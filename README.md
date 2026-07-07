@@ -142,22 +142,22 @@ The following capabilities represent the planned roadmap for Arcade. Features wi
   <img src="https://cdn.simpleicons.org/react/61DAFB" height="40" alt="React" title="React"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/typescript/3178C6" height="40" alt="TypeScript" title="TypeScript"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" height="40" alt="Tailwind CSS" title="Tailwind CSS"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:java.svg" height="40" alt="Java" title="Java"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:java.svg" height="65" alt="Java" title="Java"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/springboot/6DB33F" height="40" alt="Spring Boot" title="Spring Boot"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/postgresql/4169E1" height="40" alt="PostgreSQL" title="PostgreSQL"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/redis/FF4438" height="40" alt="Redis" title="Redis"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/mdi:aws.svg?color=white" height="40" alt="AWS" title="AWS"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:aws.svg" height="65" alt="AWS" title="AWS"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/cloudflare/F38020" height="40" alt="Cloudflare" title="Cloudflare"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/docker/2496ED" height="40" alt="Docker" title="Docker"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/vscode-icons:file-type-firebase.svg" height="40" alt="Firebase" title="Firebase"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/vscode-icons:file-type-firebase.svg" height="65" alt="Firebase" title="Firebase"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/razorpay/02042B" height="40" alt="Razorpay" title="Razorpay"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/git/F05032" height="40" alt="Git" title="Git"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/github/white" height="40" alt="GitHub" title="GitHub"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/material-symbols:antigravity.svg?color=%234285F4" height="40" alt="Antigravity" title="Antigravity"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:visual-studio-code.svg" height="40" alt="VS Code" title="VS Code"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:jetbrains.svg" height="40" alt="JetBrains" title="JetBrains"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" height="40" alt="Gemini" title="Gemini"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:claude-icon.svg" height="40" alt="Claude" title="Claude"/>
+  <img src="https://api.iconify.design/material-symbols:antigravity.svg?color=%234285F4" height="65" alt="Antigravity" title="Antigravity"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:visual-studio-code.svg" height="65" alt="VS Code" title="VS Code"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:jetbrains.svg" height="65" alt="JetBrains" title="JetBrains"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" height="65" alt="Gemini" title="Gemini"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:claude-icon.svg" height="65" alt="Claude" title="Claude"/>
 </p>
 
 ---
@@ -199,7 +199,7 @@ To run the Arcade UI locally, follow these steps:
 <h2 align="center">Contributors</h2>
 
 <p align="center">
-  Every contribution, no matter how small, helps shape Arcade into a better platform.<br/>Thank you to everyone who contributes to the project.
+  Arcade is an ecosystem powered by our Amalites.<br/>Thank you to everyone who has contributed to the platform.
 </p>
 
 <p align="center">
