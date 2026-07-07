@@ -137,27 +137,24 @@ The following capabilities represent the planned roadmap for Arcade. Features wi
 
 ## Tech Stack & Tools
 
-<p align="center">
-  <img src="https://cdn.simpleicons.org/nextdotjs/white" height="40" alt="Next.js" title="Next.js"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/react/61DAFB" height="40" alt="React" title="React"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/typescript/3178C6" height="40" alt="TypeScript" title="TypeScript"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/tailwindcss/06B6D4" height="40" alt="Tailwind CSS" title="Tailwind CSS"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:java.svg" height="65" alt="Java" title="Java"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/springboot/6DB33F" height="40" alt="Spring Boot" title="Spring Boot"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/postgresql/4169E1" height="40" alt="PostgreSQL" title="PostgreSQL"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/redis/FF4438" height="40" alt="Redis" title="Redis"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:aws.svg" height="65" alt="AWS" title="AWS"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/cloudflare/F38020" height="40" alt="Cloudflare" title="Cloudflare"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/docker/2496ED" height="40" alt="Docker" title="Docker"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/vscode-icons:file-type-firebase.svg" height="65" alt="Firebase" title="Firebase"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/razorpay/02042B" height="40" alt="Razorpay" title="Razorpay"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/git/F05032" height="40" alt="Git" title="Git"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/github/white" height="40" alt="GitHub" title="GitHub"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/material-symbols:antigravity.svg?color=%234285F4" height="65" alt="Antigravity" title="Antigravity"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:visual-studio-code.svg" height="65" alt="VS Code" title="VS Code"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:jetbrains.svg" height="65" alt="JetBrains" title="JetBrains"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" height="65" alt="Gemini" title="Gemini"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:claude-icon.svg" height="65" alt="Claude" title="Claude"/>
+<p align="left">
+  <img src="https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS"/>
+  
+  <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white" alt="Spring Boot"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis"/>
+  
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS"/>
+  <img src="https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare"/>
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase"/>
+  
+  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" alt="Git"/>
+  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/>
 </p>
 
 ---
