@@ -149,16 +149,15 @@ The following capabilities represent the planned roadmap for Arcade. Features wi
   <img src="https://api.iconify.design/mdi:aws.svg?color=white" height="40" alt="AWS" title="AWS"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/cloudflare/F38020" height="40" alt="Cloudflare" title="Cloudflare"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/docker/2496ED" height="40" alt="Docker" title="Docker"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.simpleicons.org/firebase/FFCA28" height="40" alt="Firebase Authentication" title="Firebase Authentication"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/vscode-icons:file-type-firebase.svg" height="40" alt="Firebase" title="Firebase"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/razorpay/02042B" height="40" alt="Razorpay" title="Razorpay"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/git/F05032" height="40" alt="Git" title="Git"/> &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.simpleicons.org/github/white" height="40" alt="GitHub" title="GitHub"/> &nbsp;&nbsp;&nbsp;
-    <img src="https://api.iconify.design/material-symbols:antigravity.svg" height="40" alt="Antigravity" title="Antigravity"/>
+  <img src="https://api.iconify.design/material-symbols:antigravity.svg?color=%234285F4" height="40" alt="Antigravity" title="Antigravity"/> &nbsp;&nbsp;&nbsp;
   <img src="https://api.iconify.design/logos:visual-studio-code.svg" height="40" alt="VS Code" title="VS Code"/> &nbsp;&nbsp;&nbsp;
   <img src="https://api.iconify.design/logos:jetbrains.svg" height="40" alt="JetBrains" title="JetBrains"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:google-gemini.svg" height="40" alt="Gemini" title="Gemini"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/logos:anthropic-icon.svg" height="40" alt="Claude" title="Claude"/> &nbsp;&nbsp;&nbsp;
-  <img src="https://api.iconify.design/material-symbols:antigravity.svg?color=white" height="40" alt="Antigravity" title="Antigravity"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" height="40" alt="Gemini" title="Gemini"/> &nbsp;&nbsp;&nbsp;
+  <img src="https://api.iconify.design/logos:claude-icon.svg" height="40" alt="Claude" title="Claude"/>
 </p>
 
 ---
@@ -197,8 +196,30 @@ To run the Arcade UI locally, follow these steps:
 
 <br/>
 
+<h2 align="center">Contributors</h2>
+
+<p align="center">
+  Every contribution, no matter how small, helps shape Arcade into a better platform.<br/>Thank you to everyone who contributes to the project.
+</p>
+
+<p align="center">
+  <a href="https://github.com/adhithyananilkumar/arcade/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=adhithyananilkumar/arcade" alt="Contributors" />
+  </a>
+</p>
+
+<p align="center">
+  <sub>
+    Contributors are automatically updated from the project's GitHub history.
+  </sub>
+</p>
+
+---
+
+<br/>
+
 <p align="center">
   <img src="./public/ComputerApllicationsAJCE.svg" width="200" alt="Department of Computer Applications"/><br/>
   <sub>Developed with ❤️ by the <strong>Department of Computer Applications</strong><br/>
-  Amal Jyothi College of Engineering &nbsp;·&nbsp; <a href="https://mca.ajce.in">mca.ajce.in</a> &nbsp;·&nbsp; Contact: <a href="mailto:hodmca@amaljyothi.ac.in">hodmca@amaljyothi.ac.in</a></sub>
+  Amal Jyothi College of Engineering &nbsp;·&nbsp; <a href="https://mca.ajce.in">mca.ajce.in</a> &nbsp;·&nbsp; Contact: <a href="mailto:hodmca@amaljyothi.ac.in">mca@amaljyothi.ac.in</a></sub>
 </p>
