@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions
+    url: https://github.com/adhithyananilkumar/arcade/discussions
+    about: Ask questions and discuss features
+  - name: Security Reporting
+    url: https://github.com/adhithyananilkumar/arcade/security/advisories/new
+    about: Report security vulnerabilities

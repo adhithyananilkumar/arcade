@@ -1,0 +1,97 @@
+name: Epic
+description: Represents a large product capability.
+title: "[Epic]: "
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form to propose a new Epic representing a large product capability.
+  - type: input
+    id: epic_title
+    attributes:
+      label: Epic Title
+      description: A concise and descriptive title for the Epic.
+    validations:
+      required: true
+  - type: textarea
+    id: business_goal
+    attributes:
+      label: Business Goal
+      description: What is the overarching business goal or value?
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the Epic in detail.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is in-scope and out-of-scope for this Epic?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know when this Epic is complete?
+    validations:
+      required: true
+  - type: input
+    id: related_research
+    attributes:
+      label: Related Research
+      description: Link to any related research issues or documents.
+    validations:
+      required: false
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module(s) are affected?
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  - type: input
+    id: target_milestone
+    attributes:
+      label: Target Milestone
+      description: Which milestone should this be completed by?
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: List any other Epics, Features, or external factors this depends on.
+    validations:
+      required: false
+  - type: textarea
+    id: success_metrics
+    attributes:
+      label: Success Metrics
+      description: How will success be measured post-launch?
+    validations:
+      required: true
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Any other information to add?
+    validations:
+      required: false

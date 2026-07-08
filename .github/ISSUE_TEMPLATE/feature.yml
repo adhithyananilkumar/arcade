@@ -1,0 +1,101 @@
+name: Feature
+description: Represents one functional feature under an Epic.
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form to propose a new functional Feature under an Epic.
+  - type: input
+    id: feature_title
+    attributes:
+      label: Feature Title
+    validations:
+      required: true
+  - type: input
+    id: parent_epic
+    attributes:
+      label: Parent Epic
+      description: Link to the parent Epic issue.
+    validations:
+      required: true
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: Please provide the user story in the specified format.
+      value: |
+        As a ______
+        
+        I want ______
+        
+        So that ______
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Detailed description of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What criteria must be met for this feature to be considered complete?
+    validations:
+      required: true
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: Technical Notes
+      description: Any technical implementation details or architectural considerations.
+    validations:
+      required: false
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What other features or tasks need to be completed first?
+    validations:
+      required: false
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module does this feature belong to?
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  - type: input
+    id: story_points
+    attributes:
+      label: Story Points
+      description: Estimated story points for this feature.
+    validations:
+      required: true
+  - type: input
+    id: target_sprint
+    attributes:
+      label: Target Sprint
+      description: Which sprint is this targeted for?
+    validations:
+      required: true
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+    validations:
+      required: false

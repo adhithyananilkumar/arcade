@@ -1,0 +1,98 @@
+name: Research
+description: Used before implementation begins.
+title: "[Research]: "
+labels: ["research"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form to propose new research before implementation begins.
+  - type: input
+    id: research_title
+    attributes:
+      label: Research Title
+      description: What is the title or main subject of this research?
+    validations:
+      required: true
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem Statement
+      description: What problem are we trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What is the main objective of this research?
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: Provide any necessary background context.
+    validations:
+      required: true
+  - type: textarea
+    id: existing_solutions
+    attributes:
+      label: Existing Solutions
+      description: What existing solutions or workarounds are currently being used?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_direction
+    attributes:
+      label: Proposed Direction
+      description: What is the initial proposed direction or hypothesis?
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References / URLs
+      description: Provide any relevant links, articles, or issues.
+    validations:
+      required: false
+  - type: textarea
+    id: expected_outcome
+    attributes:
+      label: Expected Outcome
+      description: What will be the deliverable or expected outcome of this research?
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How critical is this research?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module or component does this apply to?
+    validations:
+      required: true
+  - type: input
+    id: assignee
+    attributes:
+      label: Assignee
+      description: Who will be responsible for this research? (GitHub handle)
+    validations:
+      required: true
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Anything else we should know?
+    validations:
+      required: false

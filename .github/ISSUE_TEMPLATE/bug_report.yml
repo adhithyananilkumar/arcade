@@ -1,0 +1,90 @@
+name: Bug Report
+description: Report defects.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out this form to report a bug.
+  - type: input
+    id: bug_summary
+    attributes:
+      label: Bug Summary
+      description: A concise summary of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behaviour
+    attributes:
+      label: Expected Behaviour
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behaviour
+    attributes:
+      label: Actual Behaviour
+      description: What actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add any relevant screenshots.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Provide relevant logs or stack traces.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Browser, App Version, etc.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module is affected?
+    validations:
+      required: true
+  - type: input
+    id: related_feature
+    attributes:
+      label: Related Feature
+      description: Link to the related feature issue, if any.
+    validations:
+      required: false
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+    validations:
+      required: false
