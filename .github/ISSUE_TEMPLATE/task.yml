@@ -1,12 +1,8 @@
-name: Task
-description: Represents an implementation task.
+name: "✅ Task"
+description: An actionable piece of work.
 title: "[Task]: "
 labels: ["task"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Please fill out this form to outline an implementation task.
   - type: input
     id: task_title
     attributes:
@@ -14,42 +10,17 @@ body:
     validations:
       required: true
   - type: input
-    id: parent_feature
+    id: parent_epic
     attributes:
-      label: Parent Feature
-      description: Link to the parent Feature issue.
+      label: Parent Epic (Optional)
+      description: Link to the parent Epic if applicable.
     validations:
-      required: true
+      required: false
   - type: textarea
     id: description
     attributes:
       label: Description
-      description: Describe the task in detail.
-    validations:
-      required: true
-  - type: textarea
-    id: deliverables
-    attributes:
-      label: Deliverables
-      description: What are the concrete deliverables?
-    validations:
-      required: true
-  - type: textarea
-    id: acceptance_criteria
-    attributes:
-      label: Acceptance Criteria
-    validations:
-      required: true
-  - type: input
-    id: estimated_hours
-    attributes:
-      label: Estimated Hours
-    validations:
-      required: true
-  - type: input
-    id: module
-    attributes:
-      label: Module
+      description: What needs to be done?
     validations:
       required: true
   - type: dropdown
@@ -57,43 +28,8 @@ body:
     attributes:
       label: Priority
       options:
-        - Critical
         - High
         - Medium
         - Low
-    validations:
-      required: true
-  - type: input
-    id: assignee
-    attributes:
-      label: Assignee
-    validations:
-      required: true
-  - type: input
-    id: reviewer
-    attributes:
-      label: Reviewer
-    validations:
-      required: true
-  - type: checkboxes
-    id: checklist
-    attributes:
-      label: Checklist
-      description: Please confirm the following have been considered.
-      options:
-        - label: Code Complete
-          required: false
-        - label: Unit Tests
-          required: false
-        - label: Documentation Updated
-          required: false
-        - label: Code Reviewed
-          required: false
-        - label: Ready for Merge
-          required: false
-  - type: textarea
-    id: additional_notes
-    attributes:
-      label: Additional Notes
     validations:
       required: false

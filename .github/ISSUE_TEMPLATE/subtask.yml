@@ -1,0 +1,25 @@
+name: "📋 Subtask"
+description: A small unit of work for a task.
+title: "[Subtask]: "
+labels: ["subtask"]
+body:
+  - type: input
+    id: subtask_title
+    attributes:
+      label: Subtask Title
+    validations:
+      required: true
+  - type: input
+    id: parent_task
+    attributes:
+      label: Parent Task
+      description: Link to the parent Task.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Details for this subtask.
+    validations:
+      required: true
