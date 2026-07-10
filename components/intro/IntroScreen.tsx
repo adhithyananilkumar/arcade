@@ -94,32 +94,20 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
         style={{
           position: "absolute",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
-          gap: 1,
+          justifyContent: "center",
           willChange: "transform, opacity",
         }}
       >
         <img
-          src="/amaljyothi-logo.svg"
+          src="/ajce.svg"
           alt="Amal Jyothi College of Engineering"
           style={{
-            width: 126,
-            height: 126,
-            objectFit: "contain",
-            display: "block",
-            filter: "drop-shadow(0 4px 20px rgba(0,0,0,0.06))",
-          }}
-        />
-        <img
-          src="/amaljyothi-typo.svg"
-          alt="Amal Jyothi"
-          style={{
-            width: "min(460px, 84vw)",
+            width: "min(420px, 80vw)",
             height: "auto",
             objectFit: "contain",
             display: "block",
-            filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.04))",
+            filter: "drop-shadow(0 4px 24px rgba(0,0,0,0.06))",
           }}
         />
       </motion.div>
