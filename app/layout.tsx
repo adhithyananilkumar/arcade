@@ -13,6 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 
+import Providers from "@/components/Providers";
+
 export const metadata: Metadata = {
   title: "Arcade — Empowering Innovation. Building Communities.",
   description:
@@ -29,7 +31,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white">{children}</body>
+      <body className="min-h-full flex flex-col bg-white">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

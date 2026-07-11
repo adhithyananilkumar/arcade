@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import styles from './AuthForm.module.css';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthService } from '@/services/auth.service';
 
 interface AuthFormProps {
   initialMode: 'login' | 'signup';
@@ -14,10 +16,8 @@ interface AuthFormProps {
 export default function AuthForm({ initialMode }: AuthFormProps) {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [gender, setGender] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -36,20 +36,14 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (mode === 'signup') {
-      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
-        newErrors.username = "Username must be 3-20 characters long (letters, numbers, underscores).";
+      if (!/^[a-zA-Z\s]{2,50}$/.test(firstName)) {
+        newErrors.firstName = "First Name must be 2-50 characters (letters only).";
       }
-      if (!/^[a-zA-Z\s]{2,50}$/.test(fullName)) {
-        newErrors.fullName = "Full Name must be 2-50 characters (letters and spaces only).";
+      if (!/^[a-zA-Z\s]{2,50}$/.test(lastName)) {
+        newErrors.lastName = "Last Name must be 2-50 characters (letters only).";
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         newErrors.email = "Please enter a valid email address.";
-      }
-      if (!/^\+?[\d\s-]{10,15}$/.test(phoneNumber)) {
-        newErrors.phoneNumber = "Please enter a valid phone number.";
-      }
-      if (!gender) {
-        newErrors.gender = "Please select a gender.";
       }
       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.test(password)) {
         newErrors.password = "Password must be 8+ chars with 1 uppercase, 1 lowercase, 1 number, 1 special char.";
@@ -68,6 +62,8 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
     return newErrors;
   };
 
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -81,37 +77,16 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const payload = mode === 'login' 
-        ? { email, password }
-        : { username, fullName, email, phoneNumber, gender, password };
-
-      const response = await fetch(`http://localhost:8080${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(mode === 'login' ? 'Invalid credentials' : 'Registration failed. Email might be in use.');
-      }
-
-      const data = await response.json();
-      const token = data.token;
-      
       if (mode === 'login') {
-        // Store token securely
-        localStorage.setItem('token', token);
-        // Redirect to dashboard
+        const { user, accessToken } = await AuthService.login({ email, password });
+        setAuth(user, accessToken);
         router.push('/dashboard');
       } else {
-        // Show success dialog
+        await AuthService.register({ firstName, lastName, email, password });
         setShowSuccess(true);
       }
     } catch (err: any) {
-      setErrors({ global: err.message });
+      setErrors({ global: err.response?.data?.message || err.message || 'An error occurred' });
     } finally {
       setLoading(false);
     }
@@ -130,10 +105,8 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
             setMode('login');
             setPassword('');
             setConfirmPassword('');
-            setUsername('');
-            setFullName('');
-            setPhoneNumber('');
-            setGender('');
+            setFirstName('');
+            setLastName('');
             setErrors({});
           }}
         >
@@ -169,28 +142,28 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       <form className={styles.form} onSubmit={handleSubmit}>
         {errors.global && <div style={{ color: 'red', textAlign: 'center', fontSize: '0.9rem', marginBottom: '10px' }}>{errors.global}</div>}
         {mode === 'signup' && (
-          <>
-            <div className={styles.inputGroup}>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <div className={styles.inputGroup} style={{ flex: 1 }}>
               <input
                 type="text"
                 className={styles.input}
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
               />
-              {errors.username && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.username}</div>}
+              {errors.firstName && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.firstName}</div>}
             </div>
-            <div className={styles.inputGroup}>
+            <div className={styles.inputGroup} style={{ flex: 1 }}>
               <input
                 type="text"
                 className={styles.input}
-                placeholder="Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Last Name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
               />
-              {errors.fullName && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.fullName}</div>}
+              {errors.lastName && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.lastName}</div>}
             </div>
-          </>
+          </div>
         )}
         
         <div className={styles.inputGroup}>
@@ -204,35 +177,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
           {errors.email && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.email}</div>}
         </div>
 
-        {mode === 'signup' && (
-          <>
-            <div className={styles.inputGroup}>
-              <input
-                type="tel"
-                className={styles.input}
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-              {errors.phoneNumber && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.phoneNumber}</div>}
-            </div>
-            <div className={styles.inputGroup}>
-              <select
-                className={styles.input}
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                style={{ appearance: 'none', backgroundColor: 'transparent' }}
-              >
-                <option value="" disabled>Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
-              {errors.gender && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.gender}</div>}
-            </div>
-          </>
-        )}
+
 
         <div className={styles.inputGroup}>
           <div style={{ position: 'relative' }}>
@@ -315,7 +260,11 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
 
       <div className={styles.divider}>OR</div>
 
-      <button type="button" className={styles.googleButton}>
+      <button 
+        type="button" 
+        className={styles.googleButton}
+        onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+      >
         <FcGoogle size={24} />
         Continue with Google
       </button>
