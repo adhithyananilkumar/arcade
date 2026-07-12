@@ -25,6 +25,7 @@ export function ForumLayout({ children }: Props) {
   const { hideTrending } = useForumLayout();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

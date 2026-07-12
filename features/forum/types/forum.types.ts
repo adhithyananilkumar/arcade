@@ -55,6 +55,8 @@ export interface PostSummaryResponse {
   isFeatured: boolean;
   isBookmarked: boolean;
   userVote?: VoteType;
+  body?: string;
+  hasAcceptedAnswer?: boolean;
   createdAt: string;
   publishedAt?: string;
   editedAt?: string;

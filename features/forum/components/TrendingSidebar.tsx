@@ -7,7 +7,7 @@ import { TrendingUp } from 'lucide-react';
 
 export function TrendingSidebar() {
   const { data: tags } = useTrendingTags(10);
-  const { status } = useAuthStore();
+  
 
   return (
     <aside style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -44,7 +44,7 @@ export function TrendingSidebar() {
             </span>
           </div>
           <div style={{ padding: '8px 0' }}>
-            {tags.map((tag, i) => (
+            {tags.map((tag) => (
               <Link
                 key={tag.id}
                 href={`/forum/t/${tag.slug}`}

@@ -37,6 +37,7 @@ export function PostCreatorDialog({ isOpen, onClose, editPost }: Props) {
 
   useEffect(() => {
     if (isOpen && editPost) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(editPost.title);
       setBody(editPost.body);
       setPostType(editPost.postType);
@@ -52,6 +53,7 @@ export function PostCreatorDialog({ isOpen, onClose, editPost }: Props) {
   }, [isOpen, editPost]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

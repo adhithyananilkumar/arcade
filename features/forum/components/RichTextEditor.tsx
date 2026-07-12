@@ -8,6 +8,39 @@ import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import { toast } from 'sonner';
 
+const ToolbarBtn = ({ 
+  active, 
+  onClick, 
+  children 
+}: { 
+  active: boolean; 
+  onClick: () => void; 
+  children: React.ReactNode; 
+}) => (
+  <button
+    type="button"
+    onClick={(e) => { e.preventDefault(); onClick(); }}
+    style={{
+      width: 28,
+      height: 28,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--radius-sm)',
+      border: 'none',
+      background: active ? 'var(--arcade-blue)' : 'transparent',
+      color: active ? '#fff' : 'var(--text-secondary)',
+      cursor: 'pointer',
+      fontSize: 13,
+      fontWeight: 600,
+    }}
+    onMouseEnter={(e) => !active && (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
+    onMouseLeave={(e) => !active && (e.currentTarget.style.backgroundColor = 'transparent')}
+  >
+    {children}
+  </button>
+);
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
@@ -74,39 +107,6 @@ export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
     input.click();
   };
 
-  const ToolbarBtn = ({ 
-    active, 
-    onClick, 
-    children 
-  }: { 
-    active: boolean; 
-    onClick: () => void; 
-    children: React.ReactNode; 
-  }) => (
-    <button
-      type="button"
-      onClick={(e) => { e.preventDefault(); onClick(); }}
-      style={{
-        width: 28,
-        height: 28,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 'var(--radius-sm)',
-        border: 'none',
-        background: active ? 'var(--arcade-blue)' : 'transparent',
-        color: active ? '#fff' : 'var(--text-secondary)',
-        cursor: 'pointer',
-        fontSize: 13,
-        fontWeight: 600,
-      }}
-      onMouseEnter={(e) => !active && (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
-      onMouseLeave={(e) => !active && (e.currentTarget.style.backgroundColor = 'transparent')}
-    >
-      {children}
-    </button>
-  );
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
@@ -125,7 +125,7 @@ export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
         <ToolbarBtn active={editor.isActive('heading', { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>H1</ToolbarBtn>
         <ToolbarBtn active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>H2</ToolbarBtn>
         <div style={{ width: 1, height: 16, backgroundColor: 'var(--border)', margin: '0 4px' }} />
-        <ToolbarBtn active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>"</ToolbarBtn>
+        <ToolbarBtn active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>&quot;</ToolbarBtn>
         <ToolbarBtn active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>{'</>'}</ToolbarBtn>
         <div style={{ width: 1, height: 16, backgroundColor: 'var(--border)', margin: '0 4px' }} />
         <ToolbarBtn active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>•</ToolbarBtn>
