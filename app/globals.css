@@ -11,6 +11,44 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand */
+  --arcade-blue: #205ca8;
+  --arcade-blue-hover: #1a4d8f;
+  --arcade-blue-light: #ebf0fa;
+  --arcade-blue-muted: #6b93cc;
+
+  /* Surfaces */
+  --surface: #f8f9fc;
+  --surface-hover: #f1f4fa;
+  --border: #e4e8f0;
+  --border-strong: #cbd2e0;
+
+  /* Text */
+  --text-primary: #0f1824;
+  --text-secondary: #4a5568;
+  --text-muted: #8896ab;
+  --text-inverse: #ffffff;
+
+  /* Semantic */
+  --success: #16a34a;
+  --warning: #d97706;
+  --destructive: #dc2626;
+  --upvote: #205ca8;
+  --downvote: #dc2626;
+  --vote-neutral: #8896ab;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(32, 92, 168, 0.15);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
 }
 
 @theme inline {
@@ -52,3 +90,39 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Markdown preview overrides — keep it light */
+.w-md-editor-text-pre,
+.w-md-editor-text-input,
+.wmde-markdown {
+  font-family: var(--font-geist-sans), system-ui, sans-serif !important;
+}
+
+[data-color-mode="light"] .wmde-markdown {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+}
+
+[data-color-mode="light"] .wmde-markdown pre {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+[data-color-mode="light"] .wmde-markdown code {
+  background: var(--surface) !important;
+  color: var(--arcade-blue) !important;
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+[data-color-mode="light"] .wmde-markdown blockquote {
+  border-left: 3px solid var(--arcade-blue-muted);
+  color: var(--text-secondary);
+}
+
