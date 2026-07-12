@@ -30,6 +30,40 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
   const [welcomeIn, setWelcomeIn] = useState(false);
   const [appReady, setAppReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let isMounted = true;
+    let loadedCount = 0;
+
+    const handleLoad = () => {
+      loadedCount++;
+      if (loadedCount >= 2 && isMounted) {
+        setImagesLoaded(true);
+      }
+    };
+
+    const img1 = new window.Image();
+    img1.onload = handleLoad;
+    img1.onerror = handleLoad;
+    img1.src = "/ajce.svg";
+
+    const img2 = new window.Image();
+    img2.onload = handleLoad;
+    img2.onerror = handleLoad;
+    img2.src = "/arcade.svg";
+
+    const fallback = setTimeout(() => {
+      if (isMounted) setImagesLoaded(true);
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(fallback);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -38,6 +72,8 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
       onDone();
       return;
     }
+
+    if (!imagesLoaded) return;
 
     const timers = [
       setTimeout(() => setAjceIn(true), 50),
@@ -50,7 +86,7 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
 
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [imagesLoaded]);
 
   // ── AJCE derived state ─────────────────────────────────────────────────
   // Before ajceIn: hidden below. While ajceIn && !ajceOut: visible. After ajceOut: drifts up.
