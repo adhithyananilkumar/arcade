@@ -12,9 +12,10 @@ interface Props {
   onSuccess?: () => void;
   onCancel?: () => void;
   compact?: boolean;
+  autoFocus?: boolean;
 }
 
-export function CommentForm({ postId, parentId, placeholder = 'Write a comment...', onSuccess, onCancel, compact }: Props) {
+export function CommentForm({ postId, parentId, placeholder = 'Write a comment...', onSuccess, onCancel, compact, autoFocus }: Props) {
   const [body, setBody] = useState('');
   const { status } = useAuthStore();
   const createComment = useCreateComment();
@@ -40,6 +41,7 @@ export function CommentForm({ postId, parentId, placeholder = 'Write a comment..
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <textarea
+        autoFocus={autoFocus}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder={status !== 'authenticated' ? 'Sign in to comment' : placeholder}

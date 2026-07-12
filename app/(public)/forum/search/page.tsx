@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
-import { ForumLayout } from '@/features/forum/components/ForumLayout';
 import { PostCard } from '@/features/forum/components/PostCard';
 import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
 import { EmptyState } from '@/features/forum/components/EmptyState';
@@ -24,7 +23,7 @@ function SearchContent() {
   };
 
   return (
-    <ForumLayout>
+    <div>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 14 }}>
           Search Results
@@ -80,13 +79,13 @@ function SearchContent() {
           <button onClick={() => setPage((p) => p + 1)} disabled={data.last} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: '#fff', fontSize: 13, cursor: data.last ? 'not-allowed' : 'pointer', opacity: data.last ? 0.4 : 1 }}>Next</button>
         </div>
       )}
-    </ForumLayout>
+    </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<ForumLayout><LoadingSkeleton count={5} /></ForumLayout>}>
+    <Suspense fallback={<div><LoadingSkeleton count={5} /></div>}>
       <SearchContent />
     </Suspense>
   );

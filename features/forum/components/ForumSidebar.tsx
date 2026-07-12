@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutList, BookMarked, Users } from 'lucide-react';
+import { LayoutList, BookMarked } from 'lucide-react';
 import { useCategories } from '../api/forum.queries';
 
 const navItems = [
@@ -24,39 +24,8 @@ export function ForumSidebar() {
         gap: 24,
       }}
     >
-      {/* Logo */}
-      <div>
-        <Link
-          href="/forum"
-          style={{
-            display: 'block',
-            textDecoration: 'none',
-            marginBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 17,
-              fontWeight: 800,
-              color: 'var(--arcade-blue)',
-              letterSpacing: '-0.02em',
-              lineHeight: 1.2,
-            }}
-          >
-            Arcade Forum
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--text-muted)',
-              marginTop: 2,
-            }}
-          >
-            by Amal Jyothi
-          </div>
-        </Link>
-
-        {/* Nav */}
+      {/* Nav */}
+      <div style={{ marginTop: 8 }}>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -120,6 +89,10 @@ export function ForumSidebar() {
                     backgroundColor: active ? 'var(--arcade-blue-light)' : 'transparent',
                     textDecoration: 'none',
                     transition: 'all 0.12s',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'block',
                   }}
                 >
                   {cat.name}

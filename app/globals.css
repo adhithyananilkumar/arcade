@@ -103,26 +103,49 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif !important;
 }
 
-[data-color-mode="light"] .wmde-markdown {
+[data-color-mode="light"] .w-md-editor {
+  --color-canvas-default: #ffffff;
+  --color-fg-default: #0f1824;
+  background-color: #ffffff !important;
+  color: #0f1824 !important;
+}
+[data-color-mode="light"] .w-md-editor-toolbar {
+  background-color: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+[data-color-mode="light"] .w-md-editor-text {
+  background-color: #ffffff !important;
+  color: #0f1824 !important;
+}
+
+.wmde-markdown {
   background: transparent !important;
+  font-family: inherit !important;
   color: var(--text-primary) !important;
 }
-
-[data-color-mode="light"] .wmde-markdown pre {
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3 {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+.wmde-markdown code {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
-  border-radius: var(--radius-sm) !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  font-size: 13px !important;
 }
-
-[data-color-mode="light"] .wmde-markdown code {
+.wmde-markdown pre {
   background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+}
+.wmde-markdown blockquote {
+  border-left: 3px solid var(--arcade-blue) !important;
+  color: var(--text-secondary) !important;
+  background: var(--arcade-blue-light) !important;
+}
+.wmde-markdown a {
   color: var(--arcade-blue) !important;
-  border-radius: 3px;
-  padding: 1px 5px;
 }
-
-[data-color-mode="light"] .wmde-markdown blockquote {
-  border-left: 3px solid var(--arcade-blue-muted);
-  color: var(--text-secondary);
-}
-

@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
 import { useVote } from '../api/forum.queries';
@@ -13,8 +14,6 @@ interface Props {
   upvotes: number;
   downvotes: number;
   userVote?: VoteType;
-  orientation?: 'vertical' | 'horizontal';
-  onOptimisticUpdate?: (vote: VoteType | undefined, upvotes: number, downvotes: number) => void;
 }
 
 export function VoteButtons({
@@ -23,88 +22,159 @@ export function VoteButtons({
   upvotes,
   downvotes,
   userVote,
-  orientation = 'vertical',
 }: Props) {
   const { status } = useAuthStore();
   const vote = useVote();
+
+  const normalizedUserVote: VoteType | undefined =
+    userVote === true ? 'UP' : userVote === false ? 'DOWN' : userVote;
+
+  const [localUpvotes, setLocalUpvotes] = useState(upvotes);
+  const [localDownvotes, setLocalDownvotes] = useState(downvotes);
+  const [localUserVote, setLocalUserVote] = useState<VoteType | undefined>(normalizedUserVote);
+
+  const [prevUpvotes, setPrevUpvotes] = useState(upvotes);
+  const [prevUserVote, setPrevUserVote] = useState(normalizedUserVote);
+
+  if (upvotes !== prevUpvotes || normalizedUserVote !== prevUserVote) {
+    setLocalUpvotes(upvotes);
+    setLocalDownvotes(downvotes);
+    setLocalUserVote(normalizedUserVote);
+    setPrevUpvotes(upvotes);
+    setPrevUserVote(normalizedUserVote);
+  }
 
   const handleVote = (type: VoteType) => {
     if (status !== 'authenticated') {
       toast.error('Sign in to vote');
       return;
     }
-    vote.mutate({ targetType, targetId, payload: { voteType: type } });
+
+    // Save original for rollback
+    const origUp = localUpvotes;
+    const origDown = localDownvotes;
+    const origVote = localUserVote;
+
+    // Optimistic update
+    if (localUserVote === type) {
+      // Toggle off
+      setLocalUserVote(undefined);
+      if (type === 'UP') setLocalUpvotes(v => v - 1);
+      else setLocalDownvotes(v => v - 1);
+    } else {
+      // Switch or new vote
+      if (localUserVote === 'UP') setLocalUpvotes(v => v - 1);
+      if (localUserVote === 'DOWN') setLocalDownvotes(v => v - 1);
+      setLocalUserVote(type);
+      if (type === 'UP') setLocalUpvotes(v => v + 1);
+      else setLocalDownvotes(v => v + 1);
+    }
+
+    vote.mutate(
+      { targetType, targetId, payload: { voteType: type } },
+      {
+        onError: () => {
+          // Revert
+          setLocalUpvotes(origUp);
+          setLocalDownvotes(origDown);
+          setLocalUserVote(origVote);
+          toast.error('Vote failed');
+        },
+      }
+    );
   };
 
-  const netVotes = upvotes - downvotes;
+  const upvoted = localUserVote === 'UP';
+  const downvoted = localUserVote === 'DOWN';
 
-  const isRow = orientation === 'horizontal';
+  const score = localUpvotes - localDownvotes;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: isRow ? 'row' : 'column',
-        alignItems: 'center',
-        gap: isRow ? 6 : 2,
-      }}
-    >
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      height: 32,
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-full)',
+      backgroundColor: 'var(--surface)',
+      overflow: 'hidden',
+      flexShrink: 0,
+    }}>
+      {/* Upvote */}
       <motion.button
-        whileTap={{ scale: 1.25 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleVote('UP'); }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleVote('UP');
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 28,
-          height: 28,
-          borderRadius: 'var(--radius-sm)',
+          width: 32,
+          height: '100%',
           border: 'none',
           cursor: 'pointer',
-          backgroundColor: userVote === 'UP' ? 'var(--arcade-blue)' : 'transparent',
-          color: userVote === 'UP' ? '#fff' : 'var(--vote-neutral)',
+          backgroundColor: upvoted ? '#EBF0FA' : 'transparent',
+          color: upvoted ? '#205CA8' : 'var(--text-muted)',
           transition: 'all 0.15s',
         }}
       >
-        <ChevronUp size={16} />
+        <ThumbsUp 
+          size={14} 
+          color={upvoted ? '#205CA8' : 'currentColor'}
+          style={{
+            fill: upvoted ? '#205CA8' : 'none',
+            strokeWidth: upvoted ? 0 : 2,
+          }}
+        />
       </motion.button>
 
-      <span
-        style={{
-          fontSize: isRow ? 13 : 12,
-          fontWeight: 600,
-          color: userVote === 'UP'
-            ? 'var(--upvote)'
-            : userVote === 'DOWN'
-            ? 'var(--downvote)'
-            : 'var(--text-secondary)',
-          minWidth: 24,
-          textAlign: 'center',
-        }}
-      >
-        {netVotes}
+      {/* Score */}
+      <span style={{
+        fontSize: 13,
+        fontWeight: 600,
+        minWidth: 24,
+        textAlign: 'center',
+        padding: '0 4px',
+        color: upvoted ? '#205CA8' : downvoted ? '#DC2626' : 'var(--text-primary)',
+        transition: 'color 0.15s',
+      }}>
+        {score}
       </span>
 
+      {/* Downvote */}
       <motion.button
-        whileTap={{ scale: 1.25 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleVote('DOWN'); }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        onClick={e => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleVote('DOWN');
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 28,
-          height: 28,
-          borderRadius: 'var(--radius-sm)',
+          width: 32,
+          height: '100%',
           border: 'none',
           cursor: 'pointer',
-          backgroundColor: userVote === 'DOWN' ? 'var(--downvote)' : 'transparent',
-          color: userVote === 'DOWN' ? '#fff' : 'var(--vote-neutral)',
+          backgroundColor: downvoted ? '#FEF2F2' : 'transparent',
+          color: downvoted ? '#DC2626' : 'var(--text-muted)',
           transition: 'all 0.15s',
         }}
       >
-        <ChevronDown size={16} />
+        <ThumbsDown 
+          size={14} 
+          color={downvoted ? '#DC2626' : 'currentColor'}
+          style={{
+            fill: downvoted ? '#DC2626' : 'none',
+            strokeWidth: downvoted ? 0 : 2,
+          }}
+        />
       </motion.button>
     </div>
   );

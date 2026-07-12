@@ -1,7 +1,6 @@
 'use client';
 
 import { use, useState } from 'react';
-import { ForumLayout } from '@/features/forum/components/ForumLayout';
 import { PostCard } from '@/features/forum/components/PostCard';
 import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
 import { EmptyState } from '@/features/forum/components/EmptyState';
@@ -26,7 +25,7 @@ export default function TagPage({ params }: Props) {
   };
 
   return (
-    <ForumLayout>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 4 }}>
@@ -77,6 +76,6 @@ export default function TagPage({ params }: Props) {
           <button onClick={() => setPage((p) => p + 1)} disabled={data.last} style={{ height: 34, padding: '0 16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: '#fff', fontSize: 13, cursor: data.last ? 'not-allowed' : 'pointer', opacity: data.last ? 0.4 : 1 }}>Next</button>
         </div>
       )}
-    </ForumLayout>
+    </div>
   );
 }

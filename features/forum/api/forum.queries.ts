@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth.store';
 import {
   useQuery,
   useMutation,
@@ -20,8 +21,8 @@ import type {
 
 // Keys
 export const forumKeys = {
-  feed: (feedType: string, page: number) => ['forum', 'feed', feedType, page] as const,
-  post: (slug: string) => ['forum', 'post', slug] as const,
+  feed: (feedType: string, page: number, authId?: string) => ['forum', 'feed', feedType, page, authId] as const,
+  post: (slug: string, authId?: string) => ['forum', 'post', slug, authId] as const,
   postsByCategory: (slug: string, page: number) => ['forum', 'category', slug, page] as const,
   postsByTag: (tagSlug: string, page: number) => ['forum', 'tag', tagSlug, page] as const,
   postsByAuthor: (authorId: string, page: number) => ['forum', 'author', authorId, page] as const,
@@ -37,16 +38,18 @@ export const forumKeys = {
 
 // --- Queries ---
 export function useForumFeed(feedType = 'latest', page = 0, size = 20) {
+  const { user } = useAuthStore();
   return useQuery({
-    queryKey: forumKeys.feed(feedType, page),
+    queryKey: forumKeys.feed(feedType, page, user?.id),
     queryFn: () => ForumService.getFeed(feedType, page, size),
     placeholderData: (prev) => prev,
   });
 }
 
 export function usePost(slug: string) {
+  const { user } = useAuthStore();
   return useQuery({
-    queryKey: forumKeys.post(slug),
+    queryKey: forumKeys.post(slug, user?.id),
     queryFn: () => ForumService.getPostBySlug(slug),
     enabled: !!slug,
   });

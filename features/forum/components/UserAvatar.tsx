@@ -1,5 +1,7 @@
 'use client';
 
+import { displayName } from '../utils/display';
+
 interface Props {
   username: string;
   avatarUrl?: string;
@@ -12,7 +14,8 @@ const fontSizes = { sm: 10, md: 12, lg: 15, xl: 22 };
 export function UserAvatar({ username, avatarUrl, size = 'md' }: Props) {
   const px = sizes[size];
   const fs = fontSizes[size];
-  const initials = username?.slice(0, 1).toUpperCase() || '?';
+  const name = displayName(username);
+  const initials = name.slice(0, 1).toUpperCase();
 
   if (avatarUrl) {
     return (

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { LogOut, User, FileText, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { UserAvatar } from './UserAvatar';
+import { AuthService } from '@/services/auth.service';
 
 export function NavUserMenu() {
   const [open, setOpen] = useState(false);
@@ -25,10 +26,18 @@ export function NavUserMenu() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await AuthService.logout();
+    } catch (err) {
+      console.error(err);
+    }
     clearAuth();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('arcade-auth-storage');
+    }
     setOpen(false);
-    router.push('/login');
+    router.push('/forum');
   };
 
   if (!user) return null;

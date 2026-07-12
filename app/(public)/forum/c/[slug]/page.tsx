@@ -1,7 +1,6 @@
 'use client';
 
 import { use, useState } from 'react';
-import { ForumLayout } from '@/features/forum/components/ForumLayout';
 import { PostCard } from '@/features/forum/components/PostCard';
 import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
 import { EmptyState } from '@/features/forum/components/EmptyState';
@@ -18,7 +17,7 @@ export default function CategoryPage({ params }: Props) {
   const { data, isLoading } = usePostsByCategory(slug, page);
 
   return (
-    <ForumLayout>
+    <div>
       {/* Category header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 4 }}>
@@ -66,6 +65,6 @@ export default function CategoryPage({ params }: Props) {
           </button>
         </div>
       )}
-    </ForumLayout>
+    </div>
   );
 }

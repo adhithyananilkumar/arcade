@@ -11,33 +11,6 @@ export function TrendingSidebar() {
 
   return (
     <aside style={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Start discussion CTA */}
-      <Link
-        href="/forum/new"
-        style={{
-          display: 'block',
-          width: '100%',
-          padding: '10px 0',
-          textAlign: 'center',
-          backgroundColor: 'var(--arcade-blue)',
-          color: '#fff',
-          borderRadius: 'var(--radius-md)',
-          fontSize: 14,
-          fontWeight: 600,
-          textDecoration: 'none',
-          transition: 'background 0.15s',
-        }}
-        onMouseEnter={(e) =>
-          ((e.currentTarget as HTMLAnchorElement).style.backgroundColor =
-            'var(--arcade-blue-hover)')
-        }
-        onMouseLeave={(e) =>
-          ((e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--arcade-blue)')
-        }
-      >
-        + Start a Discussion
-      </Link>
-
       {/* Trending tags */}
       {tags && tags.length > 0 && (
         <div

@@ -6,20 +6,23 @@ import { NotificationPanel } from './NotificationPanel';
 import { NavUserMenu } from './NavUserMenu';
 import { useAuthStore } from '@/store/auth.store';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useForumLayout } from './ForumLayoutContext';
 
 interface Props {
   children: React.ReactNode;
-  hideTrendingSidebar?: boolean;
 }
 
-export function ForumLayout({ children, hideTrendingSidebar }: Props) {
+export function ForumLayout({ children }: Props) {
   const { status } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [q, setQ] = useState('');
   const [mounted, setMounted] = useState(false);
+  const { hideTrending } = useForumLayout();
 
   useEffect(() => {
     setMounted(true);
@@ -33,7 +36,10 @@ export function ForumLayout({ children, hideTrendingSidebar }: Props) {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: 'var(--surface)',
         fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
       }}
@@ -58,15 +64,19 @@ export function ForumLayout({ children, hideTrendingSidebar }: Props) {
         <Link
           href="/"
           style={{
-            fontSize: 15,
-            fontWeight: 800,
-            color: 'var(--arcade-blue)',
+            display: 'flex',
+            alignItems: 'center',
             textDecoration: 'none',
-            letterSpacing: '-0.02em',
             flexShrink: 0,
           }}
         >
-          Arcade
+          <Image
+            src="/arcade.svg"
+            alt="Arcade"
+            width={90}
+            height={20}
+            priority
+          />
         </Link>
         <span style={{ color: 'var(--border-strong)', fontSize: 18 }}>/</span>
         <Link
@@ -144,7 +154,9 @@ export function ForumLayout({ children, hideTrendingSidebar }: Props) {
           ) : (
             <>
               <Link
-                href="/login"
+                href={`/login?returnTo=${encodeURIComponent(
+                  typeof window !== 'undefined' ? window.location.pathname : '/forum'
+                )}`}
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
@@ -178,17 +190,46 @@ export function ForumLayout({ children, hideTrendingSidebar }: Props) {
       {/* Body */}
       <div
         style={{
-          maxWidth: 1200,
+          width: '100%',
+          flex: 1,
+          overflow: 'hidden',
           margin: '0 auto',
-          padding: '28px 24px',
+          padding: '28px 32px',
           display: 'flex',
           gap: 28,
           alignItems: 'flex-start',
+          boxSizing: 'border-box',
         }}
       >
+        <style>{`
+          @keyframes forum-fade-in {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .forum-content-enter {
+            animation: forum-fade-in 0.18s ease-out both;
+          }
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
         <ForumSidebar />
-        <main style={{ flex: 1, minWidth: 0 }}>{children}</main>
-        {!hideTrendingSidebar && <TrendingSidebar />}
+        <main
+          className="hide-scrollbar"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            height: '100%',
+            overflowY: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          <div key={pathname} className="forum-content-enter" style={{ paddingBottom: '40px' }}>
+            {children}
+          </div>
+        </main>
+        {!hideTrending && <TrendingSidebar />}
       </div>
     </div>
   );

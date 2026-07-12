@@ -1,32 +1,21 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { notFound } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { ForumLayout } from '@/features/forum/components/ForumLayout';
+import { notFound, useRouter } from 'next/navigation';
+import { useForumLayout } from '@/features/forum/components/ForumLayoutContext';
 import { CommentThread } from '@/features/forum/components/CommentThread';
 import { VoteButtons } from '@/features/forum/components/VoteButtons';
 import { TagBadge } from '@/features/forum/components/TagBadge';
 import { PostTypeBadge } from '@/features/forum/components/PostTypeBadge';
 import { UserAvatar } from '@/features/forum/components/UserAvatar';
+import { ShareButton } from '@/features/forum/components/ShareButton';
 import { usePost } from '@/features/forum/api/forum.queries';
 import { useWebSocket } from '@/features/forum/hooks/useWebSocket';
 import { useToggleBookmark } from '@/features/forum/api/forum.queries';
 import { useAuthStore } from '@/store/auth.store';
-import { Bookmark, Share2, Check, Loader2 } from 'lucide-react';
+import { Bookmark, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-
-const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), { ssr: false });
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
+import { timeAgo } from '@/features/forum/utils/display';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,11 +23,18 @@ interface Props {
 
 export default function PostDetailPage({ params }: Props) {
   const { slug } = use(params);
+  const router = useRouter();
   const { data: post, isLoading, isError } = usePost(slug);
   const toggleBookmark = useToggleBookmark();
   const { status } = useAuthStore();
   const { subscribe, clientRef } = useWebSocket();
   const [liveCommentCount, setLiveCommentCount] = useState<number | undefined>(undefined);
+  const { setHideTrending } = useForumLayout();
+
+  useEffect(() => {
+    setHideTrending(true);
+    return () => setHideTrending(false);
+  }, [setHideTrending]);
 
   // Subscribe to live comment count updates
   useEffect(() => {
@@ -56,18 +52,11 @@ export default function PostDetailPage({ params }: Props) {
     return () => clearInterval(interval);
   }, [post, subscribe, clientRef]);
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Link copied!');
-  };
-
   if (isLoading) {
     return (
-      <ForumLayout hideTrendingSidebar>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-          <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', color: 'var(--arcade-blue)' }} />
-        </div>
-      </ForumLayout>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+        <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', color: 'var(--arcade-blue)' }} />
+      </div>
     );
   }
 
@@ -75,29 +64,44 @@ export default function PostDetailPage({ params }: Props) {
     notFound();
   }
 
+  const isHtml = /<[a-z][\s\S]*>/i.test(post.body);
+
   return (
-    <ForumLayout hideTrendingSidebar>
+    <div>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
+        
+        {/* Back Button */}
+        <button 
+          onClick={() => router.back()}
+          style={{ 
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, 
+            color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', 
+            marginBottom: 20, padding: 0 
+          }}
+        >
+          <ArrowLeft size={16} /> Back to Forum
+        </button>
+
         {/* Post card header */}
         <div
           style={{
             backgroundColor: '#fff',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
-            padding: '24px 28px',
+            padding: '32px',
             marginBottom: 20,
           }}
         >
           {/* Badges */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <PostTypeBadge type={post.postType} />
             {post.category && (
               <span
                 style={{
                   fontSize: 12,
                   color: 'var(--arcade-blue)',
-                  fontWeight: 500,
-                  padding: '2px 8px',
+                  fontWeight: 600,
+                  padding: '2px 10px',
                   backgroundColor: 'var(--arcade-blue-light)',
                   borderRadius: 'var(--radius-full)',
                 }}
@@ -110,50 +114,84 @@ export default function PostDetailPage({ params }: Props) {
           {/* Title */}
           <h1
             style={{
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: 800,
               color: 'var(--text-primary)',
               lineHeight: 1.3,
               letterSpacing: '-0.02em',
-              marginBottom: 14,
+              marginBottom: 16,
             }}
           >
             {post.title}
           </h1>
 
           {/* Author + meta */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="md" />
             <div>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                 {post.author.username}
               </span>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 1 }}>
-                {timeAgo(post.createdAt)}
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
+                {timeAgo(post.createdAt)} · {post.viewCount} {post.viewCount === 1 ? 'view' : 'views'}
                 {post.editedAt && ' · edited'}
               </div>
             </div>
           </div>
+          
+          <div style={{ height: 1, backgroundColor: 'var(--border)', margin: '0 -32px 24px -32px' }} />
 
           {/* Body */}
-          <div data-color-mode="light" style={{ marginBottom: 20 }}>
-            <MarkdownPreview
-              source={post.body}
-              style={{
-                backgroundColor: 'transparent',
-                fontSize: 15,
+          <div style={{ marginBottom: 32 }}>
+            {isHtml ? (
+              <div
+                className="post-html-content"
+                style={{ fontSize: 16, lineHeight: 1.75, color: 'var(--text-primary)' }}
+                dangerouslySetInnerHTML={{
+                  __html: post.body.replace(/<script[\s\S]*?<\/script>/gi, '')
+                }}
+              />
+            ) : (
+              <div style={{
+                fontSize: 16,
                 lineHeight: 1.75,
                 color: 'var(--text-primary)',
-              }}
-            />
+                whiteSpace: 'pre-wrap',
+              }}>
+                {post.body}
+              </div>
+            )}
           </div>
+          
+          <div style={{ height: 1, backgroundColor: 'var(--border)', margin: '0 -32px 24px -32px' }} />
 
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24, alignItems: 'center' }}>
               {post.tags.map((tag) => (
                 <TagBadge key={tag.id} slug={tag.slug} name={tag.name} />
               ))}
+              {post.hasAcceptedAnswer && (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '4px 12px',
+                  backgroundColor: '#ECFDF5',
+                  border: '1px solid #86EFAC',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: '#16A34A',
+                  marginLeft: 8,
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="6" fill="#16A34A"/>
+                    <path d="M3.5 6L5.5 8L8.5 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Solved
+                </div>
+              )}
             </div>
           )}
 
@@ -162,9 +200,7 @@ export default function PostDetailPage({ params }: Props) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 16,
-              paddingTop: 16,
-              borderTop: '1px solid var(--border)',
+              gap: 8,
             }}
           >
             <VoteButtons
@@ -173,8 +209,8 @@ export default function PostDetailPage({ params }: Props) {
               upvotes={post.upvotes}
               downvotes={post.downvotes}
               userVote={post.userVote}
-              orientation="horizontal"
             />
+            
             <button
               onClick={() => {
                 if (status !== 'authenticated') { toast.error('Sign in to bookmark'); return; }
@@ -183,59 +219,27 @@ export default function PostDetailPage({ params }: Props) {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6,
+                gap: 5,
+                padding: '0 12px',
+                height: 32,
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--surface)',
+                cursor: 'pointer',
                 fontSize: 13,
                 fontWeight: 500,
                 color: post.isBookmarked ? 'var(--arcade-blue)' : 'var(--text-muted)',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
             >
-              <Bookmark size={15} fill={post.isBookmarked ? 'currentColor' : 'none'} />
+              <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} />
               {post.isBookmarked ? 'Saved' : 'Save'}
             </button>
-            <button
-              onClick={handleShare}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 13,
-                fontWeight: 500,
-                color: 'var(--text-muted)',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <Share2 size={15} />
-              Share
-            </button>
+            
+            <ShareButton />
           </div>
         </div>
-
-        {/* Accepted answer banner */}
-        {post.hasAcceptedAnswer && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 16px',
-              backgroundColor: '#ecfdf5',
-              border: '1px solid #bbf7d0',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: 20,
-              fontSize: 13,
-              color: 'var(--success)',
-              fontWeight: 600,
-            }}
-          >
-            <Check size={15} />
-            This question has an accepted answer
-          </div>
-        )}
 
         {/* Comments */}
         <div
@@ -243,12 +247,12 @@ export default function PostDetailPage({ params }: Props) {
             backgroundColor: '#fff',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-md)',
-            padding: '24px 28px',
+            padding: '32px',
           }}
         >
           <CommentThread post={post} liveCommentCount={liveCommentCount} />
         </div>
       </div>
-    </ForumLayout>
+    </div>
   );
 }
