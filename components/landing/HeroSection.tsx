@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import PinwheelToken from "./PinwheelToken";
+import GradientText from "./GradientText";
 import Link from "next/link";
 
 // ─── Word-split helper ──────────────────────────────────────────────────────
@@ -181,16 +182,27 @@ export default function HeroSection() {
                   </span>
                   ghting
                 </span>,
+                "the",
+                "path",
               ]}
               delay={0.25}
               shouldReduceMotion={shouldReduceMotion}
             />
           </span>
 
-          {/* Line 2: gradient spanning full line */}
+          {/* Line 2: mixed text and gradient */}
           <span className="l-headline__line">
-            <SplitWordsGradient
-              text="the path to possibility"
+            <SplitWords
+              wordsArray={[
+                "to",
+                <GradientText 
+                  key="possibility" 
+                  colors={['#40ffaa', '#4079ff', '#40ffaa', '#4079ff', '#40ffaa']} 
+                  animationSpeed={3}
+                >
+                  possibility.
+                </GradientText>
+              ]}
               delay={0.45}
               shouldReduceMotion={shouldReduceMotion}
             />
