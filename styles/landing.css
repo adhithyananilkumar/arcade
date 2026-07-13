@@ -190,7 +190,7 @@
 .l-hero__inner {
   max-width: 960px;
   padding-top: 3rem;
-  margin-top: -15vh;
+  margin-top: -25vh;
   /* nudge content up more */
 }
 
@@ -202,10 +202,16 @@
   cursor: pointer;
 }
 
+.l-token-wrap.is-inline-dot {
+  margin-bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* ─── Headline ──────────────────────────────────────────────────────── */
 .l-headline {
   font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(3.5rem, 8vw, 7rem);
+  font-size: clamp(4.5rem, 10vw, 8.5rem);
   font-weight: 700;
   line-height: 1.0;
   letter-spacing: -0.03em;
