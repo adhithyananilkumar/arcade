@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useEffect } from "react";
+import { motion, useReducedMotion, useAnimation } from "framer-motion";
 import PinwheelToken from "./PinwheelToken";
 import GradientText from "./GradientText";
 import Link from "next/link";
@@ -138,6 +139,102 @@ function SplitWordsGradient({
   );
 }
 
+// ─── Animated Gear Component ───────────────────────────────────────────────────
+function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  const controls = useAnimation();
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    let isMounted = true;
+
+    if (shouldReduceMotion) {
+      controls.set({ opacity: 1, scale: 1, rotate: 0 });
+      return;
+    }
+
+    const sequence = async () => {
+      // 1. Initial entrance
+      await controls.start({
+        rotate: 0,
+        scale: 1,
+        opacity: 1,
+        transition: {
+          duration: 0.9,
+          ease: [0.34, 1.56, 0.64, 1], // back.out
+          delay: 0.7,
+        },
+      });
+
+      if (!isMounted) return;
+
+      // 2. Loop for random idle spin
+      const playIdle = async () => {
+        const delay = 3000 + Math.random() * 1000; // Randomly 3 to 4 seconds
+        timeout = setTimeout(async () => {
+          if (!isMounted) return;
+          
+          // Rotate backward a little
+          await controls.start({
+            rotate: -45,
+            transition: { duration: 0.35, ease: "easeOut" },
+          });
+          
+          if (!isMounted) return;
+          
+          // Spin forward fast
+          await controls.start({
+            rotate: 360,
+            transition: { duration: 0.6, ease: "easeInOut" },
+          });
+          
+          if (!isMounted) return;
+          
+          // Rest (reset to 0 invisibly for next loop)
+          controls.set({ rotate: 0 });
+          playIdle();
+        }, delay);
+      };
+
+      playIdle();
+    };
+
+    sequence();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+  }, [controls, shouldReduceMotion]);
+
+  return (
+    <span key="to" style={{ display: 'inline-flex', alignItems: 'baseline' }}>
+      t
+      <motion.span
+        style={{
+          display: 'inline-block',
+          width: '0.72em',
+          height: '0.72em',
+          marginLeft: '0.02em',
+          transformOrigin: '50% 50%',
+          position: 'relative',
+          top: '0.07em', // Moved down slightly to match text baseline
+        }}
+        initial={shouldReduceMotion ? { opacity: 0 } : { rotate: -180, scale: 0, opacity: 0 }}
+        animate={controls}
+      >
+        <Image
+          src="/assets/lander/gear.svg"
+          alt=""
+          width={64}
+          height={64}
+          style={{ width: '100%', height: '100%', display: 'block' }}
+          priority
+        />
+      </motion.span>
+    </span>
+  );
+}
+
 // ─── Main Hero ───────────────────────────────────────────────────────────────
 export default function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
@@ -195,34 +292,7 @@ export default function HeroSection() {
           <span className="l-headline__line">
             <SplitWords
               wordsArray={[
-                <span key="to" style={{ display: 'inline-flex', alignItems: 'baseline' }}>
-                  t
-                  <motion.span
-                    style={{
-                      display: 'inline-block',
-                      width: '0.72em',
-                      height: '0.72em',
-                      marginLeft: '0.02em',
-                      transformOrigin: '50% 50%',
-                    }}
-                    initial={shouldReduceMotion ? { opacity: 0 } : { rotate: -180, scale: 0, opacity: 0 }}
-                    animate={shouldReduceMotion ? { opacity: 1 } : { rotate: 0, scale: 1, opacity: 1 }}
-                    transition={{
-                      duration: 0.9,
-                      ease: [0.34, 1.56, 0.64, 1], // back.out — smooth overshoot settle
-                      delay: 0.7,
-                    }}
-                  >
-                    <Image
-                      src="/assets/lander/gear.svg"
-                      alt=""
-                      width={64}
-                      height={64}
-                      style={{ width: '100%', height: '100%', display: 'block' }}
-                      priority
-                    />
-                  </motion.span>
-                </span>,
+                <AnimatedGear key="to" shouldReduceMotion={shouldReduceMotion} />,
                 <GradientText 
                   key="possibility" 
                   colors={['#4079ff', '#9B5DE5', '#FF6B4A', '#F9C846', '#FF9FFC', '#4079ff']} 
