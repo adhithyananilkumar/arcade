@@ -1,0 +1,239 @@
+// app/(authenticated)/dashboard/page.tsx
+// Post-login dashboard home — Create Content + My Courses grid
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import type { CourseResponse } from "@/types/api";
+import {
+  BookOpen,
+  Wrench,
+  Radio,
+  FileText,
+  Plus,
+  ChevronDown,
+  Clock,
+  GraduationCap,
+} from "lucide-react";
+
+// ── Temp author ID — replace with session user ID when auth is wired ──────────
+const TEMP_AUTHOR_ID = "00000000-0000-0000-0000-000000000001";
+
+// ── Content type menu items ───────────────────────────────────────────────────
+
+const CONTENT_TYPES = [
+  {
+    id: "course",
+    icon: BookOpen,
+    label: "Course",
+    desc: "Structured learning path with modules, chapters & lessons",
+    href: "/dashboard/content/course/new",
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
+  },
+  {
+    id: "workshop",
+    icon: Wrench,
+    label: "Workshop / Bootcamp",
+    desc: "Flexible sessions with videos, activities & resources",
+    href: "/dashboard/content/workshop/new",
+    color: "text-violet-600",
+    bg: "bg-violet-50",
+  },
+  {
+    id: "webinar",
+    icon: Radio,
+    label: "Webinar",
+    desc: "Live session with Zoom link, date & time",
+    href: "/dashboard/content/webinar/new",
+    color: "text-blue-600",
+    bg: "bg-blue-50",
+  },
+  {
+    id: "article",
+    icon: FileText,
+    label: "Article",
+    desc: "Standalone rich document authored with the editor",
+    href: "/dashboard/content/article/new",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
+  },
+] as const;
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
+    PUBLISHED: "bg-green-50 text-green-700 border-green-200",
+    ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
+  };
+  return (
+    <span
+      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+        map[status] ?? "bg-gray-100 text-gray-500 border-gray-200"
+      }`}
+    >
+      {status}
+    </span>
+  );
+}
+
+export default function DashboardPage() {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<CourseResponse[]>(`/api/courses?authorId=${TEMP_AUTHOR_ID}`)
+      .then(setCourses)
+      .catch(() => setCourses([]))
+      .finally(() => setLoadingCourses(false));
+  }, []);
+
+  return (
+    <div className="flex-1 flex flex-col">
+      {/* ── Header bar ───────────────────────────────────────────────────────── */}
+      <header className="bg-white border-b border-gray-200 px-8 py-5">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Content Studio</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Create and manage your educational content
+            </p>
+          </div>
+
+          {/* Create Content button + Canva-style dropdown */}
+          <div className="relative">
+            <button
+              id="create-content-btn"
+              onClick={() => setDropdownOpen((v) => !v)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
+            >
+              <Plus size={16} />
+              Create Content
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setDropdownOpen(false)}
+                />
+                {/* Dropdown panel */}
+                <div
+                  className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-40 overflow-hidden"
+                  role="menu"
+                >
+                  <div className="px-4 py-2.5 border-b border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Select content type
+                    </p>
+                  </div>
+                  {CONTENT_TYPES.map((type) => (
+                    <Link
+                      key={type.id}
+                      href={type.href}
+                      role="menuitem"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors"
+                    >
+                      <div
+                        className={`flex-shrink-0 w-9 h-9 rounded-lg ${type.bg} flex items-center justify-center mt-0.5`}
+                      >
+                        <type.icon size={17} className={type.color} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">{type.label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                          {type.desc}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ── My Courses section ────────────────────────────────────────────────── */}
+      <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
+        <div className="flex items-center gap-2 mb-5">
+          <GraduationCap size={17} className="text-indigo-500" />
+          <h2 className="text-base font-semibold text-gray-800">My Courses</h2>
+        </div>
+
+        {loadingCourses ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse">
+                <div className="h-4 bg-gray-100 rounded mb-3 w-2/3" />
+                <div className="h-3 bg-gray-50 rounded mb-2 w-full" />
+                <div className="h-3 bg-gray-50 rounded mb-4 w-3/4" />
+                <div className="flex justify-between items-center">
+                  <div className="h-5 w-14 bg-gray-100 rounded-full" />
+                  <div className="h-7 w-24 bg-gray-100 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+              <BookOpen size={24} className="text-gray-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">No courses yet</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Click &quot;Create Content&quot; to build your first course.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {courses.map((course) => (
+              <div
+                key={course.id}
+                className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <StatusBadge status={course.status} />
+                </div>
+                {course.description && (
+                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                    {course.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
+                  <Clock size={11} />
+                  {new Date(course.updatedAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </div>
+                <Link
+                  href={`/dashboard/content/course/${course.id}/edit`}
+                  className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
+                >
+                  Continue Editing →
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
