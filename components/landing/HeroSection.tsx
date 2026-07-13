@@ -235,6 +235,141 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
   );
 }
 
+// ─── Animated Underline Component ────────────────────────────────────────────
+function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  const controls = useAnimation();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (shouldReduceMotion) {
+      controls.set({ scaleX: 1, opacity: 1 });
+      return;
+    }
+
+    const sequence = async () => {
+      // Wait for the word to reveal
+      await new Promise(r => setTimeout(r, 1200));
+      if (!isMounted) return;
+
+      const loop = async () => {
+        // Draw in from left
+        controls.set({ transformOrigin: 'left' });
+        await controls.start({
+          scaleX: 1,
+          transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] },
+        });
+
+        if (!isMounted) return;
+        await new Promise(r => setTimeout(r, 3000)); // Stay visible
+        if (!isMounted) return;
+
+        // Erase out to the right (hides)
+        controls.set({ transformOrigin: 'right' });
+        await controls.start({
+          scaleX: 0,
+          transition: { duration: 0.8, ease: "easeInOut" },
+        });
+
+        if (!isMounted) return;
+        await new Promise(r => setTimeout(r, 800)); // Wait before drawing again
+        if (!isMounted) return;
+
+        loop();
+      };
+
+      loop();
+    };
+
+    sequence();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [controls, shouldReduceMotion]);
+
+  return (
+    <motion.span
+      style={{
+        position: 'absolute',
+        bottom: '0',
+        left: '-0.38em', // Shifted left to start under the 'p' bowl (avoiding the stem)
+        right: 0,
+        height: '0.08em', // Reduced thickness by ~30%
+        backgroundColor: '#F9C846', // Yellow
+        borderRadius: '4px',
+        zIndex: 0,
+      }}
+      initial={{ scaleX: 0 }}
+      animate={controls}
+    />
+  );
+}
+
+// ─── Animated Mirror E Component ─────────────────────────────────────────────
+function AnimatedMirrorE({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) {
+  const controls = useAnimation();
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    let isMounted = true;
+
+    if (shouldReduceMotion) return;
+
+    const sequence = async () => {
+      // Wait for initial entrance to finish
+      await new Promise(r => setTimeout(r, 1500));
+      if (!isMounted) return;
+
+      const loop = async (isFirst = false) => {
+        // First flip happens quickly; subsequent flips wait 2 to 6 seconds
+        const delay = isFirst ? 500 : 2000 + Math.random() * 4000;
+        timeout = setTimeout(async () => {
+          if (!isMounted) return;
+
+          // Flip backwards (mirror)
+          await controls.start({
+            rotateY: 180,
+            transition: { duration: 0.6, ease: "easeInOut" },
+          });
+
+          if (!isMounted) return;
+          // Stay flipped for a very short time
+          await new Promise(r => setTimeout(r, 300 + Math.random() * 400));
+          if (!isMounted) return;
+
+          // Flip forwards (normal)
+          await controls.start({
+            rotateY: 0,
+            transition: { duration: 0.6, ease: "easeInOut" },
+          });
+
+          if (!isMounted) return;
+          loop(false);
+        }, delay);
+      };
+
+      loop(true);
+    };
+
+    sequence();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeout);
+    };
+  }, [controls, shouldReduceMotion]);
+
+  return (
+    <motion.span
+      style={{ display: 'inline-block', transformOrigin: 'center' }}
+      animate={controls}
+    >
+      e
+    </motion.span>
+  );
+}
+
 // ─── Main Hero ───────────────────────────────────────────────────────────────
 export default function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
@@ -280,29 +415,15 @@ export default function HeroSection() {
                   </span>
                   ghting
                 </span>,
-                "the",
-                <span key="path" style={{ position: 'relative', display: 'inline-block' }}>
-                  path
-                  <motion.span
-                    style={{
-                      position: 'absolute',
-                      bottom: '0.05em',
-                      left: 0,
-                      right: 0,
-                      height: '0.12em',
-                      backgroundColor: '#F9C846', // Thick yellow
-                      borderRadius: '4px',
-                      transformOrigin: 'left',
-                      zIndex: -1,
-                    }}
-                    initial={shouldReduceMotion ? { opacity: 0 } : { scaleX: 0 }}
-                    animate={shouldReduceMotion ? { opacity: 1 } : { scaleX: 1 }}
-                    transition={{
-                      duration: 0.7,
-                      ease: [0.16, 1, 0.3, 1],
-                      delay: 1.0,
-                    }}
-                  />
+                <span key="the" style={{ display: 'inline-flex' }}>
+                  th<AnimatedMirrorE shouldReduceMotion={shouldReduceMotion} />
+                </span>,
+                <span key="path" style={{ display: 'inline-block' }}>
+                  p
+                  <span style={{ position: 'relative', display: 'inline-block' }}>
+                    <span style={{ position: 'relative', zIndex: 1 }}>ath</span>
+                    <AnimatedUnderline shouldReduceMotion={shouldReduceMotion} />
+                  </span>
                 </span>,
               ]}
               delay={0.25}
