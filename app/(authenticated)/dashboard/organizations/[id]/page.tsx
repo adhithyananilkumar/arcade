@@ -252,8 +252,6 @@ export default function OrganizationDetailsPage() {
         
         </div>
         
-      </div>
-      
       {/* Organization Activity Log */}
       <div className="mt-8">
         <OrgActivityLog orgId={id as string} />
