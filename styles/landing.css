@@ -180,18 +180,21 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   padding: 0 clamp(1.5rem, 7vw, 8rem);
-  padding-left: clamp(1.5rem, 12vw, 15rem);
-  padding-top: 94px;
-  /* nav height */
+  padding-top: 94px; /* nav height */
   position: relative;
 }
 
 .l-hero__inner {
-  max-width: 960px;
+  width: 100%;
+  max-width: 1200px;
   padding-top: 3rem;
-  margin-top: -25vh;
-  /* nudge content up more */
+  margin-top: -25vh; /* nudge content up more */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 /* ─── Pinwheel Token ────────────────────────────────────────────────── */
@@ -218,6 +221,7 @@
   color: var(--l-ink);
   margin: 0;
   padding: 0;
+  text-align: center;
 }
 
 .l-headline__line {
@@ -256,6 +260,7 @@
   letter-spacing: 0.01em;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -268,6 +273,7 @@
 .l-ctas {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.875rem;
   margin-top: 2.5rem;
   flex-wrap: wrap;
