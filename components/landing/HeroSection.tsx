@@ -157,19 +157,19 @@ export default function HeroSection() {
     <section className="l-hero" aria-label="Hero section">
       <div className="l-hero__inner">
         {/* ── Headline ── */}
-        <h1 className="l-headline" aria-label="Built to level you up">
-          {/* Line 1: "Built to" */}
+        <h1 className="l-headline" aria-label="Lighting the path to possibility for all">
+          {/* Line 1 */}
           <span className="l-headline__line">
             <SplitWords
               wordsArray={[
-                <span key="built">
-                  Bu
+                <span key="lighting">
+                  L
                   <span style={{ position: "relative", display: "inline-block" }}>
                     ı
                     <span
                       style={{
                         position: "absolute",
-                        top: "-0.08em",
+                        top: "0.00em",
                         left: "50%",
                         transform: "translateX(-50%)",
                         width: "0.4em",
@@ -179,8 +179,10 @@ export default function HeroSection() {
                       <PinwheelToken className="is-inline-dot" />
                     </span>
                   </span>
-                  lt
+                  ghting
                 </span>,
+                "the",
+                "path",
                 "to",
               ]}
               delay={0.25}
@@ -188,10 +190,10 @@ export default function HeroSection() {
             />
           </span>
 
-          {/* Line 2: "level you up" — gradient spanning full line */}
+          {/* Line 2: gradient spanning full line */}
           <span className="l-headline__line">
             <SplitWordsGradient
-              text="level you up"
+              text="possibility for all"
               delay={0.45}
               shouldReduceMotion={shouldReduceMotion}
             />
