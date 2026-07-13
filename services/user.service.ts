@@ -22,4 +22,12 @@ export class UserService {
     });
     return data;
   }
+
+  static async acceptContentCreatorInvite(): Promise<void> {
+    await apiClient.post('/content-creators/accept');
+  }
+
+  static async declineContentCreatorInvite(): Promise<void> {
+    await apiClient.post('/content-creators/decline');
+  }
 }

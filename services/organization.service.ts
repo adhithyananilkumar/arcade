@@ -31,7 +31,8 @@ export class OrganizationService {
    * Creates a new organization.
    */
   static async createOrganization(name: string, description?: string): Promise<Organization> {
-    const { data } = await apiClient.post<Organization>('/organizations', { name, description });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const { data } = await apiClient.post<Organization>('/organizations', { name, slug, description });
     return data;
   }
 
