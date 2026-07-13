@@ -169,11 +169,11 @@ export default function HeroSection() {
                     <span
                       style={{
                         position: "absolute",
-                        top: "0.02em",
+                        top: "-0.08em",
                         left: "50%",
                         transform: "translateX(-50%)",
-                        width: "0.55em",
-                        height: "0.55em",
+                        width: "0.4em",
+                        height: "0.4em",
                       }}
                     >
                       <PinwheelToken className="is-inline-dot" />
