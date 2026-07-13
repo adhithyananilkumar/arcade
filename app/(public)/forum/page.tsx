@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PostCard } from '@/features/forum/components/PostCard';
 import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
@@ -16,7 +16,7 @@ const FEED_TABS = [
   { key: 'top', label: 'Top' },
 ];
 
-export default function ForumPage() {
+function ForumPageContent() {
   const [feedType, setFeedType] = useState('latest');
   const [page, setPage] = useState(0);
   const [showCreator, setShowCreator] = useState(false);
@@ -194,5 +194,13 @@ export default function ForumPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ForumPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ForumPageContent />
+    </Suspense>
   );
 }
