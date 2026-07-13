@@ -76,7 +76,7 @@ export function ArcadeEditor({
       )}
       <EditorContent
         editor={editor}
-        className="flex-1 px-8 py-6 min-h-[400px] focus-within:outline-none"
+        className="flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
       />
       {/* Character count — subtle footer */}
       {!readOnly && (

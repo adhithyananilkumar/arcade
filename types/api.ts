@@ -48,23 +48,10 @@ export interface ModuleResponse {
   id: string;
   title: string;
   position: number;
-  chapters: ChapterResponse[];
-}
-
-export interface CreateModuleRequest {
-  title: string;
-}
-
-// ── Chapter ───────────────────────────────────────────────────────────────────
-
-export interface ChapterResponse {
-  id: string;
-  title: string;
-  position: number;
   lessons: LessonResponse[];
 }
 
-export interface CreateChapterRequest {
+export interface CreateModuleRequest {
   title: string;
 }
 
