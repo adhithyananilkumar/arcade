@@ -10,13 +10,18 @@ export interface User {
   lastName?: string;
   fullName: string;
   username?: string;
-  phoneNumber?: string;
+  mobileNumber?: string;
+  gender?: string;
+  address?: string;
+  socialLinks?: string[];
+  preferences?: string[];
+  onboardingCompleted?: boolean;
   provider?: string;
   createdAt?: string;
   avatarUrl?: string;
   emailVerified: boolean;
-  roles: any[];
-  permissions: string[];
+  roles?: any[];
+  permissions?: string[];
 }
 
 interface AuthState {

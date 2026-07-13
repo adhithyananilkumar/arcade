@@ -1,18 +1,14 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import { Search, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AuthService } from '@/services/auth.service';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { LogOut, User as UserIcon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import Link from 'next/link';
 
 export default function DashboardNavbar() {
   const { user, clearAuth } = useAuthStore();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const getAvatarUrl = (url?: string) => {
     if (!url) return undefined;
@@ -26,62 +22,61 @@ export default function DashboardNavbar() {
     }
     return baseUrl + (url.startsWith('/') ? '' : '/') + url;
   };
-  const router = useRouter();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
     try {
-      setIsLoggingOut(true);
       await AuthService.logout();
     } catch (error) {
       console.error('Logout failed:', error);
-      toast.error('Logout encountered an error, but your local session is cleared.');
     } finally {
       clearAuth();
-      router.push('/login');
+      window.location.href = '/login';
     }
   };
 
   return (
-    <nav className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white/80 px-6 backdrop-blur-md">
-      <div className="flex items-center gap-4">
-        {/* Breadcrumb replacement for Logo */}
-        <div className="flex items-center text-sm text-gray-500 font-medium">
-          <span className="text-gray-400">Dashboard</span>
-          <span className="mx-2 text-gray-300">/</span>
-          <span className="text-gray-900">Overview</span>
+    <nav className="flex h-16 w-full items-center justify-between px-6 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
+      
+      {/* Search */}
+      <div className="flex w-full max-w-md items-center gap-2 relative">
+        <Search size={16} className="absolute left-3 text-muted-foreground" />
+        <Input 
+          type="text" 
+          placeholder="Search..." 
+          className="w-full pl-9 bg-slate-50/50 border-slate-200 h-9 rounded-lg focus-visible:ring-blue-500 shadow-sm" 
+        />
+        <div className="absolute right-3 flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 border border-slate-200">
+          ⌘K
         </div>
       </div>
 
+      {/* Right Actions */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={toggleDropdown} className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-700 border-2 border-transparent focus:border-indigo-500 focus:outline-none transition-all">
-            {user?.avatarUrl ? (
-              <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-9 w-9 rounded-full object-cover" />
-            ) : (
-              <UserIcon size={18} />
-            )}
-          </button>
-          <div className="hidden md:flex flex-col">
-            <span className="text-sm font-semibold text-gray-900 leading-none mb-1">
-              {user?.fullName || 'User'}
-            </span>
-            <span className="text-xs text-gray-500 leading-none">
-              {user?.roles?.[0]?.name?.replace('ROLE_', '') || 'Member'}
-            </span>
-          </div>
+        
+        {/* User Profile */}
+        <div className="flex items-center gap-3 pr-4 border-r border-slate-200 hidden sm:flex">
+          <Avatar className="h-8 w-8 border border-slate-200">
+            <AvatarImage src={getAvatarUrl(user?.avatarUrl) || ''} alt={user?.fullName || 'User'} />
+            <AvatarFallback className="bg-blue-50 text-blue-700 text-xs font-semibold">
+              {user?.fullName?.charAt(0) || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-semibold text-slate-900 leading-none">
+            {user?.fullName || 'User'}
+          </span>
         </div>
 
-        <div className="h-6 w-px bg-gray-200"></div>
-
-        <button
+        {/* Logout Button */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
           onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+          className="text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-lg font-semibold"
         >
-          <LogOut size={16} />
-          <span className="hidden sm:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
-        </button>
+          <LogOut className="mr-2 h-4 w-4" />
+          Log out
+        </Button>
+
       </div>
     </nav>
   );

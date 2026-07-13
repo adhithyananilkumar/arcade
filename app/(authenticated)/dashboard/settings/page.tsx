@@ -181,6 +181,18 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-1.5">
+                <label htmlFor="username" className="text-sm font-medium text-gray-700">Username</label>
+                <input
+                  id="username"
+                  type="text"
+                  disabled
+                  value={user.username || ''}
+                  className="block w-full rounded-xl border-gray-200 bg-gray-50 text-gray-500 shadow-sm sm:text-sm px-4 py-2.5 border cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500">Username cannot be changed right now.</p>
+              </div>
+
+              <div className="space-y-1.5">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</label>
                 <input
                   id="email"

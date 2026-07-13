@@ -250,8 +250,6 @@ export default function OrganizationDetailsPage() {
           )}
         </div>
         
-        </div>
-        
       </div>
       
       {/* Organization Activity Log */}

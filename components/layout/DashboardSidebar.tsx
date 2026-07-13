@@ -3,77 +3,119 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2 } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Settings, 
+  Building2,
+  UserCircle,
+  Search
+} from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/store/auth.store';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const navItems = [
-  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
-  { name: 'Sessions', href: '/dashboard/sessions', icon: Users },
-  { name: 'Audit Logs', href: '/dashboard/audit', icon: ShieldAlert },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+const navigationGroups = [
+  {
+    title: 'GENERAL',
+    items: [
+      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
+      { name: 'Profile', href: '/dashboard/profile', icon: UserCircle },
+      { name: 'Search', href: '/dashboard/search', icon: Search },
+    ]
+  },
+  {
+    title: 'SYSTEM',
+    items: [
+      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    ]
+  }
 ];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { user } = useAuthStore();
 
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
-      <div className="flex h-16 items-center px-6 border-b border-gray-100">
+    <div className="flex h-full flex-col bg-white">
+      <div className="flex h-16 items-center px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image
             src="/arcade.svg"
             alt="Arcade"
-            width={90}
-            height={26}
+            width={100}
+            height={28}
             className="h-6 w-auto"
           />
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <nav className="flex-1 space-y-6 px-4 py-6 overflow-y-auto">
+        {navigationGroups.map((group) => (
+          <div key={group.title}>
+            <h4 className="mb-2 px-3 text-xs font-semibold tracking-wider text-muted-foreground">
+              {group.title}
+            </h4>
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'text-indigo-600 bg-indigo-50/50'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-active-indicator"
-                  className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-indigo-600"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              <Icon
-                size={18}
-                className={`transition-colors duration-200 ${
-                  isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'
-                }`}
-              />
-              {item.name}
-            </Link>
-          );
-        })}
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="relative block"
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active"
+                        className="absolute inset-0 rounded-xl bg-blue-50/80"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    {isActive && (
+                      <motion.div
+                        layoutId="sidebar-active-indicator"
+                        className="absolute left-0 top-1/2 -mt-2 h-4 w-1 rounded-r-full bg-blue-600"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    <Button
+                      variant="ghost"
+                      className={`relative z-10 w-full justify-start gap-3 rounded-xl px-3 py-2 transition-all hover:bg-slate-100/50 ${
+                        isActive ? 'text-blue-700 font-semibold hover:bg-transparent' : 'text-slate-600 hover:text-slate-900 font-medium'
+                      }`}
+                    >
+                      <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                      {item.name}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
       
-      <div className="p-4 border-t border-gray-100">
-        <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-4 text-white shadow-md">
-          <h4 className="text-sm font-bold mb-1">Upgrade to Pro</h4>
-          <p className="text-xs text-indigo-100 mb-3 opacity-90">Get access to premium features.</p>
-          <button className="w-full rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm py-1.5 text-xs font-semibold transition-colors">
-            Learn More
-          </button>
-        </div>
+      <div className="p-4 space-y-4">
+        {user && (
+          <div className="flex w-full items-center justify-start gap-3 rounded-xl px-2 py-2">
+            <Avatar className="h-9 w-9 border border-slate-200">
+              <AvatarImage src={user.avatarUrl || ''} alt={user.fullName || 'User'} />
+              <AvatarFallback className="bg-blue-50 text-blue-700 font-semibold">
+                {user.fullName?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-start overflow-hidden text-left">
+              <span className="truncate text-sm font-semibold leading-none mb-1 text-slate-900">{user.fullName || 'User'}</span>
+              <span className="truncate text-xs text-muted-foreground leading-none">{user.email || 'user@example.com'}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
