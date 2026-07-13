@@ -6,7 +6,7 @@ import type { TiptapDocument } from "./editor";
 
 // ── Course ────────────────────────────────────────────────────────────────────
 
-export type PricingModel = "FREE" | "PAID" | "SUBSCRIPTION";
+export type PricingModel = "FREE" | "PAID";
 
 export type ContentStatus =
   | "DRAFT"

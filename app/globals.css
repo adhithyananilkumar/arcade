@@ -58,13 +58,14 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/*
+ * NOTE: Do not add an unlayered universal margin/padding reset here.
+ * Tailwind v4 emits all utilities inside "@layer utilities", and unlayered CSS
+ * wins over layered CSS regardless of specificity — an unlayered universal
+ * padding and margin reset silently overrides every spacing utility such as
+ * px-8, py-5 and mx-auto. Tailwind's preflight (from the tailwindcss import)
+ * already normalizes box-sizing and element margins.
+ */
 
 html {
   scroll-behavior: smooth;

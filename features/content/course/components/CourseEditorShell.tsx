@@ -102,7 +102,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   const [courseId, setCourseId] = useState<string | undefined>(initialCourseId);
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
-  const [pricingModel, setPricingModel] = useState<"FREE" | "PAID" | "SUBSCRIPTION">("FREE");
+  const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
   const [status, setStatus] = useState("DRAFT");
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
@@ -125,7 +125,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
           const course = await api.get<CourseResponse>(`/api/courses/${initialCourseId}`);
           setTitle(course.title);
           setDescription(course.description ?? "");
-          setPricingModel(course.pricingModel as "FREE" | "PAID" | "SUBSCRIPTION");
+          setPricingModel(course.pricingModel as "FREE" | "PAID");
           setStatus(course.status);
           setModules(
             course.modules.map((m) => ({
@@ -384,7 +384,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
           <select
             value={pricingModel}
             onChange={(e) => {
-              const val = e.target.value as "FREE" | "PAID" | "SUBSCRIPTION";
+              const val = e.target.value as "FREE" | "PAID";
               setPricingModel(val);
               scheduleCourseMetaSave({ pricingModel: val });
             }}
@@ -392,7 +392,6 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
           >
             <option value="FREE">Free</option>
             <option value="PAID">Paid</option>
-            <option value="SUBSCRIPTION">Subscription</option>
           </select>
 
           {/* Status badge */}
