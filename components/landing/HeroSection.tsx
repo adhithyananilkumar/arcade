@@ -181,9 +181,6 @@ export default function HeroSection() {
                   </span>
                   ghting
                 </span>,
-                "the",
-                "path",
-                "to",
               ]}
               delay={0.25}
               shouldReduceMotion={shouldReduceMotion}
@@ -193,7 +190,7 @@ export default function HeroSection() {
           {/* Line 2: gradient spanning full line */}
           <span className="l-headline__line">
             <SplitWordsGradient
-              text="possibility"
+              text="the path to possibility"
               delay={0.45}
               shouldReduceMotion={shouldReduceMotion}
             />
