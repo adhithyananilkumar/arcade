@@ -197,8 +197,8 @@ export default function HeroSection() {
                 "to",
                 <GradientText 
                   key="possibility" 
-                  colors={['#40ffaa', '#4079ff', '#40ffaa', '#4079ff', '#40ffaa']} 
-                  animationSpeed={3}
+                  colors={['#40ffaa', '#4079ff', '#9B5DE5', '#FF6B4A', '#F9C846', '#1DB876', '#40ffaa']} 
+                  animationSpeed={8}
                 >
                   possibility.
                 </GradientText>
