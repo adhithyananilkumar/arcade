@@ -17,7 +17,7 @@ export default function DashboardNavbar() {
 
   const getAvatarUrl = (url?: string) => {
     if (!url) return undefined;
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     if (url.startsWith('/api/v1/')) {
       return baseUrl.replace('/api/v1', '') + url;

@@ -25,7 +25,7 @@ export default function SettingsPage() {
 
   const getAvatarUrl = (url?: string) => {
     if (!url) return undefined;
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
     // Prepend API URL for relative paths
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     // If the url already includes /api/v1, we need to be careful not to duplicate it.
