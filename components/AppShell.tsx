@@ -98,19 +98,19 @@ export default function AppShell() {
             Features
           </a>
           <a
-            href="#community"
+            href="/forum"
             style={{ fontSize: 13, color: "#666", textDecoration: "none", fontWeight: 500 }}
           >
-            Community
+            Forum
           </a>
           <a
-            href="/auth/login"
+            href="/login"
             style={{ fontSize: 13, color: "#444", textDecoration: "none", fontWeight: 500 }}
           >
             Sign in
           </a>
           <a
-            href="/auth/register"
+            href="/register"
             style={{
               fontSize: 13,
               fontWeight: 600,
@@ -235,7 +235,7 @@ export default function AppShell() {
           style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}
         >
           <a
-            href="/auth/register"
+            href="/register"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -495,7 +495,7 @@ export default function AppShell() {
               grow together in a space made for technical excellence.
             </p>
             <a
-              href="/auth/register"
+              href="/register"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
