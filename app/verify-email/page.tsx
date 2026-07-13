@@ -1,13 +1,21 @@
 'use client';
 
+<<<<<<< HEAD
 import { useEffect, useState, Suspense } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
+<<<<<<< HEAD
 function VerifyEmailContent() {
+=======
+export default function VerifyEmailPage() {
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -88,6 +96,7 @@ function VerifyEmailContent() {
     </div>
   );
 }
+<<<<<<< HEAD
 
 export default function VerifyEmailPage() {
   return (
@@ -96,3 +105,5 @@ export default function VerifyEmailPage() {
     </Suspense>
   );
 }
+=======
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e

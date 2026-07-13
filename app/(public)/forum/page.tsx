@@ -1,6 +1,10 @@
 'use client';
 
+<<<<<<< HEAD
 import { useState, useEffect, Suspense } from 'react';
+=======
+import { useState, useEffect } from 'react';
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
 import { useSearchParams } from 'next/navigation';
 import { PostCard } from '@/features/forum/components/PostCard';
 import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
@@ -16,7 +20,11 @@ const FEED_TABS = [
   { key: 'top', label: 'Top' },
 ];
 
+<<<<<<< HEAD
 function ForumPageContent() {
+=======
+export default function ForumPage() {
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
   const [feedType, setFeedType] = useState('latest');
   const [page, setPage] = useState(0);
   const [showCreator, setShowCreator] = useState(false);
@@ -196,6 +204,7 @@ function ForumPageContent() {
     </div>
   );
 }
+<<<<<<< HEAD
 
 export default function ForumPage() {
   return (
@@ -204,3 +213,5 @@ export default function ForumPage() {
     </Suspense>
   );
 }
+=======
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e

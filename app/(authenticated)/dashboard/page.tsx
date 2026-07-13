@@ -2,9 +2,15 @@
 
 import { useAuthStore } from '@/store/auth.store';
 import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3 } from 'lucide-react';
+<<<<<<< HEAD
 import { motion, Variants } from 'framer-motion';
 
 const containerVariants: Variants = {
+=======
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -14,7 +20,11 @@ const containerVariants: Variants = {
   }
 };
 
+<<<<<<< HEAD
 const itemVariants: Variants = {
+=======
+const itemVariants = {
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }
 };

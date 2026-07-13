@@ -92,6 +92,10 @@ export function ForumSidebar() {
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
+<<<<<<< HEAD
+=======
+                    display: 'block',
+>>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
                   }}
                 >
                   {cat.name}
