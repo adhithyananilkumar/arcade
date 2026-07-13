@@ -10,13 +10,11 @@
   --l-violet: #9b5de5;
   --l-bg: #ffffff;
   --l-bg-alt: #f6f7fb;
-  --l-gradient: linear-gradient(
-    90deg,
-    var(--l-blue) 0%,
-    var(--l-emerald) 33%,
-    var(--l-coral) 66%,
-    var(--l-violet) 100%
-  );
+  --l-gradient: linear-gradient(90deg,
+      var(--l-blue) 0%,
+      var(--l-emerald) 33%,
+      var(--l-coral) 66%,
+      var(--l-violet) 100%);
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────── */
@@ -184,14 +182,16 @@
   justify-content: center;
   padding: 0 clamp(1.5rem, 7vw, 8rem);
   padding-left: clamp(1.5rem, 12vw, 15rem);
-  padding-top: 64px; /* nav height */
+  padding-top: 94px;
+  /* nav height */
   position: relative;
 }
 
 .l-hero__inner {
   max-width: 960px;
   padding-top: 3rem;
-  margin-top: -6vh; /* nudge content up slightly */
+  margin-top: -15vh;
+  /* nudge content up more */
 }
 
 /* ─── Pinwheel Token ────────────────────────────────────────────────── */
@@ -217,7 +217,8 @@
 .l-headline__line {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.12em; /* prevent descender clipping */
+  padding-bottom: 0.12em;
+  /* prevent descender clipping */
 }
 
 /* ─── Gradient Text ─────────────────────────────────────────────────── */
@@ -311,6 +312,7 @@
   .l-nav__actions {
     gap: 0.625rem;
   }
+
   .l-nav__login {
     display: none;
   }
