@@ -101,9 +101,12 @@ export default function DashboardPage() {
             <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-md shadow-indigo-100">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-white overflow-hidden border-2 border-white">
                 {user.avatarUrl ? (
-                  <img src={getAvatarUrl(user.avatarUrl)} alt="Profile" className="h-full w-full object-cover" />
+                  <img src={getAvatarUrl(user.avatarUrl)} alt="Profile" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <UserIcon size={44} className="text-indigo-400" />
+                  <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-indigo-700 text-3xl font-extrabold tracking-tight">
+                    {user.firstName ? user.firstName.charAt(0).toUpperCase() : (user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
+                    {user.lastName ? user.lastName.charAt(0).toUpperCase() : (user.fullName && user.fullName.split(' ').length > 1 ? user.fullName.split(' ')[1].charAt(0).toUpperCase() : '')}
+                  </div>
                 )}
               </div>
             </div>

@@ -74,9 +74,12 @@ export default function DashboardNavbar() {
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-50 to-purple-50 text-indigo-600 border border-indigo-100/80 hover:shadow-sm focus:outline-none transition-all cursor-pointer overflow-hidden relative"
           >
             {user?.avatarUrl ? (
-              <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
+              <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
             ) : (
-              <UserIcon size={16} className="text-indigo-505" />
+              <div className="flex h-full w-full items-center justify-center bg-indigo-50 text-indigo-700 font-extrabold tracking-tight">
+                {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
+                {user?.lastName ? user.lastName.charAt(0).toUpperCase() : (user?.fullName && user.fullName.split(' ').length > 1 ? user.fullName.split(' ')[1].charAt(0).toUpperCase() : '')}
+              </div>
             )}
           </button>
           
