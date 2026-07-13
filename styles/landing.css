@@ -1,0 +1,315 @@
+/* ─── Google Fonts ─────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap");
+
+/* ─── Landing Design Tokens ────────────────────────────────────────── */
+:root {
+  --l-ink: #14142b;
+  --l-blue: #4c6fff;
+  --l-coral: #ff6b4a;
+  --l-emerald: #1db876;
+  --l-violet: #9b5de5;
+  --l-bg: #ffffff;
+  --l-bg-alt: #f6f7fb;
+  --l-gradient: linear-gradient(
+    90deg,
+    var(--l-blue) 0%,
+    var(--l-emerald) 33%,
+    var(--l-coral) 66%,
+    var(--l-violet) 100%
+  );
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+.landing-root {
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--l-bg);
+  color: var(--l-ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── Nav ───────────────────────────────────────────────────────────── */
+.l-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  height: 64px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(20, 20, 43, 0.06);
+}
+
+.l-nav__wordmark {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  background: var(--l-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-decoration: none;
+  user-select: none;
+}
+
+.l-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.l-nav__link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--l-ink);
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.l-nav__link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: var(--l-ink);
+  transition: width 0.15s ease;
+}
+
+.l-nav__link:hover {
+  opacity: 1;
+}
+
+.l-nav__link:hover::after {
+  width: 100%;
+}
+
+.l-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.l-nav__login {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--l-ink);
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.l-nav__login:hover {
+  opacity: 1;
+}
+
+.l-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.15s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+}
+
+.l-btn--outline-ink {
+  background: transparent;
+  border-color: var(--l-ink);
+  color: var(--l-ink);
+}
+
+.l-btn--outline-ink:hover {
+  background: var(--l-ink);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(20, 20, 43, 0.18);
+}
+
+.l-btn--solid-ink {
+  background: var(--l-ink);
+  border-color: var(--l-ink);
+  color: #fff;
+}
+
+.l-btn--solid-ink:hover {
+  background: #1f1f3e;
+  border-color: #1f1f3e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(20, 20, 43, 0.22);
+}
+
+.l-btn--ghost {
+  background: transparent;
+  border-color: rgba(20, 20, 43, 0.25);
+  color: var(--l-ink);
+}
+
+.l-btn--ghost:hover {
+  background: var(--l-ink);
+  border-color: var(--l-ink);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(20, 20, 43, 0.14);
+}
+
+/* ─── Hero Section ──────────────────────────────────────────────────── */
+.l-hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 clamp(1.5rem, 7vw, 8rem);
+  padding-top: 64px; /* nav height */
+  position: relative;
+}
+
+.l-hero__inner {
+  max-width: 960px;
+  padding-top: 3rem;
+}
+
+/* ─── Pinwheel Token ────────────────────────────────────────────────── */
+.l-token-wrap {
+  margin-bottom: 2rem;
+  width: 52px;
+  height: 52px;
+  cursor: pointer;
+}
+
+/* ─── Headline ──────────────────────────────────────────────────────── */
+.l-headline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--l-ink);
+  margin: 0;
+  padding: 0;
+}
+
+.l-headline__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em; /* prevent descender clipping */
+}
+
+/* ─── Gradient Text ─────────────────────────────────────────────────── */
+.l-gradient-text {
+  background: var(--l-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Word reveal wrapper ───────────────────────────────────────────── */
+.l-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.l-word {
+  display: inline-block;
+}
+
+/* ─── Subline ───────────────────────────────────────────────────────── */
+.l-subline {
+  margin-top: 1.75rem;
+  font-family: "Inter", sans-serif;
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  font-weight: 500;
+  color: rgba(20, 20, 43, 0.55);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.l-subline__brace {
+  color: rgba(20, 20, 43, 0.25);
+  font-weight: 400;
+}
+
+/* ─── CTAs ──────────────────────────────────────────────────────────── */
+.l-ctas {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.l-ctas .l-btn {
+  font-size: 0.9375rem;
+  padding: 0.6875rem 1.625rem;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .l-nav__links {
+    display: none;
+  }
+
+  .l-hero {
+    padding: 0 1.5rem;
+    padding-top: 64px;
+    min-height: 100svh;
+  }
+
+  .l-hero__inner {
+    padding-top: 2rem;
+  }
+
+  .l-headline {
+    font-size: clamp(2.5rem, 8vw, 3.5rem);
+  }
+
+  .l-token-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .l-ctas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .l-ctas .l-btn {
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .l-nav__actions {
+    gap: 0.625rem;
+  }
+  .l-nav__login {
+    display: none;
+  }
+}
