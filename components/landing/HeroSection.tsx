@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import PinwheelToken from "./PinwheelToken";
 import GradientText from "./GradientText";
 import Link from "next/link";
+import Image from "next/image";
 
 // ─── Word-split helper ──────────────────────────────────────────────────────
 function SplitWords({
@@ -194,7 +195,34 @@ export default function HeroSection() {
           <span className="l-headline__line">
             <SplitWords
               wordsArray={[
-                "to",
+                <span key="to" style={{ display: 'inline-flex', alignItems: 'baseline' }}>
+                  t
+                  <motion.span
+                    style={{
+                      display: 'inline-block',
+                      width: '0.72em',
+                      height: '0.72em',
+                      marginLeft: '0.02em',
+                      transformOrigin: '50% 50%',
+                    }}
+                    initial={shouldReduceMotion ? { opacity: 0 } : { rotate: -180, scale: 0, opacity: 0 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { rotate: 0, scale: 1, opacity: 1 }}
+                    transition={{
+                      duration: 0.9,
+                      ease: [0.34, 1.56, 0.64, 1], // back.out — smooth overshoot settle
+                      delay: 0.7,
+                    }}
+                  >
+                    <Image
+                      src="/assets/lander/gear.svg"
+                      alt=""
+                      width={64}
+                      height={64}
+                      style={{ width: '100%', height: '100%', display: 'block' }}
+                      priority
+                    />
+                  </motion.span>
+                </span>,
                 <GradientText 
                   key="possibility" 
                   colors={['#4079ff', '#9B5DE5', '#FF6B4A', '#F9C846', '#FF9FFC', '#4079ff']} 
