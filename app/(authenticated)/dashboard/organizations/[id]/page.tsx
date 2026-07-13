@@ -252,11 +252,6 @@ export default function OrganizationDetailsPage() {
         
         </div>
         
-<<<<<<< HEAD
-=======
-      </div>
-      
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
       {/* Organization Activity Log */}
       <div className="mt-8">
         <OrgActivityLog orgId={id as string} />

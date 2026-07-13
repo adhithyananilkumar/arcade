@@ -1,21 +1,13 @@
 'use client';
 
-<<<<<<< HEAD
 import { useState, useEffect, Suspense } from 'react';
-=======
-import { useState, useEffect } from 'react';
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
 import { Lock, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 
-<<<<<<< HEAD
 function ResetPasswordContent() {
-=======
-export default function ResetPasswordPage() {
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -144,8 +136,6 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-<<<<<<< HEAD
-
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40} /></div>}>
@@ -153,5 +143,3 @@ export default function ResetPasswordPage() {
     </Suspense>
   );
 }
-=======
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e

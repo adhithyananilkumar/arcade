@@ -19,11 +19,7 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
   const [isFocused, setIsFocused] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-<<<<<<< HEAD
   const handleDrop = useCallback(async (event: React.DragEvent<HTMLDivElement>) => {
-=======
-  const handleDrop = useCallback(async (event: React.DragEvent<HTMLDivElement>) {
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
     event.preventDefault();
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
@@ -50,11 +46,7 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
     try {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-<<<<<<< HEAD
       reader.onload = () => {
-=======
-      reader.onload = () {
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
         const base64 = reader.result as string;
         const imageMarkdown = `![${file.name}](${base64})`;
         if (api) {
@@ -64,11 +56,7 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
         }
         setIsUploading(false);
       };
-<<<<<<< HEAD
       reader.onerror = () => {
-=======
-      reader.onerror = () {
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
         toast.error('Failed to read image file');
         setIsUploading(false);
       };
@@ -84,19 +72,11 @@ export function ForumEditor({ value, onChange, minHeight = 300 }: ForumEditorPro
     keyCommand: 'image-upload',
     buttonProps: { 'aria-label': 'Upload image' },
     icon: <span style={{ fontSize: 13 }}>📷</span>,
-<<<<<<< HEAD
     execute: (_state: unknown, api: unknown) => {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/jpeg,image/png,image/webp,image/gif';
       input.onchange = async (e) => {
-=======
-    execute: (_state: unknown, api: unknown) {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/jpeg,image/png,image/webp,image/gif';
-      input.onchange = async (e) {
->>>>>>> 13f320990e05a198aced4b03c2df8b878627f83e
         const file = (e.target as HTMLInputElement).files?.[0];
         if (file) await handleImageUpload(file, api as any);
       };
