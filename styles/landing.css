@@ -183,6 +183,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 0 clamp(1.5rem, 7vw, 8rem);
+  padding-left: clamp(1.5rem, 12vw, 15rem);
   padding-top: 64px; /* nav height */
   position: relative;
 }
@@ -190,6 +191,7 @@
 .l-hero__inner {
   max-width: 960px;
   padding-top: 3rem;
+  margin-top: -6vh; /* nudge content up slightly */
 }
 
 /* ─── Pinwheel Token ────────────────────────────────────────────────── */
