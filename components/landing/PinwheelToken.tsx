@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion, useAnimation, useReducedMotion } from "framer-motion";
 
 // 4-facet pinwheel SVG — one facet per platform pillar color
-export default function PinwheelToken() {
+export default function PinwheelToken({ className }: { className?: string }) {
   const controls = useAnimation();
   const idleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -17,7 +17,7 @@ export default function PinwheelToken() {
     await controls.start({
       rotate: 360,
       transition: {
-        duration: 20,
+        duration: 4,
         ease: "linear",
         repeat: Infinity,
         repeatType: "loop",
@@ -75,7 +75,7 @@ export default function PinwheelToken() {
 
   return (
     <motion.div
-      className="l-token-wrap"
+      className={`l-token-wrap ${className || ""}`}
       variants={entranceVariant}
       initial="hidden"
       animate="visible"
@@ -86,8 +86,8 @@ export default function PinwheelToken() {
     >
       <motion.div animate={controls} style={{ width: "100%", height: "100%" }}>
         <svg
-          width="52"
-          height="52"
+          width="100%"
+          height="100%"
           viewBox="0 0 52 52"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
