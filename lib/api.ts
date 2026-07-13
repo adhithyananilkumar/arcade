@@ -17,22 +17,22 @@ async function request<T>(
     ...options,
   });
 
-  if (res.status === 204) {
-    return null as T; // No Content — caller checks for null
-  }
+  // Read the body once as text so we can handle empty responses (204, or a
+  // 201/200 with no body) without JSON.parse throwing on an empty string.
+  const text = await res.text();
 
   if (!res.ok) {
     let message = `API error ${res.status}`;
     try {
-      const err = await res.json();
+      const err = JSON.parse(text);
       message = err.message ?? message;
     } catch {
-      // ignore parse errors
+      // body wasn't JSON — keep the generic message
     }
     throw new Error(message);
   }
 
-  return res.json() as Promise<T>;
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 // ── Exports ────────────────────────────────────────────────────────────────────
