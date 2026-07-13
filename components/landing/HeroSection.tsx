@@ -281,7 +281,29 @@ export default function HeroSection() {
                   ghting
                 </span>,
                 "the",
-                "path",
+                <span key="path" style={{ position: 'relative', display: 'inline-block' }}>
+                  path
+                  <motion.span
+                    style={{
+                      position: 'absolute',
+                      bottom: '0.05em',
+                      left: 0,
+                      right: 0,
+                      height: '0.12em',
+                      backgroundColor: '#F9C846', // Thick yellow
+                      borderRadius: '4px',
+                      transformOrigin: 'left',
+                      zIndex: -1,
+                    }}
+                    initial={shouldReduceMotion ? { opacity: 0 } : { scaleX: 0 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { scaleX: 1 }}
+                    transition={{
+                      duration: 0.7,
+                      ease: [0.16, 1, 0.3, 1],
+                      delay: 1.0,
+                    }}
+                  />
+                </span>,
               ]}
               delay={0.25}
               shouldReduceMotion={shouldReduceMotion}
