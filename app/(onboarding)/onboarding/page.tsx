@@ -121,7 +121,7 @@ export default function OnboardingPage() {
         const formData = new FormData();
         formData.append('file', avatarFile);
         const avatarRes = await apiClient.post('/users/me/avatar', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: { 'Content-Type': undefined }
         });
         uploadedAvatarUrl = avatarRes.data.avatarUrl;
       }

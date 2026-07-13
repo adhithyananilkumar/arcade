@@ -17,7 +17,7 @@ export class UserService {
     formData.append('file', file);
     const { data } = await apiClient.post<User>('/users/me/avatar', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': undefined,
       },
     });
     return data;
