@@ -157,7 +157,7 @@ export default function HeroSection() {
     <section className="l-hero" aria-label="Hero section">
       <div className="l-hero__inner">
         {/* ── Headline ── */}
-        <h1 className="l-headline" aria-label="Lighting the path to possibility for all">
+        <h1 className="l-headline" aria-label="Lighting the path to possibility">
           {/* Line 1 */}
           <span className="l-headline__line">
             <SplitWords
@@ -193,7 +193,7 @@ export default function HeroSection() {
           {/* Line 2: gradient spanning full line */}
           <span className="l-headline__line">
             <SplitWordsGradient
-              text="possibility for all"
+              text="possibility"
               delay={0.45}
               shouldReduceMotion={shouldReduceMotion}
             />
