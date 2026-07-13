@@ -7,8 +7,8 @@ export class UserService {
     return data;
   }
 
-  static async updateProfile(firstName: string, lastName: string, bio?: string, linkedinUrl?: string, username?: string, mobileNumber?: string, gender?: string, address?: string): Promise<User> {
-    const { data } = await apiClient.put<User>('/users/me', { firstName, lastName, bio, linkedinUrl, username, mobileNumber, gender, address });
+  static async updateProfile(firstName: string, lastName: string, bio?: string, linkedinUrl?: string, username?: string, mobileNumber?: string, gender?: string, address?: string, githubUrl?: string): Promise<User> {
+    const { data } = await apiClient.put<User>('/users/me', { firstName, lastName, bio, linkedinUrl, username, mobileNumber, gender, address, githubUrl });
     return data;
   }
 
@@ -20,6 +20,11 @@ export class UserService {
         'Content-Type': undefined,
       },
     });
+    return data;
+  }
+
+  static async checkUsername(username: string): Promise<{ available: boolean; suggestions: string[] }> {
+    const { data } = await apiClient.get<{ available: boolean; suggestions: string[] }>(`/users/check-username?username=${encodeURIComponent(username)}`);
     return data;
   }
 }

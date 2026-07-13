@@ -24,6 +24,7 @@ export interface User {
   permissions: string[];
   bio?: string;
   linkedinUrl?: string;
+  githubUrl?: string;
 }
 
 interface AuthState {
