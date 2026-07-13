@@ -3,119 +3,93 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Building2,
-  UserCircle,
-  Search
-} from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Sparkles, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth.store';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const navigationGroups = [
-  {
-    title: 'GENERAL',
-    items: [
-      { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
-      { name: 'Profile', href: '/dashboard/profile', icon: UserCircle },
-      { name: 'Search', href: '/dashboard/search', icon: Search },
-    ]
-  },
-  {
-    title: 'SYSTEM',
-    items: [
-      { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ]
-  }
+const navItems = [
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Profile', href: '/dashboard/profile', icon: User },
+  { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
+  { name: 'Sessions', href: '/dashboard/sessions', icon: Users },
+  { name: 'Audit Logs', href: '/dashboard/audit', icon: ShieldAlert },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  const { user } = useAuthStore();
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center px-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
+    <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
+      {/* Brand Logo Header */}
+      <div className="flex h-16 items-center px-6 border-b border-slate-50/50">
+        <Link href="/dashboard" className="flex items-center gap-2 group">
           <Image
             src="/arcade.svg"
             alt="Arcade"
-            width={100}
-            height={28}
-            className="h-6 w-auto"
+            width={90}
+            height={26}
+            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-6 px-4 py-6 overflow-y-auto">
-        {navigationGroups.map((group) => (
-          <div key={group.title}>
-            <h4 className="mb-2 px-3 text-xs font-semibold tracking-wider text-muted-foreground">
-              {group.title}
-            </h4>
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const isActive = pathname === item.href;
-                const Icon = item.icon;
+      {/* Navigation Area */}
+      <nav className="flex-grow overflow-y-auto space-y-1.5 px-4 py-6 scrollbar-thin scrollbar-thumb-slate-100">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
 
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="relative block"
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="absolute inset-0 rounded-xl bg-blue-50/80"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                      />
-                    )}
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active-indicator"
-                        className="absolute left-0 top-1/2 -mt-2 h-4 w-1 rounded-r-full bg-blue-600"
-                        initial={false}
-                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                      />
-                    )}
-                    <Button
-                      variant="ghost"
-                      className={`relative z-10 w-full justify-start gap-3 rounded-xl px-3 py-2 transition-all hover:bg-slate-100/50 ${
-                        isActive ? 'text-blue-700 font-semibold hover:bg-transparent' : 'text-slate-600 hover:text-slate-900 font-medium'
-                      }`}
-                    >
-                      <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                      {item.name}
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group"
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="sidebar-active-indicator"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/40 border-l-[3px] border-indigo-600 shadow-[inset_0_1px_2px_rgba(99,102,241,0.03)]"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+              <Icon
+                size={18}
+                className={`relative z-10 transition-colors duration-200 ${
+                  isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'
+                }`}
+              />
+              <span className={`relative z-10 transition-colors duration-200 ${
+                isActive ? 'text-indigo-900 font-semibold' : 'text-slate-600 group-hover:text-slate-900'
+              }`}>
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
       
-      <div className="p-4 space-y-4">
-        {user && (
-          <div className="flex w-full items-center justify-start gap-3 rounded-xl px-2 py-2">
-            <Avatar className="h-9 w-9 border border-slate-200">
-              <AvatarImage src={user.avatarUrl || ''} alt={user.fullName || 'User'} />
-              <AvatarFallback className="bg-blue-50 text-blue-700 font-semibold">
-                {user.fullName?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-start overflow-hidden text-left">
-              <span className="truncate text-sm font-semibold leading-none mb-1 text-slate-900">{user.fullName || 'User'}</span>
-              <span className="truncate text-xs text-muted-foreground leading-none">{user.email || 'user@example.com'}</span>
+      {/* Bottom Upgrade Card Container */}
+      <div className="p-4 mt-auto border-t border-slate-50">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-5 text-white shadow-lg shadow-indigo-200/50 group">
+          {/* Subtle Background Pattern */}
+          <div className="absolute top-0 right-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/10 blur-xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -ml-6 -mb-6 w-20 h-20 rounded-full bg-pink-400/20 blur-lg pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-yellow-300 animate-pulse" />
+              <h4 className="text-sm font-bold tracking-wide">Upgrade to Pro</h4>
             </div>
+            <p className="text-xs text-indigo-100/90 mb-4 font-normal leading-relaxed">
+              Unlock exclusive club tools, custom templates, and advanced team statistics.
+            </p>
+            <button className="w-full rounded-xl bg-white px-3 py-2 text-xs font-bold text-indigo-600 shadow-md hover:bg-slate-50 active:scale-[0.98] transition-all duration-200 cursor-pointer">
+              Learn More
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,19 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { Search, LogOut } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter, usePathname } from 'next/navigation';
+import { LogOut, User as UserIcon, Bell, ChevronRight, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
 
 export default function DashboardNavbar() {
   const { user, clearAuth } = useAuthStore();
+  const pathname = usePathname();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const getAvatarUrl = (url?: string) => {
     if (!url) return undefined;
@@ -24,59 +29,78 @@ export default function DashboardNavbar() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await AuthService.logout();
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
       clearAuth();
+      setIsLoggingOut(false);
       window.location.href = '/login';
     }
   };
 
+  // Dynamically compute breadcrumbs based on pathname
+  const pathParts = pathname.split('/').filter(Boolean);
+  const pageTitle = pathParts[pathParts.length - 1] || 'Overview';
+  const formattedPageTitle = pageTitle.charAt(0).toUpperCase() + pageTitle.slice(1);
+
   return (
-    <nav className="flex h-16 w-full items-center justify-between px-6 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
-      
-      {/* Search */}
-      <div className="flex w-full max-w-md items-center gap-2 relative">
-        <Search size={16} className="absolute left-3 text-muted-foreground" />
-        <Input 
-          type="text" 
-          placeholder="Search..." 
-          className="w-full pl-9 bg-slate-50/50 border-slate-200 h-9 rounded-lg focus-visible:ring-blue-500 shadow-sm" 
-        />
-        <div className="absolute right-3 flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 border border-slate-200">
-          ⌘K
+    <nav className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-100 bg-white/70 px-6 md:px-8 backdrop-blur-md">
+      <div className="flex items-center gap-4">
+        {/* Modern Breadcrumb */}
+        <div className="flex items-center text-xs font-semibold tracking-wider text-slate-400 uppercase gap-1">
+          <span className="hover:text-indigo-600 transition-colors cursor-pointer">Arcade</span>
+          <ChevronRight size={12} className="text-slate-300" />
+          <span className="text-slate-800 font-bold">{formattedPageTitle}</span>
         </div>
       </div>
 
       {/* Right Actions */}
       <div className="flex items-center gap-4">
-        
-        {/* User Profile */}
-        <div className="flex items-center gap-3 pr-4 border-r border-slate-200 hidden sm:flex">
-          <Avatar className="h-8 w-8 border border-slate-200">
-            <AvatarImage src={getAvatarUrl(user?.avatarUrl) || ''} alt={user?.fullName || 'User'} />
-            <AvatarFallback className="bg-blue-50 text-blue-700 text-xs font-semibold">
-              {user?.fullName?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-sm font-semibold text-slate-900 leading-none">
-            {user?.fullName || 'User'}
-          </span>
+        {/* Notification Bell */}
+        <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-slate-100 transition-all cursor-pointer">
+          <Bell size={16} />
+          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white"></span>
+        </button>
+
+        <div className="h-6 w-px bg-slate-100"></div>
+
+        {/* User profile dropdown and metadata */}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={toggleDropdown} 
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-50 to-purple-50 text-indigo-600 border border-indigo-100/80 hover:shadow-sm focus:outline-none transition-all cursor-pointer overflow-hidden relative"
+          >
+            {user?.avatarUrl ? (
+              <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
+            ) : (
+              <UserIcon size={16} className="text-indigo-505" />
+            )}
+          </button>
+          
+          <div className="hidden md:flex flex-col text-left">
+            <span className="text-sm font-bold text-slate-800 leading-none mb-0.5">
+              {user?.fullName || 'User'}
+            </span>
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase leading-none">
+              Member
+            </span>
+          </div>
         </div>
 
-        {/* Logout Button */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleLogout}
-          className="text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors rounded-lg font-semibold"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Log out
-        </Button>
+        <div className="h-6 w-px bg-slate-100"></div>
 
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200/80 px-3.5 py-1.5 text-sm font-bold text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+        >
+          <LogOut size={14} />
+          <span className="hidden sm:inline">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+        </button>
       </div>
     </nav>
   );

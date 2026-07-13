@@ -7,8 +7,8 @@ export class UserService {
     return data;
   }
 
-  static async updateProfile(firstName: string, lastName: string): Promise<User> {
-    const { data } = await apiClient.put<User>('/users/me', { firstName, lastName });
+  static async updateProfile(firstName: string, lastName: string, bio?: string, linkedinUrl?: string, username?: string, mobileNumber?: string, gender?: string, address?: string): Promise<User> {
+    const { data } = await apiClient.put<User>('/users/me', { firstName, lastName, bio, linkedinUrl, username, mobileNumber, gender, address });
     return data;
   }
 

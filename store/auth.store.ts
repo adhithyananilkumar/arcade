@@ -20,8 +20,10 @@ export interface User {
   createdAt?: string;
   avatarUrl?: string;
   emailVerified: boolean;
-  roles?: any[];
-  permissions?: string[];
+  roles: any[];
+  permissions: string[];
+  bio?: string;
+  linkedinUrl?: string;
 }
 
 interface AuthState {
@@ -40,11 +42,11 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       status: 'loading',
-      setAuth: (user, accessToken) => 
+      setAuth: (user, accessToken) =>
         set({ user, accessToken, status: 'authenticated' }),
-      updateUser: (updatedUser) => 
+      updateUser: (updatedUser) =>
         set((state) => ({ user: state.user ? { ...state.user, ...updatedUser } : null })),
-      clearAuth: () => 
+      clearAuth: () =>
         set({ user: null, accessToken: null, status: 'unauthenticated' }),
       setStatus: (status) => set({ status }),
     }),
