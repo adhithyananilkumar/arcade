@@ -7,14 +7,16 @@ import Link from "next/link";
 // ─── Word-split helper ──────────────────────────────────────────────────────
 function SplitWords({
   text,
+  wordsArray,
   delay = 0,
   shouldReduceMotion,
 }: {
-  text: string;
+  text?: string;
+  wordsArray?: React.ReactNode[];
   delay?: number;
   shouldReduceMotion: boolean | null;
 }) {
-  const words = text.split(" ");
+  const words = wordsArray || (text ? text.split(" ") : []);
 
   const containerVariants = {
     hidden: {},
@@ -36,9 +38,9 @@ function SplitWords({
       transition: shouldReduceMotion
         ? { duration: 0.4 }
         : {
-            duration: 0.85,
-            ease: [0.16, 1, 0.3, 1] as const,
-          },
+          duration: 0.85,
+          ease: [0.16, 1, 0.3, 1] as const,
+        },
     },
   };
 
@@ -97,9 +99,9 @@ function SplitWordsGradient({
       transition: shouldReduceMotion
         ? { duration: 0.4 }
         : {
-            duration: 0.85,
-            ease: [0.16, 1, 0.3, 1] as const,
-          },
+          duration: 0.85,
+          ease: [0.16, 1, 0.3, 1] as const,
+        },
     },
   };
 
@@ -154,15 +156,33 @@ export default function HeroSection() {
   return (
     <section className="l-hero" aria-label="Hero section">
       <div className="l-hero__inner">
-        {/* ── Spinning accent token ── */}
-        <PinwheelToken />
-
         {/* ── Headline ── */}
         <h1 className="l-headline" aria-label="Built to level you up">
           {/* Line 1: "Built to" */}
           <span className="l-headline__line">
             <SplitWords
-              text="Built to"
+              wordsArray={[
+                <span key="built">
+                  Bu
+                  <span style={{ position: "relative", display: "inline-block" }}>
+                    ı
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "0.02em",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        width: "0.55em",
+                        height: "0.55em",
+                      }}
+                    >
+                      <PinwheelToken className="is-inline-dot" />
+                    </span>
+                  </span>
+                  lt
+                </span>,
+                "to",
+              ]}
               delay={0.25}
               shouldReduceMotion={shouldReduceMotion}
             />
@@ -178,20 +198,6 @@ export default function HeroSection() {
           </span>
         </h1>
 
-        {/* ── Subline ── */}
-        <motion.p
-          className="l-subline"
-          variants={fadeRise(shouldReduceMotion ? 0.05 : 1.0)}
-          initial="hidden"
-          animate="visible"
-        >
-          <span className="l-subline__brace" aria-hidden="true">{"{"}</span>
-          <span>
-            Arcade — courses, workshops, forums &amp; certificates, built for
-            Amal Jyothi College
-          </span>
-          <span className="l-subline__brace" aria-hidden="true">{"}"}</span>
-        </motion.p>
 
         {/* ── CTAs ── */}
         <div className="l-ctas">
