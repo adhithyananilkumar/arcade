@@ -103,9 +103,6 @@ export default function CertificateTemplate({
           <h3 className="cert-title text-xl font-bold italic text-indigo-900">
             {courseName}
           </h3>
-          <p className="text-[8px] text-indigo-600/80 font-semibold tracking-wider hover:underline transition-colors mt-0.5">
-            <a href={courseUrl} target="_blank" rel="noopener noreferrer">{courseUrl}</a>
-          </p>
         </div>
 
         {/* Footer info: Signatures, QR Code & Blockchain Hash */}

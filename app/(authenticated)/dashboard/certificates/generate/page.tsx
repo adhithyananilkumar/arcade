@@ -11,7 +11,6 @@ import { CertificateService } from '@/services/certificate.service';
 export default function GenerateCertificatePage() {
   const [participantName, setParticipantName] = useState('');
   const [courseName, setCourseName] = useState('');
-  const [courseUrl, setCourseUrl] = useState('');
   const [isMining, setIsMining] = useState(false);
   const [miningStep, setMiningStep] = useState(0);
 
@@ -28,7 +27,7 @@ export default function GenerateCertificatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!participantName.trim() || !courseName.trim() || !courseUrl.trim()) {
+    if (!participantName.trim() || !courseName.trim()) {
       toast.error('Please fill in all details');
       return;
     }
@@ -49,10 +48,12 @@ export default function GenerateCertificatePage() {
     }, 900);
 
     try {
+      const generatedCourseUrl = 'https://arcade.ajce.in/courses/' + encodeURIComponent(courseName.trim().toLowerCase().replace(/\s+/g, '-'));
+
       const response = await CertificateService.generate({
-        participantName,
-        courseName,
-        courseUrl,
+        participantName: participantName.trim(),
+        courseName: courseName.trim(),
+        courseUrl: generatedCourseUrl,
       });
 
       // Complete mining animation steps
@@ -126,20 +127,6 @@ export default function GenerateCertificatePage() {
                   placeholder="e.g. Full Stack Web Development Boot Camp"
                   value={courseName}
                   onChange={(e) => setCourseName(e.target.value)}
-                  required
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Course Info URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="e.g. https://arcade.org/courses/full-stack"
-                  value={courseUrl}
-                  onChange={(e) => setCourseUrl(e.target.value)}
                   required
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />

@@ -18,6 +18,8 @@ import {
   Link2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import domtoimage from 'dom-to-image-more';
+import { jsPDF } from 'jspdf';
 import { CertificateService, Certificate, VerificationResult } from '@/services/certificate.service';
 import CertificateTemplate from '@/components/certificates/CertificateTemplate';
 
@@ -30,6 +32,7 @@ export default function CertificateDetailPage() {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<VerificationResult | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,8 +51,59 @@ export default function CertificateDetailPage() {
     fetch();
   }, [id, router]);
 
-  const handlePrint = () => {
-    window.print();
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (!printRef.current || !certificate) return;
+
+    setDownloading(true);
+    const toastId = toast.loading('Rendering high-quality PDF...');
+
+    try {
+      const element = printRef.current;
+
+      // dom-to-image-more supports modern CSS (oklch, lab, etc.) unlike html2canvas
+      const dataUrl = await domtoimage.toPng(element, {
+        width: 1122,
+        height: 794,
+        style: { transform: 'scale(1)', transformOrigin: 'top left' },
+      });
+
+      // A4 landscape dimensions in mm (297 x 210)
+      const pdfWidth = 297;
+      const pdfHeight = 210;
+
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // Calculate image dimensions to center it on the page with padding
+      const padding = 10;
+      const maxW = pdfWidth - padding * 2;
+      const maxH = pdfHeight - padding * 2;
+
+      // Certificate is 1122x794 — maintain aspect ratio
+      const imgRatio = 1122 / 794;
+      let imgW = maxW;
+      let imgH = imgW / imgRatio;
+      if (imgH > maxH) {
+        imgH = maxH;
+        imgW = imgH * imgRatio;
+      }
+
+      const xOffset = (pdfWidth - imgW) / 2;
+      const yOffset = (pdfHeight - imgH) / 2;
+
+      pdf.addImage(dataUrl, 'PNG', xOffset, yOffset, imgW, imgH);
+
+      const filename = `Arcade_Certificate_${certificate.participantName.replace(/\s+/g, '_')}.pdf`;
+      pdf.save(filename);
+
+      toast.success('Certificate downloaded successfully!', { id: toastId });
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      toast.error('Failed to generate PDF. Please try again.', { id: toastId });
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleVerify = async () => {
@@ -126,11 +180,12 @@ export default function CertificateDetailPage() {
               Verify on Blockchain
             </button>
             <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition-all"
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-indigo-700 transition-all disabled:opacity-70"
             >
-              <Download size={16} />
-              Download PDF
+              {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              {downloading ? 'Rendering PDF...' : 'Download PDF'}
             </button>
           </div>
         </div>
@@ -159,6 +214,46 @@ export default function CertificateDetailPage() {
           </div>
         </div>
 
+        {/* Verification Link Card */}
+        {(() => {
+          const verifyLink = typeof window !== 'undefined'
+            ? `${window.location.origin}/verify/${certificate.blockchainHash}`
+            : `https://arcade.ajce.in/verify/${certificate.blockchainHash}`;
+          return (
+            <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <ShieldCheck size={15} className="text-indigo-600" />
+                <span className="text-sm font-bold text-indigo-800">Certificate Verification Link</span>
+              </div>
+              <p className="text-xs text-indigo-600/70 mb-3">
+                Share this link to let anyone verify this certificate belongs to <strong>{certificate.participantName}</strong> and has not been tampered with.
+              </p>
+              <div className="flex items-center gap-2 bg-white border border-indigo-200 rounded-xl px-3 py-2">
+                <Link2 size={13} className="text-indigo-400 shrink-0" />
+                <code className="text-xs font-mono text-indigo-700 flex-1 truncate select-all">{verifyLink}</code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(verifyLink);
+                    setLinkCopied(true);
+                    setTimeout(() => setLinkCopied(false), 2000);
+                  }}
+                  className="shrink-0 text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-2.5 py-1 rounded-lg transition-all"
+                >
+                  {linkCopied ? '✓ Copied!' : 'Copy'}
+                </button>
+                <a
+                  href={verifyLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-2.5 py-1 rounded-lg transition-all"
+                >
+                  Open ↗
+                </a>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Certificate Preview */}
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 shadow-inner flex items-center justify-center">
           <div className="w-full shadow-2xl shadow-indigo-100/50 rounded-lg overflow-hidden">
@@ -173,16 +268,25 @@ export default function CertificateDetailPage() {
         </div>
       </div>
 
-      {/* Printable Area (hidden on screen, visible on print) */}
-      <div id="certificate-print-area" ref={printRef} className="hidden print:block w-full">
-        <CertificateTemplate
-          participantName={certificate.participantName}
-          courseName={certificate.courseName}
-          courseUrl={certificate.courseUrl}
-          issuedAt={certificate.issuedAt}
-          blockchainHash={certificate.blockchainHash}
-          isPrintMode={true}
-        />
+      {/* Hidden container exclusively for PDF rendering (html2canvas) */}
+      <div className="fixed left-[-9999px] top-[-9999px]">
+        <div 
+          id="certificate-print-area" 
+          ref={printRef} 
+          className="flex items-center justify-center p-[20px] bg-white w-[1122px] h-[794px]"
+          style={{ width: '1122px', height: '794px' }} // Exact A4 landscape pixels at 96 DPI
+        >
+          <div className="w-full h-full">
+            <CertificateTemplate
+              participantName={certificate.participantName}
+              courseName={certificate.courseName}
+              courseUrl={certificate.courseUrl}
+              issuedAt={certificate.issuedAt}
+              blockchainHash={certificate.blockchainHash}
+              isPrintMode={true}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Blockchain Verification Modal */}
