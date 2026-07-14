@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3 } from 'lucide-react';
+import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { MyChannels } from './MyChannels';
@@ -157,6 +158,11 @@ export default function DashboardPage() {
 
         {/* Activity & Stats */}
         <div className="col-span-1 lg:col-span-2 flex flex-col gap-6">
+
+          {/* Admin Control Panel (Super User Only) */}
+          {primaryRole === 'SUPER_USER' && (
+            <AdminPanel />
+          )}
           
           {/* Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -245,6 +251,89 @@ export default function DashboardPage() {
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => {}}
       />
+    </motion.div>
+  );
+}
+
+function AdminPanel() {
+  const [email, setEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    setIsInviting(true);
+    setSuccess(false);
+    setError('');
+
+    try {
+      const { CreatorService } = await import('@/services/creator.service');
+      await CreatorService.inviteCreator(email);
+      setSuccess(true);
+      setEmail('');
+      setTimeout(() => setSuccess(false), 5000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to send invitation. Please try again.');
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  return (
+    <motion.div 
+      variants={itemVariants}
+      className="rounded-3xl border border-indigo-100 bg-white p-6 md:p-8 shadow-sm relative overflow-hidden"
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div className="rounded-xl bg-indigo-50 p-2.5 text-indigo-600">
+          <Shield size={24} />
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Admin Control Panel</h3>
+          <p className="text-xs text-gray-500 mt-0.5">Platform-wide administrative tools</p>
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 pt-6 mt-6">
+        <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+          <Mail size={16} className="text-indigo-500" />
+          Invite Independent Content Creator
+        </h4>
+        <p className="text-xs text-gray-500 mb-4">
+          Send an email invitation. Once they accept, they will be granted the Content Creator role.
+        </p>
+
+        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3 max-w-lg">
+          <input
+            type="email"
+            required
+            placeholder="creator@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+          />
+          <button
+            type="submit"
+            disabled={isInviting || !email.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 transition-all shrink-0"
+          >
+            {isInviting ? <Loader2 className="animate-spin" size={16} /> : 'Send Invite'}
+          </button>
+        </form>
+
+        {error && (
+          <p className="text-xs text-red-600 font-medium mt-3 bg-red-50 px-3 py-2 rounded-lg inline-block">{error}</p>
+        )}
+        {success && (
+          <p className="text-xs text-emerald-700 font-medium mt-3 bg-emerald-50 px-3 py-2 rounded-lg inline-block flex items-center gap-1.5">
+            <CheckCircle size={14} className="text-emerald-500" />
+            Invitation sent successfully! Link is printed to console if env is local.
+          </p>
+        )}
+      </div>
     </motion.div>
   );
 }
