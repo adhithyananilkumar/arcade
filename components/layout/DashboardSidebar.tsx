@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuthStore } from '@/store/auth.store';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -16,6 +18,19 @@ const navItems = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+  const { hasPermission } = usePermissions();
+  const primaryRole = user?.roles?.[0]?.name;
+  const isSuperUser = primaryRole === 'SUPER_USER';
+
+  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+
+  const dynamicNavItems = [
+    ...navItems,
+    ...(showAdminChannels ? [{ name: 'Admin Channels', href: '/dashboard/admin/channels', icon: Tv }] : []),
+    ...(showAdminSettings ? [{ name: 'Admin Settings', href: '/dashboard/admin/settings', icon: Settings }] : [])
+  ];
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
@@ -32,7 +47,7 @@ export default function DashboardSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map((item) => {
+        {dynamicNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 

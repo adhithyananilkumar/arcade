@@ -3,6 +3,9 @@
 import { useAuthStore } from '@/store/auth.store';
 import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { MyChannels } from './MyChannels';
+import { CreateChannelModal } from '@/components/CreateChannelModal';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -21,6 +24,7 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   if (!user) return null;
 
@@ -91,9 +95,32 @@ export default function DashboardPage() {
           <h2 className="relative z-10 text-2xl font-bold text-gray-900">{user.fullName || (user.firstName + (user.lastName ? ' ' + user.lastName : '')) || 'User'}</h2>
           <p className="relative z-10 text-sm text-gray-500 font-medium">{user.email}</p>
           
-          <div className="relative z-10 mt-4 flex items-center gap-2 rounded-full bg-indigo-50/80 px-4 py-1.5 text-xs font-bold text-indigo-700 tracking-wider uppercase border border-indigo-100 backdrop-blur-sm">
-            <Shield size={14} className="text-indigo-500" />
-            {primaryRole}
+          <div className="relative z-10 mt-4 flex flex-col items-center gap-4 w-full">
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              {user.roles?.map((role: any) => (
+                <div key={role.id || role.name} className="flex items-center gap-1.5 rounded-full bg-indigo-50/80 px-3 py-1 text-xs font-bold text-indigo-700 tracking-wider uppercase border border-indigo-100 backdrop-blur-sm">
+                  <Shield size={12} className="text-indigo-500" />
+                  {role.name?.replace('ROLE_', '')}
+                </div>
+              ))}
+              {(!user.roles || user.roles.length === 0) && (
+                <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500 tracking-wider uppercase border border-gray-100 backdrop-blur-sm">
+                  <Shield size={12} className="text-gray-400" />
+                  MEMBER
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
+            >
+              <Activity size={18} />
+              Create Channel
+            </button>
+            <div className="w-full mt-4">
+              <MyChannels />
+            </div>
           </div>
 
           <div className="relative z-10 mt-8 w-full space-y-4 border-t border-gray-200/60 pt-6 text-left">
@@ -212,6 +239,12 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
+      
+      <CreateChannelModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {}}
+      />
     </motion.div>
   );
 }

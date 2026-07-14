@@ -1,0 +1,148 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Channel, channelService } from '@/services/channel.service';
+import { toast } from 'sonner';
+import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export default function ManageChannelPage() {
+  const params = useParams();
+  const router = useRouter();
+  const channelId = params.id as string;
+
+  const [channel, setChannel] = useState<Channel | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (channelId) {
+      fetchChannel();
+    }
+  }, [channelId]);
+
+  const fetchChannel = async () => {
+    try {
+      setLoading(true);
+      const data = await channelService.getChannel(channelId);
+      setChannel(data);
+    } catch (error) {
+      toast.error('Failed to load channel details');
+      router.push('/dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
+  if (!channel) return null;
+
+  return (
+    <div className="mx-auto max-w-6xl space-y-8 pb-12">
+      <button 
+        onClick={() => router.push('/dashboard')}
+        className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
+      >
+        <ArrowLeft size={16} />
+        Back to Dashboard
+      </button>
+
+      {/* Channel Banner & Header (YouTube Style) */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-100"
+      >
+        {/* Banner */}
+        <div className="h-48 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+        
+        {/* Profile Info */}
+        <div className="px-8 pb-8">
+          <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-12 mb-6">
+            <div className="h-32 w-32 shrink-0 overflow-hidden rounded-full border-4 border-white bg-indigo-50 flex items-center justify-center shadow-md">
+              {channel.iconUrl ? (
+                <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
+              ) : (
+                <Tv size={48} className="text-indigo-300" />
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-1">
+              <h1 className="text-3xl font-bold text-gray-900">{channel.name}</h1>
+              <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                <span>{channel.ownerName}</span>
+                <span>•</span>
+                <span>{channel.isPersonal ? 'Personal Channel' : 'Organization Channel'}</span>
+                <span>•</span>
+                <span>Created {new Date(channel.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            
+            <div className="flex shrink-0 gap-3 mt-4 md:mt-0">
+              <button className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200">
+                <Settings size={18} />
+                Settings
+              </button>
+              <button className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow">
+                <Upload size={18} />
+                Create Content
+              </button>
+            </div>
+          </div>
+          
+          <div className="max-w-3xl">
+            <h3 className="font-semibold text-gray-900 mb-2">About this channel</h3>
+            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+              {channel.description || 'No description provided.'}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tabs / Quick Actions */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+      >
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
+            <Video size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-900">Content</h4>
+            <p className="text-sm text-gray-500">Manage videos and courses</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 group-hover:scale-110 transition-transform">
+            <BarChart3 size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-900">Analytics</h4>
+            <p className="text-sm text-gray-500">View channel performance</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
+            <Users size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-900">Community</h4>
+            <p className="text-sm text-gray-500">Manage comments & members</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

@@ -7,6 +7,16 @@ export class UserService {
     return data;
   }
 
+  static async getAllUsers(): Promise<User[]> {
+    const { data } = await apiClient.get<User[]>('/users');
+    return data;
+  }
+
+  static async assignRolesToUser(userId: string, roleIds: string[]): Promise<User> {
+    const { data } = await apiClient.put<User>(`/users/${userId}/roles`, roleIds);
+    return data;
+  }
+
   static async updateProfile(firstName: string, lastName: string): Promise<User> {
     const { data } = await apiClient.put<User>('/users/me', { firstName, lastName });
     return data;
