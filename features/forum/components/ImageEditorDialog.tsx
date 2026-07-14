@@ -109,6 +109,7 @@ export function ImageEditorDialog({ isOpen, imageUrl, onClose, onComplete }: Pro
   return createPortal(
     <AnimatePresence>
       <motion.div
+        key="backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -121,6 +122,7 @@ export function ImageEditorDialog({ isOpen, imageUrl, onClose, onComplete }: Pro
         onClick={onClose}
       />
       <motion.div
+        key="dialog"
         initial={{ opacity: 0, scale: 0.95, x: '-50%', y: '-50%' }}
         animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
         exit={{ opacity: 0, scale: 0.95, x: '-50%', y: '-50%' }}

@@ -8,6 +8,9 @@ import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import { toast } from 'sonner';
 import { ImageEditorDialog } from './ImageEditorDialog';
+import { useUploadPostImage } from '../api/forum.queries';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 const ToolbarBtn = ({ 
   active, 
@@ -52,6 +55,7 @@ const MAX_CHARS = 2000;
 
 export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
   const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
+  const uploadPostImage = useUploadPostImage();
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -178,9 +182,24 @@ export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
           isOpen={true}
           imageUrl={editingImageUrl}
           onClose={() => setEditingImageUrl(null)}
-          onComplete={(croppedBase64) => {
-            editor.chain().focus().setImage({ src: croppedBase64 }).run();
-            setEditingImageUrl(null);
+          onComplete={async (croppedBase64) => {
+            try {
+              // Convert base64 to Blob
+              const response = await fetch(croppedBase64);
+              const blob = await response.blob();
+              const file = new File([blob], `image_${Date.now()}.jpg`, { type: 'image/jpeg' });
+              
+              // Upload to backend
+              const res = await uploadPostImage.mutateAsync(file);
+              
+              // Insert real URL into editor
+              const fullUrl = res.url.startsWith('http') ? res.url : API_URL.replace('/api/v1', '') + res.url;
+              editor.chain().focus().setImage({ src: fullUrl }).run();
+            } catch (error) {
+              console.error('Error uploading image:', error);
+            } finally {
+              setEditingImageUrl(null);
+            }
           }}
         />
       )}

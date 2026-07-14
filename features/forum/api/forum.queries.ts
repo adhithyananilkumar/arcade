@@ -175,6 +175,13 @@ export function useDeletePost() {
   });
 }
 
+export function useUploadPostImage() {
+  return useMutation({
+    mutationFn: (file: File | Blob) => ForumService.uploadPostImage(file),
+    onError: () => toast.error('Failed to upload image'),
+  });
+}
+
 export function useCreateComment() {
   const qc = useQueryClient();
   return useMutation({

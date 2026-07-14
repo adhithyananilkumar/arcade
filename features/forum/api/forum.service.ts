@@ -72,6 +72,17 @@ export class ForumService {
     await apiClient.delete(`${BASE}/posts/${postId}`);
   }
 
+  static async uploadPostImage(file: File | Blob) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post<{ url: string }>(`${BASE}/posts/images`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  }
+
   // --- Comments ---
   static async getComments(postId: number, page = 0, size = 20) {
     const { data } = await apiClient.get<PagedResponse<CommentResponse>>(
