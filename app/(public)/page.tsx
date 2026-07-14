@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import HeroNav from "@/components/landing/HeroNav";
 import HeroSection from "@/components/landing/HeroSection";
+import LogoStrip from "@/components/landing/LogoStrip";
+import CourseShowcase from "@/components/landing/CourseShowcase";
 import "@/styles/landing.css";
 
 export const metadata: Metadata = {
@@ -20,6 +22,8 @@ export default function Home() {
     <div className="landing-root">
       <HeroNav />
       <HeroSection />
+      <LogoStrip />
+      <CourseShowcase />
     </div>
   );
 }

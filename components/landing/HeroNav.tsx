@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 
@@ -12,15 +13,54 @@ const navLinks = [
 
 export default function HeroNav() {
   const shouldReduceMotion = useReducedMotion();
+  const [isHidden, setIsHidden] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Hide only if we scroll down past 120px
+      if (currentScrollY > lastScrollY && currentScrollY > 120) {
+        setIsHidden(true);
+      } 
+      // Show when scrolling up
+      else if (currentScrollY < lastScrollY) {
+        setIsHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const navVariant = {
-    hidden: { y: -20, opacity: 0 },
+    hidden: { y: -100, scale: 0.9, opacity: 0 },
     visible: {
       y: 0,
+      scale: 1,
       opacity: 1,
       transition: shouldReduceMotion
         ? { duration: 0.3 }
-        : { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+        : {
+            type: "spring",
+            stiffness: 100,
+            damping: 15,
+            delay: 0.1, // slightly reduced delay for immediate loading responsiveness
+          },
+    },
+    scrollHidden: {
+      y: -100,
+      opacity: 0,
+      transition: {
+        duration: 0.25,
+        ease: "easeInOut",
+      },
     },
   };
 
@@ -29,13 +69,13 @@ export default function HeroNav() {
       className="l-nav"
       variants={navVariant}
       initial="hidden"
-      animate="visible"
+      animate={isHidden ? "scrollHidden" : "visible"}
       role="navigation"
       aria-label="Main navigation"
     >
       {/* Wordmark */}
-      <Link href="/" className="l-nav__wordmark" aria-label="Arcade home" style={{ display: "flex", alignItems: "center" }}>
-        <img src="/arcade.svg" alt="Arcade Logo" style={{ height: "30px", width: "auto" }} />
+      <Link href="/" className="l-nav__logo-container" aria-label="Arcade home">
+        <span className="l-nav__logo-text">arcade.</span>
       </Link>
 
       {/* Center-right links */}
@@ -54,7 +94,7 @@ export default function HeroNav() {
         <Link href="/login" className="l-nav__login">
           Log in
         </Link>
-        <Link href="/register" className="l-btn l-btn--outline-ink">
+        <Link href="/register" className="l-nav__get-started">
           Get Started
         </Link>
       </div>

@@ -1,13 +1,11 @@
 .animated-gradient-text {
   position: relative;
-  display: inline-flex;
+  display: inline;
   max-width: fit-content;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
   border-radius: 1.25rem;
   transition: box-shadow 0.5s ease-out;
   cursor: pointer;
+  overflow: visible; /* allow descenders (e.g. 'y') to show fully */
 }
 
 .animated-gradient-text.with-border {
@@ -41,10 +39,12 @@
 }
 
 .text-content {
-  display: inline-block;
+  display: inline;
   position: relative;
   z-index: 2;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  overflow: visible; /* allow descenders to show */
+  padding-bottom: 0.25em; /* extra room for 'y' descender */
 }
