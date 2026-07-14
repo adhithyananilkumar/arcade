@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import { MyChannels } from './MyChannels';
 import { CreateChannelModal } from '@/components/CreateChannelModal';
 
