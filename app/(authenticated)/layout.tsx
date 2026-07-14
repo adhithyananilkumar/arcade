@@ -1,6 +1,7 @@
 import ProtectedLayout from '@/components/ProtectedLayout';
 import DashboardNavbar from '@/components/layout/DashboardNavbar';
 import DashboardSidebar from '@/components/layout/DashboardSidebar';
+import TimeTracker from '@/components/TimeTracker';
 
 export default function AuthenticatedLayout({
   children,
@@ -9,6 +10,7 @@ export default function AuthenticatedLayout({
 }) {
   return (
     <ProtectedLayout>
+      <TimeTracker />
       <div className="relative flex h-screen w-full overflow-hidden bg-[#f8fafc] text-slate-900 font-sans">
         {/* Ambient background glows */}
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-indigo-200/30 to-purple-200/30 blur-3xl pointer-events-none z-0" />

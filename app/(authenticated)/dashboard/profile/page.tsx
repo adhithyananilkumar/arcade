@@ -46,6 +46,17 @@ export default function ProfilePage() {
   const [editMobileNumber, setEditMobileNumber] = useState('');
   const [editGender, setEditGender] = useState('MALE');
   const [editAddress, setEditAddress] = useState('');
+
+  // Used to force a re-render when the TimeTracker updates local storage
+  const [timeTick, setTimeTick] = useState(0);
+
+  useEffect(() => {
+    const handleTimeUpdate = () => setTimeTick(t => t + 1);
+    window.addEventListener('timeTrackerUpdated', handleTimeUpdate);
+    // Also trigger an initial tick to pick up SSR hydration differences
+    setTimeTick(1);
+    return () => window.removeEventListener('timeTrackerUpdated', handleTimeUpdate);
+  }, []);
   const [editEmail, setEditEmail] = useState('');
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
@@ -221,34 +232,69 @@ export default function ProfilePage() {
           day: 'numeric'
         });
 
-        let level = 0;
-        const rand = Math.random();
-        if (c >= 38 && c <= 50) { // simulate active periods
-          if (rand < 0.15) level = 0;
-          else if (rand < 0.45) level = 1;
-          else if (rand < 0.75) level = 2;
-          else if (rand < 0.92) level = 3;
-          else level = 4;
-        } else {
-          if (rand < 0.65) level = 0;
-          else if (rand < 0.82) level = 1;
-          else if (rand < 0.94) level = 2;
-          else if (rand < 0.98) level = 3;
-          else level = 4;
+        const targetDateISO = targetDate.toISOString().split('T')[0];
+        
+        let count = 0; // minutes
+        if (typeof window !== 'undefined') {
+          const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
+          count = Math.floor(secondsSpent / 60);
         }
 
-        let count = 0;
-        if (level === 1) count = Math.floor(Math.random() * 3) + 1;
-        else if (level === 2) count = Math.floor(Math.random() * 4) + 4;
-        else if (level === 3) count = Math.floor(Math.random() * 5) + 8;
-        else if (level === 4) count = Math.floor(Math.random() * 6) + 13;
+        let level = 0;
+        if (count < 15) level = 0; // Blank
+        else if (count < 30) level = 1; // Light Blue
+        else if (count < 45) level = 2; // Little Dark Blue
+        else level = 3; // Dark Blue
 
         week.push({ dateStr, count, level });
       }
       grid.push(week);
     }
     return grid;
-  }, []);
+  }, [timeTick]);
+
+  const totalMinutesSpent = useMemo(() => {
+    let total = 0;
+    contributionGrid.forEach(week => {
+      week.forEach(cell => {
+        total += cell.count;
+      });
+    });
+    return total;
+  }, [contributionGrid]);
+
+  const currentStreak = useMemo(() => {
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() - i);
+      const targetDateISO = targetDate.toISOString().split('T')[0];
+      
+      let count = 0;
+      if (typeof window !== 'undefined') {
+        const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
+        count = Math.floor(secondsSpent / 60);
+      }
+      
+      if (count > 0) {
+        streak++;
+      } else {
+        if (i === 0) continue; // If today is 0, don't break the streak just yet
+        break;
+      }
+    }
+    return streak;
+  }, [timeTick]);
+
+  const dynamicBadges = useMemo(() => {
+    return badges.map(b => {
+      if (b.name.startsWith('Streak')) {
+        return { ...b, name: `Streak ${currentStreak} Days` };
+      }
+      return b;
+    });
+  }, [currentStreak]);
 
   const months = useMemo(() => [
     { name: 'Jul', col: 0 },
@@ -290,7 +336,7 @@ export default function ProfilePage() {
   };
 
   const username = currentUser.username || currentUser.email?.split('@')[0] || 'username';
-  const displayedBadges = showAllBadges ? badges : badges.slice(0, 5);
+  const displayedBadges = showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 5);
 
   return (
     <motion.div 
@@ -311,7 +357,7 @@ export default function ProfilePage() {
           <div className="relative group flex h-36 w-36 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-md shadow-indigo-100 shrink-0">
             <div className="flex h-full w-full items-center justify-center rounded-full bg-white overflow-hidden border-2 border-white relative">
               {currentUser.avatarUrl ? (
-                <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
+                <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 <UserIcon size={52} className="text-indigo-400" />
               )}
@@ -350,47 +396,47 @@ export default function ProfilePage() {
             </p>
 
             {/* Enlarged Bio */}
-            <div className="mt-4 space-y-2 text-slate-700 text-base font-bold leading-relaxed w-full">
-              {currentUser.bio ? (
+            {currentUser.bio && (
+              <div className="mt-4 space-y-2 text-slate-700 text-base font-bold leading-relaxed w-full">
                 <div className="flex flex-col gap-1 items-center md:items-start">
                   {currentUser.bio.split('|').map((part: string, i: number) => (
                     <span key={i} className="inline-block">{part.trim()}</span>
                   ))}
                 </div>
-              ) : (
-                <div className="text-slate-400 italic">No bio added yet.</div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Location / Git / Email / LinkedIn / Mobile / Gender Details list */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-sm text-slate-500 font-semibold w-full pt-5 border-t border-slate-100">
-              <div className="flex items-center justify-center md:justify-start gap-2.5">
-                <MapPin size={16} className="text-slate-400 shrink-0" />
-                <span>Bangalore, India</span>
-              </div>
+              {currentUser.address && (
+                <div className="flex items-center justify-center md:justify-start gap-2.5">
+                  <MapPin size={16} className="text-slate-400 shrink-0" />
+                  <span className="truncate">{currentUser.address}</span>
+                </div>
+              )}
               
-              <div className="flex items-center justify-center md:justify-start gap-2.5">
-                <LinkIcon size={16} className="text-slate-400 shrink-0" />
-                <a href={currentUser.githubUrl || `https://github.com/${username}`} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors truncate max-w-full">
-                  {currentUser.githubUrl ? currentUser.githubUrl.replace('https://', '') : `github.com/${username}`}
-                </a>
-              </div>
+              {currentUser.githubUrl && (
+                <div className="flex items-center justify-center md:justify-start gap-2.5">
+                  <LinkIcon size={16} className="text-slate-400 shrink-0" />
+                  <a href={currentUser.githubUrl} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors truncate max-w-full">
+                    {currentUser.githubUrl.replace('https://', '')}
+                  </a>
+                </div>
+              )}
               
               <div className="flex items-center justify-center md:justify-start gap-2.5 font-bold">
                 <Mail size={16} className="text-slate-400 shrink-0" />
                 <span className="truncate">{currentUser.email}</span>
               </div>
               
-              <div className="flex items-center justify-center md:justify-start gap-2.5">
-                <FaLinkedin size={16} className="text-[#0077b5] shrink-0" />
-                {currentUser.linkedinUrl ? (
+              {currentUser.linkedinUrl && (
+                <div className="flex items-center justify-center md:justify-start gap-2.5">
+                  <FaLinkedin size={16} className="text-[#0077b5] shrink-0" />
                   <a href={currentUser.linkedinUrl} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors truncate">
                     {currentUser.linkedinUrl.replace('https://', '')}
                   </a>
-                ) : (
-                  <span className="text-slate-400 italic">No LinkedIn profile</span>
-                )}
-              </div>
+                </div>
+              )}
 
               {currentUser.mobileNumber && (
                 <div className="flex items-center justify-center md:justify-start gap-2.5">
@@ -399,19 +445,9 @@ export default function ProfilePage() {
                 </div>
               )}
 
-              {currentUser.gender && (
-                <div className="flex items-center justify-center md:justify-start gap-2.5 capitalize">
-                  <UserIcon size={16} className="text-slate-400 shrink-0" />
-                  <span>{currentUser.gender.toLowerCase()}</span>
-                </div>
-              )}
 
-              {currentUser.address && (
-                <div className="flex items-center justify-center md:justify-start gap-2.5 sm:col-span-2">
-                  <MapPin size={16} className="text-slate-400 shrink-0" />
-                  <span className="truncate">{currentUser.address}</span>
-                </div>
-              )}
+
+
             </div>
           </div>
 
@@ -483,7 +519,7 @@ export default function ProfilePage() {
       <div className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-slate-700 font-sans relative">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-slate-800 tracking-tight">
-            175 contributions in the last year
+            {totalMinutesSpent} minutes spent in the last year
           </h3>
           
           {/* Interactive Contribution Settings Dropdown */}
@@ -590,10 +626,9 @@ export default function ProfilePage() {
                       onMouseLeave={() => setHoveredCell(null)}
                       className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] border-[0.5px] border-slate-200/20 transition-all duration-200 cursor-pointer ${
                         cell.level === 0 ? 'bg-slate-50 hover:bg-indigo-50 border-slate-100' :
-                        cell.level === 1 ? 'bg-indigo-100/70 hover:scale-105' :
-                        cell.level === 2 ? 'bg-indigo-300/80 hover:scale-105' :
-                        cell.level === 3 ? 'bg-indigo-500 hover:scale-105' :
-                        'bg-indigo-700 hover:scale-105 shadow-sm'
+                        cell.level === 1 ? 'bg-indigo-200/70 hover:scale-105' :
+                        cell.level === 2 ? 'bg-indigo-400 hover:scale-105' :
+                        'bg-indigo-600 hover:scale-105 shadow-sm'
                       }`}
                     />
                   ))
@@ -606,15 +641,14 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 text-[10px] text-slate-400 font-semibold pt-3 border-t border-slate-100">
             <span className="hover:text-indigo-600 hover:underline cursor-pointer flex items-center gap-1">
               <Globe size={12} />
-              Learn how we count contributions
+              Learn how we track time spent
             </span>
             <div className="flex items-center gap-1.5 select-none">
               <span>Less</span>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-slate-50 border border-slate-100"></div>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-100/70"></div>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-300/80"></div>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-500"></div>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-700"></div>
+              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-200/70"></div>
+              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-400"></div>
+              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-600"></div>
               <span>More</span>
             </div>
           </div>
@@ -812,39 +846,7 @@ export default function ProfilePage() {
               <form onSubmit={handleEditSubmit} className="flex flex-col flex-grow overflow-hidden">
                 <div className="flex-grow overflow-y-auto px-6 py-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-200">
                   
-                  {/* Photo Upload Area inside Edit Modal */}
-                  <div className="flex items-center gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mb-2">
-                    <div className="relative h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-sm shrink-0">
-                      <div className="flex h-full w-full items-center justify-center rounded-full bg-white overflow-hidden border border-white">
-                        {currentUser.avatarUrl ? (
-                          <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
-                        ) : (
-                          <UserIcon size={24} className="text-indigo-400" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-bold text-slate-700">Profile Picture</span>
-                      <button 
-                        type="button" 
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingAvatar}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg active:scale-95 transition-all border border-indigo-100/50 cursor-pointer disabled:opacity-50"
-                      >
-                        {isUploadingAvatar ? (
-                          <>
-                            <Loader2 className="animate-spin" size={12} />
-                            <span>Uploading...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Camera size={12} />
-                            <span>Change Photo</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+
 
                   {/* Name Fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -878,7 +880,7 @@ export default function ProfilePage() {
                         type="text" 
                         required
                         value={editUsername}
-                        onChange={(e) => setEditUsername(e.target.value)}
+                        onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
                         className={`w-full rounded-xl border px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-1 ${
                           usernameAvailable === true ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500' :
                           usernameAvailable === false ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' :
@@ -971,6 +973,7 @@ export default function ProfilePage() {
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mobile Number</label>
                       <input 
                         type="text" 
+                        required
                         value={editMobileNumber}
                         onChange={(e) => setEditMobileNumber(e.target.value)}
                         placeholder="+91 XXXXX XXXXX"
@@ -1036,7 +1039,7 @@ export default function ProfilePage() {
             className="absolute z-50 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-lg pointer-events-none -translate-x-1/2 flex items-center gap-1"
             style={{ left: hoveredCell.x, top: hoveredCell.y }}
           >
-            <span>{hoveredCell.count === 0 ? 'No contributions' : `${hoveredCell.count} contributions`}</span>
+            <span>{hoveredCell.count === 0 ? '0 minutes spent' : `${hoveredCell.count} minutes spent`}</span>
             <span className="text-slate-400 font-semibold">on {hoveredCell.dateStr}</span>
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
           </motion.div>

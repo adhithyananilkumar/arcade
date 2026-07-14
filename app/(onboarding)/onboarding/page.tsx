@@ -227,7 +227,7 @@ export default function OnboardingPage() {
                       <Input 
                         id="username"
                         value={username}
-                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                        onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
                         placeholder="e.g. anandhu"
                         className={`pr-10 ${usernameStatus === 'available' ? 'border-green-500 focus-visible:ring-green-500' : usernameStatus === 'taken' ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                       />

@@ -7,6 +7,11 @@ export class UserService {
     return data;
   }
 
+  static async getPublicProfile(username: string): Promise<any> {
+    const { data } = await apiClient.get(`/public/profiles/${username}`);
+    return data;
+  }
+
   static async updateProfile(firstName: string, lastName: string, bio?: string, linkedinUrl?: string, username?: string, mobileNumber?: string, gender?: string, address?: string, githubUrl?: string): Promise<User> {
     const { data } = await apiClient.put<User>('/users/me', { firstName, lastName, bio, linkedinUrl, username, mobileNumber, gender, address, githubUrl });
     return data;

@@ -10,9 +10,6 @@ import { useAuthStore } from '@/store/auth.store';
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
-  { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
-  { name: 'Sessions', href: '/dashboard/sessions', icon: Users },
-  { name: 'Audit Logs', href: '/dashboard/audit', icon: ShieldAlert },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -69,28 +66,6 @@ export default function DashboardSidebar() {
           );
         })}
       </nav>
-      
-      {/* Bottom Upgrade Card Container */}
-      <div className="p-4 mt-auto border-t border-slate-50">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-5 text-white shadow-lg shadow-indigo-200/50 group">
-          {/* Subtle Background Pattern */}
-          <div className="absolute top-0 right-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/10 blur-xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 -ml-6 -mb-6 w-20 h-20 rounded-full bg-pink-400/20 blur-lg pointer-events-none" />
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={16} className="text-yellow-300 animate-pulse" />
-              <h4 className="text-sm font-bold tracking-wide">Upgrade to Pro</h4>
-            </div>
-            <p className="text-xs text-indigo-100/90 mb-4 font-normal leading-relaxed">
-              Unlock exclusive club tools, custom templates, and advanced team statistics.
-            </p>
-            <button className="w-full rounded-xl bg-white px-3 py-2 text-xs font-bold text-indigo-600 shadow-md hover:bg-slate-50 active:scale-[0.98] transition-all duration-200 cursor-pointer">
-              Learn More
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

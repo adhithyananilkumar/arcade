@@ -109,7 +109,7 @@ export default function SettingsPage() {
               <div className="relative group mb-4">
                 <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-50 text-indigo-300 border-4 border-white shadow-md overflow-hidden transition-all group-hover:shadow-lg">
                   {user.avatarUrl ? (
-                    <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
+                    <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <UserIcon size={56} />
                   )}
