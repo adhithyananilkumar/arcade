@@ -3,7 +3,7 @@
 
 import { useEditor } from "@tiptap/react";
 import debounce from "lodash.debounce";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/types/editor";
 
@@ -74,5 +74,17 @@ export function useArcadeEditor({
     },
   });
 
-  return editor;
+  /**
+   * Persist the current document immediately, bypassing the debounce. Returns a
+   * promise that resolves once onSave settles — call this before navigating away
+   * so no in-flight edits are lost.
+   */
+  const flushSave = useCallback(async () => {
+    debouncedSave.cancel();
+    if (editor && onSave) {
+      await onSave(editor.getJSON() as TiptapDocument);
+    }
+  }, [editor, onSave, debouncedSave]);
+
+  return { editor, flushSave };
 }

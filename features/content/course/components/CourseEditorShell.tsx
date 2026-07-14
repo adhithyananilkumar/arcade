@@ -2,7 +2,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArcadeEditor } from "@/features/content/editor/components/ArcadeEditor";
+import type { ArcadeEditorHandle } from "@/features/content/editor/components/ArcadeEditor";
 import { api } from "@/lib/api";
 import type { CourseResponse, ModuleResponse, LessonResponse } from "@/types/api";
 import type { TiptapDocument } from "@/types/editor";
@@ -18,10 +20,14 @@ import {
   Trash2,
   Send,
   AlertTriangle,
+  Settings,
+  Copy,
+  Check,
+  ArrowLeft,
 } from "lucide-react";
 
 interface CourseEditorShellProps {
-  courseId?: string; // undefined = new course; string = edit existing
+  courseId?: string; // required in practice — new courses are created via the dashboard modal
 }
 
 // ── Local types for tree state (Course → Module → Lesson) ─────────────────────
@@ -210,14 +216,170 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+// ── Course settings panel (with GitHub-style Danger Zone) ────────────────────
+
+function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-gray-100 py-2.5 last:border-b-0">
+      <span className="text-sm font-medium text-gray-500">{label}</span>
+      <span className="min-w-0 text-right text-sm text-gray-800">{children}</span>
+    </div>
+  );
+}
+
+function CourseSettingsPanel({
+  courseId,
+  title,
+  description,
+  status,
+  pricingModel,
+  createdAt,
+  updatedAt,
+  onDeleted,
+}: {
+  courseId?: string;
+  title: string;
+  description: string;
+  status: string;
+  pricingModel: string;
+  createdAt: string | null;
+  updatedAt: string | null;
+  onDeleted: () => void;
+}) {
+  const [dangerOpen, setDangerOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const canDelete = confirmText === title && !deleting && !!courseId;
+  const fmt = (d: string | null) => (d ? new Date(d).toLocaleString() : "—");
+
+  async function handleDelete() {
+    if (!canDelete) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await api.delete(`/api/courses/${courseId}`, { confirmTitle: confirmText });
+      onDeleted();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+      setDeleting(false);
+    }
+  }
+
+  function copyId() {
+    if (!courseId) return;
+    navigator.clipboard?.writeText(courseId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-3xl px-6 py-6 lg:px-10">
+      <h2 className="mb-1 text-lg font-bold text-gray-900">Course Settings</h2>
+      <p className="mb-6 text-sm text-gray-500">
+        Manage this course. Edit title, description, and pricing from the top bar.
+      </p>
+
+      {/* Course info */}
+      <div className="rounded-xl border border-gray-200 bg-white px-5 py-2 shadow-sm">
+        <InfoRow label="Title">{title || "Untitled Course"}</InfoRow>
+        <InfoRow label="Description">
+          {description ? description : <span className="text-gray-400">No description</span>}
+        </InfoRow>
+        <InfoRow label="Course ID">
+          <button
+            type="button"
+            onClick={copyId}
+            title="Copy ID"
+            className="inline-flex items-center gap-1.5 font-mono text-xs text-gray-600 hover:text-indigo-600"
+          >
+            {courseId}
+            {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+          </button>
+        </InfoRow>
+        <InfoRow label="Status">
+          <StatusPill status={status} />
+        </InfoRow>
+        <InfoRow label="Pricing">{pricingModel === "PAID" ? "Paid" : "Free"}</InfoRow>
+        <InfoRow label="Created">{fmt(createdAt)}</InfoRow>
+        <InfoRow label="Last updated">{fmt(updatedAt)}</InfoRow>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="mt-8 rounded-xl border border-red-200 bg-white shadow-sm">
+        <div className="border-b border-red-100 px-5 py-3">
+          <h3 className="text-sm font-semibold text-red-700">Danger Zone</h3>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-sm text-gray-600">
+            Deleting this course moves it to your <span className="font-medium">Trash</span>. You
+            can restore it later, or permanently delete it from there.
+          </p>
+
+          {!dangerOpen ? (
+            <button
+              type="button"
+              onClick={() => setDangerOpen(true)}
+              className="mt-3 rounded-lg border border-red-300 px-3.5 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
+            >
+              Delete this course
+            </button>
+          ) : (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50/50 p-4">
+              <label className="block text-sm text-gray-700">
+                To confirm, type <span className="font-semibold">{title}</span> below:
+              </label>
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                autoFocus
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-400 focus:ring-1 focus:ring-red-300"
+                placeholder={title}
+              />
+              {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDangerOpen(false);
+                    setConfirmText("");
+                    setError(null);
+                  }}
+                  className="rounded-lg px-3.5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={!canDelete}
+                  onClick={handleDelete}
+                  className="rounded-lg bg-red-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deleting ? "Moving to Trash…" : "Move to Trash"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Shell ────────────────────────────────────────────────────────────────
 
 export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShellProps) {
-  const [courseId, setCourseId] = useState<string | undefined>(initialCourseId);
+  const router = useRouter();
+  const [courseId] = useState<string | undefined>(initialCourseId);
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
   const [status, setStatus] = useState("DRAFT");
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -228,6 +390,13 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
   const [qbOpen, setQbOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [navigatingBack, setNavigatingBack] = useState(false);
+
+  // Imperative handle to force-save the open lesson before navigating away.
+  const editorRef = useRef<ArcadeEditorHandle>(null);
+
+  // Main-panel view: the lesson editor ("tree") or the course Settings screen.
+  const [view, setView] = useState<"tree" | "settings">("tree");
 
   // Inline rename + confirm dialog state
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
@@ -237,44 +406,32 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   // ── Bootstrap: create or load course on mount ─────────────────────────────
 
   useEffect(() => {
+    // Courses are created via the dashboard modal; the editor only ever loads an
+    // existing course. A missing id means we arrived here without one — go home.
+    if (!initialCourseId) {
+      router.replace("/dashboard");
+      return;
+    }
     async function bootstrap() {
-      if (initialCourseId) {
-        try {
-          const course = await api.get<CourseResponse>(`/api/courses/${initialCourseId}`);
-          setTitle(course.title);
-          setDescription(course.description ?? "");
-          setPricingModel(course.pricingModel as "FREE" | "PAID");
-          setStatus(course.status);
-          setModules(
-            course.modules.map((m) => ({
-              id: m.id,
-              title: m.title,
-              position: m.position,
-              lessons: m.lessons,
-              expanded: true,
-            }))
-          );
-        } catch (e) {
-          console.error("Failed to load course", e);
-        }
-      } else {
-        try {
-          const course = await api.post<CourseResponse>("/api/courses", {
-            title: "Untitled Course",
-          });
-          setCourseId(course.id);
-          setTitle(course.title);
-          setStatus(course.status);
-          if (typeof window !== "undefined") {
-            window.history.replaceState(
-              null,
-              "",
-              `/dashboard/content/course/${course.id}/edit`
-            );
-          }
-        } catch (e) {
-          console.error("Failed to create course", e);
-        }
+      try {
+        const course = await api.get<CourseResponse>(`/api/courses/${initialCourseId}`);
+        setTitle(course.title);
+        setDescription(course.description ?? "");
+        setPricingModel(course.pricingModel as "FREE" | "PAID");
+        setStatus(course.status);
+        setCreatedAt(course.createdAt);
+        setUpdatedAt(course.updatedAt);
+        setModules(
+          course.modules.map((m) => ({
+            id: m.id,
+            title: m.title,
+            position: m.position,
+            lessons: m.lessons,
+            expanded: true,
+          }))
+        );
+      } catch (e) {
+        console.error("Failed to load course", e);
       }
       setIsInitializing(false);
     }
@@ -285,6 +442,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   // ── Draft-aware lesson selection ──────────────────────────────────────────
 
   const openLesson = useCallback(async (lesson: LessonNode) => {
+    setView("tree");
     setActiveLessonId(lesson.id);
     setActiveLessonTitle(lesson.title);
 
@@ -511,6 +669,59 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     [courseId]
   );
 
+  // ── Back to dashboard (flush every pending save first) ────────────────────
+
+  const handleBack = useCallback(async () => {
+    if (navigatingBack) return;
+    setNavigatingBack(true);
+
+    // Cancel any queued debounced course-metadata save; we save synchronously below.
+    if (metaSaveTimeout.current) {
+      clearTimeout(metaSaveTimeout.current);
+      metaSaveTimeout.current = null;
+    }
+
+    const tasks: Promise<unknown>[] = [];
+
+    if (courseId) {
+      tasks.push(
+        api
+          .patch(`/api/courses/${courseId}`, { title, description, pricingModel })
+          .catch((e) => console.warn("Course metadata flush failed", e))
+      );
+    }
+
+    if (activeLessonId) {
+      // Persist the lesson title, then flush the editor body (bypasses its debounce).
+      tasks.push(
+        api
+          .patch(`/api/lessons/${activeLessonId}`, {
+            title: activeLessonTitle.trim() || "Untitled Lesson",
+          })
+          .catch((e) => console.warn("Lesson title flush failed", e))
+      );
+      if (editorRef.current) {
+        tasks.push(
+          Promise.resolve(editorRef.current.flush()).catch((e) =>
+            console.warn("Lesson body flush failed", e)
+          )
+        );
+      }
+    }
+
+    await Promise.all(tasks);
+    router.push("/dashboard");
+  }, [
+    navigatingBack,
+    courseId,
+    title,
+    description,
+    pricingModel,
+    activeLessonId,
+    activeLessonTitle,
+    router,
+  ]);
+
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () =>
@@ -578,6 +789,17 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       {/* ── Top metadata bar ─────────────────────────────────────────────── */}
       <header className="flex-shrink-0 border-b border-gray-200 bg-white px-5 py-2.5">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBack}
+            disabled={navigatingBack}
+            title="Save and return to dashboard"
+            className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+          >
+            <ArrowLeft size={16} />
+            {navigatingBack ? "Saving…" : "Back"}
+          </button>
+          <div className="h-5 w-px flex-shrink-0 bg-gray-200" />
           <input
             type="text"
             value={title}
@@ -766,12 +988,37 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
               <FileText size={13} />
               Create Question Bank
             </button>
+            <button
+              type="button"
+              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+              className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${
+                view === "settings"
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+              }`}
+            >
+              <Settings size={13} />
+              Course Settings
+            </button>
           </div>
         </aside>
 
         {/* ── Main editor panel ─────────────────────────────────────── */}
         <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
-          {activeLessonId ? (
+          {view === "settings" ? (
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <CourseSettingsPanel
+                courseId={courseId}
+                title={title}
+                description={description}
+                status={status}
+                pricingModel={pricingModel}
+                createdAt={createdAt}
+                updatedAt={updatedAt}
+                onDeleted={() => router.push("/dashboard")}
+              />
+            </div>
+          ) : activeLessonId ? (
             <div className="flex min-h-0 flex-1 flex-col px-6 py-4 lg:px-10 lg:py-6">
               <input
                 type="text"
@@ -783,6 +1030,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
               />
               <ArcadeEditor
                 key={activeLessonId}
+                ref={editorRef}
                 initialContent={activeLessonInitialContent}
                 placeholder="Start writing your lesson content…"
                 onSave={handleSave}

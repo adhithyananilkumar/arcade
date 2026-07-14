@@ -27,6 +27,7 @@ export interface CourseResponse {
   modules: ModuleResponse[];
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface CreateCourseRequest {

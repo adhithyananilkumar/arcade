@@ -4,6 +4,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { CourseResponse } from "@/types/api";
 import {
@@ -15,6 +16,8 @@ import {
   ChevronDown,
   Clock,
   GraduationCap,
+  Trash2,
+  X,
 } from "lucide-react";
 
 // ── Content type menu items ───────────────────────────────────────────────────
@@ -24,7 +27,7 @@ const CONTENT_TYPES = [
     id: "course",
     icon: BookOpen,
     label: "Course",
-    desc: "Structured learning path with modules, chapters & lessons",
+    desc: "Structured learning path with modules & lessons",
     href: "/dashboard/content/course/new",
     color: "text-indigo-600",
     bg: "bg-indigo-50",
@@ -76,8 +79,113 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// ── New Course creation modal ─────────────────────────────────────────────────
+
+function CreateCourseModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const course = await api.post<CourseResponse>("/api/courses", {
+        title: name.trim(),
+        description: description.trim() || undefined,
+      });
+      router.push(`/dashboard/content/course/${course.id}/edit`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create course");
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+            <BookOpen size={20} className="text-indigo-600" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">New Course</h3>
+            <p className="text-xs text-gray-500">Give it a name to get started.</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="course-name" className="mb-1 block text-sm font-medium text-gray-700">
+              Course name <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="course-name"
+              type="text"
+              required
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Intro to Spring Boot"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300"
+            />
+          </div>
+          <div>
+            <label htmlFor="course-desc" className="mb-1 block text-sm font-medium text-gray-700">
+              Description <span className="text-gray-400">(optional)</span>
+            </label>
+            <textarea
+              id="course-desc"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What will learners get out of this course?"
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || creating}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {creating ? "Creating…" : "Create Course"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
 
@@ -91,6 +199,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex-1 flex flex-col">
+      {createOpen && <CreateCourseModal onClose={() => setCreateOpen(false)} />}
+
       {/* ── Header bar ───────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -100,6 +210,16 @@ export default function DashboardPage() {
               Create and manage your educational content
             </p>
           </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/trash"
+              title="Trash"
+              className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
+            >
+              <Trash2 size={16} />
+              Trash
+            </Link>
 
           {/* Create Content button + Canva-style dropdown */}
           <div className="relative">
@@ -133,30 +253,54 @@ export default function DashboardPage() {
                       Select content type
                     </p>
                   </div>
-                  {CONTENT_TYPES.map((type) => (
-                    <Link
-                      key={type.id}
-                      href={type.href}
-                      role="menuitem"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors"
-                    >
-                      <div
-                        className={`flex-shrink-0 w-9 h-9 rounded-lg ${type.bg} flex items-center justify-center mt-0.5`}
+                  {CONTENT_TYPES.map((type) => {
+                    const inner = (
+                      <>
+                        <div
+                          className={`flex-shrink-0 w-9 h-9 rounded-lg ${type.bg} flex items-center justify-center mt-0.5`}
+                        >
+                          <type.icon size={17} className={type.color} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{type.label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                            {type.desc}
+                          </p>
+                        </div>
+                      </>
+                    );
+                    const cls =
+                      "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
+                    // "Course" opens the creation modal; other types navigate (stubs for now).
+                    return type.id === "course" ? (
+                      <button
+                        key={type.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          setCreateOpen(true);
+                        }}
+                        className={cls}
                       >
-                        <type.icon size={17} className={type.color} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">{type.label}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
-                          {type.desc}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                        {inner}
+                      </button>
+                    ) : (
+                      <Link
+                        key={type.id}
+                        href={type.href}
+                        role="menuitem"
+                        onClick={() => setDropdownOpen(false)}
+                        className={cls}
+                      >
+                        {inner}
+                      </Link>
+                    );
+                  })}
                 </div>
               </>
             )}
+          </div>
           </div>
         </div>
       </header>

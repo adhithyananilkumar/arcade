@@ -2,12 +2,17 @@
 "use client";
 
 import { EditorContent } from "@tiptap/react";
-import { useCallback, useState } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { EditorToolbar } from "./EditorToolbar";
 import { useArcadeEditor } from "../hooks/useArcadeEditor";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/types/editor";
+
+/** Imperative handle exposed via ref — lets a parent force-save before navigating. */
+export interface ArcadeEditorHandle {
+  flush: () => Promise<void>;
+}
 
 interface ArcadeEditorProps {
   /** Pre-populate editor with existing content. */
@@ -27,13 +32,11 @@ interface ArcadeEditorProps {
 
 type SaveStatus = "idle" | "saving" | "saved";
 
-export function ArcadeEditor({
-  initialContent,
-  placeholder,
-  readOnly = false,
-  onSave,
-  className = "",
-}: ArcadeEditorProps) {
+export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
+  function ArcadeEditor(
+    { initialContent, placeholder, readOnly = false, onSave, className = "" },
+    ref
+  ) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   const handleSave = useCallback(
@@ -51,12 +54,14 @@ export function ArcadeEditor({
     [onSave]
   );
 
-  const editor = useArcadeEditor({
+  const { editor, flushSave } = useArcadeEditor({
     initialContent,
     placeholder,
     readOnly,
     onSave: handleSave,
   });
+
+  useImperativeHandle(ref, () => ({ flush: flushSave }), [flushSave]);
 
   // editor is null during SSR — show skeleton
   if (!editor) {
@@ -88,4 +93,5 @@ export function ArcadeEditor({
       )}
     </div>
   );
-}
+  }
+);
