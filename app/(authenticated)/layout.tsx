@@ -11,14 +11,16 @@ export default function AuthenticatedLayout({
     <ProtectedLayout>
       <div className="flex h-screen w-full overflow-hidden bg-[#fafafa]">
         {/* Sidebar */}
-        <div className="hidden md:block">
+        <div className="hidden md:block print:hidden">
           <DashboardSidebar />
         </div>
         
         {/* Main Content Area */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <DashboardNavbar />
-          <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          <div className="print:hidden">
+            <DashboardNavbar />
+          </div>
+          <main className="flex-1 overflow-y-auto p-6 md:p-8 print:p-0">
             {children}
           </main>
         </div>

@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2 } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
   { name: 'Sessions', href: '/dashboard/sessions', icon: Users },
+  { name: 'Certificates', href: '/dashboard/certificates', icon: Award },
   { name: 'Audit Logs', href: '/dashboard/audit', icon: ShieldAlert },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
