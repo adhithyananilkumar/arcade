@@ -443,41 +443,59 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
   const openLesson = useCallback(async (lesson: LessonNode) => {
     setView("tree");
-    setActiveLessonId(lesson.id);
-    setActiveLessonTitle(lesson.title);
+
+    // Flush any pending edits in the currently-open lesson before switching away.
+    // Unmounting the editor cancels its debounced auto-save, so without this the
+    // last few seconds of typing would be lost on a lesson switch.
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort — proceed with the switch regardless
+      }
+    }
+
+    // Resolve this lesson's content BEFORE switching the editor to it. The editor
+    // is keyed on activeLessonId and Tiptap only reads `content` at mount, so the
+    // content must be known at the moment the key changes. Setting the id first
+    // and fetching afterwards mounts the editor empty and drops the fetched draft.
+    let content: TiptapDocument | undefined;
 
     try {
       const draft = await api.get<{ body: string; savedAt: string } | null>(
         `/api/lessons/${lesson.id}/draft`
       );
       if (draft?.body) {
-        setActiveLessonInitialContent(JSON.parse(draft.body) as TiptapDocument);
-        return;
+        content = JSON.parse(draft.body) as TiptapDocument;
       }
     } catch {
-      // Fallback to localStorage if backend is unreachable
+      // Fall back to localStorage if the backend is unreachable
     }
 
-    const localDraft = localStorage.getItem(`arcade-draft-${lesson.id}`);
-    if (localDraft) {
-      try {
-        setActiveLessonInitialContent(JSON.parse(localDraft) as TiptapDocument);
-        return;
-      } catch {
-        // ignore corrupt data
+    if (!content) {
+      const localDraft = localStorage.getItem(`arcade-draft-${lesson.id}`);
+      if (localDraft) {
+        try {
+          content = JSON.parse(localDraft) as TiptapDocument;
+        } catch {
+          // ignore corrupt data
+        }
       }
     }
 
-    if (lesson.body) {
+    if (!content && lesson.body) {
       try {
-        setActiveLessonInitialContent(JSON.parse(lesson.body) as TiptapDocument);
-        return;
+        content = JSON.parse(lesson.body) as TiptapDocument;
       } catch {
         // ignore
       }
     }
 
-    setActiveLessonInitialContent(undefined);
+    // Commit all three together: React batches these so the editor remounts once,
+    // with the correct initialContent already in place.
+    setActiveLessonTitle(lesson.title);
+    setActiveLessonInitialContent(content);
+    setActiveLessonId(lesson.id);
   }, []);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
