@@ -17,9 +17,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-// ── Temp author ID — replace with session user ID when auth is wired ──────────
-const TEMP_AUTHOR_ID = "00000000-0000-0000-0000-000000000001";
-
 // ── Content type menu items ───────────────────────────────────────────────────
 
 const CONTENT_TYPES = [
@@ -86,7 +83,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     api
-      .get<CourseResponse[]>(`/api/courses?authorId=${TEMP_AUTHOR_ID}`)
+      .get<CourseResponse[]>("/api/courses")
       .then(setCourses)
       .catch(() => setCourses([]))
       .finally(() => setLoadingCourses(false));

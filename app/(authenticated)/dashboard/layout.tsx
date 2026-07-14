@@ -1,6 +1,7 @@
 // app/(authenticated)/dashboard/layout.tsx
-// Intentionally minimal — the auth team replaces this with the full nav/sidebar shell.
-// Our pages never 404 during parallel development.
+// Gates the dashboard + editor behind a valid session, then renders the shell.
+
+import { AuthGuard } from "@/components/AuthGuard";
 
 export default function DashboardLayout({
   children,
@@ -8,8 +9,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {children}
-    </div>
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50 flex flex-col">{children}</div>
+    </AuthGuard>
   );
 }

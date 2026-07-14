@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { setTokens } from "@/lib/auth";
 
 interface AuthResponse {
   accessToken: string;
@@ -34,8 +35,7 @@ export default function LoginPage() {
         email,
         password,
       });
-      localStorage.setItem("arcade-access-token", res.accessToken);
-      localStorage.setItem("arcade-refresh-token", res.refreshToken);
+      setTokens(res.accessToken, res.refreshToken);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");

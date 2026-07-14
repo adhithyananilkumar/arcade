@@ -20,9 +20,6 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// ── Temporary: hardcoded author ID until JWT auth is wired ───────────────────
-const TEMP_AUTHOR_ID = "00000000-0000-0000-0000-000000000001";
-
 interface CourseEditorShellProps {
   courseId?: string; // undefined = new course; string = edit existing
 }
@@ -263,7 +260,6 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       } else {
         try {
           const course = await api.post<CourseResponse>("/api/courses", {
-            authorId: TEMP_AUTHOR_ID,
             title: "Untitled Course",
           });
           setCourseId(course.id);

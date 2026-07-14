@@ -30,7 +30,6 @@ export interface CourseResponse {
 }
 
 export interface CreateCourseRequest {
-  authorId: string;
   title: string;
   description?: string;
   pricingModel?: PricingModel;
