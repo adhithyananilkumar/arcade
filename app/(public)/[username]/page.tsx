@@ -35,12 +35,19 @@ export default function PublicProfilePage() {
   const [activeTab, setActiveTab] = useState<'courses' | 'enrolled' | 'certificates'>('courses');
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<{ count: number; dateStr: string; x: number; y: number } | null>(null);
+  const [activityData, setActivityData] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const data = await UserService.getPublicProfile(usernameParam);
         setProfileData(data);
+        const activity = await UserService.getUserActivity(usernameParam);
+        const dataMap: Record<string, number> = {};
+        activity.forEach((item: any) => {
+          dataMap[item.date] = item.secondsSpent;
+        });
+        setActivityData(dataMap);
       } catch (err: any) {
         if (err.response?.status === 404) {
           setError('User not found.');
@@ -76,9 +83,8 @@ export default function PublicProfilePage() {
         const targetDateISO = targetDate.toISOString().split('T')[0];
 
         let count = 0;
-        if (typeof window !== 'undefined') {
-          const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
-          count = Math.floor(secondsSpent / 60);
+        if (activityData[targetDateISO]) {
+          count = Math.floor(activityData[targetDateISO] / 60);
         }
 
         let level = 0;
@@ -92,7 +98,7 @@ export default function PublicProfilePage() {
       grid.push(week);
     }
     return grid;
-  }, []);
+  }, [activityData]);
 
   const totalMinutesSpent = useMemo(() => {
     let total = 0;
@@ -109,9 +115,8 @@ export default function PublicProfilePage() {
       const targetDateISO = targetDate.toISOString().split('T')[0];
       
       let count = 0;
-      if (typeof window !== 'undefined') {
-        const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
-        count = Math.floor(secondsSpent / 60);
+      if (activityData[targetDateISO]) {
+        count = Math.floor(activityData[targetDateISO] / 60);
       }
       
       if (count > 0) {
@@ -122,7 +127,7 @@ export default function PublicProfilePage() {
       }
     }
     return streak;
-  }, [contributionGrid]);
+  }, [activityData]);
 
   const dynamicBadges = useMemo(() => {
     return badges.map(b => {
@@ -176,14 +181,15 @@ export default function PublicProfilePage() {
   const displayedBadges = showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 5);
 
   return (
-    <motion.div 
-      className="mx-auto max-w-4xl space-y-8 pb-16 px-4 sm:px-6 relative"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-    >
-      
-      {/* ── Main Profile Header Card ── */}
+    <div className="flex w-full justify-center">
+      <motion.div 
+        className="w-full max-w-4xl space-y-8 pb-16 px-4 sm:px-6 relative"
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        
+        {/* ── Main Profile Header Card ── */}
       <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)]">
         {/* Decorative background blurs */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 opacity-30 blur-3xl pointer-events-none" />
@@ -552,5 +558,6 @@ export default function PublicProfilePage() {
       </AnimatePresence>
 
     </motion.div>
+    </div>
   );
 }

@@ -70,5 +70,28 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     );
   }
 
+  // Prevent rendering the dashboard if the user needs to be redirected to onboarding (FOUC fix)
+  if (status === 'authenticated' && user) {
+    const isOnboarding = pathname.startsWith('/onboarding');
+    
+    if (user.onboardingCompleted === false && !isOnboarding) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <p className="text-gray-500 font-medium">Preparing your setup...</p>
+        </div>
+      );
+    }
+    
+    if (user.onboardingCompleted === true && isOnboarding) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <p className="text-gray-500 font-medium">Redirecting to dashboard...</p>
+        </div>
+      );
+    }
+  }
+
   return status === 'authenticated' ? <>{children}</> : null;
 }

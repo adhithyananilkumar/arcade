@@ -68,7 +68,21 @@ export default function ProfilePage() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Settings dropdown state for contribution activity
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  const [activityData, setActivityData] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (profileData?.username) {
+      UserService.getUserActivity(profileData.username).then(data => {
+        const dataMap: Record<string, number> = {};
+        data.forEach((item: any) => {
+          dataMap[item.date] = item.secondsSpent;
+        });
+        setActivityData(dataMap);
+      }).catch(console.error);
+    }
+  }, [profileData?.username, timeTick]);
   const [showPrivateActivity, setShowPrivateActivity] = useState(true);
   const [activityVisibility, setActivityVisibility] = useState('Public');
 
@@ -235,9 +249,8 @@ export default function ProfilePage() {
         const targetDateISO = targetDate.toISOString().split('T')[0];
         
         let count = 0; // minutes
-        if (typeof window !== 'undefined') {
-          const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
-          count = Math.floor(secondsSpent / 60);
+        if (activityData[targetDateISO]) {
+          count = Math.floor(activityData[targetDateISO] / 60);
         }
 
         let level = 0;
@@ -251,7 +264,7 @@ export default function ProfilePage() {
       grid.push(week);
     }
     return grid;
-  }, [timeTick]);
+  }, [activityData]);
 
   const totalMinutesSpent = useMemo(() => {
     let total = 0;
@@ -272,9 +285,8 @@ export default function ProfilePage() {
       const targetDateISO = targetDate.toISOString().split('T')[0];
       
       let count = 0;
-      if (typeof window !== 'undefined') {
-        const secondsSpent = parseInt(localStorage.getItem(`time_spent_${targetDateISO}`) || '0', 10);
-        count = Math.floor(secondsSpent / 60);
+      if (activityData[targetDateISO]) {
+        count = Math.floor(activityData[targetDateISO] / 60);
       }
       
       if (count > 0) {
@@ -285,7 +297,7 @@ export default function ProfilePage() {
       }
     }
     return streak;
-  }, [timeTick]);
+  }, [activityData]);
 
   const dynamicBadges = useMemo(() => {
     return badges.map(b => {
@@ -525,18 +537,18 @@ export default function ProfilePage() {
           {/* Interactive Contribution Settings Dropdown */}
           <div className="relative">
             <button 
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              onClick={() => setShowSettings(!showSettings)}
               className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1 cursor-pointer focus:outline-none"
             >
               <span>Contribution settings</span>
-              <Settings size={12} className={`transition-transform duration-200 ${isSettingsOpen ? 'rotate-90' : ''}`} />
+              <Settings size={12} className={`transition-transform duration-200 ${showSettings ? 'rotate-90' : ''}`} />
             </button>
             
             <AnimatePresence>
-              {isSettingsOpen && (
+              {showSettings && (
                 <>
                   {/* Backdrop Clicker */}
-                  <div className="fixed inset-0 z-30" onClick={() => setIsSettingsOpen(false)}></div>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowSettings(false)}></div>
                   
                   <motion.div 
                     initial={{ opacity: 0, y: 5 }}
@@ -548,14 +560,14 @@ export default function ProfilePage() {
                       Visibility
                     </div>
                     <button 
-                      onClick={() => { setActivityVisibility('Public'); setIsSettingsOpen(false); }}
+                      onClick={() => { setActivityVisibility('Public'); setShowSettings(false); }}
                       className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
                     >
                       <span>Public activity only</span>
                       {activityVisibility === 'Public' && <Check size={14} className="text-indigo-600" />}
                     </button>
                     <button 
-                      onClick={() => { setActivityVisibility('Private'); setIsSettingsOpen(false); }}
+                      onClick={() => { setActivityVisibility('Private'); setShowSettings(false); }}
                       className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
                     >
                       <span>Include private activity</span>

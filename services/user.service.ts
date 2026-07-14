@@ -12,6 +12,11 @@ export class UserService {
     return data;
   }
 
+  static async getUserActivity(username: string): Promise<{date: string, secondsSpent: number}[]> {
+    const { data } = await apiClient.get<{date: string, secondsSpent: number}[]>(`/public/profiles/${username}/activity`);
+    return data;
+  }
+
   static async updateProfile(firstName: string, lastName: string, bio?: string, linkedinUrl?: string, username?: string, mobileNumber?: string, gender?: string, address?: string, githubUrl?: string): Promise<User> {
     const { data } = await apiClient.put<User>('/users/me', { firstName, lastName, bio, linkedinUrl, username, mobileNumber, gender, address, githubUrl });
     return data;

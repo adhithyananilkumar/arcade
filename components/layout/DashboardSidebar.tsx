@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Sparkles, User } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Sparkles, User, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
 

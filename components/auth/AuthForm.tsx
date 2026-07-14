@@ -39,8 +39,8 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       if (!/^[a-zA-Z\s]{2,50}$/.test(firstName)) {
         newErrors.firstName = "First Name must be 2-50 characters (letters only).";
       }
-      if (!/^[a-zA-Z\s]{2,50}$/.test(lastName)) {
-        newErrors.lastName = "Last Name must be 2-50 characters (letters only).";
+      if (!/^[a-zA-Z\s]{1,50}$/.test(lastName)) {
+        newErrors.lastName = "Last Name must be 1-50 characters (letters only).";
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         newErrors.email = "Please enter a valid email address.";
@@ -84,6 +84,17 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       } else {
         await AuthService.register({ firstName, lastName, email, password });
         setShowSuccess(true);
+        
+        // Auto-redirect to login after 3.5 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+          setPassword('');
+          setConfirmPassword('');
+          setFirstName('');
+          setLastName('');
+          setErrors({});
+          handleModeChange('login');
+        }, 3500);
       }
     } catch (err: any) {
       setErrors({ global: err.response?.data?.message || err.message || 'An error occurred' });
@@ -98,20 +109,10 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
         <div style={{ fontSize: '4rem', color: '#0056b3', marginBottom: '1rem' }}>✓</div>
         <h2 style={{ marginBottom: '1rem' }}>Registered Successfully!</h2>
         <p style={{ marginBottom: '2rem', color: '#666' }}>Your account has been created. Please log in to continue.</p>
-        <button 
-          className={styles.submitButton}
-          onClick={() => {
-            setShowSuccess(false);
-            setMode('login');
-            setPassword('');
-            setConfirmPassword('');
-            setFirstName('');
-            setLastName('');
-            setErrors({});
-          }}
-        >
-          Go to Login
-        </button>
+        <div style={{ marginTop: '1.5rem', color: '#0056b3', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <div className={styles.spinner} style={{ width: '16px', height: '16px', border: '2px solid #0056b3', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          Redirecting to login...
+        </div>
       </div>
     );
   }

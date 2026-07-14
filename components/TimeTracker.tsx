@@ -1,34 +1,62 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useAuthStore } from '@/store/auth.store';
+import { Client } from '@stomp/stompjs';
 
 export default function TimeTracker() {
+  const { user, accessToken } = useAuthStore();
+  const stompClientRef = useRef<Client | null>(null);
+
   useEffect(() => {
-    // Only run on client
     if (typeof window === 'undefined') return;
+    if (!user || !accessToken) return;
 
-    // Simulate the 1 hour the user already waited if this is the first time running today
-    const todayISO = new Date().toISOString().split('T')[0];
-    const key = `time_spent_${todayISO}`;
-    if (!localStorage.getItem(key)) {
-      // 3600 seconds = 60 minutes (1 hour)
-      localStorage.setItem(key, '3600');
-    }
+    // Connect to WebSocket using STOMP
+    const client = new Client({
+      brokerURL: 'ws://localhost:8080/ws',
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      debug: function (str) {
+        console.log('STOMP: ' + str);
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
+    client.onConnect = () => {
+      console.log('Connected to WebSocket server');
+    };
+
+    client.onStompError = (frame) => {
+      console.error('Broker reported error: ' + frame.headers['message']);
+      console.error('Additional details: ' + frame.body);
+    };
+
+    client.activate();
+    stompClientRef.current = client;
+
+    // Set up the interval to ping every 10 seconds
     const interval = setInterval(() => {
-      const today = new Date().toISOString().split('T')[0];
-      const todayKey = `time_spent_${today}`;
-      const currentSeconds = parseInt(localStorage.getItem(todayKey) || '0', 10);
-      
-      // Increment by 10 seconds
-      localStorage.setItem(todayKey, (currentSeconds + 10).toString());
-      
-      // Dispatch event so profile page can update dynamically
-      window.dispatchEvent(new Event('timeTrackerUpdated'));
-    }, 10000); // 10 seconds
+      if (stompClientRef.current && stompClientRef.current.connected) {
+        stompClientRef.current.publish({
+          destination: '/app/time/ping',
+          body: JSON.stringify({ seconds: 10 }),
+        });
+        // Dispatch local event in case the heatmap is currently being viewed
+        window.dispatchEvent(new Event('timeTrackerUpdated'));
+      }
+    }, 10000);
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearInterval(interval);
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate();
+      }
+    };
+  }, [user, accessToken]);
 
   return null;
 }

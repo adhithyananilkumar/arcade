@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'arcade-auth-storage',
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({ user: state.user, accessToken: state.accessToken }),
     }
   )
 );
