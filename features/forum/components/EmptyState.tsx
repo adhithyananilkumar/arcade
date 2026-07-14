@@ -28,22 +28,23 @@ export function EmptyState({
     >
       <div
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--arcade-blue-light)',
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: '#fafafa',
+          border: '1px solid #ebebeb',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <MessageSquare size={24} color="var(--arcade-blue)" />
+        <MessageSquare size={26} color="#111" strokeWidth={1.5} />
       </div>
       <div>
-        <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+        <p style={{ fontSize: 18, fontWeight: 650, color: '#0a0a0a', letterSpacing: '-0.02em', marginBottom: 6 }}>
           {title}
         </p>
-        <p style={{ fontSize: 14, color: 'var(--text-muted)', maxWidth: 320 }}>{description}</p>
+        <p style={{ fontSize: 14, color: '#777', maxWidth: 320 }}>{description}</p>
       </div>
       {cta && (
         <Link
@@ -51,14 +52,16 @@ export function EmptyState({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            height: 36,
-            padding: '0 16px',
-            borderRadius: 'var(--radius-full)',
-            backgroundColor: 'var(--arcade-blue)',
+            height: 44,
+            padding: '0 24px',
+            borderRadius: 100,
+            backgroundColor: '#0a0a0a',
             color: '#fff',
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: 600,
             textDecoration: 'none',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.12)',
+            marginTop: 8,
           }}
         >
           {cta.label}

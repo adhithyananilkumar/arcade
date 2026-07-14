@@ -19,12 +19,20 @@ export default function CategoryPage({ params }: Props) {
   return (
     <div>
       {/* Category header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: 4 }}>
+      <div style={{ marginBottom: 40, marginTop: 16 }}>
+        <h1 style={{ 
+          fontSize: 'clamp(32px, 5vw, 44px)', 
+          fontWeight: 650, 
+          color: '#0a0a0a', 
+          letterSpacing: '-0.03em', 
+          marginBottom: 12,
+          fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+          lineHeight: 1.1
+        }}>
           {category?.name || slug}
         </h1>
         {category?.description && (
-          <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>{category.description}</p>
+          <p style={{ fontSize: 16, color: '#777', lineHeight: 1.6, maxWidth: 600 }}>{category.description}</p>
         )}
       </div>
 

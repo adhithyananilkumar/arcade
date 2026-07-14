@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import { toast } from 'sonner';
+import { ImageEditorDialog } from './ImageEditorDialog';
 
 const ToolbarBtn = ({ 
   active, 
@@ -50,6 +51,7 @@ interface Props {
 const MAX_CHARS = 2000;
 
 export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
+  const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -98,7 +100,7 @@ export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
       reader.readAsDataURL(file);
       reader.onload = () => {
         const base64 = reader.result as string;
-        editor.chain().focus().setImage({ src: base64 }).run();
+        setEditingImageUrl(base64);
       };
       reader.onerror = () => {
         toast.error('Failed to read image file');
@@ -170,6 +172,18 @@ export function RichTextEditor({ value, onChange, minHeight = 200 }: Props) {
       }}>
         {editor.storage.characterCount.characters()} / {MAX_CHARS} characters
       </div>
+
+      {editingImageUrl && (
+        <ImageEditorDialog
+          isOpen={true}
+          imageUrl={editingImageUrl}
+          onClose={() => setEditingImageUrl(null)}
+          onComplete={(croppedBase64) => {
+            editor.chain().focus().setImage({ src: croppedBase64 }).run();
+            setEditingImageUrl(null);
+          }}
+        />
+      )}
     </div>
   );
 }

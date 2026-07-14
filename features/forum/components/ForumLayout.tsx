@@ -41,23 +41,36 @@ export function ForumLayout({ children }: Props) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: 'var(--surface)',
+        backgroundColor: '#ffffff',
         fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+        position: 'relative',
       }}
     >
+      {/* Ambient gradient to match landing page */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(99,102,241,0.09) 0%, transparent 70%)",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
       {/* Topbar */}
       <header
         style={{
           position: 'sticky',
           top: 0,
           zIndex: 40,
-          backgroundColor: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--border)',
-          padding: '0 24px',
+          backgroundColor: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          padding: '0 32px',
           display: 'flex',
           alignItems: 'center',
-          height: 56,
+          height: 64,
           gap: 16,
         }}
       >
@@ -119,19 +132,27 @@ export function ForumLayout({ children }: Props) {
             placeholder="Search posts..."
             style={{
               width: '100%',
-              height: 32,
-              paddingLeft: 30,
-              paddingRight: 12,
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-full)',
+              height: 38,
+              paddingLeft: 34,
+              paddingRight: 14,
+              border: '1px solid rgba(0,0,0,0.08)',
+              borderRadius: 100,
               fontSize: 13,
-              color: 'var(--text-primary)',
+              color: '#111',
               outline: 'none',
-              backgroundColor: 'var(--surface)',
-              transition: 'border-color 0.15s',
+              backgroundColor: '#fafafa',
+              transition: 'all 0.2s',
             }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--arcade-blue)'; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+            onFocus={(e) => { 
+              e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)'; 
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)';
+            }}
+            onBlur={(e) => { 
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)'; 
+              e.currentTarget.style.backgroundColor = '#fafafa';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </form>
 
@@ -161,7 +182,7 @@ export function ForumLayout({ children }: Props) {
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
-                  color: 'var(--text-secondary)',
+                  color: '#444',
                   textDecoration: 'none',
                   padding: '6px 4px',
                 }}
@@ -174,9 +195,9 @@ export function ForumLayout({ children }: Props) {
                   fontSize: 13,
                   fontWeight: 600,
                   color: '#fff',
-                  backgroundColor: 'var(--arcade-blue)',
-                  borderRadius: 'var(--radius-full)',
-                  padding: '6px 16px',
+                  backgroundColor: '#111',
+                  borderRadius: 100,
+                  padding: '8px 20px',
                   textDecoration: 'none',
                   display: 'inline-block',
                 }}
