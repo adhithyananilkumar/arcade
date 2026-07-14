@@ -182,7 +182,8 @@
   justify-content: center;
   align-items: center;
   padding: 0 clamp(1.5rem, 7vw, 8rem);
-  padding-top: 94px; /* nav height */
+  padding-top: 94px;
+  /* nav height */
   position: relative;
 }
 
@@ -190,7 +191,8 @@
   width: 100%;
   max-width: 1200px;
   padding-top: 3rem;
-  margin-top: -25vh; /* nudge content up more */
+  margin-top: -25vh;
+  /* nudge content up more */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -327,5 +329,96 @@
 
   .l-nav__login {
     display: none;
+  }
+}
+
+/* ─── Lantern Path Custom Styles ────────────────────────────────────── */
+.spacer {
+  height: 55vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #B7B9C4;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.lp-char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ─── Grid Layout Redesign ──────────────────────────────────────────── */
+.lp-grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  max-width: 1100px;
+  margin: 32px auto 0;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 992px) {
+  .lp-grid-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .lp-grid-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.lp-highlight-text {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+}
+
+.lp-highlight-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 35%;
+  background: #FFEB00;
+  z-index: -1;
+  transform: skewX(-4deg);
+}
+
+.lp-dropdown-link {
+  transition: color 0.15s ease;
+}
+
+.lp-dropdown-link:hover {
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 992px) {
+  .lp-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .lp-bento-grid {
+    grid-template-columns: 1fr;
   }
 }
