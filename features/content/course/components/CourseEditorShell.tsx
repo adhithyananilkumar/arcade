@@ -24,6 +24,8 @@ import {
   Copy,
   Check,
   ArrowLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 interface CourseEditorShellProps {
@@ -83,9 +85,8 @@ function ConfirmDialog({
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
         <div className="flex gap-3">
           <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${
-              danger ? "bg-red-50" : "bg-indigo-50"
-            }`}
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${danger ? "bg-red-50" : "bg-indigo-50"
+              }`}
           >
             <AlertTriangle
               size={20}
@@ -118,11 +119,10 @@ function ConfirmDialog({
                 setBusy(false);
               }
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${
-              danger
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
           >
             {busy ? "Working…" : confirmLabel}
           </button>
@@ -188,9 +188,8 @@ function IconBtn({
         e.stopPropagation();
         onClick();
       }}
-      className={`rounded p-1 text-gray-400 transition-colors ${
-        danger ? "hover:bg-red-50 hover:text-red-600" : "hover:bg-gray-200 hover:text-gray-700"
-      }`}
+      className={`rounded p-1 text-gray-400 transition-colors ${danger ? "hover:bg-red-50 hover:text-red-600" : "hover:bg-gray-200 hover:text-gray-700"
+        }`}
     >
       {children}
     </button>
@@ -236,6 +235,7 @@ function CourseSettingsPanel({
   createdAt,
   updatedAt,
   onDeleted,
+  onDescriptionChange,
 }: {
   courseId?: string;
   title: string;
@@ -245,12 +245,19 @@ function CourseSettingsPanel({
   createdAt: string | null;
   updatedAt: string | null;
   onDeleted: () => void;
+  onDescriptionChange: (desc: string) => void;
 }) {
   const [dangerOpen, setDangerOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [localDesc, setLocalDesc] = useState(description);
+
+  // Keep local state in sync when the parent description changes (e.g. initial load)
+  useEffect(() => {
+    setLocalDesc(description);
+  }, [description]);
 
   const canDelete = confirmText === title && !deleting && !!courseId;
   const fmt = (d: string | null) => (d ? new Date(d).toLocaleString() : "—");
@@ -279,15 +286,23 @@ function CourseSettingsPanel({
     <div className="mx-auto w-full max-w-3xl px-6 py-6 lg:px-10">
       <h2 className="mb-1 text-lg font-bold text-gray-900">Course Settings</h2>
       <p className="mb-6 text-sm text-gray-500">
-        Manage this course. Edit title, description, and pricing from the top bar.
+        Manage your course details and other configuration options.
       </p>
 
       {/* Course info */}
       <div className="rounded-xl border border-gray-200 bg-white px-5 py-2 shadow-sm">
         <InfoRow label="Title">{title || "Untitled Course"}</InfoRow>
-        <InfoRow label="Description">
-          {description ? description : <span className="text-gray-400">No description</span>}
-        </InfoRow>
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 py-2.5">
+          <span className="flex-shrink-0 text-sm font-medium text-gray-500">Description</span>
+          <textarea
+            value={localDesc}
+            onChange={(e) => setLocalDesc(e.target.value)}
+            onBlur={() => onDescriptionChange(localDesc)}
+            rows={3}
+            placeholder="Add a course description…"
+            className="min-w-0 flex-1 resize-none rounded-lg border border-gray-200 px-2.5 py-1.5 text-left text-sm text-gray-800 outline-none placeholder:text-gray-300 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200"
+          />
+        </div>
         <InfoRow label="Course ID">
           <button
             type="button"
@@ -397,6 +412,9 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
   // Main-panel view: the lesson editor ("tree") or the course Settings screen.
   const [view, setView] = useState<"tree" | "settings">("tree");
+
+  // Sidebar collapse state
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Inline rename + confirm dialog state
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
@@ -829,19 +847,6 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
             className="min-w-0 flex-1 rounded-lg border-0 px-1.5 py-1 text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
           />
 
-          <select
-            value={pricingModel}
-            onChange={(e) => {
-              const val = e.target.value as "FREE" | "PAID";
-              setPricingModel(val);
-              scheduleCourseMetaSave({ pricingModel: val });
-            }}
-            className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-300"
-          >
-            <option value="FREE">Free</option>
-            <option value="PAID">Paid</option>
-          </select>
-
           <StatusPill status={status} />
 
           {status === "DRAFT" && (
@@ -855,169 +860,178 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
             </button>
           )}
         </div>
-
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
-            scheduleCourseMetaSave({ description: e.target.value });
-          }}
-          placeholder="Add a course description…"
-          className="mt-1 w-full rounded-lg border-0 px-1.5 py-0.5 text-sm text-gray-600 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
-        />
       </header>
 
       {/* ── Main two-panel layout ─────────────────────────────────────────── */}
       <div className="flex min-h-0 flex-1">
         {/* ── Left sidebar: course tree ─────────────────────────────── */}
-        <aside className="flex w-64 flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700">
-            <GraduationCap size={15} className="text-indigo-500" />
-            Course Structure
-          </div>
-
-          {/* Tree scroll area */}
-          <div className="flex-1 overflow-y-auto p-2">
-            {modules.length === 0 && (
-              <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                <Layers size={28} className="text-gray-300" />
-                <p className="text-xs text-gray-400">
-                  No modules yet. Add a module to get started.
-                </p>
+        <aside
+          className={`relative flex flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-gray-50 transition-[width] duration-300 ease-in-out ${sidebarOpen ? "w-64" : "w-10"
+            }`}
+        >
+          {/* ── Sidebar header (always visible) ───────────────── */}
+          <div className={`flex flex-shrink-0 items-center bg-gray-50 ${sidebarOpen ? "border-b border-gray-200" : ""}`}>
+            {sidebarOpen && (
+              <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2.5">
+                <GraduationCap size={15} className="flex-shrink-0 text-indigo-500" />
+                <span className="truncate text-sm font-semibold text-gray-700">Course Structure</span>
               </div>
             )}
-
-            {modules.map((mod) => (
-              <div key={mod.id} className="mb-0.5">
-                {/* Module row */}
-                <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setModules((prev) =>
-                        prev.map((m) =>
-                          m.id === mod.id ? { ...m, expanded: !m.expanded } : m
-                        )
-                      )
-                    }
-                    className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                  >
-                    {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                  </button>
-
-                  {isEditing("module", mod.id) ? (
-                    renameInput("text-xs font-semibold text-gray-700")
-                  ) : (
-                    <span
-                      onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                      className="flex-1 truncate text-xs font-semibold text-gray-700"
-                      title={mod.title}
-                    >
-                      {mod.title}
-                    </span>
-                  )}
-
-                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                    <IconBtn title="Add lesson" onClick={() => addLesson(mod.id)}>
-                      <Plus size={12} />
-                    </IconBtn>
-                    <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                      <Pencil size={12} />
-                    </IconBtn>
-                    <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                      <Trash2 size={12} />
-                    </IconBtn>
-                  </div>
-                </div>
-
-                {/* Lessons directly under the module */}
-                {mod.expanded && (
-                  <div className="ml-3 border-l border-gray-200 pl-1.5">
-                    {mod.lessons.map((lesson) => (
-                      <div
-                        key={lesson.id}
-                        className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${
-                          activeLessonId === lesson.id ? "bg-indigo-50" : "hover:bg-gray-100"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => openLesson(lesson)}
-                          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${
-                            activeLessonId === lesson.id
-                              ? "font-medium text-indigo-700"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          <FileText size={11} className="flex-shrink-0" />
-                          {isEditing("lesson", lesson.id) ? (
-                            renameInput("text-xs")
-                          ) : (
-                            <span className="truncate" title={lesson.title}>
-                              {lesson.title}
-                            </span>
-                          )}
-                        </button>
-                        <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                          <IconBtn
-                            title="Rename lesson"
-                            onClick={() => startEdit("lesson", lesson.id, lesson.title)}
-                          >
-                            <Pencil size={12} />
-                          </IconBtn>
-                          <IconBtn title="Delete lesson" danger onClick={() => askDeleteLesson(lesson)}>
-                            <Trash2 size={12} />
-                          </IconBtn>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Add lesson to this module */}
-                    <button
-                      type="button"
-                      onClick={() => addLesson(mod.id)}
-                      className="mt-0.5 flex items-center gap-1 py-1 pl-2 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                    >
-                      <Plus size={11} />
-                      Add lesson
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+            <button
+              type="button"
+              title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+              onClick={() => setSidebarOpen((o) => !o)}
+              className={`flex flex-shrink-0 items-center justify-center rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 ${sidebarOpen ? "mr-1" : "mx-auto"
+                }`}
+            >
+              {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+            </button>
           </div>
 
-          {/* Sidebar footer */}
-          <div className="space-y-2 border-t border-gray-200 p-3">
-            <button
-              type="button"
-              onClick={addModule}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
-            >
-              <Plus size={14} />
-              Add Module
-            </button>
-            <button
-              type="button"
-              onClick={() => setQbOpen(true)}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
-            >
-              <FileText size={13} />
-              Create Question Bank
-            </button>
-            <button
-              type="button"
-              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-              className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${
-                view === "settings"
+          {/* ── Collapsible body ──────────────────────────────── */}
+          <div
+            className={`flex min-h-0 flex-1 flex-col transition-opacity duration-200 ${sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+              }`}
+          >
+            {/* Tree scroll area */}
+            <div className="flex-1 overflow-y-auto p-2">
+              {modules.length === 0 && (
+                <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                  <Layers size={28} className="text-gray-300" />
+                  <p className="text-xs text-gray-400">
+                    No modules yet. Add a module to get started.
+                  </p>
+                </div>
+              )}
+
+              {modules.map((mod) => (
+                <div key={mod.id} className="mb-0.5">
+                  {/* Module row */}
+                  <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setModules((prev) =>
+                          prev.map((m) =>
+                            m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                          )
+                        )
+                      }
+                      className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                    >
+                      {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </button>
+
+                    {isEditing("module", mod.id) ? (
+                      renameInput("text-xs font-semibold text-gray-700")
+                    ) : (
+                      <span
+                        onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                        className="flex-1 truncate text-xs font-semibold text-gray-700"
+                        title={mod.title}
+                      >
+                        {mod.title}
+                      </span>
+                    )}
+
+                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <IconBtn title="Add lesson" onClick={() => addLesson(mod.id)}>
+                        <Plus size={12} />
+                      </IconBtn>
+                      <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                        <Pencil size={12} />
+                      </IconBtn>
+                      <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                        <Trash2 size={12} />
+                      </IconBtn>
+                    </div>
+                  </div>
+
+                  {/* Lessons directly under the module */}
+                  {mod.expanded && (
+                    <div className="ml-3 border-l border-gray-200 pl-1.5">
+                      {mod.lessons.map((lesson) => (
+                        <div
+                          key={lesson.id}
+                          className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${activeLessonId === lesson.id ? "bg-indigo-50" : "hover:bg-gray-100"
+                            }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => openLesson(lesson)}
+                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${activeLessonId === lesson.id
+                              ? "font-medium text-indigo-700"
+                              : "text-gray-500"
+                              }`}
+                          >
+                            <FileText size={11} className="flex-shrink-0" />
+                            {isEditing("lesson", lesson.id) ? (
+                              renameInput("text-xs")
+                            ) : (
+                              <span className="truncate" title={lesson.title}>
+                                {lesson.title}
+                              </span>
+                            )}
+                          </button>
+                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                            <IconBtn
+                              title="Rename lesson"
+                              onClick={() => startEdit("lesson", lesson.id, lesson.title)}
+                            >
+                              <Pencil size={12} />
+                            </IconBtn>
+                            <IconBtn title="Delete lesson" danger onClick={() => askDeleteLesson(lesson)}>
+                              <Trash2 size={12} />
+                            </IconBtn>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add lesson to this module */}
+                      <button
+                        type="button"
+                        onClick={() => addLesson(mod.id)}
+                        className="mt-0.5 flex items-center gap-1 py-1 pl-2 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                      >
+                        <Plus size={11} />
+                        Add lesson
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Sidebar footer */}
+            <div className="space-y-2 border-t border-gray-200 p-3">
+              <button
+                type="button"
+                onClick={addModule}
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                <Plus size={14} />
+                Add Module
+              </button>
+              <button
+                type="button"
+                onClick={() => setQbOpen(true)}
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
+              >
+                <FileText size={13} />
+                Create Question Bank
+              </button>
+              <button
+                type="button"
+                onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${view === "settings"
                   ? "bg-indigo-50 text-indigo-700"
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-              }`}
-            >
-              <Settings size={13} />
-              Course Settings
-            </button>
+                  }`}
+              >
+                <Settings size={13} />
+                Course Settings
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -1034,6 +1048,10 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                 createdAt={createdAt}
                 updatedAt={updatedAt}
                 onDeleted={() => router.push("/dashboard")}
+                onDescriptionChange={(desc) => {
+                  setDescription(desc);
+                  scheduleCourseMetaSave({ description: desc });
+                }}
               />
             </div>
           ) : activeLessonId ? (

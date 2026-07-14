@@ -358,10 +358,14 @@ export default function DashboardPage() {
                 )}
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
                   <Clock size={11} />
-                  {new Date(course.updatedAt).toLocaleDateString("en-IN", {
+                  Last edited:{" "}
+                  {new Date(course.updatedAt).toLocaleString("en-IN", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
                   })}
                 </div>
                 <Link
