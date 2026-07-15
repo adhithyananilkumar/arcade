@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
 import { Lock, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 
-function ResetPasswordContent() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -138,8 +138,12 @@ function ResetPasswordContent() {
 }
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-500" size={40} /></div>}>
-      <ResetPasswordContent />
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      </div>
+    }>
+      <ResetPasswordForm />
     </Suspense>
   );
 }
