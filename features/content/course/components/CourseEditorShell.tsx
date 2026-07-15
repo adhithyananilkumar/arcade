@@ -4,15 +4,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
-import { ArcadeEditor } from "@/features/content/editor/components/ArcadeEditor";
-import type { ArcadeEditorHandle } from "@/features/content/editor/components/ArcadeEditor";
-import { VersionHistoryPanel } from "@/features/content/editor/components/VersionHistoryPanel";
+import { ArcadeEditor } from "@/features/content/editor";
+import type { ArcadeEditorHandle } from "@/features/content/editor";
+import { VersionHistoryPanel } from "@/features/content/version-history";
 import {
   createYDoc,
   applyBase64Update,
   encodeStateBase64,
   encodeSnapshotBase64,
-} from "@/features/content/editor/lib/yjs";
+} from "@/features/content/editor";
 import { api } from "@/lib/api";
 import type { CourseResponse, ModuleResponse, LessonResponse } from "@/types/api";
 import type { TiptapDocument } from "@/types/editor";

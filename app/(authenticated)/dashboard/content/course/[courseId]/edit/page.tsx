@@ -1,6 +1,6 @@
 // app/(authenticated)/dashboard/content/course/[courseId]/edit/page.tsx
 import type { Metadata } from "next";
-import { CourseEditorShell } from "@/features/content/course/components/CourseEditorShell";
+import { CourseEditorShell } from "@/features/content/course";
 
 export const metadata: Metadata = {
   title: "Edit Course — Arcade",

@@ -1,11 +1,11 @@
-// features/content/editor/components/VersionHistoryPanel.tsx
+// features/content/version-history/components/VersionHistoryPanel.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { History, X, RotateCcw, Clock, Loader2, Bookmark, Zap, GitCommitVertical } from "lucide-react";
 import { api } from "@/lib/api";
 import type { TiptapDocument } from "@/types/editor";
-import { ArcadeEditor } from "./ArcadeEditor";
+import { ArcadeEditor } from "@/features/content/editor";
 
 // ── Wire types (mirror the backend DTOs) ──────────────────────────────────────
 
