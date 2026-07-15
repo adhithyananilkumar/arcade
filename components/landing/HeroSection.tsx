@@ -147,6 +147,15 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
     let timeout: NodeJS.Timeout;
     let isMounted = true;
 
+    const safeStart = async (def: any) => {
+      if (!isMounted) return;
+      try {
+        await controls.start(def);
+      } catch (err) {
+        // Safe check for unmounted state
+      }
+    };
+
     if (shouldReduceMotion) {
       controls.set({ opacity: 1, scale: 1, rotate: 0 });
       return;
@@ -154,7 +163,7 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
 
     const sequence = async () => {
       // 1. Initial entrance
-      await controls.start({
+      await safeStart({
         rotate: 0,
         scale: 1,
         opacity: 1,
@@ -174,7 +183,7 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
           if (!isMounted) return;
           
           // Rotate backward a little
-          await controls.start({
+          await safeStart({
             rotate: -45,
             transition: { duration: 0.35, ease: "easeOut" },
           });
@@ -182,7 +191,7 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
           if (!isMounted) return;
           
           // Spin forward fast
-          await controls.start({
+          await safeStart({
             rotate: 360,
             transition: { duration: 0.6, ease: "easeInOut" },
           });
@@ -190,7 +199,9 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
           if (!isMounted) return;
           
           // Rest (reset to 0 invisibly for next loop)
-          controls.set({ rotate: 0 });
+          try {
+            controls.set({ rotate: 0 });
+          } catch (e) {}
           playIdle();
         }, delay);
       };
@@ -242,8 +253,19 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
   useEffect(() => {
     let isMounted = true;
 
+    const safeStart = async (def: any) => {
+      if (!isMounted) return;
+      try {
+        await controls.start(def);
+      } catch (err) {
+        // Safe check for unmounted state
+      }
+    };
+
     if (shouldReduceMotion) {
-      controls.set({ scaleX: 1, opacity: 1 });
+      try {
+        controls.set({ scaleX: 1, opacity: 1 });
+      } catch (e) {}
       return;
     }
 
@@ -254,8 +276,10 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
 
       const loop = async () => {
         // Draw in from left
-        controls.set({ transformOrigin: 'left' });
-        await controls.start({
+        try {
+          controls.set({ transformOrigin: 'left' });
+        } catch (e) {}
+        await safeStart({
           scaleX: 1,
           transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] },
         });
@@ -265,8 +289,10 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
         if (!isMounted) return;
 
         // Erase out to the right (hides)
-        controls.set({ transformOrigin: 'right' });
-        await controls.start({
+        try {
+          controls.set({ transformOrigin: 'right' });
+        } catch (e) {}
+        await safeStart({
           scaleX: 0,
           transition: { duration: 0.8, ease: "easeInOut" },
         });
