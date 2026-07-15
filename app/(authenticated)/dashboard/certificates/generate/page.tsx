@@ -8,9 +8,26 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { CertificateService } from '@/services/certificate.service';
 
+function inferCourseNameFromUrl(input: string): string {
+  try {
+    const parsed = new URL(input.trim());
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    const leaf = segments[segments.length - 1] || '';
+    if (!leaf) return '';
+    return decodeURIComponent(leaf)
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
+  } catch {
+    return '';
+  }
+}
+
 export default function GenerateCertificatePage() {
   const [participantName, setParticipantName] = useState('');
   const [courseName, setCourseName] = useState('');
+  const [courseUrl, setCourseUrl] = useState('');
   const [isMining, setIsMining] = useState(false);
   const [miningStep, setMiningStep] = useState(0);
 
@@ -32,6 +49,11 @@ export default function GenerateCertificatePage() {
       return;
     }
 
+    let resolvedCourseUrl = courseUrl.trim();
+    if (!resolvedCourseUrl) {
+      resolvedCourseUrl = 'https://arcade.ajce.in/courses/' + encodeURIComponent(courseName.trim().toLowerCase().replace(/\s+/g, '-'));
+    }
+
     setIsMining(true);
     setMiningStep(0);
 
@@ -48,12 +70,10 @@ export default function GenerateCertificatePage() {
     }, 900);
 
     try {
-      const generatedCourseUrl = 'https://arcade.ajce.in/courses/' + encodeURIComponent(courseName.trim().toLowerCase().replace(/\s+/g, '-'));
-
       const response = await CertificateService.generate({
         participantName: participantName.trim(),
         courseName: courseName.trim(),
-        courseUrl: generatedCourseUrl,
+        courseUrl: resolvedCourseUrl,
       });
 
       // Complete mining animation steps
@@ -130,6 +150,35 @@ export default function GenerateCertificatePage() {
                   required
                   className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Course URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://arcade.ajce.in/courses/full-stack-web-development"
+                  value={courseUrl}
+                  onChange={(e) => {
+                    const nextUrl = e.target.value;
+                    setCourseUrl(nextUrl);
+                    if (!courseName.trim()) {
+                      const inferred = inferCourseNameFromUrl(nextUrl);
+                      if (inferred) setCourseName(inferred);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!courseName.trim()) {
+                      const inferred = inferCourseNameFromUrl(e.target.value);
+                      if (inferred) setCourseName(inferred);
+                    }
+                  }}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+                <p className="mt-1 text-[11px] text-gray-500">
+                  If course name is empty, we auto-fill it from the URL slug.
+                </p>
               </div>
 
               <div className="pt-2">

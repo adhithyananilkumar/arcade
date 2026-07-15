@@ -6,20 +6,34 @@ import { motion } from 'framer-motion';
 import {
   ShieldCheck,
   ShieldX,
-  Loader2,
   CheckCircle2,
   ExternalLink,
-  Copy,
-  Check,
 } from 'lucide-react';
 import { CertificateService, VerificationResult } from '@/services/certificate.service';
 import CertificateTemplate from '@/components/certificates/CertificateTemplate';
+
+function shortenHash(value: string, head = 8, tail = 8): string {
+  if (!value) return '';
+  if (value.length <= head + tail + 3) return value;
+  return `${value.slice(0, head)}...${value.slice(-tail)}`;
+}
+
+function compactVerifyLink(link: string): string {
+  try {
+    const parsed = new URL(link);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1] || '';
+    if (!last) return link;
+    return `${parsed.origin}/verify/${shortenHash(last, 8, 8)}`;
+  } catch {
+    return link;
+  }
+}
 
 export default function VerifyCertificatePage() {
   const { hash } = useParams<{ hash: string }>();
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const verify = async () => {
@@ -44,12 +58,7 @@ export default function VerifyCertificatePage() {
   }, [hash]);
 
   const verifyUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(verifyUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const verifyUrlDisplay = verifyUrl ? compactVerifyLink(verifyUrl) : '';
 
   const formattedDate = result?.certificate?.issuedAt
     ? new Date(result.certificate.issuedAt).toLocaleDateString('en-US', {
@@ -68,6 +77,9 @@ export default function VerifyCertificatePage() {
         </div>
         <span className="text-lg font-extrabold tracking-widest text-indigo-900 uppercase">Arcade</span>
         <span className="ml-2 text-sm text-gray-400 font-medium">· Certificate Verification</span>
+        <span className="ml-auto hidden sm:inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[11px] font-mono text-indigo-700">
+          Ref {shortenHash(hash as string, 8, 8)}
+        </span>
       </header>
 
       {loading ? (
@@ -169,9 +181,6 @@ export default function VerifyCertificatePage() {
 
                     {/* Credential info rows */}
                     <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
-                      {result.isValid && result.blockIndex !== null && (
-                        <InfoRow label="Credential ID" value={`${hash.slice(0, 10)}…${hash.slice(-6)}`} mono />
-                      )}
                       {formattedDate && <InfoRow label="Issued" value={formattedDate} />}
                     </div>
                   </div>
@@ -223,7 +232,9 @@ export default function VerifyCertificatePage() {
                         This certificate is immutably recorded on the Arcade Blockchain Ledger.
                         Any modification to the participant name, course, or URL will invalidate the cryptographic signature.
                         Verify at{' '}
-                        <span className="text-indigo-600 font-mono break-all">{verifyUrl}</span>
+                        <span className="text-indigo-600 font-mono" title={verifyUrl}>
+                          {verifyUrlDisplay}
+                        </span>
                       </p>
                     </div>
                   )}
@@ -257,15 +268,6 @@ function InfoRow({ label, value, mono = false }: { label: string; value: string;
     <div className="flex items-start justify-between gap-4">
       <span className="text-gray-500 shrink-0">{label}</span>
       <span className={`text-gray-800 font-medium text-right ${mono ? 'font-mono text-xs' : ''}`}>{value}</span>
-    </div>
-  );
-}
-
-function LedgerRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 text-gray-600">
-      <span className="text-gray-400 shrink-0">{label}</span>
-      <span className="text-gray-700 truncate">{value}</span>
     </div>
   );
 }

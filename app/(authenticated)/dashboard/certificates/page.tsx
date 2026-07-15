@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Award, Plus, Search, Eye, Copy, Check, ShieldCheck, Calendar, ArrowRight, Loader2 } from 'lucide-react';
+import { Award, Plus, Search, Eye, ShieldCheck, Calendar, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { CertificateService, Certificate } from '@/services/certificate.service';
@@ -11,7 +11,6 @@ export default function CertificatesPage() {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCertificates = async () => {
@@ -27,13 +26,6 @@ export default function CertificatesPage() {
     };
     fetchCertificates();
   }, []);
-
-  const handleCopy = (hash: string) => {
-    navigator.clipboard.writeText(hash);
-    setCopiedId(hash);
-    toast.success('Blockchain hash copied to clipboard');
-    setTimeout(() => setCopiedId(null), 2000);
-  };
 
   const filteredCertificates = certificates.filter(
     (cert) =>
@@ -113,7 +105,6 @@ export default function CertificatesPage() {
                   <th scope="col" className="px-6 py-4">Participant</th>
                   <th scope="col" className="px-6 py-4">Course Details</th>
                   <th scope="col" className="px-6 py-4">Issue Date</th>
-                  <th scope="col" className="px-6 py-4">Blockchain Hash</th>
                   <th scope="col" className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -134,7 +125,7 @@ export default function CertificatesPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900">{cert.participantName}</p>
-                            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">ID: {cert.id.slice(0, 8)}...</p>
+                            <p className="text-[11px] text-gray-500">Verified learner</p>
                           </div>
                         </div>
                       </td>
@@ -159,25 +150,6 @@ export default function CertificatesPage() {
                         <div className="flex items-center gap-1.5">
                           <Calendar size={14} className="text-gray-400" />
                           <span>{new Date(cert.issuedAt).toLocaleDateString()}</span>
-                        </div>
-                      </td>
-
-                      {/* Blockchain Hash */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-gray-500 bg-gray-50 border border-gray-150 rounded px-2 py-0.5 select-all">
-                            {cert.blockchainHash.slice(0, 10)}...{cert.blockchainHash.slice(-6)}
-                          </span>
-                          <button
-                            onClick={() => handleCopy(cert.blockchainHash)}
-                            className="p-1 rounded-md text-gray-400 hover:bg-gray-150 hover:text-gray-700 transition-all duration-150"
-                          >
-                            {copiedId === cert.blockchainHash ? (
-                              <Check size={14} className="text-green-600" />
-                            ) : (
-                              <Copy size={14} />
-                            )}
-                          </button>
                         </div>
                       </td>
 
