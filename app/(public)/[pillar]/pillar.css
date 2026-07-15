@@ -36,6 +36,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-top: 80px;
 }
 
 /* Map active colors dynamically based on parent attribute */

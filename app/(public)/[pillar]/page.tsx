@@ -40,6 +40,8 @@ import {
   Settings
 } from "lucide-react";
 import "./pillar.css";
+import HeroNav from "@/components/landing/HeroNav";
+import "@/styles/landing.css";
 
 // ----------------------------------------------------
 // Data Structure for the Six Pillars
@@ -708,23 +710,7 @@ export default function PillarPage({
   return (
     <div className="pillar-page" data-pillar={activePillar.slug}>
       {/* ---------- Header Navigation ---------- */}
-      <header className="site">
-        <Link href="/" className="brand">
-          <div className="brand-mark"></div>
-          <span className="brand-name">Arcade</span>
-        </Link>
-        <nav className="site-nav">
-          <Link href="/">Home</Link>
-          <span className="current" style={{ cursor: "default" }}>Explore</span>
-          <Link href="/courses">Features</Link>
-          <Link href="/pricing">Pricing</Link>
-          <Link href="/docs">Docs</Link>
-        </nav>
-        <div className="header-actions">
-          <Link href="/login" className="link-btn">Sign in</Link>
-          <Link href="/register" className="pill-btn">Get started</Link>
-        </div>
-      </header>
+      <HeroNav />
 
       {/* ---------- Breadcrumb ---------- */}
       <div className="breadcrumb">

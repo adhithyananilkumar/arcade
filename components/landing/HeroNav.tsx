@@ -7,8 +7,8 @@ import Link from "next/link";
 const navLinks = [
   { label: "Explore", href: "/study" },
   { label: "Forums", href: "/forum" },
-  { label: "For Colleges", href: "#colleges" },
-  { label: "Docs", href: "#docs" },
+  { label: "For Colleges", href: "/#colleges" },
+  { label: "Docs", href: "/docs" },
 ];
 
 export default function HeroNav() {
