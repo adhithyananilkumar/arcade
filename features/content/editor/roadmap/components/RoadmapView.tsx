@@ -1,125 +1,107 @@
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { useRoadmap } from "../hooks/useRoadmap";
-import { useRoadmapAutoSave } from "../hooks/useRoadmapAutoSave";
-import { Loader2, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
-import { RoadmapCanvas } from "./RoadmapCanvas";
-import { useCallback } from "react";
+import { Loader2, AlertCircle, Maximize2, Route } from "lucide-react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { RoadmapStudio } from "./RoadmapStudio";
 import type { RoadmapData } from "../types";
 
-function RoadmapViewInner({ roadmap }: { roadmap: RoadmapData }) {
-  const handleSaveSuccess = useCallback((updated: RoadmapData) => {
-    // We could update local roadmap state here if we wanted to reflect new timestamps
-    // For now we just let the hook manage it internally.
-  }, []);
-
-  const { saveState, errorMessage, scheduleSave, manualSave, forceOverride } = useRoadmapAutoSave(
-    roadmap,
-    handleSaveSuccess
-  );
+function RoadmapPreviewCard({ roadmap, onOpenStudio }: { roadmap: RoadmapData, onOpenStudio: () => void }) {
+  // Parse graph to get basic stats
+  let topicsCount = 0;
+  let edgesCount = 0;
+  try {
+    const graph = JSON.parse(roadmap.graphJson || '{"nodes":[],"edges":[]}');
+    topicsCount = graph.nodes?.length || 0;
+    edgesCount = graph.edges?.length || 0;
+  } catch (e) {
+    // Ignore parse errors for preview
+  }
 
   return (
-    <>
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h3 className="font-bold text-gray-900 text-lg">{roadmap.title}</h3>
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <CheckCircle2 size={12} className="mr-1" /> Published
-            </span>
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white flex justify-between items-start">
+        <div className="flex gap-4">
+          <div className="bg-indigo-100 text-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center shrink-0">
+            <Route size={24} />
           </div>
-          {roadmap.description && (
-            <p className="text-sm text-gray-500">{roadmap.description}</p>
-          )}
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{roadmap.title}</h3>
+            {roadmap.description ? (
+              <p className="text-sm text-gray-500 line-clamp-2 max-w-md">{roadmap.description}</p>
+            ) : (
+              <p className="text-sm text-gray-400 italic">No description</p>
+            )}
+          </div>
         </div>
-        
-        <div className="flex flex-col items-end text-xs text-gray-500 gap-1">
-          <span className="flex items-center gap-1">
-            <Clock size={12} />
-            Last Saved: {new Date(roadmap.updatedAt).toLocaleTimeString()}
-          </span>
-          <span>By {roadmap.createdByName}</span>
+        <button 
+          onClick={onOpenStudio}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+        >
+          <Maximize2 size={16} />
+          Open Roadmap Studio
+        </button>
+      </div>
+      <div className="px-6 py-3 bg-gray-50 flex items-center gap-6 text-sm text-gray-600">
+        <div className="flex flex-col">
+          <span className="font-semibold text-gray-900">{topicsCount}</span>
+          <span className="text-xs text-gray-500 uppercase tracking-wider">Topics</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="font-semibold text-gray-900">{edgesCount}</span>
+          <span className="text-xs text-gray-500 uppercase tracking-wider">Connections</span>
+        </div>
+        <div className="w-px h-8 bg-gray-200" />
+        <div className="flex flex-col">
+          <span className="font-semibold text-gray-900">{new Date(roadmap.updatedAt).toLocaleDateString()}</span>
+          <span className="text-xs text-gray-500 uppercase tracking-wider">Last Updated</span>
         </div>
       </div>
-
-      {saveState === 'conflict' && (
-        <div className="bg-amber-50 border-y border-amber-200 px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-amber-800 text-sm">
-            <AlertCircle size={16} />
-            <span><strong>Conflict:</strong> This roadmap was modified in another session.</span>
-          </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-3 py-1 bg-white border border-amber-200 text-amber-700 rounded text-xs font-medium hover:bg-amber-50"
-            >
-              Reload Latest
-            </button>
-            <button 
-              // Passing empty string here as a hack, forceOverride actually takes the latest JSON from pendingData
-              onClick={() => {
-                const dummyJson = JSON.stringify({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
-                forceOverride(dummyJson); 
-              }}
-              className="px-3 py-1 bg-amber-600 text-white rounded text-xs font-medium hover:bg-amber-700"
-            >
-              Force Override
-            </button>
-          </div>
-        </div>
-      )}
-
-      {saveState === 'error' && (
-        <div className="bg-red-50 border-y border-red-200 px-6 py-2 flex items-center gap-2 text-red-700 text-xs font-medium">
-          <AlertCircle size={14} />
-          {errorMessage || 'Failed to save roadmap changes.'}
-        </div>
-      )}
-
-      <div className="w-full bg-gray-50">
-        <RoadmapCanvas 
-          roadmap={roadmap} 
-          saveState={saveState}
-          onGraphChange={scheduleSave}
-          onManualSave={manualSave}
-        />
-      </div>
-    </>
+    </div>
   );
 }
 
 export function RoadmapView({ node }: NodeViewProps) {
   const roadmapId = node.attrs.roadmapId;
   const { roadmap, loading, error } = useRoadmap(roadmapId);
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
 
   return (
     <NodeViewWrapper className="roadmap-node my-6">
-      <div
-        className="rounded-xl border border-gray-200 bg-gray-50 shadow-sm overflow-hidden flex flex-col"
-        contentEditable={false}
-      >
+      <div contentEditable={false}>
         {loading && (
-          <div className="flex items-center justify-center p-12 text-gray-500 bg-white">
+          <div className="flex items-center justify-center p-8 text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
             <Loader2 size={24} className="animate-spin mr-2" />
-            <span>Loading Roadmap Studio...</span>
+            <span>Loading Roadmap Preview...</span>
           </div>
         )}
 
         {error && (
-          <div className="flex items-center justify-center p-12 bg-white">
-            <div className="flex items-center gap-2 text-red-500 bg-red-50 p-4 rounded-lg">
-              <AlertCircle size={20} />
-              <span>Failed to load roadmap. Ensure the backend is running and you have access.</span>
-            </div>
+          <div className="flex items-center gap-2 text-red-500 bg-red-50 p-6 rounded-xl border border-red-200">
+            <AlertCircle size={20} />
+            <span>Failed to load roadmap preview.</span>
           </div>
         )}
 
         {!loading && !error && !roadmap && (
-          <div className="flex items-center justify-center p-12 bg-white text-gray-500">
+          <div className="flex items-center justify-center p-8 bg-gray-50 text-gray-500 rounded-xl border border-gray-200">
             <span>Invalid roadmap ID or roadmap not found.</span>
           </div>
         )}
 
-        {roadmap && <RoadmapViewInner roadmap={roadmap} />}
+        {roadmap && (
+          <>
+            <RoadmapPreviewCard roadmap={roadmap} onOpenStudio={() => setIsStudioOpen(true)} />
+            
+            {isStudioOpen && document.body && createPortal(
+              <RoadmapStudio 
+                roadmap={roadmap} 
+                onClose={() => setIsStudioOpen(false)} 
+              />,
+              document.body
+            )}
+          </>
+        )}
       </div>
     </NodeViewWrapper>
   );
