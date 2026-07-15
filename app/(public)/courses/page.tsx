@@ -4,6 +4,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import HeroNav from "@/components/landing/HeroNav";
 import Link from "next/link";
+import { ArrowLeft, Clock, Calendar, FileText, ChevronRight } from "lucide-react";
+import "@/styles/landing.css";
 
 const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -238,268 +240,203 @@ function CoursesContent() {
   if (activeCategory) {
     const activeData = CATEGORY_DATA[activeCategory] || CATEGORY_DATA["Computer Science"];
     return (
-      <div
-        style={{
-          background: "linear-gradient(to bottom, #FFFFFF 0%, #F9F9F6 100%)",
-          minHeight: "100vh",
-          color: "#000000",
-          fontFamily: "'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-        }}
-      >
+      <div className="landing-root" style={{ background: "linear-gradient(to bottom, #FFFFFF 0%, #F8FAFC 50%, #F1F5F9 100%)", minHeight: "100vh" }}>
         <HeroNav />
 
-        {/* Dynamic Category View (Full Screen Layout) */}
-        <main
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-            padding: "110px 48px 80px",
-            display: "grid",
-            gridTemplateColumns: "300px 1fr",
-            gap: "60px",
-          }}
-          className="lp-courses-layout"
-        >
-          {/* Sidebar */}
-          <aside style={{ alignSelf: "start", position: "sticky", top: "96px" }}>
+        <main className="l-courses-detail">
+          {/* Top Bar Navigation & Back to Explore */}
+          <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }}>
             <button
               onClick={handleGoBackToExplore}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "0 0 20px",
-                fontSize: "0.9rem",
-                fontWeight: "700",
-                color: "#6B7280",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
+              className="l-courses-detail__back"
             >
-              ← Back to Explore
+              <ArrowLeft size={16} /> Back to Explore
             </button>
-            <h3
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: "700",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "#6B7280",
-                marginBottom: "20px"
-              }}
-            >
-              Departments
-            </h3>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px"
-              }}
-            >
-              {categoriesList.map((item) => {
-                const isActive = activeCategory === item;
-                const catColor = CATEGORY_DATA[item].colors.primary;
-                return (
-                  <li key={item}>
-                    <button
-                      onClick={() => handleCategorySwitch(item)}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        background: isActive ? CATEGORY_DATA[item].colors.secondary : "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "10px 14px",
-                        borderRadius: "8px",
-                        fontSize: "0.9rem",
-                        fontWeight: isActive ? "700" : "500",
-                        color: isActive ? catColor : "#4B5563",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {isActive && (
-                        <span
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            background: catColor,
-                            boxShadow: `0 0 6px ${catColor}`
-                          }}
-                        />
-                      )}
-                      {item}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </aside>
+          </div>
 
-          {/* Dynamic Content */}
-          <section style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-            <div>
-              <h1
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: 800,
-                  color: "#000000",
-                  marginBottom: "12px",
-                  letterSpacing: "-0.02em"
-                }}
-              >
-                {activeCategory} Courses
+          {/* Department Hero Banner */}
+          <div
+            className="l-courses-detail__hero"
+            style={{ background: activeData.gradient }}
+          >
+            {/* Hero Left Content */}
+            <div className="l-courses-detail__hero-content">
+              <span className="l-courses-detail__badge">
+                Department Profile
+              </span>
+              <h1 className="l-courses-detail__title">
+                {activeCategory}
               </h1>
-              <p
-                style={{
-                  fontSize: "1.05rem",
-                  color: "#4B5563",
-                  lineHeight: "1.6",
-                  maxWidth: "860px",
-                  margin: 0
-                }}
-              >
-                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to build your skills.
+              <p className="l-courses-detail__desc">
+                {activeData.desc}
               </p>
             </div>
 
-            {/* Courses section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
+            {/* Hero Right Stats Card */}
+            <div className="l-courses-detail__stats">
+              <div className="l-courses-detail__stat-item">
+                <span className="l-courses-detail__stat-label">Courses</span>
+                <span className="l-courses-detail__stat-val">{activeData.courses.length}</span>
+              </div>
+              <div className="l-courses-detail__stat-item">
+                <span className="l-courses-detail__stat-label">Bootcamps</span>
+                <span className="l-courses-detail__stat-val">{activeData.bootcamps.length}</span>
+              </div>
+              <div className="l-courses-detail__stat-footer">
+                <FileText size={16} /> {activeData.resources.length} Guides & Docs
+              </div>
+            </div>
+          </div>
+
+          {/* Courses section */}
+          <div>
+            <div className="l-courses-detail__section-header">
+              <div className="l-courses-detail__indicator" style={{ background: activeData.colors.primary }} />
+              <h2 className="l-courses-detail__section-title">
                 Available Courses ({activeData.courses.length})
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
-                {activeData.courses.map((course) => (
-                  <div
-                    key={course.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      padding: "24px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "180px",
-                      transition: "transform 0.2s, border-color 0.2s",
-                      cursor: "pointer"
-                    }}
-                    className="lp-course-card"
-                  >
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, background: activeData.colors.secondary, padding: "2px 8px", borderRadius: "4px" }}>
-                          {course.level}
-                        </span>
-                        <span style={{ fontSize: "0.75rem", color: "#6B7280" }}>{course.duration}</span>
-                      </div>
-                      <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                        {course.title}
-                      </h3>
-                      <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: 0 }}>
-                        {course.desc}
-                      </p>
-                    </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary }}>Enroll Now →</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
+            <div className="l-courses-detail__grid">
+              {activeData.courses.map((course) => (
+                <div
+                  key={course.title}
+                  className="l-courses-detail__card"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(226, 232, 240, 0.8)";
+                  }}
+                >
+                  <div>
+                    <div className="l-courses-detail__card-header">
+                      <span
+                        className="l-courses-detail__card-badge"
+                        style={{
+                          color: activeData.colors.primary,
+                          background: activeData.colors.secondary
+                        }}
+                      >
+                        {course.level}
+                      </span>
+                      <span className="l-courses-detail__card-duration">
+                        <Clock size={12} /> {course.duration}
+                      </span>
+                    </div>
+                    <h3 className="l-courses-detail__card-title">
+                      {course.title}
+                    </h3>
+                    <p className="l-courses-detail__card-desc">
+                      {course.desc}
+                    </p>
+                  </div>
+                  <div className="l-courses-detail__card-action" style={{ color: activeData.colors.primary }}>
+                    <span>Enroll Now</span>
+                    <ChevronRight size={16} style={{ marginLeft: "4px" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            {/* Bootcamps section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
+          {/* Bootcamps section */}
+          <div>
+            <div className="l-courses-detail__section-header">
+              <div className="l-courses-detail__indicator" style={{ background: activeData.colors.primary }} />
+              <h2 className="l-courses-detail__section-title">
                 Practical Bootcamps & Workshops
               </h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {activeData.bootcamps.map((bootcamp) => (
-                  <div
-                    key={bootcamp.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "10px",
-                      padding: "16px 20px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      transition: "border-color 0.2s"
-                    }}
-                    className="lp-course-card"
-                  >
-                    <div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000" }}>{bootcamp.title}</div>
-                      <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "2px" }}>
-                        {bootcamp.type} • {bootcamp.duration} • <span style={{ color: activeData.colors.primary }}>{bootcamp.date}</span>
-                      </div>
-                    </div>
-                    <button
-                      style={{
-                        background: "transparent",
-                        border: `1.5px solid ${activeData.colors.primary}`,
-                        color: activeData.colors.primary,
-                        padding: "6px 16px",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        fontWeight: "700",
-                        cursor: "pointer",
-                        transition: "background 0.2s"
-                      }}
-                    >
-                      Register Seat
-                    </button>
-                  </div>
-                ))}
-              </div>
             </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {activeData.bootcamps.map((bootcamp) => (
+                <div
+                  key={bootcamp.title}
+                  className="l-courses-detail__row"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(226, 232, 240, 0.8)";
+                  }}
+                >
+                  <div>
+                    <div className="l-courses-detail__row-meta">
+                      <span
+                        className="l-courses-detail__row-badge"
+                        style={{
+                          color: activeData.colors.primary,
+                          background: activeData.colors.secondary
+                        }}
+                      >
+                        {bootcamp.type}
+                      </span>
+                      <span className="l-courses-detail__row-info">
+                        <Clock size={12} /> {bootcamp.duration}
+                      </span>
+                      <span className="l-courses-detail__row-info" style={{ color: activeData.colors.primary }}>
+                        <Calendar size={12} /> {bootcamp.date}
+                      </span>
+                    </div>
+                    <div className="l-courses-detail__row-title">
+                      {bootcamp.title}
+                    </div>
+                    <p className="l-courses-detail__row-desc">
+                      {bootcamp.desc}
+                    </p>
+                  </div>
 
-            {/* Resources section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
+                  <button
+                    className="l-courses-detail__row-btn"
+                    style={{
+                      background: activeData.colors.primary,
+                      boxShadow: `0 4px 12px ${activeData.colors.primary}26`
+                    }}
+                  >
+                    Register Seat
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Resources section */}
+          <div>
+            <div className="l-courses-detail__section-header">
+              <div className="l-courses-detail__indicator" style={{ background: activeData.colors.primary }} />
+              <h2 className="l-courses-detail__section-title">
                 Resource Libraries
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-                {activeData.resources.map((doc) => (
-                  <div
-                    key={doc.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "120px"
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#6B7280", textTransform: "uppercase", marginBottom: "8px" }}>
-                        {doc.type}
-                      </div>
-                      <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000", margin: "0 0 8px", lineHeight: "1.4" }}>
-                        {doc.title}
-                      </h3>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>{doc.readTime}</span>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer", textDecoration: "underline" }}>Read Link</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
-          </section>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" }}>
+              {activeData.resources.map((doc) => (
+                <div
+                  key={doc.title}
+                  className="l-courses-detail__resource-card"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(226, 232, 240, 0.8)";
+                  }}
+                >
+                  <div>
+                    <div className="l-courses-detail__resource-type">
+                      <FileText size={12} /> {doc.type}
+                    </div>
+                    <h3 className="l-courses-detail__resource-title">
+                      {doc.title}
+                    </h3>
+                  </div>
+                  <div className="l-courses-detail__resource-footer">
+                    <span className="l-courses-detail__resource-time">{doc.readTime}</span>
+                    <span className="l-courses-detail__resource-link" style={{ color: activeData.colors.primary }}>
+                      Read Guide <ChevronRight size={12} />
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </main>
       </div>
     );
@@ -508,6 +445,7 @@ function CoursesContent() {
   // RENDER OPTION B: Main Explore Hub Dashboard
   return (
     <div
+      className="explore-hub-page"
       style={{
         background: "linear-gradient(to bottom, #FFFFFF 0%, #F9F9F6 100%)",
         minHeight: "100vh",
@@ -518,7 +456,7 @@ function CoursesContent() {
       <HeroNav />
 
       <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "120px 48px 100px" }}>
-        
+
         {/* Title and Intro */}
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <h1
@@ -666,8 +604,8 @@ function CoursesContent() {
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
             type="text"
