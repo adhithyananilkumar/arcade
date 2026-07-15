@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 
 const navLinks = [
-  { label: "Explore", href: "/courses" },
+  { label: "Explore", href: "/study" },
   { label: "Forums", href: "/forum" },
   { label: "For Colleges", href: "#colleges" },
   { label: "Docs", href: "#docs" },
@@ -48,7 +48,7 @@ export default function HeroNav() {
       transition: shouldReduceMotion
         ? { duration: 0.3 }
         : {
-            type: "spring",
+            type: "spring" as const,
             stiffness: 100,
             damping: 15,
             delay: 0.1, // slightly reduced delay for immediate loading responsiveness
@@ -67,7 +67,7 @@ export default function HeroNav() {
   return (
     <motion.nav
       className="l-nav"
-      variants={navVariant}
+      variants={navVariant as any}
       initial="hidden"
       animate={isHidden ? "scrollHidden" : "visible"}
       role="navigation"

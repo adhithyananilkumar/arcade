@@ -468,7 +468,7 @@ export default function HeroSection() {
             animate="visible"
           >
             <Link
-              href="/courses"
+              href="/study"
               className="l-btn l-btn--solid-ink"
               id="hero-cta-explore"
             >

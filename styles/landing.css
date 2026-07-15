@@ -386,9 +386,9 @@
   box-shadow: 0 12px 32px -8px rgba(20, 23, 31, 0.08);
   display: grid;
   grid-template-columns: 1.15fr 1.2fr;
-  gap: 3.5rem;
+  gap: 2.5rem;
   align-items: center;
-  padding: 3.5rem;
+  padding: 2.25rem 2.75rem;
   width: 100%;
   max-width: 1200px;
   position: relative;
@@ -421,7 +421,7 @@
   font-weight: 600;
   padding: 6px 14px;
   border-radius: 99px;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
   width: fit-content;
   letter-spacing: 0.01em;
 }
@@ -442,14 +442,14 @@
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: #12141C;
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 0.75rem 0;
 }
 
 .l-showcase__subtitle-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .l-showcase__subtitle-icon {
@@ -469,7 +469,7 @@
   color: #4b5563;
   font-size: 15.5px;
   line-height: 1.6;
-  margin: 0 0 2.5rem 0;
+  margin: 0 0 1.5rem 0;
 }
 
 .l-showcase__btn {

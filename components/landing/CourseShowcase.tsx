@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Play, VolumeX, Settings, Share2, Clock, Sparkles } from "lucide-react";
+import { Play, VolumeX, Settings, Share2, Clock } from "lucide-react";
+import Link from "next/link";
 
 export default function CourseShowcase() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -25,9 +26,6 @@ export default function CourseShowcase() {
           </h2>
 
           <div className="l-showcase__subtitle-wrap">
-            <span className="l-showcase__subtitle-icon">
-              <Sparkles size={16} />
-            </span>
             <span className="l-showcase__subtitle-text">Our Mission</span>
           </div>
 
@@ -35,9 +33,9 @@ export default function CourseShowcase() {
             Arcade started with a simple idea: to build a unified online learning and collaboration ecosystem for Amal Jyothi College. We bring together high-quality courses, interactive workshops, student-led forums, and certified learning achievements under one roof. Designed by builders, for builders — Arcade is here to help you level up your skills, discover new opportunities, and connect with technical communities.
           </p>
 
-          <a href="/courses" className="l-showcase__btn">
+          <Link href="/study" className="l-showcase__btn">
             Explore Courses
-          </a>
+          </Link>
         </div>
 
         {/* Right Column: Custom Interactive Video Player */}

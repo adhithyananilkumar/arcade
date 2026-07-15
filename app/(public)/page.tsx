@@ -3,6 +3,7 @@ import HeroNav from "@/components/landing/HeroNav";
 import HeroSection from "@/components/landing/HeroSection";
 import LogoStrip from "@/components/landing/LogoStrip";
 import CourseShowcase from "@/components/landing/CourseShowcase";
+import Footer from "@/components/landing/Footer";
 import "@/styles/landing.css";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function Home() {
       <HeroSection />
       <LogoStrip />
       <CourseShowcase />
+      <Footer />
     </div>
   );
 }
