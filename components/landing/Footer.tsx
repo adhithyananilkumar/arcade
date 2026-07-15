@@ -5,10 +5,6 @@ export default function Footer() {
   return (
     <div className="arc-footer-wrapper">
       <footer className="arc-footer">
-        {/* Glow meshes for organic light */}
-        <div className="arc-footer__glow arc-footer__glow--purple" />
-        <div className="arc-footer__glow arc-footer__glow--cyan" />
-
         <div className="arc-footer__top">
           <div className="arc-footer__brand-col">
             <div className="arc-footer__brand-row">
@@ -29,7 +25,7 @@ export default function Footer() {
             </p>
             <div className="arc-footer__cta-wrap">
               <Link className="arc-footer__cta" href="/register">
-                Get started
+                Get started with Arcade
                 <svg
                   className="arc-footer__cta-icon"
                   width="16"
@@ -80,8 +76,13 @@ export default function Footer() {
         </div>
 
         <div className="arc-footer__bottom">
-          <div className="arc-footer__legal">
-            © 2026 Arcade — AJCE. All rights reserved.
+          <div className="arc-footer__legal-row">
+            <span className="arc-footer__legal">
+              © 2026 Arcade — AJCE. All rights reserved.
+            </span>
+            <span className="arc-footer__built-by">
+              Built with 💜 by the Arcade team
+            </span>
           </div>
           <div className="arc-footer__watermark">arcade.</div>
         </div>
