@@ -29,6 +29,14 @@ export class CertificateService {
   }
 
   /**
+   * Issues a certificate for a demo course using the authenticated user's profile name.
+   */
+  static async issueFromDemoCourse(data: { courseName: string; courseUrl: string; courseId?: string }): Promise<Certificate> {
+    const response = await apiClient.post<Certificate>('/certificates/issue-from-demo', data);
+    return response.data;
+  }
+
+  /**
    * Retrieves all certificates.
    */
   static async getAll(): Promise<Certificate[]> {
