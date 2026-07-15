@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
-import { Suspense } from 'react';
 import { Lock, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 
 function ResetPasswordForm() {
@@ -137,7 +136,6 @@ function ResetPasswordForm() {
     </div>
   );
 }
-
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={

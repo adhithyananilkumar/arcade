@@ -18,6 +18,7 @@ export function IntroProvider({ children }: IntroProviderProps) {
   const [showApp, setShowApp] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     // DEV: always show intro on every reload
     setShowIntro(true);

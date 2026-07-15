@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FcGoogle } from 'react-icons/fc';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import styles from './AuthForm.module.css';
@@ -26,6 +26,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleModeChange = (newMode: 'login' | 'signup') => {
     setMode(newMode);
@@ -80,7 +81,10 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       if (mode === 'login') {
         const { user, accessToken } = await AuthService.login({ email, password });
         setAuth(user, accessToken);
-        router.push('/dashboard');
+        
+        const returnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl');
+        const safePath = returnTo?.startsWith('/') ? returnTo : '/dashboard';
+        router.push(safePath);
       } else {
         await AuthService.register({ firstName, lastName, email, password });
         setShowSuccess(true);
