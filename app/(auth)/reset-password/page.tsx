@@ -5,9 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
+import { Suspense } from 'react';
 import { Lock, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -134,5 +135,17 @@ export default function ResetPasswordPage() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

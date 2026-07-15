@@ -3,16 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Organizations', href: '/dashboard/organizations', icon: Building2 },
-  { name: 'Sessions', href: '/dashboard/sessions', icon: Users },
-  { name: 'Audit Logs', href: '/dashboard/audit', icon: ShieldAlert },
+  { name: 'Profile', href: '/dashboard/profile', icon: User },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -33,20 +31,22 @@ export default function DashboardSidebar() {
   ];
 
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-gray-200">
-      <div className="flex h-16 items-center px-6 border-b border-gray-100">
-        <Link href="/dashboard" className="flex items-center gap-2">
+    <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
+      {/* Brand Logo Header */}
+      <div className="flex h-16 items-center px-6 border-b border-slate-50/50">
+        <Link href="/dashboard" className="flex items-center gap-2 group">
           <Image
             src="/arcade.svg"
             alt="Arcade"
             width={90}
             height={26}
-            className="h-6 w-auto"
+            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      {/* Navigation Area */}
+      <nav className="flex-grow overflow-y-auto space-y-1.5 px-4 py-6 scrollbar-thin scrollbar-thumb-slate-100">
         {dynamicNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -55,41 +55,31 @@ export default function DashboardSidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'text-indigo-600 bg-indigo-50/50'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
+              className="relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 group"
             >
               {isActive && (
                 <motion.div
                   layoutId="sidebar-active-indicator"
-                  className="absolute left-0 top-0 bottom-0 w-1 rounded-r-full bg-indigo-600"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/40 border-l-[3px] border-indigo-600 shadow-[inset_0_1px_2px_rgba(99,102,241,0.03)]"
                   initial={false}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
               <Icon
                 size={18}
-                className={`transition-colors duration-200 ${
-                  isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'
+                className={`relative z-10 transition-colors duration-200 ${
+                  isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'
                 }`}
               />
-              {item.name}
+              <span className={`relative z-10 transition-colors duration-200 ${
+                isActive ? 'text-indigo-900 font-semibold' : 'text-slate-600 group-hover:text-slate-900'
+              }`}>
+                {item.name}
+              </span>
             </Link>
           );
         })}
       </nav>
-      
-      <div className="p-4 border-t border-gray-100">
-        <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-4 text-white shadow-md">
-          <h4 className="text-sm font-bold mb-1">Upgrade to Pro</h4>
-          <p className="text-xs text-indigo-100 mb-3 opacity-90">Get access to premium features.</p>
-          <button className="w-full rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur-sm py-1.5 text-xs font-semibold transition-colors">
-            Learn More
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

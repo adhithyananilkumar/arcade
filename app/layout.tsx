@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 
 import Providers from "@/components/Providers";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Arcade — Empowering Innovation. Building Communities.",
@@ -32,7 +33,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-white">
-        <Providers>{children}</Providers>
+        <TooltipProvider>
+          <Providers>{children}</Providers>
+        </TooltipProvider>
       </body>
     </html>
   );
