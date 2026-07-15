@@ -26,9 +26,13 @@ export default function DashboardSidebar() {
 
   const dynamicNavItems = [
     ...navItems,
-    ...(showAdminChannels ? [{ name: 'Admin Channels', href: '/dashboard/admin/channels', icon: Tv }] : []),
+    ...(showAdminChannels ? [{ name: 'Channel Management', href: '/dashboard/admin/channels', icon: Tv }] : []),
     ...(showAdminSettings ? [{ name: 'Admin Settings', href: '/dashboard/admin/settings', icon: Settings }] : [])
   ];
+
+  if (pathname?.includes('/manage')) {
+    return null;
+  }
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">

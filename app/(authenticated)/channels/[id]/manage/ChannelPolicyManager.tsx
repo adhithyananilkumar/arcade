@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { roleService, Role } from '@/services/role.service';
+import { roleService, Role, RoleRequest } from '@/services/role.service';
 import { permissionService, Permission } from '@/services/permission.service';
 import { toast } from 'sonner';
-import { Plus, X, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
+import { Plus, X, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
+
+interface ChannelPolicyManagerProps {
+  channelId: string;
+}
 
 const formatPermissionKey = (key: string) => {
   if (!key) return '';
@@ -20,7 +22,7 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function PolicyManager() {
+export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,27 +33,25 @@ export function PolicyManager() {
   const [newRoleDesc, setNewRoleDesc] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  
-  const { hasPermission } = usePermissions();
-  const { user } = useAuthStore();
-  const isSuperUser = user?.roles?.some((r: any) => r.name === 'SUPER_USER') || false;
-  const canManagePolicies = isSuperUser || hasPermission('roles.create');
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [channelId]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const [rolesData, permsData] = await Promise.all([
-        roleService.getAllRoles('PLATFORM'),
-        permissionService.getAllPermissions()
+        roleService.getChannelRoles(channelId),
+        permissionService.getAllPermissions() // Wait, permissions API has scope support?
       ]);
       setRoles(rolesData);
-      setPermissions(permsData.filter(p => p.scopeType === 'PLATFORM'));
+      
+      // Filter permissions to only show ORGANIZATION scope for custom roles
+      const orgPerms = permsData.filter(p => p.scopeType === 'ORGANIZATION');
+      setPermissions(orgPerms);
     } catch (error) {
-      toast.error('Failed to load policies');
+      toast.error('Failed to load roles');
     } finally {
       setLoading(false);
     }
@@ -66,44 +66,38 @@ export function PolicyManager() {
     
     try {
       setSaving(true);
+      const payload: RoleRequest = {
+        name: newRoleName,
+        description: newRoleDesc,
+        permissionIds: selectedPermissions
+      };
+
       if (editingRole) {
-        await roleService.updateRole(editingRole.id, {
-          name: newRoleName,
-          description: newRoleDesc,
-          permissionIds: selectedPermissions
-        });
-        toast.success('Policy updated successfully');
+        await roleService.updateChannelRole(channelId, editingRole.id, payload);
+        toast.success('Role updated successfully');
       } else {
-        await roleService.createRole({
-          name: newRoleName,
-          description: newRoleDesc,
-          permissionIds: selectedPermissions
-        }, 'PLATFORM');
-        toast.success('Policy created successfully');
+        await roleService.createChannelRole(channelId, payload);
+        toast.success('Role created successfully');
       }
-      setIsModalOpen(false);
-      setEditingRole(null);
-      setNewRoleName('');
-      setNewRoleDesc('');
-      setSelectedPermissions([]);
+      handleCloseModal();
       fetchData();
     } catch (error) {
-      toast.error(editingRole ? 'Failed to update policy' : 'Failed to create policy');
+      toast.error(editingRole ? 'Failed to update role' : 'Failed to create role');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeletePolicy = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this policy? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this custom role? Users assigned this role may lose access.')) {
       return;
     }
     try {
-      await roleService.deleteRole(id);
-      toast.success('Policy deleted successfully');
+      await roleService.deleteChannelRole(channelId, id);
+      toast.success('Role deleted successfully');
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete policy');
+      toast.error('Failed to delete role');
     }
   };
 
@@ -131,23 +125,24 @@ export function PolicyManager() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading policies...</div>;
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading roles...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-8 pt-8 border-t border-gray-200">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">Manage custom policies and their associated permissions.</p>
-        {canManagePolicies && (
-          <button
-            onClick={() => {
-              setEditingRole(null);
-              setIsModalOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-          >
-            <Plus size={16} /> Create Policy
-          </button>
-        )}
+        <div>
+          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Shield className="text-indigo-600" size={20} />
+            Custom Roles
+          </h3>
+          <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
+        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+        >
+          <Plus size={16} /> Create Role
+        </button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -161,29 +156,31 @@ export function PolicyManager() {
                   {role.isSystem && (
                     <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">System</span>
                   )}
+                  {!role.isSystem && (
+                    <span className="px-2 py-0.5 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">Custom</span>
+                  )}
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
               </div>
-              <div className="flex gap-1">
-                {canManagePolicies && !role.isSystem && (
+              
+              {!role.isSystem && (
+                <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => startEditRole(role)}
                     className="p-1.5 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
-                    title="Edit Policy"
+                    title="Edit Role"
                   >
                     <Edit3 size={16} />
                   </button>
-                )}
-                {isSuperUser && !role.isSystem && (
                   <button
                     onClick={() => handleDeletePolicy(role.id)}
                     className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                    title="Delete Policy"
+                    title="Delete Role"
                   >
                     <Trash2 size={16} />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             
             <div className="mt-auto pt-4 border-t border-gray-50">
@@ -208,7 +205,7 @@ export function PolicyManager() {
           <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900">
-                {editingRole ? 'Edit Policy' : 'Create New Policy'}
+                {editingRole ? 'Edit Custom Role' : 'Create Custom Role'}
               </h3>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600">
                 <X size={24} />
@@ -217,13 +214,13 @@ export function PolicyManager() {
             
             <form onSubmit={handleCreatePolicy} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Policy Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role Name</label>
                 <input 
                   type="text" 
                   value={newRoleName}
                   onChange={(e) => setNewRoleName(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                  placeholder="e.g. Content Moderator"
+                  placeholder="e.g. Video Editor"
                   required
                 />
               </div>
@@ -234,7 +231,7 @@ export function PolicyManager() {
                   value={newRoleDesc}
                   onChange={(e) => setNewRoleDesc(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                  placeholder="Briefly describe what this policy allows..."
+                  placeholder="Briefly describe what this role allows..."
                   rows={2}
                 />
               </div>
@@ -256,6 +253,11 @@ export function PolicyManager() {
                       </div>
                     </label>
                   ))}
+                  {permissions.length === 0 && (
+                    <div className="col-span-2 text-sm text-gray-500 p-4 text-center border rounded-lg border-dashed">
+                      No organization permissions available.
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -272,7 +274,7 @@ export function PolicyManager() {
                   disabled={saving}
                   className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
                 >
-                  {saving ? (editingRole ? 'Updating...' : 'Creating...') : (editingRole ? 'Update Policy' : 'Create Policy')}
+                  {saving ? (editingRole ? 'Updating...' : 'Creating...') : (editingRole ? 'Update Role' : 'Create Role')}
                 </button>
               </div>
             </form>

@@ -75,4 +75,13 @@ export class UserService {
     const { data } = await apiClient.get<{ available: boolean; suggestions: string[] }>(`/users/check-username?username=${encodeURIComponent(username)}`);
     return data;
   }
+
+  static async checkEmail(email: string): Promise<User | null> {
+    try {
+      const { data } = await apiClient.get<User>(`/users/check-email?email=${encodeURIComponent(email)}`);
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
 }

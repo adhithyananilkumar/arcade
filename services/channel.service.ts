@@ -9,6 +9,8 @@ export interface Channel {
   status: string;
   ownerId: string;
   ownerName: string;
+  ownerEmail?: string;
+  ownerPhone?: string;
   createdAt: string;
 }
 
