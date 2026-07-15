@@ -10,7 +10,8 @@ export type NotificationType =
   | 'UPVOTE_ON_POST'
   | 'ANSWER_ACCEPTED'
   | 'NEW_FOLLOWER'
-  | 'MENTION';
+  | 'MENTION'
+  | 'SHARE_COMMENT';
 export type ReportStatus = 'PENDING' | 'REVIEWED' | 'DISMISSED';
 export type CommentStatus = 'VISIBLE' | 'REMOVED';
 export type BadgeLevel = 'NEWCOMER' | 'CONTRIBUTOR' | 'TRUSTED' | 'EXPERT';

@@ -1,9 +1,12 @@
 import AuthForm from '@/components/auth/AuthForm';
+import { Suspense } from 'react';
 
 export default function LoginPage() {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9f9f9' }}>
-      <AuthForm initialMode="login" />
+      <Suspense fallback={<div className="text-gray-500 font-medium">Loading login form...</div>}>
+        <AuthForm initialMode="login" />
+      </Suspense>
     </div>
   );
 }

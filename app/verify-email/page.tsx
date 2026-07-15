@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
-export default function VerifyEmailPage() {
+function VerifyEmailPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -86,5 +86,22 @@ export default function VerifyEmailPage() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl shadow-indigo-100/50 flex flex-col items-center">
+          <div className="mb-4 rounded-full bg-indigo-50 p-4 text-indigo-600">
+            <Loader2 className="animate-spin" size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Loading...</h2>
+        </div>
+      </div>
+    }>
+      <VerifyEmailPageContent />
+    </Suspense>
   );
 }

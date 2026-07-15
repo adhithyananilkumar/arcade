@@ -7,6 +7,16 @@ export class UserService {
     return data;
   }
 
+  static async getProfile(id: string): Promise<User> {
+    const { data } = await apiClient.get<User>(`/users/${id}`);
+    return data;
+  }
+
+  static async searchUsers(query: string): Promise<User[]> {
+    const { data } = await apiClient.get<User[]>(`/users/search?q=${encodeURIComponent(query)}`);
+    return data;
+  }
+
   static async updateProfile(firstName: string, lastName: string): Promise<User> {
     const { data } = await apiClient.put<User>('/users/me', { firstName, lastName });
     return data;

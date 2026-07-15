@@ -1,6 +1,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { notFound, useRouter } from 'next/navigation';
 import { useForumLayout } from '@/features/forum/components/ForumLayoutContext';
 import { CommentThread } from '@/features/forum/components/CommentThread';
@@ -15,7 +16,7 @@ import { useToggleBookmark } from '@/features/forum/api/forum.queries';
 import { useAuthStore } from '@/store/auth.store';
 import { Bookmark, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { timeAgo } from '@/features/forum/utils/display';
+import { timeAgo, displayName } from '@/features/forum/utils/display';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -51,6 +52,28 @@ export default function PostDetailPage({ params }: Props) {
     }, 500);
     return () => clearInterval(interval);
   }, [post, subscribe, clientRef]);
+
+  // Scroll to comment anchor from shared links (e.g. #comment-42)
+  useEffect(() => {
+    if (!post) return;
+    const hash = window.location.hash;
+    if (!hash.startsWith('#comment-')) return;
+    // Wait for comments to render, then scroll
+    const timer = setTimeout(() => {
+      const el = document.querySelector(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Briefly highlight the targeted comment
+        (el as HTMLElement).style.transition = 'box-shadow 0.3s, outline 0.3s';
+        (el as HTMLElement).style.outline = '2px solid var(--arcade-blue)';
+        (el as HTMLElement).style.borderRadius = '8px';
+        setTimeout(() => {
+          (el as HTMLElement).style.outline = 'none';
+        }, 2200);
+      }
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [post]);
 
   if (isLoading) {
     return (
@@ -127,11 +150,15 @@ export default function PostDetailPage({ params }: Props) {
 
           {/* Author + meta */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-            <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="md" />
+            <Link href={`/forum/user/${post.author.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="md" />
+            </Link>
             <div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                {post.author.username}
-              </span>
+              <Link href={`/forum/user/${post.author.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <span className="hover:underline" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {displayName(post.author.username)}
+                </span>
+              </Link>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
                 {timeAgo(post.createdAt)} · {post.viewCount} {post.viewCount === 1 ? 'view' : 'views'}
                 {post.editedAt && ' · edited'}
@@ -236,8 +263,11 @@ export default function PostDetailPage({ params }: Props) {
               <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} />
               {post.isBookmarked ? 'Saved' : 'Save'}
             </button>
-            
-            <ShareButton />
+            <ShareButton 
+              url={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum/${post.slug}`} 
+              title="Share Post"
+              postId={post.id}
+            />
           </div>
         </div>
 

@@ -11,12 +11,13 @@ function icon(type: NotificationType): string {
     ANSWER_ACCEPTED: '✓',
     NEW_FOLLOWER: '👤',
     MENTION: '@',
+    SHARE_COMMENT: '🔗',
   };
   return icons[type] || '🔔';
 }
 
-function label(type: NotificationType, actorName?: string): string {
-  const name = actorName || 'Someone';
+function label(notification: NotificationResponse): string {
+  const name = notification.actor?.username || 'Someone';
   const labels: Record<NotificationType, string> = {
     COMMENT_ON_POST: `${name} commented on your post`,
     REPLY_TO_COMMENT: `${name} replied to your comment`,
@@ -24,8 +25,11 @@ function label(type: NotificationType, actorName?: string): string {
     ANSWER_ACCEPTED: 'Your answer was accepted!',
     NEW_FOLLOWER: `${name} started following you`,
     MENTION: `${name} mentioned you`,
+    SHARE_COMMENT: notification.commentId
+      ? `${name} shared a comment with you`
+      : `${name} shared a post with you`,
   };
-  return labels[type] || 'New notification';
+  return labels[notification.type] || 'New notification';
 }
 
 function timeAgo(dateStr: string): string {
@@ -43,7 +47,11 @@ interface Props {
 }
 
 export function NotificationItem({ notification }: Props) {
-  const href = notification.postId ? `/forum/${notification.postId}` : '/forum';
+  const href = notification.commentId
+    ? `/forum/${notification.postId}#comment-${notification.commentId}`
+    : notification.postId
+      ? `/forum/${notification.postId}`
+      : '/forum';
 
   return (
     <Link
@@ -70,7 +78,7 @@ export function NotificationItem({ notification }: Props) {
             marginBottom: 2,
           }}
         >
-          {label(notification.type, notification.actor?.username)}
+          {label(notification)}
         </p>
         {notification.postTitle && (
           <p

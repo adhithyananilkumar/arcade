@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Reply, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
@@ -35,10 +36,12 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
 
   return (
     <div
+      id={`comment-${comment.id}`}
       style={{
         display: 'flex',
         marginLeft: depth > 0 ? 28 : 0,
         marginTop: 16,
+        scrollMarginTop: 80,
         ...(isAccepted ? {
           backgroundColor: '#F0FDF4',
           border: '1px solid #BBF7D0',
@@ -59,7 +62,9 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
           cursor: 'pointer',
         }}
       >
-        <UserAvatar username={comment.author.username} avatarUrl={comment.author.avatarUrl} size="sm" />
+        <Link href={`/forum/user/${comment.author.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <UserAvatar username={comment.author.username} avatarUrl={comment.author.avatarUrl} size="sm" />
+        </Link>
         {!collapsed && (
           <div 
             style={{
@@ -80,9 +85,14 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
       <div style={{ flex: 1, minWidth: 0, paddingLeft: 8 }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-            {displayName(comment.author.username)}
-          </span>
+          <Link
+            href={`/forum/user/${comment.author.id}`}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
+            <span className="hover:underline" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {displayName(comment.author.username)}
+            </span>
+          </Link>
           {isAccepted && (
             <span style={{
               display: 'inline-flex',
@@ -165,7 +175,14 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                   </button>
                 )}
 
-                <ShareButton url={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum/${post.slug}#comment-${comment.id}`} />
+                <ShareButton 
+                  url={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum/${post.slug}#comment-${comment.id}`} 
+                  title="Share Comment"
+                  body={comment.body}
+                  postId={post.id}
+                  commentId={comment.id}
+                  variant="popover"
+                />
 
                 {isAuthor && isQuestion && !post.hasAcceptedAnswer && !isAccepted && (
                   <button

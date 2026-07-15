@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { OrganizationService } from '@/services/organization.service';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-export default function JoinOrganizationPage() {
+function JoinOrganizationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -84,5 +84,22 @@ export default function JoinOrganizationPage() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+export default function JoinOrganizationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-[80vh] items-center justify-center">
+        <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl shadow-indigo-100/50 flex flex-col items-center">
+          <div className="mb-4 rounded-full bg-indigo-50 p-4 text-indigo-600">
+            <Loader2 className="animate-spin" size={32} />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Loading...</h2>
+        </div>
+      </div>
+    }>
+      <JoinOrganizationPageContent />
+    </Suspense>
   );
 }

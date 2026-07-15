@@ -137,6 +137,15 @@ export function useReputation(userId: string) {
   });
 }
 
+export function usePostsByAuthor(authorId: string, page = 0, size = 20) {
+  return useQuery({
+    queryKey: forumKeys.postsByAuthor(authorId, page),
+    queryFn: () => ForumService.getPostsByAuthor(authorId, page, size),
+    enabled: !!authorId,
+    placeholderData: (prev) => prev,
+  });
+}
+
 // --- Mutations ---
 export function useCreatePost() {
   const qc = useQueryClient();

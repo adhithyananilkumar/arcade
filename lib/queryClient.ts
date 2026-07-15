@@ -9,7 +9,7 @@ export const QUERY_KEYS = {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error: unknown) => {
+      retry: (failureCount, error: any) => {
         // Do not retry authorization/authentication failures
         if (error?.response?.status === 401 || error?.response?.status === 403) return false;
         return failureCount < 3;

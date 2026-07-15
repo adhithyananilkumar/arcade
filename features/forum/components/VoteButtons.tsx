@@ -26,8 +26,7 @@ export function VoteButtons({
   const { status } = useAuthStore();
   const vote = useVote();
 
-  const normalizedUserVote: VoteType | undefined =
-    userVote === true ? 'UP' : userVote === false ? 'DOWN' : userVote;
+  const normalizedUserVote: VoteType | undefined = userVote;
 
   const [localUpvotes, setLocalUpvotes] = useState(upvotes);
   const [localDownvotes, setLocalDownvotes] = useState(downvotes);

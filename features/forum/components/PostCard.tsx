@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Bookmark, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
@@ -98,10 +99,19 @@ export function PostCard({ post, index = 0 }: Props) {
       >
         {/* Top Meta Row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="sm" />
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-            {displayName(post.author.username)}
-          </span>
+          <Link
+            href={`/forum/user/${post.author.id}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}
+          >
+            <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="sm" />
+            <span 
+              className="hover:underline"
+              style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}
+            >
+              {displayName(post.author.username)}
+            </span>
+          </Link>
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>·</span>
           {post.category && (
             <>
@@ -264,7 +274,13 @@ export function PostCard({ post, index = 0 }: Props) {
             <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} />
           </button>
 
-          <ShareButton url={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum/${post.slug}`} />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ShareButton
+              url={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum/${post.slug}`}
+              title="Share Post"
+              postId={post.id}
+            />
+          </div>
 
           {isOwner && (
             <div ref={menuRef} style={{ position: 'relative', marginLeft: 'auto' }}>
