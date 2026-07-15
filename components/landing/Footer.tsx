@@ -62,16 +62,6 @@ export default function Footer() {
               <Link href="/contact">Contact</Link>
               <Link href="/careers">Careers</Link>
             </div>
-
-            <div className="arc-footer__col">
-              <div className="arc-footer__col-title">Pillars</div>
-              <Link href="/study">Study</Link>
-              <Link href="/connect">Connect</Link>
-              <Link href="/track">Track</Link>
-              <Link href="/achieve">Achieve</Link>
-              <Link href="/launch">Launch</Link>
-              <Link href="/grow">Grow</Link>
-            </div>
           </div>
         </div>
 
