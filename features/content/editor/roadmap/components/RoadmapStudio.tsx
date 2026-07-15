@@ -1,7 +1,9 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { useRoadmapAutoSave } from "../hooks/useRoadmapAutoSave";
-import { AlertCircle, Clock, CheckCircle2, ArrowLeft, X } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { RoadmapCanvas } from "./RoadmapCanvas";
+import { RoadmapHeader } from "./RoadmapHeader";
+import { PublishConfirmationModal } from "./PublishConfirmationModal";
 import type { RoadmapData } from "../types";
 
 interface RoadmapStudioProps {
@@ -9,9 +11,12 @@ interface RoadmapStudioProps {
   onClose?: () => void;
 }
 
-export function RoadmapStudio({ roadmap, onClose }: RoadmapStudioProps) {
+export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudioProps) {
+  const [roadmap, setRoadmap] = useState<RoadmapData>(initialRoadmap);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+
   const handleSaveSuccess = useCallback((updated: RoadmapData) => {
-    // Let the hook manage local state timestamps for now
+    setRoadmap(updated);
   }, []);
 
   const { saveState, errorMessage, scheduleSave, manualSave, forceOverride } = useRoadmapAutoSave(
@@ -19,40 +24,120 @@ export function RoadmapStudio({ roadmap, onClose }: RoadmapStudioProps) {
     handleSaveSuccess
   );
 
+  const isReadOnly = roadmap.status === 'published' || roadmap.status === 'archived';
+
+  // Compute validation errors for publishing
+  const validationErrors = useMemo(() => {
+    const errors: string[] = [];
+    if (!roadmap.title || roadmap.title.trim() === '') {
+      errors.push("Roadmap must have a title.");
+    }
+
+    try {
+      const graph = JSON.parse(roadmap.graphJson);
+      const nodes = graph.nodes || [];
+      const edges = graph.edges || [];
+
+      if (nodes.length === 0) {
+        errors.push("Roadmap must have at least one learning node.");
+      }
+
+      const contentIds = new Set<string>();
+      let hasMissingTitle = false;
+      let hasDuplicateContent = false;
+      
+      const nodeIds = new Set<string>(nodes.map((n: any) => n.id));
+      const connectedNodeIds = new Set<string>();
+      
+      edges.forEach((e: any) => {
+        connectedNodeIds.add(e.source);
+        connectedNodeIds.add(e.target);
+      });
+
+      let hasOrphans = false;
+
+      nodes.forEach((n: any) => {
+        const label = n.data?.label as string;
+        const cid = n.data?.contentId as string;
+        
+        if (!label || label.trim() === '') hasMissingTitle = true;
+        if (cid) {
+          if (contentIds.has(cid)) hasDuplicateContent = true;
+          contentIds.add(cid);
+        }
+        
+        // Check orphans if there's more than 1 node total
+        if (nodes.length > 1 && !connectedNodeIds.has(n.id)) {
+          hasOrphans = true;
+        }
+      });
+
+      if (hasMissingTitle) errors.push("One or more nodes are missing a title.");
+      if (hasDuplicateContent) errors.push("Duplicate content linked across multiple nodes.");
+      if (hasOrphans) errors.push("There are orphaned (unconnected) nodes in the roadmap.");
+      
+    } catch (e) {
+      errors.push("Invalid roadmap graph data.");
+    }
+
+    return errors;
+  }, [roadmap.graphJson, roadmap.title]);
+
+  // Compute counts for modal
+  const counts = useMemo(() => {
+    try {
+      const graph = JSON.parse(roadmap.graphJson);
+      return { nodes: (graph.nodes || []).length, edges: (graph.edges || []).length };
+    } catch {
+      return { nodes: 0, edges: 0 };
+    }
+  }, [roadmap.graphJson]);
+
+  const handleStatusChange = async (newStatus: RoadmapData['status']) => {
+    try {
+      const response = await fetch(`/api/roadmaps/${roadmap.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: newStatus, 
+          version: roadmap.version,
+          title: roadmap.title,
+          description: roadmap.description,
+          graphJson: roadmap.graphJson
+        })
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setRoadmap(updated);
+      } else {
+        alert("Failed to update status.");
+      }
+    } catch (e) {
+      alert("Network error.");
+    }
+  };
+
+  const handlePublishConfirm = async () => {
+    if (saveState === 'unsaved' || saveState === 'saving') {
+      // Force manual save first, then update status
+      manualSave();
+      // Wait slightly to ensure save finishes
+      setTimeout(() => handleStatusChange('published'), 1000);
+    } else {
+      handleStatusChange('published');
+    }
+  };
+
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 absolute inset-0 z-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          {onClose && (
-            <button 
-              onClick={onClose}
-              className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Close Studio"
-            >
-              <ArrowLeft size={20} />
-            </button>
-          )}
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h3 className="font-bold text-gray-900 text-lg leading-tight">{roadmap.title}</h3>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <CheckCircle2 size={12} className="mr-1" /> Published
-              </span>
-            </div>
-            {roadmap.description && (
-              <p className="text-sm text-gray-500 leading-tight">{roadmap.description}</p>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex flex-col items-end text-xs text-gray-500 gap-1">
-          <span className="flex items-center gap-1">
-            <Clock size={12} />
-            Last Saved: {new Date(roadmap.updatedAt).toLocaleTimeString()}
-          </span>
-          <span>By {roadmap.createdByName}</span>
-        </div>
-      </header>
+      <RoadmapHeader 
+        roadmap={roadmap}
+        saveState={saveState}
+        onClose={onClose}
+        onStatusChange={handleStatusChange}
+        onPublishClick={() => setIsPublishModalOpen(true)}
+        onManualSave={manualSave}
+      />
 
       {saveState === 'conflict' && (
         <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between shrink-0">
@@ -87,14 +172,31 @@ export function RoadmapStudio({ roadmap, onClose }: RoadmapStudioProps) {
         </div>
       )}
 
+      {isReadOnly && (
+        <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-2 text-emerald-800 text-sm font-medium shrink-0 flex items-center justify-center">
+          This roadmap is currently {roadmap.status}. Editing is disabled.
+        </div>
+      )}
+
       <div className="flex-1 w-full relative">
         <RoadmapCanvas 
           roadmap={roadmap} 
           saveState={saveState}
           onGraphChange={scheduleSave}
           onManualSave={manualSave}
+          readOnly={isReadOnly}
         />
       </div>
+
+      <PublishConfirmationModal 
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        onConfirm={handlePublishConfirm}
+        nodeCount={counts.nodes}
+        edgeCount={counts.edges}
+        validationErrors={validationErrors}
+        hasUnsavedChanges={saveState === 'unsaved' || saveState === 'saving'}
+      />
     </div>
   );
 }

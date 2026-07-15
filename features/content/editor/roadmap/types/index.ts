@@ -6,6 +6,10 @@ export interface RoadmapData {
   ownerId: string;
   graphJson: string;
   version: number;
+  status: 'draft' | 'review' | 'published' | 'archived';
+  publishedAt?: string;
+  publishedBy?: string;
+  archivedAt?: string;
   createdById: string;
   createdByName: string;
   createdAt: string;

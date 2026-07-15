@@ -12,6 +12,7 @@ interface RoadmapToolbarProps {
   onSearchChange: (q: string) => void;
   saveState: 'saved' | 'saving' | 'unsaved' | 'error' | 'conflict';
   onSave: () => void;
+  readOnly?: boolean;
 }
 
 export function RoadmapToolbar({
@@ -22,28 +23,44 @@ export function RoadmapToolbar({
   searchQuery,
   onSearchChange,
   saveState,
-  onSave
+  onSave,
+  readOnly
 }: RoadmapToolbarProps) {
   return (
     <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between gap-4 pointer-events-none">
-      
       <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-xl shadow-sm border border-gray-200 pointer-events-auto">
-        <button
-          onClick={onAddTopic}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <Plus size={16} /> Add Topic
-        </button>
+        {!readOnly && (
+          <button
+            onClick={onAddTopic}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Plus size={16} />
+            Add Topic
+          </button>
+        )}
+        
         <div className="w-px h-5 bg-gray-200 mx-1" />
+        
         <button
-          onClick={onDeleteSelected}
-          disabled={!hasSelection}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-            hasSelection ? 'text-red-600 hover:bg-red-50' : 'text-gray-400 cursor-not-allowed'
-          }`}
+          onClick={onFitView}
+          className="p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-lg transition-colors"
+          title="Fit to Screen"
         >
-          <Trash2 size={16} /> Delete
+          <Maximize size={18} />
         </button>
+
+        {!readOnly && hasSelection && (
+          <>
+            <div className="w-px h-5 bg-gray-200 mx-1" />
+            <button
+              onClick={onDeleteSelected}
+              className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors"
+              title="Delete Selected"
+            >
+              <Trash2 size={18} />
+            </button>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-xl shadow-sm border border-gray-200 pointer-events-auto flex-1 max-w-sm">
@@ -83,18 +100,15 @@ export function RoadmapToolbar({
           
           <button 
             onClick={onSave}
-            disabled={saveState === 'saved' || saveState === 'saving'}
+            disabled={saveState === 'saved' || saveState === 'saving' || readOnly}
             className={`p-1.5 rounded-lg transition-colors ${
-              saveState === 'saved' || saveState === 'saving' 
+              saveState === 'saved' || saveState === 'saving' || readOnly
                 ? 'text-gray-300 cursor-not-allowed' 
                 : 'text-indigo-600 hover:bg-indigo-50'
             }`} 
             title="Save"
           >
             <Save size={16} />
-          </button>
-          <button className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Publish (Coming soon)">
-            <Share size={16} />
           </button>
         </div>
       </div>

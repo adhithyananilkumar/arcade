@@ -16,7 +16,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import type { RoadmapData } from '../types';
 import { Plus } from 'lucide-react';
-import { TopicNode } from './TopicNode';
+import { LearningNode } from './LearningNode';
 import { PropertiesPanel } from './PropertiesPanel';
 import { CanvasContextMenu } from './CanvasContextMenu';
 import { RoadmapToolbar } from './RoadmapToolbar';
@@ -26,13 +26,14 @@ interface RoadmapCanvasProps {
   saveState: 'saved' | 'saving' | 'unsaved' | 'error' | 'conflict';
   onGraphChange: (graphJson: string) => void;
   onManualSave: () => void;
+  readOnly?: boolean;
 }
 
 const nodeTypes = {
-  default: TopicNode,
+  default: LearningNode,
 };
 
-function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }: RoadmapCanvasProps) {
+function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, readOnly }: RoadmapCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition, fitView, setNodes: setNodesFlow, getViewport, setViewport } = useReactFlow();
@@ -63,7 +64,6 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
       }
     }
 
-    // Force default type to map to our custom node if needed
     setNodes(parsedNodes.map(n => ({ ...n, type: 'default' })));
     setEdges(parsedEdges);
     setViewport(parsedViewport);
@@ -73,7 +73,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
   // Handle Search Filtering & Highlighting
   useEffect(() => {
     if (!searchQuery) {
-      setNodes((nds) => nds.map(n => ({ ...n, style: { opacity: 1 } })));
+      setNodes((nds) => nds.map(n => ({ ...n, style: { ...n.style, opacity: 1 } })));
       return;
     }
     
@@ -82,17 +82,23 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
     
     setNodes((nds) => nds.map(n => {
       const label = (n.data.label as string || '').toLowerCase();
-      const isMatch = label.includes(query);
+      const nodeType = (n.data.nodeType as string || 'lesson').toLowerCase();
+      
+      const isMatch = label.includes(query) || nodeType.includes(query);
       if (isMatch) hasMatch = true;
       return {
         ...n,
-        style: { opacity: isMatch ? 1 : 0.2 },
+        style: { ...n.style, opacity: isMatch ? 1 : 0.2 },
       };
     }));
 
     if (hasMatch) {
       setTimeout(() => {
-        const matchingNodeIds = nodes.filter(n => (n.data.label as string || '').toLowerCase().includes(query)).map(n => n.id);
+        const matchingNodeIds = nodes.filter(n => {
+          const label = (n.data.label as string || '').toLowerCase();
+          const nodeType = (n.data.nodeType as string || 'lesson').toLowerCase();
+          return label.includes(query) || nodeType.includes(query);
+        }).map(n => n.id);
         if (matchingNodeIds.length > 0) {
           fitView({ nodes: nodes.filter(n => matchingNodeIds.includes(n.id)), duration: 500, padding: 0.5 });
         }
@@ -113,11 +119,15 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
+    (params: Connection) => {
+      if (readOnly) return;
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges, readOnly],
   );
 
   const addTopic = useCallback(() => {
+    if (readOnly) return;
     const id = `node-${Date.now()}`;
     const domNode = document.querySelector('.react-flow__pane');
     let x = 200;
@@ -141,16 +151,18 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
     };
     
     setNodes((nds) => nds.concat(newNode));
-  }, [screenToFlowPosition, setNodes]);
+  }, [screenToFlowPosition, setNodes, readOnly]);
 
   const deleteSelected = useCallback(() => {
+    if (readOnly) return;
     const selectedNodeIds = new Set(nodes.filter(n => n.selected).map(n => n.id));
     setNodes((nds) => nds.filter((n) => !n.selected));
     setEdges((eds) => eds.filter((e) => !e.selected && !selectedNodeIds.has(e.source) && !selectedNodeIds.has(e.target)));
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, setNodes, setEdges, readOnly]);
 
   // Keyboard Shortcuts
   useEffect(() => {
+    if (readOnly) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger shortcuts if we are typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -162,25 +174,16 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
       } else if (e.key === 'F2') {
         // Trigger rename mode on selected node (TopicNode handles double click, we can pass rename state if we wanted, 
         // but for now properties panel provides rename)
-      } else if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'c') {
-          // Copy placeholder
-        } else if (e.key === 'v') {
-          // Paste placeholder
-        } else if (e.key === 'z' && !e.shiftKey) {
-          // Undo placeholder
-        } else if (e.key === 'z' && e.shiftKey) {
-          // Redo placeholder
-        }
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [deleteSelected]);
+  }, [deleteSelected, readOnly]);
 
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: Node) => {
+      if (readOnly) return;
       event.preventDefault();
       setContextMenu({
         x: event.clientX,
@@ -188,10 +191,11 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
         nodeId: node.id,
       });
     },
-    []
+    [readOnly]
   );
 
   const updateNodeData = useCallback((id: string, newData: any) => {
+    if (readOnly) return;
     setNodes((nds) =>
       nds.map((n) => {
         if (n.id === id) {
@@ -200,9 +204,10 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
         return n;
       })
     );
-  }, [setNodes]);
+  }, [setNodes, readOnly]);
 
   const handleDuplicate = useCallback((id: string) => {
+    if (readOnly) return;
     const nodeToDuplicate = nodes.find(n => n.id === id);
     if (!nodeToDuplicate) return;
     
@@ -213,16 +218,17 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
       selected: false,
     };
     setNodes((nds) => nds.concat(newNode));
-  }, [nodes, setNodes]);
+  }, [nodes, setNodes, readOnly]);
 
   const handleDeleteNode = useCallback((id: string) => {
+    if (readOnly) return;
     setNodes((nds) => nds.filter((n) => n.id !== id));
     setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, readOnly]);
 
   // Trigger graph change when elements or viewport change
   const handleGraphChange = useCallback(() => {
-    if (!isInitializedRef.current) return;
+    if (!isInitializedRef.current || readOnly) return;
     
     // Clean up nodes for saving (remove selected state, etc)
     const cleanNodes = nodes.map(n => ({
@@ -247,14 +253,14 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
     });
     
     onGraphChange(newGraphJson);
-  }, [nodes, edges, getViewport, onGraphChange]);
+  }, [nodes, edges, getViewport, onGraphChange, readOnly]);
 
   // Hook up graph changes to our handler, but we must be careful not to trigger on every render.
   // We'll use a ref to track the last saved JSON to avoid unnecessary saves.
   const lastSavedJsonRef = useRef<string | null>(null);
   
   useEffect(() => {
-    if (!isInitializedRef.current) return;
+    if (!isInitializedRef.current || readOnly) return;
     
     const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
     const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target }));
@@ -264,9 +270,10 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
       lastSavedJsonRef.current = newGraphJson;
       onGraphChange(newGraphJson);
     }
-  }, [nodes, edges, onGraphChange, getViewport]);
+  }, [nodes, edges, onGraphChange, getViewport, readOnly]);
 
   const onMoveEnd = useCallback(() => {
+    if (readOnly) return;
     // When panning/zooming stops, trigger a change check
     const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
     const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target }));
@@ -276,7 +283,40 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
       lastSavedJsonRef.current = newGraphJson;
       onGraphChange(newGraphJson);
     }
-  }, [nodes, edges, getViewport, onGraphChange]);
+  }, [nodes, edges, getViewport, onGraphChange, readOnly]);
+
+  const validatedNodes = useMemo(() => {
+    const contentIds = new Set<string>();
+    const duplicates = new Set<string>();
+    
+    nodes.forEach(n => {
+      const cid = n.data.contentId as string;
+      if (cid) {
+        if (contentIds.has(cid)) duplicates.add(cid);
+        contentIds.add(cid);
+      }
+    });
+
+    return nodes.map(n => {
+      let validationError = undefined;
+      const label = n.data.label as string;
+      const cid = n.data.contentId as string;
+      
+      if (!label || label.trim() === '') {
+        validationError = 'Missing required title.';
+      } else if (cid && duplicates.has(cid)) {
+        validationError = 'Duplicate content linked across multiple nodes.';
+      }
+      
+      // Override properties if read-only
+      const nodeData = { ...n.data, validationError };
+      if (readOnly) {
+        nodeData.readOnly = true;
+      }
+      
+      return { ...n, data: nodeData };
+    });
+  }, [nodes, readOnly]);
 
   if (nodes.length === 0) {
     return (
@@ -284,13 +324,15 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
         <div className="text-center">
           <p className="text-sm font-medium text-gray-500 mb-4">No topics yet.</p>
           <p className="text-xs text-gray-400 mb-6">Create your first topic to start building the roadmap.</p>
-          <button
-            onClick={addTopic}
-            className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
-          >
-            <Plus size={16} />
-            Create Topic
-          </button>
+          {!readOnly && (
+            <button
+              onClick={addTopic}
+              className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <Plus size={16} />
+              Create Topic
+            </button>
+          )}
         </div>
       </div>
     );
@@ -310,15 +352,16 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
           onSearchChange={setSearchQuery}
           saveState={saveState}
           onSave={onManualSave}
+          readOnly={readOnly}
         />
         
         <ReactFlow
-          nodes={nodes}
+          nodes={validatedNodes}
           edges={edges}
           nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
+          onNodesChange={readOnly ? undefined : onNodesChange}
+          onEdgesChange={readOnly ? undefined : onEdgesChange}
+          onConnect={readOnly ? undefined : onConnect}
           onNodeContextMenu={onNodeContextMenu}
           onMoveEnd={onMoveEnd}
           fitView={!roadmap.graphJson || !roadmap.graphJson.includes('"viewport"')}
@@ -326,11 +369,14 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
           maxZoom={2}
           snapToGrid={true}
           snapGrid={[20, 20]}
+          nodesDraggable={!readOnly}
+          nodesConnectable={!readOnly}
+          elementsSelectable={true}
         >
           <Background gap={20} color="#e5e7eb" />
         </ReactFlow>
 
-        {contextMenu && (
+        {contextMenu && !readOnly && (
           <CanvasContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
@@ -347,7 +393,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave }:
         )}
       </div>
 
-      {selectedNode && (
+      {selectedNode && !readOnly && (
         <PropertiesPanel
           selectedNode={selectedNode}
           onClose={() => setSelectedNodeId(null)}
