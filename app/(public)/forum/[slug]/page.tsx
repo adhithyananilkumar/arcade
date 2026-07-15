@@ -11,6 +11,7 @@ import { PostTypeBadge } from '@/features/forum/components/PostTypeBadge';
 import { UserAvatar } from '@/features/forum/components/UserAvatar';
 import { ShareButton } from '@/features/forum/components/ShareButton';
 import { usePost } from '@/features/forum/api/forum.queries';
+import { PollCard } from '@/features/forum/components/PollCard';
 import { useWebSocket } from '@/features/forum/hooks/useWebSocket';
 import { useToggleBookmark } from '@/features/forum/api/forum.queries';
 import { useAuthStore } from '@/store/auth.store';
@@ -170,7 +171,19 @@ export default function PostDetailPage({ params }: Props) {
 
           {/* Body */}
           <div style={{ marginBottom: 32 }}>
-            {isHtml ? (
+            {post.postType === 'POLL' ? (
+              <PollCard
+                postId={post.id}
+                poll={post.poll || {
+                  id: post.id,
+                  allowMultipleAnswers: false,
+                  options: [],
+                  totalVotes: 0,
+                  userVoted: false,
+                  isExpired: false
+                }}
+              />
+            ) : isHtml ? (
               <div
                 className="post-html-content"
                 style={{ fontSize: 16, lineHeight: 1.75, color: 'var(--text-primary)' }}

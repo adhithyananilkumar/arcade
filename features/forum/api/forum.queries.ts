@@ -304,3 +304,21 @@ export function useReportContent() {
     onError: () => toast.error('Failed to submit report'),
   });
 }
+
+export function useCastPollVote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ postId, optionIds }: { postId: number; optionIds: number[] }) =>
+      ForumService.castPollVote(postId, optionIds),
+    onSuccess: (data, { postId }) => {
+      // Invalidate queries so results refresh instantly
+      qc.invalidateQueries({ queryKey: ['forum', 'feed'] });
+      qc.invalidateQueries({ queryKey: ['forum', 'post'] });
+      toast.success('Vote submitted!');
+    },
+    onError: (err: any) => {
+      const errMsg = err?.response?.data?.message || 'Failed to submit vote';
+      toast.error(errMsg);
+    },
+  });
+}

@@ -10,6 +10,7 @@ import { TagBadge } from './TagBadge';
 import { PostTypeBadge } from './PostTypeBadge';
 import { VoteButtons } from './VoteButtons';
 import { ShareButton } from './ShareButton';
+import { PollCard } from './PollCard';
 import { useAuthStore } from '@/store/auth.store';
 import { useDeletePost, useToggleBookmark } from '../api/forum.queries';
 import { ForumService } from '../api/forum.service';
@@ -171,41 +172,59 @@ export function PostCard({ post, index = 0 }: Props) {
         </h3>
 
         {/* Body Preview */}
-        {bodyPreview.length > 10 && (
-          <p style={{
-            fontSize: 14,
-            lineHeight: 1.6,
-            color: 'var(--text-secondary)',
-            margin: '6px 0 12px',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}>
-            {bodyPreview}
-          </p>
-        )}
-
-        {/* Image Preview */}
-        {firstImage && (
-          <div style={{
-            marginBottom: 16,
-            borderRadius: 'var(--radius-md)',
-            overflow: 'hidden',
-            maxHeight: 240,
-          }}>
-            <img 
-              src={firstImage} 
-              alt="Post preview" 
-              style={{
-                width: '100%',
-                height: 240,
-                objectFit: 'cover',
-                display: 'block',
+        {post.postType === 'POLL' ? (
+          <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: 12 }}>
+            <PollCard
+              postId={post.id}
+              poll={post.poll || {
+                id: post.id,
+                allowMultipleAnswers: false,
+                options: [],
+                totalVotes: 0,
+                userVoted: false,
+                isExpired: false
               }}
-              onError={e => (e.currentTarget.style.display = 'none')}
             />
           </div>
+        ) : (
+          <>
+            {bodyPreview.length > 10 && (
+              <p style={{
+                fontSize: 14,
+                lineHeight: 1.6,
+                color: 'var(--text-secondary)',
+                margin: '6px 0 12px',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
+                {bodyPreview}
+              </p>
+            )}
+
+            {/* Image Preview */}
+            {firstImage && (
+              <div style={{
+                marginBottom: 16,
+                borderRadius: 'var(--radius-md)',
+                overflow: 'hidden',
+                maxHeight: 240,
+              }}>
+                <img 
+                  src={firstImage} 
+                  alt="Post preview" 
+                  style={{
+                    width: '100%',
+                    height: 240,
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                  onError={e => (e.currentTarget.style.display = 'none')}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Tags Row */}

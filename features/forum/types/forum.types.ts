@@ -61,6 +61,7 @@ export interface PostSummaryResponse {
   createdAt: string;
   publishedAt?: string;
   editedAt?: string;
+  poll?: PollResponse;
 }
 
 export interface PostDetailResponse extends PostSummaryResponse {
@@ -139,6 +140,9 @@ export interface CreatePostRequest {
   postType: PostType;
   categoryId: number;
   tags: string[];
+  pollOptions?: string[];
+  allowMultipleAnswers?: boolean;
+  pollExpiryDays?: number;
 }
 
 export interface UpdatePostRequest {
@@ -169,4 +173,21 @@ export interface ReportRequest {
   targetType: TargetType;
   targetId: number;
   reason: string;
+}
+
+export interface PollOptionResponse {
+  id: number;
+  optionText: string;
+  voteCount: number;
+  userVoted: boolean;
+}
+
+export interface PollResponse {
+  id: number;
+  allowMultipleAnswers: boolean;
+  expiryDate?: string;
+  options: PollOptionResponse[];
+  totalVotes: number;
+  userVoted: boolean;
+  isExpired: boolean;
 }

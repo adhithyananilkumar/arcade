@@ -7,7 +7,7 @@ const config: Record<PostType, { label: string; color: string; bg: string }> = {
   QUESTION: { label: 'Question', color: '#205ca8', bg: '#ebf0fa' },
   BLOG: { label: 'Blog', color: '#7c3aed', bg: '#f5f3ff' },
   SHOWCASE: { label: 'Showcase', color: '#d97706', bg: '#fffbeb' },
-  POLL: { label: 'Poll', color: '#059669', bg: '#ecfdf5' },
+  POLL: { label: '📊 Poll', color: '#059669', bg: '#ecfdf5' },
 };
 
 export function PostTypeBadge({ type }: { type: PostType }) {

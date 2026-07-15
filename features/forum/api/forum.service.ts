@@ -209,4 +209,13 @@ export class ForumService {
   static async reportContent(payload: ReportRequest) {
     await apiClient.post(`${BASE}/moderation/reports`, payload);
   }
+
+  // --- Polls ---
+  static async castPollVote(postId: number, optionIds: number[]) {
+    const { data } = await apiClient.post<PostDetailResponse>(
+      `${BASE}/posts/${postId}/poll/vote`,
+      optionIds
+    );
+    return data;
+  }
 }
