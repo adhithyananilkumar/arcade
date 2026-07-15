@@ -309,7 +309,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
       }
       
       // Override properties if read-only
-      const nodeData = { ...n.data, validationError };
+      const nodeData: Record<string, unknown> = { ...n.data, validationError };
       if (readOnly) {
         nodeData.readOnly = true;
       }
