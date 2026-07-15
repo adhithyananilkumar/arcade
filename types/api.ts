@@ -49,10 +49,23 @@ export interface ModuleResponse {
   title: string;
   position: number;
   lessons: LessonResponse[];
+  quizzes: QuizResponse[];
 }
 
 export interface CreateModuleRequest {
   title: string;
+}
+
+// ── Quiz (a module item — sibling of a lesson; owned by the content domain) ─────
+
+export interface QuizResponse {
+  id: string;
+  title: string;
+  position: number;
+}
+
+export interface QuizRequest {
+  title?: string;
 }
 
 // ── Lesson ────────────────────────────────────────────────────────────────────

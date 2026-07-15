@@ -13,14 +13,27 @@ import {
   encodeStateBase64,
   encodeSnapshotBase64,
 } from "@/features/content/editor";
+import { QuizEditor } from "@/features/assessment";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api";
-import type { CourseResponse, ModuleResponse, LessonResponse } from "@/types/api";
+import type {
+  CourseResponse,
+  ModuleResponse,
+  LessonResponse,
+  QuizResponse,
+} from "@/types/api";
 import type { TiptapDocument } from "@/types/editor";
 import {
   ChevronRight,
   ChevronDown,
   Plus,
   FileText,
+  ListChecks,
   Layers,
   X,
   GraduationCap,
@@ -53,15 +66,22 @@ interface LessonNode {
   position: number;
 }
 
+interface QuizNode {
+  id: string;
+  title: string;
+  position: number;
+}
+
 interface ModuleNode {
   id: string;
   title: string;
   position: number;
   lessons: LessonNode[];
+  quizzes: QuizNode[];
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson";
+type EditKind = "module" | "lesson" | "quiz";
 
 interface ConfirmOptions {
   title: string;
@@ -411,6 +431,9 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState("Untitled Lesson");
+  // A quiz item is open in the main panel (mutually exclusive with a lesson).
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+  const [activeQuizTitle, setActiveQuizTitle] = useState("Untitled Quiz");
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
     undefined
@@ -468,6 +491,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
             title: m.title,
             position: m.position,
             lessons: m.lessons,
+            quizzes: m.quizzes ?? [],
             expanded: true,
           }))
         );
@@ -549,6 +573,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
       // Commit together: React batches these so the editor remounts once, bound to
       // the hydrated Y.Doc with any legacy seed ready.
+      setActiveQuizId(null);
       setActiveYDoc(ydoc);
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
@@ -556,6 +581,28 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     },
     [resolveLegacyContent]
   );
+
+  // ── Open a quiz item (mutually exclusive with a lesson) ────────────────────
+  const openQuiz = useCallback(async (quiz: QuizNode) => {
+    setView("tree");
+    setHistoryOpen(false);
+
+    // Flush and tear down any open lesson editor before switching to the quiz.
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort
+      }
+    }
+    activeYDocRef.current = null;
+    setActiveYDoc(null);
+    setActiveSeedContent(undefined);
+    setActiveLessonId(null);
+
+    setActiveQuizTitle(quiz.title);
+    setActiveQuizId(quiz.id);
+  }, []);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
 
@@ -651,7 +698,14 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       });
       setModules((prev) => [
         ...prev,
-        { id: m.id, title: m.title, position: m.position, lessons: [], expanded: true },
+        {
+          id: m.id,
+          title: m.title,
+          position: m.position,
+          lessons: [],
+          quizzes: [],
+          expanded: true,
+        },
       ]);
     } catch (e) {
       console.error("Failed to add module", e);
@@ -685,6 +739,33 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     [courseId, modules, openLesson]
   );
 
+  // ── Tree mutation: Add Quiz (sibling of a lesson under a module) ────────────
+
+  const addQuiz = useCallback(
+    async (moduleId: string) => {
+      if (!courseId) return;
+      try {
+        const mod = modules.find((m) => m.id === moduleId);
+        const nextIndex = (mod?.quizzes.length ?? 0) + 1;
+        const newQuiz = await api.post<QuizResponse>(
+          `/api/modules/${moduleId}/quizzes`,
+          { title: `Quiz ${nextIndex}` }
+        );
+        setModules((prev) =>
+          prev.map((m) =>
+            m.id === moduleId
+              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz] }
+              : m
+          )
+        );
+        await openQuiz(newQuiz);
+      } catch (e) {
+        console.error("Failed to add quiz", e);
+      }
+    },
+    [courseId, modules, openQuiz]
+  );
+
   // ── Inline rename ─────────────────────────────────────────────────────────
 
   const startEdit = (kind: EditKind, id: string, current: string) => {
@@ -706,6 +787,19 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       } catch (e) {
         console.warn("Module rename failed", e);
       }
+    } else if (kind === "quiz") {
+      setModules((prev) =>
+        prev.map((m) => ({
+          ...m,
+          quizzes: m.quizzes.map((q) => (q.id === id ? { ...q, title: value } : q)),
+        }))
+      );
+      if (activeQuizId === id) setActiveQuizTitle(value);
+      try {
+        await api.patch(`/api/quizzes/${id}`, { title: value });
+      } catch (e) {
+        console.warn("Quiz rename failed", e);
+      }
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -726,7 +820,9 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
   const deleteModuleNow = async (mod: ModuleNode) => {
     const hadActive = mod.lessons.some((l) => l.id === activeLessonId);
+    const hadActiveQuiz = mod.quizzes.some((q) => q.id === activeQuizId);
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
+    if (hadActiveQuiz) setActiveQuizId(null);
     if (hadActive) {
       setActiveLessonId(null);
       // The effect cleanup destroys the doc after the editor unmounts.
@@ -779,6 +875,29 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       onConfirm: () => deleteLessonNow(lesson.id),
     });
 
+  const deleteQuizNow = async (quizId: string) => {
+    setModules((prev) =>
+      prev.map((m) => ({ ...m, quizzes: m.quizzes.filter((q) => q.id !== quizId) }))
+    );
+    if (activeQuizId === quizId) {
+      setActiveQuizId(null);
+    }
+    try {
+      await api.delete(`/api/quizzes/${quizId}`);
+    } catch (e) {
+      console.error("Failed to delete quiz", e);
+    }
+  };
+
+  const askDeleteQuiz = (quiz: QuizNode) =>
+    setConfirm({
+      title: "Delete quiz?",
+      message: `"${quiz.title}" and all of its questions will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete",
+      danger: true,
+      onConfirm: () => deleteQuizNow(quiz.id),
+    });
+
   // ── Lesson title save (from main editor input) ────────────────────────────
 
   const saveLessonTitle = useCallback(
@@ -801,6 +920,30 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       }
     },
     [activeLessonId]
+  );
+
+  // ── Quiz title save (from main panel input) ───────────────────────────────
+
+  const saveQuizTitle = useCallback(
+    async (newTitle: string) => {
+      if (!activeQuizId) return;
+      const value = newTitle.trim() || "Untitled Quiz";
+      setActiveQuizTitle(value);
+      setModules((prev) =>
+        prev.map((m) => ({
+          ...m,
+          quizzes: m.quizzes.map((q) =>
+            q.id === activeQuizId ? { ...q, title: value } : q
+          ),
+        }))
+      );
+      try {
+        await api.patch(`/api/quizzes/${activeQuizId}`, { title: value });
+      } catch (e) {
+        console.warn("Quiz title save failed", e);
+      }
+    },
+    [activeQuizId]
   );
 
   // ── Course metadata debounced save ────────────────────────────────────────
@@ -1091,9 +1234,24 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                     )}
 
                     <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                      <IconBtn title="Add lesson" onClick={() => addLesson(mod.id)}>
-                        <Plus size={12} />
-                      </IconBtn>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          title="Add lesson or quiz"
+                          className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                        >
+                          <Plus size={12} />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" sideOffset={4}>
+                          <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                            <FileText size={13} />
+                            Lesson
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                            <ListChecks size={13} />
+                            Quiz
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
                         <Pencil size={12} />
                       </IconBtn>
@@ -1103,55 +1261,94 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                     </div>
                   </div>
 
-                  {/* Lessons directly under the module */}
+                  {/* Lessons and quizzes, interleaved by position */}
                   {mod.expanded && (
                     <div className="ml-3 border-l border-gray-200 pl-1.5">
-                      {mod.lessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${activeLessonId === lesson.id ? "bg-indigo-50" : "hover:bg-gray-100"
-                            }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => openLesson(lesson)}
-                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${activeLessonId === lesson.id
-                              ? "font-medium text-indigo-700"
-                              : "text-gray-500"
-                              }`}
-                          >
-                            <FileText size={11} className="flex-shrink-0" />
-                            {isEditing("lesson", lesson.id) ? (
-                              renameInput("text-xs")
-                            ) : (
-                              <span className="truncate" title={lesson.title}>
-                                {lesson.title}
-                              </span>
-                            )}
-                          </button>
-                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                            <IconBtn
-                              title="Rename lesson"
-                              onClick={() => startEdit("lesson", lesson.id, lesson.title)}
+                      {[
+                        ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
+                        ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
+                      ]
+                        .sort((a, b) => a.node.position - b.node.position)
+                        .map((item) => {
+                          const isActive =
+                            item.kind === "lesson"
+                              ? activeLessonId === item.node.id
+                              : activeQuizId === item.node.id;
+                          return (
+                            <div
+                              key={item.node.id}
+                              className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
+                                }`}
                             >
-                              <Pencil size={12} />
-                            </IconBtn>
-                            <IconBtn title="Delete lesson" danger onClick={() => askDeleteLesson(lesson)}>
-                              <Trash2 size={12} />
-                            </IconBtn>
-                          </div>
-                        </div>
-                      ))}
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  item.kind === "lesson"
+                                    ? openLesson(item.node)
+                                    : openQuiz(item.node)
+                                }
+                                className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
+                                  ? "font-medium text-indigo-700"
+                                  : "text-gray-500"
+                                  }`}
+                              >
+                                {item.kind === "lesson" ? (
+                                  <FileText size={11} className="flex-shrink-0" />
+                                ) : (
+                                  <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
+                                )}
+                                {isEditing(item.kind, item.node.id) ? (
+                                  renameInput("text-xs")
+                                ) : (
+                                  <span className="truncate" title={item.node.title}>
+                                    {item.node.title}
+                                  </span>
+                                )}
+                              </button>
+                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                <IconBtn
+                                  title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                  onClick={() =>
+                                    startEdit(item.kind, item.node.id, item.node.title)
+                                  }
+                                >
+                                  <Pencil size={12} />
+                                </IconBtn>
+                                <IconBtn
+                                  title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                  danger
+                                  onClick={() =>
+                                    item.kind === "lesson"
+                                      ? askDeleteLesson(item.node)
+                                      : askDeleteQuiz(item.node)
+                                  }
+                                >
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            </div>
+                          );
+                        })}
 
-                      {/* Add lesson to this module */}
-                      <button
-                        type="button"
-                        onClick={() => addLesson(mod.id)}
-                        className="mt-0.5 flex items-center gap-1 py-1 pl-2 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                      >
-                        <Plus size={11} />
-                        Add lesson
-                      </button>
+                      {/* Add lesson / quiz to this module */}
+                      <div className="mt-0.5 flex items-center gap-3 pl-2">
+                        <button
+                          type="button"
+                          onClick={() => addLesson(mod.id)}
+                          className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                        >
+                          <Plus size={11} />
+                          Add lesson
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addQuiz(mod.id)}
+                          className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                        >
+                          <Plus size={11} />
+                          Add quiz
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1243,6 +1440,21 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                 />
               )}
             </div>
+          ) : activeQuizId ? (
+            <div className="flex min-h-0 flex-1 flex-col px-6 py-4 lg:px-10 lg:py-6">
+              <div className="mb-3 flex items-center gap-3">
+                <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
+                <input
+                  type="text"
+                  value={activeQuizTitle}
+                  onBlur={(e) => saveQuizTitle(e.target.value)}
+                  onChange={(e) => setActiveQuizTitle(e.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
+                  placeholder="Quiz title"
+                />
+              </div>
+              <QuizEditor key={activeQuizId} quizId={activeQuizId} className="min-h-0 flex-1" />
+            </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
@@ -1250,10 +1462,10 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
               </div>
               <div>
                 <h3 className="text-base font-semibold text-gray-700">
-                  Select a lesson to start editing
+                  Select a lesson or quiz to start editing
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
-                  Add a module, then a lesson from the sidebar to begin.
+                  Add a module, then a lesson or quiz from the sidebar to begin.
                 </p>
               </div>
             </div>
