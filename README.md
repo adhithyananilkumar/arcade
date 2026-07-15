@@ -205,6 +205,7 @@ Course Editor Shell updates complete:
 - **Settings Description Editing**: Swapped the static description display with a dynamic, left-aligned `<textarea>` on the settings panel that triggers debounced updates via `onDescriptionChange` back to the parent component and the backend API.
 - **Collapsible Sidebar**: Implemented a transition-based collapsible side panel. The panel shrinks to a sleek sidebar rail containing a larger, responsive toggle button (`PanelLeftClose` / `PanelLeftOpen` icons resized to `20px`). Other elements are dynamically hidden and disabled when closed.
 - **Last Edited Metric on Dashboard**: Modified [page.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/app/%28authenticated%29/dashboard/page.tsx) to label the course cards' indicator with "Last edited: " and formatted it as a full date-time string (including hour, minute, and AM/PM).
+- **Merge Conflict Resolution in Rich Text Extensions**: Resolved conflict in [index.ts](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/editor/extensions/index.ts) by retaining both the `yjs` collaborative dependency type import (`import type * as Y from "yjs"`) and the `RoadmapNode` extension import (`import { RoadmapNode } from "../roadmap/extensions/roadmap"`).
 
 ### 3. What's Left / Next Steps
 - Integrate course pricing model settings directly inside the Settings page (since it was removed from the header bar).

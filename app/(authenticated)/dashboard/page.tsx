@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Trash2,
   X,
+  Map,
 } from "lucide-react";
 
 // ── Content type menu items ───────────────────────────────────────────────────
@@ -212,6 +213,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/roadmaps"
+              title="Roadmaps"
+              className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
+            >
+              <Map size={16} />
+              Roadmaps
+            </Link>
             <Link
               href="/dashboard/trash"
               title="Trash"
