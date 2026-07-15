@@ -9,6 +9,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import StarterKit from "@tiptap/starter-kit";
 import { createLowlight, common } from "lowlight";
+import { RoadmapNode } from "../roadmap/extensions/roadmap";
 
 const lowlight = createLowlight(common);
 
@@ -37,5 +38,6 @@ export function buildExtensions(placeholder?: string) {
     CodeBlockLowlight.configure({
       lowlight,
     }),
+    RoadmapNode,
   ];
 }

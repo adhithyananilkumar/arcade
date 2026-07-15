@@ -15,13 +15,14 @@ import {
   Quote,
   Code2,
   Link,
-  Image,
+  Image as ImageIcon,
   Minus,
   Undo,
   Redo,
   AlignLeft,
   Check,
   Loader2,
+  Map,
 } from "lucide-react";
 
 interface ToolbarButtonProps {
@@ -89,6 +90,12 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
     const url = window.prompt("Enter image URL:");
     if (!url) return;
     editor.chain().focus().setImage({ src: url }).run();
+  };
+
+  const addRoadmap = () => {
+    // Temporary hardcoded roadmapId or prompt
+    const id = window.prompt("Enter roadmap ID (or leave blank for demo):") || "00000000-0000-0000-0000-000000000000";
+    editor.chain().focus().insertContent({ type: "roadmap", attrs: { roadmapId: id } }).run();
   };
 
   return (
@@ -216,13 +223,16 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
         <Link size={14} />
       </ToolbarButton>
       <ToolbarButton onClick={addImage} title="Insert Image">
-        <Image size={14} />
+        <ImageIcon size={14} />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
         title="Horizontal Rule"
       >
         <Minus size={14} />
+      </ToolbarButton>
+      <ToolbarButton onClick={addRoadmap} title="Insert Roadmap">
+        <Map size={14} />
       </ToolbarButton>
 
       {/* Auto-save status — right-aligned */}

@@ -20,7 +20,9 @@ export type TiptapNodeType =
   | "video-player"
   | "pdf-viewer"
   | "quiz-block"
-  | "resource-card";
+  | "resource-card"
+  | "roadmap"
+  | string;
 
 export type TiptapMarkType = "bold" | "italic" | "strike" | "code" | "link";
 
