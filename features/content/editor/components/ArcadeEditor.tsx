@@ -3,19 +3,24 @@
 
 import { EditorContent } from "@tiptap/react";
 import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import type * as Y from "yjs";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { EditorToolbar } from "./EditorToolbar";
 import { useArcadeEditor } from "../hooks/useArcadeEditor";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/types/editor";
 
-/** Imperative handle exposed via ref — lets a parent force-save before navigating. */
+/** Imperative handle exposed via ref — force-save, restore, or read current content. */
 export interface ArcadeEditorHandle {
   flush: () => Promise<void>;
+  /** Replace the document content (used to restore a version). */
+  setContent: (doc: TiptapDocument) => void;
+  /** Current document as JSON, or null before the editor is ready. */
+  getJSON: () => TiptapDocument | null;
 }
 
 interface ArcadeEditorProps {
-  /** Pre-populate editor with existing content. */
+  /** Pre-populate editor with existing content (non-collaborative mode only). */
   initialContent?: TiptapDocument;
   /** Placeholder text shown when empty. */
   placeholder?: string;
@@ -23,9 +28,13 @@ interface ArcadeEditorProps {
   readOnly?: boolean;
   /**
    * Called with the serialised doc 2s after the last keystroke.
-   * Writes to localStorage + backend draft endpoint.
+   * Writes to localStorage + backend document endpoint.
    */
   onSave?: (doc: TiptapDocument) => void | Promise<void>;
+  /** Collaborative Y.Doc — binds the editor to the version-history CRDT. */
+  ydoc?: Y.Doc;
+  /** Legacy JSON to seed into an empty Y.Doc (migration for pre-history lessons). */
+  seedContent?: TiptapDocument;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
 }
@@ -34,7 +43,7 @@ type SaveStatus = "idle" | "saving" | "saved";
 
 export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
   function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, className = "" },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "" },
     ref
   ) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -54,14 +63,20 @@ export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
     [onSave]
   );
 
-  const { editor, flushSave } = useArcadeEditor({
+  const { editor, flushSave, setContent, getJSON } = useArcadeEditor({
     initialContent,
     placeholder,
     readOnly,
     onSave: handleSave,
+    ydoc,
+    seedContent,
   });
 
-  useImperativeHandle(ref, () => ({ flush: flushSave }), [flushSave]);
+  useImperativeHandle(
+    ref,
+    () => ({ flush: flushSave, setContent, getJSON }),
+    [flushSave, setContent, getJSON]
+  );
 
   // editor is null during SSR — show skeleton
   if (!editor) {

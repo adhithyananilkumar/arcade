@@ -3,8 +3,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type * as Y from "yjs";
 import { ArcadeEditor } from "@/features/content/editor/components/ArcadeEditor";
 import type { ArcadeEditorHandle } from "@/features/content/editor/components/ArcadeEditor";
+import { VersionHistoryPanel } from "@/features/content/editor/components/VersionHistoryPanel";
+import {
+  createYDoc,
+  applyBase64Update,
+  encodeStateBase64,
+  encodeSnapshotBase64,
+} from "@/features/content/editor/lib/yjs";
 import { api } from "@/lib/api";
 import type { CourseResponse, ModuleResponse, LessonResponse } from "@/types/api";
 import type { TiptapDocument } from "@/types/editor";
@@ -26,7 +34,11 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
+  History,
 } from "lucide-react";
+
+/** How long (of edit activity) between automatic version snapshots. */
+const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
 interface CourseEditorShellProps {
   courseId?: string; // required in practice — new courses are created via the dashboard modal
@@ -399,9 +411,20 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState("Untitled Lesson");
-  const [activeLessonInitialContent, setActiveLessonInitialContent] = useState<
-    TiptapDocument | undefined
-  >(undefined);
+  // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
+  const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
+    undefined
+  );
+
+  // ── Yjs version-history state ─────────────────────────────────────────────
+  // The editor binds to a per-lesson Y.Doc (the CRDT source of truth). We keep a
+  // ref to encode its state on save without re-binding, plus the timestamp of the
+  // last auto-snapshot to pace the periodic timeline.
+  const [activeYDoc, setActiveYDoc] = useState<Y.Doc | null>(null);
+  const activeYDocRef = useRef<Y.Doc | null>(null);
+  const lastSnapshotAtRef = useRef(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const [qbOpen, setQbOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -459,78 +482,164 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
 
   // ── Draft-aware lesson selection ──────────────────────────────────────────
 
-  const openLesson = useCallback(async (lesson: LessonNode) => {
-    setView("tree");
-
-    // Flush any pending edits in the currently-open lesson before switching away.
-    // Unmounting the editor cancels its debounced auto-save, so without this the
-    // last few seconds of typing would be lost on a lesson switch.
-    if (editorRef.current) {
-      try {
-        await editorRef.current.flush();
-      } catch {
-        // best-effort — proceed with the switch regardless
-      }
-    }
-
-    // Resolve this lesson's content BEFORE switching the editor to it. The editor
-    // is keyed on activeLessonId and Tiptap only reads `content` at mount, so the
-    // content must be known at the moment the key changes. Setting the id first
-    // and fetching afterwards mounts the editor empty and drops the fetched draft.
-    let content: TiptapDocument | undefined;
-
-    try {
-      const draft = await api.get<{ body: string; savedAt: string } | null>(
-        `/api/lessons/${lesson.id}/draft`
-      );
-      if (draft?.body) {
-        content = JSON.parse(draft.body) as TiptapDocument;
-      }
-    } catch {
-      // Fall back to localStorage if the backend is unreachable
-    }
-
-    if (!content) {
-      const localDraft = localStorage.getItem(`arcade-draft-${lesson.id}`);
-      if (localDraft) {
+  /** Best-effort legacy content for a lesson without persisted CRDT state. */
+  const resolveLegacyContent = useCallback(
+    (lesson: LessonNode, docBody: string | null): TiptapDocument | undefined => {
+      const sources = [
+        docBody,
+        localStorage.getItem(`arcade-draft-${lesson.id}`),
+        lesson.body ?? null,
+      ];
+      for (const src of sources) {
+        if (!src) continue;
         try {
-          content = JSON.parse(localDraft) as TiptapDocument;
+          return JSON.parse(src) as TiptapDocument;
         } catch {
-          // ignore corrupt data
+          // try the next source
         }
       }
-    }
+      return undefined;
+    },
+    []
+  );
 
-    if (!content && lesson.body) {
-      try {
-        content = JSON.parse(lesson.body) as TiptapDocument;
-      } catch {
-        // ignore
+  const openLesson = useCallback(
+    async (lesson: LessonNode) => {
+      setView("tree");
+      setHistoryOpen(false);
+
+      // Flush pending edits in the currently-open lesson before switching away.
+      // Unmounting the editor cancels its debounced auto-save, so without this the
+      // last few seconds of typing would be lost on a lesson switch.
+      if (editorRef.current) {
+        try {
+          await editorRef.current.flush();
+        } catch {
+          // best-effort — proceed with the switch regardless
+        }
       }
-    }
 
-    // Commit all three together: React batches these so the editor remounts once,
-    // with the correct initialContent already in place.
-    setActiveLessonTitle(lesson.title);
-    setActiveLessonInitialContent(content);
-    setActiveLessonId(lesson.id);
-  }, []);
+      // The previous lesson's Y.Doc is torn down by the activeYDoc effect cleanup
+      // below, which runs only after its editor has unmounted (safe unbind).
+
+      // Build a fresh Y.Doc and hydrate it BEFORE the editor mounts. The editor is
+      // keyed on activeLessonId; Collaboration reads the Y.Doc at mount, so the
+      // CRDT state must be in place at the moment the key changes.
+      const ydoc = createYDoc();
+      let seed: TiptapDocument | undefined;
+
+      try {
+        const doc = await api.get<{
+          ydocState: string | null;
+          body: string | null;
+        } | null>(`/api/lessons/${lesson.id}/document`);
+        if (doc?.ydocState) {
+          applyBase64Update(ydoc, doc.ydocState);
+        } else {
+          // No CRDT state yet — migrate legacy JSON into the fresh Y.Doc.
+          seed = resolveLegacyContent(lesson, doc?.body ?? null);
+        }
+      } catch {
+        // Backend unreachable — fall back to local/legacy content.
+        seed = resolveLegacyContent(lesson, null);
+      }
+
+      activeYDocRef.current = ydoc;
+      lastSnapshotAtRef.current = 0; // snapshot early in a fresh editing session
+
+      // Commit together: React batches these so the editor remounts once, bound to
+      // the hydrated Y.Doc with any legacy seed ready.
+      setActiveYDoc(ydoc);
+      setActiveSeedContent(seed);
+      setActiveLessonTitle(lesson.title);
+      setActiveLessonId(lesson.id);
+    },
+    [resolveLegacyContent]
+  );
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
 
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
       if (!activeLessonId) return;
+      const ydoc = activeYDocRef.current;
+      if (!ydoc) return;
+
       const jsonStr = JSON.stringify(doc);
+      // localStorage mirror keeps a resilient JSON fallback if the backend is down.
       localStorage.setItem(`arcade-draft-${activeLessonId}`, jsonStr);
+
       try {
-        await api.put(`/api/lessons/${activeLessonId}/draft`, { body: jsonStr });
+        await api.put(`/api/lessons/${activeLessonId}/document`, {
+          ydocState: encodeStateBase64(ydoc),
+          body: jsonStr,
+        });
       } catch (e) {
-        console.warn("Draft save to backend failed, localStorage preserved.", e);
+        console.warn("Document save failed, localStorage preserved.", e);
+        return; // don't snapshot if the head save didn't land
+      }
+
+      // Auto-periodic snapshot: once the interval has elapsed since the last one,
+      // capture a Yjs snapshot as a new version (the Google-Docs-style timeline).
+      const now = Date.now();
+      if (now - lastSnapshotAtRef.current > SNAPSHOT_INTERVAL_MS) {
+        lastSnapshotAtRef.current = now;
+        try {
+          await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+            snapshot: encodeSnapshotBase64(ydoc),
+            body: jsonStr,
+            kind: "AUTO",
+          });
+          setHistoryRefreshKey((k) => k + 1);
+        } catch (e) {
+          console.warn("Auto-snapshot failed", e);
+        }
       }
     },
     [activeLessonId]
   );
+
+  // ── Restore a past version (client-driven, non-destructive) ────────────────
+  const handleRestore = useCallback(
+    async (body: TiptapDocument, source: { createdAt: string }) => {
+      if (!editorRef.current || !activeLessonId) return;
+
+      // Writing into the editor mutates the bound Y.Doc, so the restore is recorded
+      // as a forward edit in history. Flushing persists the new head immediately.
+      editorRef.current.setContent(body);
+      await editorRef.current.flush();
+
+      // Record the restore itself as a named version so the timeline stays honest.
+      try {
+        const ydoc = activeYDocRef.current;
+        await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+          snapshot: ydoc ? encodeSnapshotBase64(ydoc) : undefined,
+          body: JSON.stringify(body),
+          kind: "MANUAL",
+          label: `Restored from ${new Date(source.createdAt).toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })}`,
+        });
+        lastSnapshotAtRef.current = Date.now();
+        setHistoryRefreshKey((k) => k + 1);
+      } catch (e) {
+        console.warn("Failed to record restore point", e);
+      }
+    },
+    [activeLessonId]
+  );
+
+  // Destroy each Y.Doc once the editor bound to it has gone. This cleanup runs
+  // after the next render commits (i.e. after the keyed ArcadeEditor unmounts and
+  // unbinds), so we never destroy a doc that a live editor still references.
+  useEffect(() => {
+    return () => {
+      activeYDoc?.destroy();
+    };
+  }, [activeYDoc]);
 
   // ── Tree mutation: Add Module ──────────────────────────────────────────────
 
@@ -620,7 +729,11 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
     if (hadActive) {
       setActiveLessonId(null);
-      setActiveLessonInitialContent(undefined);
+      // The effect cleanup destroys the doc after the editor unmounts.
+      activeYDocRef.current = null;
+      setActiveYDoc(null);
+      setActiveSeedContent(undefined);
+      setHistoryOpen(false);
     }
     try {
       await api.delete(`/api/modules/${mod.id}`);
@@ -635,7 +748,11 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     );
     if (activeLessonId === lessonId) {
       setActiveLessonId(null);
-      setActiveLessonInitialContent(undefined);
+      // The effect cleanup destroys the doc after the editor unmounts.
+      activeYDocRef.current = null;
+      setActiveYDoc(null);
+      setActiveSeedContent(undefined);
+      setHistoryOpen(false);
     }
     try {
       await api.delete(`/api/lessons/${lessonId}`);
@@ -746,6 +863,25 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     }
 
     await Promise.all(tasks);
+
+    // Save a version snapshot of the open lesson on exit, so leaving the editor
+    // always leaves a restorable point in history. Runs after the flush above so it
+    // references the just-persisted document state.
+    if (activeLessonId && activeYDocRef.current && editorRef.current) {
+      const json = editorRef.current.getJSON();
+      if (json) {
+        try {
+          await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+            snapshot: encodeSnapshotBase64(activeYDocRef.current),
+            body: JSON.stringify(json),
+            kind: "AUTO",
+          });
+        } catch (e) {
+          console.warn("Exit snapshot failed", e);
+        }
+      }
+    }
+
     router.push("/dashboard");
   }, [
     navigatingBack,
@@ -764,16 +900,27 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     setConfirm({
       title: "Submit for review?",
       message:
-        "This course will be sent to an admin for review. You can keep editing while it is under review.",
+        "This course will be sent to an admin for review, and a version checkpoint is saved for each lesson. You can keep editing while it is under review.",
       confirmLabel: "Submit",
       onConfirm: async () => {
         if (!courseId) return;
+        // Flush the open lesson first so its latest edits are persisted before the
+        // backend snapshots the whole course into WORKFLOW versions.
+        if (editorRef.current) {
+          try {
+            await editorRef.current.flush();
+          } catch {
+            // best-effort — proceed with submit regardless
+          }
+        }
         try {
           const updated = await api.post<CourseResponse>(
             `/api/courses/${courseId}/submit`,
             {}
           );
           setStatus(updated.status);
+          // Surface the new "Submitted for review" checkpoint if the panel is open.
+          setHistoryRefreshKey((k) => k + 1);
         } catch (e) {
           console.error("Failed to submit course", e);
         }
@@ -821,6 +968,15 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
     <div className="flex h-screen flex-col overflow-hidden bg-white">
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
+      {activeLessonId && (
+        <VersionHistoryPanel
+          lessonId={activeLessonId}
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          refreshKey={historyRefreshKey}
+          onRestore={handleRestore}
+        />
+      )}
 
       {/* ── Top metadata bar ─────────────────────────────────────────────── */}
       <header className="flex-shrink-0 border-b border-gray-200 bg-white px-5 py-2.5">
@@ -1056,22 +1212,36 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
             </div>
           ) : activeLessonId ? (
             <div className="flex min-h-0 flex-1 flex-col px-6 py-4 lg:px-10 lg:py-6">
-              <input
-                type="text"
-                value={activeLessonTitle}
-                onBlur={(e) => saveLessonTitle(e.target.value)}
-                onChange={(e) => setActiveLessonTitle(e.target.value)}
-                className="mb-3 w-full border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                placeholder="Lesson title"
-              />
-              <ArcadeEditor
-                key={activeLessonId}
-                ref={editorRef}
-                initialContent={activeLessonInitialContent}
-                placeholder="Start writing your lesson content…"
-                onSave={handleSave}
-                className="min-h-0 flex-1 shadow-sm"
-              />
+              <div className="mb-3 flex items-center gap-3">
+                <input
+                  type="text"
+                  value={activeLessonTitle}
+                  onBlur={(e) => saveLessonTitle(e.target.value)}
+                  onChange={(e) => setActiveLessonTitle(e.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
+                  placeholder="Lesson title"
+                />
+                <button
+                  type="button"
+                  onClick={() => setHistoryOpen(true)}
+                  title="Version history"
+                  className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                >
+                  <History size={15} />
+                  History
+                </button>
+              </div>
+              {activeYDoc && (
+                <ArcadeEditor
+                  key={activeLessonId}
+                  ref={editorRef}
+                  ydoc={activeYDoc}
+                  seedContent={activeSeedContent}
+                  placeholder="Start writing your lesson content…"
+                  onSave={handleSave}
+                  className="min-h-0 flex-1 shadow-sm"
+                />
+              )}
             </div>
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
