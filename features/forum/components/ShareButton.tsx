@@ -609,17 +609,6 @@ export function PostShareDialog({
                 </div>
               </div>
 
-              {/* ── Divider ── */}
-              <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: 0 }} />
-
-              {/* ── Send to User ── */}
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
-                  Send to a user
-                </p>
-                <SendToUserSection postId={postId} commentId={commentId} shareUrl={shareUrl} />
-              </div>
-
             </div>
           </motion.div>
         </>
@@ -641,7 +630,7 @@ interface PopoverProps {
 
 function SharePopover({ shareUrl, postId, commentId, anchorRef, onClose }: PopoverProps) {
   const [copiedLink, setCopiedLink] = useState(false);
-  const [tab, setTab] = useState<'link' | 'apps' | 'users'>('link');
+  const [tab, setTab] = useState<'link' | 'apps'>('link');
   const popoverRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: -9999, left: -9999 });
 
@@ -696,7 +685,6 @@ function SharePopover({ shareUrl, postId, commentId, anchorRef, onClose }: Popov
   const tabs = [
     { id: 'link' as const, label: 'Copy Link' },
     { id: 'apps' as const, label: 'Apps' },
-    { id: 'users' as const, label: 'Send' },
   ];
 
   return createPortal(
@@ -792,10 +780,6 @@ function SharePopover({ shareUrl, postId, commentId, anchorRef, onClose }: Popov
               );
             })}
           </div>
-        )}
-
-        {tab === 'users' && (
-          <SendToUserSection postId={postId} commentId={commentId} shareUrl={shareUrl} />
         )}
       </div>
     </div>,
