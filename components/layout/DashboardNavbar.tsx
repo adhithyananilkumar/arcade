@@ -3,15 +3,51 @@
 import { useAuthStore } from '@/store/auth.store';
 import { useRouter, usePathname } from 'next/navigation';
 import { LogOut, User as UserIcon, Bell, ChevronRight, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
+import { ChannelStaffService, ChannelInvitation } from '@/services/channel-staff.service';
 
 export default function DashboardNavbar() {
   const { user, clearAuth } = useAuthStore();
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
+
+  useEffect(() => {
+    fetchInvitations();
+  }, []);
+
+  const fetchInvitations = async () => {
+    try {
+      const data = await ChannelStaffService.getMyInvitations();
+      setInvitations(data);
+    } catch {
+      // silently fail for notifications
+    }
+  };
+
+  const handleAcceptInvite = async (id: string) => {
+    try {
+      await ChannelStaffService.acceptInvitation(id);
+      toast.success('Invitation accepted! You are now staff.');
+      fetchInvitations();
+    } catch {
+      toast.error('Failed to accept invitation');
+    }
+  };
+
+  const handleRejectInvite = async (id: string) => {
+    try {
+      await ChannelStaffService.rejectInvitation(id);
+      toast.success('Invitation rejected.');
+      fetchInvitations();
+    } catch {
+      toast.error('Failed to reject invitation');
+    }
+  };
   
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
@@ -60,10 +96,45 @@ export default function DashboardNavbar() {
       {/* Right Actions */}
       <div className="flex items-center gap-4">
         {/* Notification Bell */}
-        <button className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-slate-100 transition-all cursor-pointer">
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white"></span>
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-50 border border-slate-100 transition-all cursor-pointer"
+          >
+            <Bell size={16} />
+            {invitations.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white"></span>
+            )}
+          </button>
+          
+          {isNotificationsOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                <h4 className="text-sm font-bold text-gray-900">Notifications</h4>
+                <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{invitations.length} New</span>
+              </div>
+              <div className="max-h-80 overflow-y-auto">
+                {invitations.length === 0 ? (
+                  <div className="p-6 text-center text-sm text-gray-500">No new notifications</div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {invitations.map(inv => (
+                      <div key={inv.id} className="p-4 hover:bg-gray-50/50 transition-colors">
+                        <p className="text-sm text-gray-800 mb-1">
+                          <span className="font-bold">{inv.invitedByName}</span> invited you to join <span className="font-bold">{inv.channelName}</span> as <span className="font-bold text-indigo-600">{inv.roleName}</span>.
+                        </p>
+                        <div className="flex gap-2 mt-3">
+                          <button onClick={() => handleAcceptInvite(inv.id)} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors">Accept</button>
+                          <button onClick={() => handleRejectInvite(inv.id)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-1.5 rounded-lg transition-colors">Decline</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="h-6 w-px bg-slate-100"></div>
 

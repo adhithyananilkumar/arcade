@@ -43,7 +43,15 @@ export default function OrganizationsPage() {
       setOrganizations([...organizations, newOrg]);
       setNewOrgName('');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to create organization');
+      const data = err.response?.data;
+      // Spring Boot can return validation errors as { message }, { error }, or { errors: [...] }
+      const message =
+        data?.message ||
+        data?.error ||
+        (Array.isArray(data?.errors) ? data.errors.map((e: any) => e.defaultMessage || e.message).join(', ') : null) ||
+        (typeof data === 'string' ? data : null) ||
+        `Error ${err.response?.status ?? ''}: An unexpected error occurred`;
+      setError(message);
     } finally {
       setIsCreating(false);
     }
