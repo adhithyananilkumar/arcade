@@ -72,6 +72,7 @@ export default function HeroNav() {
       animate={isHidden ? "scrollHidden" : "visible"}
       role="navigation"
       aria-label="Main navigation"
+      style={{ position: "fixed", zIndex: 100 }}
     >
       {/* Wordmark */}
       <Link href="/" className="l-nav__logo-container" aria-label="Arcade home">
