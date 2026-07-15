@@ -9,6 +9,8 @@ interface RoadmapHeaderProps {
   onStatusChange: (status: RoadmapData['status']) => void;
   onClose?: () => void;
   onManualSave: () => void;
+  onSaveAsTemplateClick: () => void;
+  onExportClick: () => void;
 }
 
 export function RoadmapHeader({ 
@@ -17,7 +19,9 @@ export function RoadmapHeader({
   onPublishClick, 
   onStatusChange, 
   onClose,
-  onManualSave
+  onManualSave,
+  onSaveAsTemplateClick,
+  onExportClick
 }: RoadmapHeaderProps) {
 
   const getStatusBadge = () => {
@@ -87,6 +91,20 @@ export function RoadmapHeader({
         </div>
 
         <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+          <button 
+            onClick={onExportClick}
+            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center gap-1"
+            title="Export to JSON"
+          >
+            Export
+          </button>
+          <button 
+            onClick={onSaveAsTemplateClick}
+            className="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 flex items-center gap-1 mr-2"
+          >
+            Save as Template
+          </button>
+
           {roadmap.status === 'draft' && (
             <>
               <button 
