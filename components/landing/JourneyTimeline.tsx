@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Play } from "lucide-react";
 import "./JourneyTimeline.css";
 
@@ -90,8 +90,13 @@ const COURSES: Course[] = [
   },
 ];
 
+const VIRTUAL_COURSES = [...COURSES, ...COURSES, ...COURSES];
+
 const AUTO_DURATION = 5000;
 const PAUSE_DURATION = 8000;
+
+const CARD_WIDTH = 290;
+const CARD_GAP = 20;
 
 /* ── Course figure with click-to-play video ── */
 function CourseFigure({ course, isActive }: { course: Course; isActive: boolean }) {
@@ -145,25 +150,37 @@ function CourseFigure({ course, isActive }: { course: Course; isActive: boolean 
 
 export default function JourneyTimeline() {
   const prefersReducedMotion = useReducedMotion();
-  const [active, setActive] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [index, setIndex] = useState(COURSES.length);
+  const [isResetting, setIsResetting] = useState(false);
+  const active = index % COURSES.length;
 
   const pauseUntilRef = useRef<number>(0);
   const frameRef = useRef<number | null>(null);
   const lastTickRef = useRef<number>(Date.now());
   const progressRef = useRef(0);
-  const dirRef = useRef(1);
-  const prevActiveRef = useRef(active);
 
-  if (active !== prevActiveRef.current) {
-    dirRef.current = active > prevActiveRef.current ? 1 : -1;
-    prevActiveRef.current = active;
-  }
+  useEffect(() => {
+    if (isResetting) {
+      const frame = requestAnimationFrame(() => {
+        setIsResetting(false);
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [isResetting]);
+
+  const handleAnimationComplete = () => {
+    if (index >= COURSES.length * 2) {
+      setIsResetting(true);
+      setIndex(index - COURSES.length);
+    } else if (index < COURSES.length) {
+      setIsResetting(true);
+      setIndex(index + COURSES.length);
+    }
+  };
 
   const goTo = useCallback((idx: number, isManual = false) => {
-    setActive(idx);
+    setIndex(idx);
     progressRef.current = 0;
-    setProgress(0);
     lastTickRef.current = Date.now();
     if (isManual) pauseUntilRef.current = Date.now() + PAUSE_DURATION;
   }, []);
@@ -176,22 +193,16 @@ export default function JourneyTimeline() {
       const elapsed = now - lastTickRef.current;
       lastTickRef.current = now;
       progressRef.current = Math.min(100, progressRef.current + (elapsed / AUTO_DURATION) * 100);
-      setProgress(progressRef.current);
       if (progressRef.current >= 100) {
         progressRef.current = 0;
-        setProgress(0);
-        setActive((a) => (a + 1) % COURSES.length);
+        setIndex((prev) => prev + 1);
       }
     };
     frameRef.current = requestAnimationFrame(tick);
     return () => { if (frameRef.current !== null) cancelAnimationFrame(frameRef.current); };
   }, []);
 
-  const slideVariants = {
-    enter: (dir: number) => ({ x: prefersReducedMotion ? 0 : dir * 40, opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit:  (dir: number) => ({ x: prefersReducedMotion ? 0 : dir * -40, opacity: 0 }),
-  };
+
 
   return (
     <section className="jt-section">
@@ -210,100 +221,108 @@ export default function JourneyTimeline() {
             Handpicked by the Arcade team. Updated every semester.
           </p>
         </motion.div>
-
-        {/* Progress dots */}
-        <div className="jt-dots" role="tablist" aria-label="Courses">
-          {COURSES.map((c, i) => (
-            <button
-              key={i}
-              className={`jt-dot-btn ${i === active ? "is-active" : ""}`}
-              onClick={() => goTo(i, true)}
-              role="tab"
-              aria-selected={i === active}
-              aria-label={c.title}
-            >
-              <div className="jt-dot-track">
-                <div
-                  className="jt-dot-fill"
-                  style={{
-                    width: i < active ? "100%" : i === active ? `${progress}%` : "0%",
-                    background: c.accent,
-                  }}
-                />
-              </div>
-            </button>
-          ))}
-        </div>
-
         {/* Carousel */}
         <div className="jt-stage">
-          <div className="jt-track">
-            {[-1, 0, 1].map((offset) => {
-              const idx = (active + offset + COURSES.length) % COURSES.length;
-              const course = COURSES[idx];
-              const isActive = offset === 0;
+          <motion.div
+            className="jt-track"
+            animate={{ x: -index * (CARD_WIDTH + CARD_GAP) }}
+            transition={
+              isResetting
+                ? { type: "tween", duration: 0 }
+                : { type: "spring", stiffness: 90, damping: 20 }
+            }
+            onAnimationComplete={handleAnimationComplete}
+            style={{
+              "--card-width": `${CARD_WIDTH}px`,
+              "--card-gap": `${CARD_GAP}px`,
+            } as React.CSSProperties}
+          >
+            {VIRTUAL_COURSES.map((course, idx) => {
+              const realIdx = idx % COURSES.length;
+              const isActive = idx === index;
+              const offset = idx - index;
+              const isVisible = Math.abs(offset) <= 3;
 
               return (
                 <motion.div
-                  key={`${offset}-${idx}`}
+                  key={`${idx}-${course.title}`}
                   className={`jt-card ${isActive ? "jt-card--active" : "jt-card--side"}`}
                   style={{
                     "--accent": course.accent,
                     "--accent-light": course.accentLight,
-                    gridColumn: offset === -1 ? 1 : offset === 0 ? 2 : 3,
                   } as React.CSSProperties}
                   animate={
                     prefersReducedMotion
-                      ? { opacity: isActive ? 1 : 0.5 }
-                      : { scale: isActive ? 1 : 0.91, opacity: isActive ? 1 : 0.5 }
+                      ? { opacity: isActive ? 1 : 0.4 }
+                      : {
+                          scale: isActive ? 1.06 : 0.88,
+                          opacity: isActive
+                            ? 1
+                            : isVisible
+                            ? Math.max(0.05, 0.55 - Math.abs(offset) * 0.15)
+                            : 0,
+                        }
                   }
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+                  whileHover={
+                    !prefersReducedMotion && isActive
+                      ? { scale: 1.09 }
+                      : undefined
+                  }
                   onClick={() => !isActive && goTo(idx, true)}
                 >
-                  {isActive ? (
-                    <AnimatePresence mode="wait" custom={dirRef.current}>
-                      <motion.div
-                        key={idx}
-                        className="jt-course"
-                        custom={dirRef.current}
-                        variants={slideVariants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <CourseFigure course={course} isActive={isActive} />
-                        <div className="jt-course__info">
-                          <h3 className="jt-course__title">{course.title}</h3>
-                          <div className="jt-course__meta">
-                            <span className="jt-course__author">{course.author}</span>
-                            <span className="jt-course__sep">·</span>
-                            <span className="jt-course__duration">{course.duration}</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  ) : (
-                    /* Side card — full-bleed thumbnail with tint overlay */
-                    <div className="jt-side-course">
-                      <div
-                        className="jt-side-course__fig"
-                        style={{ backgroundImage: `url(${course.cover})` }}
-                      />
-                      <div
-                        className="jt-side-course__overlay"
-                        style={{ background: `linear-gradient(to top, ${course.accent}ee 0%, ${course.accent}44 50%, transparent 100%)` }}
-                      />
-                      <div className="jt-side-course__info">
-                        <p className="jt-side-course__title">{course.title}</p>
-                        <p className="jt-side-course__author">{course.author}</p>
+                  {/* Active Card Content */}
+                  <motion.div
+                    className="jt-course"
+                    initial={false}
+                    animate={{ opacity: isActive ? 1 : 0, pointerEvents: isActive ? "auto" : "none" }}
+                    transition={{ duration: 0.6 }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <CourseFigure course={course} isActive={isActive} />
+                    <div className="jt-course__info">
+                      <h3 className="jt-course__title">{course.title}</h3>
+                      <div className="jt-course__meta">
+                        <span className="jt-course__author">{course.author}</span>
+                        <span className="jt-course__sep">·</span>
+                        <span className="jt-course__duration">{course.duration}</span>
                       </div>
                     </div>
-                  )}
+                  </motion.div>
+
+                  {/* Side Card Content */}
+                  <motion.div
+                    className="jt-side-course"
+                    initial={false}
+                    animate={{ opacity: isActive ? 0 : 1, pointerEvents: isActive ? "none" : "auto" }}
+                    transition={{ duration: 0.6 }}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                    }}
+                  >
+                    <div
+                      className="jt-side-course__fig"
+                      style={{ backgroundImage: `url(${course.cover})` }}
+                    />
+                    <div
+                      className="jt-side-course__overlay"
+                      style={{ background: `linear-gradient(to top, ${course.accent}ee 0%, ${course.accent}44 50%, transparent 100%)` }}
+                    />
+                    <div className="jt-side-course__info">
+                      <p className="jt-side-course__title">{course.title}</p>
+                      <p className="jt-side-course__author">{course.author}</p>
+                    </div>
+                  </motion.div>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
 
       </div>
