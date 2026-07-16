@@ -1,341 +1,821 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import Link from "next/link";
 import {
-  Play, Volume2, Settings, Share2, Clock, ChevronDown, Check,
-  Star, Users, BookOpen, Award, ArrowLeft, Terminal, Code
-} from "lucide-react";
-import HeroNav from "@/components/landing/HeroNav";
-import "@/styles/landing.css";
+  Award,
+  BadgeCheck,
+  BookOpen,
+  Briefcase,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  GraduationCap,
+  Heart,
+  Play,
+  PlayCircle,
+  Radio,
+  Settings,
+  Share2,
+  Sparkles,
+  Star,
+  Users,
+  Volume2,
+} from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
 
-const AVATAR_COLORS = [
-  { bg: "#DBEAFE", fg: "#1D4ED8" },
-  { bg: "#FEF3C7", fg: "#B45309" },
-  { bg: "#EDE9FE", fg: "#6D28D9" },
-  { bg: "#D1FAE5", fg: "#047857" },
-];
+/* ------------------------------------------------------------------ */
+/*  Data                                                               */
+/* ------------------------------------------------------------------ */
 
-function Avatar({ initials, idx = 0, size = 36 }: { initials: string; idx?: number; size?: number }) {
-  const c = AVATAR_COLORS[idx % AVATAR_COLORS.length];
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%", background: c.bg, color: c.fg,
-      display: "grid", placeItems: "center", fontSize: size * 0.38, fontWeight: 700, flexShrink: 0,
-    }}>{initials}</div>
-  );
+type Module = {
+  title: string
+  duration: string
+  accent: string
+  lessons: { title: string; length: string }[]
 }
 
-const TABS = ["Overview", "Syllabus", "Instructor", "Certificate", "Reviews"];
+type Review = {
+  name: string
+  role: string
+  quote: string
+  dark: boolean
+  accent: string
+}
 
-const MODULES = [
+const COURSE_TITLE = "Design interfaces people actually love"
+const CATEGORY = "UI / UX & Product Design"
+
+const TABS = ["Overview", "Syllabus", "Instructor", "Certificate"] as const
+type Tab = (typeof TABS)[number]
+
+const NAV_LINKS = ["Explore", "Forums", "For Colleges", "Docs"]
+
+const INSTRUCTOR = {
+  name: "Maya Okafor",
+  role: "Senior Product Designer",
+  channel: "Maya Okafor",
+  org: "Pixelcraft Studio",
+  accent: "var(--color-purple)",
+  bio: "Maya has spent twelve years designing products used by millions — leading design at two Series B startups and shipping systems at Meta and Notion. She teaches design as a craft you build in public, not a set of screens you decorate.",
+  expertise: ["Design systems", "Interaction & motion", "Figma", "Prototyping", "Design critique"],
+  stats: [
+    { k: "5", label: "courses", c: "var(--color-blue)", icon: BookOpen },
+    { k: "40,000", label: "students", c: "var(--color-amber)", icon: Users },
+    { k: "4.9", label: "avg rating", c: "var(--color-teal)", icon: Star },
+    { k: "12 yrs", label: "experience", c: "var(--color-purple)", icon: GraduationCap },
+  ],
+}
+
+const META = [
+  { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
+  { icon: BookOpen, label: "19 lessons", dot: "var(--color-amber)" },
+  { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
+]
+
+const MODULES: Module[] = [
   {
-    title: "Foundations of interface design", lessons: 5, duration: "1h 10m", color: "#3B82F6",
-    items: ["Visual hierarchy and grid systems", "Color theory for products", "Typography that scales", "Building your first component set", "Critique: heuristic review"],
+    title: "Foundations of interface design",
+    duration: "1h 10m",
+    accent: "var(--color-blue)",
+    lessons: [
+      { title: "Visual hierarchy and grid systems", length: "14m" },
+      { title: "Color theory for products", length: "12m" },
+      { title: "Typography that scales", length: "16m" },
+      { title: "Building your first component set", length: "18m" },
+      { title: "Critique: heuristic review", length: "10m" },
+    ],
   },
   {
-    title: "Interaction and motion design", lessons: 4, duration: "58m", color: "#F59E0B",
-    items: ["Micro-interactions that feel right", "Prototyping with real timing curves", "State changes and feedback", "Assignment: an animated onboarding flow"],
+    title: "Interaction and motion design",
+    duration: "58m",
+    accent: "var(--color-amber)",
+    lessons: [
+      { title: "Micro-interactions that feel right", length: "13m" },
+      { title: "Prototyping with real timing curves", length: "15m" },
+      { title: "State changes and feedback", length: "12m" },
+      { title: "Assignment: an animated onboarding flow", length: "18m" },
+    ],
   },
   {
-    title: "Design systems that scale", lessons: 6, duration: "1h 40m", color: "#6D5EF0",
-    items: ["Tokens over hard-coded values", "Component variants and props", "Documentation your team will read", "Versioning a design system", "Handoff without the back-and-forth", "Case study teardown"],
+    title: "Design systems that scale",
+    duration: "1h 40m",
+    accent: "var(--color-purple)",
+    lessons: [
+      { title: "Tokens over hard-coded values", length: "15m" },
+      { title: "Component variants and props", length: "17m" },
+      { title: "Documentation your team will read", length: "16m" },
+      { title: "Versioning a design system", length: "18m" },
+      { title: "Handoff without the back-and-forth", length: "20m" },
+      { title: "Case study teardown", length: "14m" },
+    ],
   },
   {
-    title: "Portfolio and case studies", lessons: 4, duration: "1h 02m", color: "#10B981",
-    items: ["Choosing your strongest project", "Writing a case study people finish", "Presenting process, not just polish", "Final review with a mentor"],
+    title: "Portfolio and case studies",
+    duration: "1h 02m",
+    accent: "var(--color-teal)",
+    lessons: [
+      { title: "Choosing your strongest project", length: "13m" },
+      { title: "Writing a case study people finish", length: "16m" },
+      { title: "Presenting process, not just polish", length: "15m" },
+      { title: "Final review with a mentor", length: "18m" },
+    ],
   },
-];
+]
 
-const REVIEWS = [
-  { name: "Adam Wathan", role: "Founder, Tailwind", quote: "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.", dark: true, idx: 0 },
-  { name: "Ian Callahan", role: "Harvard Art Museums", quote: "Genuinely the clearest explanation of design systems I've seen taught anywhere.", dark: false, idx: 1 },
-  { name: "Aaron Francis", role: "Co-founder, Try Hard Studios", quote: "Takes the pain out of learning motion design — the pacing is exactly right.", dark: false, idx: 2 },
-  { name: "Chandresh Patel", role: "CEO, Bacancy", quote: "Elegance, pacing, and student experience are completely unmatched.", dark: false, idx: 3 },
-  { name: "Fathom Analytics", role: "Team account", quote: "This course has been integral to how we onboard new hires into design.", dark: true, idx: 2 },
-];
+const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
 
-const PARTNERS = [
-  { name: "IEEE", color: "#00629B" }, { name: "edX", color: "#111111" },
-  { name: "IBM Cloud", color: "#6D5EF0" }, { name: "GitHub", color: "#111111" },
-  { name: "IBM", color: "#0F62FE" }, { name: "Oracle", color: "#C74634" },
-];
+const REVIEWS: Review[] = [
+  {
+    name: "Adam Wathan",
+    role: "Founder, Tailwind",
+    quote:
+      "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.",
+    dark: true,
+    accent: "var(--color-blue)",
+  },
+  {
+    name: "Ian Callahan",
+    role: "Harvard Art Museums",
+    quote: "Genuinely the clearest explanation of design systems I've seen taught anywhere.",
+    dark: false,
+    accent: "var(--color-amber)",
+  },
+  {
+    name: "Aaron Francis",
+    role: "Co-founder, Try Hard Studios",
+    quote: "Takes the pain out of learning motion design — the pacing is exactly right.",
+    dark: false,
+    accent: "var(--color-purple)",
+  },
+  {
+    name: "Chandresh Patel",
+    role: "CEO, Bacancy",
+    quote: "Elegance, pacing, and student experience are completely unmatched.",
+    dark: false,
+    accent: "var(--color-teal)",
+  },
+  {
+    name: "Fathom Analytics",
+    role: "Team account",
+    quote: "This course has been integral to how we onboard new hires into design.",
+    dark: true,
+    accent: "var(--color-coral)",
+  },
+  {
+    name: "Priya Menon",
+    role: "Design Lead, Freshworks",
+    quote: "The final case study review alone was worth the price. My portfolio has never been stronger.",
+    dark: false,
+    accent: "var(--color-blue)",
+  },
+]
 
-export default function CoursePreviewPage() {
-  const [tab, setTab] = useState("Overview");
-  const [openMod, setOpenMod] = useState(0);
-  const font = `'Inter', ui-sans-serif, system-ui`;
+const HIGHLIGHTS = [
+  "A working design system in Figma",
+  "A recorded portfolio case study",
+  "Feedback from a working designer",
+  "A shareable, verified certificate",
+]
+
+/* ------------------------------------------------------------------ */
+/*  Decorative marks                                                   */
+/* ------------------------------------------------------------------ */
+
+function FlowerMark({
+  size = 24,
+  className,
+  color = "currentColor",
+}: {
+  size?: number
+  className?: string
+  color?: string
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true" className={className}>
+      <path
+        fill={color}
+        d="M16 3.2c1.7 0 3.1 1.2 3.4 2.8a3.5 3.5 0 0 1 4.8 1.4 3.5 3.5 0 0 1 1.4 4.8 3.5 3.5 0 0 1 0 5.6 3.5 3.5 0 0 1-1.4 4.8 3.5 3.5 0 0 1-4.8 1.4 3.5 3.5 0 0 1-6.8 0 3.5 3.5 0 0 1-4.8-1.4 3.5 3.5 0 0 1-1.4-4.8 3.5 3.5 0 0 1 0-5.6 3.5 3.5 0 0 1 1.4-4.8 3.5 3.5 0 0 1 4.8-1.4A3.5 3.5 0 0 1 16 3.2Z"
+      />
+      <circle cx="16" cy="16" r="4.2" fill="#ffffff" />
+    </svg>
+  )
+}
+
+function BurstMark({ size = 22, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <circle cx="9" cy="9" r="5" fill="var(--color-blue)" />
+      <circle cx="15" cy="9" r="5" fill="var(--color-teal)" fillOpacity="0.85" />
+      <circle cx="9" cy="15" r="5" fill="var(--color-amber)" fillOpacity="0.9" />
+      <circle cx="15" cy="15" r="5" fill="var(--color-purple)" fillOpacity="0.85" />
+    </svg>
+  )
+}
+
+function Avatar({
+  name,
+  accent = "var(--color-blue)",
+  size = 36,
+  onDark = false,
+}: {
+  name: string
+  accent?: string
+  size?: number
+  onDark?: boolean
+}) {
+  const initials = name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FFFFFF", color: "#14161C", fontFamily: font }}>
-      <HeroNav />
-      <style>{`
-        .pill-btn { transition: transform .1s ease, background .1s ease; }
-        .pill-btn:hover { transform: translateY(-1px); }
-        .pill-btn:active { transform: scale(.98); }
-        .tab-seg { transition: all .15s ease; }
-        .mod-card:hover { border-color: #D7DAE3 !important; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(8px);} to {opacity:1; transform:none;} }
-        .fade-in { animation: fadeUp .3s ease-out both; }
-        .back-btn:hover { background: #F3F4F6 !important; }
-      `}</style>
+    <span
+      aria-hidden="true"
+      className="grid shrink-0 place-items-center rounded-full font-semibold text-paper"
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.38,
+        background: accent,
+        boxShadow: onDark ? "0 0 0 3px rgba(255,255,255,0.08)" : "0 0 0 3px rgba(20,22,28,0.04)",
+      }}
+    >
+      {initials}
+    </span>
+  )
+}
 
-      {/* Spacer under fixed navbar */}
-      <div style={{ height: "64px" }} />
-
-      <div style={{ padding: "48px 48px 80px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-
-          {/* Back to Explore */}
-          <Link
-            href="/explore"
-            className="back-btn"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 40,
-              fontSize: 14, fontWeight: 500, color: "#4B5563", textDecoration: "none",
-              border: "1px solid #E5E7EB", borderRadius: 8, padding: "8px 16px",
-              background: "#fff", transition: "background .15s ease",
-            }}
-          >
-            <ArrowLeft size={16} /> Back to courses
-          </Link>
-
-          {/* HERO */}
-          <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", marginBottom: 64 }}>
-            <div>
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8, background: "#F3F4F6",
-                borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 24,
-              }}>
-                <Code size={16} /> UI / UX &amp; Product Design
-              </div>
-
-              <h1 style={{ fontSize: 48, lineHeight: 1.1, fontWeight: 800, margin: "0 0 24px", letterSpacing: "-0.02em" }}>
-                Design interfaces people actually <span style={{ textDecoration: "underline", textDecorationColor: "#3B82F6", textUnderlineOffset: "6px" }}>love.</span>
-              </h1>
-
-              <p style={{ fontSize: 16, color: "#4B5563", lineHeight: 1.6, marginBottom: 32 }}>
-                A hands-on path through interface design, motion, and design systems — built by working product designers, taught the way we wish someone had taught us.
-              </p>
-
-              <div style={{ display: "flex", gap: 24, marginBottom: 28, fontSize: 13, color: "#5B5E6B" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}><Clock size={15} /> 4h 30m</span>
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BookOpen size={15} /> 19 lessons</span>
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}><Users size={15} /> 12,480 enrolled</span>
-              </div>
-
-              <div style={{ display: "flex", gap: 12 }}>
-                <button id="course-enroll-btn" className="pill-btn" style={{ background: "#14161C", color: "#fff", border: "none", borderRadius: 999, padding: "13px 24px", fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>
-                  Enroll now
-                </button>
-              </div>
-            </div>
-
-            {/* Dark video preview card */}
-            <div style={{ background: "#14161C", borderRadius: 20, padding: 16, boxShadow: "0 20px 50px rgba(20,22,28,0.22)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#2A2D38" }} />
-                  <div>
-                    <div style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>Course preview</div>
-                    <div style={{ fontSize: 11, color: "#8A8D99" }}>Product Design Studio</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <Volume2 size={15} color="#8A8D99" />
-                  <Settings size={15} color="#8A8D99" />
-                </div>
-              </div>
-              <div style={{ position: "relative", height: 200, borderRadius: 12, background: "linear-gradient(135deg,#1D2130,#262A38)", display: "grid", placeItems: "center", marginBottom: 12 }}>
-                <div style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "grid", placeItems: "center", cursor: "pointer" }}>
-                  <Play size={20} color="#fff" fill="#fff" />
-                </div>
-              </div>
-              <div style={{ height: 3, borderRadius: 2, background: "#2A2D38", marginBottom: 10 }}>
-                <div style={{ width: "35%", height: "100%", borderRadius: 2, background: "#F5654F" }} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#8A8D99" }}>
-                <span>0:42 / 2:00</span>
-                <span style={{ display: "flex", gap: 12 }}><Share2 size={13} /><Clock size={13} /></span>
-              </div>
-            </div>
-          </div>
-
-          {/* PARTNERS / VERIFIED BY */}
-          <div style={{ display: "flex", alignItems: "center", gap: 34, justifyContent: "center", flexWrap: "wrap", margin: "0 0 56px" }}>
-            <span style={{ fontSize: 12, color: "#9A9CA8", marginRight: 6 }}>Skills verified by</span>
-            {PARTNERS.map((p) => (
-              <span key={p.name} style={{ fontSize: 16, fontWeight: 700, color: p.color, opacity: 0.85 }}>{p.name}</span>
-            ))}
-          </div>
-
-          {/* TAB SEGMENT */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
-            <div style={{ display: "inline-flex", background: "#fff", border: "1px solid #E7E9F1", borderRadius: 999, padding: 5, gap: 4 }}>
-            {TABS.map((t) => (
-              <button
-                key={t}
-                id={`course-tab-${t.toLowerCase()}`}
-                onClick={() => setTab(t)}
-                className="tab-seg"
-                style={{
-                  border: "none", cursor: "pointer", borderRadius: 999, padding: "9px 18px", fontSize: 13.5, fontWeight: 600,
-                  background: tab === t ? "#14161C" : "transparent", color: tab === t ? "#fff" : "#5B5E6B",
-                }}
-              >
-                {t}
-              </button>
-            ))}
-            </div>
-          </div>
-
-
-          {/* TAB CONTENT */}
-          <div key={tab} className="fade-in">
-
-            {tab === "Overview" && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40 }}>
-                <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>About this course</h3>
-                  <p style={{ fontSize: 14, color: "#5B5E6B", lineHeight: 1.75 }}>
-                    This course treats design as a craft you build in public — every module ends with a real assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not just a certificate.
-                  </p>
-                </div>
-                <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>What you&apos;ll walk away with</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {["A working design system in Figma", "A recorded portfolio case study", "Feedback from a working designer", "A shareable certificate"].map((f) => (
-                      <div key={f} style={{ display: "flex", gap: 9, fontSize: 13.5, color: "#33353F", alignItems: "center" }}>
-                        <Check size={14} color="#10B981" /> {f}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === "Syllabus" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {MODULES.map((m, idx) => (
-                  <div key={m.title} className="mod-card" style={{ background: "#fff", border: "1px solid #ECEEF3", borderRadius: 16, overflow: "hidden" }}>
-                    <div
-                      onClick={() => setOpenMod(openMod === idx ? -1 : idx)}
-                      style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 20px", cursor: "pointer" }}
-                    >
-                      <div style={{ width: 6, height: 34, borderRadius: 3, background: m.color }} />
-                      <span style={{ flex: 1, fontSize: 14.5, fontWeight: 600 }}>{m.title}</span>
-                      <span style={{ fontSize: 12.5, color: "#9A9CA8" }}>{m.lessons} lessons · {m.duration}</span>
-                      <ChevronDown
-                        size={16}
-                        color="#9A9CA8"
-                        style={{ transform: openMod === idx ? "rotate(180deg)" : "none", transition: "transform .2s ease" }}
-                      />
-                    </div>
-                    {openMod === idx && (
-                      <div style={{ padding: "0 20px 16px 40px", display: "flex", flexDirection: "column", gap: 8 }}>
-                        {m.items.map((it) => (
-                          <div key={it} style={{ fontSize: 13, color: "#5B5E6B" }}>— {it}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {tab === "Instructor" && (
-              <div style={{ background: "#fff", border: "1px solid #ECEEF3", borderRadius: 20, padding: 28, display: "flex", gap: 20 }}>
-                <Avatar initials="MO" idx={2} size={56} />
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700 }}>Maya Okafor</div>
-                  <div style={{ fontSize: 12.5, color: "#9A9CA8", marginBottom: 12 }}>Senior product designer · ex-Meta, ex-Notion</div>
-                  <p style={{ fontSize: 14, color: "#5B5E6B", lineHeight: 1.75, maxWidth: 520, marginBottom: 14 }}>
-                    Maya has led design at two Series B startups and taught over 40,000 students how to think in systems, not screens.
-                  </p>
-                  <div style={{ display: "flex", gap: 22, fontSize: 12.5, color: "#5B5E6B" }}>
-                    <span>5 courses</span><span>40,000 students</span><span>4.9 avg rating</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === "Certificate" && (
-              <div style={{ background: "#fff", border: "1px solid #ECEEF3", borderRadius: 20, padding: 28, display: "flex", alignItems: "center", gap: 28 }}>
-                <div style={{
-                  width: 200, height: 140, borderRadius: 14,
-                  background: "linear-gradient(135deg,#14161C,#2A2D38)",
-                  flexShrink: 0, padding: 18, display: "flex", flexDirection: "column", justifyContent: "space-between",
-                }}>
-                  <Award size={20} color="#F5A623" />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Certificate of completion</div>
-                    <div style={{ fontSize: 10.5, color: "#8A8D99", marginTop: 4 }}>Verified · shareable</div>
-                  </div>
-                </div>
-                <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Finish strong, get recognized</h3>
-                  <p style={{ fontSize: 14, color: "#5B5E6B", lineHeight: 1.7, maxWidth: 400, marginBottom: 14 }}>
-                    Complete all four modules and your final case study to receive a certificate verified by our partner network — ready for your portfolio or LinkedIn.
-                  </p>
-                  <button id="course-sample-cert-btn" className="pill-btn" style={{ background: "#fff", border: "1px solid #E2E4EC", borderRadius: 999, padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                    View sample certificate
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {tab === "Reviews" && (
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                  <span style={{ fontFamily: font, fontSize: 30 }}>4.9</span>
-                  <div>
-                    <div style={{ display: "flex", gap: 2 }}>
-                      {[0, 1, 2, 3, 4].map((i) => <Star key={i} size={13} fill="#F5A623" strokeWidth={0} />)}
-                    </div>
-                    <div style={{ fontSize: 11.5, color: "#9A9CA8" }}>812 ratings</div>
-                  </div>
-                </div>
-                <div style={{ columns: "2 260px", columnGap: 16 }}>
-                  {REVIEWS.map((r) => (
-                    <div key={r.name} style={{
-                      breakInside: "avoid", marginBottom: 16, borderRadius: 18, padding: 22,
-                      background: r.dark ? "#14161C" : "#fff", border: r.dark ? "none" : "1px solid #ECEEF3",
-                    }}>
-                      <p style={{ fontSize: 14, lineHeight: 1.6, color: r.dark ? "#fff" : "#22242C", margin: "0 0 16px", fontWeight: r.dark ? 600 : 400 }}>
-                        &quot;{r.quote}&quot;
-                      </p>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, borderTop: `1px solid ${r.dark ? "#2A2D38" : "#F0F1F5"}` }}>
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: r.dark ? "#fff" : "#14161C" }}>{r.name}</div>
-                          <div style={{ fontSize: 11.5, color: r.dark ? "#8A8D99" : "#9A9CA8" }}>{r.role}</div>
-                        </div>
-                        <Avatar initials={r.name.split(" ").map((w) => w[0]).join("").slice(0, 2)} idx={r.idx} size={30} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ENROLLMENT STAT ROW */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginTop: 44 }}>
-            {[
-              { label: "Students enrolled", value: "12,480", color: "#3B82F6" },
-              { label: "Average rating", value: "4.9", color: "#F59E0B" },
-              { label: "Completion rate", value: "78%", color: "#10B981" },
-              { label: "Certified graduates", value: "9,720", color: "#6D5EF0" },
-            ].map((s) => (
-              <div key={s.label} style={{ background: "#fff", border: "1px solid #ECEEF3", borderRadius: 16, padding: "18px 18px" }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, marginBottom: 10 }} />
-                <div style={{ fontFamily: font, fontSize: 22, fontWeight: 700 }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: "#9A9CA8" }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-        </div>
+/* A medallion badge, unique per course via label + accent */
+function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { label?: string; accent?: string }) {
+  const scallops = Array.from({ length: 12 })
+  return (
+    <div className="relative shrink-0">
+      <svg width="164" height="188" viewBox="0 0 164 188" aria-hidden="true">
+        <defs>
+          <linearGradient id="badgeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor={accent} />
+            <stop offset="1" stopColor="var(--color-purple)" />
+          </linearGradient>
+        </defs>
+        {/* ribbon tails */}
+        <path d="M60 118 L44 180 L70 162 L80 128 Z" fill="var(--color-coral)" />
+        <path d="M104 118 L120 180 L94 162 L84 128 Z" fill="var(--color-teal)" />
+        {/* scalloped ring */}
+        {scallops.map((_, i) => {
+          const a = (i / 12) * Math.PI * 2
+          const cx = 82 + Math.cos(a) * 52
+          const cy = 74 + Math.sin(a) * 52
+          return <circle key={i} cx={cx} cy={cy} r="12" fill="url(#badgeGrad)" />
+        })}
+        <circle cx="82" cy="74" r="56" fill="url(#badgeGrad)" />
+        <circle cx="82" cy="74" r="45" fill="var(--color-ink)" />
+        <circle
+          cx="82"
+          cy="74"
+          r="45"
+          fill="none"
+          stroke="rgba(255,255,255,0.28)"
+          strokeWidth="1.5"
+          strokeDasharray="3 5"
+        />
+      </svg>
+      <div className="absolute inset-x-0 top-[44px] flex flex-col items-center text-paper">
+        <Award size={30} className="text-amber" />
+        <span className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-white/80">{label}</span>
+        <span className="text-[10px] text-white/45">Certified</span>
       </div>
     </div>
-  );
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Nav                                                                */
+/* ------------------------------------------------------------------ */
+
+function HeroNav() {
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
+      <nav
+        aria-label="Primary"
+        className="flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl border border-line/80 bg-paper/85 px-5 py-3 shadow-[0_8px_30px_rgba(20,22,28,0.06)] backdrop-blur-md"
+      >
+        <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-blue">
+          arcade<span className="text-ink">.</span>
+        </Link>
+
+        <ul className="hidden items-center gap-7 md:flex">
+          {NAV_LINKS.map((link) => (
+            <li key={link}>
+              <Link href="#" className="text-sm font-medium text-subtle transition-colors hover:text-ink">
+                {link}
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="#"
+            className="hidden rounded-full px-4 py-2 text-sm font-medium text-subtle transition-colors hover:text-ink sm:inline-block"
+          >
+            Log in
+          </Link>
+          <Link
+            href="#"
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5"
+          >
+            Get Started
+          </Link>
+        </div>
+      </nav>
+    </header>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Breadcrumb (modern replacement for the back button)               */
+/* ------------------------------------------------------------------ */
+
+function Breadcrumb() {
+  const crumbs = [
+    { label: "Explore", href: "/explore" },
+    { label: CATEGORY, href: "/explore" }
+  ]
+  return (
+    <nav aria-label="Breadcrumb" className="mb-8">
+      <ol className="flex flex-wrap items-center gap-1.5 text-[13px]">
+        {crumbs.map((c) => (
+          <li key={c.label} className="flex items-center gap-1.5">
+            <Link
+              href={c.href}
+              className="rounded-full px-2.5 py-1 font-medium text-subtle transition-colors hover:bg-mist hover:text-ink"
+            >
+              {c.label}
+            </Link>
+            <ChevronRight size={13} className="text-subtle/40" />
+          </li>
+        ))}
+        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{COURSE_TITLE}</li>
+      </ol>
+    </nav>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Hero                                                               */
+/* ------------------------------------------------------------------ */
+
+function CourseHero() {
+  const [saved, setSaved] = useState(false)
+
+  return (
+    <section className="arcade-fade">
+      <Breadcrumb />
+
+      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+        {/* Left — editorial copy */}
+        <div>
+          {/* Course name as the headline, keeping the word-marking */}
+          <h1
+            className="mt-6 text-[2.75rem] font-normal leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
+            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
+          >
+            Design interfaces
+            <br />
+            people actually{" "}
+            <span className="relative whitespace-nowrap italic text-blue">
+              love
+              <FlowerMark
+                size={26}
+                color="var(--color-ink)"
+                className="arcade-spin absolute -right-8 -top-2 hidden sm:block"
+              />
+              <svg
+                className="absolute -bottom-2 left-0 w-full"
+                viewBox="0 0 200 12"
+                fill="none"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path d="M2 9C40 3 160 3 198 8" stroke="var(--color-amber)" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </span>
+            .
+          </h1>
+
+          {/* Instructor: name + channel (with org already shown on top) */}
+          <div className="mt-7 flex items-center gap-3">
+            <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={46} />
+            <div>
+              <p className="text-[15px] font-semibold text-ink">{INSTRUCTOR.name}</p>
+              <p className="flex items-center gap-1.5 text-[13px] text-subtle">
+                <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-7 flex flex-wrap gap-2.5">
+            {META.map(({ icon: Icon, label, dot }) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
+              >
+                <span className="size-1.5 rounded-full" style={{ background: dot }} />
+                <Icon size={14} className="text-subtle" /> {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="flex items-baseline gap-2 pr-1">
+              <span className="font-serif text-3xl font-medium text-ink">$20</span>
+              <span className="text-sm text-subtle line-through">$49</span>
+            </div>
+            <button className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5 active:scale-[0.98]">
+              Enroll now
+            </button>
+            <button
+              onClick={() => setSaved((s) => !s)}
+              aria-pressed={saved}
+              aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-coral"
+            >
+              <Heart
+                size={18}
+                fill={saved ? "var(--color-coral)" : "none"}
+                color={saved ? "var(--color-coral)" : "currentColor"}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Right — dark video preview card */}
+        <div className="relative">
+          <div
+            className="absolute -right-4 -top-5 hidden size-24 rounded-full opacity-70 blur-2xl lg:block"
+            style={{ background: "var(--color-teal)" }}
+            aria-hidden="true"
+          />
+          <div className="relative rounded-3xl bg-ink p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
+            <div className="mb-3 flex items-center justify-between px-1">
+              <div className="flex items-center gap-2.5">
+                <span className="grid size-8 place-items-center rounded-full bg-blue text-xs font-bold text-paper">
+                  A
+                </span>
+                <div>
+                  <p className="text-[13px] font-semibold text-paper">Course preview</p>
+                  <p className="text-[11px] text-white/50">{INSTRUCTOR.channel}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-white/45">
+                <Volume2 size={15} />
+                <Settings size={15} />
+              </div>
+            </div>
+
+            <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1d2130] to-[#262a38]">
+              <div
+                className="absolute -left-6 -top-6 size-24 rounded-full opacity-40 blur-2xl"
+                style={{ background: "var(--color-purple)" }}
+                aria-hidden="true"
+              />
+              <button
+                aria-label="Play course preview"
+                className="grid size-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/20 backdrop-blur-sm transition-transform hover:scale-105"
+              >
+                <Play size={22} className="translate-x-0.5 text-paper" fill="currentColor" />
+              </button>
+            </div>
+
+            <div className="mt-3.5 h-1 rounded-full bg-white/12">
+              <div className="h-full w-[35%] rounded-full bg-coral" />
+            </div>
+            <div className="mt-2.5 flex items-center justify-between px-0.5 text-[11px] text-white/50">
+              <span>0:42 / 2:00</span>
+              <span className="flex items-center gap-3">
+                <Share2 size={13} />
+                <Clock size={13} />
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tabs                                                               */
+/* ------------------------------------------------------------------ */
+
+function CourseTabs() {
+  const [tab, setTab] = useState<Tab>("Overview")
+  const [openMod, setOpenMod] = useState(0)
+
+  return (
+    <div>
+      {/* Segmented tab control */}
+      <div className="flex justify-center">
+        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              aria-pressed={tab === t}
+              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors sm:px-5 ${tab === t ? "bg-ink text-paper" : "text-subtle hover:text-ink"
+                }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div key={tab} className="arcade-fade mt-10">
+        {tab === "Overview" && (
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="rounded-3xl border border-line bg-paper p-7">
+              <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
+                This course treats design as a craft you build in public — every module ends with a real
+                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
+                just a certificate.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-line bg-paper p-7">
+              <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
+              <ul className="mt-4 flex flex-col gap-3">
+                {HIGHLIGHTS.map((h) => (
+                  <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                      <Check size={13} className="text-teal" />
+                    </span>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {tab === "Syllabus" && (
+          <div className="mx-auto max-w-3xl">
+            {/* Structured summary of the course layout */}
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
+              {[
+                { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
+                { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
+                { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
+              ].map(({ icon: Icon, label, c }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink"
+                >
+                  <Icon size={14} style={{ color: c }} /> {label}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {MODULES.map((m, idx) => {
+                const open = openMod === idx
+                return (
+                  <div
+                    key={m.title}
+                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-colors hover:border-ink/15"
+                  >
+                    <button
+                      onClick={() => setOpenMod(open ? -1 : idx)}
+                      aria-expanded={open}
+                      className="flex w-full items-center gap-4 px-5 py-4 text-left"
+                    >
+                      <span
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper"
+                        style={{ background: m.accent }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span className="flex-1">
+                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-subtle">
+                          Module {idx + 1}
+                        </span>
+                        <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
+                      </span>
+                      <span className="hidden text-xs text-subtle sm:block">
+                        {m.lessons.length} lessons · {m.duration}
+                      </span>
+                      <ChevronDown
+                        size={17}
+                        className="text-subtle transition-transform"
+                        style={{ transform: open ? "rotate(180deg)" : "none" }}
+                      />
+                    </button>
+                    {open && (
+                      <ul className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2">
+                        {m.lessons.map((lesson, li) => (
+                          <li
+                            key={lesson.title}
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-mist"
+                          >
+                            <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
+                            <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
+                            <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
+                            <span className="text-[12px] text-subtle">{lesson.length}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab === "Instructor" && (
+          <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+              <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
+              <div className="flex-1">
+                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
+                  <BadgeCheck size={13} /> {INSTRUCTOR.org}
+                </div>
+                <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Briefcase size={13} /> {INSTRUCTOR.role}
+                  </span>
+                  <span className="text-subtle/40">·</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
+                  </span>
+                </p>
+              </div>
+              <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
+                Follow channel
+              </button>
+            </div>
+
+            <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {INSTRUCTOR.expertise.map((e) => (
+                <span
+                  key={e}
+                  className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
+                >
+                  {e}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
+              {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
+                <div key={label}>
+                  <Icon size={16} style={{ color: c }} />
+                  <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
+                  <p className="text-[12px] text-subtle">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "Certificate" && (
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
+            <CourseBadge label="UI / UX" accent="var(--color-blue)" />
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
+                <Sparkles size={13} className="text-amber" /> Course badge
+              </span>
+              <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
+                This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
+                course carries it. Finish all four modules and your final case study to unlock it on your profile.
+                You&apos;ll also receive a verified certificate of completion to share.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Reviews (now its own block, out of the tab panel)                  */
+/* ------------------------------------------------------------------ */
+
+function ReviewsBlock() {
+  return (
+    <section aria-labelledby="reviews-heading">
+      <div className="mb-8 flex flex-col items-center gap-3 text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
+          <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
+        </span>
+        <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
+          Loved by <span className="italic text-blue">12,480</span> builders
+        </h2>
+        <div className="flex items-center gap-3">
+          <span className="font-serif text-3xl font-light text-ink">4.9</span>
+          <div className="text-left">
+            <div className="flex gap-0.5">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star key={i} size={14} className="text-amber" fill="var(--color-amber)" strokeWidth={0} />
+              ))}
+            </div>
+            <p className="mt-0.5 text-xs text-subtle">812 ratings</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="[column-gap:1rem] sm:columns-2 lg:columns-3">
+        {REVIEWS.map((r) => (
+          <div
+            key={r.name}
+            className={`mb-4 break-inside-avoid rounded-2xl p-6 ${r.dark ? "bg-ink" : "border border-line bg-paper"
+              }`}
+          >
+            <p className={`text-[15px] leading-relaxed ${r.dark ? "font-medium text-paper" : "text-ink"}`}>
+              &ldquo;{r.quote}&rdquo;
+            </p>
+            <div
+              className={`mt-5 flex items-center justify-between border-t pt-4 ${r.dark ? "border-white/10" : "border-line"
+                }`}
+            >
+              <div>
+                <p className={`text-[13px] font-semibold ${r.dark ? "text-paper" : "text-ink"}`}>{r.name}</p>
+                <p className={`text-[11px] ${r.dark ? "text-white/50" : "text-subtle"}`}>{r.role}</p>
+              </div>
+              <Avatar name={r.name} accent={r.accent} size={32} onDark={r.dark} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Enroll CTA                                                         */
+/* ------------------------------------------------------------------ */
+
+function EnrollCta() {
+  return (
+    <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
+      <FlowerMark
+        size={120}
+        color="rgba(255,255,255,0.06)"
+        className="arcade-spin pointer-events-none absolute -right-8 -top-8"
+      />
+      <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-paper text-balance sm:text-4xl">
+        Light the path to your next <span className="italic text-amber">design role.</span>
+      </h2>
+      <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
+        Join 12,480 builders learning to design interfaces people actually love — with feedback from working
+        designers.
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <button className="rounded-full bg-paper px-6 py-3 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5">
+          Enroll for $20
+        </button>
+        <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
+          See how it works →
+        </button>
+      </div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+
+export default function CoursePreviewPage() {
+  return (
+    <main className="min-h-screen bg-paper text-ink">
+      <HeroNav />
+
+      {/* Hero wash */}
+      <div className="arcade-wash">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
+          <CourseHero />
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+        <CourseTabs />
+        <div className="mt-20">
+          <ReviewsBlock />
+        </div>
+        <div className="mt-16">
+          <EnrollCta />
+        </div>
+      </div>
+    </main>
+  )
 }

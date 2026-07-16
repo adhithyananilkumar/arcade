@@ -1077,7 +1077,7 @@ function CoursesContent() {
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
-    router.push(`/courses?category=${encodeURIComponent(category)}`);
+    router.push(`/explore?category=${encodeURIComponent(category)}`);
   };
 
   const handleGoBackToExplore = () => {
