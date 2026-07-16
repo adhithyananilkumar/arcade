@@ -42,6 +42,10 @@ export class ChannelStaffService {
     return data;
   }
 
+  static async deleteInvitation(channelId: string, invitationId: string): Promise<void> {
+    await apiClient.delete(`/channels/${channelId}/staff/invitations/${invitationId}`);
+  }
+
   static async getMyInvitations(): Promise<ChannelInvitation[]> {
     const { data } = await apiClient.get<ChannelInvitation[]>('/users/me/invitations');
     return data;

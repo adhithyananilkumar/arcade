@@ -83,7 +83,7 @@ export function UsersList() {
 
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (user.firstName && user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (user.lastName && user.lastName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
