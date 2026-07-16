@@ -105,6 +105,18 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
     }
   };
 
+  const handleDeleteInvitation = async (invitationId: string) => {
+    if (confirm('Are you sure you want to delete this invitation?')) {
+      try {
+        await ChannelStaffService.deleteInvitation(channelId, invitationId);
+        toast.success('Invitation deleted');
+        fetchData();
+      } catch {
+        toast.error('Failed to delete invitation');
+      }
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-indigo-600" /></div>;
   }
@@ -176,9 +188,14 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
                   <p className="text-sm font-bold text-gray-900">{inv.email}</p>
                   <p className="text-xs text-gray-500">Invited by {inv.invitedByName} on {new Date(inv.createdAt).toLocaleDateString()}</p>
                 </div>
-                <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                  {inv.roleName} - {inv.status}
-                </span>
+                <div className="flex items-center gap-6">
+                  <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                    {inv.roleName} - {inv.status}
+                  </span>
+                  <button onClick={() => handleDeleteInvitation(inv.id)} className="text-gray-400 hover:text-red-600 transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

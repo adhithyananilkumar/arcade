@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { roleService, Role } from '@/services/role.service';
 import { permissionService, Permission } from '@/services/permission.service';
 import { toast } from 'sonner';
-import { Plus, X, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
+import { Plus, X, ShieldCheck, Edit3, Trash2, Search, User as UserIcon } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore, User } from '@/store/auth.store';
+import { UserService } from '@/services/user.service';
 
 const formatPermissionKey = (key: string) => {
   if (!key) return '';
@@ -31,6 +32,11 @@ export function PolicyManager() {
   const [newRoleDesc, setNewRoleDesc] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  
+  const [selectedRoleForUsers, setSelectedRoleForUsers] = useState<Role | null>(null);
+  const [roleUsers, setRoleUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
@@ -131,6 +137,21 @@ export function PolicyManager() {
     }
   };
 
+  const openRoleUsersModal = async (role: Role) => {
+    setSelectedRoleForUsers(role);
+    setUserSearchQuery('');
+    setUsersLoading(true);
+    try {
+      const users = await UserService.getUsersByRole(role.id);
+      setRoleUsers(users);
+    } catch (error) {
+      toast.error('Failed to load users for policy');
+      setRoleUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   if (loading) return <div className="text-sm text-gray-500">Loading policies...</div>;
 
   return (
@@ -155,12 +176,20 @@ export function PolicyManager() {
           <div key={role.id} className="p-5 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col h-full">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                <h4 
+                  className="font-bold text-gray-900 flex items-center gap-2 cursor-pointer hover:text-indigo-600 transition-colors"
+                  onClick={() => openRoleUsersModal(role)}
+                  title="View Assigned Users"
+                >
                   <ShieldCheck size={18} className="text-indigo-600" />
                   {role.name}
                   {role.isSystem && (
                     <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">System</span>
                   )}
+                  <span className="px-2 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-700 rounded-full border border-indigo-100 flex items-center gap-1">
+                    <UserIcon size={12} />
+                    {role.memberCount === 1 ? '1 member' : `${role.memberCount || 0} members`}
+                  </span>
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
               </div>
@@ -276,6 +305,71 @@ export function PolicyManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedRoleForUsers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <ShieldCheck size={20} className="text-indigo-600" />
+                {selectedRoleForUsers.name} Users
+              </h3>
+              <button onClick={() => setSelectedRoleForUsers(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <p className="text-sm text-gray-500 mb-6">
+              Users currently assigned to this policy.
+            </p>
+
+            <div className="relative mb-4">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={16} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={userSearchQuery}
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-gray-50 focus:bg-white"
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              {usersLoading ? (
+                <div className="text-sm text-gray-500 text-center py-8">Loading users...</div>
+              ) : roleUsers.length === 0 ? (
+                <div className="text-sm text-gray-500 text-center py-8 bg-gray-50 rounded-xl border border-gray-100">
+                  No users are currently assigned to this policy.
+                </div>
+              ) : (
+                roleUsers
+                  .filter(u => 
+                    !userSearchQuery || 
+                    u.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) || 
+                    u.email.toLowerCase().includes(userSearchQuery.toLowerCase())
+                  )
+                  .map(user => (
+                    <div key={user.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold overflow-hidden shrink-0">
+                        {user.avatarUrl ? (
+                          <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                        ) : (
+                          user.fullName.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{user.fullName}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
           </div>
         </div>
       )}

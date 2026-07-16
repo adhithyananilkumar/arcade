@@ -65,7 +65,8 @@ export function PendingChannels() {
 
   if (loading) return <div className="text-sm text-gray-500">Loading channels...</div>;
 
-  const displayChannels = (activeTab === 'PENDING' ? pendingChannels : allChannels).filter(c => {
+  const sourceArray = activeTab === 'PENDING' ? pendingChannels : allChannels;
+  const displayChannels = (Array.isArray(sourceArray) ? sourceArray : []).filter(c => {
     if (!searchQuery) return true;
     const lowerQuery = searchQuery.toLowerCase();
     return c.name.toLowerCase().includes(lowerQuery) || c.ownerName.toLowerCase().includes(lowerQuery);

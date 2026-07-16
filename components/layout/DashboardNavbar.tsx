@@ -20,6 +20,12 @@ export default function DashboardNavbar() {
     fetchInvitations();
   }, []);
 
+  useEffect(() => {
+    if (isNotificationsOpen) {
+      fetchInvitations();
+    }
+  }, [isNotificationsOpen]);
+
   const fetchInvitations = async () => {
     try {
       const data = await ChannelStaffService.getMyInvitations();

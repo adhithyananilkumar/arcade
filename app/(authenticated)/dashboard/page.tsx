@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3, Loader2, Award } from 'lucide-react';
+import { channelService, ChannelDeletionRequestDto } from '@/services/channel.service';
+import { ChannelStaffService } from '@/services/channel-staff.service';
+import { User as UserIcon, Shield, Mail, Phone, Calendar, Activity, CheckCircle, Clock, ChevronRight, Edit3, Loader2, Award, Check, X, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { motion, Variants } from 'framer-motion';
 import { MyChannels } from './MyChannels';
 import { CreateChannelModal } from '@/components/CreateChannelModal';
@@ -29,6 +32,37 @@ const itemVariants: Variants = {
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [recentInvitations, setRecentInvitations] = useState<any[]>([]);
+  const [deletionNotifs, setDeletionNotifs] = useState<ChannelDeletionRequestDto[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      ChannelStaffService.getMyInvitations().then(setRecentInvitations).catch(() => {});
+      channelService.getMyDeletionRequests().then(reqs => setDeletionNotifs(reqs.filter(r => r.status === 'APPROVED' || r.status === 'REJECTED'))).catch(() => {});
+    }
+  }, [user]);
+
+  const handleAcceptInvite = async (id: string) => {
+    try {
+      await ChannelStaffService.acceptInvitation(id);
+      toast.success('Invitation accepted! You are now staff.');
+      setRecentInvitations(prev => prev.filter(inv => inv.id !== id));
+      // Refresh window to fetch new profile & workingAt info
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err) {
+      toast.error('Failed to accept invitation');
+    }
+  };
+
+  const handleRejectInvite = async (id: string) => {
+    try {
+      await ChannelStaffService.rejectInvitation(id);
+      toast.success('Invitation rejected.');
+      setRecentInvitations(prev => prev.filter(inv => inv.id !== id));
+    } catch (err) {
+      toast.error('Failed to reject invitation');
+    }
+  };
 
   if (!user) return null;
 
@@ -133,6 +167,12 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500 tracking-wider uppercase border border-gray-100 backdrop-blur-sm">
                   <Shield size={12} className="text-gray-400" />
                   MEMBER
+                </div>
+              )}
+              {user.workingAt && (
+                <div className="flex items-center gap-1.5 rounded-full bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-700 tracking-wider uppercase border border-blue-100 backdrop-blur-sm">
+                  <Award size={12} className="text-blue-500" />
+                  Working at {user.workingAt}
                 </div>
               )}
             </div>
@@ -271,6 +311,61 @@ export default function DashboardPage() {
             <div className="space-y-6 relative pl-3">
               {/* Timeline Dotted vertical connector */}
               <div className="absolute top-2 bottom-6 left-8 w-0.5 border-l-2 border-dashed border-slate-100 z-0"></div>
+
+              {/* Pending Invitations Event */}
+              {recentInvitations.map(inv => (
+                <div key={inv.id} className="group relative flex gap-6 items-start z-10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 border border-purple-100 text-purple-600 shadow-sm group-hover:scale-105 transition-all duration-200">
+                    <Mail size={16} />
+                  </div>
+                  <div className="pt-0.5">
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-purple-900 transition-colors">Channel Invitation</p>
+                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-1 font-semibold">
+                      <span className="flex items-center gap-1"><Clock size={12} className="text-slate-300" /> {new Date(inv.createdAt).toLocaleDateString()}</span>
+                      <span className="text-slate-200">•</span>
+                      <span className="text-slate-500 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">Invited by {inv.invitedByName} to {inv.channelName}</span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <button 
+                        onClick={() => handleAcceptInvite(inv.id)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-600 transition-colors"
+                      >
+                        <Check size={14} /> Accept
+                      </button>
+                      <button 
+                        onClick={() => handleRejectInvite(inv.id)}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      >
+                        <X size={14} /> Reject
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Deletion Request Events */}
+              {deletionNotifs.map(notif => (
+                <div key={notif.id} className="group relative flex gap-6 items-start z-10">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border shadow-sm group-hover:scale-105 transition-all duration-200 ${notif.status === 'APPROVED' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
+                    <AlertTriangle size={16} />
+                  </div>
+                  <div className="pt-0.5">
+                    <p className={`text-sm font-bold transition-colors ${notif.status === 'APPROVED' ? 'text-red-800 group-hover:text-red-900' : 'text-gray-700 group-hover:text-gray-900'}`}>
+                      Channel Deletion {notif.status === 'APPROVED' ? 'Approved' : 'Rejected'}
+                    </p>
+                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-1 font-semibold">
+                      <span className="flex items-center gap-1"><Clock size={12} className="text-slate-300" /> {new Date(notif.createdAt).toLocaleDateString()}</span>
+                      <span className="text-slate-200">•</span>
+                      <span className="text-slate-500 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{notif.channelName}</span>
+                    </div>
+                    {notif.status === 'APPROVED' ? (
+                      <p className="mt-2 text-xs text-red-600 font-medium">Your channel has been suspended and ownership transferred.</p>
+                    ) : (
+                      <p className="mt-2 text-xs text-gray-500 font-medium">Your deletion request for this channel was rejected.</p>
+                    )}
+                  </div>
+                </div>
+              ))}
 
               {/* Login Event */}
               <div className="group relative flex gap-6 items-start z-10">

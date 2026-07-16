@@ -8,7 +8,7 @@ import {
   User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3, 
   ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit, 
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
-  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare
+  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Shield
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import Image from 'next/image';
@@ -216,6 +216,19 @@ export default function PublicProfilePage() {
             <p className="text-base font-bold text-slate-400 mt-1">
               @{username}
             </p>
+
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+              <div className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500 tracking-wider uppercase border border-gray-100 backdrop-blur-sm">
+                <Shield size={12} className="text-gray-400" />
+                MEMBER
+              </div>
+              {profileData.workingAt && (
+                <div className="flex items-center gap-1.5 rounded-full bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-700 tracking-wider uppercase border border-blue-100 backdrop-blur-sm">
+                  <Award size={12} className="text-blue-500" />
+                  Working at {profileData.workingAt}
+                </div>
+              )}
+            </div>
 
             {/* Enlarged Bio */}
             {profileData.bio && (

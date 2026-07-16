@@ -7,6 +7,8 @@ import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles,
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
+import { Channel, channelService } from '@/services/channel.service';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -23,6 +25,17 @@ export default function DashboardSidebar() {
 
   const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
   const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+
+  const [workspaces, setWorkspaces] = useState<Channel[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      channelService.getMyWorkspaces().then(data => {
+        // Only show organization channels
+        setWorkspaces(data.filter(c => !c.isPersonal && c.status === 'ACTIVE'));
+      }).catch(() => {});
+    }
+  }, [user]);
 
   const dynamicNavItems = [
     ...navItems,
@@ -83,6 +96,44 @@ export default function DashboardSidebar() {
             </Link>
           );
         })}
+        
+        {workspaces.length > 0 && (
+          <div className="pt-4 mt-4 border-t border-slate-100">
+            <p className="px-4 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Workspaces</p>
+            {workspaces.map((channel) => {
+              const href = `/channels/${channel.id}/manage`;
+              const isActive = pathname === href;
+              return (
+                <Link
+                  key={channel.id}
+                  href={href}
+                  className="relative flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 group"
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-active-indicator"
+                      className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-50/70 to-purple-50/40 border-l-[3px] border-indigo-600 shadow-[inset_0_1px_2px_rgba(99,102,241,0.03)]"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <div className="relative z-10 flex h-6 w-6 items-center justify-center rounded bg-indigo-100 text-indigo-700 overflow-hidden shrink-0">
+                    {channel.iconUrl ? (
+                      <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 size={14} />
+                    )}
+                  </div>
+                  <span className={`relative z-10 truncate transition-colors duration-200 ${
+                    isActive ? 'text-indigo-900 font-semibold' : 'text-slate-600 group-hover:text-slate-900'
+                  }`}>
+                    {channel.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
     </div>
   );
