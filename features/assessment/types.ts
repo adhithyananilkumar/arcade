@@ -35,3 +35,58 @@ export interface QuestionRequest {
 export interface QuizQuestionsRequest {
   questions: QuestionRequest[];
 }
+
+// ── Quiz taking (learner-facing, no answer key) ──────────────────────────────
+
+export interface QuizTakeOptionResponse {
+  id: string;
+  text: string;
+  position: number;
+}
+
+export interface QuizTakeQuestionResponse {
+  id: string;
+  type: QuestionType;
+  prompt: string;
+  points: number;
+  position: number;
+  options: QuizTakeOptionResponse[];
+}
+
+export interface QuizTakeResponse {
+  id: string;
+  title: string;
+  questions: QuizTakeQuestionResponse[];
+}
+
+/** questionId -> selected option id(s). */
+export type QuizSubmitAnswers = Record<string, string[]>;
+
+export interface QuestionResultResponse {
+  questionId: string;
+  correct: boolean;
+  correctOptionIds: string[];
+  selectedOptionIds: string[];
+}
+
+export interface QuizAttemptResponse {
+  attemptId: string;
+  score: number;
+  maxScore: number;
+  submittedAt: string;
+  results: QuestionResultResponse[];
+}
+
+export interface QuizAttemptSummaryResponse {
+  attemptId: string;
+  score: number;
+  maxScore: number;
+  submittedAt: string;
+}
+
+export interface QuizStatsResponse {
+  quizId: string;
+  bestScore: number | null;
+  maxScore: number | null;
+  attemptCount: number;
+}

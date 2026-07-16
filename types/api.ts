@@ -94,3 +94,36 @@ export interface DraftResponse {
   body: string; // JSON string — parse to TiptapDocument
   savedAt: string;
 }
+
+// ── Course Renderer (learner-facing, read-only) ──────────────────────────────
+// Mirrors arcade-backend com.arcade.backend.learning.delivery.dto.*
+
+export interface LessonRenderResponse {
+  id: string;
+  title: string;
+  position: number;
+  body?: string; // Raw JSON string — parsed to TiptapDocument by the renderer
+}
+
+export interface QuizRenderResponse {
+  id: string;
+  title: string;
+  position: number;
+}
+
+export interface ModuleRenderResponse {
+  id: string;
+  title: string;
+  position: number;
+  lessons: LessonRenderResponse[];
+  quizzes: QuizRenderResponse[];
+}
+
+export interface CourseRenderResponse {
+  id: string;
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  status: ContentStatus;
+  modules: ModuleRenderResponse[];
+}
