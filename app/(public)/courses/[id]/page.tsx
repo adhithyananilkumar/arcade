@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Play, Volume2, Settings, Share2, Clock, ChevronDown,
-  Star, Users, BookOpen, Award, ArrowRight, ArrowLeft,
+  Star, Users, BookOpen, Award, ArrowLeft,
 } from "lucide-react";
 import HeroNav from "@/components/landing/HeroNav";
 
@@ -111,9 +111,9 @@ export default function CoursePreviewPage() {
 
       <div style={{
         background: "radial-gradient(circle at 6% 8%, #E3EBFE 0%, transparent 42%), radial-gradient(circle at 96% 88%, #DFFBEC 0%, transparent 45%), #FAFBFF",
-        padding: "32px 20px 80px",
+        padding: "32px 48px 80px",
       }}>
-        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
 
           {/* Back to Explore */}
           <Link
@@ -164,9 +164,6 @@ export default function CoursePreviewPage() {
                 <button id="course-enroll-btn" className="pill-btn" style={{ background: "#14161C", color: "#fff", border: "none", borderRadius: 999, padding: "13px 24px", fontSize: 14.5, fontWeight: 600, cursor: "pointer" }}>
                   Enroll now
                 </button>
-                <button id="course-syllabus-btn" className="pill-btn" onClick={() => setTab("Syllabus")} style={{ background: "#fff", border: "1px solid #E2E4EC", borderRadius: 999, padding: "13px 22px", fontSize: 14.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-                  See syllabus <ArrowRight size={15} />
-                </button>
               </div>
             </div>
 
@@ -209,7 +206,8 @@ export default function CoursePreviewPage() {
           </div>
 
           {/* TAB SEGMENT */}
-          <div style={{ display: "inline-flex", background: "#fff", border: "1px solid #E7E9F1", borderRadius: 999, padding: 5, gap: 4, marginBottom: 28 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", background: "#fff", border: "1px solid #E7E9F1", borderRadius: 999, padding: 5, gap: 4 }}>
             {TABS.map((t) => (
               <button
                 key={t}
@@ -224,7 +222,9 @@ export default function CoursePreviewPage() {
                 {t}
               </button>
             ))}
+            </div>
           </div>
+
 
           {/* TAB CONTENT */}
           <div key={tab} className="fade-in">
