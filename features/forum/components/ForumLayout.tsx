@@ -169,7 +169,7 @@ export function ForumLayout({ children }: Props) {
                 Sign in
               </Link>
               <Link
-                href="/register"
+                href="/sign?mode=signup"
                 style={{
                   fontSize: 13,
                   fontWeight: 600,

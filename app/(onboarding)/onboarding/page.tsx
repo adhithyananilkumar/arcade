@@ -415,7 +415,7 @@ export default function OnboardingPage() {
                   className="space-y-6"
                 >
                   <div className="flex flex-wrap gap-3">
-                    {PREFERENCE_OPTIONS.map(pref => {
+                    {[...PREFERENCE_OPTIONS, ...preferences.filter(p => !PREFERENCE_OPTIONS.includes(p))].map(pref => {
                       const isSelected = preferences.includes(pref);
                       return (
                         <button

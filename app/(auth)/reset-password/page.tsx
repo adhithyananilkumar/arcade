@@ -73,7 +73,7 @@ function ResetPasswordForm() {
             </p>
             
             <Link 
-              href="/login"
+              href="/sign"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
             >
               Continue to Login <ArrowRight size={16} />

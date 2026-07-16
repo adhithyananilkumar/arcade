@@ -92,10 +92,10 @@ export default function HeroNav() {
 
       {/* Right actions */}
       <div className="l-nav__actions">
-        <Link href="/login" className="l-nav__login">
+        <Link href="/sign" className="l-nav__login">
           Log in
         </Link>
-        <Link href="/register" className="l-nav__get-started">
+        <Link href="/sign?mode=signup" className="l-nav__get-started">
           Get Started
         </Link>
       </div>

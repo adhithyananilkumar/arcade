@@ -47,8 +47,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (!mounted) return;
 
-    if (status === 'unauthenticated' && !pathname.startsWith('/login') && !pathname.startsWith('/register')) {
-      router.push('/login');
+    if (status === 'unauthenticated' && !pathname.startsWith('/sign')) {
+      router.push('/sign');
     } else if (status === 'authenticated' && user) {
       const isOnboarding = pathname.startsWith('/onboarding');
       if (user.onboardingCompleted === false && !isOnboarding) {
@@ -63,12 +63,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   if (!mounted) return null;
 
   if (status === 'loading') {
-    return (
-      <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <p className="text-gray-500 font-medium">Loading Application...</p>
-      </div>
-    );
+    return <>{children}</>;
   }
 
   // Prevent rendering the dashboard if the user needs to be redirected to onboarding (FOUC fix)
