@@ -4,8 +4,8 @@ import HeroSection from "@/components/landing/HeroSection";
 import LogoStrip from "@/components/landing/LogoStrip";
 import CourseShowcase from "@/components/landing/CourseShowcase";
 import Testimonials from "@/components/landing/Testimonials";
-import Footer from "@/components/landing/Footer";
 import JourneyTimeline from "@/components/landing/JourneyTimeline";
+import Footer from "@/components/landing/Footer";
 import "@/styles/landing.css";
 
 export const metadata: Metadata = {
@@ -28,6 +28,7 @@ export default function Home() {
       <LogoStrip />
       <CourseShowcase />
       <Testimonials />
+      <JourneyTimeline />
       <Footer />
     </div>
   );
