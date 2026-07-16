@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 
 const navLinks = [
-  { label: "Explore", href: "/courses" },
+  { label: "Explore", href: "/explore" },
   { label: "Forums", href: "/forum" },
   { label: "For Colleges", href: "/#colleges" },
   { label: "Docs", href: "/docs" },

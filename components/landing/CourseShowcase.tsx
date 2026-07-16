@@ -33,7 +33,7 @@ export default function CourseShowcase() {
             Arcade started with a simple idea: to build a unified online learning and collaboration ecosystem for Amal Jyothi College. We bring together high-quality courses, interactive workshops, student-led forums, and certified learning achievements under one roof. Designed by builders, for builders — Arcade is here to help you level up your skills, discover new opportunities, and connect with technical communities.
           </p>
 
-          <Link href="/courses" className="l-showcase__btn">
+          <Link href="/explore" className="l-showcase__btn">
             Explore Courses
           </Link>
         </div>

@@ -1082,7 +1082,7 @@ function CoursesContent() {
 
   const handleGoBackToExplore = () => {
     setActiveCategory(null);
-    router.push("/courses");
+    router.push("/explore");
   };
 
   // RENDER OPTION A: Dedicated Category/Department Page

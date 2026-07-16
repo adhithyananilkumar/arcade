@@ -58,7 +58,7 @@ export default function Footer() {
             <div className="arc-footer__links-col">
               <span className="arc-footer__col-title">Platform</span>
               <ul className="arc-footer__list">
-                <li><Link href="/courses">Course Hub</Link></li>
+                <li><Link href="/explore">Explore</Link></li>
                 <li><Link href="/forum">Discussions</Link></li>
                 <li><Link href="/docs">Developer API</Link></li>
                 <li><Link href="/status">Network Status</Link></li>
