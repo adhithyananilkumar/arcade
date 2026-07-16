@@ -147,6 +147,15 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
     let timeout: NodeJS.Timeout;
     let isMounted = true;
 
+    const safeStart = async (def: any) => {
+      if (!isMounted) return;
+      try {
+        await controls.start(def);
+      } catch (err) {
+        // Safe check for unmounted state
+      }
+    };
+
     if (shouldReduceMotion) {
       controls.set({ opacity: 1, scale: 1, rotate: 0 });
       return;
@@ -154,7 +163,7 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
 
     const sequence = async () => {
       // 1. Initial entrance
-      await controls.start({
+      await safeStart({
         rotate: 0,
         scale: 1,
         opacity: 1,
@@ -172,25 +181,27 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
         const delay = 3000 + Math.random() * 1000; // Randomly 3 to 4 seconds
         timeout = setTimeout(async () => {
           if (!isMounted) return;
-          
+
           // Rotate backward a little
-          await controls.start({
+          await safeStart({
             rotate: -45,
             transition: { duration: 0.35, ease: "easeOut" },
           });
-          
+
           if (!isMounted) return;
-          
+
           // Spin forward fast
-          await controls.start({
+          await safeStart({
             rotate: 360,
             transition: { duration: 0.6, ease: "easeInOut" },
           });
-          
+
           if (!isMounted) return;
-          
+
           // Rest (reset to 0 invisibly for next loop)
-          controls.set({ rotate: 0 });
+          try {
+            controls.set({ rotate: 0 });
+          } catch (e) {}
           playIdle();
         }, delay);
       };
@@ -242,8 +253,19 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
   useEffect(() => {
     let isMounted = true;
 
+    const safeStart = async (def: any) => {
+      if (!isMounted) return;
+      try {
+        await controls.start(def);
+      } catch (err) {
+        // Safe check for unmounted state
+      }
+    };
+
     if (shouldReduceMotion) {
-      controls.set({ scaleX: 1, opacity: 1 });
+      try {
+        controls.set({ scaleX: 1, opacity: 1 });
+      } catch (e) {}
       return;
     }
 
@@ -254,8 +276,10 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
 
       const loop = async () => {
         // Draw in from left
-        controls.set({ transformOrigin: 'left' });
-        await controls.start({
+        try {
+          controls.set({ transformOrigin: 'left' });
+        } catch (e) {}
+        await safeStart({
           scaleX: 1,
           transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] },
         });
@@ -265,8 +289,10 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
         if (!isMounted) return;
 
         // Erase out to the right (hides)
-        controls.set({ transformOrigin: 'right' });
-        await controls.start({
+        try {
+          controls.set({ transformOrigin: 'right' });
+        } catch (e) {}
+        await safeStart({
           scaleX: 0,
           transition: { duration: 0.8, ease: "easeInOut" },
         });
@@ -293,11 +319,11 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
       style={{
         position: 'absolute',
         bottom: '0',
-        left: '-0.38em', // Shifted left to start under the 'p' bowl (avoiding the stem)
-        right: 0,
-        height: '0.08em', // Reduced thickness by ~30%
+        left: '-0.3em', // Starts immediately to the right of the 'p' stem
+        right: '0',
+        height: '0.08em',
         backgroundColor: '#F9C846', // Yellow
-        borderRadius: '4px',
+        borderRadius: '0px', // Perfectly straight
         zIndex: 0,
       }}
       initial={{ scaleX: 0 }}
@@ -362,7 +388,14 @@ function AnimatedMirrorE({ shouldReduceMotion }: { shouldReduceMotion: boolean |
 
   return (
     <motion.span
-      style={{ display: 'inline-block', transformOrigin: 'center' }}
+      style={{
+        display: 'inline-block',
+        transformOrigin: 'center',
+        fontSize: '1em',
+        verticalAlign: 'baseline',
+        lineHeight: 'inherit',
+        letterSpacing: 'inherit',
+      }}
       animate={controls}
     >
       e
@@ -432,13 +465,14 @@ export default function HeroSection() {
           </span>
 
           {/* Line 2: mixed text and gradient */}
-          <span className="l-headline__line">
+          {/* paddingBottom gives the 'y' descender room — do not remove */}
+          <span className="l-headline__line" style={{ paddingBottom: '0.35em', overflow: 'visible' }}>
             <SplitWords
               wordsArray={[
                 <AnimatedGear key="to" shouldReduceMotion={shouldReduceMotion} />,
-                <GradientText 
-                  key="possibility" 
-                  colors={['#4079ff', '#9B5DE5', '#FF6B4A', '#F9C846', '#FF9FFC', '#4079ff']} 
+                <GradientText
+                  key="possibility"
+                  colors={['#2563EB', '#0EA5E9', '#06B6D4', '#10B981', '#4F46E5', '#2563EB']}
                   animationSpeed={8}
                 >
                   possibility.
@@ -459,7 +493,7 @@ export default function HeroSection() {
             animate="visible"
           >
             <Link
-              href="/courses"
+              href="/explore"
               className="l-btn l-btn--solid-ink"
               id="hero-cta-explore"
             >
