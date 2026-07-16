@@ -1229,8 +1229,12 @@ function CoursesContent() {
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
                 {activeData.courses.map((course) => (
-                  <div
+                  <Link
                     key={course.title}
+                    href={`/courses/${encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, '-'))}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                  <div
                     style={{
                       background: "#FFFFFF",
                       border: "1px solid #E5E7EB",
@@ -1240,8 +1244,11 @@ function CoursesContent() {
                       flexDirection: "column",
                       justifyContent: "space-between",
                       minHeight: "180px",
-                      cursor: "default"
+                      cursor: "pointer",
+                      transition: "box-shadow 0.2s ease, transform 0.2s ease"
                     }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px -4px rgba(0,0,0,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}
                   >
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
@@ -1257,10 +1264,11 @@ function CoursesContent() {
                         {course.desc}
                       </p>
                     </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#6B7280" }}>Syllabus Available</span>
+                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary }}>Preview Course →</span>
                     </div>
                   </div>
+                  </Link>
                 ))}
               </div>
             </div>
