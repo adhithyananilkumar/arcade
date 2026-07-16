@@ -1,34 +1,24 @@
 // lib/api.ts
 // Thin API client wrapping fetch with base URL from env.
-// Attaches the JWT access token and silently refreshes it on 401.
+// Attaches the JWT access token and silently refreshes it on 401 using Zustand and AuthService.
 
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./auth";
+import { useAuthStore } from "@/store/auth.store";
+import { AuthService } from "@/services/auth.service";
+import { queryClient } from "./queryClient";
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
-// A single in-flight refresh shared across concurrent 401s (e.g. autosave +
-// navigation firing at once) so we only refresh once.
+// A single in-flight refresh shared across concurrent 401s
 let refreshPromise: Promise<boolean> | null = null;
 
 async function refreshTokens(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
-
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
-        });
-        if (!res.ok) return false;
-        const data = await res.json();
-        if (!data?.accessToken || !data?.refreshToken) return false;
-        setTokens(data.accessToken, data.refreshToken);
+        const { accessToken, user } = await AuthService.refresh();
+        useAuthStore.getState().setAuth(user || useAuthStore.getState().user!, accessToken);
         return true;
-      } catch {
+      } catch (err) {
         return false;
       } finally {
         refreshPromise = null;
@@ -43,7 +33,7 @@ async function request<T>(
   options?: RequestInit,
   isRetry = false
 ): Promise<T> {
-  const token = getAccessToken();
+  const token = useAuthStore.getState().accessToken;
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
@@ -59,9 +49,12 @@ async function request<T>(
     if (refreshed) {
       return request<T>(path, options, true);
     }
+    
     // Refresh failed — session is over. Send the user to sign in.
-    clearTokens();
-    if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    useAuthStore.getState().clearAuth();
+    queryClient.clear();
+    
+    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
       window.location.href = "/login";
     }
     throw new Error("Your session has expired. Please sign in again.");
