@@ -1,91 +1,101 @@
+"use client";
+
 import Link from "next/link";
 import "./Footer.css";
 
 export default function Footer() {
   return (
-    <div className="arc-footer-wrapper">
-      <footer className="arc-footer">
-        {/* Glow meshes for organic light */}
-        <div className="arc-footer__glow arc-footer__glow--purple" />
-        <div className="arc-footer__glow arc-footer__glow--cyan" />
+    <footer className="arc-footer">
+      {/* Subtle blueprint grid background overlay */}
+      <div className="arc-footer__grid-overlay"></div>
 
-        <div className="arc-footer__top">
-          <div className="arc-footer__brand-col">
-            <div className="arc-footer__brand-row">
-              <div className="arc-footer__logo-mark">
-                <div className="arc-footer__logo-inner" />
-              </div>
-              <div className="arc-footer__brand-meta">
-                <span className="arc-footer__brand-name">Arcade</span>
-                <span className="arc-footer__brand-tag">AJCE platform</span>
-              </div>
+      <div className="arc-footer__container">
+
+        {/* Main Content Area */}
+        <div className="arc-footer__content">
+
+          {/* Left Column: Brand & Newsletter */}
+          <div className="arc-footer__newsletter-section">
+            <div className="arc-footer__logo-row">
+              <span className="arc-footer__logo-text">arcade<span>.</span></span>
             </div>
-            <h3 className="arc-footer__h3">
-              One login.
-              <span className="arc-footer__accent">Six ways forward.</span>
-            </h3>
-            <p className="arc-footer__desc">
-              Arcade brings study tools, campus connections, and progress tracking into one place for every AJCE student.
+            <h3 className="arc-footer__headline">Stay connected with AJCE catalog updates.</h3>
+
+            <form className="arc-footer__form" onSubmit={(e) => e.preventDefault()}>
+              <div className="arc-footer__input-wrapper">
+                <input
+                  type="email"
+                  placeholder="Enter your college email address"
+                  className="arc-footer__input"
+                  required
+                />
+                <button type="submit" className="arc-footer__submit-btn" aria-label="Subscribe">
+                  Subscribe
+                </button>
+              </div>
+            </form>
+
+            <p className="arc-footer__subtext">
+              By subscribing, you agree to receive curriculum catalog notifications and campus event schedules.
             </p>
-            <div className="arc-footer__cta-wrap">
-              <Link className="arc-footer__cta" href="/register">
-                Get started
-                <svg
-                  className="arc-footer__cta-icon"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6 12L10 8L6 4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
-            </div>
           </div>
 
+          {/* Right Column: Clean Grid of Links */}
           <div className="arc-footer__links-grid">
-            <div className="arc-footer__col">
-              <div className="arc-footer__col-title">Menu</div>
-              <Link href="/">Home</Link>
-              <Link href="/features">Features</Link>
-              <Link href="/pricing">Pricing</Link>
-              <Link href="/docs">Docs</Link>
+
+            {/* Col 1 */}
+            <div className="arc-footer__links-col">
+              <span className="arc-footer__col-title">Departments</span>
+              <ul className="arc-footer__list">
+                <li><Link href="/courses?category=Computer+Science">Computer Science</Link></li>
+                <li><Link href="/courses?category=Artificial+Intelligence">Artificial Intelligence</Link></li>
+                <li><Link href="/courses?category=Information+Technology">Information Tech</Link></li>
+                <li><Link href="/courses?category=Business+%26+Management">Business Management</Link></li>
+              </ul>
             </div>
 
-            <div className="arc-footer__col">
-              <div className="arc-footer__col-title">Company</div>
-              <Link href="/about">About</Link>
-              <Link href="/team">Team</Link>
-              <Link href="/contact">Contact</Link>
-              <Link href="/careers">Careers</Link>
+            {/* Col 2 */}
+            <div className="arc-footer__links-col">
+              <span className="arc-footer__col-title">Platform</span>
+              <ul className="arc-footer__list">
+                <li><Link href="/courses">Course Hub</Link></li>
+                <li><Link href="/forum">Discussions</Link></li>
+                <li><Link href="/docs">Developer API</Link></li>
+                <li><Link href="/status">Network Status</Link></li>
+              </ul>
             </div>
 
-            <div className="arc-footer__col">
-              <div className="arc-footer__col-title">Pillars</div>
-              <Link href="/study">Study</Link>
-              <Link href="/connect">Connect</Link>
-              <Link href="/track">Track</Link>
-              <Link href="/achieve">Achieve</Link>
-              <Link href="/launch">Launch</Link>
-              <Link href="/grow">Grow</Link>
+            {/* Col 3 */}
+            <div className="arc-footer__links-col">
+              <span className="arc-footer__col-title">Campus Resources</span>
+              <ul className="arc-footer__list">
+                <li><a href="https://www.amaljyothi.ac.in" target="_blank" rel="noopener noreferrer">AJCE Portal</a></li>
+                <li><Link href="/placement">Placements</Link></li>
+                <li><Link href="/library">Digital Library</Link></li>
+                <li><Link href="/calendar">Academic Calendar</Link></li>
+              </ul>
             </div>
+
           </div>
+
         </div>
 
+        {/* Bottom Row */}
         <div className="arc-footer__bottom">
-          <div className="arc-footer__legal">
-            © 2026 Arcade — AJCE. All rights reserved.
+          <div className="arc-footer__bottom-left">
+            <span>© 2026 Arcade Catalog. AJCE Campus. All rights reserved.</span>
           </div>
-          <div className="arc-footer__watermark">arcade.</div>
+
+          <div className="arc-footer__bottom-right">
+            <Link href="/privacy">Privacy Policy</Link>
+            <span className="arc-footer__dot"></span>
+            <Link href="/terms">Terms of Service</Link>
+            <span className="arc-footer__dot"></span>
+            <span>Node: Kerala, IN</span>
+          </div>
         </div>
-      </footer>
-    </div>
+
+      </div>
+    </footer>
   );
 }

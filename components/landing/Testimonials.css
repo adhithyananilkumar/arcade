@@ -1,0 +1,232 @@
+/* ─── Testimonials Section ───────────────────────────────────────────── */
+.l-testimonials {
+  padding: 6rem clamp(1.5rem, 7vw, 8rem);
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+.l-testimonials__container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.l-testimonials__header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.l-testimonials__title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2.25rem, 4vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #12141C;
+  margin: 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Masonry Grid via Flex Columns */
+.l-testimonials__grid {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.l-testimonials__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* Cards Base */
+.l-testimonials__card {
+  border-radius: 20px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: 
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
+}
+
+/* Hover effects */
+.l-testimonials__card:hover {
+  transform: translateY(-6px);
+}
+
+/* Light Theme Card */
+.l-testimonials__card.is-light {
+  background: #ffffff;
+  border: 1px solid rgba(20, 23, 31, 0.05);
+  box-shadow: 
+    0 10px 30px -15px rgba(20, 23, 31, 0.03),
+    0 2px 12px -4px rgba(20, 23, 31, 0.01);
+}
+
+.l-testimonials__card.is-light:hover {
+  border-color: rgba(20, 23, 31, 0.1);
+  box-shadow: 
+    0 20px 40px -15px rgba(20, 23, 31, 0.1),
+    0 4px 20px -5px rgba(20, 23, 31, 0.04);
+}
+
+/* Dark Theme Card */
+.l-testimonials__card.is-dark {
+  background: #12141C;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.2);
+}
+
+.l-testimonials__card.is-dark:hover {
+  border-color: rgba(56, 189, 248, 0.3); /* Tailwind sky-blue accent on hover */
+  box-shadow: 
+    0 20px 45px -15px rgba(0, 0, 0, 0.4),
+    0 0 25px 1px rgba(56, 189, 248, 0.04);
+}
+
+/* Logos styling */
+.l-testimonials__logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.l-testimonials__logo-svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.l-testimonials__logo-text {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.04em;
+}
+
+.l-testimonials__logo-text.text-tailwind {
+  color: #ffffff;
+}
+
+.l-testimonials__logo-text.text-fathom {
+  color: #ffffff;
+  font-weight: 400;
+}
+
+.l-testimonials__logo-text .fathom-sub {
+  opacity: 0.6;
+}
+
+/* Quote Text */
+.l-testimonials__quote {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  margin: 0 0 2rem 0;
+}
+
+.is-light .l-testimonials__quote {
+  color: #1f2937;
+}
+
+.is-dark .l-testimonials__quote {
+  color: #ffffff;
+  font-size: 19.5px; /* Larger quote font size on dark cards matching screenshot */
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Author Section */
+.l-testimonials__author {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  padding-top: 1.25rem;
+}
+
+.is-dark .l-testimonials__author {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.l-testimonials__author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.l-testimonials__author-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.is-light .l-testimonials__author-name {
+  color: #111827;
+}
+
+.is-dark .l-testimonials__author-name {
+  color: #ffffff;
+}
+
+.l-testimonials__author-role {
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.is-light .l-testimonials__author-role {
+  color: #6b7280;
+}
+
+.is-dark .l-testimonials__author-role {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Avatars */
+.l-testimonials__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  user-select: none;
+}
+
+/* Breakpoints */
+@media (max-width: 960px) {
+  .l-testimonials {
+    padding: 4rem 1.5rem;
+  }
+
+  .l-testimonials__grid {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .l-testimonials__col {
+    gap: 1.5rem;
+  }
+}

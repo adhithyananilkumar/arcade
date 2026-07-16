@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 
 const navLinks = [
-  { label: "Explore", href: "/study" },
+  { label: "Explore", href: "/courses" },
   { label: "Forums", href: "/forum" },
   { label: "For Colleges", href: "/#colleges" },
   { label: "Docs", href: "/docs" },
@@ -72,6 +72,7 @@ export default function HeroNav() {
       animate={isHidden ? "scrollHidden" : "visible"}
       role="navigation"
       aria-label="Main navigation"
+      style={{ position: "fixed", zIndex: 100 }}
     >
       {/* Wordmark */}
       <Link href="/" className="l-nav__logo-container" aria-label="Arcade home">

@@ -365,7 +365,6 @@ function AnimatedMirrorE({ shouldReduceMotion }: { shouldReduceMotion: boolean |
       style={{
         display: 'inline-block',
         transformOrigin: 'center',
-        fontFamily: "'Latin Modern Roman', serif",
         fontSize: '1em',
         verticalAlign: 'baseline',
         lineHeight: 'inherit',
@@ -468,7 +467,7 @@ export default function HeroSection() {
             animate="visible"
           >
             <Link
-              href="/study"
+              href="/courses"
               className="l-btn l-btn--solid-ink"
               id="hero-cta-explore"
             >
