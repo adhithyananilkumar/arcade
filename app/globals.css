@@ -1,6 +1,8 @@
 @font-face {
-  font-family: "Amira Grace";
-  src: url("/fonts/Amira-Grace.otf") format("opentype");
+  font-family: "Voyage";
+  src: url("/fonts/Voyage.otf") format("opentype"),
+       url("/fonts/Voyage.woff2") format("woff2"),
+       url("/fonts/Amira-Grace.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -8,11 +10,46 @@
 
 @import "tailwindcss";
 
-@import "tw-animate-css";
-
-@import "shadcn/tailwind.css";
-
 @custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Brand */
+  --arcade-blue: #205ca8;
+  --arcade-blue-hover: #1a4d8f;
+  --arcade-blue-light: #ebf0fa;
+  --arcade-blue-muted: #6b93cc;
+
+  /* Surfaces */
+  --surface: #f8f9fc;
+  --surface-hover: #f1f4fa;
+  --border-strong: #cbd2e0;
+
+  /* Text */
+  --text-primary: #0f1824;
+  --text-secondary: #4a5568;
+  --text-muted: #8896ab;
+  --text-inverse: #ffffff;
+
+  /* Semantic */
+  --success: #16a34a;
+  --warning: #d97706;
+  --destructive-hex: #dc2626;
+  --upvote: #205ca8;
+  --downvote: #dc2626;
+  --vote-neutral: #8896ab;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(32, 92, 168, 0.15);
+
+  /* Radius */
+  --radius-sm-custom: 6px;
+  --radius-md-custom: 10px;
+  --radius-lg-custom: 14px;
+  --radius-full: 9999px;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -58,38 +95,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/*
- * NOTE: Do not add an unlayered universal margin/padding reset here.
- * Tailwind v4 emits all utilities inside "@layer utilities", and unlayered CSS
- * wins over layered CSS regardless of specificity — an unlayered universal
- * padding and margin reset silently overrides every spacing utility such as
- * px-8, py-5 and mx-auto. Tailwind's preflight (from the tailwindcss import)
- * already normalizes box-sizing and element margins.
- */
-
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  background: #ffffff;
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-}
-
-/* Respect reduced motion globally */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* Moved these resets to @layer base to prevent overriding Tailwind utility classes */
 
 :root {
   --background: oklch(1 0 0);
@@ -161,13 +167,157 @@ body {
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply font-sans;
+  }
+
+  body {
+    font-family: "Voyage", var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    @apply bg-background text-foreground;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  /* Respect reduced motion globally */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
-  html {
-    @apply font-sans;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Markdown preview overrides — keep it light */
+.w-md-editor-text-pre,
+.w-md-editor-text-input,
+.wmde-markdown {
+  font-family: var(--font-geist-sans), system-ui, sans-serif !important;
+}
+
+[data-color-mode="light"] .w-md-editor {
+  --color-canvas-default: #ffffff;
+  --color-fg-default: #0f1824;
+  background-color: #ffffff !important;
+  color: #0f1824 !important;
+}
+
+[data-color-mode="light"] .w-md-editor-toolbar {
+  background-color: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+[data-color-mode="light"] .w-md-editor-text {
+  background-color: #ffffff !important;
+  color: #0f1824 !important;
+}
+
+.wmde-markdown {
+  background: transparent !important;
+  font-family: inherit !important;
+  color: var(--text-primary) !important;
+}
+
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3 {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.wmde-markdown code {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  font-size: 13px !important;
+}
+
+.wmde-markdown pre {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.wmde-markdown blockquote {
+  border-left: 3px solid var(--arcade-blue) !important;
+  color: var(--text-secondary) !important;
+  background: var(--arcade-blue-light) !important;
+}
+
+.wmde-markdown a {
+  color: var(--arcade-blue) !important;
+}
+
+/* Custom Glass Card Component */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 6px 3px rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
 }

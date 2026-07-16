@@ -98,10 +98,10 @@ export default function AppShell() {
             Features
           </a>
           <a
-            href="#community"
+            href="/forum"
             style={{ fontSize: 13, color: "#666", textDecoration: "none", fontWeight: 500 }}
           >
-            Community
+            Forum
           </a>
           <a
             href="/login"
