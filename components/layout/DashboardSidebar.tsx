@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search, BookOpen, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -12,6 +12,8 @@ import { channelService } from '@/services/channel.service';
 
 const baseNavItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Content Studio', href: '/dashboard/content', icon: BookOpen },
+  { name: 'Roadmaps', href: '/dashboard/roadmaps', icon: Map },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
 ];
 
