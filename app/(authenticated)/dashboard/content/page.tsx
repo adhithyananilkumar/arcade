@@ -19,7 +19,7 @@ import {
   Trash2,
   X,
   Map,
-  Eye,
+  ClipboardCheck,
 } from "lucide-react";
 
 // ΓöÇΓöÇ Content type menu items ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
@@ -215,12 +215,12 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-2">
             <Link
-              href="/dashboard/content/published"
-              title="Published Courses"
+              href="/dashboard/content/review"
+              title="Review Courses"
               className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
             >
-              <Eye size={16} />
-              Published Courses
+              <ClipboardCheck size={16} />
+              Review Courses
             </Link>
             <Link
               href="/dashboard/roadmaps"
