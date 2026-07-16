@@ -23,6 +23,7 @@
     "@tiptap/pm": "^3.27.3",
     "@tiptap/react": "^3.27.3",
     "@tiptap/starter-kit": "^3.27.3",
+    "@tiptap/y-tiptap": "^3.0.7",
     "@types/sockjs-client": "^1.5.4",
     "@uiw/react-md-editor": "^4.1.1",
     "@xyflow/react": "^12.11.2",
