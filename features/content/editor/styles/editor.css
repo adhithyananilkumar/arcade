@@ -1,0 +1,161 @@
+/* features/content/editor/styles/editor.css */
+/* Scoped to .ProseMirror — prevents Tailwind preflight from stripping
+   list markers, heading sizes, and blockquote styles inside the editor. */
+
+.ProseMirror {
+  outline: none;
+  min-height: 300px;
+  padding: 0;
+  word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ── */
+.ProseMirror h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 1.5rem 0 0.75rem;
+  color: #0a0a0a;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin: 1.25rem 0 0.5rem;
+  color: #111;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem;
+  color: #1a1a1a;
+}
+
+.ProseMirror p {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: #374151;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror p:first-child {
+  margin-top: 0;
+}
+
+/* ── Lists ── */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #374151;
+  margin: 0.2rem 0;
+}
+
+.ProseMirror li p {
+  margin: 0;
+}
+
+/* ── Blockquote ── */
+.ProseMirror blockquote {
+  border-left: 3px solid #6366f1;
+  padding: 0.5rem 0 0.5rem 1rem;
+  margin: 1rem 0;
+  color: #6b7280;
+  font-style: italic;
+  background: #f8f9ff;
+  border-radius: 0 6px 6px 0;
+}
+
+.ProseMirror blockquote p {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Inline Code ── */
+.ProseMirror code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: var(--font-geist-mono), "Fira Code", monospace;
+  font-size: 0.85em;
+  color: #7c3aed;
+}
+
+/* ── Code Block ── */
+.ProseMirror pre {
+  background: #1e1e2e;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  font-family: var(--font-geist-mono), "Fira Code", monospace;
+}
+
+/* ── Horizontal Rule ── */
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* ── Images ── */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+}
+
+/* ── Links ── */
+.ProseMirror a {
+  color: #6366f1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ProseMirror a:hover {
+  color: #4f46e5;
+}
+
+/* ── Placeholder ── */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* ── Selection ── */
+.ProseMirror ::selection {
+  background: rgba(99, 102, 241, 0.15);
+}
