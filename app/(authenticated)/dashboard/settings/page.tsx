@@ -25,7 +25,7 @@ export default function SettingsPage() {
 
   const getAvatarUrl = (url?: string) => {
     if (!url) return undefined;
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
     // Prepend API URL for relative paths
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     // If the url already includes /api/v1, we need to be careful not to duplicate it.
@@ -109,7 +109,7 @@ export default function SettingsPage() {
               <div className="relative group mb-4">
                 <div className="flex h-32 w-32 items-center justify-center rounded-full bg-indigo-50 text-indigo-300 border-4 border-white shadow-md overflow-hidden transition-all group-hover:shadow-lg">
                   {user.avatarUrl ? (
-                    <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" />
+                    <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
                     <UserIcon size={56} />
                   )}
@@ -178,6 +178,18 @@ export default function SettingsPage() {
                     className="block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-4 py-2.5 border"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="username" className="text-sm font-medium text-gray-700">Username</label>
+                <input
+                  id="username"
+                  type="text"
+                  disabled
+                  value={user.username || ''}
+                  className="block w-full rounded-xl border-gray-200 bg-gray-50 text-gray-500 shadow-sm sm:text-sm px-4 py-2.5 border cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500">Username cannot be changed right now.</p>
               </div>
 
               <div className="space-y-1.5">

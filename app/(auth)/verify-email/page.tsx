@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { AuthService } from '@/services/auth.service';
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
-function VerifyEmailContent() {
+function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -90,8 +90,12 @@ function VerifyEmailContent() {
 }
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="animate-spin" size={40} /></div>}>
-      <VerifyEmailContent />
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Loader2 className="animate-spin text-indigo-600" size={32} />
+      </div>
+    }>
+      <VerifyEmailForm />
     </Suspense>
   );
 }

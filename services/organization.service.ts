@@ -4,6 +4,14 @@ export interface Organization {
   id: string;
   name: string;
   description?: string;
+  slug: string;
+  email?: string;
+  phone?: string;
+  logoUrl?: string;
+  adminName?: string;
+  adminTitle?: string;
+  address?: string;
+  studentVolunteer?: string;
   createdAt: string;
 }
 
@@ -31,7 +39,8 @@ export class OrganizationService {
    * Creates a new organization.
    */
   static async createOrganization(name: string, description?: string): Promise<Organization> {
-    const { data } = await apiClient.post<Organization>('/organizations', { name, description });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const { data } = await apiClient.post<Organization>('/organizations', { name, slug, description });
     return data;
   }
 
@@ -70,5 +79,41 @@ export class OrganizationService {
    */
   static async leaveOrganization(id: string): Promise<void> {
     await apiClient.delete(`/organizations/${id}/members/me`);
+  }
+
+  /**
+   * Updates an organization's profile info.
+   */
+  static async updateOrgProfile(id: string, data: Partial<Organization>): Promise<Organization> {
+    const { data: updated } = await apiClient.patch<Organization>(`/organizations/${id}/profile`, data);
+    return updated;
+  }
+
+  /**
+   * Uploads an organization logo.
+   */
+  static async uploadLogo(id: string, file: File): Promise<Organization> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data: updated } = await apiClient.post<Organization>(`/organizations/${id}/logo`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return updated;
+  }
+
+  /**
+   * Updates a member's role within an organization.
+   */
+  static async updateMemberRole(orgId: string, userId: string, role: string): Promise<void> {
+    await apiClient.put(`/organizations/${orgId}/members/${userId}/role`, { role });
+  }
+
+  /**
+   * Removes a member from an organization.
+   */
+  static async removeMember(orgId: string, userId: string): Promise<void> {
+    await apiClient.delete(`/organizations/${orgId}/members/${userId}`);
   }
 }
