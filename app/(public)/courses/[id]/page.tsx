@@ -4,9 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Play, Volume2, Settings, Share2, Clock, ChevronDown,
-  Star, Users, BookOpen, Award, ArrowLeft,
+  Star, Users, BookOpen, Award, ArrowLeft, Terminal, Code
 } from "lucide-react";
 import HeroNav from "@/components/landing/HeroNav";
+import "@/styles/landing.css";
 
 const AVATAR_COLORS = [
   { bg: "#DBEAFE", fg: "#1D4ED8" },
@@ -22,31 +23,6 @@ function Avatar({ initials, idx = 0, size = 36 }: { initials: string; idx?: numb
       width: size, height: size, borderRadius: "50%", background: c.bg, color: c.fg,
       display: "grid", placeItems: "center", fontSize: size * 0.38, fontWeight: 700, flexShrink: 0,
     }}>{initials}</div>
-  );
-}
-
-function Flower({ size = 14, color = "#14161C" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-      {[0, 60, 120, 180, 240, 300].map((a) => (
-        <ellipse key={a} cx="12" cy="7" rx="4" ry="5.4" fill={color} transform={`rotate(${a} 12 12)`} />
-      ))}
-      <circle cx="12" cy="12" r="3.4" fill={color} />
-    </svg>
-  );
-}
-
-function Pinwheel({ size = 22 }: { size?: number }) {
-  const petals = [
-    { a: -45, color: "#EF4444" }, { a: 45, color: "#22C55E" },
-    { a: 135, color: "#6D5EF0" }, { a: 225, color: "#F59E0B" },
-  ];
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      {petals.map((p) => (
-        <ellipse key={p.a} cx="12" cy="7.5" rx="3.6" ry="4.6" fill={p.color} transform={`rotate(${p.a} 12 12)`} />
-      ))}
-    </svg>
   );
 }
 
@@ -88,69 +64,57 @@ const PARTNERS = [
 export default function CoursePreviewPage() {
   const [tab, setTab] = useState("Overview");
   const [openMod, setOpenMod] = useState(0);
-  const font = `'PT Serif','Georgia',serif`;
+  const font = `'Inter', ui-sans-serif, system-ui`;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F9FAFB", color: "#14161C", fontFamily: "Inter, ui-sans-serif, system-ui" }}>
+    <div style={{ minHeight: "100vh", background: "#FFFFFF", color: "#14161C", fontFamily: font }}>
       <HeroNav />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
-        .pill-btn { transition: transform .15s ease, box-shadow .15s ease; }
+        .pill-btn { transition: transform .1s ease, background .1s ease; }
         .pill-btn:hover { transform: translateY(-1px); }
-        .pill-btn:active { transform: scale(.97); }
-        .tab-seg { transition: background .2s ease, color .2s ease; }
+        .pill-btn:active { transform: scale(.98); }
+        .tab-seg { transition: all .15s ease; }
         .mod-card:hover { border-color: #D7DAE3 !important; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:none;} }
-        .fade-in { animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both; }
-        .grad-text { background: linear-gradient(90deg,#10B981,#3B82F6,#6D5EF0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(8px);} to {opacity:1; transform:none;} }
+        .fade-in { animation: fadeUp .3s ease-out both; }
         .back-btn:hover { background: #F3F4F6 !important; }
       `}</style>
 
       {/* Spacer under fixed navbar */}
       <div style={{ height: "64px" }} />
 
-      <div style={{
-        background: "radial-gradient(circle at 6% 8%, #E3EBFE 0%, transparent 42%), radial-gradient(circle at 96% 88%, #DFFBEC 0%, transparent 45%), #FAFBFF",
-        padding: "32px 48px 80px",
-      }}>
-        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+      <div style={{ padding: "48px 48px 80px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Back to Explore */}
           <Link
             href="/explore"
             className="back-btn"
             style={{
-              display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 28,
-              fontSize: 14, fontWeight: 600, color: "#5B5E6B", textDecoration: "none",
-              border: "1px solid #E7E9F1", borderRadius: 999, padding: "8px 16px",
+              display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 40,
+              fontSize: 14, fontWeight: 500, color: "#4B5563", textDecoration: "none",
+              border: "1px solid #E5E7EB", borderRadius: 8, padding: "8px 16px",
               background: "#fff", transition: "background .15s ease",
             }}
           >
-            <ArrowLeft size={14} /> Back to Explore
+            <ArrowLeft size={16} /> Back to courses
           </Link>
 
           {/* HERO */}
-          <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 44, alignItems: "center", marginBottom: 56 }}>
+          <div className="fade-in" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "center", marginBottom: 64 }}>
             <div>
               <div style={{
-                display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #E7E9F1",
-                borderRadius: 999, padding: "6px 14px 6px 10px", fontSize: 12.5, fontWeight: 600, color: "#3B4CCA", marginBottom: 20,
+                display: "inline-flex", alignItems: "center", gap: 8, background: "#F3F4F6",
+                borderRadius: 6, padding: "6px 12px", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 24,
               }}>
-                <Pinwheel size={16} /> UI / UX &amp; Product Design
+                <Code size={16} /> UI / UX &amp; Product Design
               </div>
 
-              <h1 style={{ fontFamily: font, fontSize: 42, lineHeight: 1.15, fontWeight: 400, margin: "0 0 18px" }}>
-                Design{" "}
-                <span style={{ display: "inline-flex", verticalAlign: "middle", margin: "0 2px" }}>
-                  <Flower size={26} />
-                </span>{" "}
-                <span className="grad-text" style={{ fontWeight: 700 }}>interfaces</span>
-                <br />
-                people actually{" "}
-                <span style={{ borderBottom: "4px solid #F5A623", paddingBottom: 2 }}>love.</span>
+              <h1 style={{ fontSize: 48, lineHeight: 1.1, fontWeight: 800, margin: "0 0 24px", letterSpacing: "-0.02em" }}>
+                Design interfaces people actually <span style={{ textDecoration: "underline", textDecorationColor: "#3B82F6", textUnderlineOffset: "6px" }}>love.</span>
               </h1>
 
-              <p style={{ fontSize: 15, color: "#5B5E6B", lineHeight: 1.7, maxWidth: 460, marginBottom: 26 }}>
+              <p style={{ fontSize: 16, color: "#4B5563", lineHeight: 1.6, marginBottom: 32 }}>
                 A hands-on path through interface design, motion, and design systems — built by working product designers, taught the way we wish someone had taught us.
               </p>
 
