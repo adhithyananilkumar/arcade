@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { X, Palette, Settings, Layout, GraduationCap } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Palette, Settings, Layout, GraduationCap, MessageSquare } from 'lucide-react';
 import { Node } from '@xyflow/react';
 import { ContentSelector } from './ContentSelector';
+import { collaborationService } from '../services/collaboration';
+import { CommentData } from '../types';
 
 interface PropertiesPanelProps {
   selectedNode: Node | null;
   onClose: () => void;
   onUpdate: (id: string, data: any) => void;
+  roadmapId?: string;
 }
 
 const COLORS = [
@@ -35,8 +38,16 @@ const STATUSES = [
   { label: 'Archived', value: 'archived' },
 ];
 
-export function PropertiesPanel({ selectedNode, onClose, onUpdate }: PropertiesPanelProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'learning' | 'appearance'>('general');
+export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: PropertiesPanelProps) {
+  const [activeTab, setActiveTab] = useState<'general' | 'learning' | 'appearance' | 'comments'>('general');
+  const [comments, setComments] = useState<CommentData[]>([]);
+  const [newComment, setNewComment] = useState("");
+
+  useEffect(() => {
+    if (roadmapId && selectedNode) {
+      collaborationService.getComments(roadmapId, selectedNode.id).then(setComments).catch(console.error);
+    }
+  }, [roadmapId, selectedNode]);
 
   if (!selectedNode) return null;
 
@@ -44,6 +55,18 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate }: PropertiesP
 
   const handleChange = (field: string, value: string) => {
     onUpdate(selectedNode.id, { [field]: value });
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !roadmapId) return;
+    try {
+      await collaborationService.addComment(roadmapId, newComment, selectedNode.id);
+      setNewComment("");
+      const updated = await collaborationService.getComments(roadmapId, selectedNode.id);
+      setComments(updated);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -74,6 +97,14 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate }: PropertiesP
         >
           <div className="flex items-center justify-center gap-1.5"><Palette size={14} /> Style</div>
         </button>
+        {roadmapId && (
+          <button 
+            onClick={() => setActiveTab('comments')}
+            className={`flex-1 pb-2 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'comments' ? 'border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            <div className="flex items-center justify-center gap-1.5"><MessageSquare size={14} /> Comments</div>
+          </button>
+        )}
       </div>
       
       <div className="p-5 space-y-6 overflow-y-auto flex-1">
@@ -199,6 +230,43 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate }: PropertiesP
                   );
                 })}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'comments' && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
+            <h4 className="text-sm font-bold text-gray-900">Instructor Comments</h4>
+            <div className="space-y-3">
+              {comments.length === 0 ? (
+                <p className="text-xs text-gray-500 italic">No comments yet.</p>
+              ) : (
+                comments.map(c => (
+                  <div key={c.id} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-gray-900">{c.authorName}</span>
+                      <span className="text-[10px] text-gray-400">{new Date(c.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-xs text-gray-700">{c.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-2 pt-4 border-t border-gray-100">
+              <input 
+                type="text" 
+                placeholder="Add a comment..."
+                className="flex-1 text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleAddComment(); }}
+              />
+              <button 
+                onClick={handleAddComment}
+                className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700"
+              >
+                Post
+              </button>
             </div>
           </div>
         )}

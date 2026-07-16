@@ -398,6 +398,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
           selectedNode={selectedNode}
           onClose={() => setSelectedNodeId(null)}
           onUpdate={updateNodeData}
+          roadmapId={roadmap.id}
         />
       )}
     </div>

@@ -4,6 +4,9 @@ import { AlertCircle } from "lucide-react";
 import { RoadmapCanvas } from "./RoadmapCanvas";
 import { RoadmapHeader } from "./RoadmapHeader";
 import { PublishConfirmationModal } from "./PublishConfirmationModal";
+import { SaveAsTemplateModal } from "./SaveAsTemplateModal";
+import { RoadmapAnalyticsPanel } from "./RoadmapAnalyticsPanel";
+import { CollaborationPanel } from "./CollaborationPanel";
 import type { RoadmapData } from "../types";
 
 interface RoadmapStudioProps {
@@ -14,6 +17,16 @@ interface RoadmapStudioProps {
 export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudioProps) {
   const [roadmap, setRoadmap] = useState<RoadmapData>(initialRoadmap);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"editor" | "analytics" | "collaboration">("editor");
+
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(roadmap, null, 2));
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = `${roadmap.title.replace(/\s+/g, '_').toLowerCase()}_export.json`;
+    a.click();
+  };
 
   const handleSaveSuccess = useCallback((updated: RoadmapData) => {
     setRoadmap(updated);
@@ -130,14 +143,38 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
 
   return (
     <div className="flex flex-col w-full h-full bg-gray-50 absolute inset-0 z-50">
-      <RoadmapHeader 
-        roadmap={roadmap}
-        saveState={saveState}
-        onClose={onClose}
-        onStatusChange={handleStatusChange}
-        onPublishClick={() => setIsPublishModalOpen(true)}
-        onManualSave={manualSave}
-      />
+      <div className="bg-white border-b border-gray-200">
+        <RoadmapHeader 
+          roadmap={roadmap}
+          saveState={saveState}
+          onClose={onClose}
+          onStatusChange={handleStatusChange}
+          onPublishClick={() => setIsPublishModalOpen(true)}
+          onManualSave={manualSave}
+          onSaveAsTemplateClick={() => setIsTemplateModalOpen(true)}
+          onExportClick={handleExport}
+        />
+        <div className="px-6 py-2 border-t border-gray-100 flex gap-4 text-sm font-medium">
+          <button 
+            onClick={() => setActiveTab("editor")}
+            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'editor' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Graph Editor
+          </button>
+          <button 
+            onClick={() => setActiveTab("analytics")}
+            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'analytics' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Student Analytics
+          </button>
+          <button 
+            onClick={() => setActiveTab("collaboration")}
+            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'collaboration' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          >
+            Collaboration
+          </button>
+        </div>
+      </div>
 
       {saveState === 'conflict' && (
         <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between shrink-0">
@@ -178,14 +215,23 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
         </div>
       )}
 
-      <div className="flex-1 w-full relative">
-        <RoadmapCanvas 
-          roadmap={roadmap} 
-          saveState={saveState}
-          onGraphChange={scheduleSave}
-          onManualSave={manualSave}
-          readOnly={isReadOnly}
-        />
+      <div className="flex-1 relative flex overflow-hidden">
+        {activeTab === "editor" || activeTab === "collaboration" ? (
+          <>
+            <RoadmapCanvas 
+              roadmap={roadmap} 
+              saveState={saveState}
+              onGraphChange={scheduleSave}
+              onManualSave={manualSave}
+              readOnly={isReadOnly}
+            />
+            {activeTab === "collaboration" && (
+               <CollaborationPanel roadmapId={roadmap.id} />
+            )}
+          </>
+        ) : (
+          <RoadmapAnalyticsPanel roadmapId={roadmap.id} />
+        )}
       </div>
 
       <PublishConfirmationModal 
@@ -197,6 +243,19 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
         validationErrors={validationErrors}
         hasUnsavedChanges={saveState === 'unsaved' || saveState === 'saving'}
       />
+
+      {isTemplateModalOpen && (
+        <SaveAsTemplateModal
+          roadmapId={roadmap.id}
+          defaultName={roadmap.title}
+          defaultDescription={roadmap.description}
+          onClose={() => setIsTemplateModalOpen(false)}
+          onSaved={() => {
+            setIsTemplateModalOpen(false);
+            alert("Template saved successfully!");
+          }}
+        />
+      )}
     </div>
   );
 }

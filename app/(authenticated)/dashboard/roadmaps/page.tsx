@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Plus, Clock, MoreVertical, Pencil, Trash2, Copy, X } from "lucide-react";
+import { Map, Plus, Clock, MoreVertical, Pencil, Trash2, Copy, X, Library, Upload } from "lucide-react";
 import { roadmapService } from "@/features/content/editor/roadmap/services/roadmap";
 import type { RoadmapData } from "@/features/content/editor/roadmap/types";
 
@@ -272,10 +272,12 @@ function RoadmapCard({
   roadmap,
   onRename,
   onDelete,
+  onDuplicate,
 }: {
   roadmap: RoadmapData;
   onRename: (roadmap: RoadmapData) => void;
   onDelete: (roadmap: RoadmapData) => void;
+  onDuplicate: (roadmap: RoadmapData) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   
@@ -315,7 +317,7 @@ function RoadmapCard({
                   <Pencil size={14} /> Rename
                 </button>
                 <button
-                  onClick={() => { setMenuOpen(false); alert("Duplicate functionality coming soon!"); }}
+                  onClick={() => { setMenuOpen(false); onDuplicate(roadmap); }}
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
                 >
                   <Copy size={14} /> Duplicate
@@ -385,6 +387,41 @@ export default function RoadmapsPage() {
     fetchRoadmaps();
   }, []);
 
+  const handleDuplicate = async (roadmap: RoadmapData) => {
+    try {
+      await roadmapService.duplicateRoadmap(roadmap.id);
+      fetchRoadmaps();
+    } catch (e) {
+      alert("Failed to duplicate roadmap");
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (!json.title || !json.graphJson) {
+          alert("Invalid roadmap JSON format.");
+          return;
+        }
+        await roadmapService.createRoadmap({
+          title: json.title + " (Imported)",
+          description: json.description,
+          graphJson: json.graphJson,
+        });
+        fetchRoadmaps();
+      } catch (err) {
+        alert("Failed to parse JSON file.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset input
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       {createOpen && <CreateRoadmapModal onClose={() => setCreateOpen(false)} />}
@@ -423,13 +460,27 @@ export default function RoadmapsPage() {
              </div>
           </div>
 
-          <button
-            onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
-          >
-            <Plus size={16} />
-            Create Roadmap
-          </button>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-colors cursor-pointer">
+              <Upload size={16} />
+              Import JSON
+              <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+            </label>
+            <Link
+              href="/dashboard/roadmaps/templates"
+              className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+            >
+              <Library size={16} />
+              Template Library
+            </Link>
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
+            >
+              <Plus size={16} />
+              Create Roadmap
+            </button>
+          </div>
         </div>
       </header>
 
@@ -470,7 +521,8 @@ export default function RoadmapsPage() {
                 key={roadmap.id} 
                 roadmap={roadmap} 
                 onRename={setRenameTarget} 
-                onDelete={setDeleteTarget} 
+                onDelete={setDeleteTarget}
+                onDuplicate={handleDuplicate}
               />
             ))}
           </div>
