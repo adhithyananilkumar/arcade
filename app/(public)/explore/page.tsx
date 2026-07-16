@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import HeroNav from "@/components/landing/HeroNav";
 import Link from "next/link";
 import "@/styles/landing.css";
 
-const CATEGORY_DATA: Record<string, {
+export const CATEGORY_DATA: Record<string, {
   desc: string;
   coursesCount: number;
   gradient: string;
@@ -194,7 +194,7 @@ const CATEGORY_DATA: Record<string, {
   }
 };
 
-const categoriesList = Object.keys(CATEGORY_DATA);
+export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
 const WEBINARS_DATA = [
@@ -217,7 +217,7 @@ const ILLUSTRATION_BGS: Record<string, string> = {
   "Personal Development": "#65A30D" // Solid vibrant lime
 };
 
-function CategoryWatermark({ category, color }: { category: string; color: string }) {
+export function CategoryWatermark({ category, color }: { category: string; color: string }) {
   const style = {
     position: "absolute" as const,
     bottom: "-8px",
@@ -474,7 +474,7 @@ function CategoryIllustration({ category }: { category: string }) {
   }
 }
 
-function CategoryHeaderIllustration({ category }: { category: string }) {
+export function CategoryHeaderIllustration({ category }: { category: string }) {
   switch (category) {
     case "Computer Science":
       return (
@@ -873,13 +873,13 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
           <line x1="260" y1="35" x2="160" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
           <line x1="80" y1="115" x2="160" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
           <line x1="240" y1="115" x2="160" y2="75" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-          
+
           <line x1="60" y1="35" x2="30" y2="75" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
           <line x1="260" y1="35" x2="290" y2="75" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
 
           {/* Dotted concentric outer ring */}
           <circle cx="160" cy="75" r="32" stroke="rgba(236,72,153,0.3)" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
-          
+
           {/* Main glowing center */}
           <circle cx="160" cy="75" r="22" fill="url(#pinkGlow)" opacity="0.6" />
           <circle cx="160" cy="75" r="12" fill="#EC4899" />
@@ -890,7 +890,7 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
           <circle cx="260" cy="35" r="4.5" fill="#A78BFA" />
           <circle cx="80" cy="115" r="4.5" fill="#818CF8" />
           <circle cx="240" cy="115" r="4.5" fill="#818CF8" />
-          
+
           <circle cx="30" cy="75" r="3" fill="#60A5FA" />
           <circle cx="290" cy="75" r="3" fill="#60A5FA" />
         </svg>
@@ -948,17 +948,17 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
           {/* Server Stacks on Left */}
           <g transform="translate(60, 40)">
             <rect x="0" y="0" width="48" height="68" rx="6" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-            
+
             {/* Rack 1 */}
             <rect x="5" y="7" width="38" height="12" rx="2.5" fill="none" stroke="#3B82F6" strokeWidth="1.5" />
             <circle cx="11" cy="13" r="1.5" fill="#10B981" />
             <circle cx="17" cy="13" r="1.5" fill="#10B981" />
-            
+
             {/* Rack 2 */}
             <rect x="5" y="27" width="38" height="12" rx="2.5" fill="none" stroke="#3B82F6" strokeWidth="1.5" />
             <circle cx="11" cy="33" r="1.5" fill="#10B981" />
             <circle cx="17" cy="33" r="1.5" fill="#10B981" />
-            
+
             {/* Rack 3 */}
             <rect x="5" y="47" width="38" height="12" rx="2.5" fill="none" stroke="#3B82F6" strokeWidth="1.5" />
             <circle cx="11" cy="53" r="1.5" fill="#EF4444" />
@@ -977,7 +977,7 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
             {/* Orange outline cloud */}
             <path d="M 10,35 A 11,11 0 0,1 18,16 A 17,17 0 0,1 48,13 A 13,13 0 0,1 60,35 Z" fill="none" stroke="#F97316" strokeWidth="2.5" style={{ filter: "drop-shadow(0 0 8px rgba(249,115,22,0.6))" }} />
             <line x1="10" y1="35" x2="60" y2="35" stroke="#F97316" strokeWidth="2.5" />
-            
+
             {/* Lightning bolt inside */}
             <polygon points="34,14 26,27 35,27 30,40 42,24 32,24" fill="#FBBF24" style={{ filter: "drop-shadow(0 0 5px #FBBF24)" }} />
           </g>
@@ -1005,7 +1005,7 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
             <circle cx="0" cy="0" r="20" fill="none" stroke="#F87171" strokeWidth="2.2" />
             <circle cx="0" cy="0" r="11" fill="#EF4444" style={{ filter: "drop-shadow(0 0 6px #EF4444)" }} />
             <circle cx="0" cy="0" r="3.5" fill="#FFFFFF" />
-            
+
             {/* Landing arrow */}
             <line x1="28" y1="-28" x2="5" y2="-5" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
             <polygon points="3,-3 5,-10 10,-5" fill="#FFFFFF" />
@@ -1029,10 +1029,10 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
             <line x1="50" y1="95" x2="270" y2="95" stroke="#10B981" strokeWidth="2" opacity="0.4" />
             {/* Upper chord */}
             <line x1="105" y1="35" x2="215" y2="35" stroke="#10B981" strokeWidth="2" opacity="0.4" />
-            
+
             {/* Diagonal trusses */}
             <polyline points="50,95 105,35 160,95 215,35 270,95" fill="none" stroke="#10B981" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: "drop-shadow(0 0 8px rgba(16,185,129,0.7))" }} />
-            
+
             {/* Vertical trusses */}
             <line x1="105" y1="35" x2="105" y2="95" stroke="#10B981" strokeWidth="1.5" opacity="0.6" />
             <line x1="160" y1="35" x2="160" y2="95" stroke="#10B981" strokeWidth="1.5" opacity="0.6" />
@@ -1041,7 +1041,7 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
             {/* Red Downward load arrows */}
             <line x1="105" y1="8" x2="105" y2="28" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" />
             <polygon points="105,31 101,24 109,24" fill="#EF4444" />
-            
+
             <line x1="215" y1="8" x2="215" y2="28" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" />
             <polygon points="215,31 211,24 219,24" fill="#EF4444" />
 
@@ -1055,307 +1055,16 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
 }
 
 function CoursesContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  // Route selector
-  const initialCategory = searchParams.get("category");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  useEffect(() => {
-    if (initialCategory && categoriesList.includes(initialCategory)) {
-      setActiveCategory(initialCategory);
-    } else {
-      setActiveCategory(null);
-    }
-  }, [initialCategory]);
-
   const handleCategorySwitch = (category: string) => {
-    setActiveCategory(category);
     router.push(`/courses?category=${encodeURIComponent(category)}`);
   };
-
-  const handleGoBackToExplore = () => {
-    setActiveCategory(null);
-    router.push("/explore");
-  };
-
-  // RENDER OPTION A: Dedicated Category/Department Page
-  if (activeCategory) {
-    const activeData = CATEGORY_DATA[activeCategory] || CATEGORY_DATA["Computer Science"];
-    return (
-      <div
-        style={{
-          background: "#F9FAFB",
-          minHeight: "100vh",
-          color: "#000000",
-          fontFamily: "'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-        }}
-      >
-        <HeroNav />
-
-        {/* Dynamic Category View (Full Screen Layout) */}
-        <main
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-            padding: "110px 48px 80px",
-            display: "grid",
-            gridTemplateColumns: "300px 1fr",
-            gap: "60px",
-          }}
-          className="lp-courses-layout"
-        >
-          {/* Sidebar */}
-          <aside style={{ alignSelf: "start", position: "sticky", top: "96px" }}>
-            <button
-              onClick={handleGoBackToExplore}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "0 0 20px",
-                fontSize: "0.9rem",
-                fontWeight: "700",
-                color: "#6B7280",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
-            >
-              ← Back to Explore
-            </button>
-            <h3
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: "700",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "#6B7280",
-                marginBottom: "20px"
-              }}
-            >
-              Departments
-            </h3>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px"
-              }}
-            >
-              {categoriesList.map((item) => {
-                const isActive = activeCategory === item;
-                const catColor = CATEGORY_DATA[item].colors.primary;
-                return (
-                  <li key={item}>
-                    <button
-                      onClick={() => handleCategorySwitch(item)}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        background: isActive ? CATEGORY_DATA[item].colors.secondary : "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "10px 14px",
-                        borderRadius: "8px",
-                        fontSize: "0.9rem",
-                        fontWeight: isActive ? "700" : "500",
-                        color: isActive ? catColor : "#4B5563",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {isActive && (
-                        <span
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            background: catColor,
-                            boxShadow: `0 0 6px ${catColor}`
-                          }}
-                        />
-                      )}
-                      {item}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </aside>
-
-          {/* Dynamic Content */}
-          <section style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-            <div>
-              <h1
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: 800,
-                  color: "#000000",
-                  marginBottom: "12px",
-                  letterSpacing: "-0.02em"
-                }}
-              >
-                {activeCategory} Courses
-              </h1>
-              <p
-                style={{
-                  fontSize: "1.05rem",
-                  color: "#4B5563",
-                  lineHeight: "1.6",
-                  maxWidth: "860px",
-                  margin: 0
-                }}
-              >
-                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to build your skills.
-              </p>
-            </div>
-
-            {/* Courses section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Available Courses ({activeData.courses.length})
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
-                {activeData.courses.map((course) => (
-                  <div
-                    key={course.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      padding: "24px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "180px",
-                      cursor: "default"
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, background: activeData.colors.secondary, padding: "2px 8px", borderRadius: "4px" }}>
-                          {course.level}
-                        </span>
-                        <span style={{ fontSize: "0.75rem", color: "#6B7280" }}>{course.duration}</span>
-                      </div>
-                      <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                        {course.title}
-                      </h3>
-                      <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: 0 }}>
-                        {course.desc}
-                      </p>
-                    </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#6B7280" }}>Syllabus Available</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bootcamps section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Practical Bootcamps & Workshops
-              </h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {activeData.bootcamps.map((bootcamp) => (
-                  <div
-                    key={bootcamp.title}
-                    style={{
-                      background: "linear-gradient(135deg, #FFFFFF 85%, #F5F3FF 100%)",
-                      border: "1px solid #E5E7EB",
-                      borderLeft: "5px solid #8B5CF6",
-                      borderRadius: "10px",
-                      padding: "16px 20px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      position: "relative",
-                      overflow: "hidden"
-                    }}
-                  >
-                    <CategoryWatermark category={activeCategory} color="#8B5CF6" />
-                    <div style={{ position: "relative", zIndex: 1 }}>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000" }}>{bootcamp.title}</div>
-                      <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "2px" }}>
-                        {bootcamp.type} • {bootcamp.duration}
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        background: "#8B5CF6",
-                        color: "#FFFFFF",
-                        border: "none",
-                        padding: "4px 12px",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        fontWeight: "700",
-                        cursor: "default",
-                        position: "relative",
-                        zIndex: 1
-                      }}
-                    >
-                      Register
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Resources section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Resource Libraries
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-                {activeData.resources.map((doc) => (
-                  <div
-                    key={doc.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "120px"
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#6B7280", textTransform: "uppercase", marginBottom: "8px" }}>
-                        {doc.type}
-                      </div>
-                      <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000", margin: "0 0 8px", lineHeight: "1.4" }}>
-                        {doc.title}
-                      </h3>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>{doc.readTime}</span>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer", textDecoration: "underline" }}>Read Link</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-    );
-  }
 
   // RENDER OPTION B: Main Explore Hub Dashboard
   return (
@@ -1866,6 +1575,7 @@ function CoursesContent() {
                             <polyline points="12 5 19 12 12 19" />
                           </svg>
                         </div>
+
                       </div>
                     </div>
                   );
@@ -1949,7 +1659,7 @@ function CoursesContent() {
                   const ctaColor = "#FFFFFF";
                   const ctaHoverBg = isLive ? "#DC2626" : (isUpcoming ? "#D97706" : "#2563EB");
                   const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#3B82F6")}30`;
-                  
+
                   const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#2563EB");
                   const statusBg = isLive ? "#FEE2E2" : (isUpcoming ? "#FEF3C7" : "#DBEAFE");
                   const statusText = isLive ? "LIVE TODAY" : (isUpcoming ? "UPCOMING" : "RECORDED");
@@ -1988,12 +1698,12 @@ function CoursesContent() {
                           </div>
 
                           {/* Webinar Title */}
-                          <h3 
-                            style={{ 
-                              fontSize: "1.1rem", 
-                              fontWeight: "800", 
-                              color: titleColor, 
-                              marginBottom: "16px", 
+                          <h3
+                            style={{
+                              fontSize: "1.1rem",
+                              fontWeight: "800",
+                              color: titleColor,
+                              marginBottom: "16px",
                               lineHeight: "1.4",
                               minHeight: "56px",
                               display: "-webkit-box",
@@ -2030,7 +1740,7 @@ function CoursesContent() {
                                 {w.date}
                               </span>
                             </div>
-                            
+
                             <span
                               style={{
                                 background: ctaBg,
