@@ -1,8 +1,15 @@
 @font-face {
   font-family: "Voyage";
   src: url("/fonts/Voyage.otf") format("opentype"),
-       url("/fonts/Voyage.woff2") format("woff2"),
-       url("/fonts/Amira-Grace.otf") format("opentype");
+       url("/fonts/Voyage.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Amira-Grace";
+  src: url("/fonts/Amira-Grace.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
