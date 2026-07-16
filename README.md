@@ -197,6 +197,7 @@ To run the Arcade UI locally, follow these steps:
 Course Editor Shell updates complete, and latest changes from the `auth` branch have been merged into `con-man`.
 
 ### 2. What Was Implemented
+- **Second Merge of `auth` Branch**: Pulled the latest changes from `auth` and successfully merged them into `con-man`. This brought in additional public course pages, fonts, and minor dashboard navigation updates without conflicts.
 - **Merge `auth` Branch**: Successfully merged the latest changes from the `auth` branch into `con-man` in both frontend and backend repositories, bringing in dashboards, onboarding features, and channel management without disrupting the content editor engine. Resolved merge conflicts in `package.json` for rich text dependencies.
 - **Navbar Cleanup**: Removed course description input field and free/paid pricing model dropdown selector from the header of [CourseEditorShell.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/course/components/CourseEditorShell.tsx).
 - **Settings Description Editing**: Swapped the static description display with a dynamic, left-aligned `<textarea>` on the settings panel that triggers debounced updates via `onDescriptionChange` back to the parent component and the backend API.
