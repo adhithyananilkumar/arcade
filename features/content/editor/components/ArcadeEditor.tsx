@@ -6,6 +6,7 @@ import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
 import type * as Y from "yjs";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { EditorToolbar } from "./EditorToolbar";
+import { BlockHandle } from "./BlockHandle";
 import { useArcadeEditor } from "../hooks/useArcadeEditor";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/types/editor";
@@ -98,6 +99,9 @@ export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
         editor={editor}
         className="flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
       />
+      {/* Notion-style block gutter: drag-to-reorder handle + "+" add-block button.
+          Self-positions against the hovered block; edit mode only. */}
+      {!readOnly && <BlockHandle editor={editor} />}
       {/* Character count — subtle footer */}
       {!readOnly && (
         <div className="flex items-center justify-end px-8 py-2 border-t border-gray-100">

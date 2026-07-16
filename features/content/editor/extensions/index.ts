@@ -12,6 +12,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { createLowlight, common } from "lowlight";
 import type * as Y from "yjs";
 import { RoadmapNode } from "../roadmap/extensions/roadmap";
+import { SlashCommand } from "./slash-command";
 
 const lowlight = createLowlight(common);
 
@@ -51,5 +52,6 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
       lowlight,
     }),
     RoadmapNode,
+    SlashCommand,
   ];
 }
