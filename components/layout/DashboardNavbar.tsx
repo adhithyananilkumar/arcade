@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/store/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
@@ -188,6 +188,22 @@ export default function DashboardNavbar() {
                 onClick={() => router.push('/dashboard/manage-channels')} 
               >
                 Channels
+              </MenuItem>
+            )}
+            {showAdminChannels && (
+              <MenuItem 
+                icon={<Tv size={20} strokeWidth={2} className="text-pink-500" />} 
+                onClick={() => router.push('/dashboard/admin/channels')} 
+              >
+                Channel Management
+              </MenuItem>
+            )}
+            {showAdminSettings && (
+              <MenuItem 
+                icon={<ShieldAlert size={20} strokeWidth={2} className="text-red-500" />} 
+                onClick={() => router.push('/dashboard/admin/settings')} 
+              >
+                Admin Settings
               </MenuItem>
             )}
             <MenuItem 
