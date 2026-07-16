@@ -63,8 +63,8 @@ apiClient.interceptors.response.use(
         queryClient.clear(); 
         
         // Prevent infinite redirects if already on login
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login';
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/sign')) {
+          window.location.href = '/sign';
         }
         return Promise.reject(err);
       } finally {

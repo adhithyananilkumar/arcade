@@ -1,6 +1,8 @@
 @font-face {
-  font-family: "Amira Grace";
-  src: url("/fonts/Amira-Grace.otf") format("opentype");
+  font-family: "Voyage";
+  src: url("/fonts/Voyage.otf") format("opentype"),
+       url("/fonts/Voyage.woff2") format("woff2"),
+       url("/fonts/Amira-Grace.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -52,7 +54,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -131,11 +133,11 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.05 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
@@ -201,11 +203,38 @@
       scroll-behavior: auto !important;
     }
   }
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: oklch(0.85 0 0); /* light mode grey */
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.75 0 0);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: oklch(0.25 0 0); /* dark mode grey */
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(0.35 0 0);
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Markdown preview overrides — keep it light */
@@ -221,10 +250,12 @@
   background-color: #ffffff !important;
   color: #0f1824 !important;
 }
+
 [data-color-mode="light"] .w-md-editor-toolbar {
   background-color: var(--surface) !important;
   border-bottom: 1px solid var(--border) !important;
 }
+
 [data-color-mode="light"] .w-md-editor-text {
   background-color: #ffffff !important;
   color: #0f1824 !important;
@@ -235,12 +266,14 @@
   font-family: inherit !important;
   color: var(--text-primary) !important;
 }
+
 .wmde-markdown h1,
 .wmde-markdown h2,
 .wmde-markdown h3 {
   color: var(--text-primary) !important;
   border-bottom: 1px solid var(--border) !important;
 }
+
 .wmde-markdown code {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
@@ -248,16 +281,19 @@
   padding: 2px 6px !important;
   font-size: 13px !important;
 }
+
 .wmde-markdown pre {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius-md) !important;
 }
+
 .wmde-markdown blockquote {
   border-left: 3px solid var(--arcade-blue) !important;
   color: var(--text-secondary) !important;
   background: var(--arcade-blue-light) !important;
 }
+
 .wmde-markdown a {
   color: var(--arcade-blue) !important;
 }

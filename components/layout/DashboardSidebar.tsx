@@ -3,18 +3,53 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Sparkles, User, Search } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useState, useEffect } from 'react';
+import { channelService } from '@/services/channel.service';
 
-const navItems = [
+const baseNavItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+  const { hasPermission } = usePermissions();
+  const [hasChannels, setHasChannels] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    channelService.getMyChannels()
+      .then(channels => {
+        if (mounted) setHasChannels(channels.length > 0);
+      })
+      .catch(() => {
+        if (mounted) setHasChannels(false);
+      });
+    return () => { mounted = false; };
+  }, []);
+
+  const primaryRole = user?.roles?.[0]?.name;
+  const isSuperUser = primaryRole === 'SUPER_USER';
+
+  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+
+  const dynamicNavItems = [
+    ...baseNavItems,
+    ...(hasChannels ? [{ name: 'Manage Channels', href: '/dashboard/manage-channels', icon: Tv }] : []),
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    ...(showAdminChannels ? [{ name: 'Channel Management', href: '/dashboard/admin/channels', icon: Tv }] : []),
+    ...(showAdminSettings ? [{ name: 'Admin Settings', href: '/dashboard/admin/settings', icon: Settings }] : [])
+  ];
+
+  if (pathname?.includes('/manage')) {
+    return null;
+  }
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
@@ -33,7 +68,7 @@ export default function DashboardSidebar() {
 
       {/* Navigation Area */}
       <nav className="flex-grow overflow-y-auto space-y-1.5 px-4 py-6 scrollbar-thin scrollbar-thumb-slate-100">
-        {navItems.map((item) => {
+        {dynamicNavItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 

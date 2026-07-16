@@ -12,16 +12,17 @@ import {
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import Image from 'next/image';
+import PublicProfileLoading from './loading';
 
 const badges = [
-  { name: 'Code Contributor', icon: Code, color: 'text-purple-600', fill: 'fill-purple-50', stroke: 'stroke-purple-200' },
-  { name: 'Pull Shark x10', icon: GitPullRequest, color: 'text-green-600', fill: 'fill-green-50', stroke: 'stroke-green-200' },
-  { name: 'Star Contributor', icon: Star, color: 'text-amber-500', fill: 'fill-amber-50', stroke: 'stroke-amber-200' },
-  { name: 'Documentation Expert', icon: BookOpen, color: 'text-blue-600', fill: 'fill-blue-50', stroke: 'stroke-blue-200' },
-  { name: 'Commit Master', icon: GitCommit, color: 'text-rose-600', fill: 'fill-rose-50', stroke: 'stroke-rose-200' },
-  { name: 'Community Helper', icon: MessageSquare, color: 'text-sky-600', fill: 'fill-sky-50', stroke: 'stroke-sky-200' },
-  { name: 'Streak 7 Days', icon: Flame, color: 'text-indigo-600', fill: 'fill-indigo-50', stroke: 'stroke-indigo-200' },
-  { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500', fill: 'fill-orange-50', stroke: 'stroke-orange-200' },
+  { name: 'Code Contributor', icon: Code, color: 'text-purple-600 dark:text-purple-400', fill: 'fill-purple-50 dark:fill-purple-500/20', stroke: 'stroke-purple-200 dark:stroke-purple-500/30' },
+  { name: 'Pull Shark x10', icon: GitPullRequest, color: 'text-green-600 dark:text-green-400', fill: 'fill-green-50 dark:fill-green-500/20', stroke: 'stroke-green-200 dark:stroke-green-500/30' },
+  { name: 'Star Contributor', icon: Star, color: 'text-amber-500 dark:text-amber-400', fill: 'fill-amber-50 dark:fill-amber-500/20', stroke: 'stroke-amber-200 dark:stroke-amber-500/30' },
+  { name: 'Documentation Expert', icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', fill: 'fill-blue-50 dark:fill-blue-500/20', stroke: 'stroke-blue-200 dark:stroke-blue-500/30' },
+  { name: 'Commit Master', icon: GitCommit, color: 'text-rose-600 dark:text-rose-400', fill: 'fill-rose-50 dark:fill-rose-500/20', stroke: 'stroke-rose-200 dark:stroke-rose-500/30' },
+  { name: 'Community Helper', icon: MessageSquare, color: 'text-sky-600 dark:text-sky-400', fill: 'fill-sky-50 dark:fill-sky-500/20', stroke: 'stroke-sky-200 dark:stroke-sky-500/30' },
+  { name: 'Streak 7 Days', icon: Flame, color: 'text-indigo-600 dark:text-indigo-400', fill: 'fill-indigo-50 dark:fill-indigo-500/20', stroke: 'stroke-indigo-200 dark:stroke-indigo-500/30' },
+  { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500 dark:text-orange-400', fill: 'fill-orange-50 dark:fill-orange-500/20', stroke: 'stroke-orange-200 dark:stroke-orange-500/30' },
 ];
 
 export default function PublicProfilePage() {
@@ -61,6 +62,23 @@ export default function PublicProfilePage() {
     if (usernameParam) loadProfile();
   }, [usernameParam]);
 
+  useEffect(() => {
+    const handleLocalTime = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const secondsToAdd = customEvent.detail.seconds;
+      setActivityData(prev => {
+        const today = new Date().toISOString().split('T')[0];
+        const current = prev[today] || 0;
+        return { ...prev, [today]: current + secondsToAdd };
+      });
+    };
+    
+    window.addEventListener('localTimeIncrement', handleLocalTime);
+    return () => {
+      window.removeEventListener('localTimeIncrement', handleLocalTime);
+    };
+  }, []);
+
   const contributionGrid = useMemo(() => {
     const cols = 53;
     const rows = 7;
@@ -70,7 +88,9 @@ export default function PublicProfilePage() {
     for (let c = 0; c < cols; c++) {
       const week = [];
       for (let r = 0; r < rows; r++) {
-        const dayOffset = (52 - c) * 7 + (6 - r);
+        // Calculate offset in days relative to today
+        const todayDayOfWeek = (today.getDay() + 6) % 7; // Mon=0, Sun=6
+        const dayOffset = (52 - c) * 7 + (todayDayOfWeek - r);
         const targetDate = new Date(today);
         targetDate.setDate(today.getDate() - dayOffset);
         
@@ -138,20 +158,18 @@ export default function PublicProfilePage() {
     });
   }, [currentStreak]);
 
-  const months = useMemo(() => [
-    { name: 'Jul', col: 0 }, { name: 'Aug', col: 4 }, { name: 'Sep', col: 9 },
-    { name: 'Oct', col: 13 }, { name: 'Nov', col: 17 }, { name: 'Dec', col: 22 },
-    { name: 'Jan', col: 26 }, { name: 'Feb', col: 31 }, { name: 'Mar', col: 35 },
-    { name: 'Apr', col: 39 }, { name: 'May', col: 44 }, { name: 'Jun', col: 48 }, { name: 'Jul', col: 52 },
-  ], []);
+  const months = useMemo(() => {
+    const cols = [0, 4, 9, 13, 17, 22, 26, 31, 35, 39, 44, 48, 52];
+    const today = new Date();
+    return cols.map(c => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (52 - c) * 7);
+      return { name: d.toLocaleDateString(undefined, { month: 'short' }), col: c };
+    });
+  }, []);
 
   if (isLoading) {
-    return (
-      <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-3">
-        <Loader2 className="animate-spin text-indigo-600" size={36} />
-        <p className="text-sm font-semibold text-slate-400">Fetching profile details from database...</p>
-      </div>
-    );
+    return <PublicProfileLoading />;
   }
 
   if (error || !profileData) {
@@ -181,7 +199,7 @@ export default function PublicProfilePage() {
   const displayedBadges = showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 5);
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center" style={{ fontFamily: 'var(--font-geist-sans)' }}>
       <motion.div 
         className="w-full max-w-4xl space-y-8 pb-16 px-4 sm:px-6 relative"
         initial={{ opacity: 0, y: 15 }}
@@ -312,37 +330,35 @@ export default function PublicProfilePage() {
           <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
             {totalMinutesSpent} minutes spent in the last year
           </h3>
-          <div className="text-sm text-slate-400 font-semibold flex items-center gap-1.5 cursor-help">
-            Contribution settings <Settings size={14}/>
-          </div>
         </div>
 
         <div className="border border-slate-100 rounded-2xl p-4 sm:p-6 bg-slate-50/50">
           <div className="flex gap-3 items-start">
-            <div className="grid grid-rows-7 gap-[3px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Mon</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Wed</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Fri</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
+            <div className="hidden sm:grid grid-rows-7 gap-[2px] md:gap-[3px] text-[8px] md:text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Mon</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Wed</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Fri</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
             </div>
 
-            <div className="flex-grow overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
-              <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
-                {months.map((m, i) => (
-                  <span 
-                    key={`${m.name}-${m.col}-${i}`} 
-                    className="absolute" 
-                    style={{ left: `calc(${m.col} * (100% / 53))` }}
-                  >
-                    {m.name}
-                  </span>
-                ))}
-              </div>
+            <div className="flex-grow w-full overflow-hidden flex justify-end sm:justify-start">
+              <div className="w-fit">
+                <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
+                  {months.map((m, i) => (
+                    <span 
+                      key={`${m.name}-${m.col}-${i}`} 
+                      className="absolute" 
+                      style={{ left: `calc(${m.col} * (100% / 53))` }}
+                    >
+                      {m.name}
+                    </span>
+                  ))}
+                </div>
 
-              <div className="grid grid-flow-col grid-rows-7 gap-[3px]">
+                <div className="grid grid-flow-col grid-rows-7 gap-[1px] sm:gap-[2px] md:gap-[3px]">
                 {contributionGrid.map((week, wIdx) => 
                   week.map((cell, dIdx) => (
                     <div 
@@ -352,13 +368,13 @@ export default function PublicProfilePage() {
                         setHoveredCell({
                           count: cell.count,
                           dateStr: cell.dateStr,
-                          x: rect.left + window.scrollX + rect.width / 2,
-                          y: rect.top + window.scrollY - 36
+                          x: rect.left + rect.width / 2,
+                          y: rect.top - 8
                         });
                       }}
                       onMouseLeave={() => setHoveredCell(null)}
-                      className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] border-[0.5px] border-slate-200/20 transition-all duration-200 cursor-pointer ${
-                        cell.level === 0 ? 'bg-slate-50 hover:bg-indigo-50 border-slate-100' :
+                      className={`w-[5px] h-[5px] sm:w-[7px] sm:h-[7px] md:w-[10px] md:h-[10px] lg:w-[11px] lg:h-[11px] rounded-[1px] sm:rounded-[1.5px] border-[0.5px] border-slate-200/20 transition-all duration-200 cursor-pointer ${
+                        cell.level === 0 ? 'bg-slate-100 hover:bg-indigo-50 border-slate-200 dark:bg-neutral-800 dark:border-neutral-800 dark:hover:bg-neutral-700' :
                         cell.level === 1 ? 'bg-indigo-200/70 hover:scale-105' :
                         cell.level === 2 ? 'bg-indigo-400 hover:scale-105' :
                         'bg-indigo-600 hover:scale-105 shadow-sm'
@@ -368,16 +384,13 @@ export default function PublicProfilePage() {
                 )}
               </div>
             </div>
+            </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 text-[10px] text-slate-400 font-semibold pt-3 border-t border-slate-100">
-            <span className="hover:text-indigo-600 hover:underline cursor-pointer flex items-center gap-1">
-              <Globe size={12} />
-              Learn how we track time spent
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mt-4 text-[10px] text-slate-400 font-semibold pt-3 border-t border-slate-100">
             <div className="flex items-center gap-1.5 select-none">
               <span>Less</span>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-slate-50 border border-slate-100"></div>
+              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-slate-100 border border-slate-200"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-200/70"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-400"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-600"></div>
@@ -437,8 +450,11 @@ export default function PublicProfilePage() {
               >
                 {profileData.courses && profileData.courses.length > 0 ? (
                   profileData.courses.map((course: any, idx: number) => (
-                    <div key={idx} className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
-                      <div>
+                    <div key={idx} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
+                      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full text-slate-50/50 dark:text-neutral-900/50 fill-current stroke-[3.5] stroke-slate-200 dark:stroke-neutral-800 group-hover:stroke-indigo-300 dark:group-hover:stroke-indigo-600 group-hover:text-indigo-50/30 transition-all duration-300">
+                        <path d="M0 0h100v100H0z" />
+                      </svg>
+                      <div className="relative z-10">
                         <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
                           {course.title}
                         </h4>
@@ -547,7 +563,7 @@ export default function PublicProfilePage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="absolute z-50 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-lg pointer-events-none -translate-x-1/2 flex items-center gap-1"
+            className="fixed z-50 bg-slate-900 text-white text-[12px] font-bold px-4 py-2.5 rounded-xl shadow-xl pointer-events-none -translate-x-1/2 -translate-y-full flex items-center gap-1.5 whitespace-nowrap"
             style={{ left: hoveredCell.x, top: hoveredCell.y }}
           >
             <span>{hoveredCell.count === 0 ? '0 minutes spent' : `${hoveredCell.count} minutes spent`}</span>

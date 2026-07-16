@@ -38,17 +38,13 @@ export default function TimeTracker() {
     client.activate();
     stompClientRef.current = client;
 
-    // Set up the interval to ping every 10 seconds
+    // The backend now automatically tracks time based on the active WebSocket connection.
+    // We no longer need to poll/ping continuously.
+
+    // Dispatch a local event every minute to update the UI live
     const interval = setInterval(() => {
-      if (stompClientRef.current && stompClientRef.current.connected) {
-        stompClientRef.current.publish({
-          destination: '/app/time/ping',
-          body: JSON.stringify({ seconds: 10 }),
-        });
-        // Dispatch local event in case the heatmap is currently being viewed
-        window.dispatchEvent(new Event('timeTrackerUpdated'));
-      }
-    }, 10000);
+      window.dispatchEvent(new CustomEvent('localTimeIncrement', { detail: { seconds: 60 } }));
+    }, 60000);
 
     return () => {
       clearInterval(interval);
