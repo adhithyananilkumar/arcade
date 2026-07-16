@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-  Play, Volume2, Settings, Share2, Clock, ChevronDown,
+  Play, Volume2, Settings, Share2, Clock, ChevronDown, Check,
   Star, Users, BookOpen, Award, ArrowLeft, Terminal, Code
 } from "lucide-react";
 import HeroNav from "@/components/landing/HeroNav";
@@ -205,8 +205,8 @@ export default function CoursePreviewPage() {
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10 }}>What you&apos;ll walk away with</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     {["A working design system in Figma", "A recorded portfolio case study", "Feedback from a working designer", "A shareable certificate"].map((f) => (
-                      <div key={f} style={{ display: "flex", gap: 9, fontSize: 13.5, color: "#33353F" }}>
-                        <Flower size={13} /> {f}
+                      <div key={f} style={{ display: "flex", gap: 9, fontSize: 13.5, color: "#33353F", alignItems: "center" }}>
+                        <Check size={14} color="#10B981" /> {f}
                       </div>
                     ))}
                   </div>
