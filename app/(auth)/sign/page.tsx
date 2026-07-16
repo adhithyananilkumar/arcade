@@ -3,8 +3,9 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function SignPage({ searchParams }: { searchParams: { mode?: string } }) {
-  const initialMode = searchParams.mode === 'signup' ? 'signup' : 'login';
+export default async function SignPage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
+  const { mode } = await searchParams;
+  const initialMode = mode === 'signup' ? 'signup' : 'login';
 
   return (
     <div className="flex min-h-screen bg-white w-full overflow-hidden">
