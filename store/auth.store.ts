@@ -15,6 +15,7 @@ export interface User {
   address?: string;
   socialLinks?: string[];
   preferences?: string[];
+  workingAt?: string;
   onboardingCompleted?: boolean;
   provider?: string;
   createdAt?: string;

@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
+import "@/styles/landing.css";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "Forums", href: "/forum" },
   { label: "For Colleges", href: "/colleges" },
+  { label: "For creators", href: "/for-creators" },
+  { label: "Reach us", href: "/content-creator" },
   { label: "Docs", href: "/docs" },
 ];
 
@@ -24,7 +27,7 @@ export default function HeroNav() {
       // Hide only if we scroll down past 120px
       if (currentScrollY > lastScrollY && currentScrollY > 120) {
         setIsHidden(true);
-      } 
+      }
       // Show when scrolling up
       else if (currentScrollY < lastScrollY) {
         setIsHidden(false);
@@ -48,11 +51,11 @@ export default function HeroNav() {
       transition: shouldReduceMotion
         ? { duration: 0.3 }
         : {
-            type: "spring" as const,
-            stiffness: 100,
-            damping: 15,
-            delay: 0.1, // slightly reduced delay for immediate loading responsiveness
-          },
+          type: "spring" as const,
+          stiffness: 100,
+          damping: 15,
+          delay: 0.1, // slightly reduced delay for immediate loading responsiveness
+        },
     },
     scrollHidden: {
       y: -100,
@@ -92,10 +95,10 @@ export default function HeroNav() {
 
       {/* Right actions */}
       <div className="l-nav__actions">
-        <Link href="/login" className="l-nav__login">
+        <Link href="/sign" className="l-nav__login">
           Log in
         </Link>
-        <Link href="/register" className="l-nav__get-started">
+        <Link href="/sign?mode=signup" className="l-nav__get-started">
           Get Started
         </Link>
       </div>

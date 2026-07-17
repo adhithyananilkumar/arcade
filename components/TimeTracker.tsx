@@ -41,7 +41,13 @@ export default function TimeTracker() {
     // The backend now automatically tracks time based on the active WebSocket connection.
     // We no longer need to poll/ping continuously.
 
+    // Dispatch a local event every minute to update the UI live
+    const interval = setInterval(() => {
+      window.dispatchEvent(new CustomEvent('localTimeIncrement', { detail: { seconds: 60 } }));
+    }, 60000);
+
     return () => {
+      clearInterval(interval);
       if (stompClientRef.current) {
         stompClientRef.current.deactivate();
       }

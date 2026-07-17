@@ -96,6 +96,10 @@ export default function Footer() {
         </div>
 
       </div>
+
+      {/* Giant "arcade" brand watermark at the bottom center (Laravel Style) */}
+      <div className="arc-footer__watermark">arcade.</div>
     </footer>
   );
 }
+

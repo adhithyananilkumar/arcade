@@ -14,14 +14,14 @@ import {
 import { FaLinkedin } from 'react-icons/fa';
 
 const badges = [
-  { name: 'Code Contributor', icon: Code, color: 'text-purple-600', fill: 'fill-purple-50', stroke: 'stroke-purple-200' },
-  { name: 'Pull Shark x10', icon: GitPullRequest, color: 'text-green-600', fill: 'fill-green-50', stroke: 'stroke-green-200' },
-  { name: 'Star Contributor', icon: Star, color: 'text-amber-500', fill: 'fill-amber-50', stroke: 'stroke-amber-200' },
-  { name: 'Documentation Expert', icon: BookOpen, color: 'text-blue-600', fill: 'fill-blue-50', stroke: 'stroke-blue-200' },
-  { name: 'Commit Master', icon: GitCommit, color: 'text-rose-600', fill: 'fill-rose-50', stroke: 'stroke-rose-200' },
-  { name: 'Community Helper', icon: MessageSquare, color: 'text-sky-600', fill: 'fill-sky-50', stroke: 'stroke-sky-200' },
-  { name: 'Streak 7 Days', icon: Flame, color: 'text-indigo-600', fill: 'fill-indigo-50', stroke: 'stroke-indigo-200' },
-  { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500', fill: 'fill-orange-50', stroke: 'stroke-orange-200' },
+  { name: 'Code Contributor', icon: Code, color: 'text-purple-600 dark:text-purple-400', fill: 'fill-purple-50 dark:fill-purple-500/20', stroke: 'stroke-purple-200 dark:stroke-purple-500/30' },
+  { name: 'Pull Shark x10', icon: GitPullRequest, color: 'text-green-600 dark:text-green-400', fill: 'fill-green-50 dark:fill-green-500/20', stroke: 'stroke-green-200 dark:stroke-green-500/30' },
+  { name: 'Star Contributor', icon: Star, color: 'text-amber-500 dark:text-amber-400', fill: 'fill-amber-50 dark:fill-amber-500/20', stroke: 'stroke-amber-200 dark:stroke-amber-500/30' },
+  { name: 'Documentation Expert', icon: BookOpen, color: 'text-blue-600 dark:text-blue-400', fill: 'fill-blue-50 dark:fill-blue-500/20', stroke: 'stroke-blue-200 dark:stroke-blue-500/30' },
+  { name: 'Commit Master', icon: GitCommit, color: 'text-rose-600 dark:text-rose-400', fill: 'fill-rose-50 dark:fill-rose-500/20', stroke: 'stroke-rose-200 dark:stroke-rose-500/30' },
+  { name: 'Community Helper', icon: MessageSquare, color: 'text-sky-600 dark:text-sky-400', fill: 'fill-sky-50 dark:fill-sky-500/20', stroke: 'stroke-sky-200 dark:stroke-sky-500/30' },
+  { name: 'Streak 7 Days', icon: Flame, color: 'text-indigo-600 dark:text-indigo-400', fill: 'fill-indigo-50 dark:fill-indigo-500/20', stroke: 'stroke-indigo-200 dark:stroke-indigo-500/30' },
+  { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500 dark:text-orange-400', fill: 'fill-orange-50 dark:fill-orange-500/20', stroke: 'stroke-orange-200 dark:stroke-orange-500/30' },
 ];
 
 export default function ProfilePage() {
@@ -52,10 +52,23 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const handleTimeUpdate = () => setTimeTick(t => t + 1);
+    const handleLocalTime = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const secondsToAdd = customEvent.detail.seconds;
+      setActivityData(prev => {
+        const today = new Date().toISOString().split('T')[0];
+        const current = prev[today] || 0;
+        return { ...prev, [today]: current + secondsToAdd };
+      });
+    };
     window.addEventListener('timeTrackerUpdated', handleTimeUpdate);
+    window.addEventListener('localTimeIncrement', handleLocalTime);
     // Also trigger an initial tick to pick up SSR hydration differences
     setTimeTick(1);
-    return () => window.removeEventListener('timeTrackerUpdated', handleTimeUpdate);
+    return () => {
+      window.removeEventListener('timeTrackerUpdated', handleTimeUpdate);
+      window.removeEventListener('localTimeIncrement', handleLocalTime);
+    };
   }, []);
   const [editEmail, setEditEmail] = useState('');
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
@@ -236,7 +249,8 @@ export default function ProfilePage() {
       const week = [];
       for (let r = 0; r < rows; r++) {
         // Calculate offset in days relative to today
-        const dayOffset = (52 - c) * 7 + (6 - r);
+        const todayDayOfWeek = (today.getDay() + 6) % 7; // Mon=0, Sun=6
+        const dayOffset = (52 - c) * 7 + (todayDayOfWeek - r);
         const targetDate = new Date(today);
         targetDate.setDate(today.getDate() - dayOffset);
         
@@ -308,21 +322,15 @@ export default function ProfilePage() {
     });
   }, [currentStreak]);
 
-  const months = useMemo(() => [
-    { name: 'Jul', col: 0 },
-    { name: 'Aug', col: 4 },
-    { name: 'Sep', col: 9 },
-    { name: 'Oct', col: 13 },
-    { name: 'Nov', col: 17 },
-    { name: 'Dec', col: 22 },
-    { name: 'Jan', col: 26 },
-    { name: 'Feb', col: 31 },
-    { name: 'Mar', col: 35 },
-    { name: 'Apr', col: 39 },
-    { name: 'May', col: 44 },
-    { name: 'Jun', col: 48 },
-    { name: 'Jul', col: 52 },
-  ], []);
+  const months = useMemo(() => {
+    const cols = [0, 4, 9, 13, 17, 22, 26, 31, 35, 39, 44, 48, 52];
+    const today = new Date();
+    return cols.map(c => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (52 - c) * 7);
+      return { name: d.toLocaleDateString(undefined, { month: 'short' }), col: c };
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -352,14 +360,14 @@ export default function ProfilePage() {
 
   return (
     <motion.div 
-      className="mx-auto max-w-4xl space-y-8 pb-16 px-4 sm:px-6 relative"
+      className="mx-auto max-w-6xl w-full space-y-6 pb-16 px-4 sm:px-6 relative transition-colors"
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       
       {/* ── Main Profile Header Card ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)]">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black px-6 py-5 shadow-[0_8px_30px_rgb(0,0,0,0.015)] transition-colors">
         {/* Decorative background blurs */}
         <div className="absolute -top-24 -right-24 h-48 w-48 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 opacity-30 blur-3xl pointer-events-none" />
         
@@ -399,17 +407,17 @@ export default function ProfilePage() {
 
           {/* Details / Bio - Enlarged Layout */}
           <div className="flex-grow flex flex-col items-center md:items-start text-center md:text-left pt-2 w-full">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight leading-none">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-800 dark:text-white tracking-tight leading-none transition-colors">
               {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
             </h1>
             
-            <p className="text-base font-bold text-slate-400 mt-1">
+            <p className="text-base font-bold text-slate-400 dark:text-neutral-500 mt-1 transition-colors">
               @{username}
             </p>
 
             {/* Enlarged Bio */}
             {currentUser.bio && (
-              <div className="mt-4 space-y-2 text-slate-700 text-base font-bold leading-relaxed w-full">
+              <div className="mt-4 space-y-2 text-slate-700 dark:text-neutral-300 text-base font-bold leading-relaxed w-full transition-colors">
                 <div className="flex flex-col gap-1 items-center md:items-start">
                   {currentUser.bio.split('|').map((part: string, i: number) => (
                     <span key={i} className="inline-block">{part.trim()}</span>
@@ -419,7 +427,7 @@ export default function ProfilePage() {
             )}
 
             {/* Location / Git / Email / LinkedIn / Mobile / Gender Details list */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-sm text-slate-500 font-semibold w-full pt-5 border-t border-slate-100">
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-sm text-slate-500 dark:text-neutral-400 font-semibold w-full pt-5 border-t border-slate-100 dark:border-neutral-900 transition-colors">
               {currentUser.address && (
                 <div className="flex items-center justify-center md:justify-start gap-2.5">
                   <MapPin size={16} className="text-slate-400 shrink-0" />
@@ -466,7 +474,7 @@ export default function ProfilePage() {
           {/* Edit Profile Button - Opens Modal */}
           <button 
             onClick={() => setIsEditModalOpen(true)}
-            className="md:self-start inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] transition-all duration-200 shrink-0 cursor-pointer"
+            className="md:self-start inline-flex items-center gap-2 rounded-xl bg-white dark:bg-black px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-neutral-200 shadow-sm border border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-900 active:scale-[0.98] transition-all duration-200 shrink-0 cursor-pointer"
           >
             <Edit3 size={14} />
             Edit Profile
@@ -475,9 +483,9 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Badges Section - Resized Smaller ── */}
-      <div className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)]">
+      <div className="rounded-3xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black px-6 py-5 shadow-[0_8px_30px_rgb(0,0,0,0.015)] transition-colors">
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
             Badges <span className="text-slate-400 font-medium">({badges.length})</span>
           </h3>
           <button 
@@ -504,7 +512,7 @@ export default function ProfilePage() {
                 >
                   {/* SVG Hexagon Shape - Smaller Scale */}
                   <div className="relative w-14 h-14 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                    <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full text-slate-50/50 fill-current stroke-[3.5] stroke-slate-200 group-hover:stroke-indigo-300 group-hover:text-indigo-50/30 transition-all duration-300">
+                    <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full text-slate-50/50 dark:text-neutral-900/50 fill-current stroke-[3.5] stroke-slate-200 dark:stroke-neutral-800 group-hover:stroke-indigo-300 dark:group-hover:stroke-indigo-600 group-hover:text-indigo-50/30 transition-all duration-300">
                       <polygon points="50,5 90,28 90,72 50,95 10,72 10,28" />
                     </svg>
                     
@@ -528,9 +536,9 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Working GitHub-Style Contribution Section (Indigo Light Theme) ── */}
-      <div className="rounded-3xl border border-slate-100 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-slate-700 font-sans relative">
+      <div className="rounded-3xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black px-6 py-5 shadow-[0_8px_30px_rgb(0,0,0,0.015)] text-slate-700 dark:text-neutral-300 font-sans relative transition-colors">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight transition-colors">
             {totalMinutesSpent} minutes spent in the last year
           </h3>
           
@@ -591,53 +599,51 @@ export default function ProfilePage() {
         </div>
 
         {/* Outer border box for the grid - styled in clean Light Mode */}
-        <div className="border border-slate-100 rounded-2xl p-4 sm:p-6 bg-slate-50/50">
+        <div className="border border-slate-100 dark:border-neutral-800 rounded-2xl p-4 sm:p-6 bg-slate-50/50 dark:bg-neutral-900/30 transition-colors">
           <div className="flex gap-3 items-start">
             
             {/* Mon, Wed, Fri Labels */}
-            <div className="grid grid-rows-7 gap-[3px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Mon</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Wed</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
-              <div className="flex items-center h-[10px] sm:h-[11px]">Fri</div>
-              <div className="h-[10px] sm:h-[11px]"></div>
+            <div className="hidden sm:grid grid-rows-7 gap-[2px] md:gap-[3px] text-[8px] md:text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Mon</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Wed</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
+              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Fri</div>
+              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
             </div>
 
-            {/* Grid Area with Months top row */}
-            <div className="flex-grow overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200">
-              {/* Months labels */}
-              <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
-                {months.map((m) => (
-                  <span 
-                    key={`${m.name}-${m.col}`} 
-                    className="absolute" 
-                    style={{ left: `calc(${m.col} * (100% / 53))` }}
-                  >
-                    {m.name}
-                  </span>
-                ))}
-              </div>
+            <div className="flex-grow w-full overflow-hidden flex justify-end sm:justify-start">
+              <div className="w-fit">
+                <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
+                  {months.map((m, i) => (
+                    <span 
+                      key={`${m.name}-${m.col}-${i}`} 
+                      className="absolute" 
+                      style={{ left: `calc(${m.col} * (100% / 53))` }}
+                    >
+                      {m.name}
+                    </span>
+                  ))}
+                </div>
 
-              {/* 53 x 7 grid (aligned columns) */}
-              <div className="grid grid-flow-col grid-rows-7 gap-[3px]">
-                {contributionGrid.map((week, wIdx) => 
-                  week.map((cell, dIdx) => (
-                    <div 
-                      key={`${wIdx}-${dIdx}`}
-                      onMouseEnter={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
+                <div className="grid grid-flow-col grid-rows-7 gap-[1px] sm:gap-[2px] md:gap-[3px]">
+                  {contributionGrid.map((week, wIdx) => 
+                    week.map((cell, dIdx) => (
+                      <div 
+                        key={`${wIdx}-${dIdx}`}
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
                         setHoveredCell({
                           count: cell.count,
                           dateStr: cell.dateStr,
-                          x: rect.left + window.scrollX + rect.width / 2,
-                          y: rect.top + window.scrollY - 36
+                          x: rect.left + rect.width / 2,
+                          y: rect.top - 8
                         });
                       }}
                       onMouseLeave={() => setHoveredCell(null)}
-                      className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] border-[0.5px] border-slate-200/20 transition-all duration-200 cursor-pointer ${
-                        cell.level === 0 ? 'bg-slate-50 hover:bg-indigo-50 border-slate-100' :
+                      className={`w-[5px] h-[5px] sm:w-[7px] sm:h-[7px] md:w-[10px] md:h-[10px] lg:w-[11px] lg:h-[11px] rounded-[1px] sm:rounded-[1.5px] border-[0.5px] border-slate-200/20 transition-all duration-200 cursor-pointer ${
+                        cell.level === 0 ? 'bg-slate-100 hover:bg-indigo-50 border-slate-200 dark:bg-neutral-800 dark:border-neutral-800 dark:hover:bg-neutral-700' :
                         cell.level === 1 ? 'bg-indigo-200/70 hover:scale-105' :
                         cell.level === 2 ? 'bg-indigo-400 hover:scale-105' :
                         'bg-indigo-600 hover:scale-105 shadow-sm'
@@ -647,17 +653,14 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
+            </div>
           </div>
 
           {/* Grid Footer - Interactive elements */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 text-[10px] text-slate-400 font-semibold pt-3 border-t border-slate-100">
-            <span className="hover:text-indigo-600 hover:underline cursor-pointer flex items-center gap-1">
-              <Globe size={12} />
-              Learn how we track time spent
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mt-4 text-[10px] text-slate-400 font-semibold pt-3 border-t border-slate-100">
             <div className="flex items-center gap-1.5 select-none">
               <span>Less</span>
-              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-slate-50 border border-slate-100"></div>
+              <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-slate-100 border border-slate-200"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-200/70"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-400"></div>
               <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-[1.5px] bg-indigo-600"></div>
@@ -719,32 +722,32 @@ export default function ProfilePage() {
               >
                 {currentUser.courses && currentUser.courses.length > 0 ? (
                   currentUser.courses.map((course: any, idx: number) => (
-                    <div key={idx} className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
+                    <div key={idx} className="group rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
                       <div>
-                        <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
                           {course.title}
                         </h4>
-                        <p className="text-xs text-slate-400 font-medium leading-relaxed mt-2">
+                        <p className="text-xs text-slate-400 dark:text-neutral-500 font-medium leading-relaxed mt-2 transition-colors">
                           {course.description || 'No description provided.'}
                         </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between gap-4">
+                      <div className="mt-6 pt-4 border-t border-slate-50 dark:border-neutral-900 flex items-center justify-between gap-4 transition-colors">
                         <div className="flex-1 space-y-1.5">
-                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 tracking-wider">
+                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-neutral-500 tracking-wider transition-colors">
                             <span>PROGRESS</span>
-                            <span className="text-indigo-600">{course.progress}%</span>
+                            <span className="text-indigo-600 dark:text-indigo-400">{course.progress}%</span>
                           </div>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${course.progress}%` }}></div>
+                          <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden transition-colors">
+                            <div className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${course.progress}%` }}></div>
                           </div>
                         </div>
-                        <span className="text-[10px] font-extrabold text-slate-400 tracking-wide uppercase shrink-0">{course.duration}</span>
+                        <span className="text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 tracking-wide uppercase shrink-0 transition-colors">{course.duration}</span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
+                  <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
                     No uploaded courses found in the database.
                   </div>
                 )}
@@ -762,23 +765,23 @@ export default function ProfilePage() {
               >
                 {currentUser.enrolledCourses && currentUser.enrolledCourses.length > 0 ? (
                   currentUser.enrolledCourses.map((item: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.01)]">
+                    <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100/50 text-indigo-600">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors">
                           <GraduationCap size={18} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug">{item.title}</h4>
-                          <p className="text-xs text-slate-400 font-semibold mt-1">Type: {item.type} • Date: {item.date}</p>
+                          <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug transition-colors">{item.title}</h4>
+                          <p className="text-xs text-slate-400 dark:text-neutral-500 font-semibold mt-1 transition-colors">Type: {item.type} • Date: {item.date}</p>
                         </div>
                       </div>
-                      <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-100">
+                      <span className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 transition-colors">
                         {item.status}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
+                  <div className="text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
                     No enrolled courses found in the database.
                   </div>
                 )}
@@ -796,23 +799,23 @@ export default function ProfilePage() {
               >
                 {currentUser.certificates && currentUser.certificates.length > 0 ? (
                   currentUser.certificates.map((cert: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 bg-white shadow-[0_4px_20px_rgb(0,0,0,0.01)]">
+                    <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 border border-amber-100 text-amber-500">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 text-amber-500 dark:text-amber-400 transition-colors">
                           <Award size={18} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug">{cert.name}</h4>
-                          <p className="text-xs text-slate-400 font-semibold mt-1">Issued by {cert.issuer} • {cert.date}</p>
+                          <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug transition-colors">{cert.name}</h4>
+                          <p className="text-xs text-slate-400 dark:text-neutral-500 font-semibold mt-1 transition-colors">Issued by {cert.issuer} • {cert.date}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-100 px-3 py-1 rounded-lg select-none">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 px-3 py-1 rounded-lg select-none transition-colors">
                         ID: {cert.idCode}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
+                  <div className="text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
                     No certifications found in the database.
                   </div>
                 )}
@@ -841,11 +844,11 @@ export default function ProfilePage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="relative w-full max-w-lg rounded-3xl border border-slate-100 bg-white shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden"
+              className="relative w-full max-w-lg rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white dark:bg-black shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden transition-colors"
             >
               {/* Pinned Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4.5">
-                <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">Edit Profile Info</h3>
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 px-6 py-4.5 transition-colors">
+                <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight transition-colors">Edit Profile Info</h3>
                 <button 
                   onClick={() => setIsEditModalOpen(false)}
                   className="rounded-lg p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors focus:outline-none"
@@ -869,7 +872,7 @@ export default function ProfilePage() {
                         required
                         value={editFirstName}
                         onChange={(e) => setEditFirstName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -879,7 +882,7 @@ export default function ProfilePage() {
                         required
                         value={editLastName}
                         onChange={(e) => setEditLastName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -893,8 +896,9 @@ export default function ProfilePage() {
                         required
                         value={editUsername}
                         onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                        className={`w-full rounded-xl border px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-1 ${
+                        className={`w-full rounded-xl border bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 transition-colors ${
                           usernameAvailable === true ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500' :
+
                           usernameAvailable === false ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' :
                           'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500'
                         }`}
@@ -935,7 +939,7 @@ export default function ProfilePage() {
                         type="email" 
                         disabled
                         value={editEmail}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -946,7 +950,7 @@ export default function ProfilePage() {
                       <select 
                         disabled
                         value={editGender}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none"
+                        className="w-full appearance-none rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
                       >
                         <option value="MALE">Male</option>
                         <option value="FEMALE">Female</option>
@@ -964,7 +968,7 @@ export default function ProfilePage() {
                         value={editLinkedinUrl}
                         onChange={(e) => setEditLinkedinUrl(e.target.value)}
                         placeholder="https://linkedin.com/in/username"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -974,7 +978,7 @@ export default function ProfilePage() {
                         value={editGithubUrl}
                         onChange={(e) => setEditGithubUrl(e.target.value)}
                         placeholder="https://github.com/username"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -989,7 +993,7 @@ export default function ProfilePage() {
                         value={editMobileNumber}
                         onChange={(e) => setEditMobileNumber(e.target.value)}
                         placeholder="+91 XXXXX XXXXX"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                     <div className="space-y-1.5">
@@ -999,38 +1003,38 @@ export default function ProfilePage() {
                         value={editAddress}
                         onChange={(e) => setEditAddress(e.target.value)}
                         placeholder="House, Street, City, State, Country"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
 
                   {/* Bio */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bio (split using '|' for multiple lines)</label>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bio (Split using '|' for multiple lines)</label>
                     <textarea 
                       rows={3}
                       value={editBio}
                       onChange={(e) => setEditBio(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none"
+                      className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none transition-colors"
                     />
                   </div>
                 </div>
 
-                {/* Pinned Footer */}
-                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50/50 rounded-b-3xl shrink-0">
+                {/* Footer Actions */}
+                <div className="border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/30 px-6 py-4 flex items-center justify-end gap-3 transition-colors">
                   <button 
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    disabled={isSaving}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                    disabled={isSaving || usernameAvailable === false}
+                    className="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSaving && <Loader2 className="animate-spin" size={14} />}
+                    {isSaving && <Loader2 size={16} className="animate-spin" />}
                     Save Changes
                   </button>
                 </div>
@@ -1048,7 +1052,7 @@ export default function ProfilePage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.1 }}
-            className="absolute z-50 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg shadow-lg pointer-events-none -translate-x-1/2 flex items-center gap-1"
+            className="fixed z-50 bg-slate-900 text-white text-[12px] font-bold px-4 py-2.5 rounded-xl shadow-xl pointer-events-none -translate-x-1/2 -translate-y-full flex items-center gap-1.5 whitespace-nowrap"
             style={{ left: hoveredCell.x, top: hoveredCell.y }}
           >
             <span>{hoveredCell.count === 0 ? '0 minutes spent' : `${hoveredCell.count} minutes spent`}</span>
