@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Channel, channelService } from '@/services/channel.service';
 import { Tv, Clock, CheckCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 export function MyChannels() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -25,15 +26,26 @@ export function MyChannels() {
     }
   };
 
-  if (loading) return <div className="text-sm text-gray-500">Loading your channels...</div>;
-  if (channels.length === 0) return null;
+  if (loading) return <div className="text-sm text-gray-500 dark:text-neutral-400">Loading your channels...</div>;
+  if (channels.length === 0) return (
+    <div className="text-center py-8">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 mb-3">
+        <Tv size={24} className="text-indigo-600 dark:text-indigo-400" />
+      </div>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white transition-colors">No channels yet</h3>
+      <p className="mt-1 text-sm text-gray-500 dark:text-neutral-400 transition-colors">
+        You haven't created or joined any channels. 
+        Head to Settings to create your first channel!
+      </p>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       {channels.map((channel) => (
-        <div key={channel.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+        <div key={channel.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-neutral-800 bg-gray-50/50 dark:bg-neutral-900/30 transition-colors">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 overflow-hidden shrink-0">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 overflow-hidden shrink-0 transition-colors">
               {channel.iconUrl ? (
                 <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
               ) : (
@@ -41,14 +53,14 @@ export function MyChannels() {
               )}
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900">{channel.name}</h4>
-              <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+              <h4 className="font-semibold text-gray-900 dark:text-white transition-colors">{channel.name}</h4>
+              <p className="text-xs text-gray-500 dark:text-neutral-400 flex items-center gap-1 mt-1 transition-colors">
                 {channel.status === 'PENDING' ? (
-                  <span className="flex items-center text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full font-medium">
+                  <span className="flex items-center text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full font-medium transition-colors">
                     <Clock size={12} className="mr-1" /> Pending Review
                   </span>
                 ) : (
-                  <span className="flex items-center text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">
+                  <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full font-medium transition-colors">
                     <CheckCircle size={12} className="mr-1" /> Active
                   </span>
                 )}
@@ -57,15 +69,13 @@ export function MyChannels() {
             </div>
           </div>
           {channel.status === 'ACTIVE' && (
-            <a
+            <Link
               href={`/channels/${channel.id}/manage`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors shrink-0"
+              className="flex items-center gap-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm font-semibold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors shrink-0"
             >
               Manage Channel
               <ExternalLink size={14} />
-            </a>
+            </Link>
           )}
         </div>
       ))}

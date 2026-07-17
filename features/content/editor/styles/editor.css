@@ -1,0 +1,503 @@
+/* features/content/editor/styles/editor.css */
+/* Scoped to .ProseMirror — prevents Tailwind preflight from stripping
+   list markers, heading sizes, and blockquote styles inside the editor. */
+
+.ProseMirror {
+  outline: none;
+  min-height: 300px;
+  padding: 0;
+  word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ── */
+.ProseMirror h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 1.5rem 0 0.75rem;
+  color: #0a0a0a;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  margin: 1.25rem 0 0.5rem;
+  color: #111;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem;
+  color: #1a1a1a;
+}
+
+.ProseMirror p {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: #374151;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror p:first-child {
+  margin-top: 0;
+}
+
+/* ── Lists ── */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #374151;
+  margin: 0.2rem 0;
+}
+
+.ProseMirror li p {
+  margin: 0;
+}
+
+/* ── Blockquote ── */
+.ProseMirror blockquote {
+  border-left: 3px solid #6366f1;
+  padding: 0.5rem 0 0.5rem 1rem;
+  margin: 1rem 0;
+  color: #6b7280;
+  font-style: italic;
+  background: #f8f9ff;
+  border-radius: 0 6px 6px 0;
+}
+
+.ProseMirror blockquote p {
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── Inline Code ── */
+.ProseMirror code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: var(--font-geist-mono), "Fira Code", monospace;
+  font-size: 0.85em;
+  color: #7c3aed;
+}
+
+/* ── Code Block ── */
+.ProseMirror pre {
+  background: #1e1e2e;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  font-family: var(--font-geist-mono), "Fira Code", monospace;
+}
+
+/* ── Horizontal Rule ── */
+.ProseMirror hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+}
+
+/* ── Images ── */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+}
+
+/* ── Links ── */
+.ProseMirror a {
+  color: #6366f1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ProseMirror a:hover {
+  color: #4f46e5;
+}
+
+/* ── Placeholder ── */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
+/* ── Selection ── */
+.ProseMirror ::selection {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+/* ── Highlight mark ── */
+.ProseMirror mark {
+  background: #fef08a;
+  border-radius: 3px;
+  padding: 0.05em 0.1em;
+  box-decoration-break: clone;
+}
+
+/* ── Text alignment (extension-text-align) ── */
+.ProseMirror [style*="text-align:center"],
+.ProseMirror [style*="text-align: center"] {
+  text-align: center;
+}
+.ProseMirror [style*="text-align:right"],
+.ProseMirror [style*="text-align: right"] {
+  text-align: right;
+}
+
+/* ── Task lists (to-do) ── */
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.25rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.15rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.28rem;
+  user-select: none;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+/* ── Tables ── */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+  position: relative;
+  min-width: 3rem;
+}
+
+.ProseMirror table th {
+  background: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ProseMirror table .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 102, 241, 0.12);
+  pointer-events: none;
+}
+
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background: #6366f1;
+  cursor: col-resize;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* ── YouTube embed ── */
+.ProseMirror .arcade-youtube,
+.ProseMirror div[data-youtube-video] {
+  margin: 1rem 0;
+}
+
+.ProseMirror div[data-youtube-video] iframe,
+.ProseMirror .arcade-youtube iframe {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  border-radius: 10px;
+}
+
+/* ── Focused block (extension Focus) ── */
+.ProseMirror .has-focus {
+  border-radius: 4px;
+}
+
+/* ── ProseMirror drop cursor (shown while dragging a block) ── */
+.ProseMirror .ProseMirror-dropcursor,
+.prosemirror-dropcursor-block {
+  background: #6366f1 !important;
+  border-radius: 2px;
+}
+
+/* Node being dragged / selected via the handle. */
+.ProseMirror .ProseMirror-selectednode {
+  outline: 2px solid rgba(99, 102, 241, 0.4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth drag: dim the rest of the doc and hide the caret while reordering so
+   the dragged block + drop cursor are the only focal points (Notion feel). */
+.ProseMirror.arcade-dragging {
+  cursor: grabbing;
+  caret-color: transparent;
+}
+
+.ProseMirror.arcade-dragging * {
+  cursor: grabbing !important;
+}
+
+/* Settle newly-moved blocks in with a subtle fade rather than a hard jump. */
+.ProseMirror > * {
+  transition: background-color 0.15s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Block gutter handle (drag-to-reorder + add-block)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* The floating container DragHandle positions to the left of the hovered block. */
+.arcade-block-handle {
+  z-index: 30;
+}
+
+.arcade-handle-row {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  /* Nudge the controls into the left gutter, just off the text column. */
+  transform: translateX(-4px);
+}
+
+.arcade-handle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  border-radius: 5px;
+  color: #9ca3af;
+  cursor: grab;
+  transition: background-color 0.12s, color 0.12s;
+}
+
+.arcade-handle-btn:hover {
+  background: #f1f5f9;
+  color: #4b5563;
+}
+
+.arcade-handle-btn:active {
+  cursor: grabbing;
+}
+
+/* The "+" button is a click target, not a drag source. */
+.arcade-handle-btn:not(.arcade-handle-grip) {
+  cursor: pointer;
+}
+
+/* ── Block actions popover (click the grip) ── */
+.arcade-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.arcade-block-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  min-width: 184px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.14);
+}
+
+.arcade-menu-section-label {
+  padding: 6px 8px 2px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+}
+
+.arcade-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #374151;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.arcade-menu-item:hover {
+  background: #f3f4f6;
+}
+
+.arcade-menu-item svg {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.arcade-menu-item-danger {
+  color: #dc2626;
+}
+
+.arcade-menu-item-danger svg {
+  color: #dc2626;
+}
+
+.arcade-menu-item-danger:hover {
+  background: #fef2f2;
+}
+
+.arcade-menu-divider {
+  height: 1px;
+  margin: 4px 2px;
+  background: #f1f5f9;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Slash (/) command menu
+   ══════════════════════════════════════════════════════════════════════ */
+
+.arcade-slash-popup {
+  position: absolute;
+  z-index: 60;
+}
+
+.arcade-slash-menu {
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+}
+
+.arcade-slash-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.arcade-slash-item.is-selected {
+  background: #eef2ff;
+}
+
+.arcade-slash-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  background: #fff;
+  color: #4b5563;
+}
+
+.arcade-slash-item.is-selected .arcade-slash-icon {
+  border-color: #c7d2fe;
+  color: #4f46e5;
+}
+
+.arcade-slash-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.arcade-slash-title {
+  font-size: 0.8125rem;
+  font-weight: 550;
+  color: #111827;
+}
+
+.arcade-slash-desc {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.arcade-slash-empty {
+  padding: 12px;
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  text-align: center;
+}

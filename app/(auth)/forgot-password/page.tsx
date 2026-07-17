@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md space-y-8 rounded-3xl bg-white p-8 shadow-xl shadow-indigo-100/50"
       >
         <div className="text-center">
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors mb-6">
+          <Link href="/sign" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors mb-6">
             <ArrowLeft size={16} /> Back to login
           </Link>
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900">Forgot Password</h2>
