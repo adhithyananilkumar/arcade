@@ -15,69 +15,47 @@ import "../courses/courses.css";
 import "./for-creators.css";
 
 export default function ForCreatorsPage() {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const circleRef = React.useRef<HTMLDivElement>(null);
   const heroHeaderRef = React.useRef<HTMLDivElement>(null);
   const section2HeaderRef = React.useRef<HTMLDivElement>(null);
-  const cardRefs = React.useRef<(HTMLDivElement | null)[]>([]);
-  const [connections, setConnections] = React.useState<{ x1: number; y1: number; x2: number; y2: number; color: string }[]>([]);
 
-  React.useEffect(() => {
-    const updateCoords = () => {
-      if (!containerRef.current || !circleRef.current) return;
-      if (window.innerWidth <= 860) {
-        setConnections([]);
-        return;
-      }
-
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const circleRect = circleRef.current.getBoundingClientRect();
-
-      const circleX = circleRect.left + circleRect.width / 2 - containerRect.left;
-      const circleY = circleRect.top + circleRect.height / 2 - containerRect.top;
-
-      const colors = ["#3557e8", "#6c3ce0", "#1f9e6d", "#d8425f", "#d18a1d", "#1097a3"];
-      const newCoords = cardRefs.current.map((card, idx) => {
-        if (!card) return null;
-        const cardRect = card.getBoundingClientRect();
-        const cardX = cardRect.left - containerRect.left;
-        const cardY = cardRect.top + cardRect.height / 2 - containerRect.top;
-
-        const angle = Math.atan2(cardY - circleY, cardX - circleX);
-        const startRadius = 166; // 320px / 2 + 6px border thickness
-        const x1 = circleX + startRadius * Math.cos(angle);
-        const y1 = circleY + startRadius * Math.sin(angle);
-
-        return {
-          x1,
-          y1,
-          x2: cardX,
-          y2: cardY,
-          color: colors[idx % colors.length]
-        };
-      }).filter(Boolean) as { x1: number; y1: number; x2: number; y2: number; color: string }[];
-
-      setConnections(newCoords);
-    };
-
-    updateCoords();
-
-    window.addEventListener("resize", updateCoords);
-
-    const timers = [
-      setTimeout(updateCoords, 100),
-      setTimeout(updateCoords, 300),
-      setTimeout(updateCoords, 600),
-      setTimeout(updateCoords, 1200)
-    ];
-
-    return () => {
-      window.removeEventListener("resize", updateCoords);
-      timers.forEach(clearTimeout);
-    };
-  }, []);
-
-
+  const contributionSteps = [
+    {
+      theme: "step-black",
+      title: "Universities & Colleges",
+      description: "Publish accredited academic programs, manage departments, and coordinate class semesters.",
+      icon: School,
+    },
+    {
+      theme: "step-green",
+      title: "Training Academies & Bootcamps",
+      description: "Host hands-on training, manage student cohorts, and scale coding or technical bootcamps.",
+      icon: Award,
+    },
+    {
+      theme: "step-black",
+      title: "Corporate Training Teams",
+      description: "Onboard new employees, run skill assessments, and scale internal company training.",
+      icon: Building,
+    },
+    {
+      theme: "step-green",
+      title: "Nonprofits & Communities",
+      description: "Deliver accessible public education, run social campaigns, and track community impact.",
+      icon: HeartHandshake,
+    },
+    {
+      theme: "step-black",
+      title: "Industry Experts & Consultants",
+      description: "Monetize professional insights, build a personal brand, and host interactive workshops.",
+      icon: UserCheck,
+    },
+    {
+      theme: "step-green",
+      title: "Independent Content Creators",
+      description: "Publish self-paced online courses, build online communities, and share learning resources.",
+      icon: BookOpen,
+    },
+  ];
 
   const workflowSteps = [
     {
@@ -209,162 +187,125 @@ export default function ForCreatorsPage() {
 
         {/* Process Infographic Container - Wrapped in a card box with gradient and glow effects */}
         <div className="relative overflow-hidden max-w-[1020px] mx-auto rounded-[28px] p-[2px]" style={{ background: 'linear-gradient(135deg, #c7d7fa, #dbeafe, #e0f2fe, #d1fae5, #ede9fe)' }}>
-          <div className="relative bg-white/80 backdrop-blur-2xl rounded-[26px] p-5 sm:p-8 overflow-hidden">
+          <div className="relative bg-white/80 backdrop-blur-2xl rounded-[26px] p-6 sm:p-10 overflow-hidden">
             {/* Decorative glow blobs */}
             <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-35" style={{ background: 'radial-gradient(circle, #a5b4fc, transparent 70%)' }} />
             <div className="pointer-events-none absolute -bottom-16 -right-16 w-64 h-64 rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #6ee7b7, transparent 70%)' }} />
-            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-48 rounded-full opacity-10" style={{ background: 'radial-gradient(ellipse, #818cf8, transparent 70%)' }} />
 
-            <div ref={containerRef} className="process-container relative z-10">
+            {/* Redesigned Bold Section Header inside the card */}
+            <div className="process-header-redesign select-none">
+              <span className="subtitle">Who Can</span>
+              <h3 className="title">Contribute</h3>
+            </div>
 
-              {/* Dynamic dot-connector SVG lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden md:block">
-                {connections.map((c, i) => (
-                  <g key={i}>
-                    <line
-                      x1={c.x1}
-                      y1={c.y1}
-                      x2={c.x2}
-                      y2={c.y2}
-                      stroke={c.color}
-                      strokeWidth="2.5"
-                      strokeDasharray="5 5"
-                      opacity="0.8"
-                    />
-                    <circle
-                      cx={c.x2}
-                      cy={c.y2}
-                      r="4.5"
-                      fill="#ffffff"
-                      stroke={c.color}
-                      strokeWidth="2"
-                      opacity="0.6"
-                    />
-                    <circle
-                      cx={c.x1}
-                      cy={c.y1}
-                      r="4.5"
-                      fill="#ffffff"
-                      stroke={c.color}
-                      strokeWidth="2"
-                      opacity="0.6"
-                    />
-                  </g>
-                ))}
-              </svg>
+            {/* Redesigned Process Section Content */}
+            <div className="process-section-redesign relative z-10">
 
-              {/* Left Column: Central Circle Hub */}
-              <div className="process-circle-wrapper relative z-10">
-                <div className="circle-ring-back" />
+              {/* INTERLOCKING SPINE LAYOUT (Visible on all viewports, scaling responsively) */}
+              <div className="flex flex-col w-full">
+                {contributionSteps.map((step, idx) => {
+                  const Icon = step.icon;
+                  const isLeftCurve = idx % 2 === 0;
 
-                <div ref={circleRef} className="process-circle" style={{ border: '6px solid #0f172a', fontFamily: 'Georgia, "Times New Roman", serif' }}>
-                  <span style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.15em', textTransform: 'uppercase' }}>WHO ALL CAN</span>
-                  <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '42px', fontWeight: 500, color: '#3547e0', lineHeight: 1, margin: '10px 0' }}>Contribute</h3>
-                  <span style={{ fontFamily: '"Space Grotesk", sans-serif', fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.15em', textTransform: 'uppercase' }}>TO ARCADE.</span>
-                </div>
-              </div>
-
-              {/* Right Column: Pill-shaped Cards Stack */}
-              <div className="process-stack relative z-10">
-
-                {/* Card 1 */}
-                <div ref={(el) => { cardRefs.current[0] = el; }} className="process-card pastel-blue">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        01
+                  return (
+                    <div key={idx} className={`step-row-responsive ${step.theme}`}>
+                      {/* Left Column */}
+                      <div className="w-full h-full flex items-center justify-end">
+                        {!isLeftCurve ? (
+                          // Text box for right-curving steps (on the left side)
+                          <div className="text-box text-right-aligned">
+                            <div className="flex items-center justify-end gap-2.5 mb-2.5">
+                              <h4 className="font-bold">{step.title}</h4>
+                              <Icon className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" style={{ color: 'var(--step-color)' }} />
+                            </div>
+                            <p>{step.description}</p>
+                          </div>
+                        ) : (
+                          // Empty spacer for left-curving steps (text is on the right)
+                          <div className="w-full h-full" />
+                        )}
                       </div>
-                      <div className="flex flex-col">
-                        <h4>Universities & Colleges</h4>
-                        <p>Publish accredited academic programs, manage departments, and coordinate class semesters.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Card 2 */}
-                <div ref={(el) => { cardRefs.current[1] = el; }} className="process-card pastel-indigo">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        02
-                      </div>
-                      <div className="flex flex-col">
-                        <h4>Training Academies & Bootcamps</h4>
-                        <p>Host hands-on training, manage student cohorts, and scale coding or technical bootcamps.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                      {/* Center Column: Road segment SVG */}
+                      <div className="spine-center">
+                        <svg
+                          width="100%"
+                          height="100%"
+                          viewBox="0 0 160 160"
+                          className="overflow-visible select-none pointer-events-none"
+                        >
+                          {/* Asphalt road surface (dark grey/slate) */}
+                          {isLeftCurve ? (
+                            <path
+                              d="M 80,0 A 80,80 0 0 0 80,160"
+                              fill="none"
+                              stroke="#1e293b"
+                              strokeWidth="32"
+                              strokeLinecap="butt"
+                            />
+                          ) : (
+                            <path
+                              d="M 80,0 A 80,80 0 0 1 80,160"
+                              fill="none"
+                              stroke="#1e293b"
+                              strokeWidth="32"
+                              strokeLinecap="butt"
+                            />
+                          )}
 
-                {/* Card 3 */}
-                <div ref={(el) => { cardRefs.current[2] = el; }} className="process-card pastel-green">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        03
+                          {/* Dashed center line markings */}
+                          {isLeftCurve ? (
+                            <path
+                              d="M 80,0 A 80,80 0 0 0 80,160"
+                              fill="none"
+                              stroke="#ffffff"
+                              strokeWidth="2.5"
+                              strokeDasharray="12 8"
+                              strokeLinecap="round"
+                              opacity="0.85"
+                            />
+                          ) : (
+                            <path
+                              d="M 80,0 A 80,80 0 0 1 80,160"
+                              fill="none"
+                              stroke="#ffffff"
+                              strokeWidth="2.5"
+                              strokeDasharray="12 8"
+                              strokeLinecap="round"
+                              opacity="0.85"
+                            />
+                          )}
+                        </svg>
                       </div>
-                      <div className="flex flex-col">
-                        <h4>Corporate Training Teams</h4>
-                        <p>Onboard new employees, run skill assessments, and scale internal company training.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Card 4 */}
-                <div ref={(el) => { cardRefs.current[3] = el; }} className="process-card pastel-pink">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        04
-                      </div>
-                      <div className="flex flex-col">
-                        <h4>Nonprofits & Communities</h4>
-                        <p>Deliver accessible public education, run social campaigns, and track community impact.</p>
+                      {/* Right Column */}
+                      <div className="w-full h-full flex items-center justify-start">
+                        {isLeftCurve ? (
+                          // Text box for left-curving steps (on the right side)
+                          <div className="text-box text-left-aligned">
+                            <div className="flex items-center gap-2.5 mb-2.5">
+                              <Icon className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" style={{ color: 'var(--step-color)' }} />
+                              <h4 className="font-bold">{step.title}</h4>
+                            </div>
+                            <p>{step.description}</p>
+                          </div>
+                        ) : (
+                          // Empty spacer for right-curving steps (text is on the left)
+                          <div className="w-full h-full" />
+                        )}
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Card 5 */}
-                <div ref={(el) => { cardRefs.current[4] = el; }} className="process-card pastel-amber">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        05
-                      </div>
-                      <div className="flex flex-col">
-                        <h4>Industry Experts & Consultants</h4>
-                        <p>Monetize professional insights, build a personal brand, and host interactive workshops.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card 6 */}
-                <div ref={(el) => { cardRefs.current[5] = el; }} className="process-card pastel-teal">
-                  <div className="pill-container">
-                    <div className="flex items-center">
-                      <div className="number-badge">
-                        06
-                      </div>
-                      <div className="flex flex-col">
-                        <h4>Independent Content Creators</h4>
-                        <p>Publish self-paced online courses, build online communities, and share learning resources.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
+                  );
+                })}
               </div>
 
             </div>
+
           </div>
         </div>
 
         {/* Closing Platform Statement Card */}
-        <div className="bg-gradient-to-r from-blue-50/50 via-[#EAF7EF]/40 to-indigo-50/30 rounded-[24px] border border-blue-100/40 p-8 text-center max-w-3xl mx-auto shadow-[0_12px_40px_rgba(36,81,214,0.01)]">
+        <div className="bg-gradient-to-r from-blue-50/50 via-[#EAF7EF]/40 to-indigo-50/30 rounded-[24px] border border-blue-100/40 p-8 text-center max-w-3xl mx-auto shadow-[0_12px_40px_rgba(36,81,214,0.01)] mt-12">
           <p className="font-space text-base md:text-lg font-bold text-slate-800 leading-relaxed">
             "Arcade gives you a professional platform to create engaging learning experiences and reach learners everywhere."
           </p>
@@ -445,11 +386,11 @@ export default function ForCreatorsPage() {
 
               {/* Step nodes — positioned along the road path */}
               {[
-                { left: '3%',  top: '42%', cardTop: true,  step: '01', title: 'Draft & Build',  desc: 'Construct lessons and upload high-fidelity media.' },
-                { left: '23%', top: '22%', cardTop: false, step: '02', title: 'Collaborate',    desc: 'Invite peers to co-author and refine learning goals.' },
-                { left: '43%', top: '42%', cardTop: true,  step: '03', title: 'Assess',         desc: 'Embed rich coding sandboxes and final quizzes.' },
-                { left: '63%', top: '22%', cardTop: false, step: '04', title: 'Publish',        desc: 'Go live instantly on the Arcade global catalog.' },
-                { left: '83%', top: '42%', cardTop: true,  step: '05', title: 'Analyze',        desc: 'Review insights and optimize student engagement.' },
+                { left: '3%', top: '42%', cardTop: true, step: '01', title: 'Draft & Build', desc: 'Construct lessons and upload high-fidelity media.' },
+                { left: '23%', top: '22%', cardTop: false, step: '02', title: 'Collaborate', desc: 'Invite peers to co-author and refine learning goals.' },
+                { left: '43%', top: '42%', cardTop: true, step: '03', title: 'Assess', desc: 'Embed rich coding sandboxes and final quizzes.' },
+                { left: '63%', top: '22%', cardTop: false, step: '04', title: 'Publish', desc: 'Go live instantly on the Arcade global catalog.' },
+                { left: '83%', top: '42%', cardTop: true, step: '05', title: 'Analyze', desc: 'Review insights and optimize student engagement.' },
               ].map((node, i) => (
                 <div
                   key={i}
@@ -532,9 +473,9 @@ export default function ForCreatorsPage() {
 
               <div className="flex items-center justify-between border border-slate-100 p-3 rounded-xl bg-white/70">
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-[#EAF7EF] flex items-center justify-center font-bold text-[#10B981] text-xs">AI</span>
+                  <span className="w-8 h-8 rounded-lg bg-[#EAF7EF] flex items-center justify-center font-bold text-[#10B981] text-xs">TS</span>
                   <div>
-                    <h5 className="text-xs font-bold text-slate-800" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif', fontWeight: 600 }}>Deep Neural Networks</h5>
+                    <h5 className="text-xs font-bold text-slate-800" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif', fontWeight: 600 }}>Introduction to TypeScript</h5>
                     <span className="text-[9px] font-semibold text-slate-400" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>8 Modules • Draft Sandbox</span>
                   </div>
                 </div>
