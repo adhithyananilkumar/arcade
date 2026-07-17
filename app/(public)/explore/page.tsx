@@ -8,7 +8,7 @@ import GradientText from "@/components/landing/GradientText";
 import Link from "next/link";
 import "@/styles/landing.css";
 
-const CATEGORY_DATA: Record<string, {
+export const CATEGORY_DATA: Record<string, {
   desc: string;
   coursesCount: number;
   gradient: string;
@@ -195,7 +195,7 @@ const CATEGORY_DATA: Record<string, {
   }
 };
 
-const categoriesList = Object.keys(CATEGORY_DATA);
+export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
 const WEBINARS_DATA = [
@@ -218,7 +218,7 @@ const ILLUSTRATION_BGS: Record<string, string> = {
   "Personal Development": "#65A30D" // Solid vibrant lime
 };
 
-function CategoryWatermark({ category, color }: { category: string; color: string }) {
+export function CategoryWatermark({ category, color }: { category: string; color: string }) {
   const style = {
     position: "absolute" as const,
     bottom: "-8px",
