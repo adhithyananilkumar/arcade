@@ -1,12 +1,15 @@
 // features/learning/delivery/components/CourseRenderer.tsx
 // Coursera-style course view: module/lesson sidebar + a read-only content pane.
-// Enroll/preview gating is deliberately skipped for now (see AGENTS.md D4 publishing gap) —
-// this reads the live authoring tree directly, creator-only, as a stopgap.
+// Reads the immutable last-published snapshot (D4 publishing domain) — not the live authoring
+// tree — so an author's in-progress edits never leak to learners mid-edit. 404s until the course
+// has been published at least once via the "Publish" button in the course editor. Enrollment/
+// access gating is still not wired up (see AGENTS.md D4 publishing gap): any authenticated user
+// can view a published course.
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuestion } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, Eye, FileQuestion, X } from "lucide-react";
 import { courseDeliveryService } from "../api/courses";
 import { TiptapContentView } from "./TiptapContentView";
 import { QuizPlayer, getQuizStats, type QuizStatsResponse } from "@/features/assessment";
@@ -18,17 +21,27 @@ type TreeItem =
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
-export function CourseRenderer({ courseId }: { courseId: string }) {
+export function CourseRenderer({
+  courseId,
+  mode = "published",
+}: {
+  courseId: string;
+  /** "published" reads the immutable snapshot; "preview" reads the author's live working copy. */
+  mode?: "published" | "preview";
+}) {
   const [course, setCourse] = useState<CourseRenderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
   const [quizStats, setQuizStats] = useState<Record<string, QuizStatsResponse>>({});
+  const isPreview = mode === "preview";
 
   useEffect(() => {
-    courseDeliveryService
-      .renderCourse(courseId)
+    (isPreview
+      ? courseDeliveryService.renderCourse(courseId)
+      : courseDeliveryService.renderPublishedCourse(courseId)
+    )
       .then((data) => {
         setCourse(data);
         const firstLesson = data.modules.find((m) => m.lessons.length > 0)?.lessons[0];
@@ -47,7 +60,7 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
       })
       .catch((err) => setError(err instanceof Error ? err.message : "Could not load course"))
       .finally(() => setLoading(false));
-  }, [courseId]);
+  }, [courseId, isPreview]);
 
   const selectedLesson = useMemo(() => {
     if (!course || selectedItem?.kind !== "lesson") return null;
@@ -93,13 +106,30 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
       {/* Sidebar */}
       <aside className="flex w-80 flex-shrink-0 flex-col border-r border-gray-200 bg-gray-50">
         <div className="border-b border-gray-200 px-5 py-4">
-          <Link
-            href="/dashboard/content/published"
-            className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft size={14} />
-            Back
-          </Link>
+          {isPreview ? (
+            <button
+              type="button"
+              onClick={() => window.close()}
+              className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
+            >
+              <X size={14} />
+              Close preview
+            </button>
+          ) : (
+            <Link
+              href="/dashboard/content/published"
+              className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
+            >
+              <ArrowLeft size={14} />
+              Back
+            </Link>
+          )}
+          {isPreview && (
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+              <Eye size={12} />
+              Preview — your live draft, not what learners see
+            </div>
+          )}
           <h1 className="text-base font-bold leading-snug text-gray-900">{course.title}</h1>
           {course.description && (
             <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-3">
@@ -207,7 +237,11 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
           {selectedLesson ? (
             <>
               <h2 className="mb-6 text-2xl font-bold text-gray-900">{selectedLesson.title}</h2>
-              <TiptapContentView body={selectedLesson.body} emptyMessage="This lesson has no content yet." />
+              <TiptapContentView
+                body={selectedLesson.body}
+                emptyMessage="This lesson has no content yet."
+                lessonId={selectedLesson.id}
+              />
             </>
           ) : selectedQuizId ? (
             <QuizPlayer

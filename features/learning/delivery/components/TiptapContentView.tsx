@@ -8,6 +8,8 @@
 
 import type { CSSProperties, JSX, ReactNode } from "react";
 import type { TiptapDocument, TiptapMark, TiptapNode } from "@/types/editor";
+import { getBlockRenderer } from "@/features/content/blocks/registry";
+import { InteractionProvider } from "../lib/InteractionContext";
 
 function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number): ReactNode {
   if (!marks || marks.length === 0) return text;
@@ -257,18 +259,30 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       );
     }
 
-    default:
-      // Unknown/authoring-only node type (e.g. roadmap) — render children if any, else skip.
+    default: {
+      // Custom block types (button, toggle, callout, …) are registered once in
+      // features/content/blocks/registry.ts and looked up here rather than hand-added
+      // as a case per type — see Phase 0 of the block-editing architecture.
+      const BlockRenderer = getBlockRenderer(node.type);
+      if (BlockRenderer) {
+        return <BlockRenderer key={key} node={node} children={children} />;
+      }
+      // Authoring-only node type with no learner renderer yet (e.g. roadmap) —
+      // render its children if any, else skip.
       return children ? <div key={key}>{children}</div> : null;
+    }
   }
 }
 
 export function TiptapContentView({
   body,
   emptyMessage = "There's no content here yet.",
+  lessonId,
 }: {
   body?: string | null;
   emptyMessage?: string;
+  /** Enables persisted per-learner interaction state (Toggle, future blocks) for this lesson. */
+  lessonId?: string;
 }) {
   if (!body) {
     return <p className="text-sm text-gray-400 italic">{emptyMessage}</p>;
@@ -283,5 +297,9 @@ export function TiptapContentView({
 
   if (!doc?.content) return null;
 
-  return <div className="prose-sm max-w-none">{doc.content.map((node, i) => renderNode(node, i))}</div>;
+  return (
+    <InteractionProvider lessonId={lessonId}>
+      <div className="prose-sm max-w-none">{doc.content.map((node, i) => renderNode(node, i))}</div>
+    </InteractionProvider>
+  );
 }

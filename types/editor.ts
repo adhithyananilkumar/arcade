@@ -29,6 +29,10 @@ export type TiptapNodeType =
   | "quiz-block"
   | "resource-card"
   | "roadmap"
+  // Registry-backed blocks — see features/content/blocks/registry.ts:
+  | "cta-button"
+  | "toggle"
+  | "callout"
   | string;
 
 export type TiptapMarkType =

@@ -38,13 +38,31 @@ interface ArcadeEditorProps {
   seedContent?: TiptapDocument;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
+  /**
+   * Drop the card border/background/scroll so the editor blends into a host canvas
+   * (Figma-style). The host owns padding + scrolling. The formatting toolbar and
+   * character-count footer are suppressed in favour of {@link floatingToolbar}.
+   */
+  chromeless?: boolean;
+  /** Render the formatting toolbar as a floating bottom-centre pill instead of a top strip. */
+  floatingToolbar?: boolean;
 }
 
 type SaveStatus = "idle" | "saving" | "saved";
 
 export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
   function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "" },
+    {
+      initialContent,
+      placeholder,
+      readOnly = false,
+      onSave,
+      ydoc,
+      seedContent,
+      className = "",
+      chromeless = false,
+      floatingToolbar = false,
+    },
     ref
   ) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -82,7 +100,13 @@ export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
   // editor is null during SSR — show skeleton
   if (!editor) {
     return (
-      <div className={`rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`}>
+      <div
+        className={
+          chromeless
+            ? `min-h-[300px] ${className}`
+            : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
+        }
+      >
         <EditorSkeleton />
       </div>
     );
@@ -90,25 +114,37 @@ export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
 
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`}
+      className={
+        chromeless
+          ? `flex flex-col ${className}`
+          : `rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
+      }
     >
-      {!readOnly && (
+      {!readOnly && !floatingToolbar && (
         <EditorToolbar editor={editor} saveStatus={saveStatus} />
       )}
       <EditorContent
         editor={editor}
-        className="flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
+        className={
+          chromeless
+            ? "flex-1 min-h-[300px] focus-within:outline-none"
+            : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
+        }
       />
       {/* Notion-style block gutter: drag-to-reorder handle + "+" add-block button.
           Self-positions against the hovered block; edit mode only. */}
       {!readOnly && <BlockHandle editor={editor} />}
-      {/* Character count — subtle footer */}
-      {!readOnly && (
+      {/* Character count — subtle footer (card mode only) */}
+      {!readOnly && !chromeless && (
         <div className="flex items-center justify-end px-8 py-2 border-t border-gray-100">
           <span className="text-xs text-gray-400">
             {editor.storage.characterCount?.characters?.() ?? 0} characters
           </span>
         </div>
+      )}
+      {/* Floating bottom-centre toolbar (Figma-style) */}
+      {!readOnly && floatingToolbar && (
+        <EditorToolbar editor={editor} saveStatus={saveStatus} variant="floating" />
       )}
     </div>
   );
