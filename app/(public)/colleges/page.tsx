@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CollegesPageClient from "@/components/landing/CollegesPageClient";
+import "@/styles/landing.css";
 
 export const metadata: Metadata = {
   title: "Arcade for Creators — Create. Teach. Inspire.",
