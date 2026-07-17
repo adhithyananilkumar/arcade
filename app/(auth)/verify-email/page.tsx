@@ -60,8 +60,8 @@ function VerifyEmailForm() {
             <p className="text-sm text-gray-500 mt-2">Your email address has been successfully verified.</p>
             
             <Link 
-              href="/dashboard"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              href="/sign"
+              className="mt-6 block w-full text-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
             >
               Go to Dashboard <ArrowRight size={16} />
             </Link>

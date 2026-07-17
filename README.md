@@ -191,6 +191,38 @@ To run the Arcade UI locally, follow these steps:
 
 ---
 
+## Content Editor Engine Handoff Log
+
+### 1. Current Status
+Course Editor Shell updates complete, and latest changes from the `auth` branch have been merged into `con-man`.
+
+### 2. What Was Implemented
+- **Second Merge of `auth` Branch**: Pulled the latest changes from `auth` and successfully merged them into `con-man`. This brought in additional public course pages, fonts, and minor dashboard navigation updates without conflicts.
+- **Merge `auth` Branch**: Successfully merged the latest changes from the `auth` branch into `con-man` in both frontend and backend repositories, bringing in dashboards, onboarding features, and channel management without disrupting the content editor engine. Resolved merge conflicts in `package.json` for rich text dependencies.
+- **Navbar Cleanup**: Removed course description input field and free/paid pricing model dropdown selector from the header of [CourseEditorShell.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/course/components/CourseEditorShell.tsx).
+- **Settings Description Editing**: Swapped the static description display with a dynamic, left-aligned `<textarea>` on the settings panel that triggers debounced updates via `onDescriptionChange` back to the parent component and the backend API.
+- **Collapsible Sidebar**: Implemented a transition-based collapsible side panel. The panel shrinks to a sleek sidebar rail containing a larger, responsive toggle button (`PanelLeftClose` / `PanelLeftOpen` icons resized to `20px`). Other elements are dynamically hidden and disabled when closed.
+- **Last Edited Metric on Dashboard**: Modified [page.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/app/%28authenticated%29/dashboard/page.tsx) to label the course cards' indicator with "Last edited: " and formatted it as a full date-time string (including hour, minute, and AM/PM).
+- **Merge Conflict Resolution in Rich Text Extensions**: Resolved conflict in [index.ts](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/editor/extensions/index.ts) by retaining both the `yjs` collaborative dependency type import (`import type * as Y from "yjs"`) and the `RoadmapNode` extension import (`import { RoadmapNode } from "../roadmap/extensions/roadmap"`).
+
+### 3. What's Left / Next Steps
+- Integrate course pricing model settings directly inside the Settings page (since it was removed from the header bar).
+- Implement chapters/modules dragging-and-dropping structure when needed.
+- Implement the actual Question Bank creator in the next phase.
+
+### 4. Key Decisions & Rationale
+- **Left-aligned Textarea**: Ensuring textarea text is left-aligned to align with typical multi-line reading patterns and input UX expectations, rather than using the right-aligned format designed for static labels.
+- **Header Icon Size & Border Removal**: Increased toggle button size to `20px` to give it a strong visual weight on the narrow collapsed rail and conditionally omitted the bottom border when collapsed to keep the rail structure minimal and elegant.
+
+### 5. Known Issues / Blockers
+- None at this time.
+
+### 6. How to Resume
+- Ensure you are working on the `content_management` branch in both repositories.
+- Run `npm install` inside the `arcade/` directory if needed, then run `npm run dev` to start the frontend.
+
+---
+
 <br/>
 
 <h2 align="center">Contributors</h2>

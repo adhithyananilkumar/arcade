@@ -251,7 +251,7 @@
 
 /* ─── Headline ──────────────────────────────────────────────────────── */
 .l-headline {
-  font-family: "Amira Grace", serif;
+  font-family: "CSBliska", sans-serif;
   font-size: clamp(4.5rem, 10vw, 8.5rem);
   font-weight: 400;
   line-height: 1.0;

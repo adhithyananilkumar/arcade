@@ -1,17 +1,47 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FcGoogle } from 'react-icons/fc';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
-import styles from './AuthForm.module.css';
+import { Eye, EyeOff, Mail, User, ShieldAlert, CheckCircle2, Lock } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { AuthService } from '@/services/auth.service';
 
 interface AuthFormProps {
   initialMode: 'login' | 'signup';
 }
+
+const InputField = ({ label, type, placeholder, value, onChange, icon: Icon, error, isPassword, showPwd, togglePwd }: any) => (
+  <div className="flex flex-col mb-4 w-full">
+    <div className={`relative w-full rounded-2xl bg-slate-50 border-2 transition-all ${error ? 'border-red-400 shadow-[0_0_0_3px_rgba(248,113,113,0.1)]' : 'border-slate-100 focus-within:border-[#0080ff] focus-within:shadow-[0_0_0_3px_rgba(0,128,255,0.15)] focus-within:bg-white'} px-4 pt-6 pb-2`}>
+      <label className="absolute top-2.5 left-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full bg-transparent outline-none text-[15px] font-semibold text-slate-900 placeholder-transparent pr-8"
+      />
+      {Icon && !isPassword && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+          <Icon size={18} strokeWidth={2} />
+        </div>
+      )}
+      {isPassword && (
+        <button
+          type="button"
+          onClick={togglePwd}
+          tabIndex={-1}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          {showPwd ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+        </button>
+      )}
+    </div>
+    {error && <span className="text-xs text-red-500 mt-1.5 ml-2 font-medium">{error}</span>}
+  </div>
+);
 
 export default function AuthForm({ initialMode }: AuthFormProps) {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
@@ -25,13 +55,19 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  
   const router = useRouter();
   const searchParams = useSearchParams();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleModeChange = (newMode: 'login' | 'signup') => {
     setMode(newMode);
-    // Optionally update the URL without refreshing
-    router.replace(newMode === 'login' ? '/login' : '/register');
+    setErrors({});
+    if (newMode === 'signup') {
+      window.history.replaceState(null, '', '/sign?mode=signup');
+    } else {
+      window.history.replaceState(null, '', '/sign');
+    }
   };
 
   const validateForm = () => {
@@ -53,8 +89,8 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
         newErrors.confirmPassword = "Passwords do not match.";
       }
     } else {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        newErrors.email = "Please enter a valid email address.";
+      if (!email) {
+        newErrors.email = "Email or Username is required.";
       }
       if (!password) {
         newErrors.password = "Password is required.";
@@ -62,8 +98,6 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
     }
     return newErrors;
   };
-
-  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +123,6 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
         await AuthService.register({ firstName, lastName, email, password });
         setShowSuccess(true);
         
-        // Auto-redirect to login after 3.5 seconds
         setTimeout(() => {
           setShowSuccess(false);
           setPassword('');
@@ -109,12 +142,14 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
 
   if (showSuccess) {
     return (
-      <div className={styles.container} style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-        <div style={{ fontSize: '4rem', color: '#0056b3', marginBottom: '1rem' }}>✓</div>
-        <h2 style={{ marginBottom: '1rem' }}>Registered Successfully!</h2>
-        <p style={{ marginBottom: '2rem', color: '#666' }}>Your account has been created. Please log in to continue.</p>
-        <div style={{ marginTop: '1.5rem', color: '#0056b3', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          <div className={styles.spinner} style={{ width: '16px', height: '16px', border: '2px solid #0056b3', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+      <div className="flex flex-col items-center justify-center text-center py-12">
+        <CheckCircle2 className="w-20 h-20 text-[#0080ff] mb-6" />
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Account created.</h2>
+        <p className="text-gray-500 mb-8 max-w-sm">
+          Your account has been successfully registered. Please log in to continue.
+        </p>
+        <div className="flex items-center gap-3 text-[#0080ff] font-semibold">
+          <div className="w-5 h-5 border-2 border-[#0080ff] border-t-transparent rounded-full animate-spin" />
           Redirecting to login...
         </div>
       </div>
@@ -122,157 +157,141 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
   }
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>
-        {mode === 'login' ? 'Login Form' : 'Signup Form'}
-      </h1>
-
-      <div className={styles.toggleContainer}>
-        <button
-          className={`${styles.toggleButton} ${mode === 'login' ? styles.active : ''}`}
-          onClick={() => handleModeChange('login')}
-          type="button"
-        >
-          Login
-        </button>
-        <button
-          className={`${styles.toggleButton} ${mode === 'signup' ? styles.active : ''}`}
-          onClick={() => handleModeChange('signup')}
-          type="button"
-        >
-          Signup
-        </button>
+    <div className="w-full">
+      <div className="mb-10">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+          {mode === 'signup' ? 'Start for free' : 'Welcome back'}
+        </p>
+        <h1 className="text-4xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-slate-900 tracking-tight leading-tight mb-4 whitespace-nowrap">
+          {mode === 'signup' ? 'Create new account' : 'Log in to account'}
+          <span className="text-[#0080ff]">.</span>
+        </h1>
+        
+        <p className="text-slate-500 font-medium">
+          {mode === 'signup' ? 'Already A Member? ' : 'Don\'t have an account? '}
+          <button 
+            type="button"
+            onClick={() => handleModeChange(mode === 'signup' ? 'login' : 'signup')}
+            className="text-[#0080ff] hover:text-[#0066cc] font-bold transition-colors"
+          >
+            {mode === 'signup' ? 'Log In' : 'Sign Up'}
+          </button>
+        </p>
       </div>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        {errors.global && <div style={{ color: 'red', textAlign: 'center', fontSize: '0.9rem', marginBottom: '10px' }}>{errors.global}</div>}
-        {mode === 'signup' && (
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <input
-                type="text"
-                className={styles.input}
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-              {errors.firstName && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.firstName}</div>}
-            </div>
-            <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <input
-                type="text"
-                className={styles.input}
-                placeholder="Last Name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-              {errors.lastName && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.lastName}</div>}
-            </div>
+      <form onSubmit={handleSubmit} className="w-full">
+        {errors.global && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-sm font-semibold">
+            <ShieldAlert size={18} />
+            {errors.global}
           </div>
         )}
-        
-        <div className={styles.inputGroup}>
-          <input
-            type="email"
-            className={styles.input}
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {errors.email && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.email}</div>}
-        </div>
 
-
-
-        <div className={styles.inputGroup}>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={showPassword ? "text" : "password"}
-              className={styles.input}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button 
-              type="button"
-              style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
-            >
-              {showPassword ? <FiEyeOff size={18} color="#666" /> : <FiEye size={18} color="#666" />}
-            </button>
-          </div>
-          {errors.password && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.password}</div>}
-        </div>
-        
         {mode === 'signup' && (
-          <div className={styles.inputGroup}>
-            <div style={{ position: 'relative' }}>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                className={styles.input}
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              <button 
-                type="button"
-                style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                tabIndex={-1}
-              >
-                {showConfirmPassword ? <FiEyeOff size={18} color="#666" /> : <FiEye size={18} color="#666" />}
-              </button>
-            </div>
-            {errors.confirmPassword && <div style={{ color: 'red', fontSize: '0.8rem', marginTop: '4px', textAlign: 'left' }}>{errors.confirmPassword}</div>}
+          <div className="flex flex-col sm:flex-row sm:gap-4 w-full">
+            <InputField 
+              label="First name"
+              type="text"
+              placeholder="First name"
+              value={firstName}
+              onChange={(e: any) => setFirstName(e.target.value)}
+              icon={User}
+              error={errors.firstName}
+            />
+            <InputField 
+              label="Last name"
+              type="text"
+              placeholder="Last name"
+              value={lastName}
+              onChange={(e: any) => setLastName(e.target.value)}
+              icon={User}
+              error={errors.lastName}
+            />
           </div>
+        )}
+
+        <InputField 
+          label={mode === 'login' ? 'Email or Username' : 'Email'}
+          type={mode === 'login' ? 'text' : 'email'}
+          placeholder="Email address"
+          value={email}
+          onChange={(e: any) => setEmail(e.target.value)}
+          icon={Mail}
+          error={errors.email}
+        />
+
+        <InputField 
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Password"
+          value={password}
+          onChange={(e: any) => setPassword(e.target.value)}
+          isPassword={true}
+          showPwd={showPassword}
+          togglePwd={() => setShowPassword(!showPassword)}
+          error={errors.password}
+        />
+
+        {mode === 'signup' && (
+          <InputField 
+            label="Confirm password"
+            type={showConfirmPassword ? 'text' : 'password'}
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(e: any) => setConfirmPassword(e.target.value)}
+            isPassword={true}
+            showPwd={showConfirmPassword}
+            togglePwd={() => setShowConfirmPassword(!showConfirmPassword)}
+            error={errors.confirmPassword}
+          />
         )}
 
         {mode === 'login' && (
-          <Link href="/forgot-password" className={styles.forgotPassword}>
-            Forgot password?
-          </Link>
+          <div className="flex justify-end mb-6 pr-2">
+            <a href="/forgot-password" className="text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+              Forgot password?
+            </a>
+          </div>
         )}
 
-        <button type="submit" className={styles.submitButton} disabled={loading}>
-          {loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Signup')}
-        </button>
+        <div className="flex flex-col gap-4 mt-6 w-full">
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full py-3.5 px-8 rounded-full bg-[#0080ff] hover:bg-[#0066cc] text-white font-bold transition-all text-sm shadow-lg shadow-blue-500/25 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Processing...
+              </>
+            ) : (
+              mode === 'login' ? 'Log in' : 'Create account'
+            )}
+          </button>
+
+          <div className="flex items-center gap-3 my-2 text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+            <div className="flex-1 border-b border-slate-200"></div>
+            Or
+            <div className="flex-1 border-b border-slate-200"></div>
+          </div>
+          
+          <button 
+            type="button" 
+            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-8 rounded-full bg-white border-2 border-slate-100 text-slate-700 hover:bg-slate-50 hover:border-slate-200 font-bold transition-all text-sm active:scale-[0.98]"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              <path d="M1 1h22v22H1z" fill="none"/>
+            </svg>
+            Continue with Google
+          </button>
+        </div>
       </form>
-
-      <div className={styles.footer}>
-        {mode === 'login' ? (
-          <>
-            Not a member?
-            <Link href="/register" className={styles.footerLink} onClick={(e) => {
-              e.preventDefault();
-              handleModeChange('signup');
-            }}>
-              Signup now
-            </Link>
-          </>
-        ) : (
-          <>
-            Already a member?
-            <Link href="/login" className={styles.footerLink} onClick={(e) => {
-              e.preventDefault();
-              handleModeChange('login');
-            }}>
-              Login now
-            </Link>
-          </>
-        )}
-      </div>
-
-      <div className={styles.divider}>OR</div>
-
-      <button 
-        type="button" 
-        className={styles.googleButton}
-        onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
-      >
-        <FcGoogle size={24} />
-        Continue with Google
-      </button>
     </div>
   );
 }

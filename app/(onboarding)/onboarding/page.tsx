@@ -32,7 +32,10 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Step 1: Profile & Username
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState(() => {
+    const initial = user?.username || '';
+    return initial.toLowerCase().replace(/[^a-z0-9]/g, '');
+  });
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
@@ -415,7 +418,7 @@ export default function OnboardingPage() {
                   className="space-y-6"
                 >
                   <div className="flex flex-wrap gap-3">
-                    {PREFERENCE_OPTIONS.map(pref => {
+                    {[...PREFERENCE_OPTIONS, ...preferences.filter(p => !PREFERENCE_OPTIONS.includes(p))].map(pref => {
                       const isSelected = preferences.includes(pref);
                       return (
                         <button
