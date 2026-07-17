@@ -409,7 +409,7 @@ function getCourseGlyph(title: string, index: number, color: string): React.Reac
   );
 }
 
-function CourseCategoryPageContent() {
+export default function CategoryDetailedView() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -444,7 +444,7 @@ function CourseCategoryPageContent() {
     setActiveCategory(category);
     setCourseSearchQuery("");
     setActiveEditorTab(0);
-    router.push(`/courses?category=${encodeURIComponent(category)}`);
+    router.push(`/explore?category=${encodeURIComponent(category)}`);
   };
 
   const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
@@ -607,7 +607,10 @@ function CourseCategoryPageContent() {
             }}
           >
             <span 
-              onClick={() => router.push("/explore")}
+              onClick={() => {
+                setActiveCategory(null);
+                router.push("/explore");
+              }}
               style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.color = activeData.colors.primary}
               onMouseLeave={(e) => e.currentTarget.style.color = "inherit"}
@@ -616,7 +619,10 @@ function CourseCategoryPageContent() {
             </span>
             <span>/</span>
             <span 
-              onClick={() => router.push("/explore")}
+              onClick={() => {
+                setActiveCategory(null);
+                router.push("/explore");
+              }}
               style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.color = activeData.colors.primary}
               onMouseLeave={(e) => e.currentTarget.style.color = "inherit"}
@@ -1247,10 +1253,4 @@ function CourseCategoryPageContent() {
   );
 }
 
-export default function CourseCategoryPage() {
-  return (
-    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading category...</div>}>
-      <CourseCategoryPageContent />
-    </Suspense>
-  );
-}
+
