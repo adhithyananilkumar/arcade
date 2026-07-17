@@ -20,6 +20,13 @@ import {
   Undo,
   Redo,
   AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Highlighter,
+  ListChecks,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
+  Table as TableIcon,
   Check,
   Loader2,
   Map,
@@ -183,6 +190,52 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
       >
         <Code size={14} />
       </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHighlight().run()}
+        active={editor.isActive("highlight")}
+        title="Highlight"
+      >
+        <Highlighter size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleSubscript().run()}
+        active={editor.isActive("subscript")}
+        title="Subscript"
+      >
+        <SubscriptIcon size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleSuperscript().run()}
+        active={editor.isActive("superscript")}
+        title="Superscript"
+      >
+        <SuperscriptIcon size={14} />
+      </ToolbarButton>
+
+      <Divider />
+
+      {/* Alignment */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        active={editor.isActive({ textAlign: "left" })}
+        title="Align left"
+      >
+        <AlignLeft size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        active={editor.isActive({ textAlign: "center" })}
+        title="Align center"
+      >
+        <AlignCenter size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        active={editor.isActive({ textAlign: "right" })}
+        title="Align right"
+      >
+        <AlignRight size={14} />
+      </ToolbarButton>
 
       <Divider />
 
@@ -200,6 +253,13 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
         title="Ordered List"
       >
         <ListOrdered size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleTaskList().run()}
+        active={editor.isActive("taskList")}
+        title="To-do List"
+      >
+        <ListChecks size={14} />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -224,6 +284,14 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
       </ToolbarButton>
       <ToolbarButton onClick={addImage} title="Insert Image">
         <ImageIcon size={14} />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() =>
+          editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        }
+        title="Insert Table"
+      >
+        <TableIcon size={14} />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().setHorizontalRule().run()}

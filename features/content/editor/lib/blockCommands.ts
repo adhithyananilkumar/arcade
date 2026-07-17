@@ -13,6 +13,9 @@ import {
   Heading3,
   List,
   ListOrdered,
+  ListChecks,
+  Table as TableIcon,
+  Video as YoutubeIcon,
   Quote,
   Code2,
   Minus,
@@ -96,6 +99,14 @@ export function getBlockCommands(): BlockCommand[] {
       run: (editor, range) => at(editor, range).toggleOrderedList().run(),
     },
     {
+      id: "taskList",
+      title: "To-do list",
+      description: "Checklist with checkboxes",
+      icon: ListChecks,
+      keywords: ["todo", "task", "checkbox", "checklist", "check"],
+      run: (editor, range) => at(editor, range).toggleTaskList().run(),
+    },
+    {
       id: "blockquote",
       title: "Quote",
       description: "Callout / blockquote",
@@ -136,6 +147,32 @@ export function getBlockCommands(): BlockCommand[] {
       },
     },
     {
+      id: "table",
+      title: "Table",
+      description: "Insert a 3×3 table",
+      icon: TableIcon,
+      keywords: ["table", "grid", "rows", "columns", "cells"],
+      run: (editor, range) =>
+        at(editor, range)
+          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+          .run(),
+    },
+    {
+      id: "youtube",
+      title: "YouTube",
+      description: "Embed a YouTube video",
+      icon: YoutubeIcon,
+      keywords: ["youtube", "video", "embed", "yt"],
+      run: (editor, range) => {
+        const url = window.prompt("Enter YouTube URL:");
+        if (!url) {
+          if (range) editor.chain().focus().deleteRange(range).run();
+          return;
+        }
+        at(editor, range).setYoutubeVideo({ src: url }).run();
+      },
+    },
+    {
       id: "roadmap",
       title: "Roadmap",
       description: "Embed a learning roadmap",
@@ -162,6 +199,7 @@ export function getTurnIntoCommands(): BlockCommand[] {
     "heading3",
     "bulletList",
     "orderedList",
+    "taskList",
     "blockquote",
     "codeBlock",
   ]);

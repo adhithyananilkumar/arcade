@@ -160,10 +160,133 @@
   background: rgba(99, 102, 241, 0.15);
 }
 
+/* ── Highlight mark ── */
+.ProseMirror mark {
+  background: #fef08a;
+  border-radius: 3px;
+  padding: 0.05em 0.1em;
+  box-decoration-break: clone;
+}
+
+/* ── Text alignment (extension-text-align) ── */
+.ProseMirror [style*="text-align:center"],
+.ProseMirror [style*="text-align: center"] {
+  text-align: center;
+}
+.ProseMirror [style*="text-align:right"],
+.ProseMirror [style*="text-align: right"] {
+  text-align: right;
+}
+
+/* ── Task lists (to-do) ── */
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.25rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.15rem 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  margin-top: 0.28rem;
+  user-select: none;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+/* ── Tables ── */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+  position: relative;
+  min-width: 3rem;
+}
+
+.ProseMirror table th {
+  background: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ProseMirror table .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 102, 241, 0.12);
+  pointer-events: none;
+}
+
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background: #6366f1;
+  cursor: col-resize;
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* ── YouTube embed ── */
+.ProseMirror .arcade-youtube,
+.ProseMirror div[data-youtube-video] {
+  margin: 1rem 0;
+}
+
+.ProseMirror div[data-youtube-video] iframe,
+.ProseMirror .arcade-youtube iframe {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: none;
+  border-radius: 10px;
+}
+
+/* ── Focused block (extension Focus) ── */
+.ProseMirror .has-focus {
+  border-radius: 4px;
+}
+
 /* ── ProseMirror drop cursor (shown while dragging a block) ── */
 .ProseMirror .ProseMirror-dropcursor,
 .prosemirror-dropcursor-block {
   background: #6366f1 !important;
+  border-radius: 2px;
 }
 
 /* Node being dragged / selected via the handle. */
@@ -171,6 +294,22 @@
   outline: 2px solid rgba(99, 102, 241, 0.4);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Smooth drag: dim the rest of the doc and hide the caret while reordering so
+   the dragged block + drop cursor are the only focal points (Notion feel). */
+.ProseMirror.arcade-dragging {
+  cursor: grabbing;
+  caret-color: transparent;
+}
+
+.ProseMirror.arcade-dragging * {
+  cursor: grabbing !important;
+}
+
+/* Settle newly-moved blocks in with a subtle fade rather than a hard jump. */
+.ProseMirror > * {
+  transition: background-color 0.15s ease;
 }
 
 /* ══════════════════════════════════════════════════════════════════════

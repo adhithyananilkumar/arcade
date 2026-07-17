@@ -11,11 +11,18 @@ export type TiptapNodeType =
   | "bulletList"
   | "orderedList"
   | "listItem"
+  | "taskList"
+  | "taskItem"
   | "codeBlock"
   | "blockquote"
   | "horizontalRule"
   | "image"
   | "hardBreak"
+  | "table"
+  | "tableRow"
+  | "tableCell"
+  | "tableHeader"
+  | "youtube"
   // Custom renderer nodes (future Course Renderer targets):
   | "video-player"
   | "pdf-viewer"
@@ -24,7 +31,16 @@ export type TiptapNodeType =
   | "roadmap"
   | string;
 
-export type TiptapMarkType = "bold" | "italic" | "strike" | "code" | "link";
+export type TiptapMarkType =
+  | "bold"
+  | "italic"
+  | "strike"
+  | "code"
+  | "link"
+  | "highlight"
+  | "subscript"
+  | "superscript"
+  | "textStyle";
 
 export interface TiptapMark {
   type: TiptapMarkType;

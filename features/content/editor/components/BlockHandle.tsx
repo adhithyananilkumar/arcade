@@ -4,6 +4,7 @@
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import type { Editor } from "@tiptap/react";
 import type { Node as PMNode } from "@tiptap/pm/model";
+import { offset, flip, shift } from "@floating-ui/dom";
 import { Copy, GripVertical, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getTurnIntoCommands } from "../lib/blockCommands";
@@ -13,18 +14,29 @@ interface BlockHandleProps {
 }
 
 /**
+ * Floating-UI config for the gutter handle. `offset` nudges it into the left
+ * margin, `flip`/`shift` keep it on-screen near the viewport edges. Sharing one
+ * config keeps the handle glued to the block instead of jumping as you hover.
+ */
+const positionConfig = {
+  placement: "left-start" as const,
+  middleware: [offset({ mainAxis: 8, crossAxis: 2 }), flip(), shift({ padding: 8 })],
+};
+
+/**
  * Notion-style gutter control that follows the hovered block:
  *   • "+"  inserts an empty block below and opens the slash menu
  *   • grip drags to reorder (native, via DragHandle) and clicks to open block actions
  *
- * Single vertical stack only — reordering is top-level, no nested drop zones.
+ * `nested` lets you grab list items / blockquote children too — not just
+ * top-level blocks — which is what makes reordering feel like Notion.
  */
 export function BlockHandle({ editor }: BlockHandleProps) {
   // Position + node of the block the handle is currently attached to.
   const target = useRef<{ node: PMNode | null; pos: number }>({ node: null, pos: -1 });
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Close the actions menu whenever the hovered block changes or the editor scrolls.
+  // Close the actions menu whenever the hovered block changes.
   const handleNodeChange = useCallback(
     (data: { node: PMNode | null; pos: number }) => {
       target.current = { node: data.node, pos: data.pos };
@@ -33,7 +45,18 @@ export function BlockHandle({ editor }: BlockHandleProps) {
     []
   );
 
-  // Dismiss the menu on any outside interaction.
+  // While a drag is in flight, flag the editor so we can dim other blocks and
+  // hide the caret — and make sure a stray open menu doesn't ride along.
+  const handleDragStart = useCallback(() => {
+    setMenuOpen(false);
+    editor.view.dom.classList.add("arcade-dragging");
+  }, [editor]);
+
+  const handleDragEnd = useCallback(() => {
+    editor.view.dom.classList.remove("arcade-dragging");
+  }, [editor]);
+
+  // Dismiss the menu when the editor scrolls out from under it.
   useEffect(() => {
     if (!menuOpen) return;
     const close = () => setMenuOpen(false);
@@ -94,6 +117,10 @@ export function BlockHandle({ editor }: BlockHandleProps) {
     <DragHandle
       editor={editor}
       onNodeChange={handleNodeChange}
+      onElementDragStart={handleDragStart}
+      onElementDragEnd={handleDragEnd}
+      computePositionConfig={positionConfig}
+      nested
       className="arcade-block-handle"
     >
       <div className="arcade-handle-row">

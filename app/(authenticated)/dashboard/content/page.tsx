@@ -72,9 +72,8 @@ function StatusBadge({ status }: { status: string }) {
   };
   return (
     <span
-      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-        map[status] ?? "bg-gray-100 text-gray-500 border-gray-200"
-      }`}
+      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${map[status] ?? "bg-gray-100 text-gray-500 border-gray-200"
+        }`}
     >
       {status}
     </span>
@@ -239,86 +238,86 @@ export default function DashboardPage() {
               Trash
             </Link>
 
-          {/* Create Content button + Canva-style dropdown */}
-          <div className="relative">
-            <button
-              id="create-content-btn"
-              onClick={() => setDropdownOpen((v) => !v)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
-            >
-              <Plus size={16} />
-              Create Content
-              <ChevronDown
-                size={14}
-                className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {dropdownOpen && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-30"
-                  onClick={() => setDropdownOpen(false)}
+            {/* Create Content button + Canva-style dropdown */}
+            <div className="relative">
+              <button
+                id="create-content-btn"
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
+              >
+                <Plus size={16} />
+                Create Content
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
                 />
-                {/* Dropdown panel */}
-                <div
-                  className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-40 overflow-hidden"
-                  role="menu"
-                >
-                  <div className="px-4 py-2.5 border-b border-gray-100">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Select content type
-                    </p>
-                  </div>
-                  {CONTENT_TYPES.map((type) => {
-                    const inner = (
-                      <>
-                        <div
-                          className={`flex-shrink-0 w-9 h-9 rounded-lg ${type.bg} flex items-center justify-center mt-0.5`}
+              </button>
+
+              {dropdownOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setDropdownOpen(false)}
+                  />
+                  {/* Dropdown panel */}
+                  <div
+                    className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-40 overflow-hidden"
+                    role="menu"
+                  >
+                    <div className="px-4 py-2.5 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Select content type
+                      </p>
+                    </div>
+                    {CONTENT_TYPES.map((type) => {
+                      const inner = (
+                        <>
+                          <div
+                            className={`flex-shrink-0 w-9 h-9 rounded-lg ${type.bg} flex items-center justify-center mt-0.5`}
+                          >
+                            <type.icon size={17} className={type.color} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800">{type.label}</p>
+                            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                              {type.desc}
+                            </p>
+                          </div>
+                        </>
+                      );
+                      const cls =
+                        "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
+                      // "Course" opens the creation modal; other types navigate (stubs for now).
+                      return type.id === "course" ? (
+                        <button
+                          key={type.id}
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setDropdownOpen(false);
+                            setCreateOpen(true);
+                          }}
+                          className={cls}
                         >
-                          <type.icon size={17} className={type.color} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-800">{type.label}</p>
-                          <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
-                            {type.desc}
-                          </p>
-                        </div>
-                      </>
-                    );
-                    const cls =
-                      "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
-                    // "Course" opens the creation modal; other types navigate (stubs for now).
-                    return type.id === "course" ? (
-                      <button
-                        key={type.id}
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setDropdownOpen(false);
-                          setCreateOpen(true);
-                        }}
-                        className={cls}
-                      >
-                        {inner}
-                      </button>
-                    ) : (
-                      <Link
-                        key={type.id}
-                        href={type.href}
-                        role="menuitem"
-                        onClick={() => setDropdownOpen(false)}
-                        className={cls}
-                      >
-                        {inner}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+                          {inner}
+                        </button>
+                      ) : (
+                        <Link
+                          key={type.id}
+                          href={type.href}
+                          role="menuitem"
+                          onClick={() => setDropdownOpen(false)}
+                          className={cls}
+                        >
+                          {inner}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -390,7 +389,7 @@ export default function DashboardPage() {
                   href={`/dashboard/content/course/${course.id}/edit`}
                   className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
                 >
-                  Continue Editing ΓåÆ
+                  Continue Editing
                 </Link>
               </div>
             ))}

@@ -6,7 +6,7 @@
 // docs/render-engine-future-work.md for how upcoming content types (Article/Workshop/Webinar)
 // are expected to plug into this same component.
 
-import type { JSX, ReactNode } from "react";
+import type { CSSProperties, JSX, ReactNode } from "react";
 import type { TiptapDocument, TiptapMark, TiptapNode } from "@/types/editor";
 
 function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number): ReactNode {
@@ -37,10 +37,48 @@ function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number)
             {acc}
           </a>
         );
+      case "highlight": {
+        const color = typeof mark.attrs?.color === "string" ? mark.attrs.color : undefined;
+        return (
+          <mark
+            key={key}
+            style={color ? { backgroundColor: color } : undefined}
+            className={color ? undefined : "rounded bg-yellow-200/70 px-0.5"}
+          >
+            {acc}
+          </mark>
+        );
+      }
+      case "subscript":
+        return <sub key={key}>{acc}</sub>;
+      case "superscript":
+        return <sup key={key}>{acc}</sup>;
+      case "textStyle": {
+        const style: CSSProperties = {};
+        if (typeof mark.attrs?.color === "string") style.color = mark.attrs.color;
+        if (typeof mark.attrs?.backgroundColor === "string") style.backgroundColor = mark.attrs.backgroundColor;
+        if (typeof mark.attrs?.fontFamily === "string") style.fontFamily = mark.attrs.fontFamily;
+        if (typeof mark.attrs?.lineHeight === "string") style.lineHeight = mark.attrs.lineHeight;
+        if (Object.keys(style).length === 0) return acc;
+        return (
+          <span key={key} style={style}>
+            {acc}
+          </span>
+        );
+      }
       default:
         return acc;
     }
   }, text);
+}
+
+/** Maps the `textAlign` attr (extension-text-align) to a Tailwind class. */
+function textAlignClass(attrs: Record<string, unknown> | undefined): string {
+  const align = typeof attrs?.textAlign === "string" ? attrs.textAlign : undefined;
+  if (align === "center") return "text-center";
+  if (align === "right") return "text-right";
+  if (align === "justify") return "text-justify";
+  return "";
 }
 
 function renderNode(node: TiptapNode, key: number): ReactNode {
@@ -52,7 +90,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
 
     case "paragraph":
       return (
-        <p key={key} className="mb-4 leading-relaxed text-gray-800">
+        <p key={key} className={`mb-4 leading-relaxed text-gray-800 ${textAlignClass(node.attrs)}`}>
           {children}
         </p>
       );
@@ -69,7 +107,10 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       };
       const Tag = `h${Math.min(Math.max(level, 1), 6)}` as keyof JSX.IntrinsicElements;
       return (
-        <Tag key={key} className={`text-gray-900 ${sizes[level] ?? sizes[2]}`}>
+        <Tag
+          key={key}
+          className={`text-gray-900 ${sizes[level] ?? sizes[2]} ${textAlignClass(node.attrs)}`}
+        >
           {children}
         </Tag>
       );
@@ -95,6 +136,87 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
           {children}
         </li>
       );
+
+    case "taskList":
+      return (
+        <ul key={key} className="mb-4 space-y-1.5 pl-1 text-gray-800">
+          {children}
+        </ul>
+      );
+
+    case "taskItem": {
+      const checked = node.attrs?.checked === true;
+      return (
+        <li key={key} className="flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            checked={checked}
+            disabled
+            readOnly
+            className="mt-1 h-3.5 w-3.5 flex-shrink-0 accent-indigo-600"
+          />
+          <div className={`leading-relaxed ${checked ? "text-gray-400 line-through" : ""}`}>
+            {children}
+          </div>
+        </li>
+      );
+    }
+
+    case "table":
+      return (
+        <div key={key} className="mb-4 overflow-x-auto">
+          <table className="w-full table-fixed border-collapse text-sm">
+            <tbody>{children}</tbody>
+          </table>
+        </div>
+      );
+
+    case "tableRow":
+      return <tr key={key}>{children}</tr>;
+
+    case "tableHeader":
+      return (
+        <th
+          key={key}
+          colSpan={typeof node.attrs?.colspan === "number" ? node.attrs.colspan : undefined}
+          rowSpan={typeof node.attrs?.rowspan === "number" ? node.attrs.rowspan : undefined}
+          className="border border-gray-200 bg-gray-50 px-3 py-2 text-left font-semibold text-gray-900"
+        >
+          {children}
+        </th>
+      );
+
+    case "tableCell":
+      return (
+        <td
+          key={key}
+          colSpan={typeof node.attrs?.colspan === "number" ? node.attrs.colspan : undefined}
+          rowSpan={typeof node.attrs?.rowspan === "number" ? node.attrs.rowspan : undefined}
+          className="border border-gray-200 px-3 py-2 align-top text-gray-800"
+        >
+          {children}
+        </td>
+      );
+
+    case "youtube": {
+      const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
+      if (!src) return null;
+      const width = typeof node.attrs?.width === "number" ? node.attrs.width : undefined;
+      const height = typeof node.attrs?.height === "number" ? node.attrs.height : undefined;
+      return (
+        <div key={key} className="mb-4 aspect-video w-full max-w-3xl overflow-hidden rounded-lg bg-black">
+          <iframe
+            src={src}
+            width={width}
+            height={height}
+            title="YouTube video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="h-full w-full border-0"
+          />
+        </div>
+      );
+    }
 
     case "blockquote":
       return (
