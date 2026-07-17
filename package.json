@@ -17,7 +17,7 @@
     "@tiptap/extension-character-count": "3.27.4",
     "@tiptap/extension-code-block-lowlight": "3.27.4",
     "@tiptap/extension-collaboration": "3.27.4",
-    "@tiptap/extension-drag-handle-react": "3.27.4",
+    "@tiptap/extension-drag-handle-react": "^3.27.4",
     "@tiptap/extension-highlight": "3.27.4",
     "@tiptap/extension-image": "3.27.4",
     "@tiptap/extension-link": "3.27.4",

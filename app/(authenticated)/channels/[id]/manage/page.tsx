@@ -1,12 +1,15 @@
 'use client';
 
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Channel, channelService } from '@/services/channel.service';
 import { toast } from 'sonner';
 import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelSettingsManager } from './ChannelSettingsManager';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function ManageChannelPage() {
   const params = useParams();
@@ -14,8 +17,10 @@ export default function ManageChannelPage() {
   const channelId = params.id as string;
 
   const [channel, setChannel] = useState<Channel | null>(null);
+  const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'STAFF'>('OVERVIEW');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     if (channelId) {
@@ -26,8 +31,12 @@ export default function ManageChannelPage() {
   const fetchChannel = async () => {
     try {
       setLoading(true);
-      const data = await channelService.getChannel(channelId);
-      setChannel(data);
+      const [channelData, perms] = await Promise.all([
+        channelService.getChannel(channelId),
+        channelService.getMyChannelPermissions(channelId)
+      ]);
+      setChannel(channelData);
+      setPermissions(perms);
     } catch (error) {
       toast.error('Failed to load channel details');
       router.push('/dashboard');
@@ -63,7 +72,13 @@ export default function ManageChannelPage() {
         className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-100"
       >
         {/* Banner */}
-        <div className="h-48 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+        {channel.bannerUrl ? (
+          <div className="h-48 w-full">
+            <img src={channel.bannerUrl} alt={`${channel.name} banner`} className="h-full w-full object-cover" />
+          </div>
+        ) : (
+          <div className="h-48 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+        )}
         
         {/* Profile Info */}
         <div className="px-4 sm:px-8 pb-8">
@@ -90,11 +105,17 @@ export default function ManageChannelPage() {
             </div>
             
             <div className="flex shrink-0 gap-3 mt-4 md:mt-0 flex-wrap">
-              <button className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200">
+              <button 
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
+              >
                 <Settings size={18} />
                 Settings
               </button>
-              <button className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow">
+              <button 
+                onClick={() => router.push('/dashboard/content')}
+                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
+              >
                 <Upload size={18} />
                 Create Content
               </button>
@@ -119,15 +140,13 @@ export default function ManageChannelPage() {
           Overview
           {activeTab === 'OVERVIEW' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
         </button>
-        {!channel.isPersonal && (
-          <button
-            onClick={() => setActiveTab('STAFF')}
-            className={`pb-4 text-sm font-semibold transition-colors relative flex items-center gap-2 ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
-          >
-            Staff & Roles
-            {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
-          </button>
-        )}
+        <button
+          onClick={() => setActiveTab('STAFF')}
+          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          Staff & Permissions
+          {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
+        </button>
       </div>
 
       {activeTab === 'OVERVIEW' ? (
@@ -137,7 +156,10 @@ export default function ManageChannelPage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
+          <div 
+            onClick={() => router.push('/dashboard/content')}
+            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group"
+          >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
               <Video size={24} />
             </div>
@@ -171,10 +193,30 @@ export default function ManageChannelPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
         >
-          <ChannelStaffManager channelId={channelId} />
+          <div className="lg:col-span-2">
+            {/* Staff Management Component Placeholder */}
+            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Channel Staff</h3>
+              <p className="text-sm text-gray-500">Manage members and their roles here.</p>
+            </div>
+          </div>
         </motion.div>
       )}
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="max-w-6xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Channel Settings</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

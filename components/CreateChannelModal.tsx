@@ -32,14 +32,15 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
+    const finalName = isPersonal ? (user?.fullName || 'User') : name;
+
+    if (!finalName.trim()) {
       toast.error('Channel name is required');
       return;
     }
 
     try {
       setIsLoading(true);
-      const finalName = isPersonal ? (user?.fullName || 'User') : name;
       await channelService.createChannelRequest(finalName, description, isPersonal, iconFile || undefined);
       toast.success('Channel creation requested successfully');
       setName('');

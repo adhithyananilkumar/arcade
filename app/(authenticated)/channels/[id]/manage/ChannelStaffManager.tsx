@@ -6,19 +6,22 @@ import { UserService } from '@/services/user.service';
 import { Role, roleService } from '@/services/role.service';
 import { toast } from 'sonner';
 import { Users, Mail, Shield, Check, X, Search, Trash2, Plus, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
 
 interface ChannelStaffManagerProps {
   channelId: string;
+  permissions: string[];
 }
 
-export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
+export function ChannelStaffManager({ channelId, permissions }: ChannelStaffManagerProps) {
   const [staff, setStaff] = useState<ChannelStaff[]>([]);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isInvitationsExpanded, setIsInvitationsExpanded] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [emailStatus, setEmailStatus] = useState<'IDLE' | 'LOADING' | 'FOUND' | 'NOT_FOUND'>('IDLE');
@@ -40,11 +43,16 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
       setInvitations(invitesData);
       setRoles(rolesData);
     } catch (error) {
-      toast.error('Failed to load staff data');
+      toast.error('Failed to load staff information');
     } finally {
       setLoading(false);
     }
   };
+
+  const { user } = useAuthStore();
+  // We can't access channel.ownerId directly here since channel is fetched in page, 
+  // but we can rely on permissions array containing 'ALL' if they are owner.
+  const canManageStaff = permissions.includes('ALL') || permissions.includes('channel.staff.manage');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -116,13 +124,15 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
           <h3 className="text-xl font-bold text-gray-900">Staff Management</h3>
           <p className="text-sm text-gray-500">Manage who has access to this channel and their permissions.</p>
         </div>
-        <button
-          onClick={() => setIsInviteModalOpen(true)}
-          className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
-        >
-          <Plus size={16} />
-          Invite Staff
-        </button>
+        {canManageStaff && (
+          <button
+            onClick={() => setIsInviteModalOpen(true)}
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            <Plus size={16} />
+            Invite Staff
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -151,9 +161,11 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
                   <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
                     {member.roleName}
                   </span>
-                  <button onClick={() => handleRemoveStaff(member.userId)} className="text-gray-400 hover:text-red-600 transition-colors">
-                    <Trash2 size={16} />
-                  </button>
+                  {canManageStaff && (
+                    <button onClick={() => handleRemoveStaff(member.userId)} className="text-gray-400 hover:text-red-600 transition-colors">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))
@@ -163,107 +175,128 @@ export function ChannelStaffManager({ channelId }: ChannelStaffManagerProps) {
 
       {invitations.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
               <Mail size={18} className="text-orange-500" />
-              Pending Invitations
+              Invitations
             </h4>
           </div>
           <div className="divide-y divide-gray-100">
-            {invitations.map(inv => (
+            {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map(inv => (
               <div key={inv.id} className="p-4 sm:px-6 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-gray-900">{inv.email}</p>
                   <p className="text-xs text-gray-500">Invited by {inv.invitedByName} on {new Date(inv.createdAt).toLocaleDateString()}</p>
                 </div>
-                <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                  inv.status === 'PENDING' ? 'bg-orange-50 text-orange-700 ring-orange-600/20' :
+                  inv.status === 'REJECTED' ? 'bg-red-50 text-red-700 ring-red-600/10' :
+                  'bg-gray-50 text-gray-600 ring-gray-500/10'
+                }`}>
                   {inv.roleName} - {inv.status}
                 </span>
               </div>
             ))}
+            {!isInvitationsExpanded && invitations.length > 3 && (
+              <div className="p-3 bg-gray-50/50 flex justify-center">
+                <button
+                  onClick={() => setIsInvitationsExpanded(true)}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
+                  See {invitations.length - 3} More
+                </button>
+              </div>
+            )}
+            {isInvitationsExpanded && invitations.length > 3 && (
+              <div className="p-3 bg-gray-50/50 flex justify-center">
+                <button
+                  onClick={() => setIsInvitationsExpanded(false)}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                >
+                  Show Less
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Invite Staff</h3>
-              <button onClick={() => setIsInviteModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle>Invite Staff</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address / Username</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail size={16} className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="user@example.com or username"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-gray-400" />}
+                  {emailStatus === 'FOUND' && <Check size={16} className="text-green-500" />}
+                  {emailStatus === 'NOT_FOUND' && inviteEmail && <X size={16} className="text-red-500" />}
+                </div>
+              </div>
+              
+              {emailStatus === 'FOUND' && foundUser && (
+                <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                  <Check size={12} /> Found user: {foundUser.firstName} {foundUser.lastName}
+                </p>
+              )}
+              {emailStatus === 'NOT_FOUND' && inviteEmail && (
+                <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+                  <X size={12} /> User not found. Must be a registered user.
+                </p>
+              )}
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail size={16} className="text-gray-400" />
-                  </div>
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="user@example.com"
-                    className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-gray-400" />}
-                    {emailStatus === 'FOUND' && <Check size={16} className="text-green-500" />}
-                    {emailStatus === 'NOT_FOUND' && inviteEmail && <X size={16} className="text-red-500" />}
-                  </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Organization Policy</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Shield size={16} className="text-gray-400" />
                 </div>
-                
-                {emailStatus === 'FOUND' && foundUser && (
-                  <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                    <Check size={12} /> Found user: {foundUser.firstName} {foundUser.lastName}
-                  </p>
-                )}
-                {emailStatus === 'NOT_FOUND' && inviteEmail && (
-                  <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
-                    <X size={12} /> Email not found. User must be registered.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Organization Policy</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Shield size={16} className="text-gray-400" />
-                  </div>
-                  <select
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
-                  >
-                    <option value="">Select a policy...</option>
-                    {roles.map(role => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button
-                  onClick={() => setIsInviteModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleInvite}
-                  disabled={emailStatus !== 'FOUND' || !selectedRole}
-                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                >
-                  Send Invite
-                </button>
+                  <option value="">Select a policy...</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>{role.name}</option>
+                  ))}
+                </select>
               </div>
+            </div>
+
+            <div className="pt-4 flex gap-3">
+              <button
+                onClick={() => setIsInviteModalOpen(false)}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInvite}
+                disabled={emailStatus !== 'FOUND' || !selectedRole}
+                className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                Send Invite
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Role Management Section */}
       <ChannelPolicyManager channelId={channelId} />

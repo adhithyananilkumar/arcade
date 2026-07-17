@@ -15,15 +15,37 @@ export type ContentStatus =
   | "PUBLISHED"
   | "ARCHIVED";
 
+export interface UserProfileResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string | null;
+  permissions: string[];
+}
+
+export interface CommentResponse {
+  id: string;
+  lessonId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CourseResponse {
   id: string;
   authorId: string;
   authorName: string;
+  authorUsername?: string;
   title: string;
   description?: string;
   coverImageUrl?: string;
   pricingModel: PricingModel;
   status: ContentStatus;
+  wasPublished?: boolean;
   modules: ModuleResponse[];
   createdAt: string;
   updatedAt: string;

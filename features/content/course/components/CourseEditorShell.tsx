@@ -7,6 +7,7 @@ import type * as Y from "yjs";
 import { ArcadeEditor } from "@/features/content/editor";
 import type { ArcadeEditorHandle } from "@/features/content/editor";
 import { VersionHistoryPanel } from "@/features/content/version-history";
+import { LessonReviewFeedback } from "@/features/learning/delivery/components/LessonReviewFeedback";
 import {
   createYDoc,
   applyBase64Update,
@@ -48,6 +49,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   History,
+  MessageSquare,
+  Lock,
 } from "lucide-react";
 
 /** How long (of edit activity) between automatic version snapshots. */
@@ -448,6 +451,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
   const lastSnapshotAtRef = useRef(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [qbOpen, setQbOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -1138,26 +1142,58 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
           <input
             type="text"
             value={title}
+            disabled={status !== "DRAFT"}
             onChange={(e) => {
               setTitle(e.target.value);
               scheduleCourseMetaSave({ title: e.target.value });
             }}
             placeholder="Course title"
-            className="min-w-0 flex-1 rounded-lg border-0 px-1.5 py-1 text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
+            className="min-w-0 flex-1 rounded-lg border-0 px-1.5 py-1 text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 disabled:opacity-75 disabled:bg-transparent"
           />
 
           <StatusPill status={status} />
 
           {status === "DRAFT" && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-gray-400">All changes saved</span>
+              <button
+                type="button"
+                onClick={askSubmit}
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                <Send size={14} />
+                Submit for Review
+              </button>
+            </div>
+          )}
+
+          {status === "SUBMITTED" && (
+            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800 border border-yellow-200">
+              <Lock size={14} className="text-yellow-600" />
+              Under Review
+            </div>
+          )}
+
+          {(status === "APPROVED" || status === "PUBLISHED") && (
             <button
               type="button"
-              onClick={askSubmit}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              onClick={async () => {
+                try {
+                  const res = await api.post(`/api/courses/${courseId}/edit`, {});
+                  setStatus("DRAFT");
+                  // Refresh other state if necessary, but changing status to DRAFT unlocks it immediately.
+                } catch (e) {
+                  alert("Failed to revert course to draft mode.");
+                }
+              }}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 shadow-sm"
             >
-              <Send size={14} />
-              Submit for Review
+              <Pencil size={14} />
+              Edit Contents
             </button>
           )}
+
+
         </div>
       </header>
 
@@ -1356,35 +1392,37 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
             </div>
 
             {/* Sidebar footer */}
-            <div className="space-y-2 border-t border-gray-200 p-3">
-              <button
-                type="button"
-                onClick={addModule}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
-              >
-                <Plus size={14} />
-                Add Module
-              </button>
-              <button
-                type="button"
-                onClick={() => setQbOpen(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
-              >
-                <FileText size={13} />
-                Create Question Bank
-              </button>
-              <button
-                type="button"
-                onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${view === "settings"
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-                  }`}
-              >
-                <Settings size={13} />
-                Course Settings
-              </button>
-            </div>
+            {status === "DRAFT" && (
+              <div className="space-y-2 border-t border-gray-200 p-3">
+                <button
+                  type="button"
+                  onClick={addModule}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+                >
+                  <Plus size={14} />
+                  Add Module
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQbOpen(true)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
+                >
+                  <FileText size={13} />
+                  Create Question Bank
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                  className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${view === "settings"
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                    }`}
+                >
+                  <Settings size={13} />
+                  Course Settings
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -1408,14 +1446,15 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
               />
             </div>
           ) : activeLessonId ? (
-            <div className="flex min-h-0 flex-1 flex-col px-6 py-4 lg:px-10 lg:py-6">
-              <div className="mb-3 flex items-center gap-3">
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="mb-3 flex items-center gap-3 px-6 pt-4 lg:px-10 lg:pt-6">
                 <input
                   type="text"
                   value={activeLessonTitle}
+                  disabled={status !== "DRAFT"}
                   onBlur={(e) => saveLessonTitle(e.target.value)}
                   onChange={(e) => setActiveLessonTitle(e.target.value)}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
+                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300 disabled:opacity-75 disabled:bg-transparent"
                   placeholder="Lesson title"
                 />
                 <button
@@ -1427,17 +1466,39 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                   <History size={15} />
                   History
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(!feedbackOpen)}
+                  title="Reviewer Feedback"
+                  className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                    feedbackOpen
+                      ? "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                      : "border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
+                >
+                  <MessageSquare size={15} />
+                  Feedback
+                </button>
               </div>
               {activeYDoc && (
-                <ArcadeEditor
-                  key={activeLessonId}
-                  ref={editorRef}
-                  ydoc={activeYDoc}
-                  seedContent={activeSeedContent}
-                  placeholder="Start writing your lesson content…"
-                  onSave={handleSave}
-                  className="min-h-0 flex-1 shadow-sm"
-                />
+                <div className="flex flex-1 min-h-0 relative bg-white">
+                  <div className={`flex flex-col flex-1 min-h-0 overflow-y-auto pb-20 px-6 lg:px-10 py-4 lg:py-6 ${status !== "DRAFT" ? "pointer-events-none opacity-80" : ""}`}>
+                      <ArcadeEditor
+                        key={activeLessonId}
+                        ref={editorRef}
+                        ydoc={activeYDoc}
+                        seedContent={activeSeedContent}
+                        placeholder="Start writing your lesson content…"
+                        onSave={handleSave}
+                        className="shadow-sm min-h-full"
+                      />
+                    </div>
+                  {feedbackOpen && (
+                    <div className="w-80 lg:w-96 flex-shrink-0 border-l border-gray-200 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10 flex flex-col h-full absolute right-0 top-0 lg:relative lg:shadow-none">
+                      <LessonReviewFeedback lessonId={activeLessonId} className="h-full" />
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ) : activeQuizId ? (

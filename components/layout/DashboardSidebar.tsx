@@ -25,15 +25,14 @@ export default function DashboardSidebar() {
   const [hasChannels, setHasChannels] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-    channelService.getMyChannels()
-      .then(channels => {
-        if (mounted) setHasChannels(channels.length > 0);
+    Promise.all([
+      channelService.getMyChannels(),
+      channelService.getMyWorkspaces()
+    ])
+      .then(([channels, workspaces]) => {
+        setHasChannels(channels.length > 0 || workspaces.length > 0);
       })
-      .catch(() => {
-        if (mounted) setHasChannels(false);
-      });
-    return () => { mounted = false; };
+      .catch(() => setHasChannels(false));
   }, []);
 
   const primaryRole = user?.roles?.[0]?.name;

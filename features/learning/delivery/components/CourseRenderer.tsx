@@ -10,6 +10,10 @@ import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuest
 import { courseDeliveryService } from "../api/courses";
 import { TiptapContentView } from "./TiptapContentView";
 import { QuizPlayer, getQuizStats, type QuizStatsResponse } from "@/features/assessment";
+import { LessonReviewFeedback } from "./LessonReviewFeedback";
+import { PublishCourseDialog } from "./PublishCourseDialog";
+import { useAuthStore } from "@/store/auth.store";
+import { api } from "@/lib/api";
 import type { CourseRenderResponse, LessonRenderResponse } from "@/types/api";
 
 type TreeItem =
@@ -25,6 +29,13 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
   const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
   const [quizStats, setQuizStats] = useState<Record<string, QuizStatsResponse>>({});
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const { user } = useAuthStore();
+
+  const canPublish =
+    user?.permissions.some((p) => p === "courses.review" || p === "channel.courses.review") ||
+    user?.permissions.includes("ROLE_SUPER_USER");
 
   useEffect(() => {
     courseDeliveryService
@@ -69,6 +80,17 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
     });
   }
 
+  const handlePublish = async () => {
+    try {
+      await api.post(`/api/courses/${courseId}/publish`, {});
+      if (course) {
+        setCourse({ ...course, status: "PUBLISHED" });
+      }
+    } catch (err) {
+      alert("Failed to publish the course.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-gray-400">
@@ -87,14 +109,13 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
       </div>
     );
   }
-
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
       <aside className="flex w-80 flex-shrink-0 flex-col border-r border-gray-200 bg-gray-50">
         <div className="border-b border-gray-200 px-5 py-4">
           <Link
-            href="/dashboard/content/published"
+            href={canPublish ? "/dashboard/content/review" : "/dashboard/content/published"}
             className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft size={14} />
@@ -105,6 +126,19 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
             <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-3">
               {course.description}
             </p>
+          )}
+          {canPublish && course.status !== "PUBLISHED" && (
+            <button
+              onClick={() => setIsPublishDialogOpen(true)}
+              className="mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+            >
+              Publish Course
+            </button>
+          )}
+          {course.status === "PUBLISHED" && (
+            <div className="mt-4 w-full rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 text-center border border-green-200">
+              Published
+            </div>
           )}
         </div>
 
@@ -234,6 +268,44 @@ export function CourseRenderer({ courseId }: { courseId: string }) {
           )}
         </div>
       </main>
+
+      {selectedLesson && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+          {isFeedbackOpen && (
+            <div className="mb-4 w-[400px] h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-200">
+              <div className="bg-gray-900 px-4 py-3 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2 text-white">
+                  <span className="font-semibold text-sm">Reviewer Feedback</span>
+                </div>
+                <button
+                  onClick={() => setIsFeedbackOpen(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <span className="text-xl leading-none">&times;</span>
+                </button>
+              </div>
+              <LessonReviewFeedback
+                lessonId={selectedLesson.id}
+                className="flex-1 min-h-0"
+              />
+            </div>
+          )}
+          <button
+            onClick={() => setIsFeedbackOpen(!isFeedbackOpen)}
+            className={`flex items-center justify-center rounded-full p-4 shadow-lg transition-transform hover:scale-105 active:scale-95 font-semibold text-sm ${
+              isFeedbackOpen ? "bg-gray-900 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
+          >
+            {isFeedbackOpen ? "Close Feedback" : "Reviewer Feedback"}
+          </button>
+        </div>
+      )}
+
+      <PublishCourseDialog
+        open={isPublishDialogOpen}
+        onClose={() => setIsPublishDialogOpen(false)}
+        onConfirm={handlePublish}
+      />
     </div>
   );
 }

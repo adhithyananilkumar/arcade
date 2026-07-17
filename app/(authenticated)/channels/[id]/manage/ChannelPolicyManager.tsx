@@ -8,6 +8,7 @@ import { Plus, X, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
 
 interface ChannelPolicyManagerProps {
   channelId: string;
+  permissions: string[];
 }
 
 const formatPermissionKey = (key: string) => {
@@ -22,9 +23,9 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,6 +34,9 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
   const [newRoleDesc, setNewRoleDesc] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+
+  // We rely on permissions array containing 'ALL' if they are owner
+  const canManageStaff = permissions.includes('ALL') || permissions.includes('channel.staff.manage');
 
   useEffect(() => {
     fetchData();
@@ -49,7 +53,7 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
       
       // Filter permissions to only show ORGANIZATION scope for custom roles
       const orgPerms = permsData.filter(p => p.scopeType === 'ORGANIZATION');
-      setPermissions(orgPerms);
+      setAvailablePermissions(orgPerms);
     } catch (error) {
       toast.error('Failed to load roles');
     } finally {
@@ -137,12 +141,14 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
           </h3>
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-        >
-          <Plus size={16} /> Create Role
-        </button>
+        {canManageStaff && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+          >
+            <Plus size={16} /> Create Role
+          </button>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -163,7 +169,7 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
                 <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
               </div>
               
-              {!role.isSystem && (
+              {!role.isSystem && canManageStaff && (
                 <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => startEditRole(role)}
@@ -239,7 +245,7 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">Select Permissions</label>
                 <div className="grid md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
-                  {permissions.map(perm => (
+                  {availablePermissions.map(perm => (
                     <label key={perm.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
                       <input 
                         type="checkbox" 
@@ -253,7 +259,7 @@ export function ChannelPolicyManager({ channelId }: ChannelPolicyManagerProps) {
                       </div>
                     </label>
                   ))}
-                  {permissions.length === 0 && (
+                  {availablePermissions.length === 0 && (
                     <div className="col-span-2 text-sm text-gray-500 p-4 text-center border rounded-lg border-dashed">
                       No organization permissions available.
                     </div>

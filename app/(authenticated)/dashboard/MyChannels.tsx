@@ -17,8 +17,17 @@ export function MyChannels() {
   const fetchMyChannels = async () => {
     try {
       setLoading(true);
-      const data = await channelService.getMyChannels();
-      setChannels(data);
+      const [ownedChannels, workspaces] = await Promise.all([
+        channelService.getMyChannels(),
+        channelService.getMyWorkspaces()
+      ]);
+      
+      // Combine and remove duplicates by ID
+      const allChannelsMap = new Map();
+      ownedChannels.forEach(c => allChannelsMap.set(c.id, c));
+      workspaces.forEach(c => allChannelsMap.set(c.id, c));
+      
+      setChannels(Array.from(allChannelsMap.values()));
     } catch (error) {
       toast.error('Failed to load your channels');
     } finally {

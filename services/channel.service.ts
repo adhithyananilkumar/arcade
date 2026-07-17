@@ -70,7 +70,7 @@ export const channelService = {
       formData.append('banner', bannerFile);
     }
     
-    const response = await apiClient.patch<Channel>(`/channels/${channelId}/settings`, formData, {
+    const response = await apiClient.post<Channel>(`/channels/${channelId}/settings`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

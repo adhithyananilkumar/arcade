@@ -7,10 +7,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { api } from "@/lib/api";
 import type { CourseResponse } from "@/types/api";
-import { ArrowLeft, ClipboardCheck, Clock, Inbox } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, Clock, Inbox, User, Search } from "lucide-react";
 
 // Statuses that count as "in the review queue". SUBMITTED is the one the Submit
 // button produces; APPROVED is kept visible so a reviewed course doesn't vanish
@@ -42,13 +42,49 @@ function StatusBadge({ status }: { status: string }) {
 export default function ReviewCoursesPage() {
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("TO_BE_REVIEWED");
+
+  const counts = useMemo(() => {
+    let toBeReviewed = 0;
+    let updations = 0;
+    let published = 0;
+    courses.forEach((c) => {
+      if (c.status === "PUBLISHED") {
+        published++;
+      } else if (c.status === "SUBMITTED" || c.status === "APPROVED") {
+        if (c.wasPublished) updations++;
+        else toBeReviewed++;
+      }
+    });
+    return { toBeReviewed, updations, published };
+  }, [courses]);
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter((c) => {
+      if (statusFilter === "TO_BE_REVIEWED") {
+        if (c.status !== "SUBMITTED" && c.status !== "APPROVED") return false;
+        if (c.wasPublished) return false;
+      }
+      if (statusFilter === "UPDATIONS") {
+        if (c.status !== "SUBMITTED" && c.status !== "APPROVED") return false;
+        if (!c.wasPublished) return false;
+      }
+      if (statusFilter === "PUBLISHED" && c.status !== "PUBLISHED") return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        if (!(c.title || "").toLowerCase().includes(q) && !(c.authorName || "").toLowerCase().includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [courses, searchQuery, statusFilter]);
 
   useEffect(() => {
     api
-      .get<CourseResponse[]>("/api/courses")
-      .then((all) =>
-        setCourses(all.filter((c) => REVIEW_STATUSES.includes(c.status)))
-      )
+      .get<CourseResponse[]>("/api/courses/review")
+      .then((all) => setCourses(all))
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));
   }, []);
@@ -64,7 +100,7 @@ export default function ReviewCoursesPage() {
             <ArrowLeft size={14} />
             Content Studio
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Review Courses</h1>
+          <h1 className="text-xl font-bold text-gray-900">Course Management</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Courses submitted for review land here, waiting to be approved.
           </p>
@@ -72,9 +108,48 @@ export default function ReviewCoursesPage() {
       </header>
 
       <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-5">
-          <ClipboardCheck size={17} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-800">Awaiting Review</h2>
+        {/* Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">To be reviewed</span>
+            <span className="text-2xl font-bold text-gray-900 mt-1">{counts.toBeReviewed}</span>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Updations</span>
+            <span className="text-2xl font-bold text-gray-900 mt-1">{counts.updations}</span>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col">
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Published</span>
+            <span className="text-2xl font-bold text-gray-900 mt-1">{counts.published}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck size={17} className="text-indigo-500" />
+            <h2 className="text-base font-semibold text-gray-800">Course Management</h2>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm flex-shrink-0"
+            >
+              <option value="TO_BE_REVIEWED">To be reviewed</option>
+              <option value="UPDATIONS">Updations</option>
+              <option value="PUBLISHED">Published</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -91,7 +166,7 @@ export default function ReviewCoursesPage() {
               </div>
             ))}
           </div>
-        ) : courses.length === 0 ? (
+        ) : filteredCourses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
               <Inbox size={24} className="text-gray-400" />
@@ -105,7 +180,7 @@ export default function ReviewCoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course) => (
+            {filteredCourses.map((course) => (
               <div
                 key={course.id}
                 className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3"
@@ -115,6 +190,20 @@ export default function ReviewCoursesPage() {
                     {course.title}
                   </h3>
                   <StatusBadge status={course.status} />
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <User size={12} className="text-gray-400" />
+                  {course.authorUsername ? (
+                    <Link
+                      href={`/${course.authorUsername}`}
+                      target="_blank"
+                      className="hover:text-indigo-600 hover:underline"
+                    >
+                      {course.authorName}
+                    </Link>
+                  ) : (
+                    course.authorName
+                  )}
                 </div>
                 {course.description && (
                   <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
