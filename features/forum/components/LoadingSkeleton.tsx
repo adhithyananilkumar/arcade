@@ -11,12 +11,11 @@ function SkeletonBlock({
 }) {
   return (
     <div
+      className="premium-shimmer"
       style={{
         width: w,
         height: h,
         borderRadius: r,
-        backgroundColor: '#e4e8f0',
-        animation: 'pulse 1.5s ease-in-out infinite',
       }}
     />
   );
@@ -26,13 +25,16 @@ function PostCardSkeleton() {
   return (
     <div
       style={{
-        backgroundColor: '#fff',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-md)',
-        padding: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.45)',
+        backdropFilter: 'var(--glass-blur)',
+        WebkitBackdropFilter: 'var(--glass-blur)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 'var(--radius-xl)',
+        padding: '28px 32px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 14,
+        boxShadow: 'var(--shadow-premium)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -61,18 +63,10 @@ function PostCardSkeleton() {
 
 export function LoadingSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <>
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-      `}</style>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {Array.from({ length: count }).map((_, i) => (
-          <PostCardSkeleton key={i} />
-        ))}
-      </div>
-    </>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <PostCardSkeleton key={i} />
+      ))}
+    </div>
   );
 }

@@ -48,7 +48,21 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
+
+  /* Premium Design System additions */
+  --bg-gradient: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.075) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 90% 70%, rgba(99,102,241,0.04) 0%, transparent 50%), #ffffff;
+  --btn-gradient-indigo: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --btn-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  --glass-bg: rgba(255, 255, 255, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-dark: rgba(0, 0, 0, 0.04);
+  --glass-blur: blur(24px);
+  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.01);
+  --shadow-premium-hover: 0 24px 50px -12px rgba(99, 102, 241, 0.09), 0 1px 4px rgba(0, 0, 0, 0.01);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @theme inline {
@@ -149,3 +163,42 @@ body {
 .wmde-markdown a {
   color: var(--arcade-blue) !important;
 }
+
+/* Premium Utilities */
+@keyframes premium-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.premium-shimmer {
+  background: linear-gradient(90deg, #f0f3f8 25%, #e2e8f0 50%, #f0f3f8 75%);
+  background-size: 200% 100%;
+  animation: premium-shimmer 1.8s infinite linear;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.05);
+    border-color: var(--border);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+}
+
+.hover-glow:hover {
+  animation: glow-pulse 2s infinite ease-in-out;
+}
+
+.glassmorphism {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+

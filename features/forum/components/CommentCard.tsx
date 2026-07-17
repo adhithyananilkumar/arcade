@@ -42,11 +42,15 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
         marginLeft: depth > 0 ? 28 : 0,
         marginTop: 16,
         scrollMarginTop: 80,
+        transition: 'all 0.3s var(--ease-premium)',
         ...(isAccepted ? {
-          backgroundColor: '#F0FDF4',
-          border: '1px solid #BBF7D0',
-          borderRadius: 'var(--radius-md)',
-          padding: '12px 16px',
+          backgroundColor: 'rgba(16, 185, 129, 0.04)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          border: '1px solid rgba(16, 185, 129, 0.15)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '20px 24px',
+          boxShadow: 'var(--shadow-premium)',
         } : {})
       }}
     >
@@ -70,13 +74,13 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
             style={{
               width: 2,
               flex: 1,
-              backgroundColor: 'var(--border)',
+              backgroundColor: 'rgba(99, 102, 241, 0.08)',
               marginTop: 8,
               borderRadius: 1,
-              transition: 'background-color 0.15s',
+              transition: 'all 0.25s var(--ease-premium)',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--arcade-blue)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--border)')}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.4)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.08)')}
           />
         )}
       </div>
@@ -164,12 +168,21 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                   <button
                     onClick={() => setShowReply(!showReply)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 5, padding: '0 12px', height: 32,
-                      borderRadius: 'var(--radius-full)', border: '1px solid var(--border)', backgroundColor: 'var(--surface)',
-                      cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)',
+                      display: 'flex', alignItems: 'center', gap: 5, padding: '0 14px', height: 32,
+                      borderRadius: 'var(--radius-full)', border: '1px solid rgba(0,0,0,0.06)', backgroundColor: 'rgba(255,255,255,0.5)',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 550, color: 'var(--text-secondary)',
+                      transition: 'all 0.2s var(--ease-premium)',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fff';
+                      e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+                      e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }}
                   >
                     <Reply size={14} /> Reply
                   </button>
@@ -188,9 +201,18 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                   <button
                     onClick={() => acceptAnswer.mutate({ postId: post.id, commentId: comment.id })}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', height: 32,
-                      borderRadius: 'var(--radius-full)', border: '1px solid var(--success)', backgroundColor: '#ecfdf5',
-                      cursor: 'pointer', fontSize: 13, fontWeight: 500, color: 'var(--success)', marginLeft: 8
+                      display: 'flex', alignItems: 'center', gap: 4, padding: '0 14px', height: 32,
+                      borderRadius: 'var(--radius-full)', border: '1px solid rgba(22, 163, 74, 0.15)', backgroundColor: 'rgba(22, 163, 74, 0.05)',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--success)', marginLeft: 8,
+                      transition: 'all 0.2s var(--ease-premium)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(22, 163, 74, 0.1)';
+                      e.currentTarget.style.transform = 'translateY(-1px) scale(1.02)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(22, 163, 74, 0.05)';
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
                     }}
                   >
                     <Check size={14} /> Accept Answer

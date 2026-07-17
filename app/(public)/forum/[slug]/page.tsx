@@ -10,10 +10,10 @@ import { TagBadge } from '@/features/forum/components/TagBadge';
 import { PostTypeBadge } from '@/features/forum/components/PostTypeBadge';
 import { UserAvatar } from '@/features/forum/components/UserAvatar';
 import { ShareButton } from '@/features/forum/components/ShareButton';
-import { usePost } from '@/features/forum/api/forum.queries';
+import { usePost, useToggleBookmark } from '@/features/forum/api/forum.queries';
 import { PollCard } from '@/features/forum/components/PollCard';
+import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
 import { useWebSocket } from '@/features/forum/hooks/useWebSocket';
-import { useToggleBookmark } from '@/features/forum/api/forum.queries';
 import { useAuthStore } from '@/store/auth.store';
 import { Bookmark, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -35,6 +35,9 @@ export default function PostDetailPage({ params }: Props) {
 
   useEffect(() => {
     setHideTrending(true);
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      window.scrollTo(0, 0);
+    }
     return () => setHideTrending(false);
   }, [setHideTrending]);
 
@@ -77,15 +80,11 @@ export default function PostDetailPage({ params }: Props) {
   }, [post]);
 
   if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-        <Loader2 size={28} style={{ animation: 'spin 1s linear infinite', color: 'var(--arcade-blue)' }} />
-      </div>
-    );
+    return <LoadingSkeleton count={2} />;
   }
 
   if (isError || !post) {
-    notFound();
+    return notFound();
   }
 
   const isHtml = /<[a-z][\s\S]*>/i.test(post.body);
@@ -98,22 +97,46 @@ export default function PostDetailPage({ params }: Props) {
         <button 
           onClick={() => router.back()}
           style={{ 
-            display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, 
-            color: 'var(--text-secondary)', background: 'none', border: 'none', cursor: 'pointer', 
-            marginBottom: 20, padding: 0 
+            display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, 
+            color: 'var(--text-secondary)', background: 'rgba(255, 255, 255, 0.5)',
+            border: '1px solid rgba(0, 0, 0, 0.05)', borderRadius: 'var(--radius-full)',
+            padding: '8px 16px', cursor: 'pointer', marginTop: 4, marginBottom: 24,
+            boxShadow: 'var(--shadow-premium)', transition: 'all 0.2s var(--ease-premium)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--text-primary)';
+            e.currentTarget.style.backgroundColor = '#fff';
+            e.currentTarget.style.transform = 'translateX(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-secondary)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+            e.currentTarget.style.transform = 'translateX(0)';
           }}
         >
-          <ArrowLeft size={16} /> Back to Forum
+          <ArrowLeft size={15} /> Back to Forum
         </button>
 
         {/* Post card header */}
         <div
           style={{
-            backgroundColor: '#fff',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '32px',
-            marginBottom: 20,
+            backgroundColor: 'rgba(255, 255, 255, 0.45)',
+            backdropFilter: 'var(--glass-blur)',
+            WebkitBackdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '36px',
+            marginBottom: 28,
+            boxShadow: 'var(--shadow-premium)',
+            transition: 'all 0.3s var(--ease-premium)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = 'var(--shadow-premium-hover)';
+            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = 'var(--shadow-premium)';
+            e.currentTarget.style.borderColor = 'var(--glass-border)';
           }}
         >
           {/* Badges */}
@@ -167,7 +190,7 @@ export default function PostDetailPage({ params }: Props) {
             </div>
           </div>
           
-          <div style={{ height: 1, backgroundColor: 'var(--border)', margin: '0 -32px 24px -32px' }} />
+          <div style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.06)', margin: '0 -36px 24px -36px' }} />
 
           {/* Body */}
           <div style={{ marginBottom: 32 }}>
@@ -203,7 +226,7 @@ export default function PostDetailPage({ params }: Props) {
             )}
           </div>
           
-          <div style={{ height: 1, backgroundColor: 'var(--border)', margin: '0 -32px 24px -32px' }} />
+          <div style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.06)', margin: '0 -36px 24px -36px' }} />
 
           {/* Tags */}
           {post.tags.length > 0 && (
@@ -260,18 +283,25 @@ export default function PostDetailPage({ params }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 5,
-                padding: '0 12px',
+                padding: '0 16px',
                 height: 32,
                 borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--surface)',
+                border: '1px solid rgba(0,0,0,0.06)',
+                backgroundColor: 'rgba(255, 255, 255, 0.5)',
                 cursor: 'pointer',
                 fontSize: 13,
                 fontWeight: 500,
                 color: post.isBookmarked ? 'var(--arcade-blue)' : 'var(--text-muted)',
+                transition: 'all 0.2s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#fff';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+              }}
             >
               <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} />
               {post.isBookmarked ? 'Saved' : 'Save'}
@@ -287,10 +317,22 @@ export default function PostDetailPage({ params }: Props) {
         {/* Comments */}
         <div
           style={{
-            backgroundColor: '#fff',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '32px',
+            backgroundColor: 'rgba(255, 255, 255, 0.45)',
+            backdropFilter: 'var(--glass-blur)',
+            WebkitBackdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '36px',
+            boxShadow: 'var(--shadow-premium)',
+            transition: 'all 0.3s var(--ease-premium)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = 'var(--shadow-premium-hover)';
+            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = 'var(--shadow-premium)';
+            e.currentTarget.style.borderColor = 'var(--glass-border)';
           }}
         >
           <CommentThread post={post} liveCommentCount={liveCommentCount} />

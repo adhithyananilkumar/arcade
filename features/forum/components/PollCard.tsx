@@ -87,25 +87,30 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
 
   return (
     <div style={{
-      padding: '16px 20px',
-      borderRadius: 'var(--radius-lg)',
-      backgroundColor: 'var(--surface)',
-      border: '1px solid var(--border)',
-      marginTop: 12,
+      padding: '24px 28px',
+      borderRadius: 'var(--radius-xl)',
+      backgroundColor: 'rgba(255, 255, 255, 0.45)',
+      backdropFilter: 'var(--glass-blur)',
+      WebkitBackdropFilter: 'var(--glass-blur)',
+      border: '1px solid var(--glass-border)',
+      marginTop: 16,
       display: 'flex',
       flexDirection: 'column',
-      gap: 14,
+      gap: 16,
+      boxShadow: 'var(--shadow-premium)',
     }}>
       {/* Expiry Header */}
       {hasExpired && (
         <div style={{
           alignSelf: 'flex-start',
-          fontSize: 12,
-          fontWeight: 600,
+          fontSize: 11,
+          fontWeight: 700,
           color: '#ef4444',
           backgroundColor: '#fee2e2',
-          padding: '2px 8px',
+          padding: '3px 10px',
           borderRadius: 'var(--radius-full)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
         }}>
           Poll Closed
         </div>
@@ -125,29 +130,30 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
                 key={option.id}
                 style={{
                   position: 'relative',
-                  height: 44,
-                  borderRadius: 'var(--radius-md)',
-                  border: option.userVoted ? '1.5px solid var(--arcade-blue)' : '1px solid var(--border)',
+                  height: 46,
+                  borderRadius: 'var(--radius-lg)',
+                  border: option.userVoted ? '1.5px solid var(--arcade-blue)' : '1px solid rgba(0,0,0,0.06)',
                   overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0 16px',
-                  backgroundColor: option.userVoted ? 'var(--arcade-blue-light)' : '#fff',
+                  padding: '0 20px',
+                  backgroundColor: option.userVoted ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.55)',
+                  boxShadow: option.userVoted ? 'var(--shadow-xs)' : 'none',
                 }}
               >
                 {/* Animated Background Progress Bar */}
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${percentage}%` }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     bottom: 0,
                     background: color,
-                    opacity: 0.15,
+                    opacity: 0.16,
                     zIndex: 0,
                   }}
                 />
@@ -159,12 +165,12 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
                   alignItems: 'center',
                   gap: 8,
                   fontSize: 14,
-                  fontWeight: option.userVoted ? 700 : 500,
+                  fontWeight: option.userVoted ? 700 : 550,
                   color: 'var(--text-primary)',
                 }}>
                   {option.optionText}
                   {option.userVoted && (
-                    <span style={{ fontSize: 11, color: 'var(--arcade-blue)', fontWeight: 600 }}>(your choice)</span>
+                    <span style={{ fontSize: 11, color: 'var(--arcade-blue)', fontWeight: 700, backgroundColor: 'rgba(99, 102, 241, 0.08)', padding: '1px 6px', borderRadius: 100 }}>(your choice)</span>
                   )}
                 </div>
 
@@ -172,10 +178,10 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
                 <div style={{
                   zIndex: 1,
                   fontSize: 13,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: 'var(--text-primary)',
                 }}>
-                  {voteCount} {voteCount === 1 ? 'vote' : 'votes'}
+                  {percentage}% ({voteCount})
                 </div>
               </div>
             );
@@ -188,22 +194,29 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
               key={option.id}
               onClick={() => handleOptionToggle(option.id)}
               style={{
-                height: 44,
-                borderRadius: 'var(--radius-md)',
-                border: isSelected ? '1.5px solid var(--arcade-blue)' : '1px solid var(--border)',
+                height: 46,
+                borderRadius: 'var(--radius-lg)',
+                border: isSelected ? '1.5px solid var(--arcade-blue)' : '1px solid rgba(0,0,0,0.06)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '0 16px',
-                backgroundColor: isSelected ? 'var(--arcade-blue-light)' : '#fff',
+                padding: '0 20px',
+                backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.55)',
                 cursor: castVote.isPending ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s',
+                transition: 'all 0.25s var(--ease-premium)',
+                boxShadow: isSelected ? 'var(--shadow-xs)' : 'none',
               }}
               onMouseEnter={(e) => {
-                if (!isSelected && !castVote.isPending) e.currentTarget.style.backgroundColor = 'var(--surface-hover)';
+                if (!isSelected && !castVote.isPending) {
+                  e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.04)';
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.2)';
+                }
               }}
               onMouseLeave={(e) => {
-                if (!isSelected) e.currentTarget.style.backgroundColor = '#fff';
+                if (!isSelected) {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.55)';
+                  e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+                }
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -219,7 +232,7 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
                   justifyContent: 'center',
                   backgroundColor: isSelected ? 'var(--arcade-blue)' : '#fff',
                   borderColor: isSelected ? 'var(--arcade-blue)' : 'var(--border-strong)',
-                  transition: 'all 0.15s',
+                  transition: 'all 0.2s var(--ease-premium)',
                 }}>
                   {isSelected && !isProcessingThis && (
                     <div style={{
@@ -232,7 +245,7 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
                 </div>
 
                 {/* Option Text */}
-                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>
+                <span style={{ fontSize: 14, fontWeight: 550, color: 'var(--text-primary)' }}>
                   {option.optionText}
                 </span>
               </div>
@@ -253,8 +266,8 @@ export function PollCard({ postId, poll: initialPoll }: Props) {
         marginTop: 4,
       }}>
         {/* Total Vote count label */}
-        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>
-          {totalVotes} {totalVotes === 1 ? 'person voted' : 'people voted'}
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          {totalVotes} {totalVotes === 1 ? 'vote cast' : 'votes cast'}
         </span>
       </div>
     </div>

@@ -80,22 +80,29 @@ export function PostCard({ post, index = 0 }: Props) {
         onClick={() => router.push(`/forum/${post.slug}`)}
         className="forum-card"
         style={{
-          backgroundColor: '#fff',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
-          padding: '16px 20px',
+          backgroundColor: 'rgba(255, 255, 255, 0.45)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          border: '1px solid var(--glass-border)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '28px 32px',
           display: 'flex',
           flexDirection: 'column',
           cursor: 'pointer',
-          transition: 'border-color 0.15s, box-shadow 0.15s',
+          boxShadow: 'var(--shadow-premium)',
+          transition: 'all 0.3s var(--ease-premium)',
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-xs)';
+          e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.15)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-premium-hover)';
+          e.currentTarget.style.transform = 'translateY(-3px)';
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.55)';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+          e.currentTarget.style.borderColor = 'var(--glass-border)';
+          e.currentTarget.style.boxShadow = 'var(--shadow-premium)';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.45)';
         }}
       >
         {/* Top Meta Row */}
@@ -117,11 +124,21 @@ export function PostCard({ post, index = 0 }: Props) {
           {post.category && (
             <>
               <span
-                style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}
+                style={{ 
+                  fontSize: 12, 
+                  color: 'var(--arcade-blue)', 
+                  fontWeight: 600,
+                  backgroundColor: 'var(--arcade-blue-light)',
+                  padding: '2px 8px',
+                  borderRadius: 100,
+                  transition: 'background-color 0.2s'
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   router.push(`/forum/c/${post.category?.slug}`);
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(32, 92, 168, 0.15)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--arcade-blue-light)')}
               >
                 {post.category.name}
               </span>
@@ -132,7 +149,7 @@ export function PostCard({ post, index = 0 }: Props) {
         </div>
 
         {/* Badges Row */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, alignItems: 'center' }}>
           <PostTypeBadge type={post.postType} />
           {post.hasAcceptedAnswer && (
             <span style={{
@@ -160,8 +177,8 @@ export function PostCard({ post, index = 0 }: Props) {
         {/* Title */}
         <h3
           style={{
-            fontSize: 16,
-            fontWeight: 700,
+            fontSize: 17,
+            fontWeight: 750,
             color: 'var(--text-primary)',
             lineHeight: 1.4,
             marginBottom: 8,
@@ -207,9 +224,11 @@ export function PostCard({ post, index = 0 }: Props) {
             {firstImage && (
               <div style={{
                 marginBottom: 16,
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
                 maxHeight: 240,
+                border: '1px solid rgba(0,0,0,0.06)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
               }}>
                 <img 
                   src={firstImage} 
@@ -219,7 +238,10 @@ export function PostCard({ post, index = 0 }: Props) {
                     height: 240,
                     objectFit: 'cover',
                     display: 'block',
+                    transition: 'transform 0.3s var(--ease-premium)',
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.015)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                   onError={e => (e.currentTarget.style.display = 'none')}
                 />
               </div>
@@ -254,20 +276,29 @@ export function PostCard({ post, index = 0 }: Props) {
               display: 'flex',
               alignItems: 'center',
               gap: 5,
-              padding: '0 12px',
+              padding: '0 14px',
               height: 32,
               borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border)',
-              backgroundColor: 'var(--surface)',
+              border: '1px solid rgba(0,0,0,0.06)',
+              backgroundColor: 'rgba(255,255,255,0.5)',
               cursor: 'pointer',
               fontSize: 13,
-              fontWeight: 500,
-              color: 'var(--text-muted)',
+              fontWeight: 550,
+              color: 'var(--text-secondary)',
+              transition: 'all 0.2s var(--ease-premium)',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)';
+              e.currentTarget.style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
           >
-            <MessageCircle size={14} /> {post.commentCount} {post.commentCount === 1 ? 'reply' : 'replies'}
+            <MessageCircle size={14} style={{ opacity: 0.8 }} /> {post.commentCount} {post.commentCount === 1 ? 'reply' : 'replies'}
           </button>
 
           <button
@@ -279,18 +310,25 @@ export function PostCard({ post, index = 0 }: Props) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              padding: '0 10px',
+              padding: '0 12px',
               height: 32,
               borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border)',
-              backgroundColor: 'var(--surface)',
+              border: '1px solid rgba(0,0,0,0.06)',
+              backgroundColor: 'rgba(255,255,255,0.5)',
               cursor: 'pointer',
               color: post.isBookmarked ? 'var(--arcade-blue)' : 'var(--text-muted)',
+              transition: 'all 0.2s var(--ease-premium)',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface-hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.5)';
+              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
+            }}
           >
-            <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} />
+            <Bookmark size={14} fill={post.isBookmarked ? 'currentColor' : 'none'} style={{ opacity: 0.8 }} />
           </button>
 
           <div onClick={(e) => e.stopPropagation()}>
@@ -312,16 +350,17 @@ export function PostCard({ post, index = 0 }: Props) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0 8px',
+                  padding: '0 10px',
                   height: 32,
                   borderRadius: 'var(--radius-full)',
                   border: '1px solid transparent',
                   background: 'transparent',
                   cursor: 'pointer',
                   color: 'var(--text-muted)',
+                  transition: 'all 0.2s var(--ease-premium)',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-hover)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'transparent'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.03)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
               >
                 <MoreHorizontal size={16} />
               </button>
