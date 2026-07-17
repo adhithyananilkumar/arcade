@@ -32,7 +32,10 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Step 1: Profile & Username
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState(() => {
+    const initial = user?.username || '';
+    return initial.toLowerCase().replace(/[^a-z0-9]/g, '');
+  });
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
