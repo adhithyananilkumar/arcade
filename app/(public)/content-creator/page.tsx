@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import HeroNav from "@/components/landing/HeroNav";
 import TrueFocus from "@/components/landing/TrueFocus";
 import { toast } from "sonner";
 import "../courses/courses.css";
@@ -29,9 +28,6 @@ export default function ContentCreatorPage() {
   return (
     <div className="courses-dashboard-root min-h-screen flex flex-col relative z-10 bg-gradient-to-b from-[#E9EEFB] via-[#F8FAFC] to-[#EAF7EF]">
       
-      {/* Header Navigation */}
-      <HeroNav />
-
       {/* Main Content Area: Split 2-column layout matching the reference mockup */}
       <main className="flex-grow max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-32 pb-20 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-20 items-start">

@@ -6,13 +6,13 @@ import {
   Wrench, FolderOpen, Users, Building, ClipboardCheck, Award,
   BarChart3, DollarSign, CheckSquare, Send, ArrowRight, Play, Sparkles
 } from "lucide-react";
-import HeroNav from "@/components/landing/HeroNav";
 import Footer from "@/components/landing/Footer";
 import TrueFocus from "@/components/landing/TrueFocus";
 import MagicBento from "@/components/landing/MagicBento";
 import VariableProximity from "@/components/landing/VariableProximity";
 import "../courses/courses.css";
 import "./for-creators.css";
+import CollegesPageClient from "@/components/landing/CollegesPageClient";
 
 export default function ForCreatorsPage() {
   const heroHeaderRef = React.useRef<HTMLDivElement>(null);
@@ -162,7 +162,7 @@ export default function ForCreatorsPage() {
     <div className="landing-root min-h-screen flex flex-col relative z-10">
 
       {/* Capsule Navigation Header */}
-      <HeroNav />
+      <CollegesPageClient />
 
       {/* Hero Intro Header Section */}
       <header ref={heroHeaderRef} className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-36 pb-16 text-center space-y-6 relative z-10" style={{ position: 'relative' }}>

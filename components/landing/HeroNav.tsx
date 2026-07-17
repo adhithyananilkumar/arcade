@@ -7,11 +7,8 @@ import "@/styles/landing.css";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
-  { label: "Forums", href: "/forum" },
-  { label: "For Colleges", href: "/colleges" },
+  { label: "About", href: "/about" },
   { label: "For creators", href: "/for-creators" },
-  { label: "Reach us", href: "/content-creator" },
-  { label: "Docs", href: "/docs" },
 ];
 
 export default function HeroNav() {
@@ -95,10 +92,7 @@ export default function HeroNav() {
 
       {/* Right actions */}
       <div className="l-nav__actions">
-        <Link href="/sign" className="l-nav__login">
-          Log in
-        </Link>
-        <Link href="/sign?mode=signup" className="l-nav__get-started">
+        <Link href="/sign" className="l-nav__get-started">
           Get Started
         </Link>
       </div>

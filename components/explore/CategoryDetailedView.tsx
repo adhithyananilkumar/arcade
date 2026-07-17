@@ -3,7 +3,6 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import HeroNav from "@/components/landing/HeroNav";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
 
@@ -582,7 +581,6 @@ export default function CategoryDetailedView() {
           transform: translateX(3px) !important;
         }
       `}</style>
-      <HeroNav />
 
       {/* Main Container */}
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "100px 24px 0", position: "relative", zIndex: 1 }}>

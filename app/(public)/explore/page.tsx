@@ -3,7 +3,6 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import HeroNav from "@/components/landing/HeroNav";
 import GradientText from "@/components/landing/GradientText";
 import Link from "next/link";
 import "@/styles/landing.css";
@@ -1052,7 +1051,6 @@ function CoursesContent() {
           fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
         }}
       >
-        <HeroNav />
 
         {/* Dynamic Category View (Full Screen Layout) */}
         <main
@@ -1356,7 +1354,6 @@ function CoursesContent() {
           animation: tabContentEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
       `}</style>
-      <HeroNav />
 
       {/* Spacer to prevent banner content/diagonal background from sliding under the fixed header navigation bar */}
       <div style={{ height: "64px" }} />
