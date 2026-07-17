@@ -77,7 +77,7 @@ function VerifyEmailForm() {
             <p className="text-sm text-gray-500 mt-2">{errorMessage}</p>
             
             <Link 
-              href="/login"
+              href="/sign"
               className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
             >
               Return to Login

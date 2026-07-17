@@ -27,6 +27,8 @@ import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
 import type { CourseResponse } from "@/types/api"
 import { EnrollButton } from "@/components/ui/EnrollButton"
+import { UserService } from "@/services/user.service"
+import { toast } from "sonner"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -362,8 +364,7 @@ function HeroNav() {
 
 function Breadcrumb({ title }: { title: string }) {
   const crumbs = [
-    { label: "Explore", href: "/explore" },
-    { label: CATEGORY, href: "/explore" }
+    { label: "Courses", href: "/dashboard" }
   ]
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
@@ -395,7 +396,9 @@ function CourseHero({
   authorUsername, 
   authorAvatarUrl,
   lessonCount = 0,
-  onEnroll
+  onEnroll,
+  isEnrolling = false,
+  isEnrolled = false
 }: { 
   title: string
   authorName?: string
@@ -403,6 +406,8 @@ function CourseHero({
   authorAvatarUrl?: string | null
   lessonCount?: number
   onEnroll?: () => void
+  isEnrolling?: boolean
+  isEnrolled?: boolean
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -457,10 +462,9 @@ function CourseHero({
           <div className="mt-7 flex items-center gap-3">
             <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={46} />
             <div>
-              <p className="font-semibold text-ink">{displayAuthor}</p>
-              <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
-                <Radio size={14} className="opacity-70" />
-                @{displayUsername}
+              <p className="text-[15px] font-semibold text-ink">{displayAuthor}</p>
+              <p className="flex items-center gap-1.5 text-[13px] text-subtle">
+                <Radio size={13} className="text-blue" /> @{displayUsername}
               </p>
             </div>
           </div>
@@ -482,7 +486,15 @@ function CourseHero({
               <span className="font-serif text-3xl font-medium text-ink">$20</span>
               <span className="text-sm text-subtle line-through">$49</span>
             </div>
-            <EnrollButton onClick={onEnroll}>Enroll now</EnrollButton>
+            {isEnrolled ? (
+              <button className="flex h-11 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-6 font-semibold text-green-500 transition-all">
+                <Check size={18} /> Enrolled
+              </button>
+            ) : (
+              <EnrollButton onClick={onEnroll}>
+                {isEnrolling ? "Enrolling..." : "Enroll now"}
+              </EnrollButton>
+            )}
             <button
               onClick={() => setSaved((s) => !s)}
               aria-pressed={saved}
@@ -813,7 +825,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
+function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -829,7 +841,15 @@ function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <EnrollButton onClick={onEnroll}>Enroll for $20</EnrollButton>
+        {isEnrolled ? (
+          <button className="flex h-12 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-8 font-semibold text-green-500 transition-all">
+            <Check size={18} /> Enrolled
+          </button>
+        ) : (
+          <EnrollButton onClick={onEnroll}>
+            {isEnrolling ? "Enrolling..." : "Enroll for $20"}
+          </EnrollButton>
+        )}
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
         </button>
@@ -842,30 +862,57 @@ function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-export default function CoursePreviewPage() {
-  const params = useParams<{ id: string }>()
+import { useAuthStore } from "@/store/auth.store"
+
+export default function CoursePage() {
+  const params = useParams()
   const router = useRouter()
+  const { user } = useAuthStore()
+  const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isEnrolling, setIsEnrolling] = useState(false)
+  const [isEnrolled, setIsEnrolled] = useState(false)
 
-  const handleEnrollClick = () => {
-    router.push('/sign?mode=login')
+  useEffect(() => {
+    if ((user as any)?.enrolledCourses && course?.title) {
+      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.title === course.title)
+      if (alreadyEnrolled) setIsEnrolled(true)
+    }
+  }, [user, course])
+
+  const handleEnroll = async () => {
+    if (!params?.courseId) return;
+    try {
+      setIsEnrolling(true);
+      await UserService.enrollInCourse(params.courseId as string);
+      toast.success("Successfully enrolled!");
+      setIsEnrolled(true);
+      
+      // Update local auth store so it shows up in profile immediately if we go there
+      // (The actual backend update will be reflected when the profile page refetches, 
+      // but if we want instant we could also just let the profile page fetch on mount).
+    } catch (error) {
+      toast.error("Failed to enroll. Please try again.");
+    } finally {
+      setIsEnrolling(false);
+    }
   }
 
   useEffect(() => {
-    if (params?.id) {
-      api.get<CourseResponse>(`/api/v1/public/courses/${params.id}`)
+    if (params?.courseId) {
+      api.get<CourseResponse>(`/api/v1/public/courses/${params.courseId}`)
         .then(setCourse)
         .catch(console.error)
         .finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
-  }, [params?.id])
+  }, [params?.courseId])
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-paper text-ink flex items-center justify-center">
+      <main className="min-h-screen bg-transparent text-ink flex items-center justify-center">
         <div className="size-8 rounded-full border-2 border-ink border-t-transparent animate-spin" />
       </main>
     )
@@ -878,19 +925,19 @@ export default function CoursePreviewPage() {
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
 
   return (
-    <main className="min-h-screen bg-paper text-ink">
-      <HeroNav />
-
+    <main className="min-h-screen bg-transparent text-ink">
       {/* Hero wash */}
       <div className="arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-8 sm:px-8 sm:pt-12">
           <CourseHero 
             title={displayTitle} 
             authorName={authorName}
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
             lessonCount={lessonCount}
-            onEnroll={handleEnrollClick}
+            onEnroll={handleEnroll}
+            isEnrolling={isEnrolling}
+            isEnrolled={isEnrolled}
           />
         </div>
       </div>
@@ -902,7 +949,7 @@ export default function CoursePreviewPage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnrollClick} />
+          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
         </div>
       </div>
     </main>

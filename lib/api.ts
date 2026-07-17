@@ -54,8 +54,8 @@ async function request<T>(
     useAuthStore.getState().clearAuth();
     queryClient.clear();
     
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-      window.location.href = "/login";
+    if (typeof window !== "undefined" && window.location.pathname !== "/") {
+      window.location.href = "/";
     }
     throw new Error("Your session has expired. Please sign in again.");
   }

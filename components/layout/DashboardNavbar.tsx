@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/store/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert, GraduationCap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
@@ -165,11 +165,19 @@ export default function DashboardNavbar() {
               Courses
             </MenuItem>
             <MenuItem 
-              icon={<BookOpen size={20} strokeWidth={2} className="text-indigo-500" />} 
-              onClick={() => router.push('/dashboard/content')} 
+              icon={<GraduationCap size={20} strokeWidth={2} className="text-cyan-500" />} 
+              onClick={() => router.push('/dashboard/my-courses')} 
             >
-              Content Studio
+              My courses
             </MenuItem>
+            {hasChannels && (
+              <MenuItem 
+                icon={<BookOpen size={20} strokeWidth={2} className="text-indigo-500" />} 
+                onClick={() => router.push('/dashboard/content')} 
+              >
+                Content Studio
+              </MenuItem>
+            )}
             <MenuItem 
               icon={<Map size={20} strokeWidth={2} className="text-amber-500" />} 
               onClick={() => router.push('/dashboard/roadmaps')} 

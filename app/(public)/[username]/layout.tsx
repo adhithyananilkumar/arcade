@@ -34,7 +34,7 @@ export default function PublicProfileLayout({
           {/* Right: Login Button */}
           <div className="flex items-center gap-4">
             <Link
-              href="/login"
+              href="/sign"
               className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 active:scale-[0.98] transition-all cursor-pointer shadow-md"
               style={{ fontFamily: 'var(--font-geist-sans)' }}
             >

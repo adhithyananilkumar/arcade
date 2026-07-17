@@ -19,6 +19,8 @@ export interface CourseResponse {
   id: string;
   authorId: string;
   authorName: string;
+  authorUsername: string;
+  authorAvatarUrl: string | null;
   title: string;
   description?: string;
   coverImageUrl?: string;
