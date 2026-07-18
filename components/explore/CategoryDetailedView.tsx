@@ -1,14 +1,365 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
+import GradientText from "@/components/landing/GradientText";
+import BorderGlow from "./BorderGlow";
+import { gsap } from "gsap";
+
+function hexToRgbStr(hex: string): string {
+  hex = hex.replace(/^#/, "");
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
+interface BannerProps {
+  children: React.ReactNode;
+  primaryColor: string;
+  secondaryColor: string;
+  enableStars?: boolean;
+  enableTilt?: boolean;
+  clickEffect?: boolean;
+  enableMagnetism?: boolean;
+}
+
+const BannerBentoWrapper: React.FC<BannerProps> = ({
+  children,
+  primaryColor,
+  secondaryColor,
+  enableStars = true,
+  enableTilt = true,
+  clickEffect = true,
+  enableMagnetism = true
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef<HTMLDivElement[]>([]);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
+
+  const rgbColor = hexToRgbStr(primaryColor);
+
+  const clearAllParticles = useCallback(() => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+    particlesRef.current.forEach(particle => {
+      gsap.to(particle, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: "back.in(1.7)",
+        onComplete: () => {
+          particle.parentNode?.removeChild(particle);
+        }
+      });
+    });
+    particlesRef.current = [];
+  }, []);
+
+  const animateParticles = useCallback(() => {
+    if (!cardRef.current) return;
+    const { width, height } = cardRef.current.getBoundingClientRect();
+    
+    for (let i = 0; i < 12; i++) {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      const particle = document.createElement("div");
+      particle.className = "particle";
+      particle.style.cssText = `
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(${rgbColor}, 1);
+        box-shadow: 0 0 6px rgba(${rgbColor}, 0.6);
+        pointer-events: none;
+        z-index: 100;
+        left: ${x}px;
+        top: ${y}px;
+      `;
+
+      const timeoutId = setTimeout(() => {
+        if (!cardRef.current) return;
+        cardRef.current.appendChild(particle);
+        particlesRef.current.push(particle);
+
+        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+
+        gsap.to(particle, {
+          x: (Math.random() - 0.5) * 120,
+          y: (Math.random() - 0.5) * 120,
+          rotation: Math.random() * 360,
+          duration: 2 + Math.random() * 2,
+          ease: "none",
+          repeat: -1,
+          yoyo: true
+        });
+
+        gsap.to(particle, {
+          opacity: 0.3,
+          duration: 1.5,
+          ease: "power2.inOut",
+          repeat: -1,
+          yoyo: true
+        });
+      }, i * 100);
+
+      timeoutsRef.current.push(timeoutId);
+    }
+  }, [rgbColor]);
+
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element) return;
+
+    const handleMouseEnter = () => {
+      if (enableStars) {
+        animateParticles();
+      }
+
+      if (enableTilt) {
+        gsap.to(element, {
+          rotateX: 2,
+          rotateY: 2,
+          duration: 0.3,
+          ease: "power2.out",
+          transformPerspective: 1000
+        });
+      }
+    };
+
+    const handleMouseLeave = () => {
+      clearAllParticles();
+      element.style.setProperty("--glow-intensity", "0");
+
+      if (enableTilt) {
+        gsap.to(element, {
+          rotateX: 0,
+          rotateY: 0,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
+
+      if (enableMagnetism) {
+        gsap.to(element, {
+          x: 0,
+          y: 0,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const relativeX = (x / rect.width) * 100;
+      const relativeY = (y / rect.height) * 100;
+      element.style.setProperty("--glow-x", `${relativeX}%`);
+      element.style.setProperty("--glow-y", `${relativeY}%`);
+      element.style.setProperty("--glow-intensity", "1");
+      element.style.setProperty("--glow-radius", "400px");
+
+      if (enableTilt) {
+        const rotateX = ((y - centerY) / centerY) * -3;
+        const rotateY = ((x - centerX) / centerX) * 3;
+        gsap.to(element, {
+          rotateX,
+          rotateY,
+          duration: 0.1,
+          ease: "power2.out",
+          transformPerspective: 1000
+        });
+      }
+
+      if (enableMagnetism) {
+        const magnetX = (x - centerX) * 0.02;
+        const magnetY = (y - centerY) * 0.02;
+
+        magnetismAnimationRef.current = gsap.to(element, {
+          x: magnetX,
+          y: magnetY,
+          duration: 0.3,
+          ease: "power2.out"
+        });
+      }
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      if (!clickEffect) return;
+
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const maxDistance = Math.max(
+        Math.hypot(x, y),
+        Math.hypot(x - rect.width, y),
+        Math.hypot(x, y - rect.height),
+        Math.hypot(x - rect.width, y - rect.height)
+      );
+
+      const ripple = document.createElement("div");
+      ripple.style.cssText = `
+        position: absolute;
+        width: ${maxDistance * 2}px;
+        height: ${maxDistance * 2}px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(${rgbColor}, 0.25) 0%, rgba(${rgbColor}, 0.1) 30%, transparent 70%);
+        left: ${x - maxDistance}px;
+        top: ${y - maxDistance}px;
+        pointer-events: none;
+        z-index: 1000;
+      `;
+
+      element.appendChild(ripple);
+
+      gsap.fromTo(
+        ripple,
+        {
+          scale: 0,
+          opacity: 1
+        },
+        {
+          scale: 1,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power2.out",
+          onComplete: () => ripple.remove()
+        }
+      );
+    };
+
+    element.addEventListener("mouseenter", handleMouseEnter);
+    element.addEventListener("mouseleave", handleMouseLeave);
+    element.addEventListener("mousemove", handleMouseMove);
+    element.addEventListener("click", handleClick);
+
+    return () => {
+      element.removeEventListener("mouseenter", handleMouseEnter);
+      element.removeEventListener("mouseleave", handleMouseLeave);
+      element.removeEventListener("mousemove", handleMouseMove);
+      element.removeEventListener("click", handleClick);
+      clearAllParticles();
+      magnetismAnimationRef.current?.kill();
+    };
+  }, [animateParticles, clearAllParticles, enableTilt, enableMagnetism, clickEffect, rgbColor, enableStars]);
+
+  return (
+    <div
+      ref={cardRef}
+      className="magic-bento-banner magic-bento-banner--border-glow"
+      style={{
+        "--glow-color": rgbColor
+      } as React.CSSProperties}
+    >
+      {children}
+    </div>
+  );
+};
+
+function hexToHslStr(hex: string): string {
+  hex = hex.replace(/^#/, "");
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)} ${Math.round(l * 100)}`;
+}
+
+interface EnrichedCourse {
+  title: string;
+  duration: string;
+  level: string;
+  desc: string;
+  rating: number;
+  reviewsCount: number;
+  categoryTag: string;
+  instructor: {
+    name: string;
+    role: string;
+    avatarUrl: string;
+  };
+}
+
+function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string }, index: number, categoryName: string): EnrichedCourse {
+  const ratings = [4.8, 4.9, 4.7, 4.6];
+  const reviews = [320, 240, 185, 95];
+  const rating = ratings[index % ratings.length];
+  const reviewsCount = reviews[index % reviews.length];
+
+  let categoryTag = categoryName;
+  if (categoryName === "Computer Science") {
+    const tags = ["Programming", "Algorithms", "Databases", "Software Engineering"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Information Technology") {
+    const tags = ["Networking", "Cybersecurity", "Cloud Computing", "Systems"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Business & Management") {
+    const tags = ["Entrepreneurship", "Marketing", "Finance", "Product"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Civil & Mechanical") {
+    const tags = ["CAD Design", "Fluid Mechanics", "Structural", "Robotics"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Basic Sciences") {
+    const tags = ["Mathematics", "Physics", "Chemistry", "Biology"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Humanities & Languages") {
+    const tags = ["Literature", "Linguistics", "Philosophy", "History"];
+    categoryTag = tags[index % tags.length];
+  } else if (categoryName === "Personal Development") {
+    const tags = ["Productivity", "Leadership", "Communication", "Mindfulness"];
+    categoryTag = tags[index % tags.length];
+  }
+
+  const instructors = [
+    { name: "Dr. Sarah Jenkins", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" },
+    { name: "Alex Rivera", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" },
+    { name: "Prof. David Miller", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
+    { name: "Elena Rostova", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" }
+  ];
+  const instructor = instructors[index % instructors.length];
+
+  return {
+    ...course,
+    rating,
+    reviewsCount,
+    categoryTag,
+    instructor
+  };
+}
 
 const CATEGORY_TOPICS: Record<string, string[]> = {
   "Computer Science": ["Programming Logic", "Algorithms", "Relational Databases", "Software Engineering"],
-  "Artificial Intelligence": ["Machine Learning", "Neural Networks", "Deep Learning", "LLMs", "RAG Pipelines"],
   "Information Technology": ["IP Routing", "Cyber Security", "VPC Cloud", "Linux Bash", "DevOps CI/CD"],
   "Business & Management": ["Startup Valuation", "PPC SEO Marketing", "Corporate Accounting", "Product PRDs"],
   "Civil & Mechanical": ["CAD blueprints", "Fluid Dynamics", "Materials Stress", "Robotics Arms"],
@@ -19,7 +370,6 @@ const CATEGORY_TOPICS: Record<string, string[]> = {
 
 const CATEGORY_HEADLINES: Record<string, { main: string; highlight: string }> = {
   "Computer Science": { main: "Build the Future of ", highlight: "Software" },
-  "Artificial Intelligence": { main: "Harness the Power of ", highlight: "AI & ML" },
   "Information Technology": { main: "Secure & Scale Modern ", highlight: "Infrastructure" },
   "Business & Management": { main: "Lead Teams & Scale ", highlight: "Enterprises" },
   "Civil & Mechanical": { main: "Design & Engineer the ", highlight: "Physical World" },
@@ -71,32 +421,6 @@ const CATEGORY_EDITOR_TABS: Record<string, EditorContent[]> = {
         { ln: 4, tokens: [{ text: "  title: ", type: "var" }, { text: "text", type: "fn" }, { text: "(", type: "var" }, { text: '"title"', type: "str" }, { text: ").", type: "var" }, { text: "notNull", type: "fn" }, { text: "()," }] },
         { ln: 5, tokens: [{ text: "  level: ", type: "var" }, { text: "text", type: "fn" }, { text: "(", type: "var" }, { text: '"level"', type: "str" }, { text: ").", type: "var" }, { text: "notNull", type: "fn" }, { text: "()" }] },
         { ln: 6, tokens: [{ text: "});", type: "var" }] }
-      ]
-    }
-  ],
-  "Artificial Intelligence": [
-    {
-      filename: "train.py",
-      language: "python",
-      matchedText: "Epoch 10/10 complete",
-      lines: [
-        { ln: 1, tokens: [{ text: "# train model to recommend learning paths", type: "com" }] },
-        { ln: 2, tokens: [{ text: "import ", type: "kw" }, { text: "torch", type: "var" }] },
-        { ln: 3, tokens: [{ text: "model = ", type: "var" }, { text: "TransformerModel", type: "fn" }, { text: "(vocab_size=", type: "var" }, { text: "2048", type: "num" }, { text: ")" }] },
-        { ln: 4, tokens: [{ text: "model.", type: "var" }, { text: "train", type: "fn" }, { text: "(epochs=", type: "var" }, { text: "10", type: "num" }, { text: ", lr=", type: "var" }, { text: "0.001", type: "num" }, { text: ")" }] },
-        { ln: 5, tokens: [{ text: "print", type: "kw" }, { text: "(", type: "var" }, { text: '"Optimization completed"', type: "str" }, { text: ")" }] }
-      ]
-    },
-    {
-      filename: "model.py",
-      language: "python",
-      matchedText: "Model loaded",
-      lines: [
-        { ln: 1, tokens: [{ text: "# model definition class", type: "com" }] },
-        { ln: 2, tokens: [{ text: "class ", type: "kw" }, { text: "TransformerModel", type: "fn" }, { text: "(nn.Module):", type: "var" }] },
-        { ln: 3, tokens: [{ text: "    def ", type: "kw" }, { text: "__init__", type: "fn" }, { text: "(self, vocab_size):", type: "var" }] },
-        { ln: 4, tokens: [{ text: "        super().", type: "var" }, { text: "__init__", type: "fn" }, { text: "()", type: "var" }] },
-        { ln: 5, tokens: [{ text: "        self.embed = nn.", type: "var" }, { text: "Embedding", type: "fn" }, { text: "(vocab_size, ", type: "var" }, { text: "256", type: "num" }, { text: ")" }] }
       ]
     }
   ],
@@ -272,13 +596,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
       <line x1="12" y1="17" x2="12" y2="21" />
     </svg>
   ),
-  "Artificial Intelligence": (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="M12 6v12M6 12h12" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
+
   "Information Technology": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
@@ -323,7 +641,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 // Color presets for custom graphic header meshes
 const HEADER_COLOR_MESHES: Record<string, string> = {
   "Computer Science": "radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)",
-  "Artificial Intelligence": "radial-gradient(at 10% 20%, rgba(236, 72, 153, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(244, 63, 94, 0.1) 0px, transparent 50%)",
+
   "Information Technology": "radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.1) 0px, transparent 50%)",
   "Business & Management": "radial-gradient(at 10% 20%, rgba(245, 158, 11, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(239, 68, 68, 0.1) 0px, transparent 50%)",
   "Civil & Mechanical": "radial-gradient(at 10% 20%, rgba(16, 185, 129, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.1) 0px, transparent 50%)",
@@ -419,6 +737,8 @@ export default function CategoryDetailedView() {
   const [wishlistedCourses, setWishlistedCourses] = useState<Record<string, boolean>>({});
   const [activeEditorTab, setActiveEditorTab] = useState<number>(0);
 
+  const coursesSectionRef = useRef<HTMLDivElement>(null);
+
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -443,7 +763,11 @@ export default function CategoryDetailedView() {
     setActiveCategory(category);
     setCourseSearchQuery("");
     setActiveEditorTab(0);
-    router.push(`/explore?category=${encodeURIComponent(category)}`);
+    
+    const newUrl = `${window.location.pathname}?category=${encodeURIComponent(category)}`;
+    window.history.replaceState(null, "", newUrl);
+
+    coursesSectionRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
   };
 
   const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
@@ -468,11 +792,6 @@ export default function CategoryDetailedView() {
       <style>{`
         .course-card-premium {
           transition: all 0.18s ease !important;
-        }
-        .course-card-premium:hover {
-          transform: translateY(-3px) !important;
-          box-shadow: 0 14px 30px -18px rgba(20, 19, 30, 0.35) !important;
-          border-color: var(--hover-color) !important;
         }
         .hover-card-y {
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -579,6 +898,86 @@ export default function CategoryDetailedView() {
         .editor-status .ok { color: #9ad189; }
         .course-card-premium:hover .view-arrow {
           transform: translateX(3px) !important;
+        }
+
+        /* Magic Bento Banner Styles */
+        .magic-bento-banner {
+          --glow-x: 50%;
+          --glow-y: 50%;
+          --glow-intensity: 0;
+          --glow-radius: 400px;
+          --glow-color: 139, 92, 246;
+          position: relative;
+          background: rgba(255, 255, 255, 0.65) !important;
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(20, 23, 31, 0.06) !important;
+          border-radius: 24px !important;
+          padding: 48px 48px;
+          color: var(--l-ink) !important;
+          overflow: hidden;
+          box-shadow: 0 12px 30px -10px rgba(20, 23, 31, 0.04), 0 4px 10px -4px rgba(20, 23, 31, 0.02);
+          margin-bottom: 56px;
+          display: grid;
+          grid-template-columns: 1.2fr 0.8fr;
+          align-items: center;
+          gap: 40px;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          z-index: 10;
+        }
+
+        .magic-bento-banner--border-glow::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          padding: 1.5px;
+          background: radial-gradient(
+            var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.8)) 0%,
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.3)) 30%,
+            transparent 60%
+          );
+          border-radius: inherit;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+          pointer-events: none;
+          opacity: 1;
+          transition: opacity 0.3s ease;
+          z-index: 1;
+        }
+
+        .magic-bento-banner--border-glow:hover {
+          box-shadow:
+            0 20px 45px -15px rgba(var(--glow-color), 0.2),
+            0 8px 20px -8px rgba(20, 23, 31, 0.04) !important;
+          border-color: rgba(var(--glow-color), 0.2) !important;
+        }
+
+        .particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 100;
+        }
+
+        .particle::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          background: rgba(var(--glow-color), 0.2);
+          border-radius: 50%;
+          z-index: -1;
         }
       `}</style>
 
@@ -693,44 +1092,13 @@ export default function CategoryDetailedView() {
         </div>
 
         {/* Premium Minimal Interactive Banner with Cursor Spotlight effect */}
-        <div
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          style={{
-            position: "relative",
-            background: "rgba(255, 255, 255, 0.65)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            border: "1px solid rgba(20, 23, 31, 0.06)",
-            borderRadius: "24px",
-            padding: "48px 48px",
-            color: "var(--l-ink)",
-            overflow: "hidden",
-            boxShadow: isHovered 
-              ? `0 20px 45px -15px ${activeData.colors.primary}20, 0 8px 20px -8px rgba(20, 23, 31, 0.04)`
-              : "0 12px 30px -10px rgba(20, 23, 31, 0.04), 0 4px 10px -4px rgba(20, 23, 31, 0.02)",
-            marginBottom: "56px",
-            display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
-            alignItems: "center",
-            gap: "40px",
-            transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
-          }}
+        <BannerBentoWrapper
+          primaryColor={activeData.colors.primary}
+          secondaryColor={activeData.colors.secondary}
+          enableTilt={false}
+          enableMagnetism={false}
+          enableStars={false}
         >
-          {/* Spotlight overlay effect following the cursor */}
-          {isHovered && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${activeData.colors.primary}0D, transparent 70%)`,
-                pointerEvents: "none",
-                zIndex: 1,
-                transition: "opacity 0.2s ease"
-              }}
-            />
-          )}
 
           {/* Subtle dynamic grid and mesh details inside banner */}
           <div style={{ position: "absolute", inset: 0, opacity: 0.8, pointerEvents: "none", zIndex: 0 }}>
@@ -761,7 +1129,14 @@ export default function CategoryDetailedView() {
                 fontFamily: "'Space Grotesk', sans-serif"
               }}
             >
-              {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}<span style={{ color: activeData.colors.primary }}>{CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}</span>
+              {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+              <GradientText
+                colors={['#2563EB', '#0EA5E9', '#06B6D4', '#10B981', '#4F46E5', '#2563EB']}
+                animationSpeed={8}
+                showBorder={false}
+              >
+                {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+              </GradientText>
             </h1>
             <p
               style={{
@@ -896,10 +1271,10 @@ export default function CategoryDetailedView() {
               </div>
             );
           })()}
-        </div>
+        </BannerBentoWrapper>
 
         {/* Section A: Popular / Available Courses */}
-        <section style={{ marginBottom: "56px" }}>
+        <section ref={coursesSectionRef} style={{ marginBottom: "56px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
@@ -923,171 +1298,283 @@ export default function CategoryDetailedView() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-              {filteredCourses.map((course, index) => {
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>              {filteredCourses.map((course, index) => {
                 const isWishlisted = !!wishlistedCourses[course.title];
+                const enriched = getEnrichedCourse(course, index, activeCategoryName);
                 
                 return (
-                  <motion.div
+                  <div
                     key={course.title}
-                    whileHover={{ y: -3 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
                     style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E6E3F1",
-                      borderRadius: "14px",
-                      overflow: "hidden",
                       display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      position: "relative",
-                      ["--hover-color" as any]: activeData.colors.primary
+                      flexDirection: "column"
                     }}
-                    className="course-card-premium"
                   >
-                    {/* Card Graphic Header - Matching clean flat design */}
-                    <div
-                      style={{
-                        height: "120px",
-                        position: "relative",
-                        overflow: "hidden",
-                        background: `
-                          radial-gradient(circle at 25% 25%, ${activeData.colors.primary}29, transparent 55%),
-                          repeating-linear-gradient(135deg, ${activeData.colors.primary}10 0 2px, transparent 2px 14px),
-                          ${activeData.colors.secondary}
-                        `,
-                        borderBottom: "1px solid #E6E3F1",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                      }}
+                    <BorderGlow
+                      edgeSensitivity={30}
+                      glowColor={hexToHslStr(activeData.colors.primary)}
+                      backgroundColor="#FFFFFF"
+                      borderRadius={14}
+                      glowRadius={40}
+                      glowIntensity={1.0}
+                      coneSpread={25}
+                      animated={false}
+                      colors={[activeData.colors.primary, '#E6E3F1', activeData.colors.primary]}
+                      fillOpacity={0.08}
+                      className="w-full h-full"
                     >
-                      {/* Floating status badge */}
-                      {index === 0 && (
-                        <span
-                          style={{
-                            position: "absolute",
-                            left: "12px",
-                            top: "12px",
-                            background: "#14131E",
-                            color: "#FFFFFF",
-                            padding: "5px 10px",
-                            borderRadius: "999px",
-                            fontSize: "0.68rem",
-                            fontWeight: "700",
-                            letterSpacing: "0.04em",
-                            fontFamily: "'IBM Plex Mono', monospace"
-                          }}
-                        >
-                          BEST SELLER
-                        </span>
-                      )}
-
-                      {/* Wishlist Button */}
-                      <button
-                        onClick={(e) => toggleWishlist(course.title, e)}
+                      <div
                         style={{
-                          position: "absolute",
-                          right: "12px",
-                          top: "12px",
-                          width: "30px",
-                          height: "30px",
-                          borderRadius: "50%",
                           background: "#FFFFFF",
-                          border: "1px solid #E6E3F1",
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
-                          color: isWishlisted ? "#EF4444" : "#8886A0",
-                          transition: "all 0.2s"
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          position: "relative",
+                          width: "100%",
+                          height: "100%",
+                          minHeight: "530px"
                         }}
+                        className="course-card-premium"
                       >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                        </svg>
-                      </button>
-
-                      {/* Accent outline category visual watermark */}
-                      <div style={{ color: activeData.colors.primary, opacity: 0.85 }}>
-                        {getCourseGlyph(course.title, index, activeData.colors.primary)}
-                      </div>
-                    </div>
-
-                    {/* Card Body - Matching explore details layout */}
-                    <div style={{ padding: "18px 18px 16px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
-                      <div>
-                        {/* Title and Badge Row */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "4px" }}>
-                          <h3
-                            style={{
-                              fontSize: "1rem",
-                              fontWeight: "700",
-                              color: "var(--l-ink)",
-                              margin: 0,
-                              lineHeight: "1.3",
-                              fontFamily: "'Inter', sans-serif"
-                            }}
-                          >
-                            {course.title}
-                          </h3>
-                          <span
-                            style={{
-                              background: activeData.colors.secondary,
-                              color: activeData.colors.primary,
-                              padding: "4px 9px",
-                              borderRadius: "999px",
-                              fontSize: "0.68rem",
-                              fontWeight: "700",
-                              fontFamily: "'IBM Plex Mono', monospace",
-                              whiteSpace: "nowrap"
-                            }}
-                          >
-                            {course.level}
-                          </span>
-                        </div>
-                        <p
+                        {/* Card Graphic Header - Matching clean flat design */}
+                        <div
                           style={{
-                            fontSize: "0.86rem",
-                            color: "#5A5870",
-                            lineHeight: "1.5",
-                            margin: 0
-                          }}
-                        >
-                          {course.desc}
-                        </p>
-                      </div>
-
-                      {/* Action & Stats Row - Explore theme style link */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "12px", marginTop: "10px" }}>
-                        <span
-                          style={{
-                            fontSize: "0.85rem",
-                            fontWeight: "700",
-                            color: activeData.colors.primary,
+                            height: "120px",
+                            position: "relative",
+                            overflow: "hidden",
+                            background: `
+                              radial-gradient(circle at 25% 25%, ${activeData.colors.primary}29, transparent 55%),
+                              repeating-linear-gradient(135deg, ${activeData.colors.primary}10 0 2px, transparent 2px 14px),
+                              ${activeData.colors.secondary}
+                            `,
+                            borderBottom: "1px solid #E6E3F1",
                             display: "flex",
                             alignItems: "center",
-                            gap: "5px",
-                            cursor: "pointer"
+                            justifyContent: "center"
                           }}
                         >
-                          View Course
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                          </svg>
-                        </span>
-                        
-                        <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="9" />
-                            <path d="M12 7v5l3 2" />
-                          </svg>
-                          {course.duration}
-                        </span>
+                          {/* Floating status badge */}
+                          {index === 0 && (
+                            <span
+                              style={{
+                                position: "absolute",
+                                left: "12px",
+                                top: "12px",
+                                background: "#14131E",
+                                color: "#FFFFFF",
+                                padding: "5px 10px",
+                                borderRadius: "999px",
+                                fontSize: "0.68rem",
+                                fontWeight: "700",
+                                letterSpacing: "0.04em",
+                                fontFamily: "'IBM Plex Mono', monospace"
+                              }}
+                            >
+                              BEST SELLER
+                            </span>
+                          )}
+
+                          {/* Wishlist Button */}
+                          <button
+                            onClick={(e) => toggleWishlist(course.title, e)}
+                            style={{
+                              position: "absolute",
+                              right: "12px",
+                              top: "12px",
+                              width: "30px",
+                              height: "30px",
+                              borderRadius: "50%",
+                              background: "#FFFFFF",
+                              border: "1px solid #E6E3F1",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              cursor: "pointer",
+                              boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
+                              color: isWishlisted ? "#EF4444" : "#8886A0",
+                              transition: "all 0.2s"
+                            }}
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                          </button>
+
+                          {/* Accent outline category visual watermark */}
+                          <div style={{ color: activeData.colors.primary, opacity: 0.85 }}>
+                            {getCourseGlyph(course.title, index, activeData.colors.primary)}
+                          </div>
+                        </div>
+
+                        {/* Card Body - Matching explore details layout */}
+                        <div style={{ padding: "20px 20px 18px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                          <div>
+                            {/* Title */}
+                            <h3
+                              style={{
+                                fontSize: "1.05rem",
+                                fontWeight: "800",
+                                color: "var(--l-ink)",
+                                margin: "0 0 10px",
+                                lineHeight: "1.3",
+                                fontFamily: "'Space Grotesk', sans-serif"
+                              }}
+                            >
+                              {course.title}
+                            </h3>
+
+                            {/* Rating and Difficulty Row */}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
+                                <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
+                                <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{enriched.rating}</span>
+                                <span style={{ color: "#8886A0" }}>({enriched.reviewsCount} Reviews)</span>
+                              </div>
+                              <span
+                                style={{
+                                  background: activeData.colors.secondary,
+                                  color: activeData.colors.primary,
+                                  padding: "4px 10px",
+                                  borderRadius: "999px",
+                                  fontSize: "0.68rem",
+                                  fontWeight: "700",
+                                  fontFamily: "'IBM Plex Mono', monospace",
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                {course.level}
+                              </span>
+                            </div>
+
+                            {/* Description */}
+                            <p
+                              style={{
+                                fontSize: "0.86rem",
+                                color: "#5A5870",
+                                lineHeight: "1.55",
+                                margin: "0 0 16px",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                height: "4.65em"
+                              }}
+                            >
+                              {course.desc}
+                            </p>
+
+                            {/* Course Category Badge */}
+                            <div style={{ marginBottom: "18px" }}>
+                              <span
+                                style={{
+                                  background: activeData.colors.secondary,
+                                  color: activeData.colors.primary,
+                                  padding: "5px 12px",
+                                  borderRadius: "999px",
+                                  fontSize: "0.7rem",
+                                  fontWeight: "700",
+                                  fontFamily: "'IBM Plex Mono', monospace",
+                                  letterSpacing: "0.02em"
+                                }}
+                              >
+                                {enriched.categoryTag}
+                              </span>
+                            </div>
+
+                            {/* Instructor Info */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
+                              <img
+                                src={enriched.instructor.avatarUrl}
+                                alt={enriched.instructor.name}
+                                style={{
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                  border: "1px solid #E6E3F1"
+                                }}
+                              />
+                              <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
+                                <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
+                                  {enriched.instructor.name}
+                                </span>
+                                <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
+                                  {enriched.instructor.role}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Primary Action Buttons */}
+                            <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
+                              <button
+                                onClick={() => router.push("/courses/1")}
+                                style={{
+                                  width: "100%",
+                                  background: activeData.colors.primary,
+                                  color: "#FFFFFF",
+                                  border: "none",
+                                  padding: "10px 16px",
+                                  borderRadius: "10px",
+                                  fontSize: "0.85rem",
+                                  fontWeight: "700",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: "6px",
+                                  transition: "all 0.2s"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.opacity = "0.95";
+                                  e.currentTarget.style.transform = "translateY(-1px)";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.opacity = "1";
+                                  e.currentTarget.style.transform = "none";
+                                }}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="9" cy="21" r="1" />
+                                  <circle cx="20" cy="21" r="1" />
+                                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                </svg>
+                                Enroll Now
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Bottom Info Row */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "14px", marginTop: "4px" }}>
+                            <span
+                              onClick={() => router.push("/courses/1")}
+                              style={{
+                                fontSize: "0.85rem",
+                                fontWeight: "700",
+                                color: activeData.colors.primary,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                cursor: "pointer"
+                              }}
+                            >
+                              View Course
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
+                                <path d="M5 12h14M13 6l6 6-6 6" />
+                              </svg>
+                            </span>
+                            
+                            <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 7v5l3 2" />
+                              </svg>
+                              {course.duration}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </BorderGlow>
+                  </div>
                 );
               })}
             </div>

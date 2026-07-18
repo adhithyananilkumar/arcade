@@ -38,28 +38,6 @@ export const CATEGORY_DATA: Record<string, {
       { title: "Understanding Postgres Indexing & Querying", type: "Docs", readTime: "12 min read" }
     ]
   },
-  "Artificial Intelligence": {
-    coursesCount: 8,
-    gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
-    colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
-    desc: "Explore neural networks, machine learning models, training pipelines, fine-tuning large language models, and AI agent designs.",
-    courses: [
-      { title: "Intro to Machine Learning", duration: "8 Weeks", level: "Beginner", desc: "Understand supervised and unsupervised model training and evaluations." },
-      { title: "Neural Networks & Deep Learning", duration: "12 Weeks", level: "Advanced", desc: "Build multi-layer neural networks using PyTorch and TensorFlow." },
-      { title: "Natural Language Processing", duration: "10 Weeks", level: "Intermediate", desc: "Train model systems to parse and generate human texts." },
-      { title: "Computer Vision & CNNs", duration: "10 Weeks", level: "Intermediate", desc: "Process visual data, detect objects, and design image architectures." }
-    ],
-    bootcamps: [
-      { title: "AI Engineering Bootcamp", duration: "6 Weeks", type: "Full-time", date: "Starts Saturday", desc: "Integrate vector databases, construct dynamic RAG systems, and build autonomous agents." },
-      { title: "Prompt Engineering Intensive", duration: "1 Day", type: "Workshop", date: "Starts Sunday", desc: "Learn few-shot learning, chain-of-thought prompting, and systemic system instructions." },
-      { title: "Fine-tuning LLM Parameters", duration: "1 Week", type: "Advanced", date: "Starts next Month", desc: "Adapt transformer models on customized proprietary data libraries securely." }
-    ],
-    resources: [
-      { title: "RAG Pipeline Architectures Explained", type: "Article", readTime: "6 min read" },
-      { title: "Understanding Transformer Attention Mechanisms", type: "Guide", readTime: "10 min read" },
-      { title: "Training Neural Nets from Absolute Scratch", type: "Docs", readTime: "15 min read" }
-    ]
-  },
   "Information Technology": {
     coursesCount: 10,
     gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)",
@@ -198,7 +176,6 @@ export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
 const WEBINARS_DATA = [
-  { title: "Future of Generative AI in Production", category: "Artificial Intelligence", host: "Dr. Emily Stone", date: "Tomorrow, 3:00 PM", status: "Live Today", duration: "60 mins" },
   { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
   { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
   { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
@@ -208,7 +185,6 @@ const WEBINARS_DATA = [
 
 const ILLUSTRATION_BGS: Record<string, string> = {
   "Computer Science": "#7C3AED", // Solid vibrant purple
-  "Artificial Intelligence": "#DB2777", // Solid vibrant pink
   "Information Technology": "#2563EB", // Solid vibrant blue
   "Business & Management": "#EA580C", // Solid vibrant orange
   "Civil & Mechanical": "#059669", // Solid vibrant emerald
@@ -230,20 +206,6 @@ export function CategoryWatermark({ category, color }: { category: string; color
   };
   switch (category) {
     case "Computer Science":
-      return (
-        <svg style={style} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg>
-      );
-    case "Artificial Intelligence":
-      return (
-        <svg style={style} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-          <path d="M12 6v12M6 12h12" />
-          <circle cx="12" cy="12" r="3" />
-        </svg>
-      );
     case "Information Technology":
       return (
         <svg style={style} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
@@ -315,31 +277,6 @@ function CategoryIllustration({ category }: { category: string }) {
           <line x1="155" y1="84" x2="240" y2="84" stroke="rgba(255,255,255,0.5)" strokeWidth="3" strokeLinecap="round" />
           <text x="65" y="80" fill="rgba(255, 255, 255, 0.15)" fontSize="54" fontWeight="bold" fontFamily="monospace">{"{"}</text>
           <text x="235" y="105" fill="rgba(255, 255, 255, 0.15)" fontSize="48" fontWeight="bold" fontFamily="monospace">{"}"}</text>
-        </svg>
-      );
-    case "Artificial Intelligence":
-      return (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
-          <rect width="100%" height="100%" fill={bgFill} />
-          <g opacity="0.85">
-            <line x1="120" y1="80" x2="180" y2="40" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="120" y1="80" x2="160" y2="95" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="180" y1="40" x2="230" y2="55" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="160" y1="95" x2="230" y2="55" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="180" y1="40" x2="220" y2="100" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="160" y1="95" x2="220" y2="100" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="230" y1="55" x2="270" y2="70" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <line x1="220" y1="100" x2="270" y2="70" stroke="rgba(255, 255, 255, 0.35)" strokeWidth="1.5" />
-            <circle cx="120" cy="80" r="5" fill="#FFFFFF" />
-            <circle cx="180" cy="40" r="6" fill="#FFFFFF" />
-            <circle cx="160" cy="95" r="5" fill="#FFFFFF" />
-            <circle cx="230" cy="55" r="7" fill="#FFFFFF" />
-            <circle cx="220" cy="100" r="5" fill="#FFFFFF" />
-            <circle cx="270" cy="70" r="6" fill="#FFFFFF" />
-          </g>
-          <path d="M190,50 Q165,55 170,75 Q160,85 175,95 Q190,105 210,95 Q225,85 215,75 Q220,55 190,50 Z" fill="rgba(255, 255, 255, 0.15)" stroke="rgba(255, 255, 255, 0.45)" strokeWidth="1.5" style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.03))" }} />
-          <path d="M140,35 L143,42 L150,45 L143,48 L140,55 L137,48 L130,45 L137,42 Z" fill="#FFFFFF" />
-          <path d="M250,90 L252,94 L257,96 L252,98 L250,102 L248,98 L243,96 L248,94 Z" fill="#FFFFFF" />
         </svg>
       );
     case "Information Technology":
@@ -513,55 +450,6 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <text x="75" y="75" fill="#BACDEB" fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
           <text x="210" y="110" fill="#BACDEB" fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
           <text x="215" y="65" fill="#8C9CBF" fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
-        </svg>
-      );
-    case "Artificial Intelligence":
-      return (
-        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Connecting grid line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-          {/* Background circles / network */}
-          <g opacity="0.6">
-            <circle cx="150" cy="80" r="60" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-            <circle cx="150" cy="80" r="45" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-          </g>
-
-          {/* Robotic Profile / Head */}
-          <g transform="translate(30, 0)">
-            {/* Neck */}
-            <path d="M 105,100 L 105,130 L 125,130 L 125,112 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            {/* Face/Head profile */}
-            <path d="M 100,50 C 70,50 65,75 65,90 C 65,105 85,115 105,115 C 120,115 130,105 130,85 C 130,55 115,50 100,50 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            {/* Ear piece */}
-            <circle cx="100" cy="85" r="12" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="100" cy="85" r="5" fill="#4E608A" />
-            {/* Eye / visor */}
-            <path d="M 66,75 H 85 L 82,85 H 66 Z" fill="#4E608A" rx="1" />
-            {/* Head circuit lines/details */}
-            <path d="M 100,50 L 100,30" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="100" cy="30" r="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          </g>
-
-          {/* Network structure on the right */}
-          <g transform="translate(145, 20)">
-            {/* Lines */}
-            <path d="M 30,60 L 70,30 L 100,50 L 80,90 L 30,60 Z" stroke="#BACDEB" strokeWidth="1.5" />
-            <path d="M 70,30 L 80,90" stroke="#BACDEB" strokeWidth="1.5" />
-            <path d="M 30,60 L 100,50" stroke="#BACDEB" strokeWidth="1" strokeDasharray="2 2" />
-
-            {/* Nodes */}
-            <circle cx="30" cy="60" r="6" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
-            <circle cx="70" cy="30" r="7" fill="#BACDEB" stroke="#FFFFFF" strokeWidth="1.5" />
-            <circle cx="100" cy="50" r="5" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="80" cy="90" r="6" fill="#BACDEB" stroke="#FFFFFF" strokeWidth="1.5" />
-          </g>
-
-          {/* Brain circuits floating */}
-          <path d="M 105,45 Q 120,35 130,45" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <path d="M 95,45 Q 85,35 75,50" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <circle cx="130" cy="45" r="2.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="75" cy="50" r="2.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
         </svg>
       );
     case "Information Technology":
@@ -1015,11 +903,11 @@ function CoursesContent() {
 
   useEffect(() => {
     if (initialCategory && categoriesList.includes(initialCategory)) {
-      setActiveCategory(initialCategory);
+      router.push(`/courses?category=${encodeURIComponent(initialCategory)}`);
     } else {
       setActiveCategory(null);
     }
-  }, [initialCategory]);
+  }, [initialCategory, router]);
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
@@ -1030,281 +918,6 @@ function CoursesContent() {
     setActiveCategory(null);
     router.push("/explore");
   };
-
-  // RENDER OPTION A: Dedicated Category/Department Page
-  if (activeCategory) {
-    const activeData = CATEGORY_DATA[activeCategory] || CATEGORY_DATA["Computer Science"];
-    return (
-      <div
-        style={{
-          background: `
-            radial-gradient(ellipse 55% 40% at 8% 12%, rgba(59, 130, 246, 0.16) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 35% at 92% 24%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
-            radial-gradient(ellipse 45% 35% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 35% at 6% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 35% at 94% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 30% at 48% 94%, rgba(249, 200, 70, 0.07) 0%, transparent 60%),
-            linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 25%, #FFFFFF 50%, #FFFFFF 75%, #EAF7EF 100%)
-          `,
-          minHeight: "100vh",
-          color: "#000000",
-          fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
-        }}
-      >
-
-        {/* Dynamic Category View (Full Screen Layout) */}
-        <main
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-            padding: "110px 48px 80px",
-            display: "grid",
-            gridTemplateColumns: "300px 1fr",
-            gap: "60px",
-          }}
-          className="lp-courses-layout"
-        >
-          {/* Sidebar */}
-          <aside style={{ alignSelf: "start", position: "sticky", top: "96px" }}>
-            <button
-              onClick={handleGoBackToExplore}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "0 0 20px",
-                fontSize: "0.9rem",
-                fontWeight: "700",
-                color: "#6B7280",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px"
-              }}
-            >
-              ← Back to Explore
-            </button>
-            <h3
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: "700",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "#6B7280",
-                marginBottom: "20px"
-              }}
-            >
-              Departments
-            </h3>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px"
-              }}
-            >
-              {categoriesList.map((item) => {
-                const isActive = activeCategory === item;
-                const catColor = CATEGORY_DATA[item].colors.primary;
-                return (
-                  <li key={item}>
-                    <button
-                      onClick={() => handleCategorySwitch(item)}
-                      style={{
-                        width: "100%",
-                        textAlign: "left",
-                        background: isActive ? CATEGORY_DATA[item].colors.secondary : "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "10px 14px",
-                        borderRadius: "8px",
-                        fontSize: "0.9rem",
-                        fontWeight: isActive ? "700" : "500",
-                        color: isActive ? catColor : "#4B5563",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {isActive && (
-                        <span
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            background: catColor,
-                            boxShadow: `0 0 6px ${catColor}`
-                          }}
-                        />
-                      )}
-                      {item}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </aside>
-
-          {/* Dynamic Content */}
-          <section style={{ display: "flex", flexDirection: "column", gap: "40px" }}>
-            <div>
-              <h1
-                style={{
-                  fontSize: "clamp(2rem, 4vw, 2.5rem)",
-                  fontWeight: 800,
-                  color: "#000000",
-                  marginBottom: "12px",
-                  letterSpacing: "-0.02em"
-                }}
-              >
-                {activeCategory} Courses
-              </h1>
-              <p
-                style={{
-                  fontSize: "1.05rem",
-                  color: "#4B5563",
-                  lineHeight: "1.6",
-                  maxWidth: "860px",
-                  margin: 0
-                }}
-              >
-                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to build your skills.
-              </p>
-            </div>
-
-            {/* Courses section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Available Courses ({activeData.courses.length})
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
-                {activeData.courses.map((course) => (
-                  <div
-                    key={course.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      padding: "24px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "180px",
-                      cursor: "default"
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, background: activeData.colors.secondary, padding: "2px 8px", borderRadius: "4px" }}>
-                          {course.level}
-                        </span>
-                        <span style={{ fontSize: "0.75rem", color: "#6B7280" }}>{course.duration}</span>
-                      </div>
-                      <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                        {course.title}
-                      </h3>
-                      <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: 0 }}>
-                        {course.desc}
-                      </p>
-                    </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#6B7280" }}>Syllabus Available</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bootcamps section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Practical Bootcamps & Workshops
-              </h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {activeData.bootcamps.map((bootcamp) => (
-                  <div
-                    key={bootcamp.title}
-                    style={{
-                      background: `linear-gradient(135deg, #FFFFFF 85%, ${activeData.colors.secondary} 100%)`,
-                      border: "1px solid #E5E7EB",
-                      borderLeft: `5px solid ${activeData.colors.primary}`,
-                      borderRadius: "10px",
-                      padding: "16px 20px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      position: "relative",
-                      overflow: "hidden"
-                    }}
-                  >
-                    <CategoryWatermark category={activeCategory} color={activeData.colors.primary} />
-                    <div style={{ position: "relative", zIndex: 1 }}>
-                      <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000" }}>{bootcamp.title}</div>
-                      <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "2px" }}>
-                        {bootcamp.type} • {bootcamp.duration}
-                      </div>
-                    </div>
-                    <Link
-                      href="/login"
-                      className="explore-register-btn"
-                      style={{
-                        "--btn-primary": activeData.colors.primary,
-                        "--btn-secondary": activeData.colors.secondary,
-                        position: "relative",
-                        zIndex: 1
-                      } as React.CSSProperties}
-                    >
-                      Register
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Resources section */}
-            <div style={{ borderTop: "1px solid #E5E7EB", paddingTop: "32px" }}>
-              <h2 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#000000", marginBottom: "20px" }}>
-                Resource Libraries
-              </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
-                {activeData.resources.map((doc) => (
-                  <div
-                    key={doc.title}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "10px",
-                      padding: "20px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: "120px"
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: "0.75rem", fontWeight: "700", color: "#6B7280", textTransform: "uppercase", marginBottom: "8px" }}>
-                        {doc.type}
-                      </div>
-                      <h3 style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000", margin: "0 0 8px", lineHeight: "1.4" }}>
-                        {doc.title}
-                      </h3>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>{doc.readTime}</span>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer", textDecoration: "underline" }}>Read Link</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-    );
-  }
 
   // RENDER OPTION B: Main Explore Hub Dashboard
   return (
@@ -1878,7 +1491,6 @@ function CoursesContent() {
                       { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" }, // Purple (CS)
                       { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },  // Blue (IT/Maths)
                       { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },  // Green (Pers. Dev)
-                      { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" }, // Pink (AI)
                       { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },  // Amber/Orange (Business)
                       { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" }   // Teal (Sciences)
                     ];
@@ -1888,10 +1500,9 @@ function CoursesContent() {
                       "Computer Science",
                       "Information Technology",
                       "Basic Sciences",
-                      "Artificial Intelligence",
                       "Business & Management",
                       "Personal Development"
-                    ][i % 6];
+                    ][i % 5];
 
                     return (
                       <div
