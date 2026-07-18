@@ -1,5 +1,17 @@
 /* About page — landing tokens; motion-friendly styles (transform/opacity preferred) */
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Lenis base (vendored from lenis/dist/lenis.css — package has no lenis/css export) */
 html.lenis,
 html.lenis body {
@@ -137,8 +149,62 @@ html.lenis body {
   max-width: 14ch;
 }
 
+/* Keeps "About" + "Arcade." on one baseline — do not change to flex/block */
+.about-hero__title-line {
+  display: inline;
+}
+
 .about-hero__title-accent {
   display: inline;
+}
+
+/*
+ * Arcade flip-in — strictly scoped to this word.
+ * inline-block + vertical-align: bottom matches former .l-word-wrap so
+ * "About" / "Arcade." stay one aligned line before & after animation.
+ */
+.about-hero__arcade-flip {
+  display: inline-block;
+  vertical-align: bottom;
+  perspective: 900px;
+  perspective-origin: 50% 100%;
+  line-height: inherit;
+}
+
+.about-hero__arcade-flip__track {
+  display: inline-block;
+  transform-style: preserve-3d;
+  line-height: inherit;
+}
+
+.about-hero__arcade-flip__letter {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  backface-visibility: hidden;
+  line-height: inherit;
+  /* Continuous gradient slice — parent does not use flex (layout-safe) */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  will-change: transform, opacity;
+}
+
+.about-hero__arcade-flip__static {
+  display: inline;
+  background: linear-gradient(
+    90deg,
+    #2563eb,
+    #0ea5e9,
+    #06b6d4,
+    #10b981,
+    #4f46e5,
+    #2563eb
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .about-hero__tagline {
@@ -236,14 +302,11 @@ html.lenis body {
   margin: 0;
   padding: 2rem 0 0 1.5rem;
   border-left: 2px solid transparent;
-  border-image: linear-gradient(
-      180deg,
+  border-image: linear-gradient(180deg,
       #4c6fff 0%,
       #1db876 40%,
       #ff6b4a 70%,
-      #9b5de5 100%
-    )
-    1;
+      #9b5de5 100%) 1;
 }
 
 .about-pull-quote__mark {
@@ -330,14 +393,12 @@ html.lenis body {
   height: 100%;
   transform-origin: top center;
   transform: scaleY(0.04);
-  background: linear-gradient(
-    180deg,
-    #4a67ad 0%,
-    #4aa1a0 25%,
-    #78a36f 50%,
-    #ba7359 75%,
-    #9d68af 100%
-  );
+  background: linear-gradient(180deg,
+      #4a67ad 0%,
+      #4aa1a0 25%,
+      #78a36f 50%,
+      #ba7359 75%,
+      #9d68af 100%);
   will-change: transform;
 }
 
@@ -563,12 +624,10 @@ html.lenis body {
   inset: -20% -30%;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.18) 48%,
-    transparent 62%
-  );
+  background: linear-gradient(115deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.18) 48%,
+      transparent 62%);
   mix-blend-mode: soft-light;
 }
 
@@ -583,19 +642,15 @@ html.lenis body {
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(
-      to right,
+    linear-gradient(to right,
       rgba(18, 42, 30, 0.72) 0%,
       rgba(28, 58, 40, 0.48) 38%,
       rgba(40, 72, 52, 0.22) 68%,
-      rgba(52, 88, 62, 0.1) 100%
-    ),
-    linear-gradient(
-      to top,
+      rgba(52, 88, 62, 0.1) 100%),
+    linear-gradient(to top,
       rgba(16, 38, 28, 0.5) 0%,
       rgba(20, 44, 32, 0.2) 40%,
-      transparent 70%
-    );
+      transparent 70%);
 }
 
 .about-provenance__content {

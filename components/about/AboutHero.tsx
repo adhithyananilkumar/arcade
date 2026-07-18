@@ -4,19 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import TextReveal from "./TextReveal";
-import GradientText from "@/components/landing/GradientText";
+import ArcadeFlipText from "./ArcadeFlipText";
 import AuroraBackground from "./AuroraBackground";
 
-const HERO_COLORS = [
-  "#2563EB",
-  "#0EA5E9",
-  "#06B6D4",
-  "#10B981",
-  "#4F46E5",
-  "#2563EB",
-];
-
-const EASE = [0.16, 1, 0.3, 1] as const;
 const STAGGER = 0.1;
 
 export default function AboutHero() {
@@ -37,17 +27,6 @@ export default function AboutHero() {
         duration: shouldReduceMotion ? 0.3 : 0.55,
         ease: [0.22, 1, 0.36, 1] as const,
       },
-    },
-  };
-
-  const arcadeReveal = {
-    hidden: shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: "105%" },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: shouldReduceMotion
-        ? { duration: 0.3, delay: STAGGER }
-        : { duration: 0.75, ease: EASE, delay: STAGGER },
     },
   };
 
@@ -75,26 +54,21 @@ export default function AboutHero() {
             className="about-hero__title"
             aria-label="About Arcade."
           >
-            <span aria-hidden="true">
+            {/* Visual line stays one inline headline; AT uses aria-label */}
+            <span aria-hidden="true" className="about-hero__title-line">
               {mounted ? (
                 <>
-                  <TextReveal text="About" delay={0} stagger={STAGGER} as="span" />{" "}
-                  <span className="l-word-wrap" style={{ marginRight: 0 }}>
-                    <motion.span
-                      className="l-word about-hero__title-accent"
-                      variants={arcadeReveal}
-                      initial="hidden"
-                      animate="visible"
-                    >
-                      {shouldReduceMotion ? (
-                        <span className="l-gradient-text">Arcade.</span>
-                      ) : (
-                        <GradientText colors={HERO_COLORS} animationSpeed={10}>
-                          Arcade.
-                        </GradientText>
-                      )}
-                    </motion.span>
-                  </span>
+                  <TextReveal
+                    text="About"
+                    delay={0}
+                    stagger={STAGGER}
+                    as="span"
+                  />{" "}
+                  <ArcadeFlipText
+                    startDelay={0.3}
+                    letterStagger={0.05}
+                    reducedMotion={shouldReduceMotion}
+                  />
                 </>
               ) : (
                 <>
