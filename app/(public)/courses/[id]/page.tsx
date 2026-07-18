@@ -313,50 +313,6 @@ function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { labe
 }
 
 /* ------------------------------------------------------------------ */
-/*  Nav                                                                */
-/* ------------------------------------------------------------------ */
-
-function HeroNav() {
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
-      <nav
-        aria-label="Primary"
-        className="flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl border border-line/80 bg-paper/85 px-5 py-3 shadow-[0_8px_30px_rgba(20,22,28,0.06)] backdrop-blur-md"
-      >
-        <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-blue">
-          arcade<span className="text-ink">.</span>
-        </Link>
-
-        <ul className="hidden items-center gap-7 md:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link}>
-              <Link href="#" className="text-sm font-medium text-subtle transition-colors hover:text-ink">
-                {link}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="#"
-            className="hidden rounded-full px-4 py-2 text-sm font-medium text-subtle transition-colors hover:text-ink sm:inline-block"
-          >
-            Log in
-          </Link>
-          <Link
-            href="#"
-            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5"
-          >
-            Get Started
-          </Link>
-        </div>
-      </nav>
-    </header>
-  )
-}
-
-/* ------------------------------------------------------------------ */
 /*  Breadcrumb (modern replacement for the back button)               */
 /* ------------------------------------------------------------------ */
 
@@ -879,7 +835,6 @@ export default function CoursePreviewPage() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <HeroNav />
 
       {/* Hero wash */}
       <div className="arcade-wash">
