@@ -92,7 +92,7 @@ html.lenis body {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: flex-start;
   min-height: min(78vh, 720px);
   padding: 8.5rem clamp(1.5rem, 7vw, 8rem) 4rem;
@@ -102,6 +102,10 @@ html.lenis body {
 .about-hero__inner {
   position: relative;
   z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -148,11 +152,15 @@ html.lenis body {
 }
 
 .about-hero__ctas {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  margin-top: 2rem;
+  margin-top: 0;
 }
 
 /* ── Sections ──────────────────────────────────────────────────────── */
@@ -740,6 +748,15 @@ html.lenis body {
     min-height: auto;
     padding-top: 7rem;
     padding-bottom: 3rem;
+  }
+
+  .about-hero__inner {
+    justify-content: flex-start;
+  }
+
+  .about-hero__ctas {
+    position: static;
+    margin-top: 2rem;
   }
 
   .about-section {
