@@ -1,8 +1,8 @@
 /* Color themes and variables */
-.step-black {
-  --step-color: #0f172a;
-  --step-color-light: rgba(15, 23, 42, 0.04);
-  --step-color-glow: rgba(15, 23, 42, 0.12);
+.step-blue {
+  --step-color: #2451D6;
+  --step-color-light: rgba(36, 81, 214, 0.04);
+  --step-color-glow: rgba(36, 81, 214, 0.16);
 }
 
 .step-green {
@@ -11,7 +11,31 @@
   --step-color-glow: rgba(16, 185, 129, 0.16);
 }
 
-/* Process Section Redesign Container */
+.step-indigo {
+  --step-color: #6366f1;
+  --step-color-light: rgba(99, 102, 241, 0.04);
+  --step-color-glow: rgba(99, 102, 241, 0.16);
+}
+
+.step-teal {
+  --step-color: #14b8a6;
+  --step-color-light: rgba(20, 184, 166, 0.04);
+  --step-color-glow: rgba(20, 184, 166, 0.16);
+}
+
+.step-amber {
+  --step-color: #f59e0b;
+  --step-color-light: rgba(245, 158, 11, 0.04);
+  --step-color-glow: rgba(245, 158, 11, 0.16);
+}
+
+.step-purple {
+  --step-color: #8b5cf6;
+  --step-color-light: rgba(139, 92, 246, 0.04);
+  --step-color-glow: rgba(139, 92, 246, 0.16);
+}
+
+/* Process Section Container */
 .process-section-redesign {
   display: flex;
   flex-direction: column;
@@ -20,192 +44,6 @@
   max-width: 1100px;
   margin: 20px auto;
   position: relative;
-}
-
-/* Responsive Grid Row (Wavy Spine) */
-.step-row-responsive {
-  display: grid;
-  grid-template-columns: 1fr 100px 1fr;
-  align-items: center;
-  width: 100%;
-  height: 120px; /* Perfect square height on mobile */
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-@media (min-width: 768px) {
-  .step-row-responsive {
-    grid-template-columns: 1fr 160px 1fr;
-    height: 160px; /* Exact height for perfect curve connections on desktop */
-  }
-}
-
-/* Hover effects */
-.step-row-responsive:hover .text-box {
-  background: var(--step-color-light);
-  border-color: var(--step-color);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--step-color-glow);
-}
-
-.step-row-responsive:hover .text-box svg {
-  transform: scale(1.15);
-  filter: drop-shadow(0 2px 8px var(--step-color-glow));
-}
-
-/* Text box card styles */
-.text-box {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.015);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  width: 100%;
-  max-width: 420px;
-}
-
-.text-box svg {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
-}
-
-@media (min-width: 768px) {
-  .text-box {
-    padding: 16px 24px;
-    border-radius: 18px;
-  }
-}
-
-.text-box h4 {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--step-color);
-  margin-bottom: 2px;
-}
-
-@media (min-width: 768px) {
-  .text-box h4 {
-    font-size: 18px;
-    margin-bottom: 6px;
-  }
-}
-
-.text-box p {
-  font-size: 10.5px;
-  font-weight: 500;
-  color: #64748b;
-  line-height: 1.35;
-}
-
-@media (min-width: 768px) {
-  .text-box p {
-    font-size: 13.5px;
-    line-height: 1.5;
-  }
-}
-
-/* Alignments */
-.text-right-aligned {
-  text-align: right;
-  margin-left: auto;
-  margin-right: -15px;
-}
-
-@media (min-width: 768px) {
-  .text-right-aligned {
-    margin-right: -55px;
-  }
-}
-
-.text-left-aligned {
-  text-align: left;
-  margin-right: auto;
-  margin-left: -15px;
-}
-
-@media (min-width: 768px) {
-  .text-left-aligned {
-    margin-left: -55px;
-  }
-}
-
-/* Center column spine space */
-.spine-center {
-  width: 100px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-@media (min-width: 768px) {
-  .spine-center {
-    width: 160px;
-  }
-}
-
-/* Icon circle styling */
-.icon-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--step-color);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  flex-shrink: 0;
-  z-index: 10;
-}
-
-@media (min-width: 768px) {
-  .icon-circle {
-    width: 52px;
-    height: 52px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-  }
-}
-
-/* Horizontal line flex wrapper */
-.line-wrapper-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  height: 100%;
-  padding-left: 0;
-}
-
-.line-wrapper-left {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-  height: 100%;
-  padding-right: 0;
-}
-
-/* The actual connector line in the left/right column */
-.connector-line-flex {
-  height: 4px; /* Shorter/thinner line on mobile */
-  background: var(--step-color);
-  width: 30px; /* Perfectly aligns icons vertically */
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-  opacity: 0.9;
-}
-
-@media (min-width: 768px) {
-  .connector-line-flex {
-    height: 8px; /* Chunkier line on desktop */
-    width: 120px;
-  }
 }
 
 /* Header style redesign */
@@ -227,7 +65,7 @@
 
 .process-header-redesign .subtitle {
   font-family: "Space Grotesk", sans-serif;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 800;
   color: #2451D6;
   letter-spacing: 0.12em;
@@ -237,7 +75,7 @@
 
 @media (min-width: 768px) {
   .process-header-redesign .subtitle {
-    font-size: 24px;
+    font-size: 16px;
   }
 }
 
@@ -253,6 +91,238 @@
 
 @media (min-width: 768px) {
   .process-header-redesign .title {
-    font-size: 50px;
+    font-size: 48px;
   }
+}
+
+/* Grid container */
+.educators-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+@media (min-width: 640px) {
+  .educators-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .educators-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Individual card */
+.educator-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(226, 232, 240, 0.8);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.educator-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--step-color);
+  box-shadow: 0 16px 36px var(--step-color-glow);
+}
+
+.hollow-watermark {
+  font-size: 130px;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(100, 116, 139, 0.08);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  font-family: 'Space Grotesk', 'Outfit', sans-serif;
+  transition: -webkit-text-stroke 0.3s ease;
+}
+
+.educator-card:hover .hollow-watermark {
+  -webkit-text-stroke: 1.5px var(--step-color);
+}
+
+/* Text styles */
+.educator-card h4 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.educator-card:hover h4 {
+  color: var(--step-color);
+}
+
+.educator-card p {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Full-Width Curved Wave Timeline Animations
+   ========================================================================== */
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animated-wave-line {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: drawLine 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes pulseTravel {
+  0% {
+    stroke-dashoffset: 260;
+  }
+
+  100% {
+    stroke-dashoffset: -940;
+  }
+}
+
+.wave-glow-pulse {
+  stroke-dasharray: 60 200;
+  stroke-dashoffset: 260;
+  animation: pulseTravel 5s linear infinite;
+}
+
+@keyframes scaleInHexagon {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3) rotate(-30deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+}
+
+.animate-scale-in-hexagon {
+  opacity: 0;
+  animation: scaleInHexagon 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes fadeInUpCard {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.animate-fade-in-up-card {
+  opacity: 0;
+  animation: fadeInUpCard 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Pulsing background glow ring around hexagons for interactive feel */
+@keyframes hexagonPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 0 0 rgba(36, 81, 214, 0.2);
+  }
+
+  70% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0;
+    box-shadow: 0 0 0 15px rgba(36, 81, 214, 0);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0;
+  }
+}
+
+.hexagon-pulse-ring {
+  position: absolute;
+  z-index: 10;
+  width: 56px;
+  height: 56px;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: hexagonPulse 2.5s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Circular Flight Path Animations
+   ========================================================================== */
+
+@keyframes slowRotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating-orbit-circle {
+  transform-origin: center;
+  animation: slowRotate 50s linear infinite;
+}
+
+@keyframes floatArrow {
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateY(-6px) scale(1.03);
+  }
+}
+
+.floating-arrow {
+  animation: floatArrow 5s ease-in-out infinite;
+}
+
+@keyframes centerPulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(36, 81, 214, 0.15);
+  }
+
+  70% {
+    box-shadow: 0 0 0 25px rgba(36, 81, 214, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(36, 81, 214, 0);
+  }
+}
+
+.center-pulse-badge {
+  animation: centerPulseGlow 3.5s infinite ease-in-out;
 }

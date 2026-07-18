@@ -17,10 +17,39 @@ import CollegesPageClient from "@/components/landing/CollegesPageClient";
 export default function ForCreatorsPage() {
   const heroHeaderRef = React.useRef<HTMLDivElement>(null);
   const section2HeaderRef = React.useRef<HTMLDivElement>(null);
+  const timelineScrollRef = React.useRef<HTMLDivElement>(null);
+  const [animKey, setAnimKey] = React.useState(0);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimKey((prev) => prev + 1);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setAnimKey((prev) => prev + 1);
+          if (timelineScrollRef.current) {
+            timelineScrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (timelineScrollRef.current) {
+      observer.observe(timelineScrollRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const contributionSteps = [
     {
-      theme: "step-black",
+      theme: "step-blue",
       title: "Universities & Colleges",
       description: "Publish accredited academic programs, manage departments, and coordinate class semesters.",
       icon: School,
@@ -32,25 +61,25 @@ export default function ForCreatorsPage() {
       icon: Award,
     },
     {
-      theme: "step-black",
+      theme: "step-indigo",
       title: "Corporate Training Teams",
       description: "Onboard new employees, run skill assessments, and scale internal company training.",
       icon: Building,
     },
     {
-      theme: "step-green",
+      theme: "step-teal",
       title: "Nonprofits & Communities",
       description: "Deliver accessible public education, run social campaigns, and track community impact.",
       icon: HeartHandshake,
     },
     {
-      theme: "step-black",
+      theme: "step-amber",
       title: "Industry Experts & Consultants",
       description: "Monetize professional insights, build a personal brand, and host interactive workshops.",
       icon: UserCheck,
     },
     {
-      theme: "step-green",
+      theme: "step-purple",
       title: "Independent Content Creators",
       description: "Publish self-paced online courses, build online communities, and share learning resources.",
       icon: BookOpen,
@@ -165,7 +194,7 @@ export default function ForCreatorsPage() {
       <CollegesPageClient />
 
       {/* Hero Intro Header Section */}
-      <header ref={heroHeaderRef} className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-36 pb-16 text-center space-y-6 relative z-10" style={{ position: 'relative' }}>
+      <header ref={heroHeaderRef} className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-20 pb-6 text-center space-y-6 relative z-10" style={{ position: 'relative' }}>
         <h1 className="text-5xl sm:text-7xl text-slate-900 tracking-tight leading-[1.05] max-w-4xl mx-auto">
           <VariableProximity
             label="Built for Every Educator"
@@ -183,125 +212,137 @@ export default function ForCreatorsPage() {
       </header>
 
       {/* ── SECTION 1: Built for Every Educator ── */}
-      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-8 relative z-10">
+      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-0 pb-6 relative z-10">
 
-        {/* Process Infographic Container - Wrapped in a card box with gradient and glow effects */}
-        <div className="relative overflow-hidden max-w-[1020px] mx-auto rounded-[28px] p-[2px]" style={{ background: 'linear-gradient(135deg, #c7d7fa, #dbeafe, #e0f2fe, #d1fae5, #ede9fe)' }}>
-          <div className="relative bg-white/80 backdrop-blur-2xl rounded-[26px] p-6 sm:p-10 overflow-hidden">
-            {/* Decorative glow blobs */}
-            <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64 rounded-full opacity-35" style={{ background: 'radial-gradient(circle, #a5b4fc, transparent 70%)' }} />
-            <div className="pointer-events-none absolute -bottom-16 -right-16 w-64 h-64 rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #6ee7b7, transparent 70%)' }} />
+        {/* Workflow Timeline — Circular Flight Path Layout */}
+        <div className="relative w-full max-w-[960px] mx-auto select-none my-4">
 
-            {/* Redesigned Bold Section Header inside the card */}
-            <div className="process-header-redesign select-none">
-              <span className="subtitle">Who Can</span>
-              <h3 className="title">Contribute</h3>
+          {/* Desktop/Tablet Layout: Symmetrical Circular Timeline */}
+          <div className="hidden lg:block relative w-full h-[640px] z-10">
+            {/* Trajectory Dotted Circle */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 960 640">
+              <circle
+                cx="480"
+                cy="320"
+                r="185"
+                fill="none"
+                stroke="#2451D6"
+                strokeWidth="2"
+                strokeDasharray="6 6"
+                opacity="0.25"
+                className="rotating-orbit-circle"
+              />
+            </svg>
+
+            {/* Central Badge: "WHO CAN CONTRIBUTE" */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-52 h-52 rounded-full bg-white border border-slate-100/90 flex flex-col items-center justify-center text-center shadow-xl shadow-blue-500/5 p-6 center-pulse-badge">
+              <span className="text-[10px] font-black text-[#2451D6] block tracking-[0.25em] uppercase mb-1">WHO CAN</span>
+              <h3 className="text-2xl font-black text-slate-800 leading-tight font-space">CONTRIBUTE</h3>
+              <div className="w-8 h-[2px] bg-[#2451D6] mt-2 opacity-50" />
             </div>
 
-            {/* Redesigned Process Section Content */}
-            <div className="process-section-redesign relative z-10">
+            {/* 6 Circularly Mapped Arrow Steps */}
+            {[
+              { title: 'Universities & Colleges', desc: 'Publish academic programs and coordinate semesters.', color: '#3b82f6', colorLight: '#93c5fd', colorDark: '#1d4ed8', left: '50%', top: '21.1%', cardLeft: '50%', cardTop: '6%', arrowAngle: 90 },
+              { title: 'Training Bootcamps', desc: 'Host student cohorts and scale coding bootcamps.', color: '#10b981', colorLight: '#6ee7b7', colorDark: '#047857', left: '66.7%', top: '35.5%', cardLeft: '84.5%', cardTop: '35.5%', arrowAngle: 150 },
+              { title: 'Corporate Teams', desc: 'Onboard employees and scale company training.', color: '#6366f1', colorLight: '#a5b4fc', colorDark: '#4338ca', left: '66.7%', top: '64.5%', cardLeft: '84.5%', cardTop: '64.5%', arrowAngle: 210 },
+              { title: 'Nonprofits & Communities', desc: 'Deliver public education and track social impact.', color: '#14b8a6', colorLight: '#5eead4', colorDark: '#0f766e', left: '50%', top: '78.9%', cardLeft: '50%', cardTop: '94%', arrowAngle: 270 },
+              { title: 'Industry Experts', desc: 'Monetize insights and host interactive workshops.', color: '#f59e0b', colorLight: '#fcd34d', colorDark: '#b45309', left: '33.3%', top: '64.5%', cardLeft: '15.5%', cardTop: '64.5%', arrowAngle: 330 },
+              { title: 'Content Creators', desc: 'Publish courses and build online learning communities.', color: '#a855f7', colorLight: '#d8b4fe', colorDark: '#6b21a8', left: '33.3%', top: '35.5%', cardLeft: '15.5%', cardTop: '35.5%', arrowAngle: 30 }
+            ].map((node, idx) => {
+              return (
+                <div key={idx} className="group">
+                  {/* Floating 3D Arrow */}
+                  <div
+                    className="absolute z-20 transition-all duration-300 hover:scale-110 floating-arrow"
+                    style={{
+                      left: node.left,
+                      top: node.top,
+                      transform: 'translate(-50%, -50%)',
+                      animationDelay: `${idx * 0.6}s`
+                    }}
+                  >
+                    <svg
+                      width="70"
+                      height="70"
+                      viewBox="0 0 120 120"
+                      className="transition-transform duration-300 group-hover:-translate-y-1"
+                      style={{ transform: `rotate(${node.arrowAngle}deg)` }}
+                    >
+                      <defs>
+                        <linearGradient id={`arr-left-c-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor={node.color} />
+                          <stop offset="100%" stopColor={node.colorLight} />
+                        </linearGradient>
+                        <linearGradient id={`arr-right-c-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor={node.colorDark} />
+                          <stop offset="100%" stopColor={node.color} />
+                        </linearGradient>
+                      </defs>
+                      {/* Left side of stealth arrow */}
+                      <path d="M 60,15 L 20,90 L 60,70 Z" fill={`url(#arr-left-c-${idx})`} filter="drop-shadow(0 4px 6px rgba(0,0,0,0.12))" />
+                      {/* Right side of stealth arrow */}
+                      <path d="M 60,15 L 60,70 L 100,90 Z" fill={`url(#arr-right-c-${idx})`} filter="drop-shadow(0 4px 6px rgba(0,0,0,0.18))" />
+                    </svg>
+                  </div>
 
-              {/* INTERLOCKING SPINE LAYOUT (Visible on all viewports, scaling responsively) */}
-              <div className="flex flex-col w-full">
-                {contributionSteps.map((step, idx) => {
-                  const Icon = step.icon;
-                  const isLeftCurve = idx % 2 === 0;
-
-                  return (
-                    <div key={idx} className={`step-row-responsive ${step.theme}`}>
-                      {/* Left Column */}
-                      <div className="w-full h-full flex items-center justify-end">
-                        {!isLeftCurve ? (
-                          // Text box for right-curving steps (on the left side)
-                          <div className="text-box text-right-aligned">
-                            <div className="flex items-center justify-end gap-2.5 mb-2.5">
-                              <h4 className="font-bold">{step.title}</h4>
-                              <Icon className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" style={{ color: 'var(--step-color)' }} />
-                            </div>
-                            <p>{step.description}</p>
-                          </div>
-                        ) : (
-                          // Empty spacer for left-curving steps (text is on the right)
-                          <div className="w-full h-full" />
-                        )}
-                      </div>
-
-                      {/* Center Column: Road segment SVG */}
-                      <div className="spine-center">
-                        <svg
-                          width="100%"
-                          height="100%"
-                          viewBox="0 0 160 160"
-                          className="overflow-visible select-none pointer-events-none"
-                        >
-                          {/* Asphalt road surface (dark grey/slate) */}
-                          {isLeftCurve ? (
-                            <path
-                              d="M 80,0 A 80,80 0 0 0 80,160"
-                              fill="none"
-                              stroke="#1e293b"
-                              strokeWidth="32"
-                              strokeLinecap="butt"
-                            />
-                          ) : (
-                            <path
-                              d="M 80,0 A 80,80 0 0 1 80,160"
-                              fill="none"
-                              stroke="#1e293b"
-                              strokeWidth="32"
-                              strokeLinecap="butt"
-                            />
-                          )}
-
-                          {/* Dashed center line markings */}
-                          {isLeftCurve ? (
-                            <path
-                              d="M 80,0 A 80,80 0 0 0 80,160"
-                              fill="none"
-                              stroke="#ffffff"
-                              strokeWidth="2.5"
-                              strokeDasharray="12 8"
-                              strokeLinecap="round"
-                              opacity="0.85"
-                            />
-                          ) : (
-                            <path
-                              d="M 80,0 A 80,80 0 0 1 80,160"
-                              fill="none"
-                              stroke="#ffffff"
-                              strokeWidth="2.5"
-                              strokeDasharray="12 8"
-                              strokeLinecap="round"
-                              opacity="0.85"
-                            />
-                          )}
-                        </svg>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="w-full h-full flex items-center justify-start">
-                        {isLeftCurve ? (
-                          // Text box for left-curving steps (on the right side)
-                          <div className="text-box text-left-aligned">
-                            <div className="flex items-center gap-2.5 mb-2.5">
-                              <Icon className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" style={{ color: 'var(--step-color)' }} />
-                              <h4 className="font-bold">{step.title}</h4>
-                            </div>
-                            <p>{step.description}</p>
-                          </div>
-                        ) : (
-                          // Empty spacer for right-curving steps (text is on the left)
-                          <div className="w-full h-full" />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-            </div>
-
+                  {/* Description Card */}
+                  <div
+                    className="absolute z-10 w-56 text-center transition-all duration-300 group-hover:scale-[1.03]"
+                    style={{ left: node.cardLeft, top: node.cardTop, transform: 'translate(-50%, -50%)' }}
+                  >
+                    <h4 className="text-[16px] sm:text-[17px] font-black text-slate-800 mb-1.5" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>
+                      {node.title}
+                    </h4>
+                    <p className="text-[12px] sm:text-[13px] font-semibold text-slate-500 leading-normal" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>
+                      {node.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Mobile/Tablet Layout: Clean Vertical List of Arrows */}
+          <div className="lg:hidden flex flex-col gap-6 my-8 px-4">
+            {[
+              { title: 'Universities & Colleges', desc: 'Publish accredited academic programs, manage departments, and coordinate class semesters.', color: '#3b82f6', colorLight: '#93c5fd', colorDark: '#1d4ed8' },
+              { title: 'Training Bootcamps', desc: 'Host student cohorts and scale coding or technical bootcamps.', color: '#10b981', colorLight: '#6ee7b7', colorDark: '#047857' },
+              { title: 'Corporate Teams', desc: 'Onboard new employees, run skill assessments, and scale internal company training.', color: '#6366f1', colorLight: '#a5b4fc', colorDark: '#4338ca' },
+              { title: 'Nonprofits & Communities', desc: 'Deliver accessible public education, run social campaigns, and track community impact.', color: '#14b8a6', colorLight: '#5eead4', colorDark: '#0f766e' },
+              { title: 'Industry Experts', desc: 'Monetize professional insights, build a personal brand, and host interactive workshops.', color: '#f59e0b', colorLight: '#fcd34d', colorDark: '#b45309' },
+              { title: 'Content Creators', desc: 'Publish self-paced online courses, build online communities, and share learning resources.', color: '#a855f7', colorLight: '#d8b4fe', colorDark: '#6b21a8' }
+            ].map((node, idx) => (
+              <div key={idx} className="flex gap-5 items-center bg-white border border-slate-100 p-4.5 rounded-2xl shadow-sm">
+                <div className="flex-shrink-0">
+                  <svg
+                    width="54"
+                    height="54"
+                    viewBox="0 0 120 120"
+                    style={{ transform: 'rotate(40deg)' }}
+                  >
+                    <defs>
+                      <linearGradient id={`arr-left-mb-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor={node.color} />
+                        <stop offset="100%" stopColor={node.colorLight} />
+                      </linearGradient>
+                      <linearGradient id={`arr-right-mb-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor={node.colorDark} />
+                        <stop offset="100%" stopColor={node.color} />
+                      </linearGradient>
+                    </defs>
+                    <path d="M 60,15 L 20,90 L 60,70 Z" fill={`url(#arr-left-mb-${idx})`} />
+                    <path d="M 60,15 L 60,70 L 100,90 Z" fill={`url(#arr-right-mb-${idx})`} />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-[15.5px] sm:text-base font-black text-slate-800 font-space mb-0.5">{node.title}</h4>
+                  <p className="text-[12px] sm:text-[13px] font-semibold text-slate-400 leading-normal">{node.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
 
         {/* Closing Platform Statement Card */}
@@ -314,7 +355,7 @@ export default function ForCreatorsPage() {
       </section>
 
       {/* ── SECTION 2: Everything You Need in One Place ── */}
-      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-16 space-y-20 relative z-10">
+      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-0 pb-16 space-y-10 relative z-10">
 
         {/* Subsection Header */}
         <div ref={section2HeaderRef} className="text-center space-y-4 max-w-xl mx-auto" style={{ position: 'relative' }}>
@@ -334,94 +375,132 @@ export default function ForCreatorsPage() {
           </p>
         </div>
 
-        {/* Workflow Timeline — Horizontal Winding Road Design */}
-        <div className="relative overflow-hidden rounded-[28px] p-[1.5px]" style={{ background: 'linear-gradient(135deg, #c7d7fa 0%, #dbeafe 50%, #ede9fe 100%)' }}>
-          <div className="bg-white/80 backdrop-blur-xl rounded-[26px] px-8 sm:px-12 py-10 relative overflow-hidden">
+        {/* Workflow Timeline — Full-Width Curved Wave Timeline */}
+        <div ref={timelineScrollRef} className="w-screen relative left-1/2 right-1/2 -translate-x-1/2 overflow-x-auto pb-12 scrollbar-hide select-none my-8">
+          <div key={animKey} className="relative min-w-[1200px] h-[360px] w-full">
 
-            {/* Background blobs */}
-            <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #818cf8, transparent 70%)' }} />
-            <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #6ee7b7, transparent 70%)' }} />
+            {/* Background blobs inside timeline view */}
+            <div className="pointer-events-none absolute -top-12 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 right-1/4 w-72 h-72 rounded-full opacity-10 bg-emerald-300 blur-3xl" />
 
-            <span className="text-[10px] font-black text-[#2451D6] block tracking-[0.25em] uppercase mb-8 text-center">● CREATOR WORKFLOW LIFECYCLE ●</span>
-
-            {/* Road + cards layout */}
-            <div className="relative w-full" style={{ height: '320px' }}>
-
-              {/* SVG winding road */}
-              <svg
-                viewBox="0 0 1000 200"
-                preserveAspectRatio="none"
-                className="absolute inset-0 w-full"
-                style={{ height: '100%' }}
+            {/* SVG curve line stretching from X=0 to X=1200 */}
+            <svg
+              viewBox="0 0 1200 360"
+              preserveAspectRatio="none"
+              className="absolute inset-0 w-full h-full pointer-events-none z-0"
+            >
+              <defs>
+                <linearGradient id="wave-pulse-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#2451D6" stopOpacity="0" />
+                  <stop offset="50%" stopColor="#38bdf8" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {/* Soft glow shadow behind the line */}
+              <path
+                d="M 0,180 C 80,180 120,280 180,280 C 240,280 330,60 390,60 C 450,60 540,240 600,240 C 660,240 750,110 810,110 C 870,110 960,290 1020,290 C 1080,290 1120,190 1200,190"
+                stroke="rgba(36, 81, 214, 0.08)"
+                strokeWidth="10"
+                strokeLinecap="round"
                 fill="none"
-              >
-                {/* Dark road surface */}
-                <path
-                  d="M0,120 C80,120 120,60 200,80 C280,100 320,140 400,120 C480,100 520,60 600,80 C680,100 720,140 800,120 C880,100 920,60 1000,80"
-                  stroke="#1e293b"
-                  strokeWidth="28"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-                {/* Dashed center line */}
-                <path
-                  d="M0,120 C80,120 120,60 200,80 C280,100 320,140 400,120 C480,100 520,60 600,80 C680,100 720,140 800,120 C880,100 920,60 1000,80"
-                  stroke="white"
-                  strokeWidth="2.5"
-                  strokeDasharray="18 14"
-                  strokeLinecap="round"
-                  fill="none"
-                  opacity="0.7"
-                />
-                {/* Road edge lines */}
-                <path
-                  d="M0,120 C80,120 120,60 200,80 C280,100 320,140 400,120 C480,100 520,60 600,80 C680,100 720,140 800,120 C880,100 920,60 1000,80"
-                  stroke="white"
-                  strokeWidth="28"
-                  strokeLinecap="round"
-                  fill="none"
-                  opacity="0.05"
-                />
-              </svg>
+              />
+              {/* Primary wave line */}
+              <path
+                d="M 0,180 C 80,180 120,280 180,280 C 240,280 330,60 390,60 C 450,60 540,240 600,240 C 660,240 750,110 810,110 C 870,110 960,290 1020,290 C 1080,290 1120,190 1200,190"
+                stroke="#2451D6"
+                strokeWidth="4"
+                strokeLinecap="round"
+                fill="none"
+                className="animated-wave-line"
+              />
+              {/* Travelling light pulse along the wave */}
+              <path
+                d="M 0,180 C 80,180 120,280 180,280 C 240,280 330,60 390,60 C 450,60 540,240 600,240 C 660,240 750,110 810,110 C 870,110 960,290 1020,290 C 1080,290 1120,190 1200,190"
+                stroke="url(#wave-pulse-grad)"
+                strokeWidth="6"
+                strokeLinecap="round"
+                fill="none"
+                className="wave-glow-pulse"
+              />
+            </svg>
 
-              {/* Step nodes — positioned along the road path */}
-              {[
-                { left: '3%', top: '42%', cardTop: true, step: '01', title: 'Draft & Build', desc: 'Construct lessons and upload high-fidelity media.' },
-                { left: '23%', top: '22%', cardTop: false, step: '02', title: 'Collaborate', desc: 'Invite peers to co-author and refine learning goals.' },
-                { left: '43%', top: '42%', cardTop: true, step: '03', title: 'Assess', desc: 'Embed rich coding sandboxes and final quizzes.' },
-                { left: '63%', top: '22%', cardTop: false, step: '04', title: 'Publish', desc: 'Go live instantly on the Arcade global catalog.' },
-                { left: '83%', top: '42%', cardTop: true, step: '05', title: 'Analyze', desc: 'Review insights and optimize student engagement.' },
-              ].map((node, i) => (
-                <div
-                  key={i}
-                  className="absolute flex flex-col items-center"
-                  style={{ left: node.left, top: node.top, transform: 'translate(-50%, -50%)' }}
-                >
-                  {/* Card above the road */}
-                  {node.cardTop && (
-                    <div className="mb-2 bg-white border border-slate-200 rounded-2xl px-3 py-2.5 shadow-lg shadow-blue-100/50 w-36 text-center" style={{ marginBottom: '6px' }}>
-                      <h4 className="text-[11px] font-black text-slate-900 leading-tight" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>{node.title}</h4>
-                      <p className="text-[9px] text-slate-500 leading-tight mt-0.5" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>{node.desc}</p>
+            {/* Step elements mapped along the curve */}
+            {[
+              { step: '01', title: 'Draft & Build', desc: 'Construct lessons and upload high-fidelity media.', color: '#2451D6', left: '15%', nodeTop: '280px', cardTop: '95px', isLow: true, icon: Wrench },
+              { step: '02', title: 'Collaborate', desc: 'Invite peers to co-author and refine learning goals.', color: '#10B981', left: '32.5%', nodeTop: '60px', cardTop: '255px', isLow: false, icon: Users },
+              { step: '03', title: 'Assess', desc: 'Embed rich coding sandboxes and final quizzes.', color: '#6366F1', left: '50%', nodeTop: '240px', cardTop: '80px', isLow: true, icon: ClipboardCheck },
+              { step: '04', title: 'Publish', desc: 'Go live instantly on the Arcade global catalog.', color: '#14B8A6', left: '67.5%', nodeTop: '110px', cardTop: '275px', isLow: false, icon: Send },
+              { step: '05', title: 'Analyze', desc: 'Review insights and optimize student engagement.', color: '#F59E0B', left: '85%', nodeTop: '290px', cardTop: '100px', isLow: true, icon: BarChart3 },
+            ].map((node, idx) => {
+              const Icon = node.icon;
+              const nodeDelay = `${0.4 + idx * 0.35}s`;
+              const cardDelay = `${0.6 + idx * 0.35}s`;
+
+              return (
+                <div key={idx}>
+                  {/* Pulsing ring behind the Hexagon */}
+                  <div
+                    className="hexagon-pulse-ring"
+                    style={{
+                      left: node.left,
+                      top: node.nodeTop,
+                      animationDelay: nodeDelay,
+                    }}
+                  />
+
+                  {/* Hexagonal Node */}
+                  <div
+                    className="absolute z-20 animate-scale-in-hexagon"
+                    style={{
+                      left: node.left,
+                      top: node.nodeTop,
+                      transform: 'translate(-50%, -50%)',
+                      animationDelay: nodeDelay,
+                    }}
+                  >
+                    <div style={{ filter: 'drop-shadow(0 6px 16px rgba(36, 81, 214, 0.12))' }}>
+                      <div
+                        className="flex items-center justify-center w-14 h-14 bg-white border border-slate-100 transition-all duration-500 hover:scale-115 hover:bg-[#2451D6] hover:border-[#2451D6] hover:shadow-[0_0_20px_rgba(36,81,214,0.3)] group/hex"
+                        style={{
+                          clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+                        }}
+                      >
+                        <Icon className="w-5 h-5 text-[#2451D6] transition-colors duration-300 group-hover/hex:text-white" />
+                      </div>
                     </div>
-                  )}
-
-                  {/* Connector dot on road */}
-                  <div className={`relative z-20 flex items-center justify-center w-10 h-10 rounded-full border-3 shadow-lg shadow-blue-500/30 ${node.cardTop ? 'mt-0' : 'mb-0'}`}
-                    style={{ background: 'linear-gradient(135deg, #2451D6, #4f76e8)', border: '3px solid white' }}>
-                    <span className="text-[10px] font-black text-white">{node.step}</span>
                   </div>
 
-                  {/* Card below the road */}
-                  {!node.cardTop && (
-                    <div className="mt-2 bg-white border border-slate-200 rounded-2xl px-3 py-2.5 shadow-lg shadow-blue-100/50 w-36 text-center" style={{ marginTop: '6px' }}>
-                      <h4 className="text-[11px] font-black text-slate-900 leading-tight" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>{node.title}</h4>
-                      <p className="text-[9px] text-slate-500 leading-tight mt-0.5" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>{node.desc}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  {/* Watermarked Text Card */}
+                  <div
+                    className="absolute z-10 w-64 text-center animate-fade-in-up-card group/card"
+                    style={{
+                      left: node.left,
+                      top: node.cardTop,
+                      transform: 'translate(-50%, -50%)',
+                      animationDelay: cardDelay,
+                    }}
+                  >
+                    {/* Watermark Number */}
+                    <span
+                      className="absolute text-[110px] font-black text-slate-100/70 select-none z-0 pointer-events-none leading-none -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 transition-all duration-500 ease-out group-hover/card:scale-110 group-hover/card:-translate-y-[60%] group-hover/card:text-blue-500/10"
+                      style={{ fontFamily: '"Space Grotesk", sans-serif' }}
+                    >
+                      {idx + 1}
+                    </span>
 
-            </div>
+                    {/* Content */}
+                    <div className="relative z-10 p-2 transition-all duration-300 group-hover/card:-translate-y-1">
+                      <h4 className="text-[17px] sm:text-[18px] font-black text-slate-800 mb-1.5 transition-colors duration-300 group-hover/card:text-[#2451D6]" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>
+                        {node.title}
+                      </h4>
+                      <p className="text-[13px] sm:text-[14px] font-semibold text-slate-500 leading-normal" style={{ fontFamily: 'Voyage, "Playfair", Georgia, serif' }}>
+                        {node.desc}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
           </div>
         </div>
