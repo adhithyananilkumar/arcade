@@ -256,3 +256,26 @@
     width: 100%;
   }
 }
+
+/* Giant display watermark styling in the footer (Laravel Style) */
+.arc-footer__watermark {
+  position: absolute;
+  bottom: -40px;
+  /* Overlaps bottom margin edge slightly */
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(120px, 20vw, 290px);
+  color: rgba(20, 23, 31, 0.08);
+  /* Increased brand watermark visibility */
+  letter-spacing: -0.03em;
+  user-select: none;
+  pointer-events: none;
+  z-index: 1;
+  text-align: center;
+  line-height: 0.8;
+  width: 100%;
+  white-space: nowrap;
+}

@@ -32,7 +32,10 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Step 1: Profile & Username
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState(() => {
+    const initial = user?.username || '';
+    return initial.toLowerCase().replace(/[^a-z0-9]/g, '');
+  });
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
@@ -50,8 +53,8 @@ export default function OnboardingPage() {
     { value: 'prefer-not-to-say', label: 'Prefer not to say' }
   ];
   const [address, setAddress] = useState(user?.address || '');
-  const [socialLink1, setSocialLink1] = useState(user?.socialLinks?.[0] || '');
-  const [socialLink2, setSocialLink2] = useState(user?.socialLinks?.[1] || '');
+  const [socialLink1, setSocialLink1] = useState(user?.linkedinUrl || user?.socialLinks?.[0] || '');
+  const [socialLink2, setSocialLink2] = useState(user?.githubUrl || user?.socialLinks?.[1] || '');
   const [preferences, setPreferences] = useState<string[]>(user?.preferences || []);
   
   const getAvatarUrl = (url?: string) => {
@@ -134,8 +137,6 @@ export default function OnboardingPage() {
         uploadedAvatarUrl = avatarRes.data.avatarUrl;
       }
 
-      const socialLinks = [socialLink1, socialLink2].filter(link => link.trim() !== '');
-      
       const payload = {
         firstName,
         lastName,
@@ -144,7 +145,8 @@ export default function OnboardingPage() {
         mobileNumber,
         gender,
         address,
-        socialLinks,
+        linkedinUrl: socialLink1.trim() || undefined,
+        githubUrl: socialLink2.trim() || undefined,
         preferences,
         onboardingCompleted: true
       };

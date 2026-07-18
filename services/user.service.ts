@@ -68,6 +68,11 @@ export class UserService {
     return data;
   }
 
+  static async enrollInCourse(courseId: string): Promise<User> {
+    const { data } = await apiClient.post<User>(`/users/me/enrollments/${courseId}`);
+    return data;
+  }
+
   static async acceptContentCreatorInvite(): Promise<void> {
     await apiClient.post('/content-creators/accept');
   }

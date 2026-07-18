@@ -71,7 +71,12 @@ export default function CourseShowcase() {
             </div>
 
             {/* Play Button Overlay */}
-            <button className="l-showcase__play-btn" aria-label="Play video">
+            <button
+              type="button"
+              className="l-showcase__play-btn"
+              aria-label="Play video"
+              suppressHydrationWarning
+            >
               <Play size={24} fill="#ffffff" style={{ marginLeft: "4px" }} />
             </button>
 

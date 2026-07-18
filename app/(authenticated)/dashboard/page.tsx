@@ -3,6 +3,10 @@
 import { useAuthStore } from '@/store/auth.store';
 import { motion, Variants } from 'framer-motion';
 import { Search, Star, Clock, BookOpen, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import type { CourseResponse } from '@/types/api';
+import Link from 'next/link';
 import DashboardLoading from './loading';
 
 const containerVariants: Variants = {
@@ -15,47 +19,21 @@ const containerVariants: Variants = {
   }
 };
 
-const MOCK_COURSES = [
-  {
-    id: 1,
-    title: 'Advanced React & Next.js Patterns',
-    instructor: 'Sarah Drasner',
-    rating: 4.9,
-    reviews: 1240,
-    price: '$49.99',
-    duration: '12h 30m',
-    lessons: 48,
-    image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80',
-    badge: 'Bestseller'
-  },
-  {
-    id: 2,
-    title: 'UI/UX Design for Developers',
-    instructor: 'Gary Simon',
-    rating: 4.8,
-    reviews: 850,
-    price: '$39.99',
-    duration: '8h 15m',
-    lessons: 32,
-    image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80',
-    badge: 'New'
-  },
-  {
-    id: 3,
-    title: 'Mastering Python Data Science',
-    instructor: 'Jose Portilla',
-    rating: 4.7,
-    reviews: 3100,
-    price: '$59.99',
-    duration: '22h 45m',
-    lessons: 104,
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80',
-    badge: 'Highest Rated'
-  }
-];
-
 export default function DashboardPage() {
   const { user, status } = useAuthStore();
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .get<CourseResponse[]>("/api/v1/public/courses")
+      .then((data) => {
+        // Only show published courses on the dashboard
+        setCourses(data.filter(c => c.status === 'PUBLISHED' || c.status === 'APPROVED' || c.status === 'SUBMITTED' || c.status === 'DRAFT'));
+      })
+      .catch(() => setCourses([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (status === 'loading' || !user) return <DashboardLoading />;
 
@@ -148,58 +126,77 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_COURSES.map((course) => (
-            <div key={course.id} className="group bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-900/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
-              <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-neutral-900">
-                <img 
-                  src={course.image} 
-                  alt={course.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-neutral-200 shadow-sm border border-transparent dark:border-neutral-800">
-                  {course.badge}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden h-[340px] animate-pulse">
+                <div className="h-48 bg-slate-200 dark:bg-neutral-800 w-full" />
+                <div className="p-5">
+                  <div className="h-4 bg-slate-200 dark:bg-neutral-800 rounded w-3/4 mb-3" />
+                  <div className="h-3 bg-slate-200 dark:bg-neutral-800 rounded w-1/2" />
                 </div>
               </div>
-              
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
-                  {course.title}
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">{course.instructor}</p>
-                
-                <div className="flex items-center gap-1 mb-4">
-                  <span className="text-sm font-bold text-amber-500">{course.rating}</span>
-                  <div className="flex items-center text-amber-500">
-                    {[1,2,3,4,5].map(star => (
-                      <Star key={star} size={14} className={star <= Math.floor(course.rating) ? "fill-current" : "text-slate-300 dark:text-neutral-700"} />
-                    ))}
-                  </div>
-                  <span className="text-xs text-slate-400 dark:text-neutral-500 ml-1">({course.reviews.toLocaleString()})</span>
-                </div>
-                
-                <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400 mb-4 mt-auto">
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={14} className="text-indigo-400 dark:text-indigo-500" />
-                    <span>{course.duration}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <BookOpen size={14} className="text-indigo-400 dark:text-indigo-500" />
-                    <span>{course.lessons} lessons</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-neutral-800">
-                  <span className="text-xl font-extrabold text-slate-900 dark:text-white">{course.price}</span>
-                  <button className="px-4 py-2 bg-slate-100 dark:bg-neutral-900 hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:text-white text-slate-800 dark:text-neutral-200 text-sm font-bold rounded-lg transition-colors border border-transparent dark:border-neutral-800 dark:hover:border-transparent">
-                    Enroll Now
-                  </button>
-                </div>
-              </div>
+            ))}
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-900 mb-4">
+              <BookOpen size={32} className="text-slate-400 dark:text-neutral-500" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No courses available</h3>
+            <p className="text-slate-500 dark:text-neutral-400">There are no courses published yet. Check back later!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course) => (
+              <Link href={`/dashboard/${course.id}`} key={course.id} className="group bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-900/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-neutral-900">
+                  <img 
+                    src={course.coverImageUrl || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80"} 
+                    alt={course.title} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  {course.status === 'PUBLISHED' && (
+                    <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-neutral-200 shadow-sm border border-transparent dark:border-neutral-800">
+                      Published
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-5 flex flex-col flex-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">{course.authorName || 'Unknown Instructor'}</p>
+                  
+                  <div className="flex items-center gap-1 mb-4">
+                    <span className="text-sm font-bold text-amber-500">4.8</span>
+                    <div className="flex items-center text-amber-500">
+                      {[1,2,3,4,5].map(star => (
+                        <Star key={star} size={14} className={star <= 4 ? "fill-current" : "text-slate-300 dark:text-neutral-700"} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-slate-400 dark:text-neutral-500 ml-1">(1,240)</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400 mb-4 mt-auto">
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={14} className="text-indigo-400 dark:text-indigo-500" />
+                      <span>{course.description ? "Detailed" : "Self-paced"}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <BookOpen size={14} className="text-indigo-400 dark:text-indigo-500" />
+                      <span>{course.modules ? course.modules.length : 0} modules</span>
+                    </div>
+                  </div>
+                  
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );
 }
+
