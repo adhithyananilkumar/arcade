@@ -155,7 +155,7 @@ export function ForumLayout({ children }: Props) {
           ) : (
             <>
               <Link
-                href={`/login?returnTo=${encodeURIComponent(
+                href={`/sign?returnTo=${encodeURIComponent(
                   typeof window !== 'undefined' ? window.location.pathname : '/forum'
                 )}`}
                 style={{

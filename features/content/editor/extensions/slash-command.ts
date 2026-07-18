@@ -31,9 +31,18 @@ const suggestion: Omit<SuggestionOptions<BlockCommand>, "editor"> = {
   render: () => {
     let component: ReactRenderer<SlashCommandMenuRef> | null = null;
     let popup: HTMLDivElement | null = null;
+    let currentClientRect: (() => DOMRect | null) | null | undefined = null;
+
+    // The editor usually sits inside a scrollable panel, not the window itself. `scroll`
+    // doesn't bubble, but ancestors still receive it in the capture phase, so a single
+    // window-level capture listener catches scrolling on any nested container.
+    const reposition = () => {
+      if (popup) positionPopup(popup, currentClientRect);
+    };
 
     return {
       onStart: (props) => {
+        currentClientRect = props.clientRect;
         component = new ReactRenderer(SlashCommandMenu, {
           props,
           editor: props.editor,
@@ -43,8 +52,11 @@ const suggestion: Omit<SuggestionOptions<BlockCommand>, "editor"> = {
         popup.appendChild(component.element);
         document.body.appendChild(popup);
         positionPopup(popup, props.clientRect);
+        window.addEventListener("scroll", reposition, true);
+        window.addEventListener("resize", reposition);
       },
       onUpdate: (props) => {
+        currentClientRect = props.clientRect;
         component?.updateProps(props);
         if (popup) {
           popup.style.display = "";
@@ -59,10 +71,13 @@ const suggestion: Omit<SuggestionOptions<BlockCommand>, "editor"> = {
         return component?.ref?.onKeyDown(props.event) ?? false;
       },
       onExit: () => {
+        window.removeEventListener("scroll", reposition, true);
+        window.removeEventListener("resize", reposition);
         popup?.remove();
         component?.destroy();
         popup = null;
         component = null;
+        currentClientRect = null;
       },
     };
   },

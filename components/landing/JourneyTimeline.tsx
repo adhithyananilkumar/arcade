@@ -2,155 +2,131 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Play } from "lucide-react";
 import "./JourneyTimeline.css";
 
 /* ─── Course data ────────────────────────────────────────────────── */
 interface Course {
-  title: string;
+  id: string;
+  title: string;          // The title in the white section
   author: string;
   duration: string;
-  dept: string;
-  accent: string;
-  accentLight: string;
-  cover: string;       // local /courses/x.png
-  videoId: string;     // YouTube ID for click-to-play
+  rating: number;
+  reviewsCount: number;
+  
+  // Card Figure Properties
+  cardTitle: string;      // Title inside the image
+  cardSub: string;        // Subtitle/tagline inside the image
+  cardTextColor: string;  // Color of the text inside the image
+  cardAccentColor: string; // Color for rating star and borders
+  description: string;    // Description of the course (shown on active card)
+  badgeText?: string;     // "Top Rated"
+  
+  // Solid theme color for the bottom split background
+  cardBg: string;
+  
+  // Image path and YouTube video ID for the course display
+  imagePath: string;
+  youtubeId: string;
 }
 
 const COURSES: Course[] = [
   {
-    title: "React Mastery",
-    author: "Arjun Menon",
-    duration: "8.5 hrs",
-    dept: "Computer Science",
-    accent: "#2451D6",
-    accentLight: "rgba(36,81,214,0.06)",
-    cover: "/courses/react.png",
-    videoId: "w7ejDZ8SWv8",
+    id: "uiux",
+    title: "UI/UX Design Masterclass",
+    author: "Dr. Neha Kapoor",
+    duration: "5.2 hrs",
+    rating: 4.6,
+    reviewsCount: 120,
+    cardTitle: "UI/UX Design",
+    cardSub: "Learn prototyping, research, and wireframing.",
+    cardTextColor: "#FFFFFF",
+    cardAccentColor: "#8B5CF6",
+    cardBg: "#8C7CA8", // Muted purple matching uiux.png
+    description: "Master the art of user interface and user experience design. Learn prototyping, user research, wireframing, and interactive design in Figma.",
+    imagePath: "/courses/uiux.png",
+    youtubeId: "Hcqbo-M_9ow"
   },
   {
-    title: "UI/UX Fundamentals",
-    author: "Sarah Mathew",
-    duration: "6 hrs",
-    dept: "Design",
-    accent: "#9b5de5",
-    accentLight: "rgba(155,93,229,0.06)",
-    cover: "/courses/uiux.png",
-    videoId: "c9Wg6Cb_YlU",
-  },
-  {
-    title: "CAD & SolidWorks Basics",
-    author: "Prof. John Kurian",
-    duration: "7.5 hrs",
-    dept: "Mechanical",
-    accent: "#e07b39",
-    accentLight: "rgba(224,123,57,0.06)",
-    cover: "/courses/cad.png",
-    videoId: "A_mFQKFavCI",
-  },
-  {
-    title: "Financial Modelling 101",
-    author: "Neha Jacob",
-    duration: "5 hrs",
-    dept: "Business",
-    accent: "#1db876",
-    accentLight: "rgba(29,184,118,0.06)",
-    cover: "/courses/finance.png",
-    videoId: "a2aYAMNH1jU",
-  },
-  {
+    id: "pm",
     title: "Intro to Product Management",
     author: "Kiran Pillai",
-    duration: "4.5 hrs",
-    dept: "Product",
-    accent: "#0d9488",
-    accentLight: "rgba(13,148,136,0.06)",
-    cover: "/courses/pm.png",
-    videoId: "hgSt3bBYUxU",
+    duration: "4.8 hrs",
+    rating: 4.7,
+    reviewsCount: 96,
+    cardTitle: "PRODUCT MANAGEMENT",
+    cardSub: "Think like a PM",
+    cardTextColor: "#FFFFFF",
+    cardAccentColor: "#10B981",
+    cardBg: "#7D938B", // Muted green matching pm.png
+    description: "Master the product lifecycle: research user needs, write PRDs, manage launch roadmaps, design MVPs, and align engineering with business goals.",
+    imagePath: "/courses/pm.png",
+    youtubeId: "5P2nL3nKcfc"
   },
   {
+    id: "bio",
     title: "Intro to Bioinformatics",
     author: "Dr. Laya Suresh",
     duration: "6.5 hrs",
-    dept: "Biotechnology",
-    accent: "#d4537e",
-    accentLight: "rgba(212,83,126,0.06)",
-    cover: "/courses/bio.png",
-    videoId: "JBNU1G8YNnE",
+    rating: 4.8,
+    reviewsCount: 210,
+    cardTitle: "Bioinformatics",
+    cardSub: "Biology meets data",
+    cardTextColor: "#FFFFFF",
+    cardAccentColor: "#EC4899",
+    cardBg: "#180510", // Dark purple/black matching bio.png
+    description: "Explore the intersection of biology and data science. Learn how to collect, analyze, and interpret biological data using computational tools.",
+    badgeText: "Top Rated",
+    imagePath: "/courses/bio.png",
+    youtubeId: "c0Uep35VvH0"
   },
   {
+    id: "node",
     title: "Node.js & Backend APIs",
     author: "Rahul Dev",
-    duration: "9 hrs",
-    dept: "Computer Science",
-    accent: "#b45309",
-    accentLight: "rgba(180,83,9,0.06)",
-    cover: "/courses/node.png",
-    videoId: "fBNz5xF-Kx4",
+    duration: "5.6 hrs",
+    rating: 4.5,
+    reviewsCount: 88,
+    cardTitle: "Node.js & Backend APIs",
+    cardSub: "Build fast, scalable backend APIs.",
+    cardTextColor: "#FFFFFF",
+    cardAccentColor: "#D97706",
+    cardBg: "#8A7769", // Muted brown matching node.png
+    description: "Build fast, scalable backend services. Learn RESTful routing, Express middleware, authentication, database integrations, and API testing.",
+    imagePath: "/courses/node.png",
+    youtubeId: "yEHCfGv0mYM"
   },
+  {
+    id: "react",
+    title: "React Development",
+    author: "Anita Verma",
+    duration: "4.3 hrs",
+    rating: 4.4,
+    reviewsCount: 72,
+    cardTitle: "React Development",
+    cardSub: "Build responsive, dynamic interfaces.",
+    cardTextColor: "#FFFFFF",
+    cardAccentColor: "#2563EB",
+    cardBg: "#4F5660", // Dark slate grey matching react.png
+    description: "Build responsive, dynamic user interfaces. Learn hooks, state management, routing, component lifecycles, and modern React workflows.",
+    imagePath: "/courses/react.png",
+    youtubeId: "M988_fsOSxo"
+  }
 ];
 
+// Re-enable cycle loops to guarantee that there are ALWAYS two cards on each side of the active card
 const VIRTUAL_COURSES = [...COURSES, ...COURSES, ...COURSES];
 
-const AUTO_DURATION = 5000;
-const PAUSE_DURATION = 8000;
+const AUTO_DURATION = 6000;
+const PAUSE_DURATION = 10000;
 
-const CARD_WIDTH = 290;
+// Dynamic sizing and uniform spacing
 const CARD_GAP = 20;
-
-/* ── Course figure with click-to-play video ── */
-function CourseFigure({ course, isActive }: { course: Course; isActive: boolean }) {
-  const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    if (!isActive) {
-      setPlaying(false);
-      return;
-    }
-    // Automatically play the video after a short delay (once slide transition finishes)
-    const timer = setTimeout(() => {
-      setPlaying(true);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [isActive]);
-
-  return (
-    <div
-      className="jt-course__figure"
-      style={{ backgroundImage: `url(${course.cover})` }}
-    >
-      {playing ? (
-        <iframe
-          className="jt-course__iframe"
-          src={`https://www.youtube.com/embed/${course.videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${course.videoId}&rel=0&modestbranding=1`}
-          title={course.title}
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-        />
-      ) : (
-        <>
-          {/* Play button */}
-          <button
-            className="jt-course__play"
-            onClick={() => setPlaying(true)}
-            aria-label={`Play ${course.title}`}
-          >
-            <Play size={20} fill="#ffffff" strokeWidth={0} />
-          </button>
-          {/* Dept label */}
-          <span className="jt-course__fig-dept" style={{ color: course.accent }}>
-            {course.dept}
-          </span>
-        </>
-      )}
-    </div>
-  );
-}
 
 export default function JourneyTimeline() {
   const prefersReducedMotion = useReducedMotion();
-  const [index, setIndex] = useState(COURSES.length);
+  
+  // Set initial index to point to Bioinformatics in the middle cycle (index 7)
+  const [index, setIndex] = useState(COURSES.length + 2);
   const [isResetting, setIsResetting] = useState(false);
   const active = index % COURSES.length;
 
@@ -202,13 +178,28 @@ export default function JourneyTimeline() {
     return () => { if (frameRef.current !== null) cancelAnimationFrame(frameRef.current); };
   }, []);
 
+  // Helper to determine exact width of any card in the slider dynamically
+  const getCardWidth = (cardIdx: number, activeIdx: number) => {
+    if (cardIdx === activeIdx) return 360;
+    if (Math.abs(cardIdx - activeIdx) === 1) return 250;
+    return 195; // Both outer side cards are the smallest (195px width)
+  };
 
+  // Compute precise track translation dynamically to center the active card perfectly
+  const getTrackTranslation = () => {
+    let offset = 0;
+    for (let i = 0; i < index; i++) {
+      offset += getCardWidth(i, index) + CARD_GAP;
+    }
+    offset += getCardWidth(index, index) / 2;
+    return -offset; // Pure pixel number
+  };
 
   return (
     <section className="jt-section">
       <div className="jt-container">
 
-        {/* Header */}
+        {/* Header - Subtitle / Description completely removed */}
         <motion.div
           className="jt-header"
           initial={{ opacity: 0, y: 20 }}
@@ -217,108 +208,203 @@ export default function JourneyTimeline() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           <h2 className="jt-title">Top Rated Courses</h2>
-          <p className="jt-description">
-            Handpicked by the Arcade team. Updated every semester.
-          </p>
         </motion.div>
-        {/* Carousel */}
+
+        {/* Carousel Stage */}
         <div className="jt-stage">
           <motion.div
             className="jt-track"
-            animate={{ x: -index * (CARD_WIDTH + CARD_GAP) }}
+            animate={{ x: getTrackTranslation() }} // Moves track dynamically
             transition={
               isResetting
                 ? { type: "tween", duration: 0 }
-                : { type: "spring", stiffness: 90, damping: 20 }
+                : { type: "tween", duration: 1.5, ease: [0.25, 1, 0.3, 1] } // Very smooth, slow glide over 1.5 seconds
             }
             onAnimationComplete={handleAnimationComplete}
-            style={{
-              "--card-width": `${CARD_WIDTH}px`,
-              "--card-gap": `${CARD_GAP}px`,
-            } as React.CSSProperties}
           >
             {VIRTUAL_COURSES.map((course, idx) => {
-              const realIdx = idx % COURSES.length;
               const isActive = idx === index;
               const offset = idx - index;
-              const isVisible = Math.abs(offset) <= 3;
+              const isAdjacent = Math.abs(offset) === 1;
+              const isVisible = Math.abs(offset) <= 2;
+
+              // Base layouts sizes
+              const cardWidth = isActive ? 360 : (isAdjacent ? 250 : 195);
+              const cardHeight = isActive ? 460 : (isAdjacent ? 330 : 260);
+              
+              // Central active card sits lower to form overlapping baseline,
+              // while tops slope down to form a clean triangle peak shape
+              const cardY = isActive ? 35 : 0;
 
               return (
                 <motion.div
-                  key={`${idx}-${course.title}`}
-                  className={`jt-card ${isActive ? "jt-card--active" : "jt-card--side"}`}
+                  key={idx} // Stable layout key prevents DOM rebuilds and iframe reloads
+                  className={`jt-card ${isActive ? "jt-card--active" : "jt-card--side"} ${isAdjacent ? "jt-card--adjacent" : "jt-card--outer"}`}
                   style={{
-                    "--accent": course.accent,
-                    "--accent-light": course.accentLight,
+                    "--accent": course.cardAccentColor,
+                    pointerEvents: isVisible ? "auto" : "none", // Prevent clicks on hidden cards
                   } as React.CSSProperties}
                   animate={
                     prefersReducedMotion
                       ? { opacity: isActive ? 1 : 0.4 }
                       : {
-                          scale: isActive ? 1.06 : 0.88,
+                          width: cardWidth,
+                          height: cardHeight,
+                          y: cardY,
                           opacity: isActive
                             ? 1
                             : isVisible
-                            ? Math.max(0.05, 0.55 - Math.abs(offset) * 0.15)
-                            : 0,
+                            ? (isAdjacent ? 0.7 : 0.45) // Dimmable side card opacities
+                            : 0, // Cards beyond offset ±2 are fully invisible (removed from display)
                         }
                   }
-                  transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+                  // Small hover scale popup effect using Framer Motion
                   whileHover={
-                    !prefersReducedMotion && isActive
-                      ? { scale: 1.09 }
-                      : undefined
+                    prefersReducedMotion || !isVisible
+                      ? {}
+                      : {
+                          scale: 1.025,
+                          transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] }
+                        }
                   }
+                  transition={{ duration: 1.5, ease: [0.25, 1, 0.3, 1] }} // Synchronized with track horizontal slide duration (1.5 seconds)
                   onClick={() => !isActive && goTo(idx, true)}
                 >
-                  {/* Active Card Content */}
-                  <motion.div
-                    className="jt-course"
-                    initial={false}
-                    animate={{ opacity: isActive ? 1 : 0, pointerEvents: isActive ? "auto" : "none" }}
-                    transition={{ duration: 0.6 }}
+                  
+                  {/* 1. TOP IMAGE/VIDEO FIGURE (Unified DOM nodes prevent unmounting & reload flicker) */}
+                  <div 
+                    className="jt-card__figure"
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
+                      height: isActive ? "52%" : "68%",
+                      transition: "height 1.5s cubic-bezier(0.25, 1, 0.3, 1)",
                     }}
                   >
-                    <CourseFigure course={course} isActive={isActive} />
-                    <div className="jt-course__info">
-                      <h3 className="jt-course__title">{course.title}</h3>
-                      <div className="jt-course__meta">
-                        <span className="jt-course__author">{course.author}</span>
-                        <span className="jt-course__sep">·</span>
-                        <span className="jt-course__duration">{course.duration}</span>
+                    {/* Fallback/Behind Background Image that zooms on hover */}
+                    <div 
+                      className="jt-card__figure-bg"
+                      style={{
+                        backgroundImage: `url(${course.imagePath})`,
+                      }}
+                    />
+
+                    {/* YouTube IFrame Player (Only mounted when active to prevent browser autoplay blocks on low-opacity iframes) */}
+                    {isActive && (
+                      <iframe
+                        className="jt-card__video"
+                        src={`https://www.youtube.com/embed/${course.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${course.youtubeId}&controls=0&playsinline=1&rel=0&showinfo=0&modestbranding=1&enablejsapi=1`}
+                        title={course.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        style={{
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          width: "140%",
+                          height: "140%",
+                          transform: "translate(-50%, -50%)",
+                          pointerEvents: "none",
+                          border: "none",
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
+                    
+                    {/* Dark Overlay for title readability */}
+                    <div 
+                      className="jt-card__video-overlay"
+                      style={{
+                        opacity: isActive ? 1 : 0.15,
+                        transition: "opacity 1.5s cubic-bezier(0.25, 1, 0.3, 1)",
+                        zIndex: 2,
+                      }}
+                    />
+
+                    {/* Top badge: Rating star and number removed in case of central card */}
+                    {course.badgeText && isActive && (
+                      <div className="jt-card__badge" style={{ zIndex: 10 }}>
+                        {course.badgeText}
+                      </div>
+                    )}
+
+                    {/* Big Branding Text inside Figure (only shown for active video view) */}
+                    <div 
+                      className="jt-card__figure-content"
+                      style={{
+                        opacity: isActive ? 1 : 0,
+                        transform: isActive ? "translateY(0)" : "translateY(10px)",
+                        transition: "opacity 1s ease, transform 1s ease",
+                        zIndex: 5,
+                      }}
+                    >
+                      <h4 className="jt-card__figure-title">
+                        {course.cardTitle}
+                      </h4>
+                      {course.cardSub && (
+                        <p className="jt-card__figure-sub">
+                          {course.cardSub}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 2. BOTTOM DETAILS SECTION (Unified container transitions bg & layouts smoothly) */}
+                  <div 
+                    className="jt-card__bottom-container"
+                    style={{
+                      height: isActive ? "48%" : "32%",
+                      transition: "height 1.5s cubic-bezier(0.25, 1, 0.3, 1), background 1.5s ease",
+                      position: "relative",
+                      background: isActive ? "#ffffff" : course.cardBg,
+                      zIndex: 3,
+                    }}
+                  >
+                    {/* Active Bottom Content (Fades in when active) */}
+                    <div 
+                      className="jt-card__info"
+                      style={{
+                        opacity: isActive ? 1 : 0,
+                        pointerEvents: isActive ? "auto" : "none",
+                        transition: "opacity 1s ease",
+                      }}
+                    >
+                      <h3 className="jt-card__info-title">{course.title}</h3>
+                      
+                      <div className="jt-card__info-meta">
+                        <span className="jt-card__info-author">{course.author}</span>
+                        <span className="jt-card__info-sep">•</span>
+                        <span className="jt-card__info-duration">{course.duration}</span>
+                      </div>
+
+                      {/* Detailed course description paragraph */}
+                      <p className="jt-card__info-desc">{course.description}</p>
+
+                      {/* Reviews Line */}
+                      <div className="jt-card__info-reviews">
+                        <span className="jt-card__info-star" style={{ color: course.cardAccentColor }}>★</span>
+                        <span className="jt-card__info-rating">{course.rating}</span>
+                        <span className="jt-card__info-count">({course.reviewsCount})</span>
                       </div>
                     </div>
-                  </motion.div>
 
-                  {/* Side Card Content */}
-                  <motion.div
-                    className="jt-side-course"
-                    initial={false}
-                    animate={{ opacity: isActive ? 0 : 1, pointerEvents: isActive ? "none" : "auto" }}
-                    transition={{ duration: 0.6 }}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                    }}
-                  >
-                    <div
-                      className="jt-side-course__fig"
-                      style={{ backgroundImage: `url(${course.cover})` }}
-                    />
-                    <div
-                      className="jt-side-course__overlay"
-                      style={{ background: `linear-gradient(to top, ${course.accent}ee 0%, ${course.accent}44 50%, transparent 100%)` }}
-                    />
-                    <div className="jt-side-course__info">
-                      <p className="jt-side-course__title">{course.title}</p>
-                      <p className="jt-side-course__author">{course.author}</p>
+                    {/* Side Bottom Content (Fades in when side card) */}
+                    <div 
+                      className="jt-side-info-bottom"
+                      style={{
+                        opacity: isActive ? 0 : 1,
+                        pointerEvents: isActive ? "none" : "auto",
+                        transition: "opacity 1s ease",
+                      }}
+                    >
+                      <h5 className="jt-side-card-title">
+                        {course.title}
+                      </h5>
+                      <div className="jt-side-meta">
+                        <span>{course.author}</span>
+                      </div>
                     </div>
-                  </motion.div>
+                  </div>
+
                 </motion.div>
               );
             })}

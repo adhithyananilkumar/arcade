@@ -1,6 +1,6 @@
 /* ─── Custom Fonts ─────────────────────────────────────────────────── */
 @import url("https://fonts.cdnfonts.com/css/latin-modern-roman");
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap");
 
 /* ─── Landing Design Tokens ────────────────────────────────────────── */
 :root {
@@ -1112,4 +1112,47 @@
     width: 100%;
     text-align: center;
   }
+}
+
+/* Explore Section Outlined Button */
+.explore-register-btn {
+  background: transparent;
+  color: var(--btn-primary);
+  border: 1px solid var(--btn-primary);
+  padding: 3px 11px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.explore-register-btn:hover {
+  background: var(--btn-primary);
+  color: #FFFFFF !important;
+}
+
+/* Explore Webinar Outlined Button */
+.lp-webinar-btn {
+  background: transparent;
+  color: var(--cta-bg);
+  border: 1px solid var(--cta-bg);
+  padding: 7px 17px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  text-align: center;
+}
+
+.lp-webinar-btn:hover {
+  background: var(--cta-bg);
+  color: #FFFFFF !important;
+  box-shadow: var(--cta-shadow);
 }

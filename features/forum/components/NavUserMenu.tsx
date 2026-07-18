@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut, User, FileText, ChevronDown } from 'lucide-react';
+import { LogOut, User, FileText, ChevronDown, BookOpen } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { UserAvatar } from './UserAvatar';
 import { AuthService } from '@/services/auth.service';
@@ -139,6 +139,30 @@ export function NavUserMenu() {
 
             {/* Menu items */}
             <div style={{ padding: '4px 0' }}>
+              <Link
+                href="/dashboard/my-courses"
+                onClick={() => setOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '9px 16px',
+                  fontSize: 13,
+                  color: 'var(--text-primary)',
+                  textDecoration: 'none',
+                  transition: 'background 0.12s',
+                }}
+                onMouseEnter={(e) =>
+                  ((e.currentTarget as HTMLAnchorElement).style.backgroundColor =
+                    'var(--surface)')
+                }
+                onMouseLeave={(e) =>
+                  ((e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent')
+                }
+              >
+                <BookOpen size={14} color="var(--text-muted)" />
+                My courses
+              </Link>
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}

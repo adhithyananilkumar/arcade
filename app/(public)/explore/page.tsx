@@ -3,12 +3,11 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import HeroNav from "@/components/landing/HeroNav";
 import GradientText from "@/components/landing/GradientText";
 import Link from "next/link";
 import "@/styles/landing.css";
 
-const CATEGORY_DATA: Record<string, {
+export const CATEGORY_DATA: Record<string, {
   desc: string;
   coursesCount: number;
   gradient: string;
@@ -195,7 +194,7 @@ const CATEGORY_DATA: Record<string, {
   }
 };
 
-const categoriesList = Object.keys(CATEGORY_DATA);
+export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
 const WEBINARS_DATA = [
@@ -218,7 +217,7 @@ const ILLUSTRATION_BGS: Record<string, string> = {
   "Personal Development": "#65A30D" // Solid vibrant lime
 };
 
-function CategoryWatermark({ category, color }: { category: string; color: string }) {
+export function CategoryWatermark({ category, color }: { category: string; color: string }) {
   const style = {
     position: "absolute" as const,
     bottom: "-8px",
@@ -1024,7 +1023,7 @@ function CoursesContent() {
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
-    router.push(`/explore?category=${encodeURIComponent(category)}`);
+    router.push(`/courses?category=${encodeURIComponent(category)}`);
   };
 
   const handleGoBackToExplore = () => {
@@ -1052,7 +1051,6 @@ function CoursesContent() {
           fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
         }}
       >
-        <HeroNav />
 
         {/* Dynamic Category View (Full Screen Layout) */}
         <main
@@ -1184,12 +1182,8 @@ function CoursesContent() {
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
                 {activeData.courses.map((course) => (
-                  <Link
-                    key={course.title}
-                    href={`/courses/${encodeURIComponent(course.title.toLowerCase().replace(/\s+/g, '-'))}`}
-                    style={{ textDecoration: "none" }}
-                  >
                   <div
+                    key={course.title}
                     style={{
                       background: "#FFFFFF",
                       border: "1px solid #E5E7EB",
@@ -1199,11 +1193,8 @@ function CoursesContent() {
                       flexDirection: "column",
                       justifyContent: "space-between",
                       minHeight: "180px",
-                      cursor: "pointer",
-                      transition: "box-shadow 0.2s ease, transform 0.2s ease"
+                      cursor: "default"
                     }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px -4px rgba(0,0,0,0.12)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}
                   >
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
@@ -1219,11 +1210,10 @@ function CoursesContent() {
                         {course.desc}
                       </p>
                     </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "6px" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary }}>Preview Course →</span>
+                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#6B7280" }}>Syllabus Available</span>
                     </div>
                   </div>
-                  </Link>
                 ))}
               </div>
             </div>
@@ -1238,9 +1228,9 @@ function CoursesContent() {
                   <div
                     key={bootcamp.title}
                     style={{
-                      background: "linear-gradient(135deg, #FFFFFF 85%, #F5F3FF 100%)",
+                      background: `linear-gradient(135deg, #FFFFFF 85%, ${activeData.colors.secondary} 100%)`,
                       border: "1px solid #E5E7EB",
-                      borderLeft: "5px solid #8B5CF6",
+                      borderLeft: `5px solid ${activeData.colors.primary}`,
                       borderRadius: "10px",
                       padding: "16px 20px",
                       display: "flex",
@@ -1250,29 +1240,25 @@ function CoursesContent() {
                       overflow: "hidden"
                     }}
                   >
-                    <CategoryWatermark category={activeCategory} color="#8B5CF6" />
+                    <CategoryWatermark category={activeCategory} color={activeData.colors.primary} />
                     <div style={{ position: "relative", zIndex: 1 }}>
                       <div style={{ fontSize: "0.95rem", fontWeight: "700", color: "#000000" }}>{bootcamp.title}</div>
                       <div style={{ fontSize: "0.8rem", color: "#6B7280", marginTop: "2px" }}>
                         {bootcamp.type} • {bootcamp.duration}
                       </div>
                     </div>
-                    <span
+                    <Link
+                      href="/login"
+                      className="explore-register-btn"
                       style={{
-                        background: "#8B5CF6",
-                        color: "#FFFFFF",
-                        border: "none",
-                        padding: "4px 12px",
-                        borderRadius: "6px",
-                        fontSize: "0.8rem",
-                        fontWeight: "700",
-                        cursor: "default",
+                        "--btn-primary": activeData.colors.primary,
+                        "--btn-secondary": activeData.colors.secondary,
                         position: "relative",
                         zIndex: 1
-                      }}
+                      } as React.CSSProperties}
                     >
                       Register
-                    </span>
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -1368,7 +1354,6 @@ function CoursesContent() {
           animation: tabContentEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
       `}</style>
-      <HeroNav />
 
       {/* Spacer to prevent banner content/diagonal background from sliding under the fixed header navigation bar */}
       <div style={{ height: "64px" }} />
@@ -1461,31 +1446,51 @@ function CoursesContent() {
         >
           {/* Card: Courses */}
           <motion.div
-          onClick={() => handleTabSwitch("courses")}
-            whileHover={{ rotate: 0, y: -6, scale: 1.01 }}
+            onClick={() => handleTabSwitch("courses")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "courses" ? 1.03 : 0.97,
+              opacity: activeTab === "courses" ? 1 : 0.7,
+              rotate: activeTab === "courses" ? -1.5 : 0
+            }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: "#FFFFFF",
-              border: activeTab === "courses" ? "2px solid #4B6189" : "2px solid #1A1A1A",
+              background: activeTab === "courses" ? "#EFF6FF" : "#FFFFFF",
+              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "courses" ? "6px 6px 0px #4B6189" : "6px 6px 0px #1A1A1A",
-              rotate: "-1.5deg",
+              boxShadow: activeTab === "courses" ? "8px 8px 0px #3B82F6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              transition: "box-shadow 0.3s, border-color 0.3s"
+              zIndex: activeTab === "courses" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
             <div>
-              <div style={{ fontSize: "0.68rem", fontWeight: "800", color: "#6B7280", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "courses" ? "#2563EB" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
                 01 // SELF-PACED
               </div>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1A1A1A", margin: "0 0 8px", lineHeight: "1.2" }}>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "courses" ? "#1E40AF" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
                 Self-Paced Courses
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
@@ -1493,52 +1498,78 @@ function CoursesContent() {
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
-            <div style={{ width: "100%", height: "65px" }}>
+            <motion.div
+              animate={{
+                scale: activeTab === "courses" ? 1.15 : 1,
+                y: activeTab === "courses" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <rect x="36" y="36" width="88" height="48" rx="4" fill="none" stroke="#1A1A1A" strokeWidth="1.5" />
-                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinejoin="round" />
-                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke="#1A1A1A" strokeWidth="1.5" />
-                <line x1="44" y1="44" x2="72" y2="44" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <line x1="44" y1="52" x2="88" y2="52" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <line x1="44" y1="60" x2="64" y2="60" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <line x1="52" y1="68" x2="96" y2="68" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <line x1="52" y1="76" x2="80" y2="76" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 12,28 Q 20,20 18,12" stroke="#4B6189" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                <circle cx="140" cy="24" r="3" fill="#4B6189" />
-                <circle cx="148" cy="40" r="1.5" fill="#4B6189" />
+                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <rect x="36" y="36" width="88" height="48" rx="4" fill={activeTab === "courses" ? "rgba(59, 130, 246, 0.05)" : "none"} stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="44" x2="72" y2="44" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 4, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="52" x2="88" y2="52" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 6, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="60" x2="64" y2="60" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -3, 3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="68" x2="96" y2="68" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 5, 0] } : {}} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="76" x2="80" y2="76" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -2, 2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <path d="M 12,28 Q 20,20 18,12" stroke={activeTab === "courses" ? "#3B82F6" : "#4B6189"} strokeWidth="1.5" strokeLinecap="round" fill="none" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="140" cy="24" r="3" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.4, 1] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "fill 0.3s" }} />
+                <motion.circle cx="148" cy="40" r="1.5" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.6, 1] } : {}} transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "fill 0.3s" }} />
               </svg>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Card: Bootcamps */}
           <motion.div
-          onClick={() => handleTabSwitch("bootcamps")}
-            whileHover={{ y: -6, scale: 1.01 }}
+            onClick={() => handleTabSwitch("bootcamps")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "bootcamps" ? 1.03 : 0.97,
+              opacity: activeTab === "bootcamps" ? 1 : 0.7,
+              rotate: activeTab === "bootcamps" ? 0.5 : 0
+            }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: "#FFFFFF",
-              border: activeTab === "bootcamps" ? "2px solid #4B6189" : "2px solid #1A1A1A",
+              background: activeTab === "bootcamps" ? "#F5F3FF" : "#FFFFFF",
+              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "bootcamps" ? "6px 6px 0px #4B6189" : "6px 6px 0px #1A1A1A",
-              rotate: "0deg",
-              marginTop: "8px",
+              boxShadow: activeTab === "bootcamps" ? "8px 8px 0px #8B5CF6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              transition: "box-shadow 0.3s, border-color 0.3s"
+              zIndex: activeTab === "bootcamps" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
             <div>
-              <div style={{ fontSize: "0.68rem", fontWeight: "800", color: "#6B7280", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "bootcamps" ? "#7C3AED" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
                 02 // INTERACTIVE
               </div>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1A1A1A", margin: "0 0 8px", lineHeight: "1.2" }}>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "bootcamps" ? "#5B21B6" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
                 Workshops & Bootcamps
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
@@ -1546,51 +1577,78 @@ function CoursesContent() {
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
-            <div style={{ width: "100%", height: "65px" }}>
+            <motion.div
+              animate={{
+                scale: activeTab === "bootcamps" ? 1.15 : 1,
+                y: activeTab === "bootcamps" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="25" y="85" width="22" height="20" rx="3" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <rect x="47" y="65" width="22" height="40" rx="3" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <rect x="69" y="45" width="22" height="60" rx="3" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <rect x="91" y="25" width="22" height="80" rx="3" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill="none" stroke="#4B6189" strokeWidth="1.5" strokeLinejoin="round" />
-                <circle cx="58" cy="28" r="7" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M 102,15 L 108,24" stroke="#1A1A1A" strokeWidth="1.5" />
-                <path d="M 55,50 L 48,65" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 60,51 L 69,45" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
+                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "bootcamps" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
+                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
               </svg>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Card: Webinars */}
           <motion.div
-          onClick={() => handleTabSwitch("webinars")}
-            whileHover={{ rotate: 0, y: -6, scale: 1.01 }}
+            onClick={() => handleTabSwitch("webinars")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "webinars" ? 1.03 : 0.97,
+              opacity: activeTab === "webinars" ? 1 : 0.7,
+              rotate: activeTab === "webinars" ? 1.5 : 0
+            }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: "#FFFFFF",
-              border: activeTab === "webinars" ? "2px solid #4B6189" : "2px solid #1A1A1A",
+              background: activeTab === "webinars" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "webinars" ? "3px solid #0A1931" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "webinars" ? "6px 6px 0px #4B6189" : "6px 6px 0px #1A1A1A",
-              rotate: "1.5deg",
+              boxShadow: activeTab === "webinars" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              transition: "box-shadow 0.3s, border-color 0.3s"
+              zIndex: activeTab === "webinars" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
             <div>
-              <div style={{ fontSize: "0.68rem", fontWeight: "800", color: "#6B7280", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "webinars" ? "#1E3A8A" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
                 03 // EXPERT LED
               </div>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1A1A1A", margin: "0 0 8px", lineHeight: "1.2" }}>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "webinars" ? "#0F172A" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
                 Expert Webinars
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
@@ -1598,25 +1656,34 @@ function CoursesContent() {
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
-            <div style={{ width: "100%", height: "65px" }}>
+            <motion.div
+              animate={{
+                scale: activeTab === "webinars" ? 1.15 : 1,
+                y: activeTab === "webinars" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <circle cx="45" cy="40" r="7" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <path d="M 45,47 L 45,75" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 45,55 L 30,65" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 45,52 L 65,38" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 45,75 L 35,95" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 45,75 L 55,95" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="115" cy="40" r="7" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-                <path d="M 115,47 L 115,75" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 115,52 L 95,38" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 115,55 L 130,65" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 115,75 L 105,95" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 115,75 L 125,95" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 80,30 L 80,24" stroke="#4B6189" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 75,34 L 69,30" stroke="#4B6189" strokeWidth="2" strokeLinecap="round" />
-                <path d="M 85,34 L 91,30" stroke="#4B6189" strokeWidth="2" strokeLinecap="round" />
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
               </svg>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
 
@@ -1701,24 +1768,6 @@ function CoursesContent() {
               </svg>
             </button>
           )}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              background: isSearchFocused ? "rgba(59, 130, 246, 0.08)" : "#F3F4F6",
-              padding: "6px 12px",
-              borderRadius: "8px",
-              fontSize: "0.75rem",
-              color: isSearchFocused ? "#4B6189" : "#6B7280",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              transition: "all 0.3s ease"
-            }}
-          >
-            {activeTab}
-          </div>
         </div>
 
         {/* Tab content panels — ref used for auto-scroll on tab switch */}
@@ -1726,294 +1775,284 @@ function CoursesContent() {
           ref={contentRef}
           style={{ scrollMarginTop: "100px" }}
         >
-        {activeTab === "courses" && (
-          <div className="tab-content-panel">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-              {categoriesList
-                .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((cat) => {
-                  const data = CATEGORY_DATA[cat];
-                  return (
-                    <div
-                      key={cat}
-                      onClick={() => handleCategorySwitch(cat)}
-                      style={{
-                        position: "relative",
-                        borderRadius: "16px",
-                        background: "#FFFFFF",
-                        border: "1px solid #E5E7EB",
-                        overflow: "hidden",
-                        minHeight: "380px",
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        // Pass color parameters to static CSS variables for hover effects
-                        ["--hover-color" as any]: data.colors.primary,
-                        ["--hover-shadow" as any]: `${data.colors.primary}2A`, // with 16% opacity (Hex 2A)
-                      }}
-                      className="lp-category-card"
-                    >
-                      {/* Top Illustration Header */}
+          {activeTab === "courses" && (
+            <div className="tab-content-panel">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+                {categoriesList
+                  .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((cat) => {
+                    const data = CATEGORY_DATA[cat];
+                    return (
                       <div
+                        key={cat}
+                        onClick={() => handleCategorySwitch(cat)}
                         style={{
-                          height: "160px",
-                          width: "100%",
-                          background: "#F8FAFC", // soft light slate background for illustration
-                          borderBottom: "1px solid #F1F5F9",
                           position: "relative",
+                          borderRadius: "16px",
+                          background: "#FFFFFF",
+                          border: "1px solid #E5E7EB",
+                          overflow: "hidden",
+                          minHeight: "380px",
+                          cursor: "pointer",
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          flexDirection: "column",
+                          // Pass color parameters to static CSS variables for hover effects
+                          ["--hover-color" as any]: data.colors.primary,
+                          ["--hover-shadow" as any]: `${data.colors.primary}2A`, // with 16% opacity (Hex 2A)
+                        }}
+                        className="lp-category-card"
+                      >
+                        {/* Top Illustration Header */}
+                        <div
+                          style={{
+                            height: "160px",
+                            width: "100%",
+                            background: "#F8FAFC", // soft light slate background for illustration
+                            borderBottom: "1px solid #F1F5F9",
+                            position: "relative",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            overflow: "hidden"
+                          }}
+                        >
+                          <CategoryHeaderIllustration category={cat} />
+                        </div>
+
+                        {/* Card Content Section */}
+                        <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          <div>
+                            {/* Title and Pill Row */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
+                              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
+                                {cat}
+                              </h3>
+                            </div>
+
+                            <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 24px" }}>
+                              {data.desc}
+                            </p>
+                          </div>
+
+                          {/* Card Bottom Row with Explore text and simple arrow */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
+                              Explore Category
+                            </span>
+                            <svg
+                              className="lp-category-card-arrow"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#9CA3AF"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              style={{ transition: "all 0.3s ease" }}
+                            >
+                              <line x1="5" y1="12" x2="19" y2="12" />
+                              <polyline points="12 5 19 12 12 19" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+
+          {/* 2. BOOTCAMPS TAB CONTENT */}
+          {activeTab === "bootcamps" && (
+            <div className="tab-content-panel">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+                {categoriesList.flatMap(cat => {
+                  const data = CATEGORY_DATA[cat];
+                  return data.bootcamps.map(bootcamp => ({ ...bootcamp, cat, colors: data.colors }));
+                })
+                  .filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .slice(0, 6)
+                  .map((b, i) => {
+                    const cardColorPattern = [
+                      { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" }, // Purple (CS)
+                      { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },  // Blue (IT/Maths)
+                      { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },  // Green (Pers. Dev)
+                      { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" }, // Pink (AI)
+                      { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },  // Amber/Orange (Business)
+                      { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" }   // Teal (Sciences)
+                    ];
+                    const cardColors = cardColorPattern[i % cardColorPattern.length];
+
+                    const watermarkCat = [
+                      "Computer Science",
+                      "Information Technology",
+                      "Basic Sciences",
+                      "Artificial Intelligence",
+                      "Business & Management",
+                      "Personal Development"
+                    ][i % 6];
+
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          background: `linear-gradient(135deg, #FFFFFF 60%, ${cardColors.secondary} 100%)`,
+                          border: "1px solid #E5E7EB",
+                          borderLeft: `6px solid ${cardColors.primary}`,
+                          borderRadius: "16px",
+                          padding: "28px",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          minHeight: "220px",
+                          cursor: "default",
+                          position: "relative",
                           overflow: "hidden"
                         }}
                       >
-                        <CategoryHeaderIllustration category={cat} />
-                      </div>
-
-                      {/* Card Content Section */}
-                      <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                        <div>
-                          {/* Title and Pill Row */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                            <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
-                              {cat}
-                            </h3>
-                            <span style={{ flexShrink: 0, fontSize: "0.75rem", fontWeight: "700", color: data.colors.primary, background: data.colors.secondary, padding: "4px 10px", borderRadius: "20px", border: "1px solid rgba(0,0,0,0.02)" }}>
-                              {data.coursesCount} Courses
-                            </span>
+                        <CategoryWatermark category={watermarkCat} color={cardColors.primary} />
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "14px" }}>
+                            <span style={{ fontSize: "0.75rem", color: "#6B7280", fontWeight: "600" }}>{b.duration}</span>
                           </div>
-
-                          <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 24px" }}>
-                            {data.desc}
+                          <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
+                            {b.title}
+                          </h3>
+                          <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: "0 0 16px" }}>
+                            {b.desc}
                           </p>
                         </div>
-
-                        {/* Card Bottom Row with Explore text and simple arrow */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
-                            Explore Category
-                          </span>
-                          <svg
-                            className="lp-category-card-arrow"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#9CA3AF"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            style={{ transition: "all 0.3s ease" }}
-                          >
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-
-        {/* 2. BOOTCAMPS TAB CONTENT */}
-        {activeTab === "bootcamps" && (
-          <div className="tab-content-panel">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-              {categoriesList.flatMap(cat => {
-                const data = CATEGORY_DATA[cat];
-                return data.bootcamps.map(bootcamp => ({ ...bootcamp, cat, colors: data.colors }));
-              })
-                .filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                .slice(0, 6)
-                .map((b, i) => {
-                  const watermarkCat = [
-                    "Computer Science",
-                    "Information Technology",
-                    "Basic Sciences",
-                    "Artificial Intelligence",
-                    "Business & Management",
-                    "Personal Development"
-                  ][i % 6];
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        background: "linear-gradient(135deg, #FFFFFF 60%, #EFF6FF 100%)",
-                        border: "1px solid #E5E7EB",
-                        borderLeft: "6px solid #4B6189",
-                        borderRadius: "16px",
-                        padding: "28px",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        minHeight: "220px",
-                        cursor: "default",
-                        position: "relative",
-                        overflow: "hidden"
-                      }}
-                    >
-                      <CategoryWatermark category={watermarkCat} color="#4B6189" />
-                      <div style={{ position: "relative", zIndex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "14px" }}>
-                          <span style={{ fontSize: "0.75rem", color: "#6B7280", fontWeight: "600" }}>{b.duration}</span>
-                        </div>
-                        <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                          {b.title}
-                        </h3>
-                        <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: "0 0 16px" }}>
-                          {b.desc}
-                        </p>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", paddingTop: "14px", position: "relative", zIndex: 1 }}>
-                        <span
-                          style={{
-                            background: "#4B6189",
-                            color: "#FFFFFF",
-                            border: "none",
-                            padding: "4px 12px",
-                            borderRadius: "6px",
-                            fontSize: "0.8rem",
-                            fontWeight: "700",
-                            cursor: "default"
-                          }}
-                        >
-                          Register
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-
-        {/* 3. WEBINARS TAB CONTENT */}
-        {activeTab === "webinars" && (
-          <div className="tab-content-panel">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-              {WEBINARS_DATA
-                .filter(w => w.title.toLowerCase().includes(searchQuery.toLowerCase()) || w.category.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((w, i) => {
-                  const isLive = w.status === "Live Today";
-                  const isUpcoming = w.status === "Upcoming";
-                  const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#4B6189");
-                  const ctaColor = "#FFFFFF";
-                  const ctaHoverBg = isLive ? "#DC2626" : (isUpcoming ? "#D97706" : "#3A5075");
-                  const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#4B6189")}30`;
-
-                  const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#4B6189");
-                  const statusBg = isLive ? "#FEE2E2" : (isUpcoming ? "#FEF3C7" : "#EFF3FA");
-                  const statusText = isLive ? "LIVE TODAY" : (isUpcoming ? "UPCOMING" : "RECORDED");
-
-                  const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#2E3F5C");
-
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        background: "#FFFFFF",
-                        border: "1px solid #E5E7EB",
-                        borderRadius: "20px",
-                        display: "flex",
-                        flexDirection: "column",
-                        position: "relative",
-                        overflow: "hidden",
-                        boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
-                      }}
-                      className="lp-webinar-card"
-                    >
-                      {/* Custom Topic Themed Header Graphic */}
-                      <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
-
-                      {/* Card Content Body */}
-                      <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                        <div>
-                          {/* Upper category and status row */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                            <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                              {w.category} • {w.duration.toUpperCase()}
-                            </span>
-                            <span style={{ fontSize: "0.68rem", fontWeight: "800", color: statusColor, background: statusBg, padding: "4px 10px", borderRadius: "6px", letterSpacing: "0.02em" }}>
-                              {statusText}
-                            </span>
-                          </div>
-
-                          {/* Webinar Title */}
-                          <h3
+                        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", paddingTop: "14px", position: "relative", zIndex: 1 }}>
+                          <Link
+                            href="/login"
+                            className="explore-register-btn"
                             style={{
-                              fontSize: "1.1rem",
-                              fontWeight: "800",
-                              color: titleColor,
-                              marginBottom: "16px",
-                              lineHeight: "1.4",
-                              minHeight: "56px",
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              letterSpacing: "-0.01em"
-                            }}
+                              "--btn-primary": cardColors.primary,
+                              "--btn-secondary": cardColors.secondary
+                            } as React.CSSProperties}
                           >
-                            {w.title}
-                          </h3>
-
-                          {/* Host Details */}
-                          <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                              <circle cx="12" cy="7" r="4" />
-                            </svg>
-                            <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
-                          </div>
+                            Register
+                          </Link>
                         </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
 
-                        {/* Calendar timeline and Button row */}
-                        <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                <line x1="16" y1="2" x2="16" y2="6" />
-                                <line x1="8" y1="2" x2="8" y2="6" />
-                                <line x1="3" y1="10" x2="21" y2="10" />
-                              </svg>
-                              <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
-                                {w.date}
+          {/* 3. WEBINARS TAB CONTENT */}
+          {activeTab === "webinars" && (
+            <div className="tab-content-panel">
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+                {WEBINARS_DATA
+                  .filter(w => w.title.toLowerCase().includes(searchQuery.toLowerCase()) || w.category.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((w, i) => {
+                    const isLive = w.status === "Live Today";
+                    const isUpcoming = w.status === "Upcoming";
+                    const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
+                    const ctaColor = "#FFFFFF";
+                    const ctaHoverBg = isLive ? "#DC2626" : (isUpcoming ? "#D97706" : "#15305B");
+                    const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
+
+                    const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
+                    const statusBg = isLive ? "#FEE2E2" : (isUpcoming ? "#FEF3C7" : "#EFF4FC");
+                    const statusText = isLive ? "LIVE TODAY" : (isUpcoming ? "UPCOMING" : "RECORDED");
+
+                    const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
+
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          background: "#FFFFFF",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "20px",
+                          display: "flex",
+                          flexDirection: "column",
+                          position: "relative",
+                          overflow: "hidden",
+                          boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
+                        }}
+                        className="lp-webinar-card"
+                      >
+                        {/* Custom Topic Themed Header Graphic */}
+                        <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
+
+                        {/* Card Content Body */}
+                        <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          <div>
+                            {/* Upper category and status row */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                              <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                {w.category} • {w.duration.toUpperCase()}
                               </span>
                             </div>
 
-                            <span
+                            {/* Webinar Title */}
+                            <h3
                               style={{
-                                background: ctaBg,
-                                color: ctaColor,
-                                padding: "8px 18px",
-                                borderRadius: "8px",
-                                fontSize: "0.82rem",
+                                fontSize: "1.1rem",
                                 fontWeight: "800",
-                                cursor: "pointer",
-                                boxShadow: ctaShadow
-                              }}
-                              className="lp-webinar-btn"
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.background = ctaHoverBg;
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.background = ctaBg;
+                                color: titleColor,
+                                marginBottom: "16px",
+                                lineHeight: "1.4",
+                                minHeight: "56px",
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                letterSpacing: "-0.01em"
                               }}
                             >
-                              {isLive ? "Join Broadcast" : (isUpcoming ? "Save Seat" : "Watch Video")}
-                            </span>
+                              {w.title}
+                            </h3>
+
+                            {/* Host Details */}
+                            <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                              </svg>
+                              <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
+                            </div>
+                          </div>
+
+                          {/* Calendar timeline and Button row */}
+                          <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
+                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                  <line x1="16" y1="2" x2="16" y2="6" />
+                                  <line x1="8" y1="2" x2="8" y2="6" />
+                                  <line x1="3" y1="10" x2="21" y2="10" />
+                                </svg>
+                                <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
+                                  {w.date}
+                                </span>
+                              </div>
+
+                              <Link
+                                href="/login"
+                                className="lp-webinar-btn"
+                                style={{
+                                  "--cta-bg": ctaBg,
+                                  "--cta-shadow": ctaShadow
+                                } as React.CSSProperties}
+                              >
+                                {isLive ? "Join Broadcast" : (isUpcoming ? "Save Seat" : "Watch Video")}
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>{/* end contentRef wrapper */}
       </main>
     </div>

@@ -20,9 +20,9 @@ import {
   Code2,
   Minus,
   Image as ImageIcon,
-  Map,
   type LucideIcon,
 } from "lucide-react";
+import { getBlockDefinitions } from "../../blocks/registry";
 
 export interface BlockCommand {
   /** Stable id, used as React key and for equality checks. */
@@ -172,21 +172,11 @@ export function getBlockCommands(): BlockCommand[] {
         at(editor, range).setYoutubeVideo({ src: url }).run();
       },
     },
-    {
-      id: "roadmap",
-      title: "Roadmap",
-      description: "Embed a learning roadmap",
-      icon: Map,
-      keywords: ["roadmap", "path", "map"],
-      run: (editor, range) => {
-        const id =
-          window.prompt("Enter roadmap ID (or leave blank for demo):") ||
-          "00000000-0000-0000-0000-000000000000";
-        at(editor, range)
-          .insertContent({ type: "roadmap", attrs: { roadmapId: id } })
-          .run();
-      },
-    },
+    // ── Registry-backed blocks (button, toggle, callout, roadmap, …) ────────
+    // Defined once per block in features/content/blocks/<name>/index.ts — see registry.ts.
+    ...getBlockDefinitions()
+      .map((b) => b.command)
+      .filter((c): c is BlockCommand => Boolean(c)),
   ];
 }
 

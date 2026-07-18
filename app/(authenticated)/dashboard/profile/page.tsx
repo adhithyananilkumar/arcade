@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
 import { UserService } from '@/services/user.service';
 import { toast } from 'sonner';
@@ -24,7 +25,10 @@ const badges = [
   { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500 dark:text-orange-400', fill: 'fill-orange-50 dark:fill-orange-500/20', stroke: 'stroke-orange-200 dark:stroke-orange-500/30' },
 ];
 
-export default function ProfilePage() {
+function ProfilePageContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  
   const { user, updateUser } = useAuthStore();
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +38,12 @@ export default function ProfilePage() {
   
   // Sub Navigation Active Tab
   const [activeTab, setActiveTab] = useState<'courses' | 'enrolled' | 'certificates'>('courses');
+  
+  useEffect(() => {
+    if (tabParam === 'enrolled' || tabParam === 'courses' || tabParam === 'certificates') {
+      setActiveTab(tabParam as any);
+    }
+  }, [tabParam]);
   
   // Edit Profile Modal States
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -1063,5 +1073,13 @@ export default function ProfilePage() {
       </AnimatePresence>
 
     </motion.div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-600" /></div>}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

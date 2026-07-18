@@ -21,7 +21,7 @@ import { Youtube } from "@tiptap/extension-youtube";
 import { Focus } from "@tiptap/extensions";
 import { createLowlight, common } from "lowlight";
 import type * as Y from "yjs";
-import { RoadmapNode } from "../roadmap/extensions/roadmap";
+import { getBlockExtensions } from "../../blocks/registry";
 import { SlashCommand } from "./slash-command";
 
 const lowlight = createLowlight(common);
@@ -84,7 +84,7 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
     CharacterCount,
 
     // ── Domain nodes & command surfaces ────────────────────────────────────
-    RoadmapNode,
+    ...getBlockExtensions(),
     SlashCommand,
   ];
 }

@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 
 import Providers from "@/components/Providers";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import Footer from "@/components/landing/Footer";
 
 export const metadata: Metadata = {
   title: "Arcade — Empowering Innovation. Building Communities.",
@@ -35,7 +36,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-white" suppressHydrationWarning>
         <TooltipProvider>
-          <Providers>{children}</Providers>
+          <Providers>
+            <div className="flex-1">
+              {children}
+            </div>
+            <Footer />
+          </Providers>
         </TooltipProvider>
       </body>
     </html>

@@ -20,7 +20,7 @@ interface BlockHandleProps {
  */
 const positionConfig = {
   placement: "left-start" as const,
-  middleware: [offset({ mainAxis: 8, crossAxis: 2 }), flip(), shift({ padding: 8 })],
+  middleware: [offset({ mainAxis: 2, crossAxis: 2 }), flip(), shift({ padding: 8 })],
 };
 
 /**

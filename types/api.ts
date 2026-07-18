@@ -39,7 +39,12 @@ export interface CourseResponse {
   id: string;
   authorId: string;
   authorName: string;
+<<<<<<< HEAD
   authorUsername?: string;
+=======
+  authorUsername: string;
+  authorAvatarUrl: string | null;
+>>>>>>> origin/auth
   title: string;
   description?: string;
   coverImageUrl?: string;

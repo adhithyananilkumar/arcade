@@ -22,7 +22,11 @@ import {
   Volume2,
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { api } from "@/lib/api"
+import type { CourseResponse } from "@/types/api"
+import { EnrollButton } from "@/components/ui/EnrollButton"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -215,11 +219,13 @@ function BurstMark({ size = 22, className }: { size?: number; className?: string
 
 function Avatar({
   name,
+  imageUrl,
   accent = "var(--color-blue)",
   size = 36,
   onDark = false,
 }: {
   name: string
+  imageUrl?: string | null
   accent?: string
   size?: number
   onDark?: boolean
@@ -231,16 +237,31 @@ function Avatar({
     .slice(0, 2)
     .toUpperCase()
 
+  const commonStyle = {
+    width: size,
+    height: size,
+    boxShadow: onDark ? "0 0 0 3px rgba(255,255,255,0.08)" : "0 0 0 3px rgba(20,22,28,0.04)",
+  }
+
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name}
+        className="shrink-0 rounded-full object-cover"
+        style={commonStyle}
+      />
+    )
+  }
+
   return (
     <span
       aria-hidden="true"
       className="grid shrink-0 place-items-center rounded-full font-semibold text-paper"
       style={{
-        width: size,
-        height: size,
+        ...commonStyle,
         fontSize: size * 0.38,
         background: accent,
-        boxShadow: onDark ? "0 0 0 3px rgba(255,255,255,0.08)" : "0 0 0 3px rgba(20,22,28,0.04)",
       }}
     >
       {initials}
@@ -292,54 +313,10 @@ function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { labe
 }
 
 /* ------------------------------------------------------------------ */
-/*  Nav                                                                */
-/* ------------------------------------------------------------------ */
-
-function HeroNav() {
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
-      <nav
-        aria-label="Primary"
-        className="flex w-full max-w-6xl items-center justify-between gap-4 rounded-2xl border border-line/80 bg-paper/85 px-5 py-3 shadow-[0_8px_30px_rgba(20,22,28,0.06)] backdrop-blur-md"
-      >
-        <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-blue">
-          arcade<span className="text-ink">.</span>
-        </Link>
-
-        <ul className="hidden items-center gap-7 md:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link}>
-              <Link href="#" className="text-sm font-medium text-subtle transition-colors hover:text-ink">
-                {link}
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="#"
-            className="hidden rounded-full px-4 py-2 text-sm font-medium text-subtle transition-colors hover:text-ink sm:inline-block"
-          >
-            Log in
-          </Link>
-          <Link
-            href="#"
-            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5"
-          >
-            Get Started
-          </Link>
-        </div>
-      </nav>
-    </header>
-  )
-}
-
-/* ------------------------------------------------------------------ */
 /*  Breadcrumb (modern replacement for the back button)               */
 /* ------------------------------------------------------------------ */
 
-function Breadcrumb() {
+function Breadcrumb({ title }: { title: string }) {
   const crumbs = [
     { label: "Explore", href: "/explore" },
     { label: CATEGORY, href: "/explore" }
@@ -358,7 +335,7 @@ function Breadcrumb() {
             <ChevronRight size={13} className="text-subtle/40" />
           </li>
         ))}
-        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{COURSE_TITLE}</li>
+        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{title}</li>
       </ol>
     </nav>
   )
@@ -368,12 +345,40 @@ function Breadcrumb() {
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseHero() {
+function CourseHero({ 
+  title, 
+  authorName, 
+  authorUsername, 
+  authorAvatarUrl,
+  lessonCount = 0,
+  onEnroll
+}: { 
+  title: string
+  authorName?: string
+  authorUsername?: string
+  authorAvatarUrl?: string | null
+  lessonCount?: number
+  onEnroll?: () => void
+}) {
   const [saved, setSaved] = useState(false)
+
+  const words = title.split(' ')
+  const lastWord = words.pop() || ''
+  const firstPart = words.join(' ')
+  
+  const displayAuthor = authorName || INSTRUCTOR.name;
+  const displayUsername = authorUsername || displayAuthor.toLowerCase().replace(/\s+/g, '');
+  const authorInitials = displayAuthor.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+  const metaData = [
+    { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
+    { icon: BookOpen, label: `${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}`, dot: "var(--color-amber)" },
+    { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
+  ]
 
   return (
     <section className="arcade-fade">
-      <Breadcrumb />
+      <Breadcrumb title={title} />
 
       <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         {/* Left — editorial copy */}
@@ -383,11 +388,9 @@ function CourseHero() {
             className="mt-6 text-[2.75rem] font-normal leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
             style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
           >
-            Design interfaces
-            <br />
-            people actually{" "}
-            <span className="relative whitespace-nowrap italic text-blue">
-              love
+            {firstPart}{" "}
+            <span className="relative whitespace-nowrap italic text-[#4c6fff]">
+              {lastWord}
               <FlowerMark
                 size={26}
                 color="var(--color-ink)"
@@ -408,17 +411,18 @@ function CourseHero() {
 
           {/* Instructor: name + channel (with org already shown on top) */}
           <div className="mt-7 flex items-center gap-3">
-            <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={46} />
+            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={46} />
             <div>
-              <p className="text-[15px] font-semibold text-ink">{INSTRUCTOR.name}</p>
-              <p className="flex items-center gap-1.5 text-[13px] text-subtle">
-                <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
+              <p className="font-semibold text-ink">{displayAuthor}</p>
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
+                <Radio size={14} className="opacity-70" />
+                @{displayUsername}
               </p>
             </div>
           </div>
 
           <div className="mt-7 flex flex-wrap gap-2.5">
-            {META.map(({ icon: Icon, label, dot }) => (
+            {metaData.map(({ icon: Icon, label, dot }) => (
               <span
                 key={label}
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
@@ -434,9 +438,7 @@ function CourseHero() {
               <span className="font-serif text-3xl font-medium text-ink">$20</span>
               <span className="text-sm text-subtle line-through">$49</span>
             </div>
-            <button className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5 active:scale-[0.98]">
-              Enroll now
-            </button>
+            <EnrollButton onClick={onEnroll}>Enroll now</EnrollButton>
             <button
               onClick={() => setSaved((s) => !s)}
               aria-pressed={saved}
@@ -456,18 +458,22 @@ function CourseHero() {
         <div className="relative">
           <div
             className="absolute -right-4 -top-5 hidden size-24 rounded-full opacity-70 blur-2xl lg:block"
-            style={{ background: "var(--color-teal)" }}
+            style={{ background: "#1db876" }}
             aria-hidden="true"
           />
-          <div className="relative rounded-3xl bg-ink p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
+          <div className="relative rounded-3xl bg-[#14142b] p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
             <div className="mb-3 flex items-center justify-between px-1">
               <div className="flex items-center gap-2.5">
-                <span className="grid size-8 place-items-center rounded-full bg-blue text-xs font-bold text-paper">
-                  A
+                <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-[#4c6fff] text-xs font-bold text-white">
+                  {authorAvatarUrl ? (
+                    <img src={authorAvatarUrl} alt={displayAuthor} className="size-full object-cover" />
+                  ) : (
+                    authorInitials
+                  )}
                 </span>
                 <div>
-                  <p className="text-[13px] font-semibold text-paper">Course preview</p>
-                  <p className="text-[11px] text-white/50">{INSTRUCTOR.channel}</p>
+                  <p className="text-[13px] font-semibold text-white">Course preview</p>
+                  <p className="text-[11px] text-white/50">@{displayUsername}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-white/45">
@@ -479,19 +485,19 @@ function CourseHero() {
             <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1d2130] to-[#262a38]">
               <div
                 className="absolute -left-6 -top-6 size-24 rounded-full opacity-40 blur-2xl"
-                style={{ background: "var(--color-purple)" }}
+                style={{ background: "#9b5de5" }}
                 aria-hidden="true"
               />
               <button
                 aria-label="Play course preview"
                 className="grid size-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/20 backdrop-blur-sm transition-transform hover:scale-105"
               >
-                <Play size={22} className="translate-x-0.5 text-paper" fill="currentColor" />
+                <Play size={22} className="translate-x-0.5 text-white" fill="currentColor" />
               </button>
             </div>
 
             <div className="mt-3.5 h-1 rounded-full bg-white/12">
-              <div className="h-full w-[35%] rounded-full bg-coral" />
+              <div className="h-full w-[35%] rounded-full bg-[#ff6b4a]" />
             </div>
             <div className="mt-2.5 flex items-center justify-between px-0.5 text-[11px] text-white/50">
               <span>0:42 / 2:00</span>
@@ -763,7 +769,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta() {
+function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -779,9 +785,7 @@ function EnrollCta() {
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <button className="rounded-full bg-paper px-6 py-3 text-sm font-semibold text-ink transition-transform hover:-translate-y-0.5">
-          Enroll for $20
-        </button>
+        <EnrollButton onClick={onEnroll}>Enroll for $20</EnrollButton>
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
         </button>
@@ -795,14 +799,54 @@ function EnrollCta() {
 /* ------------------------------------------------------------------ */
 
 export default function CoursePreviewPage() {
+  const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const [course, setCourse] = useState<CourseResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const handleEnrollClick = () => {
+    router.push('/sign?mode=login')
+  }
+
+  useEffect(() => {
+    if (params?.id) {
+      api.get<CourseResponse>(`/api/v1/public/courses/${params.id}`)
+        .then(setCourse)
+        .catch(console.error)
+        .finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [params?.id])
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-paper text-ink flex items-center justify-center">
+        <div className="size-8 rounded-full border-2 border-ink border-t-transparent animate-spin" />
+      </main>
+    )
+  }
+
+  const displayTitle = course?.title || COURSE_TITLE;
+  const authorName = course?.authorName;
+  const authorUsername = course?.authorUsername;
+  const authorAvatarUrl = course?.authorAvatarUrl;
+  const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <HeroNav />
 
       {/* Hero wash */}
       <div className="arcade-wash">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <CourseHero />
+          <CourseHero 
+            title={displayTitle} 
+            authorName={authorName}
+            authorUsername={authorUsername}
+            authorAvatarUrl={authorAvatarUrl}
+            lessonCount={lessonCount}
+            onEnroll={handleEnrollClick}
+          />
         </div>
       </div>
 
@@ -813,7 +857,7 @@ export default function CoursePreviewPage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta />
+          <EnrollCta onEnroll={handleEnrollClick} />
         </div>
       </div>
     </main>

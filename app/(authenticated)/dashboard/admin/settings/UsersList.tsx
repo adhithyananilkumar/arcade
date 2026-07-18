@@ -82,8 +82,8 @@ export function UsersList() {
   if (loading) return <div className="text-sm text-gray-500">Loading users...</div>;
 
   const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (user.firstName && user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (user.lastName && user.lastName.toLowerCase().includes(searchQuery.toLowerCase()))
   );

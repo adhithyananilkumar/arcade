@@ -501,35 +501,7 @@ export default function HeroSection() {
             </Link>
           </motion.div>
 
-          <motion.div
-            variants={fadeRise(shouldReduceMotion ? 0.08 : 1.28)}
-            initial="hidden"
-            animate="visible"
-          >
-            <Link
-              href="#how-it-works"
-              className="l-btn l-btn--ghost"
-              id="hero-cta-how"
-            >
-              See how it works
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                aria-hidden="true"
-                style={{ opacity: 0.6 }}
-              >
-                <path
-                  d="M2.5 7h9M7 2.5 11.5 7 7 11.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Link>
-          </motion.div>
+
         </div>
       </div>
     </section>

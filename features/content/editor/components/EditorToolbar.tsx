@@ -82,10 +82,20 @@ function Divider() {
 interface EditorToolbarProps {
   editor: Editor | null;
   saveStatus?: "idle" | "saving" | "saved";
+  /**
+   * "bar" — the classic sticky top strip (spans the editor width).
+   * "floating" — a Figma-style pill fixed to the bottom-centre of the viewport.
+   */
+  variant?: "bar" | "floating";
 }
 
-export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProps) {
+export function EditorToolbar({ editor, saveStatus = "idle", variant = "bar" }: EditorToolbarProps) {
   if (!editor) return null;
+
+  const wrapperClass =
+    variant === "floating"
+      ? "fixed bottom-5 left-1/2 z-40 flex max-w-[95vw] -translate-x-1/2 items-center gap-0.5 overflow-x-auto rounded-2xl border border-black/5 bg-white/95 px-2 py-1.5 shadow-xl backdrop-blur"
+      : "sticky top-0 z-20 flex flex-wrap items-center gap-0.5 border-b border-gray-200 bg-white/95 px-4 py-2 backdrop-blur-sm";
 
   const addLink = () => {
     const url = window.prompt("Enter URL:");
@@ -106,11 +116,7 @@ export function EditorToolbar({ editor, saveStatus = "idle" }: EditorToolbarProp
   };
 
   return (
-    <div
-      className="sticky top-0 z-20 flex items-center flex-wrap gap-0.5 border-b border-gray-200 bg-white/95 backdrop-blur-sm px-4 py-2"
-      role="toolbar"
-      aria-label="Editor toolbar"
-    >
+    <div className={wrapperClass} role="toolbar" aria-label="Editor toolbar">
       {/* History */}
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}

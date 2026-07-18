@@ -318,15 +318,31 @@
 
 /* The floating container DragHandle positions to the left of the hovered block. */
 .arcade-block-handle {
+  position: relative;
   z-index: 30;
+}
+
+/*
+ * Invisible hover bridge: floating-ui's `offset` still leaves a couple of px
+ * between the handle and the block's left edge. That gap sits outside both
+ * the ProseMirror content box and this handle, so crossing it fires the
+ * editor's mouseleave and hides the handle mid-move. Extending the handle's
+ * own (portal-rendered, hoverable) DOM box across that gap keeps the pointer
+ * "inside" the handle the whole way from the block to the grip.
+ */
+.arcade-block-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 100%;
+  bottom: 0;
+  width: 8px;
 }
 
 .arcade-handle-row {
   display: flex;
   align-items: center;
   gap: 1px;
-  /* Nudge the controls into the left gutter, just off the text column. */
-  transform: translateX(-4px);
 }
 
 .arcade-handle-btn {

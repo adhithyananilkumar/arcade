@@ -1,0 +1,40 @@
+/* Import fonts to guarantee they are loaded on this page */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+.courses-dashboard-root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Headings use Space Grotesk */
+.courses-dashboard-root h1,
+.courses-dashboard-root h2,
+.courses-dashboard-root h3,
+.courses-dashboard-root h4,
+.courses-dashboard-root h5,
+.courses-dashboard-root .font-heading {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Logo uses Fraunces */
+.courses-dashboard-root .font-logo {
+  font-family: 'Fraunces', serif !important;
+}
+
+/* Customized scrollbars matching premium look */
+.courses-dashboard-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.courses-dashboard-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.courses-dashboard-root ::-webkit-scrollbar-thumb {
+  background: rgba(36, 81, 214, 0.15);
+  border-radius: 99px;
+}
+
+.courses-dashboard-root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(36, 81, 214, 0.3);
+}

@@ -14,7 +14,9 @@ export default async function EditCoursePage({ params }: Props) {
   const { courseId } = await params;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    // Cancels the dashboard shell's <main> padding (p-6 md:p-8) so the editor's own
+    // chrome sits flush under the global navbar instead of leaving a padded gap.
+    <div className="-m-6 flex h-[calc(100vh-4rem)] flex-col bg-white md:-m-8">
       <CourseEditorShell courseId={courseId} />
     </div>
   );
