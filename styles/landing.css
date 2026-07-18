@@ -1,6 +1,6 @@
 /* ─── Custom Fonts ─────────────────────────────────────────────────── */
 @import url("https://fonts.cdnfonts.com/css/latin-modern-roman");
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap");
 
 /* ─── Landing Design Tokens ────────────────────────────────────────── */
 :root {
