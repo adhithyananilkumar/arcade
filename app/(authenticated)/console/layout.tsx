@@ -17,49 +17,38 @@ export default function ArcConsoleLayout({
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
   
-  const primaryRole = user?.roles?.[0]?.name;
-  const isSuperUser = primaryRole === 'SUPER_USER';
-  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
-  const showReviewCourses = isSuperUser || hasPermission('courses.review') || hasPermission('channel.courses.review');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
+  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
 
   const navItems = [
     ...(showAdminChannels ? [{
       name: 'Channel Management',
-      href: '/arc-console/channels',
+      href: '/console/channels',
       icon: Tv,
     }] : []),
     ...(showReviewCourses ? [{
       name: 'Course Management',
-      href: '/arc-console/courses',
+      href: '/console/courses',
       icon: BookOpen,
     }] : []),
     ...(showAdminSettings ? [{
       name: 'Admin Settings',
-      href: '/arc-console/settings',
+      href: '/console/settings',
       icon: Settings,
     }] : []),
   ];
 
   return (
-    <div className="flex w-full h-full p-4 md:p-8 gap-8 max-w-[1600px] mx-auto">
+    <div className="flex w-full gap-8 max-w-7xl mx-auto px-4 md:px-8 py-8">
       {/* Left Navigation - Floating Pill */}
       <div className="hidden md:flex flex-col w-72 shrink-0">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="sticky top-8 bg-white dark:bg-neutral-900 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-neutral-800 p-4 flex flex-col gap-2"
+          className="sticky top-24 flex flex-col gap-2 pt-4"
         >
-          <div className="px-6 py-4 mb-2 flex items-center gap-3">
-            <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2.5 rounded-full text-indigo-600 dark:text-indigo-400">
-              <Shield size={22} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h2 className="font-bold text-slate-800 dark:text-slate-100 tracking-tight text-lg">Arc Console</h2>
-              <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Platform Admin</p>
-            </div>
-          </div>
-          
           <nav className="flex flex-col gap-1.5 px-2">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href);

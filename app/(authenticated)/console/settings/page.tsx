@@ -13,7 +13,7 @@ export default function AdminSettingsPage() {
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-8 max-w-7xl mx-auto space-y-8"
+      className="w-full space-y-8"
     >
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Settings</h1>

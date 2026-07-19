@@ -26,11 +26,11 @@ export default function AuthenticatedLayout({
   return (
     <ProtectedLayout>
       <TimeTracker />
-      <div className={`relative flex h-screen w-full overflow-hidden bg-background text-foreground transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
+      <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
         {/* Main Content Area */}
-        <div className="flex flex-1 flex-col overflow-hidden relative z-10 bg-transparent">
+        <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white">
           <DashboardNavbar />
-          <main className="flex-1 overflow-y-auto p-6 md:p-8 relative bg-transparent">
+          <main className="relative bg-transparent flex flex-col flex-1">
             {children}
           </main>
         </div>

@@ -35,18 +35,16 @@ export default function DashboardSidebar() {
       .catch(() => setHasChannels(false));
   }, []);
 
-  const primaryRole = user?.roles?.[0]?.name;
-  const isSuperUser = primaryRole === 'SUPER_USER';
-
-  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
+  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const showArcConsole = showAdminChannels || showAdminSettings;
 
   const dynamicNavItems = [
     ...baseNavItems,
     ...(hasChannels ? [{ name: 'Manage Channels', href: '/dashboard/manage-channels', icon: Tv }] : []),
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ...(showAdminChannels ? [{ name: 'Channel Management', href: '/dashboard/admin/channels', icon: Tv }] : []),
-    ...(showAdminSettings ? [{ name: 'Admin Settings', href: '/dashboard/admin/settings', icon: Settings }] : [])
+    ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])
   ];
 
   if (pathname?.includes('/manage')) {

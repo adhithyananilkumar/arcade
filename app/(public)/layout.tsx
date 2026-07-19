@@ -1,4 +1,5 @@
 import HeroNav from "@/components/landing/HeroNav";
+import Footer from "@/components/landing/Footer";
 
 export default function PublicLayout({
   children,
@@ -9,6 +10,7 @@ export default function PublicLayout({
     <>
       <HeroNav />
       {children}
+      <Footer />
     </>
   );
 }

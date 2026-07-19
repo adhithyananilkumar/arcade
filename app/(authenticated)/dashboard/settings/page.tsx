@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
   return (
     <motion.div 
-      className="max-w-6xl w-full mx-auto space-y-6"
+      className="max-w-7xl w-full mx-auto px-4 md:px-8 py-8 space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

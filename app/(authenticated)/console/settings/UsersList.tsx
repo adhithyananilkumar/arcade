@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserService } from '@/services/user.service';
 import { roleService, Role } from '@/services/role.service';
-import { User } from '@/store/auth.store';
+import { User, useAuthStore } from '@/store/auth.store';
 import { toast } from 'sonner';
 import { Shield, Plus, X, Edit3, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function UsersList() {
+  const currentUser = useAuthStore(state => state.user);
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +67,12 @@ export function UsersList() {
       toast.success('Roles assigned successfully');
       setIsModalOpen(false);
       fetchData(); // refresh list
-    } catch (error) {
-      toast.error('Failed to assign roles');
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Failed to assign roles');
+      }
     }
   };
 
@@ -162,20 +167,40 @@ export function UsersList() {
             <p className="text-sm text-gray-500 mb-4">Select policies for {selectedUser.firstName} {selectedUser.lastName}.</p>
             
             <div className="space-y-2 max-h-60 overflow-y-auto mb-6">
-              {roles.map(role => (
-                <label key={role.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={selectedRoles.includes(role.id)}
-                    onChange={() => toggleRoleSelection(role.id)}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  />
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{role.name}</div>
-                    <div className="text-xs text-gray-500">{role.description}</div>
-                  </div>
-                </label>
-              ))}
+              {roles.map(role => {
+                const targetHighestLevel = (selectedUser as any).roles
+                  ?.filter((r: any) => r.scopeType === 'PLATFORM')
+                  .map((r: any) => r.level || 0)
+                  .sort((a: number, b: number) => b - a)[0] || 0;
+                  
+                const currentUserHighestLevel = currentUser?.roles
+                  ?.filter((r: any) => r.scopeType === 'PLATFORM')
+                  .map((r: any) => r.level || 0)
+                  .sort((a: number, b: number) => b - a)[0] || 0;
+
+                const isTargetHigherOrEqual = targetHighestLevel >= currentUserHighestLevel && currentUser?.id !== selectedUser.id && targetHighestLevel > 0;
+                const isRoleHigherOrEqual = role.level >= currentUserHighestLevel && currentUserHighestLevel < 100;
+                const disabled = isTargetHigherOrEqual || isRoleHigherOrEqual;
+
+                return (
+                  <label key={role.id} className={`flex items-center gap-3 p-3 rounded-lg border ${disabled ? 'border-gray-50 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-gray-100 hover:bg-gray-50 cursor-pointer'}`}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedRoles.includes(role.id)}
+                      onChange={() => !disabled && toggleRoleSelection(role.id)}
+                      disabled={disabled}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50"
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {role.name}
+                        {disabled && <span className="ml-2 text-[10px] uppercase text-red-500 font-semibold bg-red-50 px-1.5 py-0.5 rounded">Not Allowed</span>}
+                      </div>
+                      <div className="text-xs text-gray-500">{role.description}</div>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
 
             <div className="flex justify-end gap-3">

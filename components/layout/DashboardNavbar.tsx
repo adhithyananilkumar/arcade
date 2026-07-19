@@ -12,6 +12,7 @@ import { channelService } from '@/services/channel.service';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/components/ui/fluid-menu';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 
 export default function DashboardNavbar() {
   const { user, clearAuth } = useAuthStore();
@@ -26,6 +27,21 @@ export default function DashboardNavbar() {
   const [hasChannels, setHasChannels] = useState(false);
   
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Intelligent header scroll behavior
+  const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
+  const [lastY, setLastY] = useState(0);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    // Only hide after 150px of downward scroll to avoid triggering at the very top
+    if (latest > 150 && latest > lastY) {
+      setHidden(true);
+    } else {
+      setHidden(false);
+    }
+    setLastY(latest);
+  });
 
   useEffect(() => {
     fetchInvitations();
@@ -107,16 +123,23 @@ export default function DashboardNavbar() {
     }
   };
 
-  const primaryRole = user?.roles?.[0]?.name;
-  const isSuperUser = primaryRole === 'SUPER_USER';
-  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
-  const showReviewCourses = isSuperUser || hasPermission('courses.review') || hasPermission('channel.courses.review');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
+  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
 
   const showArcConsole = showAdminChannels || showAdminSettings || showReviewCourses;
 
   return (
-    <nav className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-transparent bg-white dark:bg-black px-6 md:px-8 transition-colors">
+    <motion.nav 
+      variants={{
+        visible: { y: 0 },
+        hidden: { y: "-100%" },
+      }}
+      animate={hidden ? "hidden" : "visible"}
+      transition={{ duration: 0.35, ease: "easeInOut" }}
+      className="sticky top-0 z-40 flex h-16 w-full items-center justify-between bg-white dark:bg-black px-6 md:px-8 transition-colors"
+    >
       {/* Left side: Logo & Title */}
       <div className="flex items-center gap-3">
         <Link href="/dashboard" className="flex items-center gap-2 group cursor-pointer">
@@ -254,9 +277,9 @@ export default function DashboardNavbar() {
             {showArcConsole && (
               <MenuItem 
                 icon={<ShieldAlert size={20} strokeWidth={2} className="text-pink-500" />} 
-                onClick={() => router.push('/arc-console')} 
+                onClick={() => router.push('/console')} 
               >
-                arc Console
+                Console
               </MenuItem>
             )}
             <MenuItem 
@@ -274,6 +297,6 @@ export default function DashboardNavbar() {
           </MenuContainer>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }

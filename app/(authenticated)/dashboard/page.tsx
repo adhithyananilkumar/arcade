@@ -39,12 +39,12 @@ export default function DashboardPage() {
 
   return (
     <motion.div 
-      className="mx-auto max-w-6xl space-y-12 pb-12 transition-colors"
+      className="mx-auto max-w-7xl w-full px-4 md:px-8 py-8 space-y-12 transition-colors"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      <div className="flex flex-col items-center justify-center pt-24 pb-12 px-4 text-center border-b border-slate-100 dark:border-transparent transition-colors">
+      <div className="flex flex-col items-center justify-center pt-8 pb-12 text-center transition-colors">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

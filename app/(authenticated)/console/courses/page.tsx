@@ -90,18 +90,15 @@ export default function ReviewCoursesPage() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="bg-white border-b border-gray-200 px-8 py-5">
-        <div className="max-w-6xl mx-auto">
-
-          <h1 className="text-xl font-bold text-gray-900">Course Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Courses submitted for review land here, waiting to be approved.
-          </p>
-        </div>
+    <div className="flex flex-col w-full space-y-8">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Course Management</h1>
+        <p className="text-gray-500">
+          Courses submitted for review land here, waiting to be approved.
+        </p>
       </header>
 
-      <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
+      <main className="w-full">
         {/* Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col">

@@ -7,6 +7,7 @@ export interface Role {
   scopeType: string;
   isSystem: boolean;
   memberCount: number;
+  level: number;
   permissions?: { id: string, name: string }[];
 }
 

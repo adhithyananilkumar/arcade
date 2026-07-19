@@ -34,8 +34,8 @@ export function PolicyManager() {
   
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
-  const isSuperUser = user?.roles?.some((r: any) => r.name === 'SUPER_USER') || false;
-  const canManagePolicies = isSuperUser || hasPermission('roles.create');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM') || false;
+  const canManagePolicies = hasPlatformRole || hasPermission('roles.create');
 
   useEffect(() => {
     fetchData();
@@ -174,7 +174,7 @@ export function PolicyManager() {
                     <Edit3 size={16} />
                   </button>
                 )}
-                {isSuperUser && !role.isSystem && (
+                {hasPlatformRole && !role.isSystem && (
                   <button
                     onClick={() => handleDeletePolicy(role.id)}
                     className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"

@@ -10,19 +10,18 @@ export default function ArcConsoleIndex() {
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
   
-  const primaryRole = user?.roles?.[0]?.name;
-  const isSuperUser = primaryRole === 'SUPER_USER';
-  const showAdminChannels = isSuperUser || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showReviewCourses = isSuperUser || hasPermission('courses.review') || hasPermission('channel.courses.review');
-  const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
+  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
+  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
 
   useEffect(() => {
     if (showAdminChannels) {
-      router.replace('/arc-console/channels');
+      router.replace('/console/channels');
     } else if (showReviewCourses) {
-      router.replace('/arc-console/courses');
+      router.replace('/console/courses');
     } else if (showAdminSettings) {
-      router.replace('/arc-console/settings');
+      router.replace('/console/settings');
     } else {
       router.replace('/dashboard');
     }

@@ -16,9 +16,8 @@ export function DeletionRequests() {
   
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
-  const isSuperUser = user?.roles?.some((r: any) => r.name === 'SUPER_USER') || false;
-  
-  const canReview = isSuperUser || hasPermission('channels.suspend');
+  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM') || false;
+  const canReview = hasPlatformRole || hasPermission('channels.suspend');
 
   useEffect(() => {
     fetchRequests();
