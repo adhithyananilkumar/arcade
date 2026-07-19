@@ -8,6 +8,9 @@
 
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
+import { notFound } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthorizationService } from '@/services/authorization.service';
 import { api } from "@/lib/api";
 import type { CourseResponse } from "@/types/api";
 import { ArrowLeft, ClipboardCheck, Clock, Inbox, User, Search } from "lucide-react";
@@ -40,6 +43,11 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function ReviewCoursesPage() {
+  const { user } = useAuthStore();
+  if (!AuthorizationService.canReviewCourses(user)) {
+    notFound();
+  }
+
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

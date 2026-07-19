@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
 
 export default function ArcConsoleIndex() {
   const router = useRouter();
   const { hasPermission } = usePermissions();
-  const { user } = useAuthStore();
   
-  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
-  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
-  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const showAdminChannels = hasPermission('channels.approve') || hasPermission('channels.suspend');
+  const showReviewCourses = hasPermission('courses.review') || hasPermission('channel.courses.review');
+  const showAdminSettings = hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+
+  if (!showAdminChannels && !showReviewCourses && !showAdminSettings) {
+    notFound();
+  }
 
   useEffect(() => {
     if (showAdminChannels) {
@@ -22,8 +23,6 @@ export default function ArcConsoleIndex() {
       router.replace('/console/courses');
     } else if (showAdminSettings) {
       router.replace('/console/settings');
-    } else {
-      router.replace('/dashboard');
     }
   }, [router, showAdminChannels, showReviewCourses, showAdminSettings]);
 

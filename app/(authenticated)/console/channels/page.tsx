@@ -4,7 +4,15 @@ import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PendingChannels } from '@/app/(authenticated)/dashboard/PendingChannels'; // Reusing the component
 
+import { notFound } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthorizationService } from '@/services/authorization.service';
 export default function AdminChannelsPage() {
+  const { user } = useAuthStore();
+  if (!AuthorizationService.canManageChannels(user)) {
+    notFound();
+  }
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}

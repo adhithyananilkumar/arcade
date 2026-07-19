@@ -5,8 +5,16 @@ import { Shield, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UsersList } from './UsersList';
 import { PolicyManager } from './PolicyManager';
-
+import { notFound } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
+import { AuthorizationService } from '@/services/authorization.service';
 export default function AdminSettingsPage() {
+  const { user } = useAuthStore();
+  
+  if (!AuthorizationService.canManageSettings(user) && !AuthorizationService.canManageUsers(user) && !AuthorizationService.canManageRoles(user) && !AuthorizationService.canManagePermissions(user)) {
+    notFound();
+  }
+
   const [activeTab, setActiveTab] = useState<'USERS' | 'POLICIES'>('USERS');
 
   return (

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
 import { ChannelStaffService, ChannelInvitation } from '@/services/channel-staff.service';
 import { usePermissions } from '@/hooks/usePermissions';
+import { AuthorizationService } from '@/services/authorization.service';
 import { channelService } from '@/services/channel.service';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -123,12 +124,7 @@ export default function DashboardNavbar() {
     }
   };
 
-  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
-  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
-  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
-
-  const showArcConsole = showAdminChannels || showAdminSettings || showReviewCourses;
+  const showArcConsole = AuthorizationService.canAccessConsole(user);
 
   return (
     <motion.nav 

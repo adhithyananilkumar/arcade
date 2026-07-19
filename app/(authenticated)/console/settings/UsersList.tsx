@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { UserService } from '@/services/user.service';
 import { roleService, Role } from '@/services/role.service';
 import { User, useAuthStore } from '@/store/auth.store';
+import { AuthService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { Shield, Plus, X, Edit3, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -67,6 +68,7 @@ export function UsersList() {
       toast.success('Roles assigned successfully');
       setIsModalOpen(false);
       fetchData(); // refresh list
+      await AuthService.refresh();
     } catch (error: any) {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);

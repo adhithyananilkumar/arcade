@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { roleService, Role } from '@/services/role.service';
 import { permissionService, Permission } from '@/services/permission.service';
+import { AuthService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { Plus, X, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -87,6 +88,7 @@ export function PolicyManager() {
       setNewRoleDesc('');
       setSelectedPermissions([]);
       fetchData();
+      await AuthService.refresh();
     } catch (error) {
       toast.error(editingRole ? 'Failed to update policy' : 'Failed to create policy');
     } finally {
@@ -102,6 +104,7 @@ export function PolicyManager() {
       await roleService.deleteRole(id);
       toast.success('Policy deleted successfully');
       fetchData();
+      await AuthService.refresh();
     } catch (error) {
       toast.error('Failed to delete policy');
     }

@@ -1,12 +1,13 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Settings, Tv, BookOpen, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuthStore } from '@/store/auth.store';
+import { AuthorizationService } from '@/services/authorization.service';
 
 export default function ArcConsoleLayout({
   children,
@@ -14,13 +15,10 @@ export default function ArcConsoleLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
-  
-  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
-  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
-  const showReviewCourses = hasPlatformRole || hasPermission('courses.review') || hasPermission('channel.courses.review');
+  const showAdminChannels = AuthorizationService.canManageChannels(user);
+  const showReviewCourses = AuthorizationService.canReviewCourses(user);
+  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
 
   const navItems = [
     ...(showAdminChannels ? [{
@@ -39,6 +37,10 @@ export default function ArcConsoleLayout({
       icon: Settings,
     }] : []),
   ];
+
+  if (navItems.length === 0) {
+    notFound();
+  }
 
   return (
     <div className="flex w-full gap-8 max-w-7xl mx-auto px-4 md:px-8 py-8">
