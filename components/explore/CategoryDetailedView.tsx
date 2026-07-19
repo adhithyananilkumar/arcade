@@ -726,6 +726,319 @@ function getCourseGlyph(title: string, index: number, color: string): React.Reac
   );
 }
 
+interface CategoryPillButtonProps {
+  item: string;
+  isActive: boolean;
+  itemData: any;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
+  item,
+  isActive,
+  itemData,
+  onClick,
+  children
+}) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const particlesRef = useRef<HTMLDivElement[]>([]);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  const isHoveredRef = useRef(false);
+  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
+
+  const glowColor = hexToRgbStr(itemData.colors.primary);
+
+  const clearAllParticles = useCallback(() => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+    magnetismAnimationRef.current?.kill();
+
+    particlesRef.current.forEach(particle => {
+      gsap.to(particle, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: "back.in(1.7)",
+        onComplete: () => {
+          particle.parentNode?.removeChild(particle);
+        }
+      });
+    });
+    particlesRef.current = [];
+  }, []);
+
+  const animateParticles = useCallback(() => {
+    if (!buttonRef.current || !isHoveredRef.current) return;
+
+    const { width, height } = buttonRef.current.getBoundingClientRect();
+    
+    // Subtle star particles tailored for smaller button sizes
+    for (let i = 0; i < 6; i++) {
+      const px = Math.random() * width;
+      const py = Math.random() * height;
+      
+      const particle = document.createElement("div");
+      particle.className = "category-particle";
+      particle.style.cssText = `
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: rgba(${glowColor}, 1);
+        box-shadow: 0 0 4px rgba(${glowColor}, 0.6);
+        pointer-events: none;
+        z-index: 10;
+        left: ${px}px;
+        top: ${py}px;
+      `;
+
+      const timeoutId = setTimeout(() => {
+        if (!isHoveredRef.current || !buttonRef.current) return;
+        buttonRef.current.appendChild(particle);
+        particlesRef.current.push(particle);
+
+        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+
+        gsap.to(particle, {
+          x: (Math.random() - 0.5) * 50,
+          y: (Math.random() - 0.5) * 50,
+          rotation: Math.random() * 360,
+          duration: 1.5 + Math.random() * 1.5,
+          ease: "none",
+          repeat: -1,
+          yoyo: true
+        });
+
+        gsap.to(particle, {
+          opacity: 0.3,
+          duration: 1.2,
+          ease: "power2.inOut",
+          repeat: -1,
+          yoyo: true
+        });
+      }, i * 120);
+
+      timeoutsRef.current.push(timeoutId);
+    }
+  }, [glowColor]);
+
+  useEffect(() => {
+    const element = buttonRef.current;
+    if (!element) return;
+
+    const handleMouseEnter = () => {
+      isHoveredRef.current = true;
+      animateParticles();
+
+      // Subtle 3D tilt on hover
+      gsap.to(element, {
+        rotateX: 4,
+        rotateY: 4,
+        duration: 0.3,
+        ease: "power2.out",
+        transformPerspective: 600
+      });
+    };
+
+    const handleMouseLeave = () => {
+      isHoveredRef.current = false;
+      clearAllParticles();
+
+      gsap.to(element, {
+        rotateX: 0,
+        rotateY: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+
+      gsap.to(element, {
+        x: 0,
+        y: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      gsap.to(element, {
+        rotateX,
+        rotateY,
+        duration: 0.1,
+        ease: "power2.out",
+        transformPerspective: 600
+      });
+
+      // Magnetism: subtle attraction to cursor
+      const magnetX = (x - centerX) * 0.08;
+      const magnetY = (y - centerY) * 0.08;
+      magnetismAnimationRef.current = gsap.to(element, {
+        x: magnetX,
+        y: magnetY,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const maxDistance = Math.max(
+        Math.hypot(x, y),
+        Math.hypot(x - rect.width, y),
+        Math.hypot(x, y - rect.height),
+        Math.hypot(x - rect.width, y - rect.height)
+      );
+
+      const ripple = document.createElement("div");
+      ripple.style.cssText = `
+        position: absolute;
+        width: ${maxDistance * 2}px;
+        height: ${maxDistance * 2}px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(${glowColor}, 0.3) 0%, rgba(${glowColor}, 0.1) 40%, transparent 70%);
+        left: ${x - maxDistance}px;
+        top: ${y - maxDistance}px;
+        pointer-events: none;
+        z-index: 10;
+      `;
+
+      element.appendChild(ripple);
+
+      gsap.fromTo(
+        ripple,
+        { scale: 0, opacity: 1 },
+        {
+          scale: 1,
+          opacity: 0,
+          duration: 0.7,
+          ease: "power2.out",
+          onComplete: () => ripple.remove()
+        }
+      );
+    };
+
+    element.addEventListener("mouseenter", handleMouseEnter);
+    element.addEventListener("mouseleave", handleMouseLeave);
+    element.addEventListener("mousemove", handleMouseMove);
+    element.addEventListener("click", handleClick);
+
+    return () => {
+      isHoveredRef.current = false;
+      element.removeEventListener("mouseenter", handleMouseEnter);
+      element.removeEventListener("mouseleave", handleMouseLeave);
+      element.removeEventListener("mousemove", handleMouseMove);
+      element.removeEventListener("click", handleClick);
+      clearAllParticles();
+    };
+  }, [animateParticles, clearAllParticles, glowColor]);
+
+  return (
+    <button
+      ref={buttonRef}
+      onClick={onClick}
+      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      style={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "12px 20px",
+        borderRadius: "14px",
+        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
+        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        color: isActive ? itemData.colors.primary : "#5E606A",
+        fontSize: "0.9rem",
+        fontWeight: "700",
+        cursor: "pointer",
+        boxShadow: isActive 
+          ? `0 10px 20px -8px ${itemData.colors.primary}33` 
+          : "0 4px 10px -2px rgba(0,0,0,0.02)",
+        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "--glow-color": glowColor
+      } as React.CSSProperties}
+    >
+      {children}
+    </button>
+  );
+};
+
+interface CategoryGlobalSpotlightProps {
+  gridRef: React.RefObject<HTMLDivElement | null>;
+  spotlightRadius?: number;
+}
+
+const CategoryGlobalSpotlight: React.FC<CategoryGlobalSpotlightProps> = ({
+  gridRef,
+  spotlightRadius = 160
+}) => {
+  useEffect(() => {
+    if (!gridRef?.current) return;
+
+    const container = gridRef.current;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const cards = container.querySelectorAll(".category-bento-card");
+
+      cards.forEach(card => {
+        const cardElement = card as HTMLElement;
+        const cardRect = cardElement.getBoundingClientRect();
+        
+        const centerX = cardRect.left + cardRect.width / 2;
+        const centerY = cardRect.top + cardRect.height / 2;
+        const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY) - Math.max(cardRect.width, cardRect.height) / 2;
+        const effectiveDistance = Math.max(0, distance);
+
+        const proximity = spotlightRadius * 0.5;
+        const fadeDistance = spotlightRadius * 0.75;
+
+        let glowIntensity = 0;
+        if (effectiveDistance <= proximity) {
+          glowIntensity = 1;
+        } else if (effectiveDistance <= fadeDistance) {
+          glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
+        }
+
+        const relativeX = ((e.clientX - cardRect.left) / cardRect.width) * 100;
+        const relativeY = ((e.clientY - cardRect.top) / cardRect.height) * 100;
+
+        cardElement.style.setProperty("--glow-x", `${relativeX}%`);
+        cardElement.style.setProperty("--glow-y", `${relativeY}%`);
+        cardElement.style.setProperty("--glow-intensity", glowIntensity.toString());
+        cardElement.style.setProperty("--glow-radius", `${spotlightRadius}px`);
+      });
+    };
+
+    const handleMouseLeave = () => {
+      container.querySelectorAll(".category-bento-card").forEach(card => {
+        (card as HTMLElement).style.setProperty("--glow-intensity", "0");
+      });
+    };
+
+    container.addEventListener("mousemove", handleMouseMove);
+    container.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      container.removeEventListener("mousemove", handleMouseMove);
+      container.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [gridRef, spotlightRadius]);
+
+  return null;
+};
+
 export default function CategoryDetailedView() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -738,6 +1051,7 @@ export default function CategoryDetailedView() {
   const [activeEditorTab, setActiveEditorTab] = useState<number>(0);
 
   const coursesSectionRef = useRef<HTMLDivElement>(null);
+  const categoriesGridRef = useRef<HTMLDivElement>(null);
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -979,114 +1293,107 @@ export default function CategoryDetailedView() {
           border-radius: 50%;
           z-index: -1;
         }
+
+        /* Category Selector MagicBento Styles */
+        .category-bento-card {
+          position: relative;
+          overflow: hidden;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+          --glow-x: 50%;
+          --glow-y: 50%;
+          --glow-intensity: 0;
+          --glow-radius: 120px;
+        }
+
+        .category-bento-card--border-glow::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          padding: 1.5px;
+          background: radial-gradient(
+            var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.85)) 0%,
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.4)) 30%,
+            transparent 60%
+          );
+          border-radius: inherit;
+          -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+          pointer-events: none;
+          opacity: 1;
+          transition: opacity 0.3s ease;
+          z-index: 1;
+        }
+
+        .category-bento-card--border-glow:hover {
+          box-shadow:
+            0 8px 20px -6px rgba(var(--glow-color), 0.25),
+            0 4px 10px -4px rgba(20, 23, 31, 0.02) !important;
+        }
+
+        .category-particle {
+          position: absolute;
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 10;
+        }
+
+        .category-particle::before {
+          content: '';
+          position: absolute;
+          top: -1.5px;
+          left: -1.5px;
+          right: -1.5px;
+          bottom: -1.5px;
+          background: rgba(var(--glow-color), 0.2);
+          border-radius: 50%;
+          z-index: -1;
+        }
       `}</style>
 
       {/* Main Container */}
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "100px 24px 0", position: "relative", zIndex: 1 }}>
         
-        {/* Sleek Top Breadcrumb Bar */}
-        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: "28px" }}>
-          <div 
-            style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "8px", 
-              fontSize: "0.85rem", 
-              fontWeight: "600", 
-              color: "rgba(20, 20, 43, 0.55)",
-              background: "rgba(255, 255, 255, 0.65)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              padding: "10px 18px",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
-            }}
-          >
-            <span 
-              onClick={() => {
-                setActiveCategory(null);
-                router.push("/explore");
-              }}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
-              onMouseEnter={(e) => e.currentTarget.style.color = activeData.colors.primary}
-              onMouseLeave={(e) => e.currentTarget.style.color = "inherit"}
-            >
-              Explore
-            </span>
-            <span>/</span>
-            <span 
-              onClick={() => {
-                setActiveCategory(null);
-                router.push("/explore");
-              }}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
-              onMouseEnter={(e) => e.currentTarget.style.color = activeData.colors.primary}
-              onMouseLeave={(e) => e.currentTarget.style.color = "inherit"}
-            >
-              Departments
-            </span>
-            <span>/</span>
-            <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
-          </div>
-        </div>
+
+
+        {/* Category Selector Spotlight tracker */}
+        <CategoryGlobalSpotlight gridRef={categoriesGridRef} spotlightRadius={160} />
 
         {/* Unique Mesh Category Selector - Sticky-friendly Horizontal Pill Navigation */}
         <div 
+          ref={categoriesGridRef}
           style={{ 
             display: "flex", 
             gap: "10px", 
             overflowX: "auto", 
             paddingBottom: "16px",
-            marginBottom: "32px"
+            marginBottom: "32px",
+            position: "relative"
           }}
-          className="hide-scrollbar"
+          className="hide-scrollbar bento-section"
         >
           {categoriesList.map((item) => {
             const isActive = activeCategoryName === item;
             const itemData = CATEGORY_DATA[item];
             return (
-              <button
+              <CategoryPillButton
                 key={item}
+                item={item}
+                isActive={isActive}
+                itemData={itemData}
                 onClick={() => handleCategorySwitch(item)}
-                style={{
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "12px 20px",
-                  borderRadius: "14px",
-                  border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-                  background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(8px)",
-                  WebkitBackdropFilter: "blur(8px)",
-                  color: isActive ? itemData.colors.primary : "#5E606A",
-                  fontSize: "0.9rem",
-                  fontWeight: "700",
-                  cursor: "pointer",
-                  boxShadow: isActive 
-                    ? `0 10px 20px -8px ${itemData.colors.primary}33` 
-                    : "0 4px 10px -2px rgba(0,0,0,0.02)",
-                  transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.85)";
-                    e.currentTarget.style.borderColor = itemData.colors.primary;
-                    e.currentTarget.style.color = "var(--l-ink)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.65)";
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                    e.currentTarget.style.color = "#5E606A";
-                  }
-                }}
               >
-                <span style={{ opacity: isActive ? 1 : 0.6 }}>{CATEGORY_ICONS[item]}</span>
-                {item}
-              </button>
+                <span style={{ opacity: isActive ? 1 : 0.6, display: "flex", alignItems: "center" }}>{CATEGORY_ICONS[item]}</span>
+                <span style={{ zIndex: 2 }}>{item}</span>
+              </CategoryPillButton>
             );
           })}
         </div>
