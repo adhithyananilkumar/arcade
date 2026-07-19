@@ -1,5 +1,24 @@
 'use client';
 
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Apps
+ * App: Public
+ * Type: Orchestrator
+ *
+ * Purpose:
+ * Connects the pure UI AuthForm to API services and Next.js routing.
+ *
+ * Rules:
+ * - Handles all side-effects (fetching, navigation, cookies).
+ * - Delegates rendering to pure domain components.
+ * - Never export this component back to domains/.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
+
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';

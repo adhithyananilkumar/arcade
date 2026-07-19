@@ -1,3 +1,19 @@
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Shared
+ * Subsystem: Design System
+ *
+ * Purpose:
+ * Highly reusable, generic button component.
+ *
+ * Rules:
+ * - Never mention business models (e.g. "Course", "Quiz").
+ * - Must not have external side-effects.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 

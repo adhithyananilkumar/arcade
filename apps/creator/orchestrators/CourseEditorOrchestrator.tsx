@@ -1,5 +1,24 @@
-// features/content/course/components/CourseEditorShell.tsx
 "use client";
+
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Apps
+ * App: Creator
+ * Type: Orchestrator
+ *
+ * Purpose:
+ * Composes Courses, Learning, and Publishing domains into the rich text editor.
+ *
+ * Rules:
+ * - The supreme authority for the course authoring state.
+ * - Handles complex cross-domain interactions.
+ * - Keep domain UI pure.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
+// features/content/course/components/CourseEditorShell.tsx
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";

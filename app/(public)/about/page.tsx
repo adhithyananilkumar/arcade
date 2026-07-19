@@ -4,7 +4,7 @@ import React from "react";
 import { ArrowRight, Globe, Users, Zap, Shield, HeartHandshake } from "lucide-react";
 import Link from "next/link";
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
-import "@/styles/landing.css";
+import "@/apps/public/landing.css";
 
 export default function AboutPage() {
   const headerRef = React.useRef<HTMLDivElement>(null);

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import "@/styles/landing.css";
+import "@/apps/public/landing.css";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },

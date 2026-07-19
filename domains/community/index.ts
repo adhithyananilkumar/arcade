@@ -1,3 +1,20 @@
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Domains
+ * Domain: Community
+ *
+ * Purpose:
+ * Exposes the public API for the Community domain.
+ *
+ * Rules:
+ * - Export only stable public APIs.
+ * - Never export internal helpers.
+ * - Never import from apps/.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
 export { ForumSidebar } from './components/ForumSidebar';
 export { TrendingSidebar } from './components/TrendingSidebar';
 export { NotificationPanel } from './components/NotificationPanel';

@@ -1,3 +1,19 @@
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: App
+ * Type: Root Layout
+ *
+ * Purpose:
+ * Declarative global HTML layout and Next.js root metadata.
+ *
+ * Rules:
+ * - Do not place business logic here.
+ * - Delegate to GlobalProviders in apps/core for React Context.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

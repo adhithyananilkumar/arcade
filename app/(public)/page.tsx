@@ -4,7 +4,7 @@ import LogoStrip from "@/apps/public/components/landing/LogoStrip";
 import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
 import Testimonials from "@/apps/public/components/landing/Testimonials";
 import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
-import "@/styles/landing.css";
+import "@/apps/public/landing.css";
 
 export const metadata: Metadata = {
   title: "Arcade — Built to level you up",

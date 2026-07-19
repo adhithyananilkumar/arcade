@@ -1,5 +1,22 @@
 'use client';
 
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Apps
+ * App: Core
+ *
+ * Purpose:
+ * Route guard layout ensuring a user is authenticated.
+ *
+ * Rules:
+ * - Handles redirects to /sign.
+ * - Delegates rendering to nested children.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
+
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';

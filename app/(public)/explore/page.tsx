@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import GradientText from "@/apps/public/components/landing/GradientText";
 import Link from "next/link";
-import "@/styles/landing.css";
+import "@/apps/public/landing.css";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;

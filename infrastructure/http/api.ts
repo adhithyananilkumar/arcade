@@ -1,3 +1,20 @@
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Infrastructure
+ * Module: HTTP
+ *
+ * Purpose:
+ * The single source of truth for all outgoing HTTP requests.
+ *
+ * Rules:
+ * - Must remain agnostic to Arcade business domains.
+ * - Exposes generic methods (get, post, put, delete).
+ * - Do not import anything from domains/ or apps/.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
 // lib/api.ts
 // Thin API client wrapping fetch with base URL from env.
 // Attaches the JWT access token and silently refreshes it on 401 using Zustand and AuthService.

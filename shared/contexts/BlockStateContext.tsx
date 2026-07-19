@@ -1,5 +1,22 @@
 "use client";
 
+/**
+ * ------------------------------------------------------------------
+ * Arcade Frontend Architecture
+ * Layer: Shared
+ * Module: Contexts
+ *
+ * Purpose:
+ * Framework-agnostic React Context for managing rich text block state.
+ *
+ * Rules:
+ * - Must not contain domain-specific business logic.
+ * - Safe to be used by any domain.
+ * - See docs/architecture/ADR-001-frontend-architecture.md
+ * ------------------------------------------------------------------
+ */
+
+
 import { createContext, useCallback, useContext } from "react";
 
 interface BlockStateContextValue {
