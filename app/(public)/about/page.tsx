@@ -3,7 +3,7 @@
 import React from "react";
 import { ArrowRight, Globe, Users, Zap, Shield, HeartHandshake } from "lucide-react";
 import Link from "next/link";
-import VariableProximity from "@/components/landing/VariableProximity";
+import VariableProximity from "@/apps/public/components/landing/VariableProximity";
 import "@/styles/landing.css";
 
 export default function AboutPage() {

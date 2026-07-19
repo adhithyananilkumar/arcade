@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { OrganizationService } from '@/services/platform/tenancy/organization.service';
+import { OrganizationService } from "@/domains/organizations";
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';

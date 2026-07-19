@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import HeroSection from "@/components/landing/HeroSection";
-import LogoStrip from "@/components/landing/LogoStrip";
-import CourseShowcase from "@/components/landing/CourseShowcase";
-import Testimonials from "@/components/landing/Testimonials";
-import JourneyTimeline from "@/components/landing/JourneyTimeline";
+import HeroSection from "@/apps/public/components/landing/HeroSection";
+import LogoStrip from "@/apps/public/components/landing/LogoStrip";
+import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
+import Testimonials from "@/apps/public/components/landing/Testimonials";
+import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
 import "@/styles/landing.css";
 
 export const metadata: Metadata = {

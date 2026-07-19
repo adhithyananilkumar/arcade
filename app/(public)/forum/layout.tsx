@@ -1,7 +1,7 @@
 'use client';
 
-import { ForumLayout } from '@/features/forum/components/ForumLayout';
-import { ForumLayoutProvider } from '@/features/forum/components/ForumLayoutContext';
+import { ForumLayout } from "@/apps/public/layout/ForumLayout";
+import { ForumLayoutProvider } from "@/apps/public/layout/ForumLayoutContext";
 
 export default function ForumGroupLayout({
   children,

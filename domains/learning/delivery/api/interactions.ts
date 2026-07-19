@@ -2,7 +2,7 @@
 // Per-learner interaction state for interactive blocks (toggle, and future ones) inside a lesson.
 // See arcade-backend com.arcade.backend.learning.interaction.*
 
-import { api } from "@/lib/api";
+import { api } from "@/infrastructure/http/api";
 
 export interface InteractionStateResponse {
   state: Record<string, unknown>;

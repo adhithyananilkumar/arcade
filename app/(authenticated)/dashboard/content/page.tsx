@@ -5,8 +5,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import type { CourseResponse } from "@/types/api";
+import { api } from "@/infrastructure/http/api";
+import type { CourseResponse } from "@/shared/types/api.types";
 import {
   BookOpen,
   Wrench,

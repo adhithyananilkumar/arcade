@@ -3,9 +3,9 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { roadmapService } from "@/features/content/editor/roadmap/services/roadmap";
-import type { RoadmapData } from "@/features/content/editor/roadmap/types";
-import { RoadmapStudio } from "@/features/content/editor/roadmap/components/RoadmapStudio";
+import { roadmapService } from "@/domains/roadmaps";
+import type { RoadmapData } from "@/domains/roadmaps";
+import { RoadmapStudio } from "@/domains/roadmaps";
 import { useRouter } from "next/navigation";
 
 export default function RoadmapEditPage({

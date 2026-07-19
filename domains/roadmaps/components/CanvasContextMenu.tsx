@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Pencil, Copy, Trash2, Palette } from 'lucide-react';
 import { Node } from '@xyflow/react';

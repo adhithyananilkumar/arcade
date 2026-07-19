@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { 
   ReactFlow, 

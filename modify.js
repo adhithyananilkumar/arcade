@@ -11,7 +11,7 @@ code = code.replace(/\/\* \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 // Imports
 code = code.replace(
   /import \{ useState \} from "react"/,
-  `import { useState, useEffect, createContext, useContext } from "react"\nimport { useParams } from "next/navigation"\nimport { api } from "@/lib/api"\nimport { CourseResponse } from "@/types/api"`
+  `import { useState, useEffect, createContext, useContext } from "react"\nimport { useParams } from "next/navigation"\nimport { api } from "@/infrastructure/http/api"\nimport { CourseResponse } from "@/shared/types/api.types"`
 );
 
 // Context

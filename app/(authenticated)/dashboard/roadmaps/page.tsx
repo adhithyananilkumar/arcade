@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Map, Plus, Clock, MoreVertical, Pencil, Trash2, Copy, X, Library, Upload } from "lucide-react";
-import { roadmapService } from "@/features/content/editor/roadmap/services/roadmap";
-import type { RoadmapData } from "@/features/content/editor/roadmap/types";
+import { roadmapService } from "@/domains/roadmaps";
+import type { RoadmapData } from "@/domains/roadmaps";
 
 function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();

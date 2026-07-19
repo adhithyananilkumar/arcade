@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ReactFlow, Background, Controls, Node, Edge, MarkerType } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";

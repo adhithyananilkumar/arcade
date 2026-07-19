@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Bookmark, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { UserAvatar } from './UserAvatar';
 import { TagBadge } from './TagBadge';
 import { PostTypeBadge } from './PostTypeBadge';
 import { VoteButtons } from './VoteButtons';
 import { ShareButton } from './ShareButton';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useDeletePost, useToggleBookmark } from '../api/forum.queries';
 import { ForumService } from '../api/forum.service';
 import { PostCreatorDialog } from './PostCreatorDialog';
@@ -23,7 +23,6 @@ interface Props {
 }
 
 export function PostCard({ post, index = 0 }: Props) {
-  const router = useRouter();
   const { user } = useAuthStore();
   const deletePost = useDeletePost();
   const toggleBookmark = useToggleBookmark();
@@ -75,9 +74,9 @@ export function PostCard({ post, index = 0 }: Props) {
       transition={{ duration: 0.22, delay: index * 0.04 }}
     >
       <div
-        onClick={() => router.push(`/forum/${post.slug}`)}
-        className="forum-card"
+        className="forum-card group"
         style={{
+          position: 'relative',
           backgroundColor: '#fff',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
@@ -96,8 +95,15 @@ export function PostCard({ post, index = 0 }: Props) {
           (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
         }}
       >
+        {/* Stretched Link for the entire card */}
+        <Link 
+          href={`/forum/${post.slug}`} 
+          style={{ position: 'absolute', inset: 0, zIndex: 1 }} 
+          aria-label={`View post: ${post.title}`}
+        />
+
         {/* Top Meta Row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, position: 'relative', zIndex: 10 }}>
           <UserAvatar username={post.author.username} avatarUrl={post.author.avatarUrl} size="sm" />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
             {displayName(post.author.username)}
@@ -105,15 +111,12 @@ export function PostCard({ post, index = 0 }: Props) {
           <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>·</span>
           {post.category && (
             <>
-              <span
-                style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/forum/c/${post.category?.slug}`);
-                }}
+              <Link
+                href={`/forum/c/${post.category?.slug}`}
+                style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, textDecoration: 'none' }}
               >
                 {post.category.name}
-              </span>
+              </Link>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>·</span>
             </>
           )}
@@ -200,7 +203,7 @@ export function PostCard({ post, index = 0 }: Props) {
 
         {/* Tags Row */}
         {post.tags.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16, position: 'relative', zIndex: 10 }}>
             {post.tags.slice(0, 4).map((tag) => (
               <span key={tag.id} onClick={(e) => e.stopPropagation()}>
                 <TagBadge slug={tag.slug} name={tag.name} />
@@ -210,7 +213,7 @@ export function PostCard({ post, index = 0 }: Props) {
         )}
 
         {/* Action Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'auto', position: 'relative', zIndex: 10 }}>
           <VoteButtons
             targetType="POST"
             targetId={post.id}
@@ -219,8 +222,8 @@ export function PostCard({ post, index = 0 }: Props) {
             userVote={post.userVote}
           />
 
-          <button
-            onClick={(e) => { e.stopPropagation(); router.push(`/forum/${post.slug}`); }}
+          <Link
+            href={`/forum/${post.slug}`}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -230,7 +233,7 @@ export function PostCard({ post, index = 0 }: Props) {
               borderRadius: 'var(--radius-full)',
               border: '1px solid var(--border)',
               backgroundColor: 'var(--surface)',
-              cursor: 'pointer',
+              textDecoration: 'none',
               fontSize: 13,
               fontWeight: 500,
               color: 'var(--text-muted)',
@@ -239,7 +242,7 @@ export function PostCard({ post, index = 0 }: Props) {
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--surface)')}
           >
             <MessageCircle size={14} /> {post.commentCount} {post.commentCount === 1 ? 'reply' : 'replies'}
-          </button>
+          </Link>
 
           <button
             onClick={(e) => {

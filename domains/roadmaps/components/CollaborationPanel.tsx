@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { Users, MessageSquare, Activity, UserPlus, Clock, Check, MoreVertical } from "lucide-react";
 import { collaborationService } from "../services/collaboration";

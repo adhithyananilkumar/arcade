@@ -1,13 +1,14 @@
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export const usePermissions = () => {
   const user = useAuthStore((state) => state.user);
 
-  const hasRole = (role: string) => user?.roles?.includes(role) ?? false;
-  const hasAnyRole = (roles: string[]) => roles.some(hasRole);
-  
-  const hasPermission = (permission: string) => user?.permissions?.includes(permission) ?? false;
+  // The backend resolves all permissions into the user.permissions array.
+  // The 'ALL' permission indicates superuser privileges.
+  const hasPermission = (permission: string) => 
+    user?.permissions?.includes('ALL') || (user?.permissions?.includes(permission) ?? false);
+    
   const hasAnyPermission = (permissions: string[]) => permissions.some(hasPermission);
 
-  return { hasRole, hasAnyRole, hasPermission, hasAnyPermission, isOwner: hasRole('ROLE_OWNER') };
+  return { hasPermission, hasAnyPermission };
 };

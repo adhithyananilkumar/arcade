@@ -1,7 +1,7 @@
 // features/assessment/api.ts
 // Typed calls to the assessment domain's quiz-authoring endpoints.
 
-import { api } from "@/lib/api";
+import { api } from "@/infrastructure/http/api";
 import type {
   BankQuestionResponse,
   QuestionBankQuestionsRequest,

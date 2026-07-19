@@ -4,10 +4,10 @@ import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Settings, Tv, BookOpen, Shield } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthorizationService } from '@/services/authorization.service';
+import { cn } from '@/shared/utils/utils';
+import { usePermissions } from "@/domains/identity";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
 export default function ArcConsoleLayout({
   children,

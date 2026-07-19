@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { BookOpen, HelpCircle, FileText, Link, PlaySquare, Folder, AlertTriangle } from 'lucide-react';

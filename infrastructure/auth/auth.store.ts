@@ -21,8 +21,11 @@ export interface User {
   createdAt?: string;
   avatarUrl?: string;
   emailVerified: boolean;
-  roles: any[];
-  permissions: string[];
+  platformRoles?: { id: string; code: string; name: string }[];
+  channelMemberships?: { channelId: string; channelName: string; channelType: string; roles: { id: string; code: string; name: string }[] }[];
+  // Legacy fields (kept for fallback)
+  roles?: any[];
+  permissions?: string[];
   bio?: string;
   linkedinUrl?: string;
   githubUrl?: string;

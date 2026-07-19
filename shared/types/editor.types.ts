@@ -3,6 +3,9 @@
 // Every document produced by Tiptap must conform to TiptapDocument.
 // See: AGENTS.md §3 — Guiding Principle 4
 
+import type { Editor, Range } from "@tiptap/react";
+import type { LucideIcon } from "lucide-react";
+
 export type TiptapNodeType =
   | "doc"
   | "paragraph"
@@ -62,4 +65,22 @@ export interface TiptapNode {
 export interface TiptapDocument {
   type: "doc";
   content: TiptapNode[];
+}
+
+export interface BlockCommand {
+  /** Stable id, used as React key and for equality checks. */
+  id: string;
+  /** Human label shown in menus. */
+  title: string;
+  /** One-line description shown under the title in the slash menu. */
+  description: string;
+  /** Icon rendered in the gutter menus. */
+  icon: LucideIcon;
+  /** Extra fuzzy-search terms for the slash menu (all lowercase). */
+  keywords: string[];
+  /**
+   * Apply the command. When invoked from the slash menu, `range` is the "/query"
+   * range to delete first; the "+" button and "Turn into" pass no range.
+   */
+  run: (editor: Editor, range?: Range) => void;
 }

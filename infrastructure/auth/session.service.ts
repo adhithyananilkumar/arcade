@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/apiClient';
+import { api } from '@/infrastructure/http/api';
 
 export interface Session {
   id: string;
@@ -12,7 +12,7 @@ export class SessionService {
    * Retrieves all active sessions for the current user.
    */
   static async getSessions(): Promise<Session[]> {
-    const { data } = await apiClient.get<Session[]>('/sessions');
+    const data = await api.get<Session[]>('/api/v1/sessions');
     return data;
   }
 
@@ -20,6 +20,6 @@ export class SessionService {
    * Revokes a specific session family.
    */
   static async revokeSession(familyId: string): Promise<void> {
-    await apiClient.delete(`/sessions/${familyId}`);
+    await api.delete(`/api/v1/sessions/${familyId}`);
   }
 }

@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/apiClient';
+import { api } from '@/infrastructure/http/api';
 
 export interface Permission {
   id: string;
@@ -11,7 +11,7 @@ export interface Permission {
 
 export const permissionService = {
   getAllPermissions: async (): Promise<Permission[]> => {
-    const response = await apiClient.get<Permission[]>('/permissions');
-    return response.data;
+    const response = await api.get<Permission[]>('/api/v1/permissions');
+    return response;
   },
 };

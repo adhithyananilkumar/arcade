@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { Handle, Position } from "@xyflow/react";
 import { BookOpen, Video, PenTool, CheckCircle, Lock, PlayCircle, Clock } from "lucide-react";

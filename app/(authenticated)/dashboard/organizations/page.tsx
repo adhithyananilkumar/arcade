@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Organization, OrganizationService } from '@/services/platform/tenancy/organization.service';
+import { Organization, OrganizationService } from "@/domains/organizations";
 import { Building2, Plus, Users, ChevronRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);

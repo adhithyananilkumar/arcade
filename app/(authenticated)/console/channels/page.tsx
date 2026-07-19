@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import { PendingChannels } from '@/app/(authenticated)/dashboard/PendingChannels'; // Reusing the component
 
 import { notFound } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthorizationService } from '@/services/authorization.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 export default function AdminChannelsPage() {
   const { user } = useAuthStore();
   if (!AuthorizationService.canManageChannels(user)) {

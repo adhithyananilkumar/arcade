@@ -1,18 +1,18 @@
 'use client';
 
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert, Bell, Check, X, GraduationCap } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { AuthService } from '@/services/auth.service';
-import { ChannelStaffService, ChannelInvitation } from '@/services/platform/tenancy/channel-staff.service';
-import { usePermissions } from '@/hooks/usePermissions';
-import { AuthorizationService } from '@/services/authorization.service';
-import { channelService } from '@/services/platform/tenancy/channel.service';
+import { AuthService } from '@/infrastructure/auth/auth.service';
+import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
+import { usePermissions } from "@/domains/identity";
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
+import { channelService } from "@/domains/channels";
 import Link from 'next/link';
 import Image from 'next/image';
-import { MenuContainer, MenuItem } from '@/components/ui/fluid-menu';
+import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 
 export default function DashboardNavbar() {

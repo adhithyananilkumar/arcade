@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useVote } from '../api/forum.queries';
 import type { TargetType, VoteType } from '../types/forum.types';
 

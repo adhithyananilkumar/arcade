@@ -4,17 +4,14 @@
 // this reads the live authoring tree directly, creator-only, as a stopgap.
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuestion } from "lucide-react";
-import { courseDeliveryService } from "../api/courses";
 import { TiptapContentView } from "./TiptapContentView";
-import { QuizPlayer, getQuizStats, type QuizStatsResponse } from "@/features/assessment";
+import { QuizPlayer, type QuizStatsResponse } from "@/domains/assessments";
 import { LessonReviewFeedback } from "./LessonReviewFeedback";
 import { PublishCourseDialog } from "./PublishCourseDialog";
-import { useAuthStore } from "@/store/auth.store";
-import { api } from "@/lib/api";
-import type { CourseRenderResponse, LessonRenderResponse } from "@/types/api";
+import type { CourseRenderResponse, LessonRenderResponse } from "@/shared/types/api.types";
 
 type TreeItem =
   | { kind: "lesson"; moduleId: string; item: LessonRenderResponse }
@@ -22,43 +19,50 @@ type TreeItem =
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
-export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: string }) {
-  const [course, setCourse] = useState<CourseRenderResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<SelectedItem>(null);
-  const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
-  const [quizStats, setQuizStats] = useState<Record<string, QuizStatsResponse>>({});
+interface CourseRendererProps {
+  course: CourseRenderResponse | null;
+  loading: boolean;
+  error: string | null;
+  selectedItem: SelectedItem;
+  setSelectedItem: (item: SelectedItem) => void;
+  collapsedModules: Set<string>;
+  toggleModule: (moduleId: string) => void;
+  quizStats: Record<string, QuizStatsResponse>;
+  canPublish: boolean;
+  onPublish: () => Promise<void>;
+  onAttemptGraded: (attempt: any, quizId: string) => void;
+  mode?: string;
+  isFeedbackOpen: boolean;
+  setIsFeedbackOpen: (open: boolean) => void;
+  comments: any[];
+  commentsLoading: boolean;
+  commentsError: string | null;
+  onAddComment: (content: string) => Promise<void>;
+  currentUser: any;
+}
+
+export function CourseRenderer({
+  course,
+  loading,
+  error,
+  selectedItem,
+  setSelectedItem,
+  collapsedModules,
+  toggleModule,
+  quizStats,
+  canPublish,
+  onPublish,
+  onAttemptGraded,
+  mode,
+  isFeedbackOpen,
+  setIsFeedbackOpen,
+  comments,
+  commentsLoading,
+  commentsError,
+  onAddComment,
+  currentUser
+}: CourseRendererProps) {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
-  const { user } = useAuthStore();
-
-  const canPublish =
-    user?.permissions.some((p) => p === "courses.review" || p === "channel.courses.review") ||
-    user?.permissions.includes("ROLE_SUPER_USER");
-
-  useEffect(() => {
-    courseDeliveryService
-      .renderCourse(courseId)
-      .then((data) => {
-        setCourse(data);
-        const firstLesson = data.modules.find((m) => m.lessons.length > 0)?.lessons[0];
-        setSelectedItem(firstLesson ? { kind: "lesson", id: firstLesson.id } : null);
-
-        const quizIds = data.modules.flatMap((m) => m.quizzes.map((q) => q.id));
-        if (quizIds.length > 0) {
-          getQuizStats(quizIds)
-            .then((stats) => {
-              setQuizStats(Object.fromEntries(stats.map((s) => [s.quizId, s])));
-            })
-            .catch(() => {
-              // Sidebar badges are a nice-to-have — a failed stats fetch shouldn't block the course.
-            });
-        }
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : "Could not load course"))
-      .finally(() => setLoading(false));
-  }, [courseId]);
 
   const selectedLesson = useMemo(() => {
     if (!course || selectedItem?.kind !== "lesson") return null;
@@ -70,26 +74,6 @@ export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: st
   }, [course, selectedItem]);
 
   const selectedQuizId = selectedItem?.kind === "quiz" ? selectedItem.id : null;
-
-  function toggleModule(moduleId: string) {
-    setCollapsedModules((prev) => {
-      const next = new Set(prev);
-      if (next.has(moduleId)) next.delete(moduleId);
-      else next.add(moduleId);
-      return next;
-    });
-  }
-
-  const handlePublish = async () => {
-    try {
-      await api.post(`/api/courses/${courseId}/publish`, {});
-      if (course) {
-        setCourse({ ...course, status: "PUBLISHED" });
-      }
-    } catch (err) {
-      alert("Failed to publish the course.");
-    }
-  };
 
   if (loading) {
     return (
@@ -247,21 +231,7 @@ export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: st
             <QuizPlayer
               key={selectedQuizId}
               quizId={selectedQuizId}
-              onAttemptGraded={(attempt) =>
-                setQuizStats((prev) => {
-                  const existing = prev[selectedQuizId];
-                  const bestScore = Math.max(existing?.bestScore ?? -Infinity, attempt.score);
-                  return {
-                    ...prev,
-                    [selectedQuizId]: {
-                      quizId: selectedQuizId,
-                      bestScore,
-                      maxScore: attempt.maxScore,
-                      attemptCount: (existing?.attemptCount ?? 0) + 1,
-                    },
-                  };
-                })
-              }
+              onAttemptGraded={(attempt) => onAttemptGraded(attempt, selectedQuizId)}
             />
           ) : (
             <p className="text-sm text-gray-400">Select a lesson from the sidebar to begin.</p>
@@ -285,7 +255,11 @@ export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: st
                 </button>
               </div>
               <LessonReviewFeedback
-                lessonId={selectedLesson.id}
+                comments={comments}
+                loading={commentsLoading}
+                error={commentsError}
+                onAddComment={onAddComment}
+                currentUser={currentUser}
                 className="flex-1 min-h-0"
               />
             </div>
@@ -304,7 +278,7 @@ export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: st
       <PublishCourseDialog
         open={isPublishDialogOpen}
         onClose={() => setIsPublishDialogOpen(false)}
-        onConfirm={handlePublish}
+        onConfirm={onPublish}
       />
     </div>
   );

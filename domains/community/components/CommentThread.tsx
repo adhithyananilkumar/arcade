@@ -6,7 +6,7 @@ import { CommentForm } from './CommentForm';
 import { LoadingSkeleton } from './LoadingSkeleton';
 import { EmptyState } from './EmptyState';
 import { UserAvatar } from './UserAvatar';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { PostDetailResponse } from '../types/forum.types';

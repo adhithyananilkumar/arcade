@@ -1,5 +1,5 @@
-import HeroNav from "@/components/landing/HeroNav";
-import Footer from "@/components/landing/Footer";
+import HeroNav from "@/apps/public/components/landing/HeroNav";
+import Footer from "@/apps/public/components/landing/Footer";
 
 export default function PublicLayout({
   children,

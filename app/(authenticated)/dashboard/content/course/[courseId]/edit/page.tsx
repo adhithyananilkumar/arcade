@@ -1,6 +1,6 @@
 // app/(authenticated)/dashboard/content/course/[courseId]/edit/page.tsx
 import type { Metadata } from "next";
-import { CourseEditorShell } from "@/features/content/course";
+import { CourseEditorOrchestrator } from "@/apps/creator/orchestrators/CourseEditorOrchestrator";
 
 export const metadata: Metadata = {
   title: "Edit Course — Arcade",
@@ -14,10 +14,10 @@ export default async function EditCoursePage({ params }: Props) {
   const { courseId } = await params;
 
   return (
-    // Cancels the dashboard shell's <main> padding (p-6 md:p-8) so the editor's own
-    // chrome sits flush under the global navbar instead of leaving a padded gap.
-    <div className="-m-6 flex h-[calc(100vh-4rem)] flex-col bg-white md:-m-8">
-      <CourseEditorShell courseId={courseId} />
+    // Removes negative margins since the global layout doesn't use padding anymore.
+    // Ensure height works within the new flex layout.
+    <div className="flex flex-col flex-1 bg-white">
+      <CourseEditorOrchestrator courseId={courseId} />
     </div>
   );
 }

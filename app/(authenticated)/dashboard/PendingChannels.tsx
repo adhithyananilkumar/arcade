@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
+import { Channel, channelService } from "@/domains/channels";
 import { Search, Check, X, Tv } from 'lucide-react';
 import { toast } from 'sonner';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { usePermissions } from "@/domains/identity";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 
 export function PendingChannels() {
   const [activeTab, setActiveTab] = useState<'PENDING' | 'ALL'>('PENDING');

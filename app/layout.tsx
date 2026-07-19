@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 
-import Providers from "@/components/Providers";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import Providers from "@/apps/core/Providers";
+import { TooltipProvider } from "@/shared/design-system/ui/tooltip";
 
 
 export const metadata: Metadata = {

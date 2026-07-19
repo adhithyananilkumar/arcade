@@ -1,9 +1,9 @@
 'use client';
 
-import ProtectedLayout from '@/components/ProtectedLayout';
-import DashboardNavbar from '@/components/layout/DashboardNavbar';
-import TimeTracker from '@/components/TimeTracker';
-import { useThemeStore } from '@/store/theme.store';
+import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
+import DashboardNavbar from '@/apps/learner/layout/DashboardNavbar';
+import { TimeTracker } from "@/domains/learning";
+import { useThemeStore } from '@/infrastructure/state/theme.store';
 import { useEffect, useState } from 'react';
 
 export default function AuthenticatedLayout({

@@ -1,59 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
-import type { CommentResponse } from "@/types/api";
+import { useState } from "react";
+import type { CommentResponse } from "@/shared/types/api.types";
 import { MessageSquare, Send } from "lucide-react";
-import { useAuthStore } from "@/store/auth.store";
 
 interface LessonReviewFeedbackProps {
-  lessonId: string;
+  comments: CommentResponse[];
+  loading: boolean;
+  error: string | null;
+  onAddComment: (content: string) => Promise<void>;
+  currentUser: any;
   className?: string;
 }
 
-export function LessonReviewFeedback({ lessonId, className = "" }: LessonReviewFeedbackProps) {
-  const [comments, setComments] = useState<CommentResponse[]>([]);
+export function LessonReviewFeedback({
+  comments,
+  loading,
+  error,
+  onAddComment,
+  currentUser,
+  className = "",
+}: LessonReviewFeedbackProps) {
   const [newComment, setNewComment] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useAuthStore();
-
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    api
-      .get<CommentResponse[]>(`/api/lessons/${lessonId}/comments`)
-      .then(setComments)
-      .catch((err) => {
-        // If it's a 403 Forbidden, they probably aren't the author or a reviewer.
-        // We can just hide the UI or show a soft error.
-        setError("You do not have access to view reviewer feedback.");
-      })
-      .finally(() => setLoading(false));
-  }, [lessonId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     try {
-      const added = await api.post<CommentResponse>(
-        `/api/lessons/${lessonId}/comments`,
-        { content: newComment.trim() }
-      );
-      setComments((prev) => [...prev, added]);
+      await onAddComment(newComment.trim());
       setNewComment("");
     } catch (err) {
-      alert("Failed to post feedback.");
+      // Error handled by orchestrator
     }
   };
 
   if (loading) return null; // Or a subtle spinner
 
   if (error) {
-    // If forbidden, we don't even render the comment box. This is appropriate
-    // for standard users viewing a course (if we ever allow that), they just
-    // won't see the internal reviewer feedback section at all.
     return null;
   }
 
@@ -77,11 +61,11 @@ export function LessonReviewFeedback({ lessonId, className = "" }: LessonReviewF
             <div
               key={c.id}
               className={`flex flex-col gap-1 max-w-[85%] ${
-                c.authorId === user?.id ? "self-end items-end" : "self-start items-start"
+                c.authorId === currentUser?.id ? "self-end items-end" : "self-start items-start"
               }`}
             >
               <div className="flex items-center gap-1.5 px-1">
-                {c.authorId !== user?.id && (
+                {c.authorId !== currentUser?.id && (
                   <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                     {c.authorName}
                   </span>
@@ -94,7 +78,7 @@ export function LessonReviewFeedback({ lessonId, className = "" }: LessonReviewF
                     minute: "2-digit",
                   })}
                 </span>
-                {c.authorId === user?.id && (
+                {c.authorId === currentUser?.id && (
                   <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
                     {c.authorName}
                   </span>
@@ -102,7 +86,7 @@ export function LessonReviewFeedback({ lessonId, className = "" }: LessonReviewF
               </div>
               <div
                 className={`px-4 py-2.5 rounded-2xl text-sm ${
-                  c.authorId === user?.id
+                  c.authorId === currentUser?.id
                     ? "bg-indigo-600 text-white rounded-tr-sm"
                     : "bg-gray-100 text-gray-800 rounded-tl-sm"
                 }`}

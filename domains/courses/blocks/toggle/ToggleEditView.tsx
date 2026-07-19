@@ -1,3 +1,5 @@
+'use client';
+
 import { NodeViewWrapper, NodeViewContent, NodeViewProps } from "@tiptap/react";
 import { ChevronRight, ListTree } from "lucide-react";
 import { useState } from "react";

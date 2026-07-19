@@ -1,11 +1,11 @@
 'use client';
 
 import { use, useState } from 'react';
-import { PostCard } from '@/features/forum/components/PostCard';
-import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
-import { EmptyState } from '@/features/forum/components/EmptyState';
-import { usePostsByTag, useToggleFollowTag } from '@/features/forum/api/forum.queries';
-import { useAuthStore } from '@/store/auth.store';
+import { PostCard } from "@/domains/community";
+import { LoadingSkeleton } from "@/domains/community";
+import { EmptyState } from "@/domains/community";
+import { usePostsByTag, useToggleFollowTag } from "@/domains/community";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { toast } from 'sonner';
 
 interface Props {

@@ -4,31 +4,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
-import { ArcadeEditor } from "@/features/content/editor";
-import type { ArcadeEditorHandle } from "@/features/content/editor";
-import { VersionHistoryPanel } from "@/features/content/version-history";
-import { LessonReviewFeedback } from "@/features/learning/delivery/components/LessonReviewFeedback";
+import { ArcadeEditor } from "@/apps/creator/editor";
+import type { ArcadeEditorHandle } from "@/apps/creator/editor";
+import { VersionHistoryOrchestrator } from "./VersionHistoryOrchestrator";
+import { LessonFeedbackOrchestrator } from "./LessonFeedbackOrchestrator";
+
 import {
   createYDoc,
   applyBase64Update,
   encodeStateBase64,
   encodeSnapshotBase64,
-} from "@/features/content/editor";
-import { QuizEditor } from "@/features/assessment";
+} from "@/apps/creator/editor";
+import { QuizEditor } from "@/domains/assessments";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { api } from "@/lib/api";
+} from "@/shared/design-system/ui/dropdown-menu";
+import { api } from "@/infrastructure/http/api";
 import type {
   CourseResponse,
   ModuleResponse,
   LessonResponse,
   QuizResponse,
-} from "@/types/api";
-import type { TiptapDocument } from "@/types/editor";
+} from "@/shared/types/api.types";
+import type { TiptapDocument } from "@/shared/types/editor.types";
 import {
   ChevronRight,
   ChevronDown,
@@ -56,7 +57,7 @@ import {
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
-interface CourseEditorShellProps {
+interface CourseEditorOrchestratorProps {
   courseId?: string; // required in practice — new courses are created via the dashboard modal
 }
 
@@ -421,7 +422,7 @@ function CourseSettingsPanel({
 
 // ── Main Shell ────────────────────────────────────────────────────────────────
 
-export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShellProps) {
+export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEditorOrchestratorProps) {
   const router = useRouter();
   const [courseId] = useState<string | undefined>(initialCourseId);
   const [title, setTitle] = useState("Untitled Course");
@@ -1116,12 +1117,20 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       {activeLessonId && (
-        <VersionHistoryPanel
+        <VersionHistoryOrchestrator
           lessonId={activeLessonId}
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           refreshKey={historyRefreshKey}
           onRestore={handleRestore}
+          renderEditor={(previewDoc, selectedId) => (
+            <ArcadeEditor
+              key={selectedId}
+              readOnly
+              initialContent={previewDoc}
+              className="bg-white"
+            />
+          )}
         />
       )}
 
@@ -1495,7 +1504,7 @@ export function CourseEditorShell({ courseId: initialCourseId }: CourseEditorShe
                     </div>
                   {feedbackOpen && (
                     <div className="w-80 lg:w-96 flex-shrink-0 border-l border-gray-200 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10 flex flex-col h-full absolute right-0 top-0 lg:relative lg:shadow-none">
-                      <LessonReviewFeedback lessonId={activeLessonId} className="h-full" />
+                      <LessonFeedbackOrchestrator lessonId={activeLessonId} className="h-full" />
                     </div>
                   )}
                 </div>

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { roleService, Role } from '@/services/identity/iam/role.service';
-import { permissionService, Permission } from '@/services/identity/iam/permission.service';
-import { AuthService } from '@/services/auth.service';
+import { roleService, Role } from "@/domains/identity";
+import { permissionService, Permission } from "@/domains/identity";
+import { AuthService } from '@/infrastructure/auth/auth.service';
 import { toast } from 'sonner';
 import { Plus, X, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
+import { usePermissions } from "@/domains/identity";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 const formatPermissionKey = (key: string) => {
   if (!key) return '';

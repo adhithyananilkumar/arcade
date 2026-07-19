@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { BlockCommand } from "../lib/blockCommands";
+import type { BlockCommand } from "@/shared/types/editor.types";
 
 /** Imperative surface the suggestion plugin drives for keyboard navigation. */
 export interface SlashCommandMenuRef {

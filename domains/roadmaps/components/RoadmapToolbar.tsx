@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { 
   Plus, Trash2, Undo, Redo, LayoutGrid, Maximize, Save, Share, Search 

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useState, useMemo } from "react";
 import { useRoadmapAutoSave } from "../hooks/useRoadmapAutoSave";
 import { AlertCircle } from "lucide-react";

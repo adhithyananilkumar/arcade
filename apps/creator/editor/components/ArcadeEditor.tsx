@@ -9,7 +9,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { BlockHandle } from "./BlockHandle";
 import { useArcadeEditor } from "../hooks/useArcadeEditor";
 import "../styles/editor.css";
-import type { TiptapDocument } from "@/types/editor";
+import type { TiptapDocument } from "@/shared/types/editor.types";
 
 /** Imperative handle exposed via ref — force-save, restore, or read current content. */
 export interface ArcadeEditorHandle {

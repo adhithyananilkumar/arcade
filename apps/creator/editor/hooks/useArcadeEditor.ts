@@ -6,7 +6,7 @@ import debounce from "lodash.debounce";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
-import type { TiptapDocument } from "@/types/editor";
+import type { TiptapDocument } from "@/shared/types/editor.types";
 
 export interface UseArcadeEditorOptions {
   /**

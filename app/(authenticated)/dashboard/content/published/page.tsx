@@ -6,8 +6,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
-import type { CourseResponse } from "@/types/api";
+import { api } from "@/infrastructure/http/api";
+import type { CourseResponse } from "@/shared/types/api.types";
 import { ArrowLeft, BookOpen, Clock, GraduationCap } from "lucide-react";
 
 function StatusBadge({ status }: { status: string }) {

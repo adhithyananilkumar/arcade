@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { usePathname } from "next/navigation"
 import { ChevronDown } from "lucide-react"
 
 interface MenuProps {
@@ -82,12 +81,6 @@ export function MenuItem({ children, onClick, disabled = false, icon, isActive =
 
 export function MenuContainer({ children }: { children: React.ReactNode }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const pathname = usePathname()
-  
-  useEffect(() => {
-    setIsExpanded(false)
-  }, [pathname])
-
   const childrenArray = React.Children.toArray(children)
   const totalItems = childrenArray.length - 1
 
@@ -129,7 +122,10 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
                 WebkitFontSmoothing: 'antialiased'
               }}
             >
-              <div className="h-full w-full bg-white dark:bg-black shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-neutral-800 rounded-full flex items-center justify-center hover:scale-[1.05] transition-transform duration-300 group">
+              <div 
+                className="h-full w-full bg-white dark:bg-black shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-neutral-800 rounded-full flex items-center justify-center hover:scale-[1.05] transition-transform duration-300 group"
+                onClick={() => setIsExpanded(false)}
+              >
                 {child}
               </div>
             </div>

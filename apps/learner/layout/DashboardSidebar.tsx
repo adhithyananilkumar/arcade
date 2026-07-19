@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search, BookOpen, Map, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuthStore } from '@/store/auth.store';
-import { usePermissions } from '@/hooks/usePermissions';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { usePermissions } from "@/domains/identity";
 import { useState, useEffect } from 'react';
-import { channelService } from '@/services/platform/tenancy/channel.service';
+import { channelService } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },

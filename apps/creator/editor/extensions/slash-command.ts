@@ -9,7 +9,8 @@ import {
   SlashCommandMenu,
   type SlashCommandMenuRef,
 } from "../components/SlashCommandMenu";
-import { filterBlockCommands, type BlockCommand } from "../lib/blockCommands";
+import { filterBlockCommands } from "../lib/blockCommands";
+import type { BlockCommand } from "@/shared/types/editor.types";
 
 /** Position a floating popup below the "/" caret using the suggestion's clientRect. */
 function positionPopup(popup: HTMLElement, clientRect?: (() => DOMRect | null) | null) {

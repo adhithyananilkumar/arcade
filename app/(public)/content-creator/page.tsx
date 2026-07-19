@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import TrueFocus from "@/components/landing/TrueFocus";
+import TrueFocus from "@/apps/public/components/landing/TrueFocus";
 import { toast } from "sonner";
 import "../courses/courses.css";
 

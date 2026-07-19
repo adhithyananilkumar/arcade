@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
+import CategoryDetailedView from "@/apps/public/components/explore/CategoryDetailedView";
 
 export default function CoursesPage() {
   return (

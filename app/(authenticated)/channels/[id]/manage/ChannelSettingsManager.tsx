@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
+import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
 import { Upload, Image as ImageIcon, Loader2, AlertTriangle, Info, X, Shield } from 'lucide-react';
-import { useAuthStore } from '@/store/auth.store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelStaffManager } from './ChannelStaffManager';
 
 interface Props {

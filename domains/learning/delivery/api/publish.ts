@@ -2,7 +2,7 @@
 // Author-only publishing controls for the D4 publishing domain — cut/list immutable course
 // snapshots. See arcade-backend com.arcade.backend.publishing.*
 
-import { api } from "@/lib/api";
+import { api } from "@/infrastructure/http/api";
 
 export interface PublishResponse {
   versionId: string;

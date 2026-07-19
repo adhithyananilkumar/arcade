@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AuditLog, AuditService } from '@/services/platform/audit/audit.service';
+import { AuditLog, AuditService } from '@/infrastructure/monitoring/audit.service';
 import { Shield, Loader2, ArrowLeft, Clock, Monitor, Key, Building } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';

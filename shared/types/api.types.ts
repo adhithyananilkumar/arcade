@@ -2,7 +2,7 @@
 // API request/response types that mirror the Spring Boot DTOs.
 // Keep in sync with the backend DTOs in arcade-backend/content/dto/.
 
-import type { TiptapDocument } from "./editor";
+import type { TiptapDocument } from "./editor.types";
 
 // ── Course ────────────────────────────────────────────────────────────────────
 

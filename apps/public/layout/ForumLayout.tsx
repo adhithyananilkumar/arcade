@@ -1,10 +1,8 @@
 'use client';
 
-import { ForumSidebar } from './ForumSidebar';
-import { TrendingSidebar } from './TrendingSidebar';
-import { NotificationPanel } from './NotificationPanel';
-import { NavUserMenu } from './NavUserMenu';
-import { useAuthStore } from '@/store/auth.store';
+import { ForumSidebar, TrendingSidebar, NotificationPanel, NavUserMenu } from '@/domains/community';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthService } from '@/infrastructure/auth/auth.service';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search } from 'lucide-react';
@@ -17,7 +15,7 @@ interface Props {
 }
 
 export function ForumLayout({ children }: Props) {
-  const { status } = useAuthStore();
+  const { status, user } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [q, setQ] = useState('');
@@ -147,10 +145,29 @@ export function ForumLayout({ children }: Props) {
         >
           {!mounted || status === 'loading' ? (
             <div style={{ width: 130, height: 32 }} />
-          ) : status === 'authenticated' ? (
+          ) : status === 'authenticated' && user ? (
             <>
               <NotificationPanel />
-              <NavUserMenu />
+              <NavUserMenu 
+                user={{
+                  username: user.username,
+                  email: user.email,
+                  firstName: user.firstName,
+                  avatarUrl: user.avatarUrl
+                }}
+                onLogout={async () => {
+                  try {
+                    await AuthService.logout();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                  useAuthStore.getState().clearAuth();
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('arcade-auth-storage');
+                  }
+                  router.push('/forum');
+                }}
+              />
             </>
           ) : (
             <>

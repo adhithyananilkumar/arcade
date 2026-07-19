@@ -1,10 +1,10 @@
 import { ChevronRight } from "lucide-react";
 import type { BlockRenderProps } from "../types";
-import { useBlockInteraction } from "@/features/learning/delivery/lib/InteractionContext";
+import { useBlockState } from "@/shared/contexts/BlockStateContext";
 
 export function ToggleRender({ node, children }: BlockRenderProps) {
   const nodeId = typeof node.attrs?.nodeId === "string" ? node.attrs.nodeId : undefined;
-  const [{ open }, setToggleState] = useBlockInteraction(nodeId, { open: false });
+  const [{ open }, setToggleState] = useBlockState(nodeId, { open: false });
   const setOpen = (next: boolean | ((prev: boolean) => boolean)) =>
     setToggleState({ open: typeof next === "function" ? next(open) : next });
   const title = typeof node.attrs?.title === "string" && node.attrs.title ? node.attrs.title : "Toggle";

@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { api } from "@/infrastructure/http/api";
 import type { CollaboratorData, CommentData, ActivityData } from "../types";
 
 export const collaborationService = {

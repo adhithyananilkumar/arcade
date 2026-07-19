@@ -9,10 +9,10 @@
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import { notFound } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthorizationService } from '@/services/authorization.service';
-import { api } from "@/lib/api";
-import type { CourseResponse } from "@/types/api";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
+import { api } from "@/infrastructure/http/api";
+import type { CourseResponse } from "@/shared/types/api.types";
 import { ArrowLeft, ClipboardCheck, Clock, Inbox, User, Search } from "lucide-react";
 
 // Statuses that count as "in the review queue". SUBMITTED is the one the Submit

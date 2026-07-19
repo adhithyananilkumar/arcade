@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-import { useThemeStore } from '@/store/theme.store';
-import { UserService } from '@/services/identity/user.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { useThemeStore } from '@/infrastructure/state/theme.store';
+import { UserService } from "@/domains/identity";
 import { User as UserIcon, Camera, Loader2, CheckCircle2, Activity, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { CreateChannelModal } from '@/components/CreateChannelModal';
+import { CreateChannelModal } from "@/domains/channels";
 
 export default function SettingsPage() {
   const { user } = useAuthStore();

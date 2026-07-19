@@ -2,13 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { PostCard } from '@/features/forum/components/PostCard';
-import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
-import { EmptyState } from '@/features/forum/components/EmptyState';
-import { useForumFeed } from '@/features/forum/api/forum.queries';
-import { useAuthStore } from '@/store/auth.store';
-import { UserAvatar } from '@/features/forum/components/UserAvatar';
-import { PostCreatorDialog } from '@/features/forum/components/PostCreatorDialog';
+import { PostCard } from "@/domains/community";
+import { LoadingSkeleton } from "@/domains/community";
+import { EmptyState } from "@/domains/community";
+import { useForumFeed } from "@/domains/community";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { UserAvatar } from "@/domains/community";
+import { PostCreatorDialog } from "@/domains/community";
 
 const FEED_TABS = [
   { key: 'latest', label: 'Latest' },

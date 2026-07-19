@@ -24,10 +24,10 @@ import {
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { api } from "@/lib/api"
-import type { CourseResponse } from "@/types/api"
-import { EnrollButton } from "@/components/ui/EnrollButton"
-import { UserService } from "@/services/identity/user.service"
+import { api } from "@/infrastructure/http/api"
+import type { CourseResponse } from "@/shared/types/api.types"
+import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
+import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
 
 /* ------------------------------------------------------------------ */
@@ -862,7 +862,7 @@ function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false }: { onEn
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-import { useAuthStore } from "@/store/auth.store"
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
 
 export default function CoursePage() {
   const params = useParams()

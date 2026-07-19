@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChannelStaffService, ChannelStaff, ChannelInvitation } from '@/services/platform/tenancy/channel-staff.service';
-import { UserService } from '@/services/identity/user.service';
-import { Role, roleService } from '@/services/identity/iam/role.service';
+import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/channels";
+import { UserService } from "@/domains/identity";
+import { Role, roleService } from "@/domains/identity";
 import { toast } from 'sonner';
 import { Users, Mail, Shield, Check, X, Search, Trash2, Plus, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 interface ChannelStaffManagerProps {
   channelId: string;

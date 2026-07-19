@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { UserService } from '@/services/identity/user.service';
-import { roleService, Role } from '@/services/identity/iam/role.service';
-import { User, useAuthStore } from '@/store/auth.store';
-import { AuthService } from '@/services/auth.service';
+import { UserService } from "@/domains/identity";
+import { roleService, Role } from "@/domains/identity";
+import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthService } from '@/infrastructure/auth/auth.service';
 import { toast } from 'sonner';
 import { Shield, Plus, X, Edit3, Search } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
 
 export function UsersList() {
   const currentUser = useAuthStore(state => state.user);

@@ -21,7 +21,7 @@ import { Youtube } from "@tiptap/extension-youtube";
 import { Focus } from "@tiptap/extensions";
 import { createLowlight, common } from "lowlight";
 import type * as Y from "yjs";
-import { getBlockExtensions } from "../../blocks/registry";
+import { getBlockExtensions } from "@/domains/courses";
 import { SlashCommand } from "./slash-command";
 
 const lowlight = createLowlight(common);

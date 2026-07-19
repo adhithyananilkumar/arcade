@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { X, Palette, Settings, Layout, GraduationCap, MessageSquare } from 'lucide-react';
 import { Node } from '@xyflow/react';

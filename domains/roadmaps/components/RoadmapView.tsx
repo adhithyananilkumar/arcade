@@ -1,3 +1,5 @@
+'use client';
+
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import { useRoadmap } from "../hooks/useRoadmap";
 import { Loader2, AlertCircle, Maximize2, Route } from "lucide-react";

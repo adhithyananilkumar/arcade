@@ -1,4 +1,4 @@
-import ProtectedLayout from '@/components/ProtectedLayout';
+import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
 
 export default function OnboardingLayout({
   children,

@@ -1,8 +1,8 @@
 // features/learning/delivery/api/courses.ts
 // Read-only course delivery API — the renderer's only door into the backend.
 
-import { api } from "@/lib/api";
-import type { CourseRenderResponse } from "@/types/api";
+import { api } from "@/infrastructure/http/api";
+import type { CourseRenderResponse } from "@/shared/types/api.types";
 
 export const courseDeliveryService = {
   /** Author-only live preview — the working copy, not what learners currently see. */

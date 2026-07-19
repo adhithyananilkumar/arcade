@@ -2,18 +2,23 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { LogOut, User, FileText, ChevronDown, BookOpen } from 'lucide-react';
-import { useAuthStore } from '@/store/auth.store';
 import { UserAvatar } from './UserAvatar';
-import { AuthService } from '@/services/auth.service';
+import Link from 'next/link';
 
-export function NavUserMenu() {
+interface NavUserMenuProps {
+  user: {
+    username?: string;
+    email: string;
+    firstName?: string;
+    avatarUrl?: string | null;
+  };
+  onLogout: () => void;
+}
+
+export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const { user, clearAuth } = useAuthStore();
-  const router = useRouter();
 
   // Close on outside click
   useEffect(() => {
@@ -26,21 +31,10 @@ export function NavUserMenu() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await AuthService.logout();
-    } catch (err) {
-      console.error(err);
-    }
-    clearAuth();
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('arcade-auth-storage');
-    }
+  const handleSignOut = () => {
     setOpen(false);
-    router.push('/forum');
+    onLogout();
   };
-
-  if (!user) return null;
 
   return (
     <div ref={panelRef} style={{ position: 'relative' }}>
@@ -59,7 +53,7 @@ export function NavUserMenu() {
           transition: 'all 0.15s',
         }}
       >
-        <UserAvatar username={user.username || user.email} avatarUrl={user.avatarUrl} size="sm" />
+        <UserAvatar username={user.username || user.email} avatarUrl={user.avatarUrl || undefined} size="sm" />
         <span
           style={{
             fontSize: 13,

@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/apiClient';
+import { api } from '@/infrastructure/http/api';
 
 export interface Role {
   id: string;
@@ -20,42 +20,42 @@ export interface RoleRequest {
 export const roleService = {
   getAllRoles: async (scope?: string): Promise<Role[]> => {
     const query = scope ? `?scope=${scope}` : '';
-    const response = await apiClient.get<Role[]>(`/roles${query}`);
-    return response.data;
+    const response = await api.get<Role[]>(`/api/v1/roles${query}`);
+    return response;
   },
 
   createRole: async (request: RoleRequest, scope?: string): Promise<Role> => {
     const query = scope ? `?scope=${scope}` : '';
-    const response = await apiClient.post<Role>(`/roles${query}`, request);
-    return response.data;
+    const response = await api.post<Role>(`/api/v1/roles${query}`, request);
+    return response;
   },
 
   updateRole: async (id: string, request: RoleRequest): Promise<Role> => {
-    const response = await apiClient.put<Role>(`/roles/${id}`, request);
-    return response.data;
+    const response = await api.put<Role>(`/api/v1/roles/${id}`, request);
+    return response;
   },
 
   deleteRole: async (id: string): Promise<void> => {
-    await apiClient.delete(`/roles/${id}`);
+    await api.delete(`/api/v1/roles/${id}`);
   },
 
   // Channel-specific role endpoints
   getChannelRoles: async (channelId: string): Promise<Role[]> => {
-    const response = await apiClient.get<Role[]>(`/channels/${channelId}/roles`);
-    return response.data;
+    const response = await api.get<Role[]>(`/api/v1/channels/${channelId}/roles`);
+    return response;
   },
 
   createChannelRole: async (channelId: string, request: RoleRequest): Promise<Role> => {
-    const response = await apiClient.post<Role>(`/channels/${channelId}/roles`, request);
-    return response.data;
+    const response = await api.post<Role>(`/api/v1/channels/${channelId}/roles`, request);
+    return response;
   },
 
   updateChannelRole: async (channelId: string, roleId: string, request: RoleRequest): Promise<Role> => {
-    const response = await apiClient.put<Role>(`/channels/${channelId}/roles/${roleId}`, request);
-    return response.data;
+    const response = await api.put<Role>(`/api/v1/channels/${channelId}/roles/${roleId}`, request);
+    return response;
   },
 
   deleteChannelRole: async (channelId: string, roleId: string): Promise<void> => {
-    await apiClient.delete(`/channels/${channelId}/roles/${roleId}`);
+    await api.delete(`/api/v1/channels/${channelId}/roles/${roleId}`);
   },
 };

@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search, Filter, Star, Map, Clock, Play } from "lucide-react";
-import { roadmapTemplateService } from "@/features/content/editor/roadmap/services/template";
-import { roadmapService } from "@/features/content/editor/roadmap/services/roadmap";
-import type { RoadmapTemplateData } from "@/features/content/editor/roadmap/types";
-import { CATEGORIES, DIFFICULTIES } from "@/features/content/editor/roadmap/components/SaveAsTemplateModal";
+import { roadmapTemplateService } from "@/domains/roadmaps";
+import { roadmapService } from "@/domains/roadmaps";
+import type { RoadmapTemplateData } from "@/domains/roadmaps";
+import { CATEGORIES, DIFFICULTIES } from "@/domains/roadmaps";
 
 export default function TemplatesPage() {
   const router = useRouter();

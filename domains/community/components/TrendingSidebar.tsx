@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTrendingTags } from '../api/forum.queries';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { TrendingUp } from 'lucide-react';
 
 export function TrendingSidebar() {

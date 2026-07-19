@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, PlaySquare } from 'lucide-react';
-import { channelService } from '@/services/platform/tenancy/channel.service';
+import { Button } from '@/shared/design-system/ui/button';
+import { channelService } from '../api/channel.service';
 import { toast } from 'sonner';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 interface CreateChannelModalProps {
   isOpen: boolean;

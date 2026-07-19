@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/apiClient';
+import { api } from '@/infrastructure/http/api';
 
 export interface Channel {
   id: string;
@@ -46,12 +46,8 @@ export const channelService = {
       formData.append('icon', iconFile);
     }
     
-    const response = await apiClient.post<Channel>('/channels', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    const response = await api.post<Channel>('/api/v1/channels', formData);
+    return response;
   },
 
   updateChannelSettings: async (
@@ -70,50 +66,46 @@ export const channelService = {
       formData.append('banner', bannerFile);
     }
     
-    const response = await apiClient.post<Channel>(`/channels/${channelId}/settings`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
+    return response;
   },
 
   getPendingRequests: async (): Promise<Channel[]> => {
-    const response = await apiClient.get<Channel[]>('/channels/requests');
-    return response.data;
+    const response = await api.get<Channel[]>('/api/v1/channels/requests');
+    return response;
   },
 
   getAllChannels: async (): Promise<Channel[]> => {
-    const response = await apiClient.get<Channel[]>('/channels');
-    return response.data;
+    const response = await api.get<Channel[]>('/api/v1/channels');
+    return response;
   },
 
   getMyChannels: async (): Promise<Channel[]> => {
-    const response = await apiClient.get<Channel[]>('/channels/me');
-    return response.data;
+    const response = await api.get<Channel[]>('/api/v1/channels/me');
+    return response;
   },
 
   getMyWorkspaces: async (): Promise<Channel[]> => {
-    const response = await apiClient.get<Channel[]>('/channels/workspaces');
-    return response.data;
+    const response = await api.get<Channel[]>('/api/v1/channels/workspaces');
+    return response;
   },
 
   getMyChannelPermissions: async (channelId: string): Promise<string[]> => {
-    const response = await apiClient.get<string[]>(`/channels/${channelId}/permissions`);
-    return response.data;
+    const response = await api.get<string[]>(`/api/v1/channels/${channelId}/permissions`);
+    return response;
   },
 
   getChannel: async (channelId: string): Promise<Channel> => {
-    const response = await apiClient.get<Channel>(`/channels/${channelId}`);
-    return response.data;
+    const response = await api.get<Channel>(`/api/v1/channels/${channelId}`);
+    return response;
   },
 
   acceptChannelRequest: async (channelId: string): Promise<void> => {
-    await apiClient.post(`/channels/${channelId}/accept`);
+    await api.post(`/api/v1/channels/${channelId}/accept`);
   },
 
   deleteChannelRequest: async (channelId: string): Promise<void> => {
-    await apiClient.delete(`/channels/${channelId}`);
+    await api.delete(`/api/v1/channels/${channelId}`);
   },
 
   submitDeletionRequest: async (
@@ -122,24 +114,22 @@ export const channelService = {
     phoneNumber: string,
     email: string
   ): Promise<void> => {
-    await apiClient.post(`/channels/${channelId}/delete-request`, null, {
-      params: { reason, phoneNumber, email }
-    });
+    const query = new URLSearchParams({ reason, phoneNumber, email }).toString();
+    await api.post(`/api/v1/channels/${channelId}/delete-request?${query}`);
   },
 
   getPendingDeletionRequests: async (): Promise<ChannelDeletionRequestDto[]> => {
-    const response = await apiClient.get<ChannelDeletionRequestDto[]>('/channels/delete-requests');
-    return response.data;
+    const response = await api.get<ChannelDeletionRequestDto[]>('/api/v1/channels/delete-requests');
+    return response;
   },
 
   getMyDeletionRequests: async (): Promise<ChannelDeletionRequestDto[]> => {
-    const response = await apiClient.get<ChannelDeletionRequestDto[]>('/channels/my-delete-requests');
-    return response.data;
+    const response = await api.get<ChannelDeletionRequestDto[]>('/api/v1/channels/my-delete-requests');
+    return response;
   },
 
   reviewDeletionRequest: async (requestId: string, action: 'APPROVE' | 'REJECT'): Promise<void> => {
-    await apiClient.post(`/channels/delete-requests/${requestId}/review`, null, {
-      params: { action }
-    });
+    const query = new URLSearchParams({ action }).toString();
+    await api.post(`/api/v1/channels/delete-requests/${requestId}/review?${query}`);
   }
 };

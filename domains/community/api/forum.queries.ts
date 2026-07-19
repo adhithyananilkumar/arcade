@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import {
   useQuery,
   useMutation,

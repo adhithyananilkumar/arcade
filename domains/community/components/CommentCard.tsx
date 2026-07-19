@@ -7,7 +7,7 @@ import { UserAvatar } from './UserAvatar';
 import { VoteButtons } from './VoteButtons';
 import { ShareButton } from './ShareButton';
 import { CommentForm } from './CommentForm';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useAcceptAnswer } from '../api/forum.queries';
 import { displayName, timeAgo } from '../utils/display';
 import type { CommentResponse, PostDetailResponse } from '../types/forum.types';

@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
-import { PostCard } from '@/features/forum/components/PostCard';
-import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
-import { EmptyState } from '@/features/forum/components/EmptyState';
-import { useSearchPosts } from '@/features/forum/api/forum.queries';
+import { PostCard } from "@/domains/community";
+import { LoadingSkeleton } from "@/domains/community";
+import { EmptyState } from "@/domains/community";
+import { useSearchPosts } from "@/domains/community";
 import { Search } from 'lucide-react';
 
 function SearchContent() {

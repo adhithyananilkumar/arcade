@@ -1,34 +1,34 @@
-import { apiClient } from '@/lib/apiClient';
-import { User } from '@/store/auth.store';
+import { api } from '@/infrastructure/http/api';
+import { User } from '@/infrastructure/auth/auth.store';
 
 export class UserService {
   static async getMe(): Promise<User> {
-    const { data } = await apiClient.get<User>('/users/me');
+    const data = await api.get<User>('/api/v1/users/me');
     return data;
   }
 
   static async getAllUsers(): Promise<User[]> {
-    const { data } = await apiClient.get<User[]>('/users');
+    const data = await api.get<User[]>('/api/v1/users');
     return data;
   }
 
   static async getUsersByRole(roleId: string): Promise<User[]> {
-    const { data } = await apiClient.get<User[]>(`/users/by-role/${roleId}`);
+    const data = await api.get<User[]>(`/api/v1/users/by-role/${roleId}`);
     return data;
   }
 
   static async assignRolesToUser(userId: string, roleIds: string[]): Promise<User> {
-    const { data } = await apiClient.put<User>(`/users/${userId}/roles`, roleIds);
+    const data = await api.put<User>(`/api/v1/users/${userId}/roles`, roleIds);
     return data;
   }
 
   static async getPublicProfile(username: string): Promise<any> {
-    const { data } = await apiClient.get(`/public/profiles/${username}`);
+    const data = await api.get(`/api/v1/public/profiles/${username}`);
     return data;
   }
 
   static async getUserActivity(username: string): Promise<{date: string, secondsSpent: number}[]> {
-    const { data } = await apiClient.get<{date: string, secondsSpent: number}[]>(`/public/profiles/${username}/activity`);
+    const data = await api.get<{date: string, secondsSpent: number}[]>(`/api/v1/public/profiles/${username}/activity`);
     return data;
   }
 
@@ -43,7 +43,7 @@ export class UserService {
     address?: string,
     githubUrl?: string
   ): Promise<User> {
-    const { data } = await apiClient.put<User>('/users/me', {
+    const data = await api.put<User>('/api/v1/users/me', {
       firstName,
       lastName,
       bio,
@@ -60,35 +60,31 @@ export class UserService {
   static async uploadAvatar(file: File): Promise<User> {
     const formData = new FormData();
     formData.append('file', file);
-    const { data } = await apiClient.post<User>('/users/me/avatar', formData, {
-      headers: {
-        'Content-Type': undefined,
-      },
-    });
+    const data = await api.post<User>('/api/v1/users/me/avatar', formData);
     return data;
   }
 
   static  async enrollInCourse(courseId: string): Promise<User> {
-    await apiClient.post(`/learning/enrollments/${courseId}`);
+    await api.post(`/api/v1/learning/enrollments/${courseId}`);
     return this.getMe();
   }
 
   static async acceptContentCreatorInvite(): Promise<void> {
-    await apiClient.post('/content-creators/accept');
+    await api.post('/api/v1/content-creators/accept');
   }
 
   static async declineContentCreatorInvite(): Promise<void> {
-    await apiClient.post('/content-creators/decline');
+    await api.post('/api/v1/content-creators/decline');
   }
 
   static async checkUsername(username: string): Promise<{ available: boolean; suggestions: string[] }> {
-    const { data } = await apiClient.get<{ available: boolean; suggestions: string[] }>(`/users/check-username?username=${encodeURIComponent(username)}`);
+    const data = await api.get<{ available: boolean; suggestions: string[] }>(`/api/v1/users/check-username?username=${encodeURIComponent(username)}`);
     return data;
   }
 
   static async checkEmail(email: string): Promise<User | null> {
     try {
-      const { data } = await apiClient.get<User>(`/users/check-email?email=${encodeURIComponent(email)}`);
+      const data = await api.get<User>(`/api/v1/users/check-email?email=${encodeURIComponent(email)}`);
       return data;
     } catch (e) {
       return null;

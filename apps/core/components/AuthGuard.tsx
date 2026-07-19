@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated } from "@/lib/auth";
+import { isAuthenticated } from "@/infrastructure/auth/auth";
 
 /**
  * Client-side gate for authenticated areas. Redirects to /login when no token

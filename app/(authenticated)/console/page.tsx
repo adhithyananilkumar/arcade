@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { usePermissions } from '@/hooks/usePermissions';
+import { usePermissions } from "@/domains/identity";
 
 export default function ArcConsoleIndex() {
   const router = useRouter();

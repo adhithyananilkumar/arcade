@@ -1,11 +1,11 @@
 'use client';
 
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, Variants } from 'framer-motion';
 import { Search, Star, Clock, BookOpen, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
-import type { CourseResponse } from '@/types/api';
+import { api } from '@/infrastructure/http/api';
+import type { CourseResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
 import DashboardLoading from './loading';
 

@@ -1,10 +1,10 @@
 'use client';
 
 import { use, useState } from 'react';
-import { PostCard } from '@/features/forum/components/PostCard';
-import { LoadingSkeleton } from '@/features/forum/components/LoadingSkeleton';
-import { EmptyState } from '@/features/forum/components/EmptyState';
-import { usePostsByCategory, useCategoryBySlug } from '@/features/forum/api/forum.queries';
+import { PostCard } from "@/domains/community";
+import { LoadingSkeleton } from "@/domains/community";
+import { EmptyState } from "@/domains/community";
+import { usePostsByCategory, useCategoryBySlug } from "@/domains/community";
 
 interface Props {
   params: Promise<{ slug: string }>;

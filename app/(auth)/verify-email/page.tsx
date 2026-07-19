@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { AuthService } from '@/services/auth.service';
+import { AuthService } from '@/infrastructure/auth/auth.service';
 import { Loader2, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
 function VerifyEmailForm() {

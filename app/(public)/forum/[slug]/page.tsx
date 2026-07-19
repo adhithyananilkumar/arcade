@@ -2,20 +2,20 @@
 
 import { use, useEffect, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { useForumLayout } from '@/features/forum/components/ForumLayoutContext';
-import { CommentThread } from '@/features/forum/components/CommentThread';
-import { VoteButtons } from '@/features/forum/components/VoteButtons';
-import { TagBadge } from '@/features/forum/components/TagBadge';
-import { PostTypeBadge } from '@/features/forum/components/PostTypeBadge';
-import { UserAvatar } from '@/features/forum/components/UserAvatar';
-import { ShareButton } from '@/features/forum/components/ShareButton';
-import { usePost } from '@/features/forum/api/forum.queries';
-import { useWebSocket } from '@/features/forum/hooks/useWebSocket';
-import { useToggleBookmark } from '@/features/forum/api/forum.queries';
-import { useAuthStore } from '@/store/auth.store';
+import { useForumLayout } from "@/apps/public/layout/ForumLayoutContext";
+import { CommentThread } from "@/domains/community";
+import { VoteButtons } from "@/domains/community";
+import { TagBadge } from "@/domains/community";
+import { PostTypeBadge } from "@/domains/community";
+import { UserAvatar } from "@/domains/community";
+import { ShareButton } from "@/domains/community";
+import { usePost } from "@/domains/community";
+import { useWebSocket } from "@/domains/community";
+import { useToggleBookmark } from "@/domains/community";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { Bookmark, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { timeAgo } from '@/features/forum/utils/display';
+import { timeAgo } from "@/domains/community";
 
 interface Props {
   params: Promise<{ slug: string }>;

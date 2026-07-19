@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ArrowRight, User as UserIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export default function SearchPage() {
   const [username, setUsername] = useState('');

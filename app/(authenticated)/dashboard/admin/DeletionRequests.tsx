@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChannelDeletionRequestDto, channelService } from '@/services/platform/tenancy/channel.service';
+import { ChannelDeletionRequestDto, channelService } from "@/domains/channels";
 import { Check, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useAuthStore } from '@/store/auth.store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { usePermissions } from "@/domains/identity";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 
 export function DeletionRequests() {
   const [requests, setRequests] = useState<ChannelDeletionRequestDto[]>([]);

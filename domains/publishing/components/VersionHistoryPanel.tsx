@@ -3,13 +3,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { History, X, RotateCcw, Clock, Loader2, Bookmark, Zap, GitCommitVertical } from "lucide-react";
-import { api } from "@/lib/api";
-import type { TiptapDocument } from "@/types/editor";
-import { ArcadeEditor } from "@/features/content/editor";
+
+import type { TiptapDocument } from "@/shared/types/editor.types";
 
 // ── Wire types (mirror the backend DTOs) ──────────────────────────────────────
 
-interface VersionSummary {
+export interface VersionSummary {
   id: string;
   seq: number;
   kind: "AUTO" | "MANUAL" | "WORKFLOW";
@@ -19,20 +18,22 @@ interface VersionSummary {
   createdByName: string | null;
 }
 
-interface VersionDetail extends VersionSummary {
+export interface VersionDetail extends VersionSummary {
   body: string | null; // JSON string of the Tiptap document
 }
 
 interface VersionHistoryPanelProps {
-  lessonId: string;
   open: boolean;
   onClose: () => void;
-  /**
-   * Bumped by the parent whenever a new snapshot is written, so the list refetches.
-   */
-  refreshKey?: number;
-  /** Restore a version's content into the live editor. Resolves once persisted. */
+  versions: VersionSummary[];
+  loading: boolean;
+  error: string | null;
+  selected: VersionDetail | null;
+  previewLoading: boolean;
+  onSelectVersion: (v: VersionSummary) => void;
+  onRetryLoad: () => void;
   onRestore: (body: TiptapDocument, source: VersionSummary) => Promise<void>;
+  renderEditor: (previewDoc: TiptapDocument, selectedId: string) => React.ReactNode;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -69,59 +70,19 @@ const KIND_META: Record<
 // ── Component ───────────────────────────────────────────────────────────────────
 
 export function VersionHistoryPanel({
-  lessonId,
   open,
   onClose,
-  refreshKey,
+  versions,
+  loading,
+  error,
+  selected,
+  previewLoading,
+  onSelectVersion,
+  onRetryLoad,
   onRestore,
+  renderEditor,
 }: VersionHistoryPanelProps) {
-  const [versions, setVersions] = useState<VersionSummary[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [selected, setSelected] = useState<VersionDetail | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
-
-  // ── Load the timeline ──────────────────────────────────────────────────────
-  const loadVersions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const list = await api.get<VersionSummary[]>(
-        `/api/lessons/${lessonId}/document/versions`
-      );
-      setVersions(list ?? []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load history");
-    } finally {
-      setLoading(false);
-    }
-  }, [lessonId]);
-
-  useEffect(() => {
-    // Re-sync the timeline from the API whenever the panel opens or a snapshot lands.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (open) loadVersions();
-  }, [open, refreshKey, loadVersions]);
-
-  // ── Preview a version ──────────────────────────────────────────────────────
-  const selectVersion = useCallback(
-    async (v: VersionSummary) => {
-      setPreviewLoading(true);
-      try {
-        const detail = await api.get<VersionDetail>(
-          `/api/lessons/${lessonId}/document/versions/${v.id}`
-        );
-        setSelected(detail);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load version");
-      } finally {
-        setPreviewLoading(false);
-      }
-    },
-    [lessonId]
-  );
 
   const previewDoc: TiptapDocument | undefined = (() => {
     if (!selected?.body) return undefined;
@@ -137,7 +98,6 @@ export function VersionHistoryPanel({
     setRestoring(true);
     try {
       await onRestore(previewDoc, selected);
-      setSelected(null);
     } finally {
       setRestoring(false);
     }
@@ -177,7 +137,7 @@ export function VersionHistoryPanel({
             <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
               <p className="text-sm text-red-600">{error}</p>
               <button
-                onClick={loadVersions}
+                onClick={onRetryLoad}
                 className="text-xs font-medium text-indigo-600 hover:underline"
               >
                 Try again
@@ -201,7 +161,7 @@ export function VersionHistoryPanel({
                   <button
                     key={v.id}
                     type="button"
-                    onClick={() => selectVersion(v)}
+                    onClick={() => onSelectVersion(v)}
                     className={`flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
                       isActive ? "bg-indigo-50" : "hover:bg-gray-50"
                     }`}
@@ -264,12 +224,7 @@ export function VersionHistoryPanel({
                   <Loader2 size={18} className="animate-spin" />
                 </div>
               ) : previewDoc ? (
-                <ArcadeEditor
-                  key={selected.id}
-                  readOnly
-                  initialContent={previewDoc}
-                  className="bg-white"
-                />
+                renderEditor(previewDoc, selected.id)
               ) : (
                 <p className="py-6 text-center text-xs text-gray-400">
                   This version has no previewable content.

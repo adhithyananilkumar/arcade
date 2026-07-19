@@ -5,8 +5,7 @@
 
 import type { Extension, Node } from "@tiptap/core";
 import type { ComponentType } from "react";
-import type { TiptapNode } from "@/types/editor";
-import type { BlockCommand } from "../editor/lib/blockCommands";
+import type { TiptapNode, BlockCommand } from "@/shared/types/editor.types";
 
 export interface BlockRenderProps {
   node: TiptapNode;

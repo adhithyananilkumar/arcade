@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
-import DotGrid from "@/components/landing/DotGrid";
+import DotGrid from "@/apps/public/components/landing/DotGrid";
 
 const CATEGORY_TOPICS: Record<string, string[]> = {
   "Computer Science": ["Programming Logic", "Algorithms", "Relational Databases", "Software Engineering"],

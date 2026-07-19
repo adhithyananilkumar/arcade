@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { CheckCircle2, Clock, Eye, FileEdit, Archive, ShieldAlert } from "lucide-react";
 import type { RoadmapData } from "../types";

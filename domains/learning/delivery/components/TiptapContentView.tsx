@@ -7,8 +7,8 @@
 // are expected to plug into this same component.
 
 import type { CSSProperties, JSX, ReactNode } from "react";
-import type { TiptapDocument, TiptapMark, TiptapNode } from "@/types/editor";
-import { getBlockRenderer } from "@/features/content/blocks/registry";
+import type { TiptapDocument, TiptapMark, TiptapNode } from "@/shared/types/editor.types";
+import { getBlockRenderer } from "@/domains/courses";
 import { InteractionProvider } from "../lib/InteractionContext";
 
 function renderMarks(text: string, marks: TiptapMark[] | undefined, key: number): ReactNode {

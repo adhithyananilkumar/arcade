@@ -1,20 +1,26 @@
-import { User } from '@/store/auth.store';
+import { User } from '@/infrastructure/auth/auth.store';
 
 export const AuthorizationService = {
-  canAccessConsole: (user: User | null | undefined) => 
-    AuthorizationService.canManageChannels(user) || 
-    AuthorizationService.canReviewCourses(user) || 
-    AuthorizationService.canManageUsers(user) || 
-    AuthorizationService.canManageRoles(user) ||
-    AuthorizationService.canManagePermissions(user) ||
-    AuthorizationService.canManageSettings(user),
+  hasPermission: (user: User | null | undefined, permission: string) => {
+    if (!user) return false;
+    return user.permissions?.includes('ALL') || user.permissions?.includes(permission) || false;
+  },
 
-  canManageChannels: (user: User | null | undefined) => user?.permissions?.includes('channels.manage') || false,
-  canReviewCourses: (user: User | null | undefined) => user?.permissions?.includes('courses.review') || false,
-  canManageUsers: (user: User | null | undefined) => user?.permissions?.includes('users.manage') || false,
-  canManageRoles: (user: User | null | undefined) => user?.permissions?.includes('roles.assign') || false,
-  canManagePermissions: (user: User | null | undefined) => user?.permissions?.includes('permissions.manage') || false,
-  canManageSettings: (user: User | null | undefined) => user?.permissions?.includes('settings.manage') || false,
+  canAccessConsole: (user: User | null | undefined) => 
+    AuthorizationService.hasPermission(user, 'console.access') || 
+    AuthorizationService.hasPermission(user, 'channels.manage') ||
+    AuthorizationService.hasPermission(user, 'courses.review') ||
+    AuthorizationService.hasPermission(user, 'users.manage') ||
+    AuthorizationService.hasPermission(user, 'roles.assign') ||
+    AuthorizationService.hasPermission(user, 'permissions.manage') ||
+    AuthorizationService.hasPermission(user, 'settings.manage'),
+
+  canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'channels.manage'),
+  canReviewCourses: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'courses.review'),
+  canManageUsers: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'users.manage'),
+  canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'roles.assign'),
+  canManagePermissions: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'permissions.manage'),
+  canManageSettings: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'settings.manage'),
   
-  canViewAuditLogs: (user: User | null | undefined) => user?.permissions?.includes('audit.view') || false,
+  canViewAuditLogs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'audit.view'),
 };

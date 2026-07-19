@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthService } from '@/services/auth.service';
-import { UserService } from '@/services/identity/user.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthService } from '@/infrastructure/auth/auth.service';
+import { UserService } from "@/domains/identity";
 import { Loader2 } from 'lucide-react';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         try {
           let { accessToken, user } = await AuthService.refresh();
           
-          // Set auth immediately so apiClient can use the token
+          // Set auth immediately so api can use the token
           setAuth(user || {}, accessToken);
 
           if (!user || Object.keys(user).length === 0) {

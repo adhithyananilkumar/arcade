@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthService } from '@/services/auth.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthService } from '@/infrastructure/auth/auth.service';
 
 export function AuthInitializer() {
   const { setAuth, clearAuth, setStatus, status } = useAuthStore();

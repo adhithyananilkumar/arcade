@@ -10,17 +10,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { interactionService } from "../api/interactions";
 
-interface InteractionContextValue {
-  lessonId: string | null;
-  getState: (nodeId: string) => Record<string, unknown> | undefined;
-  setState: (nodeId: string, state: Record<string, unknown>) => void;
-}
-
-const InteractionContext = createContext<InteractionContextValue>({
-  lessonId: null,
-  getState: () => undefined,
-  setState: () => {},
-});
+import { BlockStateContext } from "@/shared/contexts/BlockStateContext";
 
 /**
  * Wrap a single lesson's rendered content so its interactive blocks can persist state.
@@ -64,24 +54,9 @@ export function InteractionProvider({
   );
 
   return (
-    <InteractionContext.Provider value={{ lessonId: lessonId ?? null, getState, setState }}>
+    <BlockStateContext.Provider value={{ getState, setState }}>
       {children}
-    </InteractionContext.Provider>
+    </BlockStateContext.Provider>
   );
 }
 
-/** Persisted per-learner state for one interactive block instance, keyed by its stable nodeId. */
-export function useBlockInteraction<T extends Record<string, unknown>>(
-  nodeId: string | undefined,
-  defaultState: T
-): [T, (next: T) => void] {
-  const { getState, setState } = useContext(InteractionContext);
-  const current = (nodeId ? getState(nodeId) : undefined) as T | undefined;
-  const update = useCallback(
-    (next: T) => {
-      if (nodeId) setState(nodeId, next);
-    },
-    [nodeId, setState]
-  );
-  return [current ?? defaultState, update];
-}

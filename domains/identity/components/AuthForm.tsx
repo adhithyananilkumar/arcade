@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Mail, User, ShieldAlert, CheckCircle2, Lock } from 'lucide-react';
-import { useAuthStore } from '@/store/auth.store';
-import { AuthService } from '@/services/auth.service';
+import { Eye, EyeOff, Mail, User, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 interface AuthFormProps {
-  initialMode: 'login' | 'signup';
+  mode: 'login' | 'signup';
+  loading: boolean;
+  showSuccess: boolean;
+  globalError?: string;
+  onModeChange: (mode: 'login' | 'signup') => void;
+  onSubmit: (data: any) => void;
+  onGoogleLogin: () => void;
 }
 
 const InputField = ({ label, type, placeholder, value, onChange, icon: Icon, error, isPassword, showPwd, togglePwd }: any) => (
@@ -43,8 +46,15 @@ const InputField = ({ label, type, placeholder, value, onChange, icon: Icon, err
   </div>
 );
 
-export default function AuthForm({ initialMode }: AuthFormProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+export default function AuthForm({ 
+  mode, 
+  loading, 
+  showSuccess, 
+  globalError, 
+  onModeChange, 
+  onSubmit, 
+  onGoogleLogin 
+}: AuthFormProps) {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -53,22 +63,6 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const setAuth = useAuthStore((state) => state.setAuth);
-
-  const handleModeChange = (newMode: 'login' | 'signup') => {
-    setMode(newMode);
-    setErrors({});
-    if (newMode === 'signup') {
-      window.history.replaceState(null, '', '/sign?mode=signup');
-    } else {
-      window.history.replaceState(null, '', '/sign');
-    }
-  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -99,7 +93,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
     return newErrors;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     
@@ -109,35 +103,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      if (mode === 'login') {
-        const { user, accessToken } = await AuthService.login({ email, password });
-        setAuth(user, accessToken);
-        
-        const returnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl');
-        const safePath = returnTo?.startsWith('/') ? returnTo : '/dashboard';
-        router.push(safePath);
-      } else {
-        await AuthService.register({ firstName, lastName, email, password });
-        setShowSuccess(true);
-        
-        setTimeout(() => {
-          setShowSuccess(false);
-          setPassword('');
-          setConfirmPassword('');
-          setFirstName('');
-          setLastName('');
-          setErrors({});
-          handleModeChange('login');
-        }, 3500);
-      }
-    } catch (err: any) {
-      setErrors({ global: err.response?.data?.message || err.message || 'An error occurred' });
-    } finally {
-      setLoading(false);
-    }
+    onSubmit({ email, password, firstName, lastName });
   };
 
   if (showSuccess) {
@@ -171,7 +137,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
           {mode === 'signup' ? 'Already A Member? ' : 'Don\'t have an account? '}
           <button 
             type="button"
-            onClick={() => handleModeChange(mode === 'signup' ? 'login' : 'signup')}
+            onClick={() => onModeChange(mode === 'signup' ? 'login' : 'signup')}
             className="text-[#0080ff] hover:text-[#0066cc] font-bold transition-colors"
           >
             {mode === 'signup' ? 'Log In' : 'Sign Up'}
@@ -180,10 +146,10 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="w-full">
-        {errors.global && (
+        {globalError && (
           <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600 text-sm font-semibold">
             <ShieldAlert size={18} />
-            {errors.global}
+            {globalError}
           </div>
         )}
 
@@ -278,7 +244,7 @@ export default function AuthForm({ initialMode }: AuthFormProps) {
           
           <button 
             type="button" 
-            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+            onClick={onGoogleLogin}
             className="w-full flex items-center justify-center gap-3 py-3.5 px-8 rounded-full bg-white border-2 border-slate-100 text-slate-700 hover:bg-slate-50 hover:border-slate-200 font-bold transition-all text-sm active:scale-[0.98]"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5">

@@ -1,4 +1,4 @@
-import AuthForm from '@/components/auth/AuthForm';
+import { AuthOrchestrator } from "@/apps/public/orchestrators/AuthOrchestrator";
 import { Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,7 +23,7 @@ export default async function SignPage({ searchParams }: { searchParams: Promise
         </Link>
         <div className="w-full max-w-[440px] relative z-10">
           <Suspense fallback={<div className="text-gray-400">Loading...</div>}>
-            <AuthForm initialMode={initialMode} />
+            <AuthOrchestrator initialMode={initialMode} />
           </Suspense>
         </div>
       </div>

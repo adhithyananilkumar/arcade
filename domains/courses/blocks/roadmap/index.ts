@@ -1,6 +1,6 @@
 import { Map } from "lucide-react";
 import type { BlockDefinition } from "../types";
-import { RoadmapNode } from "../../editor/roadmap/extensions/roadmap";
+import { RoadmapNode } from "@/domains/roadmaps";
 
 // Roadmap predates the block registry — its own extensions/components/hooks/services
 // tree lives under editor/roadmap/. This wrapper just registers it into the shared

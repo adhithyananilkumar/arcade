@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
-import type { CourseResponse, LessonResponse } from '@/types/api';
+import { api } from '@/infrastructure/http/api';
+import type { CourseResponse, LessonResponse } from '@/shared/types/api.types';
 import { BookOpen, ChevronLeft, PlayCircle, FileText } from 'lucide-react';
-import { TiptapContentView } from '@/features/learning/delivery/components/TiptapContentView';
+import { TiptapContentView } from "@/domains/learning";
 import Link from 'next/link';
 
 export default function CourseLearnPage() {

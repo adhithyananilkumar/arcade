@@ -22,25 +22,8 @@ import {
   Image as ImageIcon,
   type LucideIcon,
 } from "lucide-react";
-import { getBlockDefinitions } from "../../blocks/registry";
-
-export interface BlockCommand {
-  /** Stable id, used as React key and for equality checks. */
-  id: string;
-  /** Human label shown in menus. */
-  title: string;
-  /** One-line description shown under the title in the slash menu. */
-  description: string;
-  /** Icon rendered in the gutter menus. */
-  icon: LucideIcon;
-  /** Extra fuzzy-search terms for the slash menu (all lowercase). */
-  keywords: string[];
-  /**
-   * Apply the command. When invoked from the slash menu, `range` is the "/query"
-   * range to delete first; the "+" button and "Turn into" pass no range.
-   */
-  run: (editor: Editor, range?: Range) => void;
-}
+import { getBlockDefinitions } from "@/domains/courses";
+import type { BlockCommand } from "@/shared/types/editor.types";
 
 /** Focused chain with the slash trigger removed (when a range is supplied). */
 function at(editor: Editor, range?: Range) {

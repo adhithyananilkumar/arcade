@@ -1,17 +1,17 @@
 // app/(authenticated)/dashboard/content/published/[courseId]/page.tsx
 import type { Metadata } from "next";
-import { CourseRenderer } from "@/features/learning/delivery/components/CourseRenderer";
+import { CoursePlayerOrchestrator } from "@/apps/learner/orchestrators/CoursePlayerOrchestrator";
 
 export const metadata: Metadata = {
   title: "Course — Arcade",
 };
 
-interface Props {
-  params: Promise<{ courseId: string }>;
-}
-
-export default async function PublishedCoursePage({ params }: Props) {
+export default async function PublishedCourseViewPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-
-  return <CourseRenderer courseId={courseId} />;
+  
+  if (!courseId) {
+    return <div className="p-8 text-gray-500">Course ID is missing</div>;
+  }
+  
+  return <CoursePlayerOrchestrator courseId={courseId} />;
 }

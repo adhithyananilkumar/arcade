@@ -1,4 +1,4 @@
-import { QuizPlayer } from "@/features/assessment";
+import { QuizPlayer } from "@/domains/assessments";
 import type { BlockRenderProps } from "../types";
 
 export function QuizBlockRender({ node }: BlockRenderProps) {

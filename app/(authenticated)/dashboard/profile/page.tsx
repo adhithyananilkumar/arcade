@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { UserService } from '@/services/identity/user.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { UserService } from "@/domains/identity";
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 

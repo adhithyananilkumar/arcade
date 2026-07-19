@@ -16,7 +16,7 @@ export default function SessionsPage() {
 
   const loadSessions = async () => {
     try {
-      const { SessionService } = await import('@/services/session.service');
+      const { SessionService } = await import('@/infrastructure/auth/session.service');
       const data = await SessionService.getSessions();
       setSessions(data);
     } catch (err) {
@@ -31,7 +31,7 @@ export default function SessionsPage() {
     
     setRevokingId(familyId);
     try {
-      const { SessionService } = await import('@/services/session.service');
+      const { SessionService } = await import('@/infrastructure/auth/session.service');
       await SessionService.revokeSession(familyId);
       setSessions(sessions.filter(s => s.familyId !== familyId));
     } catch (err) {

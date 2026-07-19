@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import GradientText from "@/components/landing/GradientText";
+import GradientText from "@/apps/public/components/landing/GradientText";
 import Link from "next/link";
 import "@/styles/landing.css";
 

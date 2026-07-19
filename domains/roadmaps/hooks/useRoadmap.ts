@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from "react";
 import { roadmapService } from "../services/roadmap";
 import type { RoadmapData } from "../types";

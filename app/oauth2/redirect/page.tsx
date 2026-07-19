@@ -2,11 +2,11 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
-import { UserService } from '@/services/identity/user.service';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { UserService } from "@/domains/identity";
 import { Loader2 } from 'lucide-react';
 
-import DashboardNavbar from '@/components/layout/DashboardNavbar';
+import DashboardNavbar from '@/apps/learner/layout/DashboardNavbar';
 import DashboardLoading from '@/app/(authenticated)/dashboard/loading';
 
 function OAuthRedirectHandler() {

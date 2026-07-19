@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/shared/design-system/ui/button';
+import { Input } from '@/shared/design-system/ui/input';
 import { Loader2, Camera, CheckCircle2, AlertCircle, X, Plus, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { apiClient } from '@/lib/apiClient';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
+import { api } from '@/infrastructure/http/api';
 import { Poppins } from 'next/font/google';
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'] });
@@ -85,13 +85,13 @@ export default function OnboardingPage() {
       }
       setUsernameStatus('checking');
       try {
-        const res = await apiClient.get(`/users/check-username?username=${username}`);
-        if (res.data.available) {
+        const res = await api.get<{available: boolean, suggestions?: string[]}>(`/api/v1/users/check-username?username=${username}`);
+        if (res.available) {
           setUsernameStatus('available');
           setUsernameSuggestions([]);
         } else {
           setUsernameStatus('taken');
-          setUsernameSuggestions(res.data.suggestions || []);
+          setUsernameSuggestions(res.suggestions || []);
         }
       } catch (error) {
         console.error('Error checking username', error);
@@ -131,10 +131,8 @@ export default function OnboardingPage() {
       if (avatarFile) {
         const formData = new FormData();
         formData.append('file', avatarFile);
-        const avatarRes = await apiClient.post('/users/me/avatar', formData, {
-          headers: { 'Content-Type': undefined }
-        });
-        uploadedAvatarUrl = avatarRes.data.avatarUrl;
+        const avatarRes = await api.post<{avatarUrl: string}>('/api/v1/users/me/avatar', formData);
+        uploadedAvatarUrl = avatarRes.avatarUrl;
       }
 
       const payload = {
@@ -151,8 +149,8 @@ export default function OnboardingPage() {
         onboardingCompleted: true
       };
 
-      const profileRes = await apiClient.put('/users/me', payload);
-      updateUser(profileRes.data);
+      const profileRes = await api.put<any>('/api/v1/users/me', payload);
+      updateUser(profileRes);
       router.push('/dashboard');
     } catch (error) {
       console.error('Failed to complete onboarding', error);

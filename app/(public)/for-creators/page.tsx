@@ -6,13 +6,13 @@ import {
   Wrench, FolderOpen, Users, Building, ClipboardCheck, Award,
   BarChart3, DollarSign, CheckSquare, Send, ArrowRight, Play, Sparkles
 } from "lucide-react";
-import Footer from "@/components/landing/Footer";
-import TrueFocus from "@/components/landing/TrueFocus";
-import MagicBento from "@/components/landing/MagicBento";
-import VariableProximity from "@/components/landing/VariableProximity";
+import Footer from "@/apps/public/components/landing/Footer";
+import TrueFocus from "@/apps/public/components/landing/TrueFocus";
+import MagicBento from "@/apps/public/components/landing/MagicBento";
+import VariableProximity from "@/apps/public/components/landing/VariableProximity";
 import "../courses/courses.css";
 import "./for-creators.css";
-import CollegesPageClient from "@/components/landing/CollegesPageClient";
+import CollegesPageClient from "@/apps/public/components/landing/CollegesPageClient";
 
 export default function ForCreatorsPage() {
   const heroHeaderRef = React.useRef<HTMLDivElement>(null);
