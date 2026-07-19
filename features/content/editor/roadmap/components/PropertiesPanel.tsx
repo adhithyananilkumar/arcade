@@ -22,6 +22,20 @@ const COLORS = [
   { label: 'Slate', value: 'bg-slate-800' },
 ];
 
+const TEXT_COLORS = [
+  { label: 'Dark (Default)', value: 'text-gray-900', colorCode: '#111827' },
+  { label: 'White', value: 'text-white', colorCode: '#ffffff' },
+  { label: 'Indigo', value: 'text-indigo-600', colorCode: '#4f46e5' },
+  { label: 'Rose', value: 'text-rose-600', colorCode: '#e11d48' },
+  { label: 'Emerald', value: 'text-emerald-600', colorCode: '#059669' },
+];
+
+const FONTS = [
+  { label: 'Sans (Default)', value: 'font-sans' },
+  { label: 'Serif', value: 'font-serif' },
+  { label: 'Mono', value: 'font-mono' },
+];
+
 const NODE_TYPES = [
   { label: 'Lesson', value: 'lesson' },
   { label: 'Quiz', value: 'quiz' },
@@ -97,14 +111,6 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
         >
           <div className="flex items-center justify-center gap-1.5"><Palette size={14} /> Style</div>
         </button>
-        {roadmapId && (
-          <button 
-            onClick={() => setActiveTab('comments')}
-            className={`flex-1 pb-2 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'comments' ? 'border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            <div className="flex items-center justify-center gap-1.5"><MessageSquare size={14} /> Comments</div>
-          </button>
-        )}
       </div>
       
       <div className="p-5 space-y-6 overflow-y-auto flex-1">
@@ -231,42 +237,40 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
                 })}
               </div>
             </div>
-          </div>
-        )}
 
-        {activeTab === 'comments' && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
-            <h4 className="text-sm font-bold text-gray-900">Instructor Comments</h4>
-            <div className="space-y-3">
-              {comments.length === 0 ? (
-                <p className="text-xs text-gray-500 italic">No comments yet.</p>
-              ) : (
-                comments.map(c => (
-                  <div key={c.id} className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-gray-900">{c.authorName}</span>
-                      <span className="text-[10px] text-gray-400">{new Date(c.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-xs text-gray-700">{c.content}</p>
-                  </div>
-                ))
-              )}
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                Font Color
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {TEXT_COLORS.map((c) => {
+                  const isActive = (data.fontColor as string) === c.value || (!data.fontColor && c.value === 'text-gray-900');
+                  return (
+                    <button
+                      key={c.value}
+                      onClick={() => handleChange('fontColor', c.value)}
+                      title={c.label}
+                      style={{ backgroundColor: c.colorCode }}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        isActive ? 'border-indigo-500 scale-110 shadow-md ring-2 ring-indigo-500/30 ring-offset-1' : 'border-gray-200 hover:scale-105 shadow-sm'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex gap-2 pt-4 border-t border-gray-100">
-              <input 
-                type="text" 
-                placeholder="Add a comment..."
-                className="flex-1 text-xs border border-gray-300 rounded-lg px-3 py-2 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                value={newComment}
-                onChange={e => setNewComment(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleAddComment(); }}
-              />
-              <button 
-                onClick={handleAddComment}
-                className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700"
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                Font Family
+              </label>
+              <select
+                value={(data.fontFamily as string) || 'font-sans'}
+                onChange={(e) => handleChange('fontFamily', e.target.value)}
+                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
               >
-                Post
-              </button>
+                {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
             </div>
           </div>
         )}

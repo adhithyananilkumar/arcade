@@ -5,7 +5,7 @@ import { RoadmapCanvas } from "./RoadmapCanvas";
 import { RoadmapHeader } from "./RoadmapHeader";
 import { PublishConfirmationModal } from "./PublishConfirmationModal";
 import { SaveAsTemplateModal } from "./SaveAsTemplateModal";
-import { RoadmapAnalyticsPanel } from "./RoadmapAnalyticsPanel";
+
 import { CollaborationPanel } from "./CollaborationPanel";
 import type { RoadmapData } from "../types";
 
@@ -18,7 +18,7 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
   const [roadmap, setRoadmap] = useState<RoadmapData>(initialRoadmap);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"editor" | "analytics" | "collaboration">("editor");
+  const [activeTab, setActiveTab] = useState<"editor" | "collaboration">("editor");
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(roadmap, null, 2));
@@ -161,12 +161,7 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
           >
             Graph Editor
           </button>
-          <button 
-            onClick={() => setActiveTab("analytics")}
-            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'analytics' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Student Analytics
-          </button>
+
           <button 
             onClick={() => setActiveTab("collaboration")}
             className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'collaboration' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -216,22 +211,18 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
       )}
 
       <div className="flex-1 relative flex overflow-hidden">
-        {activeTab === "editor" || activeTab === "collaboration" ? (
-          <>
-            <RoadmapCanvas 
-              roadmap={roadmap} 
-              saveState={saveState}
-              onGraphChange={scheduleSave}
-              onManualSave={manualSave}
-              readOnly={isReadOnly}
-            />
-            {activeTab === "collaboration" && (
-               <CollaborationPanel roadmapId={roadmap.id} />
-            )}
-          </>
-        ) : (
-          <RoadmapAnalyticsPanel roadmapId={roadmap.id} />
-        )}
+        <>
+          <RoadmapCanvas 
+            roadmap={roadmap} 
+            saveState={saveState}
+            onGraphChange={scheduleSave}
+            onManualSave={manualSave}
+            readOnly={isReadOnly}
+          />
+          {activeTab === "collaboration" && (
+             <CollaborationPanel roadmapId={roadmap.id} />
+          )}
+        </>
       </div>
 
       <PublishConfirmationModal 
