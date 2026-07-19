@@ -27,7 +27,7 @@ import { useParams, useRouter } from "next/navigation"
 import { api } from "@/lib/api"
 import type { CourseResponse } from "@/types/api"
 import { EnrollButton } from "@/components/ui/EnrollButton"
-import { UserService } from "@/services/user.service"
+import { UserService } from "@/services/identity/user.service"
 import { toast } from "sonner"
 
 /* ------------------------------------------------------------------ */

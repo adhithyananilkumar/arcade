@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Channel, channelService } from '@/services/channel.service';
+import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
 import { Search, Check, X, Tv } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/usePermissions';

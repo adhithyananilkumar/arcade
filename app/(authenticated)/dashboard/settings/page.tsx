@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useThemeStore } from '@/store/theme.store';
-import { UserService } from '@/services/user.service';
+import { UserService } from '@/services/identity/user.service';
 import { User as UserIcon, Camera, Loader2, CheckCircle2, Activity, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';

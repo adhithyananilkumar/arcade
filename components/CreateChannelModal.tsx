@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Loader2, PlaySquare } from 'lucide-react';
-import { channelService } from '@/services/channel.service';
+import { channelService } from '@/services/platform/tenancy/channel.service';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
 

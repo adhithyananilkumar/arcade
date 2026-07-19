@@ -6,10 +6,10 @@ import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inb
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/services/auth.service';
-import { ChannelStaffService, ChannelInvitation } from '@/services/channel-staff.service';
+import { ChannelStaffService, ChannelInvitation } from '@/services/platform/tenancy/channel-staff.service';
 import { usePermissions } from '@/hooks/usePermissions';
 import { AuthorizationService } from '@/services/authorization.service';
-import { channelService } from '@/services/channel.service';
+import { channelService } from '@/services/platform/tenancy/channel.service';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/components/ui/fluid-menu';

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { UserService } from '@/services/user.service';
+import { UserService } from '@/services/identity/user.service';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Loader2 } from 'lucide-react';

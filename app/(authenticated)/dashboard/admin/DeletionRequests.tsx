@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChannelDeletionRequestDto, channelService } from '@/services/channel.service';
+import { ChannelDeletionRequestDto, channelService } from '@/services/platform/tenancy/channel.service';
 import { Check, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/usePermissions';

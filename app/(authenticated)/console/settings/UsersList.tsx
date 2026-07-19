@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { UserService } from '@/services/user.service';
-import { roleService, Role } from '@/services/role.service';
+import { UserService } from '@/services/identity/user.service';
+import { roleService, Role } from '@/services/identity/iam/role.service';
 import { User, useAuthStore } from '@/store/auth.store';
 import { AuthService } from '@/services/auth.service';
 import { toast } from 'sonner';

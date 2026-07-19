@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Channel, channelService } from '@/services/channel.service';
+import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
 import { Tv, Clock, CheckCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';

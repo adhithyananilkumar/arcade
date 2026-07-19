@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChannelStaffService, ChannelStaff, ChannelInvitation } from '@/services/channel-staff.service';
-import { UserService } from '@/services/user.service';
-import { Role, roleService } from '@/services/role.service';
+import { ChannelStaffService, ChannelStaff, ChannelInvitation } from '@/services/platform/tenancy/channel-staff.service';
+import { UserService } from '@/services/identity/user.service';
+import { Role, roleService } from '@/services/identity/iam/role.service';
 import { toast } from 'sonner';
 import { Users, Mail, Shield, Check, X, Search, Trash2, Plus, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';

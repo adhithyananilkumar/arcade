@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Channel, channelService } from '@/services/channel.service';
+import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
 import { toast } from 'sonner';
 import { Upload, Image as ImageIcon, Loader2, AlertTriangle, Info, X, Shield } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';

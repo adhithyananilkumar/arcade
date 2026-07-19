@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Channel, channelService } from '@/services/channel.service';
+import { Channel, channelService } from '@/services/platform/tenancy/channel.service';
 import { toast } from 'sonner';
 import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';

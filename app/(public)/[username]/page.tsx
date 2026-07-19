@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { UserService } from '@/services/user.service';
+import { UserService } from '@/services/identity/user.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3, 

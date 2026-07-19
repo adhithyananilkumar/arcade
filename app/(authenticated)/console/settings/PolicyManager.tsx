@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { roleService, Role } from '@/services/role.service';
-import { permissionService, Permission } from '@/services/permission.service';
+import { roleService, Role } from '@/services/identity/iam/role.service';
+import { permissionService, Permission } from '@/services/identity/iam/permission.service';
 import { AuthService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { Plus, X, ShieldCheck, Edit3, Trash2 } from 'lucide-react';

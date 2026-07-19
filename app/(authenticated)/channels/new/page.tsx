@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { channelService } from '@/services/channel.service';
+import { channelService } from '@/services/platform/tenancy/channel.service';
 import { Tv, Upload, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';

@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth.store';
-import { UserService } from '@/services/user.service';
+import { UserService } from '@/services/identity/user.service';
 import { Loader2 } from 'lucide-react';
 
 import DashboardNavbar from '@/components/layout/DashboardNavbar';

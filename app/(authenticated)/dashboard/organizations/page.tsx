@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Organization, OrganizationService } from '@/services/organization.service';
+import { Organization, OrganizationService } from '@/services/platform/tenancy/organization.service';
 import { Building2, Plus, Users, ChevronRight, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';

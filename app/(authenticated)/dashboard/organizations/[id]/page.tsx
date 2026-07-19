@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Organization, OrganizationMembership, OrganizationService } from '@/services/organization.service';
+import { Organization, OrganizationMembership, OrganizationService } from '@/services/platform/tenancy/organization.service';
 import { Building2, ArrowLeft, Mail, Shield, User as UserIcon, Loader2, CheckCircle2, Trash2, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -634,7 +634,7 @@ function OrgActivityLog({ orgId }: { orgId: string }) {
   const loadLogs = async (pageNumber: number) => {
     setIsLoading(true);
     try {
-      const { AuditService } = await import('@/services/audit.service');
+      const { AuditService } = await import('@/services/platform/audit/audit.service');
       const data = await AuditService.getOrgAuditLogs(orgId, pageNumber);
       setLogs(data.content);
       setTotalPages(data.totalPages);

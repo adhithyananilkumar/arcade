@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useState, useEffect } from 'react';
-import { channelService } from '@/services/channel.service';
+import { channelService } from '@/services/platform/tenancy/channel.service';
 
 const baseNavItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
