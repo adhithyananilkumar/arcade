@@ -1,7 +1,25 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/admin/channels',
+        destination: '/arc-console/channels',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/admin/settings',
+        destination: '/arc-console/settings',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/content/review',
+        destination: '/arc-console/courses',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -93,13 +93,7 @@ export default function ReviewCoursesPage() {
     <div className="flex-1 flex flex-col">
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto">
-          <Link
-            href="/dashboard/content"
-            className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft size={14} />
-            Content Studio
-          </Link>
+
           <h1 className="text-xl font-bold text-gray-900">Course Management</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Courses submitted for review land here, waiting to be approved.

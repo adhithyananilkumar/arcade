@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Users, Mail, Shield, Check, X, Search, Trash2, Plus, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
+import { useAuthStore } from '@/store/auth.store';
 
 interface ChannelStaffManagerProps {
   channelId: string;
@@ -299,7 +300,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
       </Dialog>
 
       {/* Role Management Section */}
-      <ChannelPolicyManager channelId={channelId} />
+      <ChannelPolicyManager channelId={channelId} permissions={permissions} />
     </div>
   );
 }

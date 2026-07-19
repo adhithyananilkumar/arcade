@@ -22,7 +22,7 @@ type TreeItem =
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
-export function CourseRenderer({ courseId }: { courseId: string }) {
+export function CourseRenderer({ courseId, mode }: { courseId: string, mode?: string }) {
   const [course, setCourse] = useState<CourseRenderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

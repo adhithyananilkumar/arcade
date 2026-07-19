@@ -209,7 +209,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
 
     {!channel.isPersonal && (
       <div className="mt-12 border-t border-gray-100 pt-8">
-        <ChannelStaffManager channelId={channel.id} />
+        <ChannelStaffManager channelId={channel.id} permissions={permissions} />
       </div>
     )}
 

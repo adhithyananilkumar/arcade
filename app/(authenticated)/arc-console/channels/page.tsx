@@ -2,7 +2,7 @@
 
 import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PendingChannels } from '../../PendingChannels'; // Reusing the component
+import { PendingChannels } from '@/app/(authenticated)/dashboard/PendingChannels'; // Reusing the component
 
 export default function AdminChannelsPage() {
   return (

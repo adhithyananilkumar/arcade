@@ -113,14 +113,7 @@ export default function DashboardNavbar() {
   const showAdminSettings = isSuperUser || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
   const showReviewCourses = isSuperUser || hasPermission('courses.review') || hasPermission('channel.courses.review');
 
-  const navItems = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Profile', href: '/dashboard/profile', icon: UserIcon },
-    ...(hasChannels ? [{ name: 'Manage Channels', href: '/dashboard/manage-channels', icon: Tv }] : []),
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ...(showAdminChannels ? [{ name: 'Channel Management', href: '/dashboard/admin/channels', icon: Tv }] : []),
-    ...(showAdminSettings ? [{ name: 'Admin Settings', href: '/dashboard/admin/settings', icon: Settings }] : [])
-  ];
+  const showArcConsole = showAdminChannels || showAdminSettings || showReviewCourses;
 
   return (
     <nav className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-transparent bg-white dark:bg-black px-6 md:px-8 transition-colors">
@@ -258,28 +251,12 @@ export default function DashboardNavbar() {
                 My Channel
               </MenuItem>
             )}
-            {showAdminChannels && (
+            {showArcConsole && (
               <MenuItem 
-                icon={<Tv size={20} strokeWidth={2} className="text-pink-500" />} 
-                onClick={() => router.push('/dashboard/admin/channels')} 
+                icon={<ShieldAlert size={20} strokeWidth={2} className="text-pink-500" />} 
+                onClick={() => router.push('/arc-console')} 
               >
-                Channel Management
-              </MenuItem>
-            )}
-            {showReviewCourses && (
-              <MenuItem 
-                icon={<BookOpen size={20} strokeWidth={2} className="text-cyan-500" />} 
-                onClick={() => router.push('/dashboard/content/review')} 
-              >
-                Course Management
-              </MenuItem>
-            )}
-            {showAdminSettings && (
-              <MenuItem 
-                icon={<ShieldAlert size={20} strokeWidth={2} className="text-red-500" />} 
-                onClick={() => router.push('/dashboard/admin/settings')} 
-              >
-                Admin Settings
+                arc Console
               </MenuItem>
             )}
             <MenuItem 
