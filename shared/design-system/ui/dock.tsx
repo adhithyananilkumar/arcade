@@ -21,11 +21,13 @@ import {
 } from 'react';
 import { cn } from '@/shared/utils/utils';
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const DOCK_HEIGHT = 128;
-const DEFAULT_MAGNIFICATION = 80;
-const DEFAULT_DISTANCE = 150;
-const DEFAULT_PANEL_HEIGHT = 64;
+const DEFAULT_MAGNIFICATION = 100;
+const DEFAULT_DISTANCE = 100;
+const DEFAULT_PANEL_HEIGHT = 60;
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 type DockProps = {
   children: React.ReactNode;
   className?: string;
@@ -34,32 +36,37 @@ type DockProps = {
   magnification?: number;
   spring?: SpringOptions;
 };
+
 type DockItemProps = {
   className?: string;
   children: React.ReactNode;
   onClick?: () => void;
 };
+
 type DockLabelProps = {
   className?: string;
   children: React.ReactNode;
 };
+
 type DockIconProps = {
   className?: string;
   children: React.ReactNode;
 };
 
-type DocContextType = {
+type DockContextType = {
   mouseX: MotionValue;
   spring: SpringOptions;
   magnification: number;
   distance: number;
 };
+
 type DockProviderProps = {
   children: React.ReactNode;
-  value: DocContextType;
+  value: DockContextType;
 };
 
-const DockContext = createContext<DocContextType | undefined>(undefined);
+// ─── Context ──────────────────────────────────────────────────────────────────
+const DockContext = createContext<DockContextType | undefined>(undefined);
 
 function DockProvider({ children, value }: DockProviderProps) {
   return <DockContext.Provider value={value}>{children}</DockContext.Provider>;
@@ -67,16 +74,22 @@ function DockProvider({ children, value }: DockProviderProps) {
 
 function useDock() {
   const context = useContext(DockContext);
-  if (!context) {
-    throw new Error('useDock must be used within an DockProvider');
-  }
+  if (!context) throw new Error('useDock must be used within a DockProvider');
   return context;
 }
+
+// ─── Dock ─────────────────────────────────────────────────────────────────────
+// Smooth Apple-style spring physics
+const APPLE_SPRING: SpringOptions = {
+  mass: 0.1,
+  stiffness: 220,
+  damping: 17,
+};
 
 function Dock({
   children,
   className,
-  spring = { mass: 0.1, stiffness: 150, damping: 12 },
+  spring = APPLE_SPRING,
   magnification = DEFAULT_MAGNIFICATION,
   distance = DEFAULT_DISTANCE,
   panelHeight = DEFAULT_PANEL_HEIGHT,
@@ -84,21 +97,23 @@ function Dock({
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
 
-  const maxHeight = useMemo(() => {
-    return Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4);
-  }, [magnification]);
+  // Max height the outer wrapper needs to allow icons to grow upward without clipping
+  const maxHeight = useMemo(
+    () => Math.max(DOCK_HEIGHT, magnification + magnification / 2 + 4),
+    [magnification]
+  );
 
-  const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
-  const height = useSpring(heightRow, spring);
+  const heightMotion = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
+  const height = useSpring(heightMotion, spring);
 
   return (
+    // Outer wrapper — purely for height animation so icons grow upward.
+    // MUST be transparent with no overflow clip so the capsule floats cleanly.
     <motion.div
-      style={{
-        height: height,
-        scrollbarWidth: 'none',
-      }}
-      className='mx-2 flex max-w-full items-end overflow-x-auto'
+      style={{ height }}
+      className="flex items-end justify-center overflow-visible bg-transparent"
     >
+      {/* The actual glass capsule */}
       <motion.div
         onMouseMove={({ pageX }) => {
           isHovered.set(1);
@@ -109,12 +124,13 @@ function Dock({
           mouseX.set(Infinity);
         }}
         className={cn(
-          'mx-auto flex w-fit gap-4 rounded-2xl bg-gray-50 px-4 dark:bg-neutral-900',
+          // Base layout
+          'mx-auto flex w-fit items-center gap-2 rounded-full px-4',
           className
         )}
         style={{ height: panelHeight }}
-        role='toolbar'
-        aria-label='Application dock'
+        role="toolbar"
+        aria-label="Application dock"
       >
         <DockProvider value={{ mouseX, spring, distance, magnification }}>
           {children}
@@ -124,18 +140,18 @@ function Dock({
   );
 }
 
+// ─── DockItem ─────────────────────────────────────────────────────────────────
 function DockItem({ children, className, onClick }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
-
   const { distance, magnification, mouseX, spring } = useDock();
-
   const isHovered = useMotionValue(0);
 
   const mouseDistance = useTransform(mouseX, (val) => {
-    const domRect = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
-    return val - domRect.x - domRect.width / 2;
+    const rect = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
+    return val - rect.x - rect.width / 2;
   });
 
+  // The core magnification: resting=40px, peak=magnification, falls off with distance
   const widthTransform = useTransform(
     mouseDistance,
     [-distance, 0, distance],
@@ -152,48 +168,51 @@ function DockItem({ children, className, onClick }: DockItemProps) {
       onHoverEnd={() => isHovered.set(0)}
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
-      className={cn(
-        'relative inline-flex items-center justify-center',
-        className
-      )}
+      className={cn('relative inline-flex items-center justify-center', className)}
       tabIndex={0}
-      role='button'
-      aria-haspopup='true'
+      role="button"
+      aria-haspopup="true"
       onClick={onClick}
     >
       {Children.map(children, (child) =>
-        cloneElement(child as React.ReactElement, { width, isHovered } as Record<string, unknown>)
+        cloneElement(
+          child as React.ReactElement,
+          { width, isHovered } as Record<string, unknown>
+        )
       )}
     </motion.div>
   );
 }
 
+// ─── DockLabel (tooltip) ──────────────────────────────────────────────────────
 function DockLabel({ children, className, ...rest }: DockLabelProps) {
   const restProps = rest as Record<string, unknown>;
   const isHovered = restProps['isHovered'] as MotionValue<number>;
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = isHovered.on('change', (latest) => {
-      setIsVisible(latest === 1);
-    });
-
-    return () => unsubscribe();
+    const unsub = isHovered.on('change', (v) => setIsVisible(v === 1));
+    return unsub;
   }, [isHovered]);
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 0 }}
-          animate={{ opacity: 1, y: -10 }}
-          exit={{ opacity: 0, y: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, y: 4, scale: 0.94 }}
+          animate={{ opacity: 1, y: -8, scale: 1 }}
+          exit={{ opacity: 0, y: 4, scale: 0.94 }}
+          transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
           className={cn(
-            'absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-neutral-700 dark:border-neutral-900 dark:bg-neutral-800 dark:text-white',
+            // Glassmorphic tooltip
+            'absolute -top-8 left-1/2 w-fit whitespace-nowrap rounded-lg px-2.5 py-1',
+            'bg-white/75 dark:bg-neutral-900/75 backdrop-blur-md',
+            'border border-white/50 dark:border-white/[0.08]',
+            'text-[11px] font-medium text-neutral-700 dark:text-neutral-200',
+            'shadow-[0_2px_8px_rgba(0,0,0,0.08)]',
             className
           )}
-          role='tooltip'
+          role="tooltip"
           style={{ x: '-50%' }}
         >
           {children}
@@ -203,15 +222,17 @@ function DockLabel({ children, className, ...rest }: DockLabelProps) {
   );
 }
 
+// ─── DockIcon ─────────────────────────────────────────────────────────────────
 function DockIcon({ children, className, ...rest }: DockIconProps) {
   const restProps = rest as Record<string, unknown>;
   const width = restProps['width'] as MotionValue<number>;
 
-  const widthTransform = useTransform(width, (val) => val / 2);
+  // Icon fills 70% of its container width — balances size vs. breathing room
+  const iconSize = useTransform(width, (val) => val * 0.70);
 
   return (
     <motion.div
-      style={{ width: widthTransform }}
+      style={{ width: iconSize, height: iconSize }}
       className={cn('flex items-center justify-center', className)}
     >
       {children}
