@@ -2,6 +2,7 @@
 
 import ProtectedLayout from '@/apps/core/layout/ProtectedLayout';
 import DashboardNavbar from '@/apps/learner/layout/DashboardNavbar';
+import DashboardDock from '@/apps/learner/layout/DashboardDock';
 import { TimeTracker } from "@/domains/learning";
 import { useThemeStore } from '@/infrastructure/state/theme.store';
 import { useEffect, useState } from 'react';
@@ -30,9 +31,10 @@ export default function AuthenticatedLayout({
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white">
           <DashboardNavbar />
-          <main className="relative bg-transparent flex flex-col flex-1">
+          <main className="relative bg-transparent flex flex-col flex-1 pb-28">
             {children}
           </main>
+          <DashboardDock />
         </div>
       </div>
     </ProtectedLayout>

@@ -34,25 +34,6 @@ function formatLabel(str: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function filterByScope(permissions: Permission[], scope: Scope): Permission[] {
-  if (scope === 'PLATFORM') {
-    return permissions.filter(
-      (p) => p.context === 'GLOBAL' || p.code.startsWith('platform.')
-    );
-  }
-  if (scope === 'CHANNEL') {
-    return permissions.filter(
-      (p) => p.context === 'CHANNEL' || p.code.startsWith('channel.')
-    );
-  }
-  if (scope === 'PUBLISHER') {
-    return permissions.filter(
-      (p) => p.context === 'PUBLISHER' || p.code.startsWith('publisher.')
-    );
-  }
-  return permissions;
-}
-
 function groupByModule(permissions: Permission[]): Record<string, Permission[]> {
   const groups: Record<string, Permission[]> = {};
   for (const perm of permissions) {
@@ -193,29 +174,26 @@ export function PolicyEditor({
     setSearch('');
 
     permissionService
-      .getAllPermissions()
+      .getAllPermissions(scope === 'PUBLISHER' ? undefined : scope)
       .then((perms) => setAllPermissions(perms))
       .catch(() => setAllPermissions([]))
       .finally(() => setLoading(false));
-  }, [policy?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [policy?.id, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Derived ───────────────────────────────────────────────────────────────
-
-  const scopedPermissions = useMemo(
-    () => filterByScope(allPermissions, scope),
-    [allPermissions, scope]
-  );
+  // allPermissions is already filtered to this scope by the backend — the frontend
+  // must never re-derive scope from a permission's code or infer it locally.
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return scopedPermissions;
+    if (!search.trim()) return allPermissions;
     const q = search.toLowerCase();
-    return scopedPermissions.filter(
+    return allPermissions.filter(
       (p) =>
         p.code.toLowerCase().includes(q) ||
         (p.description ?? '').toLowerCase().includes(q) ||
         (p.module ?? '').toLowerCase().includes(q)
     );
-  }, [scopedPermissions, search]);
+  }, [allPermissions, search]);
 
   const grouped = useMemo(() => groupByModule(filtered), [filtered]);
   const groupKeys = Object.keys(grouped).sort();
@@ -337,7 +315,7 @@ export function PolicyEditor({
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
               </div>
-            ) : scopedPermissions.length === 0 ? (
+            ) : allPermissions.length === 0 ? (
               <div className="text-sm text-gray-400 italic text-center py-10 border border-dashed border-gray-200 rounded-xl">
                 No permissions available for this scope.
               </div>

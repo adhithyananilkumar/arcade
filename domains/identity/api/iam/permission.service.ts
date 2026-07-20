@@ -10,8 +10,10 @@ export interface Permission {
 }
 
 export const permissionService = {
-  getAllPermissions: async (): Promise<Permission[]> => {
-    const response = await api.get<Permission[]>('/api/v1/permissions');
+  /** Returns only permissions valid for the given scope; the backend performs the filtering. */
+  getAllPermissions: async (scope?: 'PLATFORM' | 'CHANNEL'): Promise<Permission[]> => {
+    const query = scope ? `?scope=${scope}` : '';
+    const response = await api.get<Permission[]>(`/api/v1/permissions${query}`);
     return response;
   },
 };
