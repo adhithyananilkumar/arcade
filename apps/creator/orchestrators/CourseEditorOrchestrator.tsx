@@ -1133,7 +1133,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-white">
+    <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       {activeLessonId && (
