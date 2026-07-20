@@ -127,66 +127,66 @@ export default function DashboardNavbar() {
   const showArcConsole = AuthorizationService.canAccessConsole(user);
 
   return (
-    <motion.nav 
+    <motion.div 
       variants={{
-        visible: { y: 0 },
-        hidden: { y: "-100%" },
+        visible: { y: 0, opacity: 1 },
+        hidden: { y: -20, opacity: 0 },
       }}
       animate={hidden ? "hidden" : "visible"}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="sticky top-0 z-40 flex h-16 w-full items-center justify-between bg-white dark:bg-black px-6 md:px-8 transition-colors"
+      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between px-6 md:px-8 pointer-events-none"
     >
-      {/* Left side: Logo & Title */}
-      <div className="flex items-center gap-3">
-        <Link href="/dashboard" className="flex items-center gap-2 group cursor-pointer">
+      {/* Left Island: Branding */}
+      <div className="pointer-events-auto flex items-center h-12 px-5 rounded-full apple-glass-dock">
+        <Link href="/dashboard" className="flex items-center group cursor-pointer">
           <Image
             src="/arcade.svg"
             alt="Arcade"
-            width={100}
-            height={28}
-            className="h-7 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+            width={85}
+            height={24}
+            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
           />
         </Link>
       </div>
 
-      {/* Right side: Actions */}
-      <div className="flex items-center gap-3 pr-2">
-        <div className="relative z-50 flex items-center gap-4">
+      {/* Right Island: Utilities */}
+      <div className="pointer-events-auto flex items-center h-12 rounded-full apple-glass-dock pr-1 pl-2">
+        <div className="relative z-50 flex items-center gap-2">
           
           {/* Notifications Dropdown */}
-          <div className="relative">
+          <div className="relative flex items-center">
             <button 
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-              className="relative p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+              className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
             >
-              <Bell size={20} />
+              <Bell size={20} strokeWidth={2} />
               {invitations.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white dark:border-black"></span>
+                <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-neutral-900 shadow-sm"></span>
               )}
             </button>
             
             {isNotificationsOpen && (
               <>
                 <div 
-                  className="fixed inset-0 z-40" 
+                  className="fixed inset-0 z-40 cursor-default" 
                   onClick={() => setIsNotificationsOpen(false)}
                 />
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
+                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto">
                     {invitations.length === 0 ? (
                       <div className="p-4 text-center text-sm text-slate-500">No new notifications</div>
                     ) : (
-                      <div className="divide-y divide-slate-100 dark:divide-neutral-800">
+                      <div className="divide-y divide-black/5 dark:divide-white/5">
                         {invitations.map(inv => (
-                          <div key={inv.id} className="p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors">
+                          <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                             <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
                               Channel Invitation
                             </p>
-                            <p className="text-xs text-slate-500 mb-3">
-                              You've been invited to join as <span className="font-bold">{inv.roleName}</span>.
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                              You've been invited to join as <span className="font-bold text-slate-700 dark:text-slate-300">{inv.roleName}</span>.
                             </p>
                             <div className="flex gap-2">
                               <button 
@@ -197,7 +197,7 @@ export default function DashboardNavbar() {
                               </button>
                               <button 
                                 onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
-                                className="flex-1 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-1"
+                                className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1"
                               >
                                 <X size={14} /> Decline
                               </button>
@@ -212,13 +212,16 @@ export default function DashboardNavbar() {
             )}
           </div>
 
+          <div className="w-[1px] h-4 bg-black/10 dark:bg-white/10 mx-1"></div>
+
+          {/* Profile Dropdown */}
           <MenuContainer>
-            {/* 1. Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between pl-3 pr-1 gap-2">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
+            {/* Trigger (Profile Picture and Name) */}
+            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2">
+              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
                 {user?.username || user?.firstName || 'user'}
               </span>
-              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-slate-100 dark:border-neutral-800">
+              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-black/5 dark:border-white/10 shadow-sm">
                 {user?.avatarUrl ? (
                   <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
@@ -229,42 +232,16 @@ export default function DashboardNavbar() {
               </div>
             </div>
 
-            {/* 2. Menu Items */}
+            {/* Menu Items */}
             <MenuItem 
-              icon={<Book size={20} strokeWidth={2} className="text-blue-500" />} 
-              onClick={() => router.push('/dashboard')} 
-            >
-              Courses
-            </MenuItem>
-            <MenuItem 
-              icon={<GraduationCap size={20} strokeWidth={2} className="text-cyan-500" />} 
-              onClick={() => router.push('/dashboard/my-courses')} 
-            >
-              My courses
-            </MenuItem>
-            {hasChannels && (
-              <MenuItem 
-                icon={<BookOpen size={20} strokeWidth={2} className="text-indigo-500" />} 
-                onClick={() => router.push('/dashboard/content')} 
-              >
-                Content Studio
-              </MenuItem>
-            )}
-            <MenuItem 
-              icon={<Map size={20} strokeWidth={2} className="text-amber-500" />} 
-              onClick={() => router.push('/dashboard/roadmaps')} 
-            >
-              Roadmaps
-            </MenuItem>
-            <MenuItem 
-              icon={<UserIcon size={20} strokeWidth={2} className="text-emerald-500" />} 
+              icon={<UserIcon size={18} strokeWidth={2} className="text-emerald-500" />} 
               onClick={() => router.push('/dashboard/profile')} 
             >
               Profile
             </MenuItem>
             {hasChannels && (
               <MenuItem 
-                icon={<Tv size={20} strokeWidth={2} className="text-purple-500" />} 
+                icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
                 onClick={() => router.push('/dashboard/manage-channels')} 
               >
                 My Channel
@@ -272,20 +249,20 @@ export default function DashboardNavbar() {
             )}
             {showArcConsole && (
               <MenuItem 
-                icon={<ShieldAlert size={20} strokeWidth={2} className="text-pink-500" />} 
+                icon={<ShieldAlert size={18} strokeWidth={2} className="text-pink-500" />} 
                 onClick={() => router.push('/console')} 
               >
                 Console
               </MenuItem>
             )}
             <MenuItem 
-              icon={<Settings size={20} strokeWidth={2} className="text-slate-500" />} 
+              icon={<Settings size={18} strokeWidth={2} className="text-slate-500" />} 
               onClick={() => router.push('/dashboard/settings')} 
             >
               Settings
             </MenuItem>
             <MenuItem 
-              icon={<LogOut size={20} strokeWidth={2} className="text-red-500" />} 
+              icon={<LogOut size={18} strokeWidth={2} className="text-red-500" />} 
               onClick={handleLogout} 
             >
               Sign out
@@ -293,6 +270,6 @@ export default function DashboardNavbar() {
           </MenuContainer>
         </div>
       </div>
-    </motion.nav>
+    </motion.div>
   );
 }
