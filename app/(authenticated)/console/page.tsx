@@ -2,15 +2,16 @@
 
 import { useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { usePermissions } from "@/domains/identity";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
 export default function ArcConsoleIndex() {
   const router = useRouter();
-  const { hasPermission } = usePermissions();
+  const { user } = useAuthStore();
   
-  const showAdminChannels = hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showReviewCourses = hasPermission('courses.review') || hasPermission('channel.courses.review');
-  const showAdminSettings = hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
+  const showAdminChannels = AuthorizationService.canManageChannels(user);
+  const showReviewCourses = AuthorizationService.canReviewCourses(user);
+  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
 
   if (!showAdminChannels && !showReviewCourses && !showAdminSettings) {
     notFound();

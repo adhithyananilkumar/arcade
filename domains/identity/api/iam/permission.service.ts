@@ -2,11 +2,11 @@ import { api } from '@/infrastructure/http/api';
 
 export interface Permission {
   id: string;
-  key: string;
-  name: string;
+  code: string;
   module: string;
   description: string;
-  scopeType: string;
+  context: string;
+  deprecated?: boolean;
 }
 
 export const permissionService = {

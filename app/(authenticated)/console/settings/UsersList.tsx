@@ -56,7 +56,7 @@ export function UsersList() {
   const openAssignModal = (user: User) => {
     setSelectedUser(user);
     // Assuming user object has roles array like { id, name }
-    const userRoleIds = (user as any).roles?.map((r: any) => r.id).filter(Boolean) || [];
+    const userRoleIds = (user as any).platformRoles?.map((r: any) => r.id).filter(Boolean) || [];
     setSelectedRoles(userRoleIds);
     setIsModalOpen(true);
   };
@@ -139,7 +139,7 @@ export function UsersList() {
               </h4>
               <p className="text-sm text-gray-500">{user.email}</p>
               <div className="mt-2 flex gap-2 flex-wrap">
-                {(user as any).roles?.map((role: any) => (
+                {(user as any).platformRoles?.map((role: any) => (
                   <span key={role.id} className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
                     {role.name}
                   </span>
@@ -170,18 +170,18 @@ export function UsersList() {
             
             <div className="space-y-2 max-h-60 overflow-y-auto mb-6">
               {roles.map(role => {
-                const targetHighestLevel = (selectedUser as any).roles
+                const targetHighestLevel = (selectedUser as any).platformRoles
                   ?.filter((r: any) => r.scopeType === 'PLATFORM')
                   .map((r: any) => r.level || 0)
                   .sort((a: number, b: number) => b - a)[0] || 0;
                   
-                const currentUserHighestLevel = currentUser?.roles
+                const currentUserHighestLevel = currentUser?.platformRoles
                   ?.filter((r: any) => r.scopeType === 'PLATFORM')
                   .map((r: any) => r.level || 0)
                   .sort((a: number, b: number) => b - a)[0] || 0;
 
                 const isTargetHigherOrEqual = targetHighestLevel >= currentUserHighestLevel && currentUser?.id !== selectedUser.id && targetHighestLevel > 0;
-                const isRoleHigherOrEqual = role.level >= currentUserHighestLevel && currentUserHighestLevel < 100;
+                const isRoleHigherOrEqual = currentUserHighestLevel > 0 && (role.level || 0) >= currentUserHighestLevel;
                 const disabled = isTargetHigherOrEqual || isRoleHigherOrEqual;
 
                 return (
@@ -195,7 +195,7 @@ export function UsersList() {
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
-                        {role.name}
+                        {role.displayName}
                         {disabled && <span className="ml-2 text-[10px] uppercase text-red-500 font-semibold bg-red-50 px-1.5 py-0.5 rounded">Not Allowed</span>}
                       </div>
                       <div className="text-xs text-gray-500">{role.description}</div>

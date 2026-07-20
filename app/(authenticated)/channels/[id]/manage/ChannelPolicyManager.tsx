@@ -1,10 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+// -----------------------------------------------------------------------------------------
+// IMPORTANT: Before making further UI or architectural changes to the Policy Editor,
+// read the standard defined in docs/architecture/iam-policy-editor-standard.md.
+// Future versions of this editor should implement Managed Policy Bundles, Permission Tree Views,
+// and Dependency Validations.
+// -----------------------------------------------------------------------------------------
 import { roleService, Role, RoleRequest } from "@/domains/identity";
-import { permissionService, Permission } from "@/domains/identity";
 import { toast } from 'sonner';
-import { Plus, X, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
+import { Plus, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
+import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
 
 interface ChannelPolicyManagerProps {
   channelId: string;
@@ -23,20 +29,13 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions: userPermissions }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
-  const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  const [newRoleName, setNewRoleName] = useState('');
-  const [newRoleDesc, setNewRoleDesc] = useState('');
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-
-  // We rely on permissions array containing 'ALL' if they are owner
-  const canManageStaff = permissions.includes('ALL') || permissions.includes('channel.staff.manage');
+  const canManageStaff = userPermissions.includes('channel.manage') || userPermissions.includes('channel.roles.manage');
 
   useEffect(() => {
     fetchData();
@@ -45,15 +44,8 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [rolesData, permsData] = await Promise.all([
-        roleService.getChannelRoles(channelId),
-        permissionService.getAllPermissions() // Wait, permissions API has scope support?
-      ]);
+      const rolesData = await roleService.getChannelRoles(channelId);
       setRoles(rolesData);
-      
-      // Filter permissions to only show ORGANIZATION scope for custom roles
-      const orgPerms = permsData.filter(p => p.scopeType === 'ORGANIZATION');
-      setAvailablePermissions(orgPerms);
     } catch (error) {
       toast.error('Failed to load roles');
     } finally {
@@ -61,21 +53,19 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
     }
   };
 
-  const handleCreatePolicy = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newRoleName.trim()) {
-      toast.error('Policy name is required');
-      return;
-    }
-    
+  const handleSavePolicy = async (data: {
+    name: string;
+    description: string;
+    effectivePermissionIds: string[];
+  }) => {
     try {
       setSaving(true);
       const payload: RoleRequest = {
-        name: newRoleName,
-        description: newRoleDesc,
-        permissionIds: selectedPermissions
+        code: editingRole ? editingRole.code : data.name.toUpperCase().replace(/\s+/g, '_'),
+        displayName: data.name,
+        description: data.description,
+        permissionIds: data.effectivePermissionIds,
       };
-
       if (editingRole) {
         await roleService.updateChannelRole(channelId, editingRole.id, payload);
         toast.success('Role updated successfully');
@@ -85,7 +75,7 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
       }
       handleCloseModal();
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error(editingRole ? 'Failed to update role' : 'Failed to create role');
     } finally {
       setSaving(false);
@@ -107,26 +97,12 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
 
   const startEditRole = (role: Role) => {
     setEditingRole(role);
-    setNewRoleName(role.name);
-    setNewRoleDesc(role.description || '');
-    setSelectedPermissions(role.permissions?.map((p: any) => p.id) || []);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingRole(null);
-    setNewRoleName('');
-    setNewRoleDesc('');
-    setSelectedPermissions([]);
-  };
-
-  const togglePermission = (permId: string) => {
-    if (selectedPermissions.includes(permId)) {
-      setSelectedPermissions(selectedPermissions.filter(id => id !== permId));
-    } else {
-      setSelectedPermissions([...selectedPermissions, permId]);
-    }
   };
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading roles...</div>;
@@ -158,18 +134,18 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
               <div>
                 <h4 className="font-bold text-gray-900 flex items-center gap-2">
                   <ShieldCheck size={18} className="text-indigo-600" />
-                  {role.name}
-                  {role.isSystem && (
+                  {role.displayName}
+                  {role.systemRole && (
                     <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">System</span>
                   )}
-                  {!role.isSystem && (
+                  {!role.systemRole && (
                     <span className="px-2 py-0.5 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">Custom</span>
                   )}
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
               </div>
               
-              {!role.isSystem && canManageStaff && (
+              {!role.systemRole && canManageStaff && (
                 <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => startEditRole(role)}
@@ -194,7 +170,7 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
               <div className="flex flex-wrap gap-1.5">
                 {role.permissions?.map((p: any) => (
                   <span key={p.id} className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100">
-                    {p.name || formatPermissionKey(p.key)}
+                    {formatPermissionKey(p.code)}
                   </span>
                 ))}
                 {(!role.permissions || role.permissions.length === 0) && (
@@ -208,82 +184,20 @@ export function ChannelPolicyManager({ channelId, permissions }: ChannelPolicyMa
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">
-                {editingRole ? 'Edit Custom Role' : 'Create Custom Role'}
-              </h3>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleCreatePolicy} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role Name</label>
-                <input 
-                  type="text" 
-                  value={newRoleName}
-                  onChange={(e) => setNewRoleName(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                  placeholder="e.g. Video Editor"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea 
-                  value={newRoleDesc}
-                  onChange={(e) => setNewRoleDesc(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-indigo-500 focus:ring-indigo-500"
-                  placeholder="Briefly describe what this role allows..."
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Select Permissions</label>
-                <div className="grid md:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
-                  {availablePermissions.map(perm => (
-                    <label key={perm.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedPermissions.includes(perm.id)}
-                        onChange={() => togglePermission(perm.id)}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{perm.name || formatPermissionKey(perm.key)}</div>
-                        {perm.description && <div className="text-xs text-gray-500">{perm.description}</div>}
-                      </div>
-                    </label>
-                  ))}
-                  {availablePermissions.length === 0 && (
-                    <div className="col-span-2 text-sm text-gray-500 p-4 text-center border rounded-lg border-dashed">
-                      No organization permissions available.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
-                >
-                  {saving ? (editingRole ? 'Updating...' : 'Creating...') : (editingRole ? 'Update Role' : 'Create Role')}
-                </button>
-              </div>
-            </form>
+          <div className="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl">
+            <PolicyEditor
+              scope="CHANNEL"
+              resourceId={channelId}
+              mode={editingRole ? 'edit' : 'create'}
+              policy={editingRole ? {
+                id: editingRole.id,
+                name: editingRole.displayName ?? '',
+                description: editingRole.description,
+                permissionIds: editingRole.permissions?.map((p: any) => p.id) ?? [],
+              } : undefined}
+              onSave={handleSavePolicy}
+              onCancel={handleCloseModal}
+            />
           </div>
         </div>
       )}

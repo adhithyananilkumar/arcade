@@ -274,7 +274,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
                 >
                   <option value="">Select a policy...</option>
                   {roles.map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
+                    <option key={role.id} value={role.id}>{role.displayName || role.code}</option>
                   ))}
                 </select>
               </div>

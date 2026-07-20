@@ -7,6 +7,7 @@ import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles,
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePermissions } from "@/domains/identity";
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { useState, useEffect } from 'react';
 import { channelService } from "@/domains/channels";
 
@@ -35,10 +36,9 @@ export default function DashboardSidebar() {
       .catch(() => setHasChannels(false));
   }, []);
 
-  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM');
-  const showAdminChannels = hasPlatformRole || hasPermission('channels.approve') || hasPermission('channels.suspend');
-  const showAdminSettings = hasPlatformRole || hasPermission('roles.create') || hasPermission('roles.assign') || hasPermission('users.suspend');
-  const showArcConsole = showAdminChannels || showAdminSettings;
+  const showAdminChannels = AuthorizationService.canManageChannels(user);
+  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showArcConsole = showAdminChannels || showAdminSettings || AuthorizationService.canReviewCourses(user);
 
   const dynamicNavItems = [
     ...baseNavItems,

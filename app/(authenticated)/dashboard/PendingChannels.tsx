@@ -18,10 +18,8 @@ export function PendingChannels() {
   
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
-  const hasPlatformRole = user?.roles?.some((r: any) => r.scopeType === 'PLATFORM') || false;
-  
-  const canApprove = hasPlatformRole || hasPermission('channels.approve');
-  const canSuspend = hasPlatformRole || hasPermission('channels.suspend');
+  const canApprove = hasPermission('platform.channels.manage');
+  const canSuspend = hasPermission('platform.channels.manage');
 
   useEffect(() => {
     fetchChannels();
