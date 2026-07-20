@@ -21,6 +21,12 @@ export default function HeroNav() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
+      if (currentScrollY <= 0) {
+        setIsHidden(false);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
       // Hide only if we scroll down past 120px
       if (currentScrollY > lastScrollY && currentScrollY > 120) {
         setIsHidden(true);
@@ -76,7 +82,7 @@ export default function HeroNav() {
     >
       {/* Wordmark */}
       <Link href="/" className="l-nav__logo-container" aria-label="Arcade home">
-        <span className="l-nav__logo-text">arcade.</span>
+        <img src="/arcade.svg" alt="Arcade Logo" className="l-nav__logo" />
       </Link>
 
       {/* Center-right links */}
