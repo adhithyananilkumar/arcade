@@ -84,6 +84,11 @@
   height: 24px;
   width: auto;
   display: block;
+  transition: opacity 0.25s ease;
+}
+
+.l-nav__logo-container:hover .l-nav__logo {
+  opacity: 0.8;
 }
 
 .l-nav__links {
