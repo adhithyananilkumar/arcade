@@ -469,6 +469,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   const [activeYDoc, setActiveYDoc] = useState<Y.Doc | null>(null);
   const activeYDocRef = useRef<Y.Doc | null>(null);
   const lastSnapshotAtRef = useRef(0);
+  const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -1132,7 +1133,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   }
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-white">
+    <div className="relative flex h-full flex-col overflow-hidden bg-white">
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       {activeLessonId && (
@@ -1153,109 +1154,101 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
         />
       )}
 
-      {/* ── Top metadata bar ─────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 border-b border-gray-200 bg-white px-5 py-2.5">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleBack}
-            disabled={navigatingBack}
-            title="Save and return to dashboard"
-            className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
-          >
-            <ArrowLeft size={16} />
-            {navigatingBack ? "Saving…" : "Back"}
-          </button>
-          <div className="h-5 w-px flex-shrink-0 bg-gray-200" />
-          <input
-            type="text"
-            value={title}
-            disabled={status !== "DRAFT"}
-            onChange={(e) => {
-              setTitle(e.target.value);
-              scheduleCourseMetaSave({ title: e.target.value });
-            }}
-            placeholder="Course title"
-            className="min-w-0 flex-1 rounded-lg border-0 px-1.5 py-1 text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 disabled:opacity-75 disabled:bg-transparent"
-          />
-
-          <StatusPill status={status} />
-
-          {status === "DRAFT" && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-gray-400">All changes saved</span>
-              <button
-                type="button"
-                onClick={askSubmit}
-                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
-              >
-                <Send size={14} />
-                Submit for Review
-              </button>
-            </div>
-          )}
-
-          {status === "SUBMITTED" && (
-            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-yellow-800 border border-yellow-200">
-              <Lock size={14} className="text-yellow-600" />
-              Under Review
-            </div>
-          )}
-
-          {(status === "APPROVED" || status === "PUBLISHED") && (
+      {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
+          row regardless of how wide the left/right action groups are ────── */}
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
+          {/* Left: Back, flush to the page margin */}
+          <div className="justify-self-start">
             <button
               type="button"
-              onClick={async () => {
-                try {
-                  const res = await api.post(`/api/courses/${courseId}/edit`, {});
-                  setStatus("DRAFT");
-                  // Refresh other state if necessary, but changing status to DRAFT unlocks it immediately.
-                } catch (e) {
-                  alert("Failed to revert course to draft mode.");
-                }
-              }}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 shadow-sm"
+              onClick={handleBack}
+              disabled={navigatingBack}
+              title="Save and return to dashboard"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
             >
-              <Pencil size={14} />
-              Edit Contents
-            </button>
-          )}
-
-
-        </div>
-      </header>
-
-      {/* ── Main two-panel layout ─────────────────────────────────────────── */}
-      <div className="flex min-h-0 flex-1">
-        {/* ── Left sidebar: course tree ─────────────────────────────── */}
-        <aside
-          className={`relative flex flex-shrink-0 flex-col overflow-hidden border-r border-gray-200 bg-gray-50 transition-[width] duration-300 ease-in-out ${sidebarOpen ? "w-64" : "w-10"
-            }`}
-        >
-          {/* ── Sidebar header (always visible) ───────────────── */}
-          <div className={`flex flex-shrink-0 items-center bg-gray-50 ${sidebarOpen ? "border-b border-gray-200" : ""}`}>
-            {sidebarOpen && (
-              <div className="flex min-w-0 flex-1 items-center gap-2 px-4 py-2.5">
-                <GraduationCap size={15} className="flex-shrink-0 text-indigo-500" />
-                <span className="truncate text-sm font-semibold text-gray-700">Course Structure</span>
-              </div>
-            )}
-            <button
-              type="button"
-              title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-              onClick={() => setSidebarOpen((o) => !o)}
-              className={`flex flex-shrink-0 items-center justify-center rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 ${sidebarOpen ? "mr-1" : "mx-auto"
-                }`}
-            >
-              {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
             </button>
           </div>
 
-          {/* ── Collapsible body ──────────────────────────────── */}
-          <div
-            className={`flex min-h-0 flex-1 flex-col transition-opacity duration-200 ${sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
-              }`}
-          >
+          {/* Center: course title, centered on the viewport regardless of side widths */}
+          <div className="min-w-0 justify-self-center">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                scheduleCourseMetaSave({ title: e.target.value });
+              }}
+              placeholder="Course title"
+              size={Math.max(title.length, 12)}
+              className="max-w-[60vw] rounded-lg border-0 bg-transparent px-1.5 py-1 text-center text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 sm:max-w-md"
+            />
+          </div>
+
+          {/* Right: status + secondary actions, flush to the page margin */}
+          <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
+            <StatusPill status={status} />
+
+            {activeLessonId && (
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(true)}
+                title="Version history"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              >
+                <History size={15} />
+                <span className="hidden md:inline">History</span>
+              </button>
+            )}
+
+            {status === "DRAFT" && (
+              <button
+                type="button"
+                onClick={askSubmit}
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                <Send size={14} />
+                <span className="hidden sm:inline">Submit for Review</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* ── Canvas + floating overlays ────────────────────────────────────── */}
+      <div className="relative min-h-0 flex-1">
+        {/* ── Floating collapsible sidebar: course tree ─────────────── */}
+        <aside className="absolute left-3 top-14 z-20 flex">
+          {!sidebarOpen ? (
+            <button
+              type="button"
+              title="Expand sidebar"
+              onClick={() => setSidebarOpen(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              <PanelLeftOpen size={18} />
+            </button>
+          ) : (
+          <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+            {/* ── Sidebar header ───────────────── */}
+            <div className="flex flex-shrink-0 items-center px-2.5 py-2">
+              <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                Course Structure
+              </span>
+              <button
+                type="button"
+                title="Collapse sidebar"
+                onClick={() => setSidebarOpen(false)}
+                className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            </div>
+
+            {/* ── Body ──────────────────────────────── */}
+            <div className="flex min-h-0 flex-1 flex-col">
             {/* Tree scroll area */}
             <div className="flex-1 overflow-y-auto p-2">
               {modules.length === 0 && (
@@ -1370,6 +1363,22 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                                 )}
                               </button>
                               <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                {item.kind === "quiz" && (
+                                  <IconBtn
+                                    title="Copy quiz ID — paste into an inline Quiz block"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(item.node.id);
+                                      setCopiedQuizId(item.node.id);
+                                      setTimeout(() => setCopiedQuizId(null), 1500);
+                                    }}
+                                  >
+                                    {copiedQuizId === item.node.id ? (
+                                      <Check size={12} className="text-emerald-500" />
+                                    ) : (
+                                      <Copy size={12} />
+                                    )}
+                                  </IconBtn>
+                                )}
                                 <IconBtn
                                   title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
                                   onClick={() =>
@@ -1420,133 +1429,106 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             </div>
 
             {/* Sidebar footer */}
-            {status === "DRAFT" && (
-              <div className="space-y-2 border-t border-gray-200 p-3">
-                <button
-                  type="button"
-                  onClick={addModule}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600 py-2 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
-                >
-                  <Plus size={14} />
-                  Add Module
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQbOpen(true)}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-100 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
-                >
-                  <FileText size={13} />
-                  Create Question Bank
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                  className={`flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors ${view === "settings"
-                    ? "bg-indigo-50 text-indigo-700"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
-                    }`}
-                >
-                  <Settings size={13} />
-                  Course Settings
-                </button>
-              </div>
-            )}
+            <div className="space-y-0.5 border-t border-gray-100 p-1.5">
+              <button
+                type="button"
+                onClick={addModule}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+              >
+                <Plus size={14} />
+                Add Module
+              </button>
+              <button
+                type="button"
+                onClick={() => setQbOpen(true)}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <FileText size={13} />
+                Create Question Bank
+              </button>
+              <button
+                type="button"
+                onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  }`}
+              >
+                <Settings size={13} />
+                Course Settings
+              </button>
+            </div>
+            </div>
           </div>
+          )}
         </aside>
 
-        {/* ── Main editor panel ─────────────────────────────────────── */}
-        <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
+        {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
+        <main className="absolute inset-0 z-0 overflow-y-auto">
           {view === "settings" ? (
-            <div className="min-h-0 flex-1 overflow-y-auto">
-              <CourseSettingsPanel
-                courseId={courseId}
-                title={title}
-                description={description}
-                status={status}
-                pricingModel={pricingModel}
-                createdAt={createdAt}
-                updatedAt={updatedAt}
-                onDeleted={() => router.push("/dashboard")}
-                onDescriptionChange={(desc) => {
-                  setDescription(desc);
-                  scheduleCourseMetaSave({ description: desc });
-                }}
-              />
+            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
+              <div className="overflow-hidden rounded-2xl border border-gray-100">
+                <CourseSettingsPanel
+                  courseId={courseId}
+                  title={title}
+                  description={description}
+                  status={status}
+                  pricingModel={pricingModel}
+                  createdAt={createdAt}
+                  updatedAt={updatedAt}
+                  onDeleted={() => router.push("/dashboard")}
+                  onDescriptionChange={(desc) => {
+                    setDescription(desc);
+                    scheduleCourseMetaSave({ description: desc });
+                  }}
+                />
+              </div>
             </div>
           ) : activeLessonId ? (
-            <div className="flex min-h-0 flex-1 flex-col">
-              <div className="mb-3 flex items-center gap-3 px-6 pt-4 lg:px-10 lg:pt-6">
+            <div className="mx-auto max-w-[860px] px-6 pb-44 pt-24 sm:px-12">
+              <div>
                 <input
                   type="text"
                   value={activeLessonTitle}
-                  disabled={status !== "DRAFT"}
                   onBlur={(e) => saveLessonTitle(e.target.value)}
                   onChange={(e) => setActiveLessonTitle(e.target.value)}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300 disabled:opacity-75 disabled:bg-transparent"
+                  className="mb-3 w-full border-0 bg-transparent text-4xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
                   placeholder="Lesson title"
                 />
-                <button
-                  type="button"
-                  onClick={() => setHistoryOpen(true)}
-                  title="Version history"
-                  className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                >
-                  <History size={15} />
-                  History
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFeedbackOpen(!feedbackOpen)}
-                  title="Reviewer Feedback"
-                  className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                    feedbackOpen
-                      ? "border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                      : "border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  <MessageSquare size={15} />
-                  Feedback
-                </button>
+                {activeYDoc && (
+                  <ArcadeEditor
+                    key={activeLessonId}
+                    ref={editorRef}
+                    ydoc={activeYDoc}
+                    seedContent={activeSeedContent}
+                    placeholder="Start writing your lesson content…"
+                    onSave={handleSave}
+                    chromeless
+                    floatingToolbar
+                  />
+                )}
               </div>
-              {activeYDoc && (
-                <div className="flex flex-1 min-h-0 relative bg-white">
-                  <div className={`flex flex-col flex-1 min-h-0 overflow-y-auto pb-20 px-6 lg:px-10 py-4 lg:py-6 ${status !== "DRAFT" ? "pointer-events-none opacity-80" : ""}`}>
-                      <ArcadeEditor
-                        key={activeLessonId}
-                        ref={editorRef}
-                        ydoc={activeYDoc}
-                        seedContent={activeSeedContent}
-                        placeholder="Start writing your lesson content…"
-                        onSave={handleSave}
-                        className="shadow-sm min-h-full"
-                      />
-                    </div>
-                  {feedbackOpen && (
-                    <div className="w-80 lg:w-96 flex-shrink-0 border-l border-gray-200 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10 flex flex-col h-full absolute right-0 top-0 lg:relative lg:shadow-none">
-                      <LessonFeedbackOrchestrator lessonId={activeLessonId} className="h-full" />
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           ) : activeQuizId ? (
-            <div className="flex min-h-0 flex-1 flex-col px-6 py-4 lg:px-10 lg:py-6">
-              <div className="mb-3 flex items-center gap-3">
-                <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
-                <input
-                  type="text"
-                  value={activeQuizTitle}
-                  onBlur={(e) => saveQuizTitle(e.target.value)}
-                  onChange={(e) => setActiveQuizTitle(e.target.value)}
-                  className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                  placeholder="Quiz title"
-                />
+            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
+              <div>
+                <div className="mb-5 flex items-center gap-3">
+                  <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
+                  <input
+                    type="text"
+                    value={activeQuizTitle}
+                    onBlur={(e) => saveQuizTitle(e.target.value)}
+                    onChange={(e) => setActiveQuizTitle(e.target.value)}
+                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
+                    placeholder="Quiz title"
+                  />
+                </div>
+                <QuizEditor key={activeQuizId} quizId={activeQuizId} />
               </div>
-              <QuizEditor key={activeQuizId} quizId={activeQuizId} className="min-h-0 flex-1" />
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
+            <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center gap-4 pt-20 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50">
                 <FileText size={28} className="text-indigo-400" />
               </div>
               <div>
@@ -1554,7 +1536,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                   Select a lesson or quiz to start editing
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
-                  Add a module, then a lesson or quiz from the sidebar to begin.
+                  Open the sidebar, add a module, then a lesson or quiz to begin.
                 </p>
               </div>
             </div>
