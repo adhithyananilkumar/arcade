@@ -10,7 +10,8 @@ export default function AppShellResolver() {
   const { status } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
-  const showPublic = searchParams.get('public') === 'true';
+  const PUBLIC_VIEW_PARAM = 'public';
+  const showPublic = searchParams.get(PUBLIC_VIEW_PARAM) === 'true';
 
   useEffect(() => {
     setMounted(true);
@@ -28,7 +29,11 @@ export default function AppShellResolver() {
     );
   }
 
-  // Route to the appropriate workspace application
+  /**
+   * `?public=true` is a presentation-only override that allows
+   * authenticated users to temporarily view the public marketing
+   * site. It must never influence authentication or authorization.
+   */
   if (status === 'unauthenticated' || showPublic) {
     return <PublicApp />;
   }
