@@ -115,14 +115,9 @@ export default function HeroNav() {
             Open Arcade
           </Link>
         ) : (
-          <>
-            <Link href="/sign" className="l-nav__login">
-              Sign In
-            </Link>
-            <Link href="/sign?type=register" className="l-nav__get-started">
-              Get Started
-            </Link>
-          </>
+          <Link href="/sign" className="l-nav__get-started">
+            Get Started
+          </Link>
         )}
       </div>
     </motion.nav>
