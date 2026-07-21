@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { Home, Compass, BookOpen, Trophy } from 'lucide-react';
+import { usePathname, useRouter, useParams } from 'next/navigation';
+import { Home, Compass, BookOpen, Trophy, ClipboardList } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 
@@ -39,18 +39,32 @@ const dockItems = [
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,
   },
+  {
+    id: 'exam',
+    label: 'Exam',
+    href: '/exam-hub', // Or dynamic route below
+    icon: ClipboardList,
+    activeColor: 'text-rose-600 dark:text-rose-400',
+    exact: false,
+  }
 ] as const;
 
 // ─── Component ─────────── //
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
+  
+  // If we are viewing a specific course, point the exam button to that course's exam.
+  // Otherwise, point to a default test course for demonstration.
+  const currentCourseId = params?.courseId || 'default';
 
-  // Hide the dock on content studio, roadmaps, and settings pages
+  // Hide the dock on content studio, roadmaps, settings pages, and exam pages
   if (
     pathname.startsWith('/content') ||
     pathname.startsWith('/roadmaps') ||
-    pathname.startsWith('/settings')
+    pathname.startsWith('/settings') ||
+    pathname.includes('/exam')
   ) {
     return null;
   }
@@ -77,7 +91,13 @@ export default function LearnerDock() {
               <DockItem
                 key={item.id}
                 className="cursor-pointer"
-                onClick={() => router.push(item.href)}
+                onClick={() => {
+                  if (item.id === 'exam') {
+                    router.push(`/learn/${currentCourseId}/exam`);
+                  } else {
+                    router.push(item.href);
+                  }
+                }}
               >
                 <DockLabel>{item.label}</DockLabel>
                 <DockIcon>

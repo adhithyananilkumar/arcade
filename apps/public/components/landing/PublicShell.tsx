@@ -14,17 +14,21 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import HeroNav from "./HeroNav";
 import Footer from "./Footer";
 
+import { useParams } from "next/navigation";
+
 /** Inner shell — reads IntroContext (which is available when isLanding is true) */
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { introActive } = useIntroContext();
   const status = useAuthStore((state) => state.status);
   const showNav = !introActive && status !== 'authenticated';
+  const params = useParams();
+  const isProfile = !!params?.username;
 
   return (
     <>
       {showNav && <HeroNav />}
       {children}
-      {!introActive && <Footer />}
+      {!introActive && !isProfile && <Footer />}
     </>
   );
 }
@@ -33,12 +37,14 @@ function ShellInner({ children }: { children: React.ReactNode }) {
 function ShellOuter({ children }: { children: React.ReactNode }) {
   const status = useAuthStore((state) => state.status);
   const showNav = status !== 'authenticated';
+  const params = useParams();
+  const isProfile = !!params?.username;
 
   return (
     <>
       {showNav && <HeroNav />}
       {children}
-      <Footer />
+      {!isProfile && <Footer />}
     </>
   );
 }

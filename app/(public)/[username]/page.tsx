@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { UserService } from "@/domains/identity";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -197,6 +198,9 @@ export default function PublicProfilePage() {
           <h1 className="text-7xl md:text-9xl font-black text-slate-800 tracking-tight leading-none">404</h1>
           <h2 className="text-2xl md:text-4xl font-bold text-slate-600 mt-2 md:mt-4">Page not found</h2>
           <p className="mt-4 text-slate-500 font-medium max-w-sm">The page or user you're looking for doesn't exist or might have been removed.</p>
+          <Link href="/" className="mt-8 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors shadow-sm active:scale-95">
+            Back
+          </Link>
         </div>
       </div>
     );

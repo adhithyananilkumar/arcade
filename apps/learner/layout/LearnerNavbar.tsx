@@ -126,6 +126,10 @@ export default function LearnerNavbar() {
 
   const showArcConsole = AuthorizationService.canAccessConsole(user);
 
+  if (pathname.includes('/exam')) {
+    return null;
+  }
+
   return (
     <motion.div 
       variants={{

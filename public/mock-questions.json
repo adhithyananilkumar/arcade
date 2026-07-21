@@ -1,0 +1,357 @@
+{
+  "examTitle": "Introduction to Mathematics - Mock Examination",
+  "totalQuestions": 50,
+  "duration": 60,
+  "questions": [
+    {
+      "id": 1,
+      "level": "easy",
+      "question": "What is 8 + 5?",
+      "options": ["11", "12", "13", "14"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 2,
+      "level": "easy",
+      "question": "Which number is an even number?",
+      "options": ["15", "21", "18", "19"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 3,
+      "level": "easy",
+      "question": "What is 20 ÷ 4?",
+      "options": ["4", "5", "6", "7"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 4,
+      "level": "easy",
+      "question": "What is 9 × 7?",
+      "options": ["56", "63", "72", "54"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 5,
+      "level": "easy",
+      "question": "Which of the following is a prime number?",
+      "options": ["9", "15", "17", "21"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 6,
+      "level": "easy",
+      "question": "What is the value of 50 - 18?",
+      "options": ["30", "32", "28", "34"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 7,
+      "level": "easy",
+      "question": "How many sides does a hexagon have?",
+      "options": ["5", "6", "7", "8"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 8,
+      "level": "easy",
+      "question": "Which symbol represents multiplication?",
+      "options": ["+", "-", "×", "÷"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 9,
+      "level": "easy",
+      "question": "What is 100 divided by 10?",
+      "options": ["5", "10", "20", "25"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 10,
+      "level": "easy",
+      "question": "Which fraction is equal to one-half?",
+      "options": ["2/4", "1/3", "3/4", "4/5"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 11,
+      "level": "easy",
+      "question": "What is the square of 5?",
+      "options": ["10", "15", "20", "25"],
+      "correctAnswer": 3
+    },
+    {
+      "id": 12,
+      "level": "easy",
+      "question": "What is 12 + 18?",
+      "options": ["28", "30", "32", "34"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 13,
+      "level": "easy",
+      "question": "Which is the smallest whole number?",
+      "options": ["0", "1", "-1", "2"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 14,
+      "level": "easy",
+      "question": "How many degrees are in a right angle?",
+      "options": ["45", "90", "180", "360"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 15,
+      "level": "easy",
+      "question": "What is 15% of 100?",
+      "options": ["5", "10", "15", "20"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 16,
+      "level": "normal",
+      "question": "Solve: x + 8 = 21",
+      "options": ["11", "12", "13", "14"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 17,
+      "level": "normal",
+      "question": "Find the perimeter of a rectangle with length 8 cm and width 5 cm.",
+      "options": ["13 cm", "26 cm", "40 cm", "16 cm"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 18,
+      "level": "normal",
+      "question": "What is the area of a square with side length 9 cm?",
+      "options": ["18", "36", "72", "81"],
+      "correctAnswer": 3
+    },
+    {
+      "id": 19,
+      "level": "normal",
+      "question": "Simplify: 4(3 + 2)",
+      "options": ["9", "20", "24", "18"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 20,
+      "level": "normal",
+      "question": "Which of these is an irrational number?",
+      "options": ["1/2", "√2", "0.25", "5"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 21,
+      "level": "normal",
+      "question": "The mean of 5, 8, 10, and 13 is:",
+      "options": ["8", "9", "9.5", "10"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 22,
+      "level": "normal",
+      "question": "Solve: 3x = 24",
+      "options": ["6", "7", "8", "9"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 23,
+      "level": "normal",
+      "question": "What is 25% of 80?",
+      "options": ["15", "20", "25", "30"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 24,
+      "level": "normal",
+      "question": "How many faces does a cube have?",
+      "options": ["4", "5", "6", "8"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 25,
+      "level": "normal",
+      "question": "Find the median of 3, 7, 9, 12, 15.",
+      "options": ["7", "8", "9", "12"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 26,
+      "level": "normal",
+      "question": "Evaluate: 2³ × 4",
+      "options": ["16", "24", "32", "36"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 27,
+      "level": "normal",
+      "question": "What is the value of π (approximately)?",
+      "options": ["2.14", "3.14", "4.13", "3.41"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 28,
+      "level": "normal",
+      "question": "Convert 0.75 into a fraction.",
+      "options": ["1/2", "2/3", "3/4", "4/5"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 29,
+      "level": "normal",
+      "question": "What is the sum of interior angles of a triangle?",
+      "options": ["90°", "180°", "270°", "360°"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 30,
+      "level": "normal",
+      "question": "Solve: 45 ÷ (5 × 3)",
+      "options": ["2", "3", "4", "5"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 31,
+      "level": "normal",
+      "question": "Which graph is best for comparing categories?",
+      "options": ["Bar Graph", "Line Graph", "Pie Chart", "Scatter Plot"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 32,
+      "level": "normal",
+      "question": "What is the least common multiple of 6 and 8?",
+      "options": ["12", "18", "24", "48"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 33,
+      "level": "normal",
+      "question": "Simplify: 5² - 9",
+      "options": ["14", "16", "18", "20"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 34,
+      "level": "normal",
+      "question": "Which is equivalent to 40%?",
+      "options": ["2/5", "3/5", "1/5", "4/5"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 35,
+      "level": "hard",
+      "question": "Solve: 2x + 7 = 25",
+      "options": ["7", "8", "9", "10"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 36,
+      "level": "hard",
+      "question": "Find the area of a triangle with base 12 cm and height 9 cm.",
+      "options": ["54 cm²", "108 cm²", "96 cm²", "48 cm²"],
+      "correctAnswer": 0
+    },
+    {
+      "id": 37,
+      "level": "hard",
+      "question": "What is the square root of 196?",
+      "options": ["12", "13", "14", "15"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 38,
+      "level": "hard",
+      "question": "Solve: 4(x - 2) = 20",
+      "options": ["5", "6", "7", "8"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 39,
+      "level": "hard",
+      "question": "The probability of getting a head when tossing a fair coin is:",
+      "options": ["1/4", "1/3", "1/2", "1"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 40,
+      "level": "hard",
+      "question": "Find the HCF of 48 and 72.",
+      "options": ["12", "18", "24", "36"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 41,
+      "level": "hard",
+      "question": "What is 7³?",
+      "options": ["243", "343", "441", "512"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 42,
+      "level": "hard",
+      "question": "If a train travels 180 km in 3 hours, what is its speed?",
+      "options": ["50 km/h", "55 km/h", "60 km/h", "65 km/h"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 43,
+      "level": "hard",
+      "question": "Solve: (5 × 6) - (8 ÷ 2)",
+      "options": ["24", "26", "28", "30"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 44,
+      "level": "hard",
+      "question": "Find the value of 3² + 4².",
+      "options": ["21", "25", "27", "29"],
+      "correctAnswer": 1
+    },
+    {
+      "id": 45,
+      "level": "hard",
+      "question": "What is the volume of a cube with side 4 cm?",
+      "options": ["16", "32", "48", "64"],
+      "correctAnswer": 3
+    },
+    {
+      "id": 46,
+      "level": "hard",
+      "question": "Which number is divisible by both 3 and 5?",
+      "options": ["20", "25", "30", "35"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 47,
+      "level": "hard",
+      "question": "Simplify: (18 ÷ 3) × (5 + 1)",
+      "options": ["24", "30", "36", "42"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 48,
+      "level": "hard",
+      "question": "The sum of the angles in a quadrilateral is:",
+      "options": ["180°", "270°", "360°", "540°"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 49,
+      "level": "hard",
+      "question": "Solve: x² = 144",
+      "options": ["10", "11", "12", "13"],
+      "correctAnswer": 2
+    },
+    {
+      "id": 50,
+      "level": "hard",
+      "question": "If the radius of a circle is 7 cm, what is its diameter?",
+      "options": ["7 cm", "10 cm", "12 cm", "14 cm"],
+      "correctAnswer": 3
+    }
+  ]
+}

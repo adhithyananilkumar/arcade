@@ -52,7 +52,7 @@ type Review = {
 const COURSE_TITLE = "Design interfaces people actually love"
 const CATEGORY = "UI / UX & Product Design"
 
-const TABS = ["Overview", "Syllabus", "Instructor", "Certificate"] as const
+const TABS = ["Overview", "Syllabus", "Instructor", "Certificate", "Exam"] as const
 type Tab = (typeof TABS)[number]
 
 const NAV_LINKS = ["Explore", "Forums", "For Colleges", "Docs"]
@@ -576,6 +576,7 @@ function CourseHero({
 function CourseTabs() {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
+  const params = useParams()
 
   return (
     <div>
@@ -759,6 +760,26 @@ function CourseTabs() {
                 course carries it. Finish all four modules and your final case study to unlock it on your profile.
                 You&apos;ll also receive a verified certificate of completion to share.
               </p>
+            </div>
+          </div>
+        )}
+
+        {tab === "Exam" && (
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 text-center sm:items-center">
+            <div className="flex flex-col items-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 px-3 py-1.5 text-[12px] font-semibold text-indigo-500">
+                <BadgeCheck size={14} className="text-indigo-500" /> Final Assessment
+              </span>
+              <h3 className="mt-4 font-serif text-3xl font-light text-ink">Take the Final Exam</h3>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
+                Test your knowledge with a 25-question, 60-minute exam covering all course modules. Complete this exam in a proctored fullscreen environment to earn your certificate!
+              </p>
+              <Link 
+                href={`/learn/${params.courseId}/exam`}
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-8 py-3.5 font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95"
+              >
+                Proceed to Exam <ChevronRight size={18} />
+              </Link>
             </div>
           </div>
         )}
