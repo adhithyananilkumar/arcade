@@ -4,13 +4,11 @@ import React from "react";
 import CreatorHero from "@/apps/public/components/landing/creators/CreatorHero";
 import CreatorStats from "@/apps/public/components/landing/creators/CreatorStats";
 import CreatorJourney from "@/apps/public/components/landing/creators/CreatorJourney";
-import CreatorDashboard from "@/apps/public/components/landing/creators/CreatorDashboard";
 import CreatorEverythingInOnePlace from "@/apps/public/components/landing/creators/CreatorEverythingInOnePlace";
 import CreatorPublishing from "@/apps/public/components/landing/creators/CreatorPublishing";
 import CreatorFormats from "@/apps/public/components/landing/creators/CreatorFormats";
 import CreatorEducators from "@/apps/public/components/landing/creators/CreatorEducators";
 import CreatorPuzzle from "@/apps/public/components/landing/creators/CreatorPuzzle";
-import CreatorTrust from "@/apps/public/components/landing/creators/CreatorTrust";
 import CreatorFAQ from "@/apps/public/components/landing/creators/CreatorFAQ";
 import CreatorCTA from "@/apps/public/components/landing/creators/CreatorCTA";
 
@@ -23,12 +21,10 @@ export default function CreatorsPage() {
       <CreatorStats />
       <CreatorJourney />
       <CreatorEverythingInOnePlace />
-      <CreatorDashboard />
       <CreatorPublishing />
       <CreatorFormats />
       <CreatorEducators />
       <CreatorPuzzle />
-      <CreatorTrust />
       <CreatorFAQ />
       <CreatorCTA />
     </div>

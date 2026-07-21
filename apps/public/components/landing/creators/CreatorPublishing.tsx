@@ -20,9 +20,8 @@ export default function CreatorPublishing() {
           <div className="pubtab-switch relative">
             <button
               type="button"
-              className={`relative z-10 transition-colors duration-300 font-semibold text-xs py-2 ${
-                activePubTab === "indep" ? "text-white" : "text-zinc-500"
-              }`}
+              className={`relative z-10 transition-colors duration-300 font-semibold text-xs py-2 ${activePubTab === "indep" ? "text-white" : "text-zinc-500"
+                }`}
               onClick={() => {
                 setActivePubTab("indep");
                 setHoveredFeature(null);
@@ -39,9 +38,8 @@ export default function CreatorPublishing() {
             </button>
             <button
               type="button"
-              className={`relative z-10 transition-colors duration-300 font-semibold text-xs py-2 ${
-                activePubTab === "org" ? "text-white" : "text-zinc-500"
-              }`}
+              className={`relative z-10 transition-colors duration-300 font-semibold text-xs py-2 ${activePubTab === "org" ? "text-white" : "text-zinc-500"
+                }`}
               onClick={() => {
                 setActivePubTab("org");
                 setHoveredFeature(null);
@@ -57,10 +55,10 @@ export default function CreatorPublishing() {
               Organization
             </button>
           </div>
-          
+
           <div className="pubtabs-panel-wrap mt-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              
+
               {/* Left Column: Premium Feature Cards Grid */}
               <div className="lg:col-span-7 flex flex-col justify-center">
                 <AnimatePresence mode="wait">
@@ -78,13 +76,12 @@ export default function CreatorPublishing() {
                         <p className="text-[11px] text-zinc-500 mt-1">Publish under your personal brand and maintain complete creative control.</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("brand")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#818cf8" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "brand" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "brand" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -95,13 +92,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Publish and verify courses under your own name to build industry authority.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("control")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#818cf8" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "control" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "control" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -112,13 +108,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Structure lessons, customize syllabus layouts, and define browser terminals your way.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("pricing")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#818cf8" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "pricing" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "pricing" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -130,13 +125,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Configure pricing tiers, create promotion cycles, and receive direct Stripe transfers.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("reach")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#818cf8" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "reach" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "reach" ? "border-indigo-500 shadow-md bg-indigo-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -162,13 +156,12 @@ export default function CreatorPublishing() {
                         <p className="text-[11px] text-zinc-500 mt-1">Co-author courses, configure custom domains, and manage institutional structures.</p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("brand")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#14b8a6" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "brand" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "brand" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -179,13 +172,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Brand certificates and syllabi with your corporate logo and color systems.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("authors")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#14b8a6" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "authors" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "authors" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -196,13 +188,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Add teammates, manage writer permissions, and review draft edits collaboratively.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("domain")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#14b8a6" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "domain" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "domain" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -213,13 +204,12 @@ export default function CreatorPublishing() {
                           <p className="text-[10px] text-zinc-500 leading-normal mt-1">Host your custom workspace cockpit under a unique corporate subdomain.</p>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                           onMouseEnter={() => setHoveredFeature("reach")}
                           onMouseLeave={() => setHoveredFeature(null)}
                           whileHover={{ y: -2, borderColor: "#14b8a6" }}
-                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${
-                            hoveredFeature === "reach" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
-                          }`}
+                          className={`bg-white/70 border rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.01)] transition-all duration-300 ${hoveredFeature === "reach" ? "border-teal-500 shadow-md bg-teal-50/10" : "border-zinc-200/60"
+                            }`}
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-2.5">
                             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -234,7 +224,7 @@ export default function CreatorPublishing() {
                   )}
                 </AnimatePresence>
               </div>
-              
+
               {/* Right Column: 3D Flipping Mockup UI Card */}
               <div className="lg:col-span-5 flex items-center justify-center pt-6 lg:pt-0">
                 <div style={{ perspective: "1000px" }} className="w-full max-w-[340px] h-[280px] relative">
@@ -245,7 +235,7 @@ export default function CreatorPublishing() {
                     className="w-full h-full relative"
                   >
                     {/* Front Side: Independent Creator Mockup */}
-                    <div 
+                    <div
                       className="absolute inset-0 w-full h-full"
                       style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
                     >
@@ -254,9 +244,8 @@ export default function CreatorPublishing() {
                           Independent
                         </div>
 
-                        <div className={`flex items-center gap-3.5 mt-2 p-1 rounded-xl transition-all duration-300 ${
-                          hoveredFeature === "brand" ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 bg-indigo-50/30" : ""
-                        }`}>
+                        <div className={`flex items-center gap-3.5 mt-2 p-1 rounded-xl transition-all duration-300 ${hoveredFeature === "brand" ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 bg-indigo-50/30" : ""
+                          }`}>
                           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-base font-bold shadow-sm">
                             AR
                           </div>
@@ -270,9 +259,8 @@ export default function CreatorPublishing() {
                           </div>
                         </div>
 
-                        <div className={`grid grid-cols-2 gap-3.5 bg-white/70 border border-zinc-200/50 rounded-2xl p-3 my-3 transition-all duration-300 ${
-                          hoveredFeature === "reach" ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 bg-indigo-50/30" : ""
-                        }`}>
+                        <div className={`grid grid-cols-2 gap-3.5 bg-white/70 border border-zinc-200/50 rounded-2xl p-3 my-3 transition-all duration-300 ${hoveredFeature === "reach" ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 bg-indigo-50/30" : ""
+                          }`}>
                           <div className="text-center">
                             <span className="block text-sm font-black text-indigo-600">14.8k</span>
                             <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">Students</span>
@@ -283,13 +271,12 @@ export default function CreatorPublishing() {
                           </div>
                         </div>
 
-                        <motion.div 
+                        <motion.div
                           whileHover={{ scale: 1.02 }}
-                          className={`bg-white/95 border rounded-xl p-3 flex items-center gap-3 shadow-xs cursor-pointer transition-all duration-300 ${
-                            hoveredFeature === "pricing" || hoveredFeature === "control" 
-                              ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 border-indigo-200" 
+                          className={`bg-white/95 border rounded-xl p-3 flex items-center gap-3 shadow-xs cursor-pointer transition-all duration-300 ${hoveredFeature === "pricing" || hoveredFeature === "control"
+                              ? "ring-2 ring-indigo-500 ring-offset-2 scale-105 border-indigo-200"
                               : "border-zinc-200/40"
-                          }`}
+                            }`}
                         >
                           <div className="w-8 h-8 rounded bg-indigo-500 flex items-center justify-center text-white text-[10px] font-black">
                             TS
@@ -303,12 +290,12 @@ export default function CreatorPublishing() {
                     </div>
 
                     {/* Back Side: Organization Mockup */}
-                    <div 
+                    <div
                       className="absolute inset-0 w-full h-full"
-                      style={{ 
-                        backfaceVisibility: "hidden", 
+                      style={{
+                        backfaceVisibility: "hidden",
                         WebkitBackfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)" 
+                        transform: "rotateY(180deg)"
                       }}
                     >
                       <div className="w-full h-full bg-gradient-to-br from-teal-50/90 via-indigo-50/60 to-white border border-teal-100 rounded-[28px] p-6 shadow-[0_15px_30px_rgba(20,184,166,0.06)] relative overflow-hidden flex flex-col justify-between">
@@ -316,23 +303,20 @@ export default function CreatorPublishing() {
                           Organization
                         </div>
 
-                        <div className={`flex items-center gap-3.5 mt-2 p-1 rounded-xl transition-all duration-300 ${
-                          hoveredFeature === "brand" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-50/30" : ""
-                        }`}>
+                        <div className={`flex items-center gap-3.5 mt-2 p-1 rounded-xl transition-all duration-300 ${hoveredFeature === "brand" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-50/30" : ""
+                          }`}>
                           <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white text-lg font-black shadow-sm">
                             CX
                           </div>
                           <div className="text-left">
                             <h4 className="text-sm font-extrabold text-zinc-900 leading-snug">Codex Academy</h4>
-                            <span className={`text-[9px] font-bold px-2 py-0.5 border rounded-full mt-1 inline-block transition-all duration-300 ${
-                              hoveredFeature === "domain" ? "bg-teal-500 text-white border-teal-500 scale-105" : "bg-teal-50/70 text-teal-700 border-teal-100/50"
-                            }`}>academy.codex.io</span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 border rounded-full mt-1 inline-block transition-all duration-300 ${hoveredFeature === "domain" ? "bg-teal-500 text-white border-teal-500 scale-105" : "bg-teal-50/70 text-teal-700 border-teal-100/50"
+                              }`}>academy.codex.io</span>
                           </div>
                         </div>
 
-                        <div className={`flex flex-col gap-2 my-3 p-1.5 rounded-xl transition-all duration-300 ${
-                          hoveredFeature === "authors" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-50/30" : ""
-                        }`}>
+                        <div className={`flex flex-col gap-2 my-3 p-1.5 rounded-xl transition-all duration-300 ${hoveredFeature === "authors" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 bg-teal-50/30" : ""
+                          }`}>
                           <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider text-left">Authors Directory</span>
                           <div className="flex items-center gap-2">
                             <div className="flex -space-x-2">
@@ -344,31 +328,30 @@ export default function CreatorPublishing() {
                           </div>
                         </div>
 
-                        <div className={`bg-white/95 border rounded-xl p-3 flex justify-between items-center gap-2 shadow-xs transition-all duration-300 ${
-                          hoveredFeature === "reach" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 border-teal-200" : "border-zinc-200/40"
-                        }`}>
+                        <div className={`bg-white/95 border rounded-xl p-3 flex justify-between items-center gap-2 shadow-xs transition-all duration-300 ${hoveredFeature === "reach" ? "ring-2 ring-teal-500 ring-offset-2 scale-105 border-teal-200" : "border-zinc-200/40"
+                          }`}>
                           <div className="text-left">
                             <span className="text-[7.5px] font-bold text-zinc-400 uppercase tracking-wider block leading-none mb-1">Global Reach</span>
                             <span className="text-[10px] font-black text-teal-600">84,500 students enrolled</span>
                           </div>
                           <div className="flex gap-1 items-end h-7 justify-end">
-                            <motion.div 
-                              initial={{ height: "0%" }} 
-                              animate={{ height: activePubTab === "org" ? "40%" : "0%" }} 
-                              transition={{ delay: 0.1, type: "spring", stiffness: 80 }} 
-                              className="w-1.5 bg-teal-400 rounded-full" 
+                            <motion.div
+                              initial={{ height: "0%" }}
+                              animate={{ height: activePubTab === "org" ? "40%" : "0%" }}
+                              transition={{ delay: 0.1, type: "spring", stiffness: 80 }}
+                              className="w-1.5 bg-teal-400 rounded-full"
                             />
-                            <motion.div 
-                              initial={{ height: "0%" }} 
-                              animate={{ height: activePubTab === "org" ? "70%" : "0%" }} 
-                              transition={{ delay: 0.2, type: "spring", stiffness: 80 }} 
-                              className="w-1.5 bg-teal-500 rounded-full" 
+                            <motion.div
+                              initial={{ height: "0%" }}
+                              animate={{ height: activePubTab === "org" ? "70%" : "0%" }}
+                              transition={{ delay: 0.2, type: "spring", stiffness: 80 }}
+                              className="w-1.5 bg-teal-500 rounded-full"
                             />
-                            <motion.div 
-                              initial={{ height: "0%" }} 
-                              animate={{ height: activePubTab === "org" ? "100%" : "0%" }} 
-                              transition={{ delay: 0.3, type: "spring", stiffness: 80 }} 
-                              className="w-1.5 bg-indigo-500 rounded-full" 
+                            <motion.div
+                              initial={{ height: "0%" }}
+                              animate={{ height: activePubTab === "org" ? "100%" : "0%" }}
+                              transition={{ delay: 0.3, type: "spring", stiffness: 80 }}
+                              className="w-1.5 bg-indigo-500 rounded-full"
                             />
                           </div>
                         </div>
