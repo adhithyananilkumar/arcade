@@ -202,7 +202,7 @@ Course Editor Shell updates complete, and latest changes from the `auth` branch 
 - **Navbar Cleanup**: Removed course description input field and free/paid pricing model dropdown selector from the header of [CourseEditorShell.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/course/components/CourseEditorShell.tsx).
 - **Settings Description Editing**: Swapped the static description display with a dynamic, left-aligned `<textarea>` on the settings panel that triggers debounced updates via `onDescriptionChange` back to the parent component and the backend API.
 - **Collapsible Sidebar**: Implemented a transition-based collapsible side panel. The panel shrinks to a sleek sidebar rail containing a larger, responsive toggle button (`PanelLeftClose` / `PanelLeftOpen` icons resized to `20px`). Other elements are dynamically hidden and disabled when closed.
-- **Last Edited Metric on Dashboard**: Modified [page.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/app/%28authenticated%29/dashboard/page.tsx) to label the course cards' indicator with "Last edited: " and formatted it as a full date-time string (including hour, minute, and AM/PM).
+- **Last Edited Metric on Dashboard**: Modified [page.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/app/%28authenticated%29/studio/page.tsx) to label the course cards' indicator with "Last edited: " and formatted it as a full date-time string (including hour, minute, and AM/PM). *(Note: this dashboard now lives at `/studio`, not `/content` or `/dashboard` — see "Unified Content Model" in `docs/architecture/platform-architecture.md`.)*
 - **Merge Conflict Resolution in Rich Text Extensions**: Resolved conflict in [index.ts](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/editor/extensions/index.ts) by retaining both the `yjs` collaborative dependency type import (`import type * as Y from "yjs"`) and the `RoadmapNode` extension import (`import { RoadmapNode } from "../roadmap/extensions/roadmap"`).
 
 ### 3. What's Left / Next Steps
@@ -218,7 +218,7 @@ Course Editor Shell updates complete, and latest changes from the `auth` branch 
 - None at this time.
 
 ### 6. How to Resume
-- Ensure you are working on the `content_management` branch in both repositories.
+- Ensure you are working on the `studio` branch in both repositories.
 - Run `npm install` inside the `arcade/` directory if needed, then run `npm run dev` to start the frontend.
 
 ---

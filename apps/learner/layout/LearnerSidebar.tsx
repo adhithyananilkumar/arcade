@@ -41,8 +41,8 @@ export default function LearnerSidebar() {
   const dynamicNavItems = [
     ...baseNavItems,
     ...(hasChannels || showArcConsole ? [
-      { name: 'Content Studio', href: '/content', icon: BookOpen },
-      { name: 'Published Courses', href: '/content/published', icon: Eye }
+      { name: 'Content Studio', href: '/studio', icon: BookOpen },
+      { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
     ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),
     { name: 'Settings', href: '/settings', icon: Settings },

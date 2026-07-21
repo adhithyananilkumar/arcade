@@ -45,9 +45,10 @@ view, the pattern to follow is:
    under `features/learning/delivery/components/` for that type's navigation shape. Whatever the
    shell looks like, the actual content body should still render through **`TiptapContentView`**
    — pass it the JSON string, don't reimplement node-type switching.
-3. **Routing**: add the type's own route under `app/(authenticated)/dashboard/content/published/`
+3. **Routing**: add the type's own route under `app/(authenticated)/studio/published/`
    (or wherever the catalog lives by then), following the pattern in
-   `app/(authenticated)/dashboard/content/published/[courseId]/page.tsx`.
+   `app/(authenticated)/studio/published/[courseId]/page.tsx`. (Renamed from `/content` to
+   `/studio` 2026-07-21 — see `platform-architecture.md` §14 Unified Content Model.)
 4. If two content types turn out to share more structure than expected (e.g. Workshop ends up
    being module/lesson-shaped too), consider generalizing `CourseRenderer`'s sidebar into a
    shared tree-navigation component at that point — not before. Speculative generalization now,

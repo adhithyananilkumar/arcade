@@ -52,7 +52,7 @@ export default function TemplatesPage() {
   const handleCreateFromTemplate = async (id: string) => {
     try {
       const roadmap = await roadmapService.createFromTemplate(id);
-      router.push(`/roadmaps/${roadmap.id}/edit`);
+      router.push(`/studio/roadmap/${roadmap.id}/edit`);
     } catch (e) {
       alert("Failed to create roadmap from template");
     }
@@ -63,7 +63,7 @@ export default function TemplatesPage() {
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <Link href="/roadmaps" className="text-gray-400 hover:text-gray-600">
+             <Link href="/studio" className="text-gray-400 hover:text-gray-600">
                <ArrowLeft size={20} />
              </Link>
              <div>

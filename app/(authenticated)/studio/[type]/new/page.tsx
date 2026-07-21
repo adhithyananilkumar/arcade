@@ -1,4 +1,4 @@
-// app/(authenticated)/content/[type]/new/page.tsx
+// app/(authenticated)/studio/[type]/new/page.tsx
 // Catches workshop, webinar, article types — Coming Soon stub.
 // These routes are locked in from day one so no other teams get 404s.
 

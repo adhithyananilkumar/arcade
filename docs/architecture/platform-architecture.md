@@ -356,8 +356,14 @@ the layered-within-feature pattern).
 
 **Frontend feature.** `features/content/*` — already the most-built feature:
 `content/course/components/CourseEditorShell.tsx` (the shell) and
-`content/editor/{components,extensions,hooks,lib,styles}` (the editor-engine). Routes
-under `app/(authenticated)/dashboard/content/`.
+`content/editor/{components,extensions,hooks,lib,styles}` (the editor-engine).
+
+> **Naming note (2026-07-21):** the routes and folder names in this section describe the
+> target/aspirational layout. The actual current physical paths are `domains/` (not
+> `features/`) for domain logic, and `app/(authenticated)/studio/` (not
+> `dashboard/content/`) for the routes — the Content Studio dashboard was renamed from
+> `/content` to `/studio` and merged with the former `/roadmaps` feature. See
+> **§14 Unified Content Model** below for the authoritative current state.
 
 **Public interface.**
 - To D4 Publishing: "materialize the current working copy of course C as a serializable
@@ -976,3 +982,73 @@ structural contract, and a merged change that contradicts it is a bug in the doc
 | Date | Change |
 |---|---|
 | 2026-07-15 | Initial reference architecture: 8 domains + Foundation, submodules, boundary laws, migration plan. |
+| 2026-07-21 | Content Studio renamed `/content` → `/studio`; `/roadmaps` merged into it as a content type. See §14. |
+
+---
+
+## 14. Unified Content Model (2026-07-21)
+
+**Context.** The Content Studio dashboard route was renamed from `/content` to `/studio`,
+and the previously separate `/roadmaps` feature was merged into it — Roadmap is now just
+another content *type* alongside Course, selectable from the same "Create Content"
+dropdown, rather than a standalone top-level feature. This was an explicit,
+human-approved exception to the "architecture is stable, do not merge contexts" rule in
+`arcade-backend/CLAUDE.md` and the "v1.0 stable" rule in `arcade/CLAUDE.md` — both files
+carry a one-line pointer back to this section.
+
+**Backend: `ContentItem` (JOINED inheritance).** Course and Roadmap have very different
+shapes (Course is a relational tree of modules/lessons; Roadmap is metadata plus one
+JSONB graph blob), so a literal single-table merge was a poor fit. Instead, a shared base
+entity was introduced using Hibernate's `@Inheritance(strategy = JOINED)`:
+
+- `com.arcade.backend.studio.content.model.ContentItem` (table `content_items`,
+  `@DiscriminatorColumn(name = "content_type")`) — id, title, description,
+  coverImageUrl, ownerId (the authoring user — mirrors `Course.author`/`Roadmap.createdBy`),
+  status, publishedAt, archivedAt, deletedAt, createdAt, updatedAt.
+- `Course` (`@DiscriminatorValue("COURSE")`, table `courses`) and `Roadmap`
+  (`@DiscriminatorValue("ROADMAP")`, table `roadmaps`) both `extends ContentItem`,
+  keeping only their type-specific columns on their own tables (`author`/`pricingModel`/
+  `modules`/`publishedVersionId` for Course; `ownerType`/`ownerRefId`/`graphJson`/
+  `version` (optimistic lock)/`publishedBy`/`createdBy` for Roadmap).
+- Migration: `V147__unify_content_items.sql` creates `content_items`, backfills it from
+  both `courses` and `roadmaps`, adds the JOINED-inheritance FK from each child table's
+  `id` back to `content_items.id`, and drops the now-duplicated columns from the child
+  tables. **Status casing was deliberately left as-is per type** (`DRAFT` for Course,
+  `draft` for Roadmap) rather than normalized — the frontend roadmap components
+  (`RoadmapHeader.tsx`, `RoadmapStudio.tsx`, `PropertiesPanel.tsx`) are wired to the
+  lowercase convention, and normalizing would have forced an unrelated frontend rewrite.
+- `Roadmap`'s own polymorphic owner pair (`ownerType` + `ownerRefId`, DB column still
+  named `owner_id`) is distinct from the inherited `ContentItem.ownerId` — the Java
+  property was renamed to `ownerRefId` specifically so it does not override/shadow the
+  parent's `getOwnerId()`/`setOwnerId()`.
+
+**New unified read API.** `GET /api/content` (`ContentController` →
+`ContentService` → `ContentItemRepository`) lists all content types owned by the
+authenticated user, returning `ContentSummaryResponse` (id, type, title, description,
+coverImageUrl, status, createdAt, updatedAt). This backs the `/studio` dashboard grid.
+Existing `/api/courses` and `/api/roadmaps` are unchanged — they still own detail/CRUD
+for their respective types; only the cross-type *listing* is new.
+
+**Frontend routes.**
+```
+/studio                          → unified dashboard (Create Content dropdown + grid of courses & roadmaps)
+/studio/course/new               → course creation
+/studio/course/[courseId]/edit   → course editor
+/studio/course/[courseId]/preview
+/studio/published, /studio/published/[courseId]
+/studio/review
+/studio/roadmap/[id]/edit        → roadmap (RoadmapStudio) editor — was /roadmaps/[id]/edit
+/studio/roadmap/templates        → roadmap template library — was /roadmaps/templates
+/studio/[type]/new               → workshop/webinar/article stubs
+```
+The old standalone `/roadmaps` list page was deleted outright (not kept as a filtered
+sub-view); its rename/duplicate/delete actions were ported into the unified grid's
+per-card menu, and its "Import JSON" / "Template Library" actions moved into the
+`/studio` header. No redirects were added from the old `/content/*` / `/roadmaps/*`
+paths — breaking those bookmarks was an accepted, explicit tradeoff.
+
+**Known consequence.** Because `/studio` is gated by the same admin/channel-membership
+check as the old `/content` (see `studio/layout.tsx`), and the old `/roadmaps` route had
+*no* such gate, roadmap access for users without channels/admin rights is now more
+restrictive than before the merge. This is an inherent effect of folding Roadmaps into
+the gated Studio area, not an incidental bug — flagged here for product awareness.

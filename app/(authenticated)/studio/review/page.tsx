@@ -1,19 +1,30 @@
-// app/(authenticated)/content/published/page.tsx
-// Temporary "Published Courses" page: lists all courses the current user has authored.
-// Stopgap until the real publishing pipeline (course_versions / status gating) lands —
-// clicking a card opens the course renderer directly off the live authoring tree.
+// app/(authenticated)/studio/review/page.tsx
+// "Review Courses" page: lists courses the author has submitted for review.
+// A course lands here the moment its author presses "Submit for Review" in the
+// editor (which flips the course status to SUBMITTED via /api/courses/{id}/submit).
+// The actual review/approval pipeline is owned by a teammate — for now this page
+// is just the delivery destination that proves a course was handed off for review.
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
-import { ArrowLeft, BookOpen, Clock, GraduationCap } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, Clock, Inbox } from "lucide-react";
+
+// Statuses that count as "in the review queue". SUBMITTED is the one the Submit
+// button produces; APPROVED is kept visible so a reviewed course doesn't vanish
+// before the teammate's pipeline decides what happens next.
+const REVIEW_STATUSES: ReadonlyArray<CourseResponse["status"]> = [
+  "SUBMITTED",
+  "APPROVED",
+];
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
     SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
+    APPROVED: "bg-green-50 text-green-700 border-green-200",
     PUBLISHED: "bg-green-50 text-green-700 border-green-200",
     ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
   };
@@ -28,14 +39,16 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function PublishedCoursesPage() {
+export default function ReviewCoursesPage() {
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api
       .get<CourseResponse[]>("/api/courses")
-      .then(setCourses)
+      .then((all) =>
+        setCourses(all.filter((c) => REVIEW_STATUSES.includes(c.status)))
+      )
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));
   }, []);
@@ -45,23 +58,23 @@ export default function PublishedCoursesPage() {
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto">
           <Link
-            href="/content"
+            href="/studio"
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft size={14} />
             Content Studio
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Published Courses</h1>
+          <h1 className="text-xl font-bold text-gray-900">Review Courses</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Preview your courses the way learners will see them.
+            Courses submitted for review land here, waiting to be approved.
           </p>
         </div>
       </header>
 
       <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2 mb-5">
-          <GraduationCap size={17} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-800">Your Courses</h2>
+          <ClipboardCheck size={17} className="text-indigo-500" />
+          <h2 className="text-base font-semibold text-gray-800">Awaiting Review</h2>
         </div>
 
         {loading ? (
@@ -81,12 +94,12 @@ export default function PublishedCoursesPage() {
         ) : courses.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <BookOpen size={24} className="text-gray-400" />
+              <Inbox size={24} className="text-gray-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">No courses yet</p>
+              <p className="text-sm font-medium text-gray-600">No courses awaiting review</p>
               <p className="text-xs text-gray-400 mt-1">
-                Create a course in the Content Studio to preview it here.
+                Open a course and press &quot;Submit for Review&quot; to send it here.
               </p>
             </div>
           </div>
@@ -121,10 +134,10 @@ export default function PublishedCoursesPage() {
                   })}
                 </div>
                 <Link
-                  href={`/content/published/${course.id}`}
+                  href={`/studio/published/${course.id}`}
                   className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
                 >
-                  View Course →
+                  Review Course →
                 </Link>
               </div>
             ))}

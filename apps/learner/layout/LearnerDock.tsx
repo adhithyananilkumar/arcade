@@ -34,7 +34,7 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/roadmaps',
+    href: '/studio',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,

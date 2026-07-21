@@ -48,11 +48,11 @@ export default function RoadmapEditPage({
           <h2 className="text-lg font-semibold text-red-800 mb-2">Failed to load roadmap</h2>
           <p className="text-sm text-red-600 mb-6">{error || "Roadmap not found"}</p>
           <Link
-            href="/roadmaps"
+            href="/studio"
             className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-lg text-sm font-medium text-red-700 hover:bg-red-50"
           >
             <ArrowLeft size={16} />
-            Back to Roadmaps
+            Back to Studio
           </Link>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function RoadmapEditPage({
     <div className="flex-1 flex flex-col w-full h-full relative">
       <RoadmapStudio 
         roadmap={roadmap} 
-        onClose={() => router.push('/roadmaps')}
+        onClose={() => router.push('/studio')}
       />
     </div>
   );

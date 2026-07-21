@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -239,12 +239,6 @@ export default function LearnerNavbar() {
             >
               Profile
             </MenuItem>
-            <MenuItem 
-              icon={<Map size={18} strokeWidth={2} className="text-orange-500" />} 
-              onClick={() => router.push('/roadmaps')} 
-            >
-              Roadmaps
-            </MenuItem>
             {hasChannels && (
               <MenuItem 
                 icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
@@ -256,7 +250,7 @@ export default function LearnerNavbar() {
             {(hasChannels || showArcConsole) && (
               <MenuItem 
                 icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
-                onClick={() => router.push('/content')} 
+                onClick={() => router.push('/studio')}
               >
                 Content Studio
               </MenuItem>
