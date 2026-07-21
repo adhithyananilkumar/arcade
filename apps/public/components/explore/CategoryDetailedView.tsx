@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
+import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/apps/core/components/ExploreHub";
 import DotGrid from "@/apps/public/components/landing/DotGrid";
 
 const CATEGORY_TOPICS: Record<string, string[]> = {
