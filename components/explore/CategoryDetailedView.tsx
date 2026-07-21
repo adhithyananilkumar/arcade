@@ -1094,7 +1094,6 @@ export default function CategoryDetailedView() {
 
   const activeCategoryName = activeCategory || "Computer Science";
   const activeData = CATEGORY_DATA[activeCategoryName];
-  const topics = CATEGORY_TOPICS[activeCategoryName] || [];
 
   const filteredCourses = activeData.courses.filter(course =>
     course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
@@ -1495,39 +1494,6 @@ export default function CategoryDetailedView() {
               />
             </div>
 
-            {/* Popular Topics List */}
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "0.8rem", color: "rgba(20, 20, 43, 0.4)", fontWeight: "700" }}>Popular searches:</span>
-              {topics.map(topic => (
-                <button
-                  key={topic}
-                  onClick={() => setCourseSearchQuery(topic)}
-                  style={{
-                    background: "rgba(20, 23, 31, 0.03)",
-                    border: "1px solid rgba(20, 23, 31, 0.05)",
-                    color: "#4B5563",
-                    padding: "4px 12px",
-                    borderRadius: "10px",
-                    fontSize: "0.75rem",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.2s"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary;
-                    e.currentTarget.style.color = activeData.colors.primary;
-                    e.currentTarget.style.borderColor = `${activeData.colors.primary}30`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(20, 23, 31, 0.03)";
-                    e.currentTarget.style.color = "#4B5563";
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.05)";
-                  }}
-                >
-                  {topic}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Banner Right Panel: Dynamic Visual Code Editor mockup */}
