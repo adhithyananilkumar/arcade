@@ -41,10 +41,19 @@ const dockItems = [
   },
 ] as const;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Component ─────────── //
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Hide the dock on content studio, roadmaps, and settings pages
+  if (
+    pathname.startsWith('/content') ||
+    pathname.startsWith('/roadmaps') ||
+    pathname.startsWith('/settings')
+  ) {
+    return null;
+  }
 
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href) && href !== '/';
