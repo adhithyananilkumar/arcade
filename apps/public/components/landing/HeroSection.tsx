@@ -6,6 +6,7 @@ import PinwheelToken from "./PinwheelToken";
 import GradientText from "./GradientText";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 // ─── Word-split helper ──────────────────────────────────────────────────────
 function SplitWords({
@@ -403,9 +404,10 @@ function AnimatedMirrorE({ shouldReduceMotion }: { shouldReduceMotion: boolean |
   );
 }
 
-// ─── Main Hero ───────────────────────────────────────────────────────────────
+// ─── Main Hero Component ──────────────────────────────────────────────────────
 export default function HeroSection() {
   const shouldReduceMotion = useReducedMotion();
+  const { status } = useAuthStore();
 
   const fadeRise = (delay: number) => ({
     hidden: shouldReduceMotion ? { opacity: 0, y: 0 } : { opacity: 0, y: 20 },
@@ -492,13 +494,23 @@ export default function HeroSection() {
             initial="hidden"
             animate="visible"
           >
-            <Link
-              href="/explore"
-              className="l-btn l-btn--solid-ink"
-              id="hero-cta-explore"
-            >
-              Explore Courses
-            </Link>
+            {status === 'authenticated' ? (
+              <Link
+                href="/"
+                className="l-btn l-btn--solid-ink"
+                id="hero-cta-explore"
+              >
+                Continue Learning
+              </Link>
+            ) : (
+              <Link
+                href="/sign"
+                className="l-btn l-btn--solid-ink"
+                id="hero-cta-explore"
+              >
+                Get Started
+              </Link>
+            )}
           </motion.div>
 
 

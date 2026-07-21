@@ -39,7 +39,7 @@ export default function ManageChannelPage() {
       setPermissions(perms);
     } catch (error) {
       toast.error('Failed to load channel details');
-      router.push('/dashboard');
+      router.push('/');
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function ManageChannelPage() {
   return (
     <div className="w-full space-y-8 pb-12">
       <button 
-        onClick={() => router.push('/dashboard')}
+        onClick={() => router.push('/')}
         className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft size={16} />
@@ -113,7 +113,7 @@ export default function ManageChannelPage() {
                 Settings
               </button>
               <button 
-                onClick={() => router.push('/dashboard/content')}
+                onClick={() => router.push('/content')}
                 className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
               >
                 <Upload size={18} />
@@ -157,7 +157,7 @@ export default function ManageChannelPage() {
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           <div 
-            onClick={() => router.push('/dashboard/content')}
+            onClick={() => router.push('/content')}
             className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group"
           >
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
