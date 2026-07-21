@@ -68,6 +68,10 @@ export function MyChannels() {
                   <span className="flex items-center text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full font-medium transition-colors">
                     <Clock size={12} className="mr-1" /> Pending Review
                   </span>
+                ) : channel.status === 'SUSPENDED' ? (
+                  <span className="flex items-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full font-medium transition-colors">
+                    <CheckCircle size={12} className="mr-1" /> Suspended
+                  </span>
                 ) : (
                   <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full font-medium transition-colors">
                     <CheckCircle size={12} className="mr-1" /> Active
@@ -77,7 +81,7 @@ export function MyChannels() {
               </p>
             </div>
           </div>
-          {channel.status === 'ACTIVE' && (
+          {channel.status !== 'SUSPENDED' && (
             <Link
               href={`/channels/${channel.id}/manage`}
               className="flex items-center gap-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 text-sm font-semibold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors shrink-0"

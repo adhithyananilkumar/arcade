@@ -1,31 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 // -----------------------------------------------------------------------------------------
 // IMPORTANT: Before making further UI or architectural changes to the Policy Editor,
 // read the standard defined in docs/architecture/iam-policy-editor-standard.md.
 // Future versions of this editor should implement Managed Policy Bundles, Permission Tree Views,
 // and Dependency Validations.
 // -----------------------------------------------------------------------------------------
-import { roleService, Role } from "@/domains/identity";
+import { roleService, Role, usePermissions } from "@/domains/identity";
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { toast } from 'sonner';
 import { Plus, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
-import { usePermissions } from "@/domains/identity";
-import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
+import { PolicyEditor, RolePermissionsViewer } from '@/domains/iam';
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
-
-const formatPermissionKey = (key: string) => {
-  if (!key) return '';
-  const parts = key.split('.');
-  const capitalized = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
-  if (capitalized.length >= 2) {
-    const action = capitalized.pop();
-    const resource = capitalized.join(' ');
-    return `${action} ${resource}`;
-  }
-  return key;
-};
 
 export function PolicyManager() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -37,21 +24,21 @@ export function PolicyManager() {
   const { hasPermission } = usePermissions();
   const canManagePolicies = hasPermission('platform.roles.manage');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const rolesData = await roleService.getAllRoles('PLATFORM');
       setRoles(rolesData);
-    } catch (error) {
+    } catch {
       toast.error('Failed to load policies');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSavePolicy = async (data: {
     name: string;
@@ -169,19 +156,7 @@ export function PolicyManager() {
               </div>
             </div>
             
-            <div className="mt-auto pt-4 border-t border-gray-50">
-              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
-              <div className="flex flex-wrap gap-1.5">
-                {role.permissions?.map((p: any) => (
-                  <span key={p.id} className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100">
-                    {formatPermissionKey(p.code)}
-                  </span>
-                ))}
-                {(!role.permissions || role.permissions.length === 0) && (
-                  <span className="text-xs text-gray-400 italic">No permissions assigned</span>
-                )}
-              </div>
-            </div>
+            <RolePermissionsViewer role={role} />
           </div>
         ))}
       </div>
@@ -196,7 +171,7 @@ export function PolicyManager() {
                 id: editingRole.id,
                 name: editingRole.displayName ?? '',
                 description: editingRole.description,
-                permissionIds: editingRole.permissions?.map((p: any) => p.id) ?? [],
+                permissionIds: editingRole.permissions?.map((p) => p.id) ?? [],
               } : undefined}
               onSave={handleSavePolicy}
               onCancel={handleCloseModal}

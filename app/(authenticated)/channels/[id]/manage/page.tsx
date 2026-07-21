@@ -10,6 +10,8 @@ import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, Shie
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { usePermissions } from "@/domains/identity";
 
 export default function ManageChannelPage() {
   const params = useParams();
@@ -21,6 +23,7 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'STAFF'>('OVERVIEW');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { canCreateContent } = usePermissions();
 
   useEffect(() => {
     if (channelId) {
@@ -112,13 +115,15 @@ export default function ManageChannelPage() {
                 <Settings size={18} />
                 Settings
               </button>
-              <button 
-                onClick={() => router.push('/dashboard/content')}
-                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
-              >
-                <Upload size={18} />
-                Create Content
-              </button>
+              {canCreateContent() && (
+                <button 
+                  onClick={() => router.push('/dashboard/content')}
+                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
+                >
+                  <Upload size={18} />
+                  Create Content
+                </button>
+              )}
             </div>
           </div>
           
@@ -140,13 +145,15 @@ export default function ManageChannelPage() {
           Overview
           {activeTab === 'OVERVIEW' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
         </button>
-        <button
-          onClick={() => setActiveTab('STAFF')}
-          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
-        >
-          Staff & Permissions
-          {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
-        </button>
+        {(permissions.includes('ALL') || permissions.includes('channel.members.view') || permissions.includes('channel.roles.view')) && (
+          <button
+            onClick={() => setActiveTab('STAFF')}
+            className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+          >
+            Staff & Permissions
+            {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
+          </button>
+        )}
       </div>
 
       {activeTab === 'OVERVIEW' ? (

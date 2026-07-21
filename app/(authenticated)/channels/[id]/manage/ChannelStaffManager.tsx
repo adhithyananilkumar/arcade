@@ -35,14 +35,15 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [staffData, invitesData, rolesData] = await Promise.all([
+      const [staffResult, invitesResult, rolesResult] = await Promise.allSettled([
         ChannelStaffService.getStaff(channelId),
         ChannelStaffService.getInvitations(channelId),
         roleService.getChannelRoles(channelId)
       ]);
-      setStaff(staffData);
-      setInvitations(invitesData);
-      setRoles(rolesData);
+      
+      if (staffResult.status === 'fulfilled') setStaff(staffResult.value);
+      if (invitesResult.status === 'fulfilled') setInvitations(invitesResult.value);
+      if (rolesResult.status === 'fulfilled') setRoles(rolesResult.value);
     } catch (error) {
       toast.error('Failed to load staff information');
     } finally {
@@ -51,9 +52,8 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
   };
 
   const { user } = useAuthStore();
-  // We can't access channel.ownerId directly here since channel is fetched in page, 
-  // but we can rely on permissions array containing 'ALL' if they are owner.
-  const canManageStaff = permissions.includes('ALL') || permissions.includes('channel.staff.manage');
+  const canInviteStaff = permissions.includes('ALL') || permissions.includes('channel.members.invite');
+  const canRemoveStaff = permissions.includes('ALL') || permissions.includes('channel.members.remove');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -125,7 +125,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
           <h3 className="text-xl font-bold text-gray-900">Staff Management</h3>
           <p className="text-sm text-gray-500">Manage who has access to this channel and their permissions.</p>
         </div>
-        {canManageStaff && (
+        {canInviteStaff && (
           <button
             onClick={() => setIsInviteModalOpen(true)}
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
@@ -162,7 +162,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
                   <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
                     {member.roleName}
                   </span>
-                  {canManageStaff && (
+                  {canRemoveStaff && (
                     <button onClick={() => handleRemoveStaff(member.userId)} className="text-gray-400 hover:text-red-600 transition-colors">
                       <Trash2 size={16} />
                     </button>
@@ -267,16 +267,25 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Shield size={16} className="text-gray-400" />
                 </div>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
-                >
-                  <option value="">Select a policy...</option>
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>{role.displayName || role.code}</option>
-                  ))}
-                </select>
+                
+                {(!permissions.includes('ALL') && 
+                  !permissions.includes('channel.roles.assign') && 
+                  !permissions.includes('channel.policies.assign')) ? (
+                  <div className="w-full pl-10 pr-4 py-2 border border-red-200 bg-red-50 text-red-600 rounded-xl text-sm">
+                    You do not have permission to assign policies.
+                  </div>
+                ) : (
+                  <select
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
+                  >
+                    <option value="">Select a policy...</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.displayName || role.code}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 

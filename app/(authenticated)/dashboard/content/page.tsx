@@ -1,4 +1,4 @@
-﻿// app/(authenticated)/dashboard/page.tsx
+// app/(authenticated)/dashboard/page.tsx
 // Post-login dashboard home ΓÇö Create Content + My Courses grid
 "use client";
 
@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
+import { channelService, Channel } from "@/domains/channels/api/channel.service";
+import { usePermissions } from "@/domains/identity";
 import {
   BookOpen,
   Wrench,
@@ -86,8 +88,20 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [channelId, setChannelId] = useState("");
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loadingChannels, setLoadingChannels] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    channelService.getMyWorkspaces().then(data => {
+      setChannels(data);
+      if (data.length > 0) setChannelId(data[0].id);
+    }).finally(() => {
+      setLoadingChannels(false);
+    });
+  }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -98,6 +112,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
       const course = await api.post<CourseResponse>("/api/courses", {
         title: name.trim(),
         description: description.trim() || undefined,
+        channelId: channelId,
       });
       router.push(`/dashboard/content/course/${course.id}/edit`);
     } catch (err) {
@@ -150,6 +165,29 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             />
           </div>
           <div>
+            <label htmlFor="course-channel" className="mb-1 block text-sm font-medium text-gray-700">
+              Channel <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="course-channel"
+              required
+              value={channelId}
+              onChange={(e) => setChannelId(e.target.value)}
+              disabled={loadingChannels || channels.length === 0}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300 disabled:bg-gray-100"
+            >
+              {loadingChannels ? (
+                <option>Loading channels...</option>
+              ) : channels.length === 0 ? (
+                <option value="">No channels available</option>
+              ) : (
+                channels.map(ch => (
+                  <option key={ch.id} value={ch.id}>{ch.name}</option>
+                ))
+              )}
+            </select>
+          </div>
+          <div>
             <label htmlFor="course-desc" className="mb-1 block text-sm font-medium text-gray-700">
               Description <span className="text-gray-400">(optional)</span>
             </label>
@@ -172,7 +210,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || creating}
+              disabled={!name.trim() || !channelId || creating || loadingChannels}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
             >
               {creating ? "CreatingΓÇª" : "Create Course"}
@@ -189,6 +227,7 @@ export default function DashboardPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
+  const { canCreateContent } = usePermissions();
 
   useEffect(() => {
     api
@@ -239,9 +278,10 @@ export default function DashboardPage() {
             </Link>
 
             {/* Create Content button + Canva-style dropdown */}
-            <div className="relative">
-              <button
-                id="create-content-btn"
+            {canCreateContent() && (
+              <div className="relative">
+                <button
+                  id="create-content-btn"
                 onClick={() => setDropdownOpen((v) => !v)}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition-colors"
               >
@@ -318,11 +358,12 @@ export default function DashboardPage() {
                 </>
               )}
             </div>
+          )}
           </div>
         </div>
       </header>
 
-      {/* ΓöÇΓöÇ My Courses section ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* My Courses section */}
       <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2 mb-5">
           <GraduationCap size={17} className="text-indigo-500" />
@@ -349,10 +390,14 @@ export default function DashboardPage() {
               <BookOpen size={24} className="text-gray-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">No courses yet</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Click &quot;Create Content&quot; to build your first course.
-              </p>
+              <h3 className="text-sm font-medium text-gray-600">
+                You don&apos;t have any courses yet.
+              </h3>
+              {canCreateContent() && (
+                <p className="mt-2 text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
+                  Click &quot;Create Content&quot; to build your first course.
+                </p>
+              )}
             </div>
           </div>
         ) : (

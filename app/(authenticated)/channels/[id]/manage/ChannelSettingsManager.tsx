@@ -24,7 +24,9 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
   const [loading, setLoading] = useState(false);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
-  const canManageSettings = isOwner || permissions.includes('channel.settings.manage');
+  const canUpdateSettings = isOwner || permissions.includes('channel.settings.update');
+  const canUpdateBranding = isOwner || permissions.includes('channel.branding.update');
+  const canDeleteChannel = isOwner || permissions.includes('channel.owner.delete');
 
   // Deletion state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -96,9 +98,10 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
           <h2 className="text-lg font-bold text-gray-900">Branding & Profile</h2>
           <p className="text-sm text-gray-500">Update your channel's public appearance.</p>
         </div>
-        {!canManageSettings && (
+        {!canUpdateSettings && !canUpdateBranding && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-            <Shield size={12} /> Read Only
+            <Shield size={12} />
+            View Only
           </span>
         )}
       </div>  
@@ -111,7 +114,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
               {bannerPreview ? (
                 <div className="aspect-[4/1] w-full">
                   <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
-                  {canManageSettings && (
+                  {canUpdateBranding && (
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <span className="text-white font-medium flex items-center gap-2">
                         <Upload size={18} /> Change Banner
@@ -125,7 +128,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
                   <span className="text-sm font-medium">Click to upload banner</span>
                 </div>
               )}
-              {canManageSettings && (
+              {canUpdateBranding && (
                 <input 
                   type="file" 
                   accept="image/*" 
@@ -140,7 +143,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-700">Channel Logo</label>
             <div className="space-y-4">
-                {canManageSettings ? (
+                {canUpdateBranding ? (
                   <>
                     <label className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none">
                       <span className="flex items-center space-x-2">
@@ -185,7 +188,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                disabled={!canManageSettings}
+                disabled={!canUpdateSettings}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
                 placeholder="What is your channel about?"
               />
@@ -194,8 +197,8 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
         </div>
       </div>
 
-      {canManageSettings && (
-        <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex justify-end">
+      {(canUpdateSettings || canUpdateBranding) && (
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
           <button
             type="submit"
             disabled={loading}
@@ -213,7 +216,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
       </div>
     )}
 
-    {isOwner && (
+    {canDeleteChannel && (
       <div className="mt-12 border-t border-red-100 pt-8 max-w-3xl">
         <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
           <AlertTriangle size={20} />

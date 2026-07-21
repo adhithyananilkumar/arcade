@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 // -----------------------------------------------------------------------------------------
 // IMPORTANT: Before making further UI or architectural changes to the Policy Editor,
 // read the standard defined in docs/architecture/iam-policy-editor-standard.md.
@@ -10,24 +10,13 @@ import { useState, useEffect } from 'react';
 import { roleService, Role, RoleRequest } from "@/domains/identity";
 import { toast } from 'sonner';
 import { Plus, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
-import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
+import { PolicyEditor } from '@/domains/iam';
+import { RolePermissionsViewer } from '@/domains/iam/components/RolePermissionsViewer';
 
 interface ChannelPolicyManagerProps {
   channelId: string;
   permissions: string[];
 }
-
-const formatPermissionKey = (key: string) => {
-  if (!key) return '';
-  const parts = key.split('.');
-  const capitalized = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
-  if (capitalized.length >= 2) {
-    const action = capitalized.pop();
-    const resource = capitalized.join(' ');
-    return `${action} ${resource}`;
-  }
-  return key;
-};
 
 export function ChannelPolicyManager({ channelId, permissions: userPermissions }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -35,23 +24,25 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [saving, setSaving] = useState(false);
-  const canManageStaff = userPermissions.includes('channel.manage') || userPermissions.includes('channel.roles.manage');
+  const canCreateRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.roles.create');
+  const canUpdateRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.roles.update');
+  const canDeleteRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.roles.delete');
 
-  useEffect(() => {
-    fetchData();
-  }, [channelId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const rolesData = await roleService.getChannelRoles(channelId);
       setRoles(rolesData);
-    } catch (error) {
+    } catch {
       toast.error('Failed to load roles');
     } finally {
       setLoading(false);
     }
-  };
+  }, [channelId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleSavePolicy = async (data: {
     name: string;
@@ -117,12 +108,13 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
           </h3>
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
-        {canManageStaff && (
+        {canCreateRoles && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
           >
-            <Plus size={16} /> Create Role
+            <Plus size={16} />
+            Create Policy
           </button>
         )}
       </div>
@@ -145,39 +137,23 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
                 <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
               </div>
               
-              {!role.systemRole && canManageStaff && (
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    onClick={() => startEditRole(role)}
-                    className="p-1.5 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
-                    title="Edit Role"
-                  >
-                    <Edit3 size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeletePolicy(role.id)}
-                    className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                    title="Delete Role"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+              {!role.systemRole && (canUpdateRoles || canDeleteRoles) && (
+                <div className="flex items-center gap-2">
+                  {canUpdateRoles && (
+                    <button onClick={() => startEditRole(role)} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-indigo-50">
+                      <Edit3 size={16} />
+                    </button>
+                  )}
+                  {canDeleteRoles && (
+                    <button onClick={() => handleDeletePolicy(role.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50">
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
             
-            <div className="mt-auto pt-4 border-t border-gray-50">
-              <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
-              <div className="flex flex-wrap gap-1.5">
-                {role.permissions?.map((p: any) => (
-                  <span key={p.id} className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100">
-                    {formatPermissionKey(p.code)}
-                  </span>
-                ))}
-                {(!role.permissions || role.permissions.length === 0) && (
-                  <span className="text-xs text-gray-400 italic">No permissions assigned</span>
-                )}
-              </div>
-            </div>
+            <RolePermissionsViewer role={role} />
           </div>
         ))}
       </div>
@@ -193,7 +169,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
                 id: editingRole.id,
                 name: editingRole.displayName ?? '',
                 description: editingRole.description,
-                permissionIds: editingRole.permissions?.map((p: any) => p.id) ?? [],
+                permissionIds: editingRole.permissions?.map((p) => p.id) ?? [],
               } : undefined}
               onSave={handleSavePolicy}
               onCancel={handleCloseModal}

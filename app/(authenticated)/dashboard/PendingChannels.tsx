@@ -132,7 +132,11 @@ export function PendingChannels() {
                 {activeTab === 'ALL' && (
                   <>
                     <span>•</span>
-                    <span className={channel.status === 'ACTIVE' ? 'text-emerald-600' : 'text-amber-600'}>{channel.status}</span>
+                    <span className={
+                      channel.status === 'ACTIVE' ? 'text-emerald-600' :
+                      channel.status === 'SUSPENDED' ? 'text-red-600' :
+                      'text-amber-600'
+                    }>{channel.status}</span>
                   </>
                 )}
               </p>
@@ -161,10 +165,10 @@ export function PendingChannels() {
               )}
             </div>
           )}
-          {activeTab === 'ALL' && channel.status === 'ACTIVE' && (
+          {activeTab === 'ALL' && (
             <div onClick={(e) => e.stopPropagation()}>
               <a
-                href={`/channels/${channel.id}/manage`}
+                href={`/console/channels/${channel.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
