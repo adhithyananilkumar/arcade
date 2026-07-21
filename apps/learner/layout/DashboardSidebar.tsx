@@ -13,8 +13,6 @@ import { channelService } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Content Studio', href: '/dashboard/content', icon: BookOpen },
-  { name: 'Published Courses', href: '/dashboard/content/published', icon: Eye },
   { name: 'Roadmaps', href: '/dashboard/roadmaps', icon: Map },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
 ];
@@ -42,6 +40,10 @@ export default function DashboardSidebar() {
 
   const dynamicNavItems = [
     ...baseNavItems,
+    ...(hasChannels || showArcConsole ? [
+      { name: 'Content Studio', href: '/dashboard/content', icon: BookOpen },
+      { name: 'Published Courses', href: '/dashboard/content/published', icon: Eye }
+    ] : []),
     ...(hasChannels ? [{ name: 'Manage Channels', href: '/dashboard/manage-channels', icon: Tv }] : []),
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])

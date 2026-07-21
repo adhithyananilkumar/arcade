@@ -239,12 +239,26 @@ export default function DashboardNavbar() {
             >
               Profile
             </MenuItem>
+            <MenuItem 
+              icon={<Map size={18} strokeWidth={2} className="text-orange-500" />} 
+              onClick={() => router.push('/dashboard/roadmaps')} 
+            >
+              Roadmaps
+            </MenuItem>
             {hasChannels && (
               <MenuItem 
                 icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
                 onClick={() => router.push('/dashboard/manage-channels')} 
               >
                 My Channel
+              </MenuItem>
+            )}
+            {(hasChannels || showArcConsole) && (
+              <MenuItem 
+                icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
+                onClick={() => router.push('/dashboard/content')} 
+              >
+                Content Studio
               </MenuItem>
             )}
             {showArcConsole && (
