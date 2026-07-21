@@ -22,7 +22,19 @@ import {
   Volume2,
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { api } from "@/lib/api"
+import { useAuthStore } from "@/store/auth.store"
+import { CATEGORY_DATA } from "@/app/(public)/explore/page"
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .trim();
+}
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -295,10 +307,10 @@ function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { labe
 /*  Breadcrumb (modern replacement for the back button)               */
 /* ------------------------------------------------------------------ */
 
-function Breadcrumb() {
+function Breadcrumb({ category, title }: { category: string; title: string }) {
   const crumbs = [
     { label: "Explore", href: "/explore" },
-    { label: CATEGORY, href: "/explore" }
+    { label: category, href: "/explore" }
   ]
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
@@ -314,7 +326,7 @@ function Breadcrumb() {
             <ChevronRight size={13} className="text-subtle/40" />
           </li>
         ))}
-        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{COURSE_TITLE}</li>
+        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{title}</li>
       </ol>
     </nav>
   )
@@ -324,12 +336,21 @@ function Breadcrumb() {
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseHero() {
+function CourseHero({ course }: { course: any }) {
   const [saved, setSaved] = useState(false)
+  const titleWords = course.title.split(" ")
+  const lastWord = titleWords.pop() || ""
+  const remainingTitle = titleWords.join(" ")
+
+  const dynamicMeta = [
+    { icon: Clock, label: course.duration, dot: "var(--color-blue)" },
+    { icon: BookOpen, label: "19 lessons", dot: "var(--color-amber)" },
+    { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
+  ]
 
   return (
     <section className="arcade-fade">
-      <Breadcrumb />
+      <Breadcrumb category={course.categoryName} title={course.title} />
 
       <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         {/* Left — editorial copy */}
@@ -339,11 +360,9 @@ function CourseHero() {
             className="mt-6 text-[2.75rem] font-normal leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
             style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
           >
-            Design interfaces
-            <br />
-            people actually{" "}
+            {remainingTitle}{" "}
             <span className="relative whitespace-nowrap italic text-blue">
-              love
+              {lastWord}
               <FlowerMark
                 size={26}
                 color="var(--color-ink)"
@@ -359,7 +378,6 @@ function CourseHero() {
                 <path d="M2 9C40 3 160 3 198 8" stroke="var(--color-amber)" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </span>
-            .
           </h1>
 
           {/* Instructor: name + channel (with org already shown on top) */}
@@ -374,7 +392,7 @@ function CourseHero() {
           </div>
 
           <div className="mt-7 flex flex-wrap gap-2.5">
-            {META.map(({ icon: Icon, label, dot }) => (
+            {dynamicMeta.map(({ icon: Icon, label, dot }) => (
               <span
                 key={label}
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
@@ -467,7 +485,7 @@ function CourseHero() {
 /*  Tabs                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseTabs() {
+function CourseTabs({ course }: { course: any }) {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
 
@@ -496,9 +514,7 @@ function CourseTabs() {
             <div className="rounded-3xl border border-line bg-paper p-7">
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
-                just a certificate.
+                {course.desc}
               </p>
             </div>
             <div className="rounded-3xl border border-line bg-paper p-7">
@@ -642,14 +658,14 @@ function CourseTabs() {
 
         {tab === "Certificate" && (
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
-            <CourseBadge label="UI / UX" accent="var(--color-blue)" />
+            <CourseBadge label={course.title.split(" ").slice(0, 2).join(" ")} accent="var(--color-blue)" />
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
                 <Sparkles size={13} className="text-amber" /> Course badge
               </span>
               <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
               <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
+                This badge is unique to <span className="font-medium text-ink">{course.title}</span> — no other
                 course carries it. Finish all four modules and your final case study to unlock it on your profile.
                 You&apos;ll also receive a verified certificate of completion to share.
               </p>
@@ -662,55 +678,228 @@ function CourseTabs() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Reviews (now its own block, out of the tab panel)                  */
+/*  Reviews                                                           */
 /* ------------------------------------------------------------------ */
 
-function ReviewsBlock() {
+interface ReviewResponse {
+  id: string;
+  courseId: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  userAvatarUrl?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+function ReviewsBlock({
+  courseSlug,
+  reviews,
+  onReviewSubmitted
+}: {
+  courseSlug: string;
+  reviews: ReviewResponse[];
+  onReviewSubmitted: () => void;
+}) {
+  const { user, status } = useAuthStore();
+  const isAuthenticated = status === "authenticated";
+
+  const [rating, setRating] = useState<number>(0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const totalReviews = reviews.length;
+  const avgRating = totalReviews > 0
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+    : 0.0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (rating === 0) {
+      setErrorMsg("Please select a star rating.");
+      return;
+    }
+    setSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      await api.post(`/api/v1/reviews/courses/${courseSlug}`, {
+        rating,
+        comment
+      });
+      setRating(0);
+      setComment("");
+      onReviewSubmitted();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to submit review.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <section aria-labelledby="reviews-heading">
-      <div className="mb-8 flex flex-col items-center gap-3 text-center">
+    <section aria-labelledby="reviews-heading" className="flex flex-col gap-10">
+      <div className="flex flex-col items-center gap-3 text-center">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-subtle">
           <Star size={13} className="text-amber" fill="var(--color-amber)" strokeWidth={0} /> Reviews
         </span>
         <h2 id="reviews-heading" className="font-serif text-3xl font-light text-ink text-balance sm:text-4xl">
-          Loved by <span className="italic text-blue">12,480</span> builders
+          Loved by <span className="italic text-blue">{totalReviews}</span> {totalReviews === 1 ? "builder" : "builders"}
         </h2>
-        <div className="flex items-center gap-3">
-          <span className="font-serif text-3xl font-light text-ink">4.9</span>
-          <div className="text-left">
-            <div className="flex gap-0.5">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} size={14} className="text-amber" fill="var(--color-amber)" strokeWidth={0} />
-              ))}
+        {totalReviews > 0 && (
+          <div className="flex items-center gap-3">
+            <span className="font-serif text-3xl font-light text-ink">{avgRating.toFixed(1)}</span>
+            <div className="text-left">
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((starVal) => (
+                  <Star
+                    key={starVal}
+                    size={14}
+                    className="text-amber"
+                    fill={starVal <= Math.round(avgRating) ? "var(--color-amber)" : "none"}
+                    stroke="var(--color-amber)"
+                    strokeWidth={starVal <= Math.round(avgRating) ? 0 : 1.5}
+                  />
+                ))}
+              </div>
+              <p className="mt-0.5 text-xs text-subtle">{totalReviews} {totalReviews === 1 ? "rating" : "ratings"}</p>
             </div>
-            <p className="mt-0.5 text-xs text-subtle">812 ratings</p>
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="[column-gap:1rem] sm:columns-2 lg:columns-3">
-        {REVIEWS.map((r) => (
-          <div
-            key={r.name}
-            className={`mb-4 break-inside-avoid rounded-2xl p-6 ${r.dark ? "bg-ink" : "border border-line bg-paper"
-              }`}
-          >
-            <p className={`text-[15px] leading-relaxed ${r.dark ? "font-medium text-paper" : "text-ink"}`}>
-              &ldquo;{r.quote}&rdquo;
-            </p>
-            <div
-              className={`mt-5 flex items-center justify-between border-t pt-4 ${r.dark ? "border-white/10" : "border-line"
-                }`}
-            >
-              <div>
-                <p className={`text-[13px] font-semibold ${r.dark ? "text-paper" : "text-ink"}`}>{r.name}</p>
-                <p className={`text-[11px] ${r.dark ? "text-white/50" : "text-subtle"}`}>{r.role}</p>
+      {/* Review Submission Form */}
+      <div className="mx-auto max-w-xl w-full border border-line bg-paper rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <h3 className="font-serif text-xl font-light text-ink mb-4">Share your feedback</h3>
+        {isAuthenticated ? (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-subtle">Your Rating</span>
+              <div className="flex gap-1.5 items-center">
+                {[1, 2, 3, 4, 5].map((starVal) => (
+                  <button
+                    key={starVal}
+                    type="button"
+                    onClick={() => setRating(starVal)}
+                    onMouseEnter={() => setHoverRating(starVal)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    className="p-1 focus:outline-none transition-transform hover:scale-110"
+                    aria-label={`Rate ${starVal} stars`}
+                  >
+                    <Star
+                      size={26}
+                      className="text-amber"
+                      fill={(hoverRating || rating) >= starVal ? "var(--color-amber)" : "none"}
+                      stroke="var(--color-amber)"
+                      strokeWidth={(hoverRating || rating) >= starVal ? 0 : 1.5}
+                    />
+                  </button>
+                ))}
+                {rating > 0 && (
+                  <span className="text-sm font-semibold text-ink ml-2">
+                    {rating} {rating === 1 ? "Star" : "Stars"}
+                  </span>
+                )}
               </div>
-              <Avatar name={r.name} accent={r.accent} size={32} onDark={r.dark} />
             </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="review-comment" className="text-xs font-semibold uppercase tracking-wider text-subtle">
+                Review Comment
+              </label>
+              <textarea
+                id="review-comment"
+                placeholder="What did you think of the course? What did you learn?"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={3}
+                className="w-full rounded-2xl border border-line bg-mist p-4 text-[14px] leading-relaxed text-ink focus:border-ink/20 focus:outline-none"
+              />
+            </div>
+
+            {errorMsg && (
+              <p className="text-xs font-semibold text-coral">{errorMsg}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-2 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper transition-transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50"
+            >
+              {submitting ? "Submitting..." : "Submit Review"}
+            </button>
+          </form>
+        ) : (
+          <div className="text-center py-4">
+            <p className="text-[14px] text-subtle mb-4">Please log in to share your experience and rate this course.</p>
+            <Link
+              href="/login"
+              className="inline-block rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-paper hover:bg-ink/90 transition-transform hover:-translate-y-0.5"
+            >
+              Log In
+            </Link>
           </div>
-        ))}
+        )}
       </div>
+
+      {reviews.length === 0 ? (
+        <div className="text-center py-12 border border-line border-dashed rounded-3xl bg-paper">
+          <p className="text-sm text-subtle">No reviews yet for this course. Be the first to leave a review!</p>
+        </div>
+      ) : (
+        <div className="[column-gap:1rem] sm:columns-2 lg:columns-3">
+          {reviews.map((r, i) => {
+            const cardAccentColors = [
+              "var(--color-blue)",
+              "var(--color-amber)",
+              "var(--color-purple)",
+              "var(--color-teal)",
+              "var(--color-coral)"
+            ];
+            const accentColor = cardAccentColors[i % cardAccentColors.length];
+            const isDarkCard = i % 5 === 0;
+
+            return (
+              <div
+                key={r.id}
+                className={`mb-4 break-inside-avoid rounded-2xl p-6 ${
+                  isDarkCard ? "bg-ink text-paper" : "border border-line bg-paper text-ink"
+                }`}
+              >
+                <div className="flex gap-0.5 mb-3">
+                  {[1, 2, 3, 4, 5].map((starVal) => (
+                    <Star
+                      key={starVal}
+                      size={12}
+                      className="text-amber"
+                      fill={starVal <= r.rating ? "var(--color-amber)" : "none"}
+                      stroke="var(--color-amber)"
+                      strokeWidth={starVal <= r.rating ? 0 : 1.5}
+                    />
+                  ))}
+                </div>
+                <p className={`text-[15px] leading-relaxed ${isDarkCard ? "font-medium" : ""}`}>
+                  &ldquo;{r.comment || "Rated this course."}&rdquo;
+                </p>
+                <div
+                  className={`mt-5 flex items-center justify-between border-t pt-4 ${
+                    isDarkCard ? "border-white/10" : "border-line"
+                  }`}
+                >
+                  <div>
+                    <p className={`text-[13px] font-semibold ${isDarkCard ? "text-paper" : "text-ink"}`}>{r.userName}</p>
+                    <p className={`text-[11px] ${isDarkCard ? "text-white/50" : "text-subtle"}`}>{r.userRole}</p>
+                  </div>
+                  <Avatar name={r.userName} accent={accentColor} size={32} onDark={isDarkCard} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   )
 }
@@ -719,7 +908,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta() {
+function EnrollCta({ course }: { course: any }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -728,10 +917,10 @@ function EnrollCta() {
         className="arcade-spin pointer-events-none absolute -right-8 -top-8"
       />
       <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-paper text-balance sm:text-4xl">
-        Light the path to your next <span className="italic text-amber">design role.</span>
+        Light the path to your next <span className="italic text-amber">{course.title.split(" ").slice(-2).join(" ")} role.</span>
       </h2>
       <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
-        Join 12,480 builders learning to design interfaces people actually love — with feedback from working
+        Join 12,480 builders learning to {course.title.toLowerCase()} — with feedback from working
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -751,24 +940,65 @@ function EnrollCta() {
 /* ------------------------------------------------------------------ */
 
 export default function CoursePreviewPage() {
+  const params = useParams();
+  const id = params.id as string;
+
+  const allCourses = Object.entries(CATEGORY_DATA).flatMap(([catName, catData]) =>
+    catData.courses.map((c) => ({
+      ...c,
+      categoryName: catName,
+      slug: slugify(c.title),
+    }))
+  );
+
+  const defaultCourse = {
+    title: "Design interfaces people actually love",
+    duration: "4h 30m",
+    level: "Intermediate",
+    desc: "This course treats design as a craft you build in public — every module ends with a real assignment, reviewed by a working product designer. You'll leave with a portfolio piece, not just a certificate.",
+    categoryName: "UI / UX & Product Design",
+    slug: "design-interfaces-people-actually-love",
+  };
+
+  const currentCourse = allCourses.find((c) => c.slug === id) || defaultCourse;
+
+  const [reviews, setReviews] = useState<ReviewResponse[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+
+  const fetchReviews = () => {
+    api.get<ReviewResponse[]>(`/api/v1/reviews/courses/${currentCourse.slug}`)
+      .then((data) => {
+        setReviews(data || []);
+      })
+      .catch((err) => console.error("Failed to load reviews:", err))
+      .finally(() => setLoadingReviews(false));
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [currentCourse.slug]);
+
   return (
     <main className="min-h-screen bg-paper text-ink">
-
       {/* Hero wash */}
       <div className="arcade-wash">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <CourseHero />
+          <CourseHero course={currentCourse} />
         </div>
       </div>
 
       {/* Body */}
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-        <CourseTabs />
+        <CourseTabs course={currentCourse} />
         <div className="mt-20">
-          <ReviewsBlock />
+          <ReviewsBlock
+            courseSlug={currentCourse.slug}
+            reviews={reviews}
+            onReviewSubmitted={fetchReviews}
+          />
         </div>
         <div className="mt-16">
-          <EnrollCta />
+          <EnrollCta course={currentCourse} />
         </div>
       </div>
     </main>

@@ -8,6 +8,7 @@ import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
+import { api } from "@/lib/api";
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -20,252 +21,231 @@ function hexToRgbStr(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-interface BannerProps {
-  children: React.ReactNode;
-  primaryColor: string;
-  secondaryColor: string;
-  enableStars?: boolean;
-  enableTilt?: boolean;
-  clickEffect?: boolean;
-  enableMagnetism?: boolean;
-}
-
-const BannerBentoWrapper: React.FC<BannerProps> = ({
-  children,
-  primaryColor,
-  secondaryColor,
-  enableStars = true,
-  enableTilt = true,
-  clickEffect = true,
-  enableMagnetism = true
-}) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const particlesRef = useRef<HTMLDivElement[]>([]);
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
-  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
-
-  const rgbColor = hexToRgbStr(primaryColor);
-
-  const clearAllParticles = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-    particlesRef.current.forEach(particle => {
-      gsap.to(particle, {
-        scale: 0,
-        opacity: 0,
-        duration: 0.3,
-        ease: "back.in(1.7)",
-        onComplete: () => {
-          particle.parentNode?.removeChild(particle);
-        }
-      });
-    });
-    particlesRef.current = [];
-  }, []);
-
-  const animateParticles = useCallback(() => {
-    if (!cardRef.current) return;
-    const { width, height } = cardRef.current.getBoundingClientRect();
-    
-    for (let i = 0; i < 12; i++) {
-      const x = Math.random() * width;
-      const y = Math.random() * height;
-      const particle = document.createElement("div");
-      particle.className = "particle";
-      particle.style.cssText = `
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: rgba(${rgbColor}, 1);
-        box-shadow: 0 0 6px rgba(${rgbColor}, 0.6);
-        pointer-events: none;
-        z-index: 100;
-        left: ${x}px;
-        top: ${y}px;
-      `;
-
-      const timeoutId = setTimeout(() => {
-        if (!cardRef.current) return;
-        cardRef.current.appendChild(particle);
-        particlesRef.current.push(particle);
-
-        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
-
-        gsap.to(particle, {
-          x: (Math.random() - 0.5) * 120,
-          y: (Math.random() - 0.5) * 120,
-          rotation: Math.random() * 360,
-          duration: 2 + Math.random() * 2,
-          ease: "none",
-          repeat: -1,
-          yoyo: true
-        });
-
-        gsap.to(particle, {
-          opacity: 0.3,
-          duration: 1.5,
-          ease: "power2.inOut",
-          repeat: -1,
-          yoyo: true
-        });
-      }, i * 100);
-
-      timeoutsRef.current.push(timeoutId);
-    }
-  }, [rgbColor]);
-
-  useEffect(() => {
-    const element = cardRef.current;
-    if (!element) return;
-
-    const handleMouseEnter = () => {
-      if (enableStars) {
-        animateParticles();
-      }
-
-      if (enableTilt) {
-        gsap.to(element, {
-          rotateX: 2,
-          rotateY: 2,
-          duration: 0.3,
-          ease: "power2.out",
-          transformPerspective: 1000
-        });
-      }
-    };
-
-    const handleMouseLeave = () => {
-      clearAllParticles();
-      element.style.setProperty("--glow-intensity", "0");
-
-      if (enableTilt) {
-        gsap.to(element, {
-          rotateX: 0,
-          rotateY: 0,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      }
-
-      if (enableMagnetism) {
-        gsap.to(element, {
-          x: 0,
-          y: 0,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      }
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const relativeX = (x / rect.width) * 100;
-      const relativeY = (y / rect.height) * 100;
-      element.style.setProperty("--glow-x", `${relativeX}%`);
-      element.style.setProperty("--glow-y", `${relativeY}%`);
-      element.style.setProperty("--glow-intensity", "1");
-      element.style.setProperty("--glow-radius", "400px");
-
-      if (enableTilt) {
-        const rotateX = ((y - centerY) / centerY) * -3;
-        const rotateY = ((x - centerX) / centerX) * 3;
-        gsap.to(element, {
-          rotateX,
-          rotateY,
-          duration: 0.1,
-          ease: "power2.out",
-          transformPerspective: 1000
-        });
-      }
-
-      if (enableMagnetism) {
-        const magnetX = (x - centerX) * 0.02;
-        const magnetY = (y - centerY) * 0.02;
-
-        magnetismAnimationRef.current = gsap.to(element, {
-          x: magnetX,
-          y: magnetY,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      }
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      if (!clickEffect) return;
-
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const maxDistance = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(x - rect.width, y),
-        Math.hypot(x, y - rect.height),
-        Math.hypot(x - rect.width, y - rect.height)
-      );
-
-      const ripple = document.createElement("div");
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${maxDistance * 2}px;
-        height: ${maxDistance * 2}px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(${rgbColor}, 0.25) 0%, rgba(${rgbColor}, 0.1) 30%, transparent 70%);
-        left: ${x - maxDistance}px;
-        top: ${y - maxDistance}px;
-        pointer-events: none;
-        z-index: 1000;
-      `;
-
-      element.appendChild(ripple);
-
-      gsap.fromTo(
-        ripple,
-        {
-          scale: 0,
-          opacity: 1
-        },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          onComplete: () => ripple.remove()
-        }
-      );
-    };
-
-    element.addEventListener("mouseenter", handleMouseEnter);
-    element.addEventListener("mouseleave", handleMouseLeave);
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("click", handleClick);
-
-    return () => {
-      element.removeEventListener("mouseenter", handleMouseEnter);
-      element.removeEventListener("mouseleave", handleMouseLeave);
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("click", handleClick);
-      clearAllParticles();
-      magnetismAnimationRef.current?.kill();
-    };
-  }, [animateParticles, clearAllParticles, enableTilt, enableMagnetism, clickEffect, rgbColor, enableStars]);
-
+const HoneycombIllustration: React.FC = () => {
   return (
-    <div
-      ref={cardRef}
-      className="magic-bento-banner magic-bento-banner--border-glow"
-      style={{
-        "--glow-color": rgbColor
-      } as React.CSSProperties}
-    >
-      {children}
+    <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <svg
+        viewBox="0 0 450 300"
+        width="100%"
+        height="100%"
+        style={{ overflow: "visible", display: "block", maxWidth: "450px" }}
+      >
+        {/* Background dotted line paths / orbits */}
+        <path
+          d="M 120,40 C 200,-10 320,10 340,90"
+          stroke="#CBD5E1"
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          fill="none"
+        />
+        <path
+          d="M 50,110 C 30,50 120,10 200,60"
+          stroke="#CBD5E1"
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          fill="none"
+        />
+        <path
+          d="M 280,240 C 360,250 430,190 410,120"
+          stroke="#CBD5E1"
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          fill="none"
+        />
+        <path
+          d="M 60,190 C 80,250 180,270 230,240"
+          stroke="#CBD5E1"
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          fill="none"
+        />
+
+        {/* Small floating elements like badminton shuttles or balls */}
+        <g transform="translate(350, 45) rotate(-30)">
+          <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
+          <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
+          <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
+        </g>
+        
+        {/* Sparkles / star outlines */}
+        <g transform="translate(380, 210) scale(0.8)">
+          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
+        </g>
+        <g transform="translate(60, 60) scale(0.6)">
+          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
+        </g>
+
+        {/* Diagonal Expand Arrows in bottom-right */}
+        <g transform="translate(390, 250)">
+          <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
+          <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </g>
+
+        {/* Center Hexagon: Girl with Clipboard (Center: 210, 150, radius: 52) */}
+        <g transform="translate(210, 150)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#FFFFFF"
+            stroke="#E2E8F0"
+            strokeWidth="1.8"
+          />
+          {/* Sketch: Girl with Clipboard */}
+          <path d="M-18,-2 C-22,12 -16,28 -14,38 M18,-2 C22,12 16,28 14,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-13,-8 C-13,8 13,8 13,-8 C13,-18 -13,-18 -13,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M-14,-10 Q0,-22 14,-10 M-14,-10 C-18,-5 -15,10 -15,10 M14,-10 C18,-5 15,10 15,10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <ellipse cx="-5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
+          <ellipse cx="5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
+          <path d="M-3,-2 Q0,1 3,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-4,4 L-4,10 M4,4 L4,10" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <rect x="-14" y="10" width="28" height="30" rx="3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-6,10 L-6,7 C-6,6 -5,5 -4,5 H4 C5,5 6,6 6,7 L6,10 Z" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-18,22 Q-13,20 -12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,22 Q13,20 12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <line x1="-8" y1="18" x2="8" y2="18" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="-8" y1="24" x2="4" y2="24" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="-8" y1="30" x2="0" y2="30" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+
+        {/* Top-Left Hexagon: Old Man with flat cap (Center: 132, 105, radius: 52) */}
+        <g transform="translate(132, 105)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#FEF08A"
+            stroke="#F59E0B"
+            strokeWidth="1.8"
+          />
+          <path d="M-15,-6 C-15,10 15,10 15,-6 C15,-16 -15,-16 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M-22,-12 C-15,-28 15,-28 22,-12 Z" fill="#F1F5F9" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-26,-10 C-10,-2 10,-2 26,-10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,8 C-5,22 5,22 10,8" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,3 Q0,-1 10,3 Q5,7 0,5 Q-5,7 -10,3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+          <circle cx="-6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <circle cx="6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <line x1="-1.5" y1="-6" x2="1.5" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-10.5,-6 L-15,-8" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M10.5,-6 L15,-8" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M0,-4 Q2,0 -1,2" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <path d="M-25,32 Q-12,18 0,22 Q12,18 25,32" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <line x1="0" y1="22" x2="0" y2="35" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-10,24 L-5,32 M10,24 L5,32" stroke="#1E293B" strokeWidth="1.6" />
+        </g>
+
+        {/* Top-Right Hexagon: Badminton Player (Center: 288, 105, radius: 52) */}
+        <g transform="translate(288, 105)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#FFFFFF"
+            stroke="#E2E8F0"
+            strokeWidth="1.8"
+          />
+          <circle cx="-6" cy="-5" r="7" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <path d="M1,-5 L4,-4 L1,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-4" cy="-7" r="1" fill="#1E293B" />
+          <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
+          <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          <g transform="translate(28, -32) rotate(45)">
+            <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+            <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
+            <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
+            <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+            <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+          </g>
+          <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+
+        {/* Middle-Left Hexagon: Spiky Hair waving (Center: 54, 150, radius: 52) */}
+        <g transform="translate(54, 150)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#FCA5A5"
+            stroke="#F87171"
+            strokeWidth="1.8"
+          />
+          <path d="M-18,-8 L-14,-22 L-6,-16 L2,-25 L8,-15 L16,-20 L18,-6 L14,4 L-15,4 Z" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-13,-6 C-13,10 13,10 13,-6 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <circle cx="-5" cy="-2" r="1.2" fill="#1E293B" />
+          <circle cx="5" cy="-2" r="1.2" fill="#1E293B" />
+          <path d="M-3,3 Q0,6 3,3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-13,6 C-22,-2 -26,-12 -28,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-28,-18 Q-32,-21 -29,-23 M-28,-18 Q-28,-22 -26,-22 M-28,-18 Q-24,-20 -24,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-10,12 L-14,35 M10,12 L14,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+
+        {/* Middle-Right Hexagon: Child pointing to target (Center: 366, 150, radius: 52) */}
+        <g transform="translate(366, 150)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#F472B6"
+            stroke="#EC4899"
+            strokeWidth="1.8"
+          />
+          <g transform="translate(24, 0)">
+            <circle cx="0" cy="0" r="12" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+            <circle cx="0" cy="0" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
+            <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+          </g>
+          <circle cx="-10" cy="-6" r="8" stroke="#1E293B" strokeWidth="1.6" fill="#FFFFFF" />
+          <path d="M-18,-8 C-21,-12 -16,-17 -12,-14 C-10,-19 -4,-18 -4,-14 C-1,-17 3,-12 1,-8 M-18,-8 C-21,-5 -20,2 -18,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <circle cx="-5" cy="-7" r="1" fill="#1E293B" />
+          <path d="M-7,-3 Q-5,-1 -3,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-2,2 Q8,-2 18,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,-2 C20,-2 22,-2 24,-2 M18,-2 L17,1 L15,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-14,7 C-12,20 -18,36 -18,36 M-6,7 C-4,18 -2,30 -1,36" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+
+        {/* Bottom-Left Hexagon: Girl clinking glass (Center: 132, 195, radius: 52) */}
+        <g transform="translate(132, 195)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#A7F3D0"
+            stroke="#10B981"
+            strokeWidth="1.8"
+          />
+          <path d="M-12,-8 C-12,8 12,8 12,-8 C12,-18 -12,-18 -12,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M-15,-6 C-17,-18 17,-18 15,-6 C16,4 12,12 12,12 L-12,12 C-12,12 -16,4 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="-4" cy="-8" r="1.2" fill="#1E293B" />
+          <circle cx="4" cy="-8" r="1.2" fill="#1E293B" />
+          <path d="M-2.5,-3 Q0,-1 2.5,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M6,10 Q14,8 18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M18,10 L24,11 L22,20 L16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M22,13 Q25,14 24,16 Q23,17 21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <path d="M-12,14 L-15,35 M6,14 L4,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+
+        {/* Bottom-Right Hexagon: Man clinking glass (Center: 288, 195, radius: 52) */}
+        <g transform="translate(288, 195)">
+          <polygon
+            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
+            fill="#94A3B8"
+            stroke="#475569"
+            strokeWidth="1.8"
+          />
+          <path d="M-12,-6 C-12,8 12,8 12,-6 C12,-16 -12,-16 -12,-6" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M-15,-10 C-10,-22 10,-22 15,-10 L-15,-10" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-18,-8 L-22,-6 L-16,-6" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <rect x="-9" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <rect x="2" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <line x1="-2" y1="-6" x2="2" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
+          <path d="M-3,1 Q0,3 3,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-6,10 Q-14,8 -18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M-18,10 L-24,11 L-22,20 L-16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+          <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+        
+        {/* Clink sparks between bottom left & right cups */}
+        <g transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
+          <line x1="-8" y1="-8" x2="-3" y2="-3" />
+          <line x1="8" y1="-8" x2="3" y2="-3" />
+          <line x1="-8" y1="8" x2="-3" y2="3" />
+          <line x1="8" y1="8" x2="3" y2="3" />
+          <line x1="0" y1="-10" x2="0" y2="-4" />
+          <line x1="0" y1="10" x2="0" y2="4" />
+        </g>
+      </svg>
     </div>
   );
 };
@@ -294,6 +274,14 @@ function hexToHslStr(hex: string): string {
   }
 
   return `${Math.round(h * 360)} ${Math.round(s * 100)} ${Math.round(l * 100)}`;
+}
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .trim();
 }
 
 interface EnrichedCourse {
@@ -975,6 +963,253 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
   );
 };
 
+interface FilterPillButtonProps {
+  isActive: boolean;
+  activeData: any;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+const FilterPillButton: React.FC<FilterPillButtonProps> = ({
+  isActive,
+  activeData,
+  onClick,
+  children
+}) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const particlesRef = useRef<HTMLDivElement[]>([]);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  const isHoveredRef = useRef(false);
+  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
+
+  const glowColor = hexToRgbStr(activeData.colors.primary);
+
+  const clearAllParticles = useCallback(() => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+    magnetismAnimationRef.current?.kill();
+
+    particlesRef.current.forEach(particle => {
+      gsap.to(particle, {
+        scale: 0,
+        opacity: 0,
+        duration: 0.3,
+        ease: "back.in(1.7)",
+        onComplete: () => {
+          particle.parentNode?.removeChild(particle);
+        }
+      });
+    });
+    particlesRef.current = [];
+  }, []);
+
+  const animateParticles = useCallback(() => {
+    if (!buttonRef.current || !isHoveredRef.current) return;
+
+    const { width, height } = buttonRef.current.getBoundingClientRect();
+    
+    // Subtle star particles tailored for smaller button sizes
+    for (let i = 0; i < 6; i++) {
+      const px = Math.random() * width;
+      const py = Math.random() * height;
+      
+      const particle = document.createElement("div");
+      particle.className = "category-particle";
+      particle.style.cssText = `
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: rgba(${glowColor}, 1);
+        box-shadow: 0 0 4px rgba(${glowColor}, 0.6);
+        pointer-events: none;
+        z-index: 10;
+        left: ${px}px;
+        top: ${py}px;
+      `;
+
+      const timeoutId = setTimeout(() => {
+        if (!isHoveredRef.current || !buttonRef.current) return;
+        buttonRef.current.appendChild(particle);
+        particlesRef.current.push(particle);
+
+        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
+
+        gsap.to(particle, {
+          x: (Math.random() - 0.5) * 50,
+          y: (Math.random() - 0.5) * 50,
+          rotation: Math.random() * 360,
+          duration: 1.5 + Math.random() * 1.5,
+          ease: "none",
+          repeat: -1,
+          yoyo: true
+        });
+
+        gsap.to(particle, {
+          opacity: 0.3,
+          duration: 1.2,
+          ease: "power2.inOut",
+          repeat: -1,
+          yoyo: true
+        });
+      }, i * 120);
+
+      timeoutsRef.current.push(timeoutId);
+    }
+  }, [glowColor]);
+
+  useEffect(() => {
+    const element = buttonRef.current;
+    if (!element) return;
+
+    const handleMouseEnter = () => {
+      isHoveredRef.current = true;
+      animateParticles();
+
+      // Subtle 3D tilt on hover
+      gsap.to(element, {
+        rotateX: 4,
+        rotateY: 4,
+        duration: 0.3,
+        ease: "power2.out",
+        transformPerspective: 600
+      });
+    };
+
+    const handleMouseLeave = () => {
+      isHoveredRef.current = false;
+      clearAllParticles();
+
+      gsap.to(element, {
+        rotateX: 0,
+        rotateY: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+
+      gsap.to(element, {
+        x: 0,
+        y: 0,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      gsap.to(element, {
+        rotateX,
+        rotateY,
+        duration: 0.1,
+        ease: "power2.out",
+        transformPerspective: 600
+      });
+
+      // Magnetism: subtle attraction to cursor
+      const magnetX = (x - centerX) * 0.08;
+      const magnetY = (y - centerY) * 0.08;
+      magnetismAnimationRef.current = gsap.to(element, {
+        x: magnetX,
+        y: magnetY,
+        duration: 0.3,
+        ease: "power2.out"
+      });
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const maxDistance = Math.max(
+        Math.hypot(x, y),
+        Math.hypot(x - rect.width, y),
+        Math.hypot(x, y - rect.height),
+        Math.hypot(x - rect.width, y - rect.height)
+      );
+
+      const ripple = document.createElement("div");
+      ripple.style.cssText = `
+        position: absolute;
+        width: ${maxDistance * 2}px;
+        height: ${maxDistance * 2}px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(${glowColor}, 0.3) 0%, rgba(${glowColor}, 0.1) 40%, transparent 70%);
+        left: ${x - maxDistance}px;
+        top: ${y - maxDistance}px;
+        pointer-events: none;
+        z-index: 10;
+      `;
+
+      element.appendChild(ripple);
+
+      gsap.fromTo(
+        ripple,
+        { scale: 0, opacity: 1 },
+        {
+          scale: 1,
+          opacity: 0,
+          duration: 0.7,
+          ease: "power2.out",
+          onComplete: () => ripple.remove()
+        }
+      );
+    };
+
+    element.addEventListener("mouseenter", handleMouseEnter);
+    element.addEventListener("mouseleave", handleMouseLeave);
+    element.addEventListener("mousemove", handleMouseMove);
+    element.addEventListener("click", handleClick);
+
+    return () => {
+      isHoveredRef.current = false;
+      element.removeEventListener("mouseenter", handleMouseEnter);
+      element.removeEventListener("mouseleave", handleMouseLeave);
+      element.removeEventListener("mousemove", handleMouseMove);
+      element.removeEventListener("click", handleClick);
+      clearAllParticles();
+    };
+  }, [animateParticles, clearAllParticles, glowColor]);
+
+  return (
+    <button
+      ref={buttonRef}
+      onClick={onClick}
+      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      style={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "8px 16px",
+        borderRadius: "10px",
+        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
+        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        color: isActive ? activeData.colors.primary : "#5E606A",
+        fontSize: "0.82rem",
+        fontWeight: "700",
+        cursor: "pointer",
+        boxShadow: isActive 
+          ? `0 10px 20px -8px ${activeData.colors.primary}33` 
+          : "0 4px 10px -2px rgba(0,0,0,0.02)",
+        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "--glow-color": glowColor
+      } as React.CSSProperties}
+    >
+      {children}
+    </button>
+  );
+};
+
 interface CategoryGlobalSpotlightProps {
   gridRef: React.RefObject<HTMLDivElement | null>;
   spotlightRadius?: number;
@@ -1039,6 +1274,268 @@ const CategoryGlobalSpotlight: React.FC<CategoryGlobalSpotlightProps> = ({
   return null;
 };
 
+interface CourseCardProps {
+  course: any;
+  index: number;
+  activeCategoryName: string;
+  activeData: any;
+  router: any;
+  realRating: number;
+  realReviewsCount: number;
+}
+
+const CourseCard: React.FC<CourseCardProps> = ({
+  course,
+  index,
+  activeCategoryName,
+  activeData,
+  router,
+  realRating,
+  realReviewsCount
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const descRef = useRef<HTMLParagraphElement>(null);
+
+  const enriched = getEnrichedCourse(course, index, activeCategoryName);
+  const courseSlug = slugify(course.title);
+
+  useEffect(() => {
+    if (descRef.current) {
+      // Line-height is 1.5. If the height of element > line-height * 2, it overflows.
+      // Two lines is approx 44px. If scrollHeight is greater, it overflows 2 lines.
+      setIsOverflowing(descRef.current.scrollHeight > 45);
+    }
+  }, [course.desc]);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
+      <BorderGlow
+        edgeSensitivity={30}
+        glowColor={hexToHslStr(activeData.colors.primary)}
+        backgroundColor="#FFFFFF"
+        borderRadius={14}
+        glowRadius={40}
+        glowIntensity={0.3}
+        coneSpread={25}
+        animated={false}
+        colors={[`${activeData.colors.primary}40`, '#E6E3F1', `${activeData.colors.primary}40`]}
+        fillOpacity={0.08}
+        className="w-full h-full"
+      >
+        <div
+          style={{
+            background: "#FFFFFF",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            minHeight: "360px"
+          }}
+          className="course-card-premium"
+        >
+          {/* Card Graphic Header */}
+          <div
+            style={{
+              height: "90px",
+              position: "relative",
+              overflow: "hidden",
+              background: `
+                radial-gradient(circle at 25% 25%, ${activeData.colors.primary}12, transparent 55%),
+                repeating-linear-gradient(135deg, ${activeData.colors.primary}08 0 2px, transparent 2px 14px),
+                #F9FAFB
+              `,
+              borderBottom: "1px solid #E6E3F1",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            {/* Accent outline category visual watermark */}
+            <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
+              {getCourseGlyph(course.title, index, activeData.colors.primary)}
+            </div>
+          </div>
+
+          {/* Card Body */}
+          <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
+            <div>
+              {/* Title */}
+              <h3
+                style={{
+                  fontSize: "1.05rem",
+                  fontWeight: "800",
+                  color: "var(--l-ink)",
+                  margin: "0 0 6px",
+                  lineHeight: "1.3",
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}
+              >
+                {course.title}
+              </h3>
+
+              {/* Rating Row */}
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
+                  <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
+                  <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{realReviewsCount > 0 ? realRating.toFixed(1) : "0.0"}</span>
+                  <span style={{ color: "#8886A0" }}>({realReviewsCount} {realReviewsCount === 1 ? "Review" : "Reviews"})</span>
+                </div>
+              </div>
+
+              {/* Description with Read More */}
+              <div style={{ position: "relative", marginBottom: "12px" }}>
+                <p
+                  ref={descRef}
+                  style={isExpanded ? {
+                    fontSize: "0.86rem",
+                    color: "#5A5870",
+                    lineHeight: "1.5",
+                    margin: 0
+                  } : {
+                    fontSize: "0.86rem",
+                    color: "#5A5870",
+                    lineHeight: "1.5",
+                    margin: 0,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    maxHeight: "3em"
+                  }}
+                >
+                  {course.desc}
+                </p>
+                {isOverflowing && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(!isExpanded);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: activeData.colors.primary,
+                      fontSize: "0.8rem",
+                      fontWeight: "800",
+                      cursor: "pointer",
+                      padding: "2px 0 0 0",
+                      marginTop: "4px",
+                      display: "block",
+                      outline: "none"
+                    }}
+                  >
+                    {isExpanded ? "Read less" : "Read more"}
+                  </button>
+                )}
+              </div>
+
+              {/* Instructor Info */}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <img
+                  src={enriched.instructor.avatarUrl}
+                  alt={enriched.instructor.name}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "1px solid #E6E3F1"
+                  }}
+                />
+                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
+                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
+                    {enriched.instructor.name}
+                  </span>
+                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
+                    {enriched.instructor.role}
+                  </span>
+                </div>
+              </div>
+
+              {/* Primary Action Button */}
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                <button
+                  onClick={() => router.push("/courses/" + courseSlug)}
+                  style={{
+                    width: "100%",
+                    background: activeData.colors.secondary,
+                    color: activeData.colors.primary,
+                    border: "none",
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    fontSize: "0.85rem",
+                    fontWeight: "700",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    transition: "all 0.25s ease"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = activeData.colors.secondary.replace('0.08', '0.16');
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = activeData.colors.secondary;
+                    e.currentTarget.style.transform = "none";
+                  }}
+                >
+                  Enroll Now
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom Info Row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
+              <span
+                onClick={() => router.push("/courses/" + courseSlug)}
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: "700",
+                  color: "#5A5870",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  cursor: "pointer",
+                  transition: "color 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = activeData.colors.primary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#5A5870";
+                }}
+              >
+                View Course
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+              
+              <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </svg>
+                {course.duration}
+              </span>
+            </div>
+          </div>
+        </div>
+      </BorderGlow>
+    </div>
+  );
+};
+
 export default function CategoryDetailedView() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1048,10 +1545,20 @@ export default function CategoryDetailedView() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [wishlistedCourses, setWishlistedCourses] = useState<Record<string, boolean>>({});
-  const [activeEditorTab, setActiveEditorTab] = useState<number>(0);
+  const [selectedDifficulty, setSelectedDifficulty] = useState("All Levels");
+  const [selectedTopic, setSelectedTopic] = useState("All Topics");
+
+  const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+
+  useEffect(() => {
+    api.get<Record<string, { averageRating: number; reviewsCount: number }>>("/api/v1/reviews/stats")
+      .then(setCourseStats)
+      .catch((err) => console.error("Failed to fetch course stats", err));
+  }, []);
 
   const coursesSectionRef = useRef<HTMLDivElement>(null);
   const categoriesGridRef = useRef<HTMLDivElement>(null);
+  const filtersGridRef = useRef<HTMLDivElement>(null);
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -1070,13 +1577,13 @@ export default function CategoryDetailedView() {
     } else {
       setActiveCategory("Computer Science"); // Fallback default
     }
-    setActiveEditorTab(0);
   }, [initialCategory]);
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     setCourseSearchQuery("");
-    setActiveEditorTab(0);
+    setSelectedDifficulty("All Levels");
+    setSelectedTopic("All Topics");
     
     const newUrl = `${window.location.pathname}?category=${encodeURIComponent(category)}`;
     window.history.replaceState(null, "", newUrl);
@@ -1095,10 +1602,17 @@ export default function CategoryDetailedView() {
   const activeCategoryName = activeCategory || "Computer Science";
   const activeData = CATEGORY_DATA[activeCategoryName];
 
-  const filteredCourses = activeData.courses.filter(course =>
-    course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
-    course.desc.toLowerCase().includes(courseSearchQuery.toLowerCase())
-  );
+  const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
+  const topics = ["All Topics", ...Array.from(new Set(activeData.courses.map((c, i) => getEnrichedCourse(c, i, activeCategoryName).categoryTag)))];
+
+  const filteredCourses = activeData.courses.filter((course, index) => {
+    const enriched = getEnrichedCourse(course, index, activeCategoryName);
+    const matchesSearch = course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
+                          course.desc.toLowerCase().includes(courseSearchQuery.toLowerCase());
+    const matchesDifficulty = selectedDifficulty === "All Levels" || course.level === selectedDifficulty;
+    const matchesTopic = selectedTopic === "All Topics" || enriched.categoryTag === selectedTopic;
+    return matchesSearch && matchesDifficulty && matchesTopic;
+  });
 
   return (
     <div className="landing-root" style={{ minHeight: "100vh", paddingBottom: "100px" }}>
@@ -1360,67 +1874,20 @@ export default function CategoryDetailedView() {
 
       {/* Main Container */}
       <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "100px 24px 0", position: "relative", zIndex: 1 }}>
-        
 
-
-        {/* Category Selector Spotlight tracker */}
-        <CategoryGlobalSpotlight gridRef={categoriesGridRef} spotlightRadius={160} />
-
-        {/* Unique Mesh Category Selector - Sticky-friendly Horizontal Pill Navigation */}
-        <div 
-          ref={categoriesGridRef}
-          style={{ 
-            display: "flex", 
-            gap: "10px", 
-            overflowX: "auto", 
-            paddingBottom: "16px",
-            marginBottom: "32px",
-            position: "relative"
+        {/* Hero Section Container (No background card, border, or shadow) */}
+        <div
+          style={{
+            position: "relative",
+            marginBottom: "56px",
+            display: "grid",
+            gridTemplateColumns: "1.2fr 0.8fr",
+            alignItems: "center",
+            gap: "40px",
+            zIndex: 10,
+            padding: "24px 0"
           }}
-          className="hide-scrollbar bento-section"
         >
-          {categoriesList.map((item) => {
-            const isActive = activeCategoryName === item;
-            const itemData = CATEGORY_DATA[item];
-            return (
-              <CategoryPillButton
-                key={item}
-                item={item}
-                isActive={isActive}
-                itemData={itemData}
-                onClick={() => handleCategorySwitch(item)}
-              >
-                <span style={{ opacity: isActive ? 1 : 0.6, display: "flex", alignItems: "center" }}>{CATEGORY_ICONS[item]}</span>
-                <span style={{ zIndex: 2 }}>{item}</span>
-              </CategoryPillButton>
-            );
-          })}
-        </div>
-
-        {/* Premium Minimal Interactive Banner with Cursor Spotlight effect */}
-        <BannerBentoWrapper
-          primaryColor={activeData.colors.primary}
-          secondaryColor={activeData.colors.secondary}
-          enableTilt={false}
-          enableMagnetism={false}
-          enableStars={false}
-        >
-
-          {/* Subtle dynamic grid and mesh details inside banner */}
-          <div style={{ position: "absolute", inset: 0, opacity: 0.8, pointerEvents: "none", zIndex: 0 }}>
-            <DotGrid
-              dotSize={6}
-              gap={20}
-              baseColor="#E2E8F0"
-              activeColor={activeData.colors.primary}
-              proximity={120}
-              shockRadius={200}
-              shockStrength={4}
-              resistance={750}
-              returnDuration={1.5}
-            />
-          </div>
-          <div style={{ position: "absolute", top: "-20%", right: "-20%", width: "400px", height: "400px", borderRadius: "50%", background: `radial-gradient(circle, ${activeData.colors.primary}1A 0%, transparent 70%)`, filter: "blur(60px)", pointerEvents: "none" }} />
 
           {/* Banner Left Info */}
           <div style={{ position: "relative", zIndex: 2 }}>
@@ -1496,55 +1963,11 @@ export default function CategoryDetailedView() {
 
           </div>
 
-          {/* Banner Right Panel: Dynamic Visual Code Editor mockup */}
-          {(() => {
-            const tabs = CATEGORY_EDITOR_TABS[activeCategoryName] || CATEGORY_EDITOR_TABS["Computer Science"];
-            const editorMock = tabs[activeEditorTab] || tabs[0];
-            return (
-              <div className="hero-visual" style={{ zIndex: 2 }}>
-                <div className="editor-topbar">
-                  <div className="editor-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                  <div className="editor-tabs">
-                    {tabs.map((tab, idx) => (
-                      <div
-                        key={tab.filename}
-                        className={`editor-tab ${activeEditorTab === idx ? "active" : ""}`}
-                        style={{ cursor: "pointer" }}
-                        onClick={() => setActiveEditorTab(idx)}
-                      >
-                        {tab.filename}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="editor-body">
-                  {editorMock.lines.map((line) => (
-                    <div key={line.ln}>
-                      <span className="ln">{line.ln}</span>
-                      {line.tokens.map((token, tokIdx) => (
-                        <span
-                          key={tokIdx}
-                          className={token.type ? `tok-${token.type}` : undefined}
-                        >
-                          {token.text}
-                        </span>
-                      ))}
-                      {line.ln === editorMock.lines.length && <span className="caret"></span>}
-                    </div>
-                  ))}
-                </div>
-                <div className="editor-status">
-                  <span>{editorMock.matchedText}</span>
-                  <span className="ok">● ready</span>
-                </div>
-              </div>
-            );
-          })()}
-        </BannerBentoWrapper>
+          {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+          <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+            <HoneycombIllustration />
+          </div>
+        </div>
 
         {/* Section A: Popular / Available Courses */}
         <section ref={coursesSectionRef} style={{ marginBottom: "56px" }}>
@@ -1560,6 +1983,73 @@ export default function CategoryDetailedView() {
             </span>
           </div>
 
+          {/* Professional Horizontal Filters Bar */}
+          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
+          <div
+            ref={filtersGridRef}
+            style={{
+              display: "flex",
+              gap: "24px",
+              marginBottom: "32px",
+              background: "rgba(255, 255, 255, 0.65)",
+              border: "1px solid rgba(20, 23, 31, 0.06)",
+              borderRadius: "16px",
+              padding: "20px 24px",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
+              flexWrap: "wrap",
+              alignItems: "flex-start"
+            }}
+          >
+            {/* Difficulty Filter */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Difficulty Level
+              </label>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {difficultyLevels.map((level) => {
+                  const isActive = selectedDifficulty === level;
+                  return (
+                    <FilterPillButton
+                      key={level}
+                      isActive={isActive}
+                      activeData={activeData}
+                      onClick={() => setSelectedDifficulty(level)}
+                    >
+                      {level}
+                    </FilterPillButton>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
+
+            {/* Topic Filter */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Course Topic
+              </label>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {topics.map((topic) => {
+                  const isActive = selectedTopic === topic;
+                  return (
+                    <FilterPillButton
+                      key={topic}
+                      isActive={isActive}
+                      activeData={activeData}
+                      onClick={() => setSelectedTopic(topic)}
+                    >
+                      {topic}
+                    </FilterPillButton>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {filteredCourses.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
               <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
@@ -1571,283 +2061,21 @@ export default function CategoryDetailedView() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>              {filteredCourses.map((course, index) => {
-                const isWishlisted = !!wishlistedCourses[course.title];
-                const enriched = getEnrichedCourse(course, index, activeCategoryName);
-                
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+              {filteredCourses.map((course, index) => {
+                const slug = slugify(course.title);
+                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
                 return (
-                  <div
+                  <CourseCard
                     key={course.title}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column"
-                    }}
-                  >
-                    <BorderGlow
-                      edgeSensitivity={30}
-                      glowColor={hexToHslStr(activeData.colors.primary)}
-                      backgroundColor="#FFFFFF"
-                      borderRadius={14}
-                      glowRadius={40}
-                      glowIntensity={1.0}
-                      coneSpread={25}
-                      animated={false}
-                      colors={[activeData.colors.primary, '#E6E3F1', activeData.colors.primary]}
-                      fillOpacity={0.08}
-                      className="w-full h-full"
-                    >
-                      <div
-                        style={{
-                          background: "#FFFFFF",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          position: "relative",
-                          width: "100%",
-                          height: "100%",
-                          minHeight: "530px"
-                        }}
-                        className="course-card-premium"
-                      >
-                        {/* Card Graphic Header - Matching clean flat design */}
-                        <div
-                          style={{
-                            height: "120px",
-                            position: "relative",
-                            overflow: "hidden",
-                            background: `
-                              radial-gradient(circle at 25% 25%, ${activeData.colors.primary}29, transparent 55%),
-                              repeating-linear-gradient(135deg, ${activeData.colors.primary}10 0 2px, transparent 2px 14px),
-                              ${activeData.colors.secondary}
-                            `,
-                            borderBottom: "1px solid #E6E3F1",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}
-                        >
-                          {/* Floating status badge */}
-                          {index === 0 && (
-                            <span
-                              style={{
-                                position: "absolute",
-                                left: "12px",
-                                top: "12px",
-                                background: "#14131E",
-                                color: "#FFFFFF",
-                                padding: "5px 10px",
-                                borderRadius: "999px",
-                                fontSize: "0.68rem",
-                                fontWeight: "700",
-                                letterSpacing: "0.04em",
-                                fontFamily: "'IBM Plex Mono', monospace"
-                              }}
-                            >
-                              BEST SELLER
-                            </span>
-                          )}
-
-                          {/* Wishlist Button */}
-                          <button
-                            onClick={(e) => toggleWishlist(course.title, e)}
-                            style={{
-                              position: "absolute",
-                              right: "12px",
-                              top: "12px",
-                              width: "30px",
-                              height: "30px",
-                              borderRadius: "50%",
-                              background: "#FFFFFF",
-                              border: "1px solid #E6E3F1",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
-                              color: isWishlisted ? "#EF4444" : "#8886A0",
-                              transition: "all 0.2s"
-                            }}
-                          >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                            </svg>
-                          </button>
-
-                          {/* Accent outline category visual watermark */}
-                          <div style={{ color: activeData.colors.primary, opacity: 0.85 }}>
-                            {getCourseGlyph(course.title, index, activeData.colors.primary)}
-                          </div>
-                        </div>
-
-                        {/* Card Body - Matching explore details layout */}
-                        <div style={{ padding: "20px 20px 18px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
-                          <div>
-                            {/* Title */}
-                            <h3
-                              style={{
-                                fontSize: "1.05rem",
-                                fontWeight: "800",
-                                color: "var(--l-ink)",
-                                margin: "0 0 10px",
-                                lineHeight: "1.3",
-                                fontFamily: "'Space Grotesk', sans-serif"
-                              }}
-                            >
-                              {course.title}
-                            </h3>
-
-                            {/* Rating and Difficulty Row */}
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
-                                <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
-                                <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{enriched.rating}</span>
-                                <span style={{ color: "#8886A0" }}>({enriched.reviewsCount} Reviews)</span>
-                              </div>
-                              <span
-                                style={{
-                                  background: activeData.colors.secondary,
-                                  color: activeData.colors.primary,
-                                  padding: "4px 10px",
-                                  borderRadius: "999px",
-                                  fontSize: "0.68rem",
-                                  fontWeight: "700",
-                                  fontFamily: "'IBM Plex Mono', monospace",
-                                  whiteSpace: "nowrap"
-                                }}
-                              >
-                                {course.level}
-                              </span>
-                            </div>
-
-                            {/* Description */}
-                            <p
-                              style={{
-                                fontSize: "0.86rem",
-                                color: "#5A5870",
-                                lineHeight: "1.55",
-                                margin: "0 0 16px",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                height: "4.65em"
-                              }}
-                            >
-                              {course.desc}
-                            </p>
-
-                            {/* Course Category Badge */}
-                            <div style={{ marginBottom: "18px" }}>
-                              <span
-                                style={{
-                                  background: activeData.colors.secondary,
-                                  color: activeData.colors.primary,
-                                  padding: "5px 12px",
-                                  borderRadius: "999px",
-                                  fontSize: "0.7rem",
-                                  fontWeight: "700",
-                                  fontFamily: "'IBM Plex Mono', monospace",
-                                  letterSpacing: "0.02em"
-                                }}
-                              >
-                                {enriched.categoryTag}
-                              </span>
-                            </div>
-
-                            {/* Instructor Info */}
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-                              <img
-                                src={enriched.instructor.avatarUrl}
-                                alt={enriched.instructor.name}
-                                style={{
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "50%",
-                                  objectFit: "cover",
-                                  border: "1px solid #E6E3F1"
-                                }}
-                              />
-                              <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                                <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
-                                  {enriched.instructor.name}
-                                </span>
-                                <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                                  {enriched.instructor.role}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Primary Action Buttons */}
-                            <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-                              <button
-                                onClick={() => router.push("/courses/1")}
-                                style={{
-                                  width: "100%",
-                                  background: activeData.colors.primary,
-                                  color: "#FFFFFF",
-                                  border: "none",
-                                  padding: "10px 16px",
-                                  borderRadius: "10px",
-                                  fontSize: "0.85rem",
-                                  fontWeight: "700",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  gap: "6px",
-                                  transition: "all 0.2s"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.opacity = "0.95";
-                                  e.currentTarget.style.transform = "translateY(-1px)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.opacity = "1";
-                                  e.currentTarget.style.transform = "none";
-                                }}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="9" cy="21" r="1" />
-                                  <circle cx="20" cy="21" r="1" />
-                                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                </svg>
-                                Enroll Now
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Bottom Info Row */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "14px", marginTop: "4px" }}>
-                            <span
-                              onClick={() => router.push("/courses/1")}
-                              style={{
-                                fontSize: "0.85rem",
-                                fontWeight: "700",
-                                color: activeData.colors.primary,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "5px",
-                                cursor: "pointer"
-                              }}
-                            >
-                              View Course
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                                <path d="M5 12h14M13 6l6 6-6 6" />
-                              </svg>
-                            </span>
-                            
-                            <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="9" />
-                                <path d="M12 7v5l3 2" />
-                              </svg>
-                              {course.duration}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </BorderGlow>
-                  </div>
+                    course={course}
+                    index={index}
+                    activeCategoryName={activeCategoryName}
+                    activeData={activeData}
+                    router={router}
+                    realRating={stats.averageRating}
+                    realReviewsCount={stats.reviewsCount}
+                  />
                 );
               })}
             </div>

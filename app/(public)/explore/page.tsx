@@ -62,8 +62,8 @@ export const CATEGORY_DATA: Record<string, {
   },
   "Business & Management": {
     coursesCount: 6,
-    gradient: "linear-gradient(135deg, #F59E0B 0%, #C2410C 100%)",
-    colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
+    gradient: "linear-gradient(135deg, #D97462 0%, #9C4132 100%)",
+    colors: { primary: "#D97462", secondary: "rgba(217, 116, 98, 0.08)" },
     desc: "Develop strategic startup frameworks, financial accounting competence, agile project leadership, and product marketing strategies.",
     courses: [
       { title: "Principles of Management", duration: "6 Weeks", level: "Beginner", desc: "Master organizational structures, planning strategies, and leadership." },
