@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default function PublicLandingPage() {
   return (
     <div className="landing-root">
       <HeroSection />

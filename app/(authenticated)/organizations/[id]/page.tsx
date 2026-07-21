@@ -196,7 +196,7 @@ export default function OrganizationDetailsPage() {
     setIsLeaving(true);
     try {
       await OrganizationService.leaveOrganization(id as string);
-      router.push('/dashboard/organizations');
+      router.push('/organizations');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to leave organization');
       setIsLeaving(false);
@@ -224,7 +224,7 @@ export default function OrganizationDetailsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-6">
         <div>
-          <Link href="/dashboard/organizations" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors">
+          <Link href="/organizations" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors">
             <ArrowLeft size={16} /> Back to Organizations
           </Link>
           <div className="flex items-center gap-4">

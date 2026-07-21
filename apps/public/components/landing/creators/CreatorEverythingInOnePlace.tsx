@@ -6,11 +6,13 @@ import {
 } from "lucide-react";
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
 import Link from "next/link";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export default function CreatorEverythingInOnePlace() {
   const section2HeaderRef = useRef<HTMLDivElement>(null);
   const timelineScrollRef = useRef<HTMLDivElement>(null);
   const [animKey, setAnimKey] = useState(0);
+  const { status } = useAuthStore();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -248,13 +250,23 @@ export default function CreatorEverythingInOnePlace() {
             Skip complex integrations. Build courses, manage co-authors, review curriculum feedback, and configure custom billing cycles in a sleek, glassmorphic layout.
           </p>
           <div className="pt-4">
-            <Link
-              href="/register?role=creator"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2451D6] hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-blue-500/10 hover:shadow-lg transition-all duration-300"
-            >
-              <span>Get Started Now</span>
-              <ArrowRight size={14} />
-            </Link>
+            {status === 'authenticated' ? (
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2451D6] hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-blue-500/10 hover:shadow-lg transition-all duration-300"
+              >
+                <span>Open Arcade</span>
+                <ArrowRight size={14} />
+              </Link>
+            ) : (
+              <Link
+                href="/register?role=creator"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2451D6] hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-blue-500/10 hover:shadow-lg transition-all duration-300"
+              >
+                <span>Get Started Now</span>
+                <ArrowRight size={14} />
+              </Link>
+            )}
           </div>
         </div>
 

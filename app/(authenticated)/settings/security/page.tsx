@@ -46,7 +46,7 @@ export default function SecurityLogsPage() {
   return (
     <div className="max-w-4xl space-y-8">
       <div>
-        <Link href="/dashboard/settings" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors">
+        <Link href="/settings" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-indigo-600 mb-3 transition-colors">
           <ArrowLeft size={16} /> Back to Settings
         </Link>
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Security & Audit Logs</h1>

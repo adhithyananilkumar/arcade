@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
 import type { CourseResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
-import DashboardLoading from './loading';
+import DashboardLoading from '@/app/(authenticated)/loading';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -19,7 +19,7 @@ const containerVariants: Variants = {
   }
 };
 
-export default function DashboardPage() {
+export default function LearnerHomePage() {
   const { user, status } = useAuthStore();
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +149,7 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <Link href={`/dashboard/${course.id}`} key={course.id} className="group bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-900/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
+              <Link href={`/learn/${course.id}`} key={course.id} className="group bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-900/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
                 <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-neutral-900">
                   <img 
                     src={course.coverImageUrl || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80"} 

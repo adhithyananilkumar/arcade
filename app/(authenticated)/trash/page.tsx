@@ -1,4 +1,4 @@
-// app/(authenticated)/dashboard/trash/page.tsx
+// app/(authenticated)/trash/page.tsx
 // Personal Trash — restore soft-deleted courses or permanently delete them.
 "use client";
 
@@ -139,7 +139,7 @@ export default function TrashPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div>
             <Link
-              href="/dashboard"
+              href="/"
               className="mb-1 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft size={13} />

@@ -139,7 +139,7 @@ export function StudentRoadmapView({ roadmapId }: StudentRoadmapViewProps) {
     <div className="flex flex-col h-full w-full bg-gray-50 relative">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10 shrink-0">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600">
+          <Link href="/" className="text-gray-400 hover:text-gray-600">
             <ArrowLeft size={20} />
           </Link>
           <div>

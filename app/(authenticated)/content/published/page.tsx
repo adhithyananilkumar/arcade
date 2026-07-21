@@ -1,4 +1,4 @@
-// app/(authenticated)/dashboard/content/published/page.tsx
+// app/(authenticated)/content/published/page.tsx
 // Temporary "Published Courses" page: lists all courses the current user has authored.
 // Stopgap until the real publishing pipeline (course_versions / status gating) lands —
 // clicking a card opens the course renderer directly off the live authoring tree.
@@ -45,7 +45,7 @@ export default function PublishedCoursesPage() {
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto">
           <Link
-            href="/dashboard/content"
+            href="/content"
             className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft size={14} />
@@ -121,7 +121,7 @@ export default function PublishedCoursesPage() {
                   })}
                 </div>
                 <Link
-                  href={`/dashboard/content/published/${course.id}`}
+                  href={`/content/published/${course.id}`}
                   className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
                 >
                   View Course →

@@ -11,7 +11,10 @@ const navLinks = [
   { label: "For creators", href: "/creators" },
 ];
 
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+
 export default function HeroNav() {
+  const { status } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
   const [isHidden, setIsHidden] = useState(false);
 
@@ -107,9 +110,20 @@ export default function HeroNav() {
 
       {/* Right actions */}
       <div className="l-nav__actions">
-        <Link href="/sign" className="l-nav__get-started">
-          Get Started
-        </Link>
+        {status === 'authenticated' ? (
+          <Link href="/" className="l-nav__get-started">
+            Open Arcade
+          </Link>
+        ) : (
+          <>
+            <Link href="/sign" className="l-nav__login">
+              Sign In
+            </Link>
+            <Link href="/sign?type=register" className="l-nav__get-started">
+              Get Started
+            </Link>
+          </>
+        )}
       </div>
     </motion.nav>
   );

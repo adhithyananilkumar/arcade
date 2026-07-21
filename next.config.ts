@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         destination: '/creators',
         permanent: true,
       },
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
     ];
   },
 };

@@ -1,4 +1,4 @@
-﻿// app/(authenticated)/dashboard/page.tsx
+﻿// app/(authenticated)/page.tsx
 // Post-login dashboard home ΓÇö Create Content + My Courses grid
 "use client";
 
@@ -30,7 +30,7 @@ const CONTENT_TYPES = [
     icon: BookOpen,
     label: "Course",
     desc: "Structured learning path with modules & lessons",
-    href: "/dashboard/content/course/new",
+    href: "/content/course/new",
     color: "text-indigo-600",
     bg: "bg-indigo-50",
   },
@@ -39,7 +39,7 @@ const CONTENT_TYPES = [
     icon: Wrench,
     label: "Workshop / Bootcamp",
     desc: "Flexible sessions with videos, activities & resources",
-    href: "/dashboard/content/workshop/new",
+    href: "/content/workshop/new",
     color: "text-violet-600",
     bg: "bg-violet-50",
   },
@@ -48,7 +48,7 @@ const CONTENT_TYPES = [
     icon: Radio,
     label: "Webinar",
     desc: "Live session with Zoom link, date & time",
-    href: "/dashboard/content/webinar/new",
+    href: "/content/webinar/new",
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
@@ -57,7 +57,7 @@ const CONTENT_TYPES = [
     icon: FileText,
     label: "Article",
     desc: "Standalone rich document authored with the editor",
-    href: "/dashboard/content/article/new",
+    href: "/content/article/new",
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
@@ -99,7 +99,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
         title: name.trim(),
         description: description.trim() || undefined,
       });
-      router.push(`/dashboard/content/course/${course.id}/edit`);
+      router.push(`/content/course/${course.id}/edit`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create course");
       setCreating(false);
@@ -214,7 +214,7 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-2">
             <Link
-              href="/dashboard/content/review"
+              href="/content/review"
               title="Review Courses"
               className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
             >
@@ -222,7 +222,7 @@ export default function DashboardPage() {
               Review Courses
             </Link>
             <Link
-              href="/dashboard/roadmaps"
+              href="/roadmaps"
               title="Roadmaps"
               className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
             >
@@ -230,7 +230,7 @@ export default function DashboardPage() {
               Roadmaps
             </Link>
             <Link
-              href="/dashboard/trash"
+              href="/trash"
               title="Trash"
               className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
             >
@@ -386,7 +386,7 @@ export default function DashboardPage() {
                   })}
                 </div>
                 <Link
-                  href={`/dashboard/content/course/${course.id}/edit`}
+                  href={`/content/course/${course.id}/edit`}
                   className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
                 >
                   Continue Editing

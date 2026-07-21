@@ -34,12 +34,12 @@ export default function ContentStudioLayout({
           setIsAuthorized(true);
         } else {
           setIsAuthorized(false);
-          router.push('/dashboard');
+          router.push('/');
         }
       })
       .catch(() => {
         setIsAuthorized(false);
-        router.push('/dashboard');
+        router.push('/');
       });
   }, [user, router]);
 

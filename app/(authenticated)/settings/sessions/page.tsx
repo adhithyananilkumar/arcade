@@ -49,7 +49,7 @@ export default function SessionsPage() {
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+        <Link href="/settings" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
           <ArrowLeft size={20} className="text-gray-600" />
         </Link>
         <div>

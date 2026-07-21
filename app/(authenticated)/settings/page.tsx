@@ -76,13 +76,13 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-3">
               <Link 
-                href="/dashboard/settings/sessions"
+                href="/settings/sessions"
                 className="rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 px-4 py-2 text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
               >
                 View Active Sessions
               </Link>
               <Link 
-                href="/dashboard/settings/security"
+                href="/settings/security"
                 className="rounded-lg bg-gray-50 dark:bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800 border border-gray-200 dark:border-neutral-800 transition-colors"
               >
                 View Audit Logs

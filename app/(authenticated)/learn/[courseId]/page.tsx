@@ -364,7 +364,7 @@ function HeroNav() {
 
 function Breadcrumb({ title }: { title: string }) {
   const crumbs = [
-    { label: "Courses", href: "/dashboard" }
+    { label: "Courses", href: "/" }
   ]
   return (
     <nav aria-label="Breadcrumb" className="mb-8">

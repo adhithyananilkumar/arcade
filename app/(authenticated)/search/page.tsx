@@ -25,7 +25,7 @@ export default function SearchPage() {
     // Tailwind JIT trigger comment
     setTimeout(() => {
       if (currentUserUsername && searchUsername.toLowerCase() === currentUserUsername.toLowerCase()) {
-        router.push('/dashboard/profile');
+        router.push('/profile');
       } else {
         router.push(`/${searchUsername}`);
       }

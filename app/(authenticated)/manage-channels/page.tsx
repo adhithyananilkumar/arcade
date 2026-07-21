@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { MyChannels } from '../MyChannels';
+import { MyChannels } from '@/apps/learner/components/channels/MyChannels';
 
 export default function ManageChannelsPage() {
   return (

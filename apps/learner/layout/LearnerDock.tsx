@@ -10,7 +10,7 @@ const dockItems = [
   {
     id: 'home',
     label: 'Home',
-    href: '/dashboard',
+    href: '/',
     icon: Home,
     activeColor: 'text-indigo-600 dark:text-indigo-400',
     exact: true,
@@ -18,7 +18,7 @@ const dockItems = [
   {
     id: 'explore',
     label: 'Explore',
-    href: '/dashboard/search',
+    href: '/search',
     icon: Compass,
     activeColor: 'text-violet-600 dark:text-violet-400',
     exact: false,
@@ -26,7 +26,7 @@ const dockItems = [
   {
     id: 'my-courses',
     label: 'My Courses',
-    href: '/dashboard/my-courses',
+    href: '/my-courses',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
     exact: false,
@@ -34,7 +34,7 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/dashboard/roadmaps',
+    href: '/roadmaps',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,
@@ -42,12 +42,12 @@ const dockItems = [
 ] as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function DashboardDock() {
+export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
 
   const isActive = (href: string, exact: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href);
+    exact ? pathname === href : pathname.startsWith(href) && href !== '/';
 
   return (
     // Fixed bottom-center. pointer-events-none on the full-width row so

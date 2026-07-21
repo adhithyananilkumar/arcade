@@ -1,4 +1,4 @@
-// app/(authenticated)/dashboard/content/review/page.tsx
+// app/(authenticated)/content/review/page.tsx
 // "Review Courses" page: lists courses the author has submitted for review.
 // A course lands here the moment its author presses "Submit for Review" in the
 // editor (which flips the course status to SUBMITTED via /api/courses/{id}/submit).
@@ -222,7 +222,7 @@ export default function ReviewCoursesPage() {
                   })}
                 </div>
                 <Link
-                  href={`/dashboard/content/published/${course.id}`}
+                  href={`/content/published/${course.id}`}
                   className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
                 >
                   Review Course →

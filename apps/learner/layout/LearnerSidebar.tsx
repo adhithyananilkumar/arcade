@@ -12,12 +12,12 @@ import { useState, useEffect } from 'react';
 import { channelService } from "@/domains/channels";
 
 const baseNavItems = [
-  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Roadmaps', href: '/dashboard/roadmaps', icon: Map },
-  { name: 'Profile', href: '/dashboard/profile', icon: User },
+  { name: 'Overview', href: '/', icon: LayoutDashboard },
+  { name: 'Roadmaps', href: '/roadmaps', icon: Map },
+  { name: 'Profile', href: '/profile', icon: User },
 ];
 
-export default function DashboardSidebar() {
+export default function LearnerSidebar() {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const { hasPermission } = usePermissions();
@@ -41,11 +41,11 @@ export default function DashboardSidebar() {
   const dynamicNavItems = [
     ...baseNavItems,
     ...(hasChannels || showArcConsole ? [
-      { name: 'Content Studio', href: '/dashboard/content', icon: BookOpen },
-      { name: 'Published Courses', href: '/dashboard/content/published', icon: Eye }
+      { name: 'Content Studio', href: '/content', icon: BookOpen },
+      { name: 'Published Courses', href: '/content/published', icon: Eye }
     ] : []),
-    ...(hasChannels ? [{ name: 'Manage Channels', href: '/dashboard/manage-channels', icon: Tv }] : []),
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),
+    { name: 'Settings', href: '/settings', icon: Settings },
     ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])
   ];
 
@@ -57,7 +57,7 @@ export default function DashboardSidebar() {
     <div className="flex h-full w-64 flex-col bg-white border-r border-slate-100 shadow-[1px_0_10px_rgba(0,0,0,0.01)] relative z-30">
       {/* Brand Logo Header */}
       <div className="flex h-16 items-center px-6 border-b border-slate-50/50">
-        <Link href="/dashboard" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           <Image
             src="/arcade.svg"
             alt="Arcade"

@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert, Bell, Check, X, GraduationCap } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, Map, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -15,7 +15,7 @@ import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 
-export default function DashboardNavbar() {
+export default function LearnerNavbar() {
   const { user, clearAuth } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
@@ -138,7 +138,7 @@ export default function DashboardNavbar() {
     >
       {/* Left Island: Branding */}
       <div className="pointer-events-auto flex items-center h-12 px-5 rounded-full apple-glass-dock">
-        <Link href="/dashboard" className="flex items-center group cursor-pointer">
+        <Link href="/" className="flex items-center group cursor-pointer">
           <Image
             src="/arcade.svg"
             alt="Arcade"
@@ -235,20 +235,20 @@ export default function DashboardNavbar() {
             {/* Menu Items */}
             <MenuItem 
               icon={<UserIcon size={18} strokeWidth={2} className="text-emerald-500" />} 
-              onClick={() => router.push('/dashboard/profile')} 
+              onClick={() => router.push('/profile')} 
             >
               Profile
             </MenuItem>
             <MenuItem 
               icon={<Map size={18} strokeWidth={2} className="text-orange-500" />} 
-              onClick={() => router.push('/dashboard/roadmaps')} 
+              onClick={() => router.push('/roadmaps')} 
             >
               Roadmaps
             </MenuItem>
             {hasChannels && (
               <MenuItem 
                 icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
-                onClick={() => router.push('/dashboard/manage-channels')} 
+                onClick={() => router.push('/manage-channels')} 
               >
                 My Channel
               </MenuItem>
@@ -256,7 +256,7 @@ export default function DashboardNavbar() {
             {(hasChannels || showArcConsole) && (
               <MenuItem 
                 icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
-                onClick={() => router.push('/dashboard/content')} 
+                onClick={() => router.push('/content')} 
               >
                 Content Studio
               </MenuItem>
@@ -271,9 +271,15 @@ export default function DashboardNavbar() {
             )}
             <MenuItem 
               icon={<Settings size={18} strokeWidth={2} className="text-slate-500" />} 
-              onClick={() => router.push('/dashboard/settings')} 
+              onClick={() => router.push('/settings')} 
             >
               Settings
+            </MenuItem>
+            <MenuItem 
+              icon={<Compass size={18} strokeWidth={2} className="text-blue-500" />} 
+              onClick={() => router.push('/?public=true')} 
+            >
+              Go to website
             </MenuItem>
             <MenuItem 
               icon={<LogOut size={18} strokeWidth={2} className="text-red-500" />} 

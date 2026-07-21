@@ -24,7 +24,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
         title: title.trim(),
         description: description.trim() || undefined,
       });
-      router.push(`/dashboard/roadmaps/${roadmap.id}/edit`);
+      router.push(`/roadmaps/${roadmap.id}/edit`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create roadmap");
       setCreating(false);
@@ -352,7 +352,7 @@ function RoadmapCard({
           </span>
         </div>
         <Link
-          href={`/dashboard/roadmaps/${roadmap.id}/edit`}
+          href={`/roadmaps/${roadmap.id}/edit`}
           className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg px-3 py-1.5 transition-colors"
         >
           Open Studio
@@ -449,7 +449,7 @@ export default function RoadmapsPage() {
       <header className="bg-white border-b border-gray-200 px-8 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <Link href="/dashboard" className="text-gray-400 hover:text-gray-600">
+             <Link href="/" className="text-gray-400 hover:text-gray-600">
                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
              </Link>
              <div>
@@ -467,7 +467,7 @@ export default function RoadmapsPage() {
               <input type="file" accept=".json" className="hidden" onChange={handleImport} />
             </label>
             <Link
-              href="/dashboard/roadmaps/templates"
+              href="/roadmaps/templates"
               className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
             >
               <Library size={16} />

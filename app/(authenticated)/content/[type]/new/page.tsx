@@ -1,4 +1,4 @@
-// app/(authenticated)/dashboard/content/[type]/new/page.tsx
+// app/(authenticated)/content/[type]/new/page.tsx
 // Catches workshop, webinar, article types — Coming Soon stub.
 // These routes are locked in from day one so no other teams get 404s.
 
@@ -71,7 +71,7 @@ export default async function ContentTypeComingSoonPage({ params }: Props) {
         </div>
         <div>
           <Link
-            href="/dashboard"
+            href="/"
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft size={14} />

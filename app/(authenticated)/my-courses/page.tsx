@@ -82,7 +82,7 @@ export default function MyCoursesPage() {
               );
 
               return item.courseId ? (
-                <Link key={idx} href={`/dashboard/${item.courseId}/learn`} className={className}>
+                <Link key={idx} href={`/learn/${item.courseId}/learn`} className={className}>
                   {innerContent}
                 </Link>
               ) : (

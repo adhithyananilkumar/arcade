@@ -1,4 +1,4 @@
-// app/(authenticated)/dashboard/content/published/[courseId]/page.tsx
+// app/(authenticated)/content/published/[courseId]/page.tsx
 import type { Metadata } from "next";
 import { CoursePlayerOrchestrator } from "@/apps/learner/orchestrators/CoursePlayerOrchestrator";
 
