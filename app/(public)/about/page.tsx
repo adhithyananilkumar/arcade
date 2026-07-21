@@ -152,7 +152,7 @@ export default function AboutPage() {
             </p>
             <div className="pt-4">
               <Link
-                href="/for-creators"
+                href="/creators"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white hover:bg-blue-50 text-slate-900 font-bold text-sm tracking-wide shadow-xl transition-all duration-300 hover:scale-105"
               >
                 <span>Become a Creator</span>
