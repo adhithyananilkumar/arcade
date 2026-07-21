@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { UserService } from "@/domains/identity";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,6 +13,8 @@ import {
 import { FaLinkedin } from 'react-icons/fa';
 import Image from 'next/image';
 import PublicProfileLoading from './loading';
+import Lottie from 'lottie-react';
+import notFoundAnimation from '@/public/404 page not found.json';
 
 const badges = [
   { name: 'Code Contributor', icon: Code, color: 'text-purple-600 dark:text-purple-400', fill: 'fill-purple-50 dark:fill-purple-500/20', stroke: 'stroke-purple-200 dark:stroke-purple-500/30' },
@@ -37,6 +39,7 @@ export default function PublicProfilePage() {
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<{ count: number; dateStr: string; x: number; y: number } | null>(null);
   const [activityData, setActivityData] = useState<Record<string, number>>({});
+  const lottieRef = useRef<any>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -174,10 +177,27 @@ export default function PublicProfilePage() {
 
   if (error || !profileData) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-slate-600">
-        <Compass size={48} className="text-slate-300 mb-4" />
-        <h1 className="text-2xl font-bold text-slate-800">Profile Not Found</h1>
-        <p className="mt-2 text-sm">{error || "The user you are looking for doesn't exist."}</p>
+      <div className="flex flex-col md:flex-row items-center justify-center min-h-[60vh] py-12 gap-8 md:gap-16 text-slate-600 px-4">
+        {/* Left Side: Animation */}
+        <div className="w-64 h-64 md:w-96 md:h-96 shrink-0">
+          <Lottie 
+            lottieRef={lottieRef}
+            animationData={notFoundAnimation} 
+            loop={false} 
+            onDOMLoaded={() => {
+              if (lottieRef.current) {
+                lottieRef.current.setSpeed(0.5);
+              }
+            }}
+          />
+        </div>
+
+        {/* Right Side: Text */}
+        <div className="flex flex-col items-center md:items-start text-center md:text-left">
+          <h1 className="text-7xl md:text-9xl font-black text-slate-800 tracking-tight leading-none">404</h1>
+          <h2 className="text-2xl md:text-4xl font-bold text-slate-600 mt-2 md:mt-4">Page not found</h2>
+          <p className="mt-4 text-slate-500 font-medium max-w-sm">The page or user you're looking for doesn't exist or might have been removed.</p>
+        </div>
       </div>
     );
   }

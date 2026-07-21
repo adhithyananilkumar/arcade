@@ -504,7 +504,7 @@ export default function HeroSection() {
               </Link>
             ) : (
               <Link
-                href="/sign?type=register"
+                href="/sign"
                 className="l-btn l-btn--solid-ink"
                 id="hero-cta-explore"
               >
