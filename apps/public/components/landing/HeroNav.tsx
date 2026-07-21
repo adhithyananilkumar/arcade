@@ -8,7 +8,7 @@ import "@/apps/public/landing.css";
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "About", href: "/about" },
-  { label: "For creators", href: "/for-creators" },
+  { label: "For creators", href: "/creators" },
 ];
 
 export default function HeroNav() {
