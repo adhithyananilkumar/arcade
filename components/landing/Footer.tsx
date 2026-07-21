@@ -47,10 +47,10 @@ export default function Footer() {
             <div className="arc-footer__links-col">
               <span className="arc-footer__col-title">Departments</span>
               <ul className="arc-footer__list">
-                <li><Link href="/courses?category=Computer+Science">Computer Science</Link></li>
-                <li><Link href="/courses?category=Artificial+Intelligence">Artificial Intelligence</Link></li>
-                <li><Link href="/courses?category=Information+Technology">Information Tech</Link></li>
-                <li><Link href="/courses?category=Business+%26+Management">Business Management</Link></li>
+                <li><Link href="/explore?category=Computer+Science">Computer Science</Link></li>
+                <li><Link href="/explore?category=Artificial+Intelligence">Artificial Intelligence</Link></li>
+                <li><Link href="/explore?category=Information+Technology">Information Tech</Link></li>
+                <li><Link href="/explore?category=Business+%26+Management">Business Management</Link></li>
               </ul>
             </div>
 
