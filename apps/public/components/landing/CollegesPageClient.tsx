@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
-  CheckCircle2,
   Cpu,
   Sparkles,
   Users,
@@ -31,13 +30,7 @@ export default function CollegesPageClient() {
     }),
   } as any;
 
-  // Highlights aligned with the CollegesEcosystem nodes
-  const highlights = [
-    "Self-hosted forums & technical clubs",
-    "Comprehensive creator tools & analytics",
-    "Integrated code playground & terminals",
-    "Direct student certification & badges",
-  ];
+
 
   const featureDetails = [
     {
@@ -102,7 +95,7 @@ export default function CollegesPageClient() {
               custom={0.2}
               className="mb-8 select-none"
             >
-              <div 
+              <div
                 style={{ fontFamily: "'Caveat', cursive" }}
                 className="text-3xl sm:text-4xl text-zinc-500 font-semibold mb-2"
               >
@@ -130,33 +123,7 @@ export default function CollegesPageClient() {
               Empower your educators, organizations, and developers. Build, host, and scale professional courses and coding labs natively on Arcade. Provide hands-on learning experiences and certifications that help your community level up.
             </motion.p>
 
-            {/* Features List with Interactivity */}
-            <motion.div
-              variants={fadeInVariant}
-              initial="hidden"
-              animate="visible"
-              custom={0.4}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 mb-8 w-full max-w-lg"
-            >
-              {highlights.map((item, idx) => {
-                const isActive = activeFeature === idx;
-                return (
-                  <div
-                    key={idx}
-                    onMouseEnter={() => setActiveFeature(idx)}
-                    onMouseLeave={() => setActiveFeature(null)}
-                    className={`flex items-center gap-2.5 text-sm font-medium transition-all duration-300 cursor-pointer ${isActive
-                        ? "text-zinc-950 scale-105 translate-x-1"
-                        : "text-zinc-600 opacity-80"
-                      }`}
-                  >
-                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 transition-colors duration-300 ${isActive ? "text-indigo-500 stroke-[3px]" : "text-emerald-500"
-                      }`} />
-                    <span>{item}</span>
-                  </div>
-                );
-              })}
-            </motion.div>
+
 
             {/* CTAs */}
             <motion.div

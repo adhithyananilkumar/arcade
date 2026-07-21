@@ -498,7 +498,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
     // Courses are created via the dashboard modal; the editor only ever loads an
     // existing course. A missing id means we arrived here without one — go home.
     if (!initialCourseId) {
-      router.replace("/dashboard");
+      router.replace("/");
       return;
     }
     async function bootstrap() {
@@ -1050,7 +1050,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       }
     }
 
-    router.push("/dashboard");
+    router.push("/");
   }, [
     navigatingBack,
     courseId,
@@ -1476,7 +1476,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                   pricingModel={pricingModel}
                   createdAt={createdAt}
                   updatedAt={updatedAt}
-                  onDeleted={() => router.push("/dashboard")}
+                  onDeleted={() => router.push("/")}
                   onDescriptionChange={(desc) => {
                     setDescription(desc);
                     scheduleCourseMetaSave({ description: desc });

@@ -18,6 +18,21 @@ const nextConfig: NextConfig = {
         destination: '/arc-console/courses',
         permanent: true,
       },
+      {
+        source: '/for-creators',
+        destination: '/creators',
+        permanent: true,
+      },
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
     ];
   },
 };
