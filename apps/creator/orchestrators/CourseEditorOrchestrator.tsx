@@ -1154,6 +1154,38 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
         />
       )}
 
+      {activeLessonId && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+          {feedbackOpen && (
+            <div className="mb-4 w-[400px] h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-200">
+              <div className="bg-gray-900 px-4 py-3 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-2 text-white">
+                  <span className="font-semibold text-sm">Reviewer Feedback</span>
+                </div>
+                <button
+                  onClick={() => setFeedbackOpen(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <span className="text-xl leading-none">&times;</span>
+                </button>
+              </div>
+              <LessonFeedbackOrchestrator
+                lessonId={activeLessonId}
+                className="flex-1 min-h-0"
+              />
+            </div>
+          )}
+          <button
+            onClick={() => setFeedbackOpen(!feedbackOpen)}
+            className={`flex items-center justify-center rounded-full p-4 shadow-lg transition-transform hover:scale-105 active:scale-95 font-semibold text-sm ${
+              feedbackOpen ? "bg-gray-900 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
+          >
+            {feedbackOpen ? "Close Feedback" : "Reviewer Feedback"}
+          </button>
+        </div>
+      )}
+
       {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
           row regardless of how wide the left/right action groups are ────── */}
       <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
