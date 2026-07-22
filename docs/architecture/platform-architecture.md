@@ -2,7 +2,7 @@
 
 > **Status:** Reference architecture (target state). Design-approved, incrementally adopted.
 > **Scope:** Both repositories — `arcade` (Next.js frontend) and `arcade-backend` (Spring Boot backend).
-> **Branch context:** authored on `con-man` while the content editor-engine is being built.
+> **Branch context:** authored on `studio` while the content editor-engine is being built.
 > **Last updated:** 2026-07-15.
 
 This document is the **single, authoritative map of how the Arcade platform is
@@ -877,7 +877,7 @@ route to the owning team (L9).
 
 ### 11.3 Migration principle: strangler, not big-bang
 
-Do **not** reorganize everything at once. The platform ships on `con-man`;
+Do **not** reorganize everything at once. The platform ships on `studio`;
 churn there is risk. Instead:
 
 - **New domains land in the target shape from day one.** When D4/D5/D6/D8 are built, they
