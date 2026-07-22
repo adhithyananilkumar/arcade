@@ -11,43 +11,71 @@ const STEPS = [
 
 interface Props {
   currentStep: number;
+  onSelectStep?: (stepIndex: number) => void;
 }
 
-export const WorkshopStepper: React.FC<Props> = ({ currentStep }) => {
+export const WorkshopStepper: React.FC<Props> = ({ currentStep, onSelectStep }) => {
   return (
     <div className="w-64 flex-shrink-0">
       <nav aria-label="Progress">
-        <ol role="list" className="overflow-hidden">
+        <ol role="list" className="space-y-6">
           {STEPS.map((step, index) => {
             const isCurrent = currentStep === index;
             const isCompleted = currentStep > index;
-            const isDisabled = index > 0; // Only step 0 is active for Phase 1
-            
+            const isLast = index === STEPS.length - 1;
+
             return (
-              <li key={step} className="relative pb-10">
-                {index !== STEPS.length - 1 ? (
-                  <div className={`absolute top-4 left-4 -ml-px h-full w-0.5 ${isCompleted ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'}`} aria-hidden="true" />
-                ) : null}
-                
-                <div className={`relative flex items-center group ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-                  <span className="h-9 flex items-center">
-                    <span className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 
-                      ${isCurrent ? 'border-indigo-600 bg-white dark:bg-gray-900' : 
-                        isCompleted ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'}
-                    `}>
+              <li key={step} className="relative">
+                {/* Connecting line between steps */}
+                {!isLast && (
+                  <div
+                    className={`absolute top-8 left-4 -ml-px w-0.5 h-[calc(100%+8px)] ${
+                      isCompleted ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                    aria-hidden="true"
+                  />
+                )}
+
+                <div
+                  onClick={() => onSelectStep?.(index)}
+                  className="relative flex items-center group cursor-pointer transition-colors"
+                >
+                  <span className="flex items-center">
+                    <span
+                      className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 transition-all ${
+                        isCurrent
+                          ? 'border-indigo-600 bg-white dark:bg-gray-900 text-indigo-600 shadow-sm'
+                          : isCompleted
+                          ? 'bg-indigo-600 border-indigo-600 text-white'
+                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:border-indigo-400'
+                      }`}
+                    >
                       {isCompleted ? (
-                        <svg className="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       ) : (
-                        <span className={`text-sm font-medium ${isCurrent ? 'text-indigo-600' : 'text-gray-500 dark:text-gray-400'}`}>
-                          {index + 1}
-                        </span>
+                        <span className="text-sm font-semibold">{index + 1}</span>
                       )}
                     </span>
                   </span>
-                  <span className={`ml-4 min-w-0 flex flex-col ${isCurrent ? 'text-indigo-600 font-semibold' : 'text-gray-500 font-medium dark:text-gray-400'}`}>
-                    <span className="text-sm tracking-wide">{step}</span>
+
+                  <span className="ml-4 min-w-0 flex flex-col">
+                    <span
+                      className={`text-sm font-medium transition-colors ${
+                        isCurrent
+                          ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+                          : isCompleted
+                          ? 'text-gray-900 dark:text-gray-200'
+                          : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                      }`}
+                    >
+                      {step}
+                    </span>
                   </span>
                 </div>
               </li>

@@ -1,7 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { WorkshopListDto } from '@/app/(authenticated)/studio/workshop/api/dashboardApi';
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 interface WorkshopCardProps {
   workshop: WorkshopListDto;
@@ -64,7 +69,7 @@ export default function WorkshopCard({ workshop, onDuplicate, onArchive, onDelet
         </div>
 
         <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-          <span>Updated {format(new Date(workshop.updatedAt), 'MMM d, yyyy')}</span>
+          <span>Updated {formatDate(workshop.updatedAt)}</span>
           
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Link 

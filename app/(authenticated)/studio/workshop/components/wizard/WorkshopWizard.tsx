@@ -20,19 +20,19 @@ export const WorkshopWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const form = useWorkshopForm();
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (navigateAfterSave = true) => {
     try {
       form.setIsSubmitting(true);
-      
+
       // We only save if basic fields are roughly valid to avoid sending complete trash
       if (!form.formData.title || !form.formData.category) {
         toast.error('Title and Category are required to save a draft.');
-        return;
+        return null;
       }
-      
+
       if (Object.keys(form.errors).length > 0) {
         toast.error(Object.values(form.errors)[0] as string);
-        return;
+        return null;
       }
 
       // Ensure language is set for backend validation
@@ -56,19 +56,26 @@ export const WorkshopWizard: React.FC = () => {
       };
 
       const workshopId = (form.formData as any).id;
+      let savedId = workshopId;
+
       if (workshopId) {
         await updateWorkshop(workshopId, createPayload);
       } else {
         const response = await createWorkshop(createPayload);
+        savedId = response.id;
         form.handleChange('id' as any, response.id); // Save ID back to form to avoid duplicates
       }
-      
+
       toast.success('Workshop draft saved successfully!');
-      router.push('/studio'); // Go back to studio dashboard or to the newly created edit page
+      if (navigateAfterSave) {
+        router.push('/studio');
+      }
+      return savedId;
     } catch (error: any) {
       console.error('Save Draft Error:', error);
-      const errorMessage = error?.message || error?.response?.data?.message || 'Failed to save draft. Please try again.';
+      const errorMessage = error?.message || 'Failed to save draft. Please try again.';
       toast.error(errorMessage);
+      return null;
     } finally {
       form.setIsSubmitting(false);
     }
@@ -91,10 +98,10 @@ export const WorkshopWizard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <WorkshopHeader />
-      
+
       <div className="flex flex-col md:flex-row gap-8">
-        <WorkshopStepper currentStep={currentStep} />
-        
+        <WorkshopStepper currentStep={currentStep} onSelectStep={setCurrentStep} />
+
         <div className="flex-1 min-w-0">
           {currentStep === 0 && <BasicInformationStep form={form} />}
           {currentStep === 1 && <ScheduleStep form={form} />}
@@ -102,9 +109,9 @@ export const WorkshopWizard: React.FC = () => {
           {currentStep === 3 && <PricingStep form={form} />}
           {currentStep === 4 && <SettingsStep form={form} />}
           {currentStep === 5 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} onSaveDraft={handleSaveDraft} isSaving={form.isSubmitting} />}
-          
+
           {(currentStep < 5 || !(form.formData as any).id) && (
-            <WorkshopFooter 
+            <WorkshopFooter
               onBack={handleBack}
               onSaveDraft={handleSaveDraft}
               onContinue={currentStep < 5 ? handleContinue : undefined}

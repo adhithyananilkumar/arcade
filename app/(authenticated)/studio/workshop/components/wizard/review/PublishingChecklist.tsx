@@ -18,40 +18,48 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
     'Settings': 4
   };
 
+  // Only consider critical issues (Title or Category missing) as blocking issues
+  const filteredIssues = (validation.issues || []).filter(i => 
+    i.issue?.toLowerCase().includes('title') || i.issue?.toLowerCase().includes('category')
+  );
+
+  const isReady = filteredIssues.length === 0;
+  const percentage = isReady ? 100 : validation.completionPercentage;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Publishing Checklist</h3>
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          validation.isReady 
+          isReady 
             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
         }`}>
-          {validation.isReady ? 'Ready to Publish' : 'Needs Attention'}
+          {isReady ? 'Ready to Publish' : 'Needs Attention'}
         </span>
       </div>
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm font-medium text-gray-700 dark:text-gray-300">
           <span>Progress</span>
-          <span>{validation.completionPercentage}%</span>
+          <span>{percentage}%</span>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div 
-            className={`h-2 rounded-full ${validation.isReady ? 'bg-green-500' : 'bg-indigo-600'}`} 
-            style={{ width: `${validation.completionPercentage}%` }}
+            className={`h-2 rounded-full ${isReady ? 'bg-green-500' : 'bg-indigo-600'}`} 
+            style={{ width: `${percentage}%` }}
           />
         </div>
       </div>
 
-      {validation.issues.length > 0 && (
+      {filteredIssues.length > 0 && (
         <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-500" />
             Issues to Resolve
           </h4>
           <ul className="space-y-3">
-            {validation.issues.map((issue, idx) => (
+            {filteredIssues.map((issue, idx) => (
               <li key={idx} className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-md p-3">
                 <div className="flex justify-between items-start">
                   <div>
@@ -73,7 +81,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
         </div>
       )}
 
-      {validation.isReady && (
+      {isReady && (
         <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/10 p-4 rounded-md border border-green-200 dark:border-green-900/50">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

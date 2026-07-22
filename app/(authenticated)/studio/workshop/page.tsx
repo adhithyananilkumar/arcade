@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getDashboardWorkshops, WorkshopPage, DashboardFilter, deleteWorkshop } from './api/dashboardApi';
+import { duplicateWorkshop, archiveWorkshop } from './api/publish';
 import WorkshopCard from './components/dashboard/WorkshopCard';
 import EmptyState from './components/dashboard/EmptyState';
 
@@ -52,7 +53,7 @@ export default function WorkshopDashboardPage() {
 
   const handleDuplicate = async (id: string) => {
     try {
-      await fetch(`/api/workshops/${id}/duplicate`, { method: 'POST' });
+      await duplicateWorkshop(id);
       loadWorkshops();
     } catch (err) {
       console.error(err);
@@ -61,7 +62,7 @@ export default function WorkshopDashboardPage() {
 
   const handleArchive = async (id: string) => {
     try {
-      await fetch(`/api/workshops/${id}/archive`, { method: 'PATCH' });
+      await archiveWorkshop(id);
       loadWorkshops();
     } catch (err) {
       console.error(err);

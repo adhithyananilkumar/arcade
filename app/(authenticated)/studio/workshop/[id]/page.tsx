@@ -4,7 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
-import { format } from 'date-fns';
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 export default function SingleWorkshopDashboard() {
   const { id } = useParams();
@@ -83,7 +88,7 @@ export default function SingleWorkshopDashboard() {
               {summary.title || 'Untitled Workshop'}
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Created {format(new Date(summary.createdAt), 'MMM d, yyyy')} • Last updated {format(new Date(summary.updatedAt), 'MMM d, yyyy')}
+              Created {formatDate(summary.createdAt)} • Last updated {formatDate(summary.updatedAt)}
             </p>
           </div>
           <div className="flex flex-wrap gap-3 w-full md:w-auto">

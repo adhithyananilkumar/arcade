@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { PublishingChecklist } from './PublishingChecklist';
 import { WorkshopPreview } from './WorkshopPreview';
@@ -9,7 +10,7 @@ import { useRouter } from 'next/navigation';
 interface Props {
   form: ReturnType<typeof useWorkshopForm>;
   onNavigateToStep: (step: number) => void;
-  onSaveDraft?: () => void;
+  onSaveDraft?: (navigateAfterSave?: boolean) => Promise<any>;
   isSaving?: boolean;
 }
 
@@ -50,14 +51,24 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
   }, [workshopId]);
 
   const handlePublish = async () => {
-    if (!workshopId) return;
     setIsPublishing(true);
     try {
-      await publishWorkshop(workshopId);
-      alert('Workshop published successfully!');
+      let targetId = workshopId;
+      if (!targetId && onSaveDraft) {
+        targetId = await onSaveDraft(false);
+      }
+
+      if (!targetId) {
+        toast.error('Please fill in Title and Category first.');
+        return;
+      }
+
+      await publishWorkshop(targetId);
+      toast.success('Workshop published successfully!');
       router.push('/studio/workshop');
-    } catch (e) {
-      alert('Failed to publish workshop.');
+    } catch (e: any) {
+      console.error('Publish error:', e);
+      toast.error(e?.message || 'Failed to publish workshop.');
     } finally {
       setIsPublishing(false);
     }
@@ -68,10 +79,10 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     setIsArchiving(true);
     try {
       await archiveWorkshop(workshopId);
-      alert('Workshop archived.');
+      toast.success('Workshop archived.');
       router.push('/studio/workshop');
-    } catch (e) {
-      alert('Failed to archive workshop.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to archive workshop.');
     } finally {
       setIsArchiving(false);
     }
@@ -82,10 +93,10 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     setIsDuplicating(true);
     try {
       const copy = await duplicateWorkshop(workshopId);
-      alert('Workshop duplicated.');
+      toast.success('Workshop duplicated.');
       router.push(`/studio/workshop/new?id=${copy.id}`);
-    } catch (e) {
-      alert('Failed to duplicate workshop.');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to duplicate workshop.');
     } finally {
       setIsDuplicating(false);
     }
@@ -93,9 +104,18 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
 
   if (!workshopId) {
     return (
-      <div className="p-8 text-center bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg">
-        <p className="text-yellow-800 dark:text-yellow-400 font-medium">Please save your draft first!</p>
-        <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-2">You need to save this workshop to the server before you can review and publish it.</p>
+      <div className="p-8 text-center bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg max-w-2xl mx-auto space-y-4">
+        <p className="text-yellow-800 dark:text-yellow-400 font-semibold text-lg">Save Draft to Review & Publish</p>
+        <p className="text-sm text-yellow-700 dark:text-yellow-500">
+          You need to save your workshop draft to the server before reviewing and publishing.
+        </p>
+        <button
+          onClick={() => onSaveDraft?.(false)}
+          disabled={isSaving}
+          className="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-md shadow transition-colors disabled:opacity-50"
+        >
+          {isSaving ? 'Saving Draft...' : 'Save Draft Now'}
+        </button>
       </div>
     );
   }
@@ -130,12 +150,8 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
           <div className="space-y-3">
             <button
               onClick={handlePublish}
-              disabled={!validation?.isReady || isPublishing}
-              className={`w-full py-2.5 px-4 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors ${
-                validation?.isReady
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white dark:ring-offset-gray-900'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-              }`}
+              disabled={isPublishing}
+              className="w-full py-2.5 px-4 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors bg-indigo-600 hover:bg-indigo-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
             >
               {isPublishing ? 'Publishing...' : 'Publish Workshop'}
             </button>
