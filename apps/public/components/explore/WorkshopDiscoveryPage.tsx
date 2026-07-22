@@ -4,7 +4,16 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useWorkshopDiscovery } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopDiscovery';
-import { Workshop, WorkshopType, DeliveryMode, Difficulty } from '@/app/(authenticated)/studio/workshop/types';
+import { Workshop, WorkshopType } from '@/app/(authenticated)/studio/workshop/types';
+
+const THEMES = [
+  { border: '#8B5CF6', bg: '#F5F3FF', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' }, // Purple - Code
+  { border: '#3B82F6', bg: '#EFF6FF', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' }, // Blue - Layout
+  { border: '#10B981', bg: '#ECFDF5', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' }, // Emerald - Calendar/Planning
+  { border: '#EC4899', bg: '#FDF2F8', icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' }, // Pink - Vision/AI
+  { border: '#F59E0B', bg: '#FFFBEB', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' }, // Amber - Chart/Stats
+  { border: '#14B8A6', bg: '#F0FDFA', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4' }, // Teal - DB/Layers
+];
 
 export default function WorkshopDiscoveryPage() {
   const {
@@ -39,223 +48,170 @@ export default function WorkshopDiscoveryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0d14] text-white py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full bg-transparent font-sans pb-16 pt-2">
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        {/* Header Banner */}
-        <div className="text-center space-y-4 max-w-3xl mx-auto pt-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-            Live & Hands-On Learning
-          </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-400">
-            Workshop Discovery
-          </h1>
-          <p className="text-gray-400 text-base sm:text-lg">
-            Explore live bootcamps, masterclasses, and intensive workshops hosted by expert instructors.
-          </p>
-        </div>
-
-        {/* Search & Filter Bar */}
-        <div className="bg-[#121624] p-4 sm:p-6 rounded-2xl border border-gray-800/80 shadow-xl space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            
-            {/* Search Input */}
-            <div className="md:col-span-6 relative">
-              <input
-                type="text"
-                placeholder="Search workshops by title, category, description, tags..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-[#1a1f36] border border-gray-700/60 rounded-xl text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-              />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-white text-xs bg-gray-800 rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            {/* Category Filter */}
-            <div className="md:col-span-3">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full py-3 px-3 bg-[#1a1f36] border border-gray-700/60 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+        {/* Subtle Filter Bar */}
+        <div className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-3">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              placeholder="Search by title, description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
+            />
+            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 text-xs w-4 h-4 flex items-center justify-center"
               >
-                {categories.map((cat) => (
-                  <option key={cat.value} value={cat.value} className="bg-[#121624]">
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Type Filter */}
-            <div className="md:col-span-3">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full py-3 px-3 bg-[#1a1f36] border border-gray-700/60 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
-              >
-                {types.map((t) => (
-                  <option key={t.value} value={t.value} className="bg-[#121624]">
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+                ✕
+              </button>
+            )}
           </div>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full md:w-48 py-2.5 px-3 bg-gray-50 border border-transparent rounded-xl text-gray-700 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+          >
+            {categories.map((cat) => (
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            className="w-full md:w-40 py-2.5 px-3 bg-gray-50 border border-transparent rounded-xl text-gray-700 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+          >
+            {types.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Content Section */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-[#121624] border border-gray-800 rounded-2xl p-5 space-y-4 animate-pulse">
-                <div className="w-full h-44 bg-gray-800/60 rounded-xl" />
-                <div className="h-4 bg-gray-800/60 rounded w-1/3" />
-                <div className="h-6 bg-gray-800/60 rounded w-3/4" />
-                <div className="h-4 bg-gray-800/60 rounded w-full" />
-                <div className="h-10 bg-gray-800/60 rounded-xl w-full pt-2" />
+              <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 h-56 space-y-4 shadow-sm animate-pulse flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between mb-4">
+                    <div className="w-3/4 h-5 bg-gray-100 rounded-md" />
+                    <div className="w-16 h-4 bg-gray-100 rounded-md" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="w-full h-3 bg-gray-50 rounded-md" />
+                    <div className="w-4/5 h-3 bg-gray-50 rounded-md" />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <div className="w-24 h-8 bg-gray-100 rounded-lg" />
+                </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-2xl text-center space-y-4 max-w-xl mx-auto">
-            <svg className="w-12 h-12 mx-auto text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <p className="font-medium text-lg">{error}</p>
+          <div className="bg-red-50 text-red-500 p-6 rounded-2xl text-center space-y-3 max-w-xl mx-auto border border-red-100">
+            <p className="font-medium text-sm">{error}</p>
             <button
               onClick={refetch}
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium text-sm rounded-xl transition-all"
+              className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 font-semibold text-xs rounded-lg transition-all"
             >
               Try Again
             </button>
           </div>
         ) : workshops.length === 0 ? (
-          <div className="bg-[#121624] border border-gray-800/80 p-12 rounded-2xl text-center space-y-4 max-w-lg mx-auto">
-            <div className="w-16 h-16 bg-gray-800/60 text-gray-400 rounded-full flex items-center justify-center mx-auto text-2xl">
-              🎓
-            </div>
-            <h3 className="text-xl font-bold text-white">No workshops available.</h3>
-            <p className="text-gray-400 text-sm">
+          <div className="bg-white border border-gray-100 shadow-sm p-12 rounded-2xl text-center space-y-3 max-w-lg mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900">No bootcamps found</h3>
+            <p className="text-gray-500 text-sm">
               {searchQuery || selectedCategory !== 'all' || selectedType !== 'all'
-                ? 'No published workshops matched your search criteria. Try adjusting your filters.'
-                : 'There are currently no published workshops in the system. Check back soon!'}
+                ? 'Try adjusting your filters or search query.'
+                : 'There are currently no published bootcamps in the system.'}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {workshops.map((workshop) => (
-              <WorkshopCard key={workshop.id} workshop={workshop} />
+            {workshops.map((workshop, idx) => (
+              <WorkshopCard key={workshop.id} workshop={workshop} idx={idx} />
             ))}
           </div>
         )}
-
       </div>
     </div>
   );
 }
 
-function WorkshopCard({ workshop }: { workshop: Workshop }) {
-  const isFree = workshop.price === 0 || !workshop.price;
+function WorkshopCard({ workshop, idx }: { workshop: Workshop; idx: number }) {
+  const theme = THEMES[idx % THEMES.length];
+  // Calculate duration or fallback
+  const duration = workshop.sessions ? `${workshop.sessions.length} Days` : 'Self-paced';
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -4, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.05)" }}
       transition={{ duration: 0.2 }}
-      className="bg-[#121624] border border-gray-800/80 hover:border-indigo-500/50 rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl transition-all group"
+      className="bg-white rounded-2xl relative overflow-hidden flex flex-col justify-between shadow-sm group"
+      style={{
+        border: '1px solid #F3F4F6',
+        borderLeft: `6px solid ${theme.border}`,
+        minHeight: '220px',
+      }}
     >
-      <div>
-        {/* Cover Image */}
-        <div className="relative w-full h-44 bg-gradient-to-br from-indigo-900/40 via-purple-900/20 to-gray-900 overflow-hidden">
-          {workshop.coverImageUrl ? (
-            <img
-              src={workshop.coverImageUrl}
-              alt={workshop.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-4xl opacity-30 select-none">
-              🚀
-            </div>
-          )}
-
-          {/* Price Badge */}
-          <div className="absolute top-3 right-3 px-3 py-1 bg-black/70 backdrop-blur-md rounded-full text-xs font-bold text-white border border-white/10">
-            {isFree ? 'FREE' : `${workshop.currency || '$'}${workshop.price}`}
-          </div>
-
-          {/* Workshop Type Badge */}
-          <div className="absolute top-3 left-3 px-2.5 py-1 bg-indigo-600/90 backdrop-blur-md rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white">
-            {workshop.workshopType || 'WORKSHOP'}
-          </div>
-        </div>
-
-        {/* Card Body */}
-        <div className="p-5 space-y-3">
-          
-          {/* Metadata Badges */}
-          <div className="flex flex-wrap gap-2 text-[11px] font-medium text-gray-400">
-            <span className="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50">
-              {workshop.category}
-            </span>
-            <span className="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50">
-              {workshop.deliveryMode || 'ONLINE'}
-            </span>
-            <span className="px-2 py-0.5 bg-gray-800/80 rounded border border-gray-700/50">
-              {workshop.difficulty || 'BEGINNER'}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h3 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-2">
-            {workshop.title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-gray-400 text-xs line-clamp-2 leading-relaxed">
-            {workshop.description || 'No description provided.'}
-          </p>
-
-          {/* Tags */}
-          {workshop.tags && workshop.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
-              {workshop.tags.slice(0, 3).map((tag, idx) => (
-                <span key={idx} className="text-[10px] text-indigo-300/80 bg-indigo-500/10 px-2 py-0.5 rounded-full">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Background Graphic */}
+      <div 
+        className="absolute bottom-4 left-4 opacity-10 pointer-events-none transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+        style={{ color: theme.border }}
+      >
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d={theme.icon} />
+        </svg>
       </div>
 
-      {/* Card Footer / CTA */}
-      <div className="p-5 pt-0 border-t border-gray-800/40 flex items-center justify-between mt-4">
-        <div className="text-xs text-gray-400">
-          <span className="block text-[10px] text-gray-500 uppercase font-semibold">Language</span>
-          <span className="font-medium text-gray-300">{workshop.language?.toUpperCase() || 'EN'}</span>
+      <div className="p-6 pb-2 z-10 flex-1 flex flex-col">
+        {/* Top Header Row */}
+        <div className="flex justify-between items-start gap-4 mb-3">
+          <h3 className="text-[17px] font-bold text-gray-900 leading-tight">
+            {workshop.title}
+          </h3>
+          <span className="text-xs font-semibold text-gray-500 whitespace-nowrap bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+            {duration}
+          </span>
         </div>
 
+        {/* Description */}
+        <p className="text-gray-500 text-[13px] leading-relaxed line-clamp-3">
+          {workshop.description || 'Build modern skills from architectural design to deployment.'}
+        </p>
+      </div>
+
+      {/* Footer / CTA */}
+      <div className="p-6 pt-4 flex justify-end z-10">
         <Link
           href={`/workshop/${workshop.id}`}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-1.5"
+          className="px-5 py-1.5 font-semibold text-sm rounded-lg border transition-all flex items-center justify-center bg-white hover:shadow-md"
+          style={{
+            color: theme.border,
+            borderColor: theme.border + '40', // 25% opacity hex
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme.bg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+          }}
         >
-          View Workshop
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
+          Register
         </Link>
       </div>
     </motion.div>
   );
 }
+
