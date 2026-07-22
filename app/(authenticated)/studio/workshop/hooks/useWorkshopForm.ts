@@ -19,6 +19,7 @@ const initialData: WorkshopFormData = {
   currency: 'USD',
   capacity: undefined,
   visibility: Visibility.PRIVATE,
+  sessions: [],
 };
 
 export const useWorkshopForm = () => {

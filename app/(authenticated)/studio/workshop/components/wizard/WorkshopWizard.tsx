@@ -7,6 +7,7 @@ import { WorkshopHeader } from '@/app/(authenticated)/studio/workshop/components
 import { WorkshopStepper } from '@/app/(authenticated)/studio/workshop/components/wizard/WorkshopStepper';
 import { WorkshopFooter } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/workshop/components/wizard/BasicInformationStep';
+import { ScheduleStep } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/ScheduleStep';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { createWorkshop } from '@/app/(authenticated)/studio/workshop/api/workshop';
 
@@ -36,12 +37,21 @@ export const WorkshopWizard: React.FC = () => {
   };
 
   const handleContinue = () => {
-    // In Phase 1, only step 1 is implemented.
-    toast.info('Phase 1 limits: Only Basic Information can be completed currently.');
+    if (currentStep === 0) {
+      // Save draft automatically on continue? The prompt says "Saving the workshop draft should also save all sessions."
+      // Actually we can just proceed to step 1 (Schedule) if form is valid
+      setCurrentStep(1);
+    } else {
+      toast.info('Future steps coming soon.');
+    }
   };
 
   const handleBack = () => {
-    router.push('/studio');
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      router.push('/studio');
+    }
   };
 
   return (
@@ -53,12 +63,13 @@ export const WorkshopWizard: React.FC = () => {
         
         <div className="flex-1 min-w-0">
           {currentStep === 0 && <BasicInformationStep form={form} />}
+          {currentStep === 1 && <ScheduleStep form={form} />}
           
           <WorkshopFooter 
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
             onContinue={handleContinue}
-            canContinue={form.isValid}
+            canContinue={currentStep === 0 ? form.isValid : true}
             isSaving={form.isSubmitting}
           />
         </div>

@@ -64,4 +64,46 @@ export interface WorkshopFormData extends Partial<CreateWorkshopRequest> {
   title: string;
   category: string;
   language: string;
+  sessions: Partial<WorkshopSession>[];
 }
+
+export enum SessionStatus {
+  PLANNED = 'PLANNED',
+  LIVE = 'LIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  POSTPONED = 'POSTPONED'
+}
+
+export enum MeetingProvider {
+  NONE = 'NONE',
+  ZOOM = 'ZOOM',
+  GOOGLE_MEET = 'GOOGLE_MEET',
+  MICROSOFT_TEAMS = 'MICROSOFT_TEAMS',
+  JITSI = 'JITSI',
+  CUSTOM = 'CUSTOM'
+}
+
+export interface WorkshopSession {
+  id: string;
+  workshopId: string;
+  title: string;
+  description?: string;
+  sessionNumber: number;
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  startTime: string; // HH:MM:SS
+  endTime: string; // HH:MM:SS
+  timezone: string;
+  deliveryMode: DeliveryMode;
+  locationDetails?: Record<string, string>;
+  meetingUrl?: string;
+  meetingProvider?: MeetingProvider;
+  capacity?: number;
+  status: SessionStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'createdAt' | 'updatedAt'>;
+export type UpdateWorkshopSessionRequest = Partial<CreateWorkshopSessionRequest> & { status?: SessionStatus };
