@@ -33,14 +33,16 @@ export const WorkshopFooter: React.FC<Props> = ({
         >
           {isSaving ? 'Saving...' : 'Save Draft'}
         </button>
-        <button
-          type="button"
-          onClick={onContinue}
-          disabled={!canContinue || isSaving}
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700"
-        >
-          Continue
-        </button>
+        {onContinue && (
+          <button
+            type="button"
+            onClick={onContinue}
+            disabled={!canContinue || isSaving}
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-700"
+          >
+            Continue
+          </button>
+        )}
       </div>
     </div>
   );

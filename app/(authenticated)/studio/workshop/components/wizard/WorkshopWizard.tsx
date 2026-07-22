@@ -13,7 +13,7 @@ import { PricingStep } from '@/app/(authenticated)/studio/workshop/components/wi
 import { SettingsStep } from '@/app/(authenticated)/studio/workshop/components/wizard/settings/SettingsStep';
 import { ReviewStep } from '@/app/(authenticated)/studio/workshop/components/wizard/review/ReviewStep';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
-import { createWorkshop } from '@/app/(authenticated)/studio/workshop/api/workshop';
+import { createWorkshop, updateWorkshop } from '@/app/(authenticated)/studio/workshop/api/workshop';
 
 export const WorkshopWizard: React.FC = () => {
   const router = useRouter();
@@ -29,12 +29,46 @@ export const WorkshopWizard: React.FC = () => {
         toast.error('Title and Category are required to save a draft.');
         return;
       }
+      
+      if (Object.keys(form.errors).length > 0) {
+        toast.error(Object.values(form.errors)[0] as string);
+        return;
+      }
 
-      await createWorkshop(form.formData as any);
+      // Ensure language is set for backend validation
+      const createPayload: any = {
+        title: form.formData.title,
+        subtitle: form.formData.subtitle,
+        description: form.formData.description,
+        category: form.formData.category,
+        tags: form.formData.tags,
+        thumbnailUrl: form.formData.thumbnailUrl,
+        coverImageUrl: form.formData.coverImageUrl,
+        promoVideoUrl: form.formData.promoVideoUrl,
+        workshopType: form.formData.workshopType,
+        deliveryMode: form.formData.deliveryMode,
+        difficulty: form.formData.difficulty,
+        language: form.formData.language || 'en',
+        price: form.formData.price || 0,
+        currency: form.formData.currency || 'USD',
+        capacity: form.formData.capacity === '' ? null : form.formData.capacity,
+        visibility: form.formData.visibility
+      };
+
+      const workshopId = (form.formData as any).id;
+      if (workshopId) {
+        await updateWorkshop(workshopId, createPayload);
+      } else {
+        const response = await createWorkshop(createPayload);
+        form.handleChange('id' as any, response.id); // Save ID back to form to avoid duplicates
+      }
+      
       toast.success('Workshop draft saved successfully!');
       router.push('/studio'); // Go back to studio dashboard or to the newly created edit page
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to save draft. Please try again.');
+      console.error('Save Draft Error:', error);
+      const errorMessage = error?.message || error?.response?.data?.message || 'Failed to save draft. Please try again.';
+      toast.error(errorMessage);
     } finally {
       form.setIsSubmitting(false);
     }
@@ -67,13 +101,13 @@ export const WorkshopWizard: React.FC = () => {
           {currentStep === 2 && <ResourcesStep form={form} />}
           {currentStep === 3 && <PricingStep form={form} />}
           {currentStep === 4 && <SettingsStep form={form} />}
-          {currentStep === 5 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} />}
+          {currentStep === 5 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} onSaveDraft={handleSaveDraft} isSaving={form.isSubmitting} />}
           
-          {currentStep < 5 && (
+          {(currentStep < 5 || !(form.formData as any).id) && (
             <WorkshopFooter 
               onBack={handleBack}
               onSaveDraft={handleSaveDraft}
-              onContinue={handleContinue}
+              onContinue={currentStep < 5 ? handleContinue : undefined}
               canContinue={currentStep === 0 ? form.isValid : true}
               isSaving={form.isSubmitting}
             />

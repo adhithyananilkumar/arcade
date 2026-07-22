@@ -9,9 +9,11 @@ import { useRouter } from 'next/navigation';
 interface Props {
   form: ReturnType<typeof useWorkshopForm>;
   onNavigateToStep: (step: number) => void;
+  onSaveDraft?: () => void;
+  isSaving?: boolean;
 }
 
-export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep }) => {
+export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraft, isSaving }) => {
   const router = useRouter();
   const [validation, setValidation] = useState<PublishValidationResponse | null>(null);
   const [preview, setPreview] = useState<WorkshopPreviewDto | null>(null);
@@ -138,10 +140,11 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep }) => {
               {isPublishing ? 'Publishing...' : 'Publish Workshop'}
             </button>
             <button
-              onClick={() => alert('Draft saved.')}
+              onClick={onSaveDraft}
+              disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors"
             >
-              Save Draft
+              {isSaving ? 'Saving...' : 'Save Draft'}
             </button>
             <button
               onClick={handleDuplicate}

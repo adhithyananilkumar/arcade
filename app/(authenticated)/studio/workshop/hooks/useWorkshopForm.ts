@@ -14,7 +14,7 @@ const initialData: WorkshopFormData = {
   workshopType: WorkshopType.WORKSHOP,
   deliveryMode: DeliveryMode.ONLINE,
   difficulty: Difficulty.BEGINNER,
-  language: '',
+  language: 'en',
   price: 0,
   currency: 'USD',
   capacity: undefined,
