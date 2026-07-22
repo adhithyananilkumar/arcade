@@ -32,8 +32,8 @@ export const CalendarPreview: React.FC<Props> = ({ form }) => {
         
         {sortedSessions.map((session, index) => (
           <div key={index} className="flex items-center space-x-4 relative z-10 py-2 w-full">
-            <div className="w-3 h-3 rounded-full bg-indigo-500 border-4 border-white dark:border-gray-800 box-content flex-shrink-0"></div>
-            <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 rounded-md border border-gray-100 dark:border-gray-700 flex-1 flex justify-between items-center shadow-sm">
+            <div className="w-3 h-3 rounded-full bg-violet-500 border-4 border-white dark:border-gray-800 box-content flex-shrink-0"></div>
+            <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-700 flex-1 flex justify-between items-center shadow-sm">
               <span className="font-medium text-gray-700 dark:text-gray-300">
                 {session.title || `Session ${index + 1}`}
               </span>

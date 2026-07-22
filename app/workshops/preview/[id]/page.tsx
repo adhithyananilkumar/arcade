@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { notFound } from 'next/navigation';
 import { WorkshopPreview } from '@/app/(authenticated)/studio/workshop/components/wizard/review/WorkshopPreview';
 import { getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
 import { WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function PublicPreviewPage({ params }: Props) {
-  const { id } = params;
+  const { id } = use(params);
   const [previewData, setPreviewData] = useState<WorkshopPreviewDto | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);

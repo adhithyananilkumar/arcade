@@ -44,7 +44,7 @@ export const ScheduleStep: React.FC<Props> = ({ form }) => {
               };
               form.handleChange('sessions', [...(form.formData.sessions || []), newSession]);
             }}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500"
           >
             + Add Session
           </button>

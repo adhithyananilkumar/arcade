@@ -11,8 +11,8 @@ export class WorkshopAdapter implements ContentDataAdapter {
 
   terminology = {
     root: "Workshop",
-    container: "Schedule",
-    leafDocument: "Session",
+    container: "Workshop Days",
+    leafDocument: "Day",
     leafQuiz: "Quiz",
   };
 
@@ -23,7 +23,7 @@ export class WorkshopAdapter implements ContentDataAdapter {
       api.get<Workshop>(`/api/workshops/${id}`),
       api.get<WorkshopSession[]>(`/api/workshops/${id}/sessions`).catch(() => []),
     ]);
-    
+
     return {
       meta: {
         id: workshop.id,
@@ -79,7 +79,18 @@ export class WorkshopAdapter implements ContentDataAdapter {
     if (type !== "document") {
       throw new Error("Workshops currently only support sessions (documents).");
     }
-    const s = await api.post<WorkshopSession>(`/api/workshops/${this.workshopId}/sessions`, { title });
+
+    const payload = {
+      title,
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      startTime: "09:00:00",
+      endTime: "17:00:00",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      deliveryMode: "ONLINE"
+    };
+
+    const s = await api.post<WorkshopSession>(`/api/workshops/${this.workshopId}/sessions`, payload);
     return {
       id: s.id,
       title: s.title,

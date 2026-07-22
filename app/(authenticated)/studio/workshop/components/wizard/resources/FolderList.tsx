@@ -34,7 +34,7 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
         <h3 className="font-medium text-gray-900 dark:text-white">Folders</h3>
         <button 
           onClick={() => setIsCreating(true)}
-          className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
+          className="text-xs text-violet-600 dark:text-violet-400 hover:text-violet-800"
         >
           + New
         </button>
@@ -43,9 +43,9 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
       <div className="flex-1 overflow-y-auto space-y-1 pr-2">
         <button
           onClick={() => onSelectFolder(null)}
-          className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2 ${
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
             selectedFolderId === null 
-              ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' 
+              ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' 
               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
@@ -57,9 +57,9 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
           <button
             key={folder.id}
             onClick={() => onSelectFolder(folder.id!)}
-            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2 ${
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
               selectedFolderId === folder.id 
-                ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' 
+                ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
@@ -81,7 +81,7 @@ export const FolderList: React.FC<Props> = ({ form, selectedFolderId, onSelectFo
               }}
               onBlur={handleCreateFolder}
               placeholder="Folder name..."
-              className="w-full text-sm rounded border border-indigo-300 focus:ring-indigo-500 focus:border-indigo-500 px-2 py-1 dark:bg-gray-900 dark:border-indigo-700 dark:text-white"
+              className="w-full text-sm rounded border border-violet-300 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 px-2 py-1 dark:bg-gray-900 dark:border-violet-700 dark:text-white"
             />
           </div>
         )}

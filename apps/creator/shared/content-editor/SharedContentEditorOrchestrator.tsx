@@ -310,7 +310,7 @@ function InfoRow({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
-function ContentSettingsPanel({ terminology, 
+function ContentSettingsPanel({ terminology,
   contentId,
   title,
   description,
@@ -609,11 +609,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         })
         : Promise.resolve();
 
-      const documentPending = api
-        .get<{
-          ydocState: string | null;
-          body: string | null;
-        } | null>(`/api/lessons/${lesson.id}/document`)
+      const documentPending = adapter
+        .getLeafDocument(lesson.id)
         .catch(() => null);
 
       // The previous lesson's Y.Doc is torn down by the activeYDoc effect cleanup
@@ -701,7 +698,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       });
 
       try {
-        await api.put(`/api/lessons/${activeLessonId}/document`, {
+        await adapter.saveLeafDocument(activeLessonId, {
           ydocState: encodeStateBase64(ydoc),
           body: jsonStr,
         });
@@ -718,8 +715,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       const now = Date.now();
       if (now - lastSnapshotAtRef.current > SNAPSHOT_INTERVAL_MS) {
         lastSnapshotAtRef.current = now;
-        void api
-          .post(`/api/lessons/${activeLessonId}/document/versions`, {
+        void adapter
+          .saveLeafVersion(activeLessonId, {
             snapshot: encodeSnapshotBase64(ydoc),
             body: jsonStr,
             kind: "AUTO",
@@ -744,7 +741,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       // Record the restore itself as a named version so the timeline stays honest.
       try {
         const ydoc = activeYDocRef.current;
-        await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+        await adapter.saveLeafVersion(activeLessonId, {
           snapshot: ydoc ? encodeSnapshotBase64(ydoc) : undefined,
           body: JSON.stringify(body),
           kind: "MANUAL",
@@ -778,9 +775,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const addModule = useCallback(async () => {
     if (!contentId) return;
     try {
-      const m = await api.post<ModuleResponse>(`/api/courses/${contentId}/modules`, {
-        title: `Module ${modules.length + 1}`,
-      });
+      const title = `${adapter.terminology.container} ${modules.length + 1}`;
+      const m = await adapter.addContainer(contentId, title);
       setModules((prev) => [
         ...prev,
         {
@@ -795,7 +791,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     } catch (e) {
       console.error("Failed to add module", e);
     }
-  }, [contentId, modules.length]);
+  }, [contentId, modules.length, adapter]);
 
   // ── Tree mutation: Add Lesson (directly under a module) ────────────────────
 
@@ -805,23 +801,24 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       try {
         const mod = modules.find((m) => m.id === moduleId);
         const nextIndex = (mod?.lessons.length ?? 0) + 1;
-        const newLesson = await api.post<LessonResponse>(
-          `/api/modules/${moduleId}/lessons`,
-          { title: `Lesson ${nextIndex}` }
+        const newLesson = await adapter.addLeaf(
+          moduleId,
+          `${adapter.terminology.leafDocument} ${nextIndex}`,
+          "document"
         );
         setModules((prev) =>
           prev.map((m) =>
             m.id === moduleId
-              ? { ...m, expanded: true, lessons: [...m.lessons, newLesson] }
+              ? { ...m, expanded: true, lessons: [...m.lessons, newLesson as any] }
               : m
           )
         );
-        await openLesson(newLesson);
+        await openLesson(newLesson as any);
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
     },
-    [contentId, modules, openLesson]
+    [contentId, modules, openLesson, adapter]
   );
 
   // ── Tree mutation: Add Quiz (sibling of a lesson under a module) ────────────
@@ -832,23 +829,24 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       try {
         const mod = modules.find((m) => m.id === moduleId);
         const nextIndex = (mod?.quizzes.length ?? 0) + 1;
-        const newQuiz = await api.post<QuizResponse>(
-          `/api/modules/${moduleId}/quizzes`,
-          { title: `Quiz ${nextIndex}` }
+        const newQuiz = await adapter.addLeaf(
+          moduleId,
+          `${adapter.terminology.leafQuiz} ${nextIndex}`,
+          "quiz"
         );
         setModules((prev) =>
           prev.map((m) =>
             m.id === moduleId
-              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz] }
+              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz as any] }
               : m
           )
         );
-        await openQuiz(newQuiz);
+        await openQuiz(newQuiz as any);
       } catch (e) {
         console.error("Failed to add quiz", e);
       }
     },
-    [contentId, modules, openQuiz]
+    [contentId, modules, openQuiz, adapter]
   );
 
   // ── Inline rename ─────────────────────────────────────────────────────────
@@ -1102,11 +1100,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const askSubmit = () =>
     setConfirm({
-      title: "Submit for review?",
+      title: contentType === "workshop" ? "Proceed to next steps?" : "Ready for review?",
       message:
-        "This course will be sent to an admin for review, and a version checkpoint is saved for each lesson. You can keep editing while it is under review.",
-      confirmLabel: "Submit",
+        contentType === "workshop"
+          ? "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published."
+          : "Once submitted, reviewers will be notified and your content will be locked for editing until approved.",
+      confirmLabel: contentType === "workshop" ? "Proceed.." : "Submit for Review",
       onConfirm: async () => {
+        if (contentType === "workshop") {
+          router.push(`/studio/workshop/${contentId}`);
+          return;
+        }
+
         if (!contentId) return;
         // Flush the open lesson first so its latest edits are persisted before the
         // backend snapshots the whole course into WORKFLOW versions.
@@ -1239,7 +1244,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {status === "DRAFT" && (
+            {status === "DRAFT" && contentType !== "workshop" && (
               <button
                 type="button"
                 onClick={askSubmit}
@@ -1247,6 +1252,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               >
                 <Send size={14} />
                 <span className="hidden sm:inline">Submit for Review</span>
+              </button>
+            )}
+
+            {contentType === "workshop" && contentId && (
+              <button
+                type="button"
+                onClick={() => router.push(`/studio/workshop/${contentId}`)}
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                <Settings size={14} />
+                <span className="hidden sm:inline">Manage Workshop</span>
               </button>
             )}
           </div>
@@ -1291,7 +1307,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
                       <Layers size={28} className="text-gray-300" />
                       <p className="text-xs text-gray-400">
-                        No modules yet. Add a module to get started.
+                        {contentType === "workshop"
+                          ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                          : "No modules yet. Add a module to get started."}
                       </p>
                     </div>
                   )}
@@ -1440,24 +1458,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             })}
 
                           {/* Add lesson / quiz to this module */}
-                          <div className="mt-0.5 flex items-center gap-3 pl-2">
-                            <button
-                              type="button"
-                              onClick={() => addLesson(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add lesson
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => addQuiz(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add quiz
-                            </button>
-                          </div>
+                          {contentType !== "workshop" && (
+                            <div className="mt-0.5 flex items-center gap-3 pl-2">
+                              <button
+                                type="button"
+                                onClick={() => addLesson(mod.id)}
+                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                              >
+                                <Plus size={11} />
+                                Add lesson
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => addQuiz(mod.id)}
+                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                              >
+                                <Plus size={11} />
+                                Add quiz
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1465,23 +1485,50 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 </div>
 
                 {/* Sidebar footer */}
-                <div className="space-y-0.5 border-t border-gray-100 p-1.5">
-                  <button
-                    type="button"
-                    onClick={addModule}
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
-                  >
-                    <Plus size={14} />
-                    Add Module
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setQbOpen(true)}
-                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                  >
-                    <FileText size={13} />
-                    Create Question Bank
-                  </button>
+                <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
+                  {contentType === "workshop" && modules.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => addLesson(modules[0].id)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
+                    >
+                      <Plus size={14} />
+                      Add Day
+                    </button>
+                  )}
+                  {contentType === "workshop" && (
+                    <div className="border-t border-gray-100 my-1"></div>
+                  )}
+                  {contentType !== "workshop" && (
+                    <button
+                      type="button"
+                      onClick={addModule}
+                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                    >
+                      <Plus size={14} />
+                      Add Module
+                    </button>
+                  )}
+                  {contentType !== "workshop" && (
+                    <button
+                      type="button"
+                      onClick={() => setQbOpen(true)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    >
+                      <FileText size={13} />
+                      Create Question Bank
+                    </button>
+                  )}
+                  {contentType === "workshop" && (
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
+                      title="Resources (Coming soon)"
+                    >
+                      <FileText size={13} />
+                      Resources
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
@@ -1564,10 +1611,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </div>
               <div>
                 <h3 className="text-base font-semibold text-gray-700">
-                  Select a lesson or quiz to start editing
+                  {contentType === "workshop"
+                    ? "Select a workshop day or create a new day to start editing."
+                    : "Select a lesson or quiz to start editing."}
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
-                  Open the sidebar, add a module, then a lesson or quiz to begin.
+                  {contentType === "workshop"
+                    ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                    : "Open the sidebar, add a module, then a lesson or quiz to begin."}
                 </p>
               </div>
             </div>

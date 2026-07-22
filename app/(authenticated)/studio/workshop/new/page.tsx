@@ -1,15 +1,13 @@
-import { Metadata } from 'next';
-import { WorkshopWizard } from '@/app/(authenticated)/studio/workshop/components/wizard/WorkshopWizard';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Create Workshop | Arcade Studio',
-  description: 'Create a new workshop on Arcade',
-};
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function NewWorkshopPage() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
-      <WorkshopWizard />
-    </div>
-  );
+// This route is deprecated — workshop creation is now a modal on /studio
+export default function NewWorkshopRedirect() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/studio');
+  }, [router]);
+  return null;
 }

@@ -29,9 +29,8 @@ export const WorkshopStepper: React.FC<Props> = ({ currentStep, onSelectStep }) 
                 {/* Connecting line between steps */}
                 {!isLast && (
                   <div
-                    className={`absolute top-8 left-4 -ml-px w-0.5 h-[calc(100%+8px)] ${
-                      isCompleted ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`absolute top-8 left-4 -ml-px w-0.5 h-[calc(100%+8px)] ${isCompleted ? 'bg-violet-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                     aria-hidden="true"
                   />
                 )}
@@ -42,13 +41,12 @@ export const WorkshopStepper: React.FC<Props> = ({ currentStep, onSelectStep }) 
                 >
                   <span className="flex items-center">
                     <span
-                      className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 transition-all ${
-                        isCurrent
-                          ? 'border-indigo-600 bg-white dark:bg-gray-900 text-indigo-600 shadow-sm'
+                      className={`relative z-10 w-8 h-8 flex items-center justify-center rounded-full border-2 transition-all ${isCurrent
+                          ? 'border-violet-600 bg-white dark:bg-gray-900 text-violet-600 shadow-sm'
                           : isCompleted
-                          ? 'bg-indigo-600 border-indigo-600 text-white'
-                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:border-indigo-400'
-                      }`}
+                            ? 'bg-violet-600 border-violet-600 text-white'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:border-violet-400'
+                        }`}
                     >
                       {isCompleted ? (
                         <svg className="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -66,13 +64,12 @@ export const WorkshopStepper: React.FC<Props> = ({ currentStep, onSelectStep }) 
 
                   <span className="ml-4 min-w-0 flex flex-col">
                     <span
-                      className={`text-sm font-medium transition-colors ${
-                        isCurrent
-                          ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+                      className={`text-sm font-medium transition-colors ${isCurrent
+                          ? 'text-violet-600 dark:text-violet-400 font-semibold'
                           : isCompleted
-                          ? 'text-gray-900 dark:text-gray-200'
-                          : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-                      }`}
+                            ? 'text-gray-900 dark:text-gray-200'
+                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                        }`}
                     >
                       {step}
                     </span>

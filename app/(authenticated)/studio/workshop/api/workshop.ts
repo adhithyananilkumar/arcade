@@ -11,6 +11,10 @@ export const updateWorkshop = async (id: string, data: Partial<CreateWorkshopReq
   return await api.patch<Workshop>(`${API_BASE_PATH}/${id}`, data);
 };
 
+export const getWorkshop = async (id: string): Promise<Workshop> => {
+  return await api.get<Workshop>(`${API_BASE_PATH}/${id}`);
+};
+
 export const createWorkshopSession = async (workshopId: string, data: CreateWorkshopSessionRequest): Promise<WorkshopSession> => {
   return await api.post<WorkshopSession>(`${API_BASE_PATH}/${workshopId}/sessions`, data);
 };

@@ -1,5 +1,17 @@
-import React from 'react';
+'use client';
 
-export default function PlaceholderPage() {
-  return <div className="p-8">Coming Soon</div>;
+import { use } from 'react';
+import { WorkshopWizard } from '@/app/(authenticated)/studio/workshop/components/wizard/WorkshopWizard';
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default function WorkshopPublishPage({ params }: Props) {
+  const { id } = use(params);
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
+      <WorkshopWizard workshopId={id} initialStep={6} />
+    </div>
+  );
 }

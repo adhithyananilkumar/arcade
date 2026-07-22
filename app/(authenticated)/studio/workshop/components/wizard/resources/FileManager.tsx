@@ -76,13 +76,13 @@ export const FileManager: React.FC<Props> = ({ form, selectedFolderId }) => {
         <div className="flex space-x-3">
           <button
             onClick={handleAddExternalLink}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 shadow-sm"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 shadow-sm"
           >
             Add Link
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 shadow-sm"
+            className="px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 shadow-sm"
           >
             Upload Files
           </button>
@@ -107,7 +107,7 @@ export const FileManager: React.FC<Props> = ({ form, selectedFolderId }) => {
           <div className="mt-6 flex gap-4">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400"
+              className="px-4 py-2 text-sm font-medium text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-100 dark:bg-violet-900/30 dark:text-violet-400"
             >
               Upload a File
             </button>
@@ -119,7 +119,7 @@ export const FileManager: React.FC<Props> = ({ form, selectedFolderId }) => {
           {currentResources.map(resource => (
             <div key={resource.id} className="relative group bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                <div className="p-2 bg-violet-50 dark:bg-violet-900/30 rounded text-violet-600 dark:text-violet-400 flex-shrink-0">
                   {resource.resourceType === ResourceType.LINK ? (
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                   ) : (

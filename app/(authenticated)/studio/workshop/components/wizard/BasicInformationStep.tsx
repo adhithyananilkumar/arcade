@@ -30,7 +30,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
           id="title"
           value={formData.title}
           onChange={(e) => handleChange('title', e.target.value)}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white transition-shadow"
+          className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-2.5 text-base focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white transition-shadow"
           placeholder="e.g. Advanced React Patterns"
         />
       </InputWrapper>
@@ -43,7 +43,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="category"
             value={formData.category}
             onChange={(e) => handleChange('category', e.target.value)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
           >
             <option value="">Select a category</option>
             {CATEGORIES.map(c => (
@@ -57,7 +57,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="workshopType"
             value={formData.workshopType}
             onChange={(e) => handleChange('workshopType', e.target.value as any)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
           >
             {WORKSHOP_TYPES.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
@@ -70,7 +70,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="deliveryMode"
             value={formData.deliveryMode}
             onChange={(e) => handleChange('deliveryMode', e.target.value as any)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
           >
             {DELIVERY_MODES.map(d => (
               <option key={d.value} value={d.value}>{d.label}</option>
@@ -83,7 +83,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="language"
             value={formData.language}
             onChange={(e) => handleChange('language', e.target.value)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
           >
             <option value="">Select language</option>
             {LANGUAGES.map(l => (
@@ -97,7 +97,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="difficulty"
             value={formData.difficulty}
             onChange={(e) => handleChange('difficulty', e.target.value as any)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
           >
             {DIFFICULTIES.map(d => (
               <option key={d.value} value={d.value}>{d.label}</option>
@@ -114,7 +114,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
               const tagsArray = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
               handleChange('tags', tagsArray);
             }}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             placeholder="e.g. react, patterns, advanced"
           />
         </InputWrapper>
@@ -127,7 +127,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             rows={8}
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
-            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white resize-y"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-4 py-3 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white resize-y"
             placeholder="Describe what students will learn in this workshop..."
           />
         </InputWrapper>

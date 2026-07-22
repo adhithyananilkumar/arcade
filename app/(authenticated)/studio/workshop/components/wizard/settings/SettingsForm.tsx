@@ -30,7 +30,7 @@ const Toggle = ({
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
         />
-        <div className={`block w-10 h-6 rounded-full transition-colors ${checked ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+        <div className={`block w-10 h-6 rounded-full transition-colors ${checked ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
         <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${checked ? 'transform translate-x-4' : ''}`}></div>
       </div>
     </label>
@@ -63,7 +63,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
                   key={opt}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
                     settings.visibility === opt 
-                      ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/20 dark:border-indigo-500' 
+                      ? 'bg-violet-50 border-violet-500 dark:bg-violet-900/20 dark:border-violet-500' 
                       : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -73,7 +73,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
                     value={opt}
                     checked={settings.visibility === opt}
                     onChange={(e) => updateSettings('visibility', e.target.value as Visibility)}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 text-violet-600 focus:ring-violet-500"
                   />
                   <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
                     {opt.charAt(0) + opt.slice(1).toLowerCase()}
@@ -91,7 +91,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
                   key={opt}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
                     settings.listingStatus === opt 
-                      ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/20 dark:border-indigo-500' 
+                      ? 'bg-violet-50 border-violet-500 dark:bg-violet-900/20 dark:border-violet-500' 
                       : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -101,7 +101,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
                     value={opt}
                     checked={settings.listingStatus === opt}
                     onChange={(e) => updateSettings('listingStatus', e.target.value as ListingStatus)}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 text-violet-600 focus:ring-violet-500"
                   />
                   <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
                     {opt === ListingStatus.UNLISTED ? 'Hidden' : opt.charAt(0) + opt.slice(1).toLowerCase()}
@@ -157,7 +157,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
               <select
                 value={settings.recordingVisibility || RecordingVisibility.REGISTERED_ONLY}
                 onChange={(e) => updateSettings('recordingVisibility', e.target.value as RecordingVisibility)}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
               >
                 {Object.values(RecordingVisibility).map((opt) => (
                   <option key={opt} value={opt}>{opt.replace('_', ' ')}</option>
@@ -212,7 +212,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
               value={settings.seoTitle || ''}
               onChange={(e) => updateSettings('seoTitle', e.target.value)}
               placeholder="e.g. Master Advanced React Patterns"
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             />
           </div>
           <div>
@@ -223,7 +223,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
               value={settings.seoDescription || ''}
               onChange={(e) => updateSettings('seoDescription', e.target.value)}
               placeholder="e.g. Learn how to build scalable React applications..."
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             />
           </div>
           <div>
@@ -233,7 +233,7 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
               value={settings.seoKeywords || ''}
               onChange={(e) => updateSettings('seoKeywords', e.target.value)}
               placeholder="e.g. react, programming, web development"
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             />
           </div>
         </div>

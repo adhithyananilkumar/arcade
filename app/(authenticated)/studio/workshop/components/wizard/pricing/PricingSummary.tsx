@@ -54,7 +54,7 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
         {!isFree && pricing.earlyBirdEnabled && (
           <div className="border-b border-gray-100 dark:border-gray-700 pb-4">
             <div className="flex justify-between items-start mb-1">
-              <span className="text-sm text-indigo-600 dark:text-indigo-400 flex items-center">
+              <span className="text-sm text-violet-600 dark:text-violet-400 flex items-center">
                 Early Bird
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -97,7 +97,7 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
           </div>
           {!isUnlimited && pricing.waitlistEnabled && (
             <div className="flex justify-end">
-              <span className="text-xs text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs text-violet-600 dark:text-violet-400">
                 Waitlist Enabled
               </span>
             </div>

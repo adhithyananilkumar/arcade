@@ -110,16 +110,23 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: string }) {
-  const isRoadmap = type === "ROADMAP";
+  if (type === "ROADMAP") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200">
+        <Map size={10} /> Roadmap
+      </span>
+    );
+  }
+  if (type === "WORKSHOP") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
+        <Wrench size={10} /> Workshop
+      </span>
+    );
+  }
   return (
-    <span
-      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isRoadmap
-          ? "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200"
-          : "bg-indigo-50 text-indigo-700 border-indigo-200"
-        }`}
-    >
-      {isRoadmap ? <Map size={10} /> : <BookOpen size={10} />}
-      {isRoadmap ? "Roadmap" : "Course"}
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200">
+      <BookOpen size={10} /> Course
     </span>
   );
 }
@@ -657,7 +664,12 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const editHref = isRoadmap ? `/studio/roadmap/${item.id}/edit` : `/studio/course/${item.id}/edit`;
+  const isWorkshop = item.type === "WORKSHOP";
+  const editHref = isRoadmap 
+    ? `/studio/roadmap/${item.id}/edit` 
+    : isWorkshop
+      ? `/studio/workshop/${item.id}`
+      : `/studio/course/${item.id}/edit`;
 
   return (
     <div className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3 relative">

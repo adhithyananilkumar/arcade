@@ -46,7 +46,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div 
-            className={`h-2 rounded-full ${isReady ? 'bg-green-500' : 'bg-indigo-600'}`} 
+            className={`h-2 rounded-full ${isReady ? 'bg-green-500' : 'bg-violet-600'}`} 
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -60,7 +60,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
           </h4>
           <ul className="space-y-3">
             {filteredIssues.map((issue, idx) => (
-              <li key={idx} className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-md p-3">
+              <li key={idx} className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg p-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="block text-xs font-semibold text-yellow-800 dark:text-yellow-500 uppercase tracking-wider mb-1">
@@ -70,7 +70,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
                   </div>
                   <button
                     onClick={() => onNavigateToStep(sectionMap[issue.section] ?? 0)}
-                    className="flex items-center text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    className="flex items-center text-xs font-medium text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
                   >
                     Fix <ChevronRight className="w-4 h-4 ml-0.5" />
                   </button>
@@ -83,7 +83,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
 
       {isReady && (
         <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/10 p-4 rounded-md border border-green-200 dark:border-green-900/50">
+          <div className="flex items-center gap-2 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-200 dark:border-green-900/50">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
             <p className="text-sm font-medium">All checks passed! Your workshop is ready to be published.</p>
           </div>

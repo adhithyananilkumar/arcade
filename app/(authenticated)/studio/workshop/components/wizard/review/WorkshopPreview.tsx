@@ -44,7 +44,7 @@ export const WorkshopPreview: React.FC<Props> = ({ preview }) => {
         
         <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8">
           <div className="max-w-4xl mx-auto">
-            <span className="inline-block px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-full mb-3">
+            <span className="inline-block px-3 py-1 bg-violet-600 text-white text-xs font-semibold rounded-full mb-3">
               {basicInfo.category || 'Uncategorized'}
             </span>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 leading-tight">
@@ -112,7 +112,7 @@ export const WorkshopPreview: React.FC<Props> = ({ preview }) => {
               )}
             </div>
 
-            <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-6">
+            <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-6">
               Register Now
             </button>
 

@@ -33,7 +33,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                   key={model}
                   className={`flex items-center justify-center px-4 py-3 border rounded-lg cursor-pointer transition-colors ${
                     pricing.pricingModel === model 
-                    ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300' 
+                    ? 'border-violet-600 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300' 
                     : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -65,7 +65,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                     step="0.01"
                     value={pricing.price || ''}
                     onChange={(e) => updatePricing('price', parseFloat(e.target.value))}
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 pl-7 pr-12 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 pl-7 pr-12 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                     <span className="text-gray-500 sm:text-sm">{pricing.currency || 'USD'}</span>
@@ -78,7 +78,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 <select
                   value={pricing.currency || 'USD'}
                   onChange={(e) => updatePricing('currency', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
                 >
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
@@ -101,7 +101,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
             <select
               value={pricing.registrationType || RegistrationType.OPEN}
               onChange={(e) => updatePricing('registrationType', e.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             >
               {Object.keys(RegistrationType).map((type) => (
                 <option key={type} value={type}>{type.replace('_', ' ')}</option>
@@ -116,7 +116,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 type="datetime-local"
                 value={pricing.registrationStart ? new Date(pricing.registrationStart).toISOString().slice(0,16) : ''}
                 onChange={(e) => updatePricing('registrationStart', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
               />
             </div>
             <div>
@@ -125,7 +125,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 type="datetime-local"
                 value={pricing.registrationEnd ? new Date(pricing.registrationEnd).toISOString().slice(0,16) : ''}
                 onChange={(e) => updatePricing('registrationEnd', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 type="radio"
                 checked={pricing.seatType === SeatType.UNLIMITED}
                 onChange={() => updatePricing('seatType', SeatType.UNLIMITED)}
-                className="text-indigo-600 focus:ring-indigo-500"
+                className="text-violet-600 focus:ring-violet-500"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Unlimited Seats</span>
             </label>
@@ -152,7 +152,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 type="radio"
                 checked={pricing.seatType === SeatType.LIMITED}
                 onChange={() => updatePricing('seatType', SeatType.LIMITED)}
-                className="text-indigo-600 focus:ring-indigo-500"
+                className="text-violet-600 focus:ring-violet-500"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Limited Seats</span>
             </label>
@@ -167,7 +167,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                   min="1"
                   value={pricing.seatLimit || ''}
                   onChange={(e) => updatePricing('seatLimit', parseInt(e.target.value))}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
                 />
               </div>
 
@@ -180,7 +180,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                       checked={pricing.waitlistEnabled || false}
                       onChange={(e) => updatePricing('waitlistEnabled', e.target.checked)}
                     />
-                    <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.waitlistEnabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                    <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.waitlistEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
                     <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${pricing.waitlistEnabled ? 'transform translate-x-4' : ''}`}></div>
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Waitlist</span>
@@ -205,19 +205,19 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                   checked={pricing.earlyBirdEnabled || false}
                   onChange={(e) => updatePricing('earlyBirdEnabled', e.target.checked)}
                 />
-                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.earlyBirdEnabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.earlyBirdEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${pricing.earlyBirdEnabled ? 'transform translate-x-4' : ''}`}></div>
               </div>
             </label>
           </div>
 
           {pricing.earlyBirdEnabled && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-100 dark:border-indigo-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-violet-50 dark:bg-violet-900/20 p-4 rounded-lg border border-violet-100 dark:border-violet-800">
               <div>
-                <label className="block text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-1.5">Early Bird Price</label>
+                <label className="block text-sm font-medium text-violet-900 dark:text-violet-200 mb-1.5">Early Bird Price</label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <span className="text-indigo-500 sm:text-sm">$</span>
+                    <span className="text-violet-500 sm:text-sm">$</span>
                   </div>
                   <input
                     type="number"
@@ -225,21 +225,21 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                     step="0.01"
                     value={pricing.earlyBirdPrice || ''}
                     onChange={(e) => updatePricing('earlyBirdPrice', parseFloat(e.target.value))}
-                    className="w-full rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 pl-7 pr-12 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                    className="w-full rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-900 pl-7 pr-12 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
                   />
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-indigo-500 sm:text-sm">{pricing.currency || 'USD'}</span>
+                    <span className="text-violet-500 sm:text-sm">{pricing.currency || 'USD'}</span>
                   </div>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-1.5">Ends On</label>
+                <label className="block text-sm font-medium text-violet-900 dark:text-violet-200 mb-1.5">Ends On</label>
                 <input
                   type="datetime-local"
                   value={pricing.earlyBirdEndDate ? new Date(pricing.earlyBirdEndDate).toISOString().slice(0,16) : ''}
                   onChange={(e) => updatePricing('earlyBirdEndDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
-                  className="w-full rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+                  className="w-full rounded-lg border border-violet-200 dark:border-violet-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
                 />
               </div>
             </div>
@@ -261,7 +261,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                   checked={pricing.couponEnabled || false}
                   onChange={(e) => updatePricing('couponEnabled', e.target.checked)}
                 />
-                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.couponEnabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.couponEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${pricing.couponEnabled ? 'transform translate-x-4' : ''}`}></div>
               </div>
             </label>
@@ -283,7 +283,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                   checked={pricing.allowCancellation || false}
                   onChange={(e) => updatePricing('allowCancellation', e.target.checked)}
                 />
-                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.allowCancellation ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.allowCancellation ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${pricing.allowCancellation ? 'transform translate-x-4' : ''}`}></div>
               </div>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Allow Cancellations</span>
@@ -295,7 +295,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
             <select
               value={pricing.refundPolicy || RefundPolicy.NO_REFUND}
               onChange={(e) => updatePricing('refundPolicy', e.target.value)}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
             >
               {Object.keys(RefundPolicy).map((policy) => (
                 <option key={policy} value={policy}>{policy.replace('_', ' ')}</option>

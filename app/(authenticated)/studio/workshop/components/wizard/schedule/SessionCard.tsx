@@ -30,7 +30,7 @@ export const SessionCard: React.FC<Props> = ({ id, session, index, onUpdate, onD
       ref={setNodeRef}
       style={style}
       className={`bg-white dark:bg-gray-900 border rounded-lg shadow-sm ${
-        isDragging ? 'border-indigo-500 shadow-md ring-1 ring-indigo-500' : 'border-gray-200 dark:border-gray-700'
+        isDragging ? 'border-violet-500 shadow-md ring-1 ring-violet-500' : 'border-gray-200 dark:border-gray-700'
       }`}
     >
       <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 rounded-t-lg">
@@ -47,7 +47,7 @@ export const SessionCard: React.FC<Props> = ({ id, session, index, onUpdate, onD
           <button
             type="button"
             onClick={onDuplicate}
-            className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             title="Duplicate Session"
           >
             <Copy size={18} />

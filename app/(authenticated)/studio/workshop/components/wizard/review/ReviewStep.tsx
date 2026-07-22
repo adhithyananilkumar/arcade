@@ -65,7 +65,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
 
       await publishWorkshop(targetId);
       toast.success('Workshop published successfully!');
-      router.push('/studio/workshop');
+      router.push('/studio');
     } catch (e: any) {
       console.error('Publish error:', e);
       toast.error(e?.message || 'Failed to publish workshop.');
@@ -80,7 +80,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     try {
       await archiveWorkshop(workshopId);
       toast.success('Workshop archived.');
-      router.push('/studio/workshop');
+      router.push('/studio');
     } catch (e: any) {
       toast.error(e?.message || 'Failed to archive workshop.');
     } finally {
@@ -112,7 +112,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
         <button
           onClick={() => onSaveDraft?.(false)}
           disabled={isSaving}
-          className="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-md shadow transition-colors disabled:opacity-50"
+          className="inline-flex items-center px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm rounded-lg shadow transition-colors disabled:opacity-50"
         >
           {isSaving ? 'Saving Draft...' : 'Save Draft Now'}
         </button>
@@ -151,28 +151,28 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
             <button
               onClick={handlePublish}
               disabled={isPublishing}
-              className="w-full py-2.5 px-4 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors bg-indigo-600 hover:bg-indigo-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
+              className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
             >
               {isPublishing ? 'Publishing...' : 'Publish Workshop'}
             </button>
             <button
               onClick={onSaveDraft}
               disabled={isSaving}
-              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors"
+              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
               {isSaving ? 'Saving...' : 'Save Draft'}
             </button>
             <button
               onClick={handleDuplicate}
               disabled={isDuplicating}
-              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition-colors"
+              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
               {isDuplicating ? 'Duplicating...' : 'Duplicate'}
             </button>
             <button
               onClick={handleArchive}
               disabled={isArchiving}
-              className="w-full py-2.5 px-4 border border-red-300 dark:border-red-900/50 rounded-md text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-colors"
+              className="w-full py-2.5 px-4 border border-red-300 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-colors"
             >
               {isArchiving ? 'Archiving...' : 'Archive'}
             </button>
