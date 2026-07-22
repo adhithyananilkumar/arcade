@@ -30,6 +30,7 @@ interface CourseRendererProps {
   quizStats: Record<string, QuizStatsResponse>;
   canPublish: boolean;
   onPublish: () => Promise<void>;
+  onReject?: (reason: string) => Promise<void>;
   onAttemptGraded: (attempt: any, quizId: string) => void;
   mode?: string;
   isFeedbackOpen: boolean;
@@ -52,6 +53,7 @@ export function CourseRenderer({
   quizStats,
   canPublish,
   onPublish,
+  onReject,
   onAttemptGraded,
   mode,
   isFeedbackOpen,
@@ -63,6 +65,8 @@ export function CourseRenderer({
   currentUser
 }: CourseRendererProps) {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const selectedLesson = useMemo(() => {
     if (!course || selectedItem?.kind !== "lesson") return null;
@@ -111,17 +115,32 @@ export function CourseRenderer({
               {course.description}
             </p>
           )}
-          {canPublish && course.status !== "PUBLISHED" && (
-            <button
-              onClick={() => setIsPublishDialogOpen(true)}
-              className="mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
-            >
-              Publish Course
-            </button>
+          {canPublish && (course.status === "SUBMITTED" || course.status === "APPROVED") && (
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                onClick={() => setIsPublishDialogOpen(true)}
+                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              >
+                Approve & Publish
+              </button>
+              {onReject && (
+                <button
+                  onClick={() => setIsRejectDialogOpen(true)}
+                  className="w-full rounded-lg bg-red-50 text-red-600 px-3 py-2 text-sm font-semibold hover:bg-red-100 transition-colors border border-red-200"
+                >
+                  Reject Course
+                </button>
+              )}
+            </div>
           )}
           {course.status === "PUBLISHED" && (
             <div className="mt-4 w-full rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 text-center border border-green-200">
               Published
+            </div>
+          )}
+          {course.status === "REJECTED" && (
+            <div className="mt-4 w-full rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 text-center border border-red-200">
+              Rejected
             </div>
           )}
         </div>
@@ -280,6 +299,47 @@ export function CourseRenderer({
         onClose={() => setIsPublishDialogOpen(false)}
         onConfirm={onPublish}
       />
+
+      {isRejectDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Reject Course</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Please provide a reason for rejecting this course. The author will see this comment.
+            </p>
+            <textarea
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm resize-none mb-4"
+              placeholder="E.g., The audio quality in module 2 is poor..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                onClick={() => setIsRejectDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
+                disabled={!rejectReason.trim()}
+                onClick={() => {
+                  if (onReject) {
+                    onReject(rejectReason).then(() => {
+                      setIsRejectDialogOpen(false);
+                      setRejectReason("");
+                    });
+                  }
+                }}
+              >
+                Reject Course
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

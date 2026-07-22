@@ -56,12 +56,23 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
 
   const handlePublish = async () => {
     try {
-      await api.post(`/api/courses/${courseId}/publish`, {});
+      await api.post(`/api/courses/${courseId}/approve`, {});
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
     } catch (err) {
       alert("Failed to publish the course.");
+    }
+  };
+
+  const handleReject = async (reason: string) => {
+    try {
+      await api.post(`/api/courses/${courseId}/reject`, { reason });
+      if (course) {
+        setCourse({ ...course, status: "REJECTED" });
+      }
+    } catch (err) {
+      alert("Failed to reject the course.");
     }
   };
 
@@ -123,6 +134,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       quizStats={quizStats}
       canPublish={!!canPublish}
       onPublish={handlePublish}
+      onReject={handleReject}
       onAttemptGraded={handleAttemptGraded}
       mode={mode}
       isFeedbackOpen={isFeedbackOpen}

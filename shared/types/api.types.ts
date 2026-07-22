@@ -13,7 +13,8 @@ export type ContentStatus =
   | "SUBMITTED"
   | "APPROVED"
   | "PUBLISHED"
-  | "ARCHIVED";
+  | "ARCHIVED"
+  | "REJECTED";
 
 export interface UserProfileResponse {
   id: string;
@@ -45,7 +46,10 @@ export interface CourseResponse {
   description?: string;
   coverImageUrl?: string;
   pricingModel: PricingModel;
+  priceAmount?: number;
+  examSchedule?: string;
   status: ContentStatus;
+  rejectionReason?: string;
   wasPublished?: boolean;
   modules: ModuleResponse[];
   createdAt: string;
@@ -57,12 +61,16 @@ export interface CreateCourseRequest {
   title: string;
   description?: string;
   pricingModel?: PricingModel;
+  priceAmount?: number;
+  examSchedule?: string;
 }
 
 export interface PatchCourseRequest {
   title?: string;
   description?: string;
   pricingModel?: PricingModel;
+  priceAmount?: number;
+  examSchedule?: string;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────

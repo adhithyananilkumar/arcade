@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '@/infrastructure/http/api';
 
 type Question = {
   id: number;
@@ -27,18 +28,16 @@ export default function ExamEnginePage() {
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load and shuffle questions
+  // Load questions
   useEffect(() => {
-    fetch('/mock-questions.json')
-      .then(res => res.json())
+    api.get<Question[]>(`/api/courses/${params.courseId}/exam/questions`)
       .then(data => {
-        const allQuestions: Question[] = data.questions || [];
-        // Shuffle and pick 25
-        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-        setQuestions(shuffled.slice(0, 25));
+        setQuestions(data);
       })
-      .catch(err => console.error("Failed to load questions", err));
-  }, []);
+      .catch(err => {
+        console.error("Failed to load questions", err);
+      });
+  }, [params.courseId]);
 
   // Check if already terminated
   useEffect(() => {

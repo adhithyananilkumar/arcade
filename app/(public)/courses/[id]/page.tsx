@@ -351,7 +351,9 @@ function CourseHero({
   authorUsername, 
   authorAvatarUrl,
   lessonCount = 0,
-  onEnroll
+  onEnroll,
+  pricingModel,
+  priceAmount
 }: { 
   title: string
   authorName?: string
@@ -435,8 +437,13 @@ function CourseHero({
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <div className="flex items-baseline gap-2 pr-1">
-              <span className="font-serif text-3xl font-medium text-ink">$20</span>
-              <span className="text-sm text-subtle line-through">$49</span>
+              {pricingModel === "PAID" ? (
+                <>
+                  <span className="font-serif text-3xl font-medium text-ink">${priceAmount}</span>
+                </>
+              ) : (
+                <span className="font-serif text-3xl font-medium text-ink">Free</span>
+              )}
             </div>
             <EnrollButton onClick={onEnroll}>Enroll now</EnrollButton>
             <button

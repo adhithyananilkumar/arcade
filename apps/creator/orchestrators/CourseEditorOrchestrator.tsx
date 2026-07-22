@@ -34,7 +34,8 @@ import {
   encodeStateBase64,
   encodeSnapshotBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor } from "@/domains/assessments";
+import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
+import { CourseSubmitDialog } from "../components/CourseSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -187,41 +188,6 @@ function ConfirmDialog({
   );
 }
 
-// ── Question Bank placeholder dialog ─────────────────────────────────────────
-
-function QuestionBankDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          <X size={18} />
-        </button>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
-            <FileText size={22} className="text-indigo-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Question Bank</h3>
-          <p className="text-sm leading-relaxed text-gray-500">
-            The Question Bank editor is coming in the next phase. You&apos;ll be able to
-            create MCQ, short answer, and coding questions linked to this course.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Got it
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Small icon button used in the tree rows ──────────────────────────────────
 
 function IconBtn({
@@ -257,6 +223,7 @@ function StatusPill({ status }: { status: string }) {
     SUBMITTED: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
     APPROVED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
     PUBLISHED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
+    REJECTED: { badge: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-400" },
     ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
   };
   const s = styles[status] ?? styles.ARCHIVED;
@@ -450,6 +417,8 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   const [status, setStatus] = useState("DRAFT");
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<CourseResponse | null>(null);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -520,6 +489,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             expanded: true,
           }))
         );
+        setCourseData(course);
       } catch (e) {
         console.error("Failed to load course", e);
       }
@@ -1064,36 +1034,35 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const askSubmit = () =>
-    setConfirm({
-      title: "Submit for review?",
-      message:
-        "This course will be sent to an admin for review, and a version checkpoint is saved for each lesson. You can keep editing while it is under review.",
-      confirmLabel: "Submit",
-      onConfirm: async () => {
-        if (!courseId) return;
-        // Flush the open lesson first so its latest edits are persisted before the
-        // backend snapshots the whole course into WORKFLOW versions.
-        if (editorRef.current) {
-          try {
-            await editorRef.current.flush();
-          } catch {
-            // best-effort — proceed with submit regardless
-          }
-        }
-        try {
-          const updated = await api.post<CourseResponse>(
-            `/api/courses/${courseId}/submit`,
-            {}
-          );
-          setStatus(updated.status);
-          // Surface the new "Submitted for review" checkpoint if the panel is open.
-          setHistoryRefreshKey((k) => k + 1);
-        } catch (e) {
-          console.error("Failed to submit course", e);
-        }
-      },
-    });
+  const handleConfirmSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; examSchedule?: string }) => {
+    if (!courseId) return;
+    
+    // Flush the open lesson first
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort
+      }
+    }
+    
+    try {
+      // First update the extra fields
+      await api.patch(`/api/courses/${courseId}`, data);
+      
+      // Then submit for review
+      const updated = await api.post<CourseResponse>(`/api/courses/${courseId}/submit`, {});
+      setStatus(updated.status);
+      setPricingModel(data.pricingModel);
+      if (courseData) {
+        setCourseData({ ...courseData, ...data, status: updated.status });
+      }
+      setHistoryRefreshKey((k) => k + 1);
+    } catch (e) {
+      console.error("Failed to submit course", e);
+      throw e;
+    }
+  };
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1133,8 +1102,16 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   }
 
   return (
-    <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+    <div className="relative flex flex-1 h-full min-h-0 flex-col overflow-hidden bg-white">
+      {courseData && (
+        <CourseSubmitDialog
+          course={courseData}
+          open={submitDialogOpen}
+          onClose={() => setSubmitDialogOpen(false)}
+          onSubmit={handleConfirmSubmit}
+        />
+      )}
+      <QuestionBankPanel open={qbOpen} courseId={courseId} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       {activeLessonId && (
         <VersionHistoryOrchestrator
@@ -1206,7 +1183,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             {status === "DRAFT" && (
               <button
                 type="button"
-                onClick={askSubmit}
+                onClick={() => setSubmitDialogOpen(true)}
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
                 <Send size={14} />
@@ -1486,6 +1463,16 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             </div>
           ) : activeLessonId ? (
             <div className="mx-auto max-w-[860px] px-6 pb-44 pt-24 sm:px-12">
+              {courseData?.status === "REJECTED" && courseData.rejectionReason && (
+                <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-200 flex items-start gap-3 text-red-800">
+                  <span className="text-xl leading-none mt-0.5">⚠️</span>
+                  <div>
+                    <h3 className="font-semibold text-sm">Course Rejected</h3>
+                    <p className="text-sm mt-1">{courseData.rejectionReason}</p>
+                    <p className="text-xs mt-2 text-red-600 font-medium">Please address these issues and resubmit.</p>
+                  </div>
+                </div>
+              )}
               <div>
                 <input
                   type="text"

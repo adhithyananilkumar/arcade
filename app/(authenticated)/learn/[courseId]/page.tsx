@@ -398,7 +398,9 @@ function CourseHero({
   lessonCount = 0,
   onEnroll,
   isEnrolling = false,
-  isEnrolled = false
+  isEnrolled = false,
+  pricingModel,
+  priceAmount
 }: { 
   title: string
   authorName?: string
@@ -408,6 +410,8 @@ function CourseHero({
   onEnroll?: () => void
   isEnrolling?: boolean
   isEnrolled?: boolean
+  pricingModel?: string
+  priceAmount?: number
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -483,8 +487,14 @@ function CourseHero({
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <div className="flex items-baseline gap-2 pr-1">
-              <span className="font-serif text-3xl font-medium text-ink">$20</span>
-              <span className="text-sm text-subtle line-through">$49</span>
+              {pricingModel === "PAID" ? (
+                <>
+                  <span className="font-serif text-3xl font-medium text-ink">${priceAmount}</span>
+                  {/* <span className="text-sm text-subtle line-through">${(priceAmount || 0) * 2}</span> */}
+                </>
+              ) : (
+                <span className="font-serif text-3xl font-medium text-ink">Free</span>
+              )}
             </div>
             {isEnrolled ? (
               <button className="flex h-11 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-6 font-semibold text-green-500 transition-all">
@@ -846,7 +856,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean }) {
+function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -868,7 +878,7 @@ function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false }: { onEn
           </button>
         ) : (
           <EnrollButton onClick={onEnroll}>
-            {isEnrolling ? "Enrolling..." : "Enroll for $20"}
+            {isEnrolling ? "Enrolling..." : "Enroll now"}
           </EnrollButton>
         )}
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
@@ -959,6 +969,8 @@ export default function CoursePage() {
             onEnroll={handleEnroll}
             isEnrolling={isEnrolling}
             isEnrolled={isEnrolled}
+            pricingModel={course?.pricingModel}
+            priceAmount={course?.priceAmount}
           />
         </div>
       </div>
@@ -970,7 +982,7 @@ export default function CoursePage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} />
+          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} />
         </div>
       </div>
     </main>

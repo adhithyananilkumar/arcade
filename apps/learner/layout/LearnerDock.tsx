@@ -42,7 +42,7 @@ const dockItems = [
   {
     id: 'exam',
     label: 'Exam',
-    href: '/exam-hub', // Or dynamic route below
+    href: '/exam',
     icon: ClipboardList,
     activeColor: 'text-rose-600 dark:text-rose-400',
     exact: false,
@@ -64,7 +64,7 @@ export default function LearnerDock() {
     pathname.startsWith('/content') ||
     pathname.startsWith('/roadmaps') ||
     pathname.startsWith('/settings') ||
-    pathname.includes('/exam')
+    pathname.includes('/exam/')
   ) {
     return null;
   }
@@ -93,7 +93,7 @@ export default function LearnerDock() {
                 className="cursor-pointer"
                 onClick={() => {
                   if (item.id === 'exam') {
-                    router.push(`/learn/${currentCourseId}/exam`);
+                    router.push('/exam');
                   } else {
                     router.push(item.href);
                   }

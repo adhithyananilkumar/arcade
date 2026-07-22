@@ -31,7 +31,7 @@ export default function LearnerShell({
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white">
           <LearnerNavbar />
-          <main className="relative bg-transparent flex flex-col flex-1 pb-28">
+          <main className="relative bg-transparent flex flex-col flex-1 pt-24 pb-28">
             {children}
           </main>
           <LearnerDock />

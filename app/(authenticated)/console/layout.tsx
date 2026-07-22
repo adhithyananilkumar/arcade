@@ -3,7 +3,7 @@
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Settings, Tv, BookOpen, Shield } from 'lucide-react';
+import { Settings, Tv, BookOpen, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -30,6 +30,10 @@ export default function ArcConsoleLayout({
       name: 'Course Management',
       href: '/console/courses',
       icon: BookOpen,
+    }, {
+      name: 'Exam Schedules',
+      href: '/console/exam-schedules',
+      icon: Calendar,
     }] : []),
     ...(showAdminSettings ? [{
       name: 'Admin Settings',

@@ -73,9 +73,20 @@ export default function ExamAcknowledgementPage() {
             </div>
 
             {isTerminated && (
-              <div className="mx-6 mt-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
-                <AlertTriangle size={20} />
-                <span className="font-medium">You cannot take this exam because your previous session was terminated due to anti-cheat violations.</span>
+              <div className="mx-6 mt-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle size={20} className="shrink-0" />
+                  <span className="font-medium">You cannot take this exam because your previous session was terminated due to anti-cheat violations.</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    sessionStorage.removeItem(`exam_terminated_${params.courseId}`);
+                    setIsTerminated(false);
+                  }}
+                  className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-sm font-semibold transition-colors shrink-0"
+                >
+                  Reset (Dev)
+                </button>
               </div>
             )}
 
