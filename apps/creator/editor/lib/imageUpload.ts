@@ -14,34 +14,42 @@ interface PresignResponse {
   publicUrl: string;
 }
 
+import { toast } from "sonner";
+
 async function uploadFile(file: File, allowedTypes: string[] | null): Promise<string> {
-  if (allowedTypes && !allowedTypes.includes(file.type)) {
-    throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
+  try {
+    if (allowedTypes && !allowedTypes.includes(file.type)) {
+      throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
+    }
+    if (file.size > MAX_BYTES) {
+      throw new Error(`File exceeds the ${MAX_BYTES / 1024 / 1024}MB limit`);
+    }
+
+    const presign = await api.post<PresignResponse>("/api/media/presign", {
+      fileName: file.name,
+      contentType: file.type,
+    });
+
+    const putRes = await fetch(presign.uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!putRes.ok) throw new Error("Upload to storage failed");
+
+    await api.post("/api/media/metadata", {
+      key: presign.key,
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    });
+
+    return presign.publicUrl;
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    toast.error(error.message || "Failed to upload file");
+    return ""; // Return empty string to avoid unhandled rejection in tiptap
   }
-  if (file.size > MAX_BYTES) {
-    throw new Error(`File exceeds the ${MAX_BYTES / 1024 / 1024}MB limit`);
-  }
-
-  const presign = await api.post<PresignResponse>("/api/media/presign", {
-    fileName: file.name,
-    contentType: file.type,
-  });
-
-  const putRes = await fetch(presign.uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  if (!putRes.ok) throw new Error("Upload to storage failed");
-
-  await api.post("/api/media/metadata", {
-    key: presign.key,
-    fileName: file.name,
-    contentType: file.type,
-    sizeBytes: file.size,
-  });
-
-  return presign.publicUrl;
 }
 
 /** Image-only upload — backs the Image extension's `upload` option. */
