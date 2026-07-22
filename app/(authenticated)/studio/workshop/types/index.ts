@@ -65,6 +65,9 @@ export interface WorkshopFormData extends Partial<CreateWorkshopRequest> {
   category: string;
   language: string;
   sessions: Partial<WorkshopSession>[];
+  pricing: Partial<WorkshopPricing>;
+  folders: Partial<WorkshopFolder>[];
+  resources: Partial<WorkshopResource>[];
 }
 
 export enum SessionStatus {
@@ -107,3 +110,94 @@ export interface WorkshopSession {
 
 export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'createdAt' | 'updatedAt'>;
 export type UpdateWorkshopSessionRequest = Partial<CreateWorkshopSessionRequest> & { status?: SessionStatus };
+
+export enum PricingModel {
+  FREE = 'FREE',
+  PAID = 'PAID',
+  MEMBERSHIP = 'MEMBERSHIP',
+  INVITE_ONLY = 'INVITE_ONLY',
+  COMING_SOON = 'COMING_SOON'
+}
+
+export enum RegistrationType {
+  OPEN = 'OPEN',
+  APPROVAL_REQUIRED = 'APPROVAL_REQUIRED',
+  INVITE_ONLY = 'INVITE_ONLY',
+  PRIVATE = 'PRIVATE'
+}
+
+export interface WorkshopPricing {
+  id: string;
+  workshopId: string;
+  pricingModel: PricingModel;
+  price: number;
+  currency: string;
+  registrationType: RegistrationType;
+  seatLimit?: number;
+  waitlistEnabled: boolean;
+  registrationStartsAt?: string; // ISO OffsetDateTime
+  registrationEndsAt?: string;
+  earlyBirdEnabled: boolean;
+  earlyBirdPrice?: number;
+  earlyBirdEndsAt?: string;
+  couponSupported: boolean;
+  refundPolicy?: string;
+  allowCancellation: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SaveWorkshopPricingRequest = Omit<WorkshopPricing, 'id' | 'workshopId' | 'createdAt' | 'updatedAt'>;
+
+export enum ResourceType {
+  PDF = 'PDF',
+  DOCUMENT = 'DOCUMENT',
+  SLIDES = 'SLIDES',
+  IMAGE = 'IMAGE',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
+  ZIP = 'ZIP',
+  CODE = 'CODE',
+  TEMPLATE = 'TEMPLATE',
+  LINK = 'LINK',
+  MARKDOWN = 'MARKDOWN',
+  OTHER = 'OTHER'
+}
+
+export enum StorageProvider {
+  LOCAL = 'LOCAL',
+  S3 = 'S3',
+  AZURE = 'AZURE',
+  GOOGLE_CLOUD = 'GOOGLE_CLOUD',
+  EXTERNAL = 'EXTERNAL'
+}
+
+export interface WorkshopFolder {
+  id: string;
+  workshopId: string;
+  name: string;
+  parentFolderId?: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkshopResource {
+  id: string;
+  workshopId: string;
+  folderId?: string;
+  title: string;
+  description?: string;
+  resourceType: ResourceType;
+  fileName?: string;
+  originalFileName?: string;
+  mimeType?: string;
+  fileSize?: number;
+  fileUrl?: string;
+  thumbnailUrl?: string;
+  externalUrl?: string;
+  storageProvider: StorageProvider;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}

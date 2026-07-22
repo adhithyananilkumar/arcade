@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
-import { DeliveryMode, Difficulty, Visibility, WorkshopFormData, WorkshopType } from '@/app/(authenticated)/studio/workshop/types';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { DeliveryMode, Difficulty, Visibility, WorkshopFormData, WorkshopType, PricingModel, RegistrationType } from '@/app/(authenticated)/studio/workshop/types';
 
 const initialData: WorkshopFormData = {
   title: '',
@@ -20,12 +20,42 @@ const initialData: WorkshopFormData = {
   capacity: undefined,
   visibility: Visibility.PRIVATE,
   sessions: [],
+  pricing: {
+    pricingModel: PricingModel.FREE,
+    price: 0,
+    currency: 'USD',
+    registrationType: RegistrationType.OPEN,
+    waitlistEnabled: false,
+    earlyBirdEnabled: false,
+    couponSupported: false,
+    allowCancellation: false
+  },
+  folders: [],
+  resources: []
 };
 
 export const useWorkshopForm = () => {
-  const [formData, setFormData] = useState<WorkshopFormData>(initialData);
+  const [formData, setFormData] = useState<WorkshopFormData>(() => {
+    if (typeof window !== 'undefined') {
+      const savedDraft = localStorage.getItem('arcade_workshop_draft');
+      if (savedDraft) {
+        try {
+          return JSON.parse(savedDraft);
+        } catch (e) {
+          console.error('Failed to parse saved draft', e);
+        }
+      }
+    }
+    return initialData;
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('arcade_workshop_draft', JSON.stringify(formData));
+    }
+  }, [formData]);
 
   const validateField = useCallback((name: string, value: any) => {
     let error = '';

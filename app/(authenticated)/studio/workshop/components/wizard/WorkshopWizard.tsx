@@ -8,6 +8,8 @@ import { WorkshopStepper } from '@/app/(authenticated)/studio/workshop/component
 import { WorkshopFooter } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/workshop/components/wizard/BasicInformationStep';
 import { ScheduleStep } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/ScheduleStep';
+import { ResourcesStep } from '@/app/(authenticated)/studio/workshop/components/wizard/resources/ResourcesStep';
+import { PricingStep } from '@/app/(authenticated)/studio/workshop/components/wizard/pricing/PricingStep';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { createWorkshop } from '@/app/(authenticated)/studio/workshop/api/workshop';
 
@@ -37,10 +39,8 @@ export const WorkshopWizard: React.FC = () => {
   };
 
   const handleContinue = () => {
-    if (currentStep === 0) {
-      // Save draft automatically on continue? The prompt says "Saving the workshop draft should also save all sessions."
-      // Actually we can just proceed to step 1 (Schedule) if form is valid
-      setCurrentStep(1);
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
     } else {
       toast.info('Future steps coming soon.');
     }
@@ -64,6 +64,8 @@ export const WorkshopWizard: React.FC = () => {
         <div className="flex-1 min-w-0">
           {currentStep === 0 && <BasicInformationStep form={form} />}
           {currentStep === 1 && <ScheduleStep form={form} />}
+          {currentStep === 2 && <ResourcesStep form={form} />}
+          {currentStep === 3 && <PricingStep form={form} />}
           
           <WorkshopFooter 
             onBack={handleBack}
