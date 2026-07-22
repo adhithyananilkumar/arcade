@@ -265,6 +265,7 @@ export default function SingleWorkshopDashboard() {
         ) : (
           /* Wizard steps embedded inline */
           <WorkshopWizard
+            key={activeTab}
             workshopId={id as string}
             initialStep={activeTabData.step}
           />

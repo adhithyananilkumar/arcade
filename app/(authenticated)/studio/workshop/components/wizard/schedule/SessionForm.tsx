@@ -1,5 +1,5 @@
 import React from 'react';
-import { WorkshopSession, MeetingProvider } from '@/app/(authenticated)/studio/workshop/types';
+import { WorkshopSession, MeetingProvider, SessionReleaseType } from '@/app/(authenticated)/studio/workshop/types';
 
 interface Props {
   session: Partial<WorkshopSession>;
@@ -137,6 +137,37 @@ export const SessionForm: React.FC<Props> = ({ session, onUpdate }) => {
           </div>
         </div>
       )}
+
+      <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg border border-amber-100 dark:border-amber-900/50 space-y-4 mt-6">
+        <h4 className="text-sm font-medium text-amber-800 dark:text-amber-300">Content Availability (Release Rules)</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">When should content unlock?</label>
+            <select
+              value={session.releaseType || SessionReleaseType.SCHEDULED_START}
+              onChange={(e) => onUpdate('releaseType', e.target.value as SessionReleaseType)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
+            >
+              <option value={SessionReleaseType.IMMEDIATE}>Immediately on Publish</option>
+              <option value={SessionReleaseType.SCHEDULED_START}>At Scheduled Start Time</option>
+              <option value={SessionReleaseType.SCHEDULED_END}>At Scheduled End Time</option>
+              <option value={SessionReleaseType.MANUAL}>Manual Release Only</option>
+              <option value={SessionReleaseType.CUSTOM}>Custom Date & Time</option>
+            </select>
+          </div>
+          {session.releaseType === SessionReleaseType.CUSTOM && (
+            <div>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Custom Release Time</label>
+              <input
+                type="datetime-local"
+                value={session.customReleaseTime ? session.customReleaseTime.slice(0, 16) : ''}
+                onChange={(e) => onUpdate('customReleaseTime', e.target.value ? new Date(e.target.value).toISOString() : '')}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
+              />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

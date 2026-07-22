@@ -81,6 +81,14 @@ export enum SessionStatus {
   POSTPONED = 'POSTPONED'
 }
 
+export enum SessionReleaseType {
+  IMMEDIATE = 'IMMEDIATE',
+  SCHEDULED_START = 'SCHEDULED_START',
+  SCHEDULED_END = 'SCHEDULED_END',
+  MANUAL = 'MANUAL',
+  CUSTOM = 'CUSTOM'
+}
+
 export enum MeetingProvider {
   NONE = 'NONE',
   ZOOM = 'ZOOM',
@@ -107,11 +115,14 @@ export interface WorkshopSession {
   meetingProvider?: MeetingProvider;
   capacity?: number;
   status: SessionStatus;
+  releaseType?: SessionReleaseType;
+  customReleaseTime?: string;
+  isManuallyReleased?: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'createdAt' | 'updatedAt'>;
+export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'isManuallyReleased' | 'createdAt' | 'updatedAt'>;
 export type UpdateWorkshopSessionRequest = Partial<CreateWorkshopSessionRequest> & { status?: SessionStatus };
 
 export enum PricingModel {

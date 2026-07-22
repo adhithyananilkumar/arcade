@@ -43,6 +43,8 @@ import type * as Y from "yjs";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
+import { encodeSnapshotBase64 } from "@/apps/creator/editor";
+import { SessionSettingsDialog } from "./SessionSettingsDialog";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -50,7 +52,6 @@ import {
   createYDoc,
   applyBase64Update,
   encodeStateBase64,
-  encodeSnapshotBase64,
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
@@ -517,6 +518,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [isInitializing, setIsInitializing] = useState(true);
   const [navigatingBack, setNavigatingBack] = useState(false);
 
+  // Workshop Session Settings
+  const [sessionSettingsSessionId, setSessionSettingsSessionId] = useState<string | null>(null);
+
   // Imperative handle to force-save the open lesson before navigating away.
   const editorRef = useRef<ArcadeEditorHandle>(null);
 
@@ -814,6 +818,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )
         );
         await openLesson(newLesson as any);
+        if (contentType === "workshop") {
+          setSessionSettingsSessionId(newLesson.id);
+        }
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
@@ -1177,6 +1184,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
+      <SessionSettingsDialog
+        open={!!sessionSettingsSessionId}
+        onClose={() => setSessionSettingsSessionId(null)}
+        workshopId={contentId!}
+        sessionId={sessionSettingsSessionId}
+      />
       {activeLessonId && (
         <VersionHistoryOrchestrator
           lessonId={activeLessonId}
@@ -1241,6 +1254,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               >
                 <History size={15} />
                 <span className="hidden md:inline">History</span>
+              </button>
+            )}
+
+            {activeLessonId && contentType === "workshop" && (
+              <button
+                type="button"
+                onClick={() => setSessionSettingsSessionId(activeLessonId)}
+                title="Day Schedule & Settings"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              >
+                <Settings size={15} />
+                <span className="hidden md:inline">Day Settings</span>
               </button>
             )}
 
