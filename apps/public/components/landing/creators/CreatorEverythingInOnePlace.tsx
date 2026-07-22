@@ -2,17 +2,14 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import {
-  Wrench, Users, ClipboardCheck, Send, BarChart3, ArrowRight
+  Wrench, Users, ClipboardCheck, Send, BarChart3
 } from "lucide-react";
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
-import Link from "next/link";
-import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export default function CreatorEverythingInOnePlace() {
   const section2HeaderRef = useRef<HTMLDivElement>(null);
   const timelineScrollRef = useRef<HTMLDivElement>(null);
   const [animKey, setAnimKey] = useState(0);
-  const { status } = useAuthStore();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -182,94 +179,6 @@ export default function CreatorEverythingInOnePlace() {
             );
           })}
         </div>
-      </div>
-
-      {/* Dashboard Mockup */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
-
-        {/* Mockup Panel */}
-        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-[24px] p-6 shadow-[0_20px_50px_rgba(36,81,214,0.03)] space-y-6 relative overflow-hidden">
-          {/* Window controls */}
-          <div className="flex gap-1.5 border-b border-slate-100 pb-4">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-            <span className="text-[9px] font-bold text-slate-400 ml-4">Workspace / Dashboard / Analytics</span>
-          </div>
-
-          {/* Analytics widgets */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-[#F8F9FC] border border-slate-100 rounded-xl p-3.5 space-y-1">
-              <span className="text-[9px] font-black text-slate-400 block tracking-wider uppercase">REVENUE</span>
-              <span className="font-space text-base font-extrabold text-[#2451D6]">$12,840</span>
-            </div>
-            <div className="bg-[#F8F9FC] border border-slate-100 rounded-xl p-3.5 space-y-1">
-              <span className="text-[9px] font-black text-slate-400 block tracking-wider uppercase">ENROLLMENTS</span>
-              <span className="font-space text-base font-extrabold text-slate-800">1,480</span>
-            </div>
-            <div className="bg-[#F8F9FC] border border-slate-100 rounded-xl p-3.5 space-y-1">
-              <span className="text-[9px] font-black text-slate-400 block tracking-wider uppercase">RATING</span>
-              <span className="font-space text-base font-extrabold text-[#10B981]">4.9★</span>
-            </div>
-          </div>
-
-          {/* Course draft rows */}
-          <div className="space-y-3">
-            <span className="text-[9px] font-black text-slate-400 block tracking-wider uppercase">ACTIVE CURRICULUM</span>
-
-            <div className="flex items-center justify-between border border-slate-100 p-3 rounded-xl bg-white">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center font-bold text-[#2451D6] text-xs">JS</span>
-                <div>
-                  <h5 className="text-xs font-bold text-slate-800">Advanced JS Engine</h5>
-                  <span className="text-[9px] font-semibold text-slate-400">12 Modules • 148 Graded Questions</span>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-full text-[8px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 uppercase tracking-wider">Active</span>
-            </div>
-
-            <div className="flex items-center justify-between border border-slate-100 p-3 rounded-xl bg-white/70">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-[#EAF7EF] flex items-center justify-center font-bold text-[#10B981] text-xs">TS</span>
-                <div>
-                  <h5 className="text-xs font-bold text-slate-800">Introduction to TypeScript</h5>
-                  <span className="text-[9px] font-semibold text-slate-400">8 Modules • Draft Sandbox</span>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded-full text-[8px] font-black text-amber-700 bg-amber-50 border border-amber-100 uppercase tracking-wider">Reviewing</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Value proposition */}
-        <div className="lg:col-span-2 space-y-6">
-          <h3 className="text-2xl font-bold text-slate-900 leading-tight">
-            A Complete Command Center
-          </h3>
-          <p className="text-xs sm:text-sm font-semibold text-slate-500 leading-relaxed">
-            Skip complex integrations. Build courses, manage co-authors, review curriculum feedback, and configure custom billing cycles in a sleek, glassmorphic layout.
-          </p>
-          <div className="pt-4">
-            {status === 'authenticated' ? (
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2451D6] hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-blue-500/10 hover:shadow-lg transition-all duration-300"
-              >
-                <span>Open Arcade</span>
-                <ArrowRight size={14} />
-              </Link>
-            ) : (
-              <Link
-                href="/register?role=creator"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#2451D6] hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase shadow-md shadow-blue-500/10 hover:shadow-lg transition-all duration-300"
-              >
-                <span>Get Started Now</span>
-                <ArrowRight size={14} />
-              </Link>
-            )}
-          </div>
-        </div>
-
       </div>
 
     </section>

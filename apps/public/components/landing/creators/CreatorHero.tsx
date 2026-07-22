@@ -1,28 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { ArrowRight } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, Variants } from "framer-motion";
+import CreatorHeroEcosystem from "@/apps/public/components/landing/creators/CreatorHeroEcosystem";
 import DotGrid from "@/apps/public/components/landing/DotGrid";
-import CollegesEcosystem from "@/apps/public/components/landing/CollegesEcosystem";
 import Link from "next/link";
 
 export default function CreatorHero() {
   const shouldReduceMotion = useReducedMotion();
-  const [activeFeature, setActiveFeature] = useState<number | null>(null);
 
-  const fadeInVariant = {
+  const fadeInVariant: Variants = {
     hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
     visible: (customDelay: number) => ({
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.6,
-        ease: [0.16, 1, 0.3, 1] as any,
+        ease: [0.16, 1, 0.3, 1],
         delay: customDelay,
       },
     }),
-  } as any;
+  };
 
   return (
     <section className="hero relative z-10 bg-transparent pt-0 pb-8 lg:pb-12 overflow-hidden">
@@ -105,10 +104,7 @@ export default function CreatorHero() {
           {/* Outer Decorative Glow */}
           <div className="absolute inset-0 bg-radial-gradient from-indigo-100/20 to-transparent blur-3xl -z-10" />
 
-          <CollegesEcosystem
-            activeFeature={activeFeature}
-            setActiveFeature={setActiveFeature}
-          />
+          <CreatorHeroEcosystem />
         </div>
       </div>
     </section>
