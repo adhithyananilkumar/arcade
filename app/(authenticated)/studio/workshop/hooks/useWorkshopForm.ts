@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { DeliveryMode, Difficulty, Visibility, WorkshopFormData, WorkshopType, PricingModel, RegistrationType } from '@/app/(authenticated)/studio/workshop/types';
+import { DeliveryMode, Difficulty, Visibility, WorkshopFormData, WorkshopType, PricingModel, RegistrationType, SeatType, RefundPolicy, ListingStatus } from '@/app/(authenticated)/studio/workshop/types';
 
 const initialData: WorkshopFormData = {
   title: '',
@@ -25,13 +25,30 @@ const initialData: WorkshopFormData = {
     price: 0,
     currency: 'USD',
     registrationType: RegistrationType.OPEN,
+    seatType: SeatType.UNLIMITED,
     waitlistEnabled: false,
     earlyBirdEnabled: false,
-    couponSupported: false,
+    couponEnabled: false,
+    refundPolicy: RefundPolicy.NO_REFUND,
     allowCancellation: false
   },
   folders: [],
-  resources: []
+  resources: [],
+  settings: {
+    visibility: Visibility.PUBLIC,
+    listingStatus: ListingStatus.LISTED,
+    allowReviews: true,
+    allowDiscussion: true,
+    certificateEnabled: false,
+    recordingAvailable: false,
+    chatEnabled: true,
+    enableReminders: true,
+    emailNotifications: true,
+    mobileNotifications: false,
+    calendarIntegration: true,
+    autoPublish: false,
+    customUrlEnabled: false
+  }
 };
 
 export const useWorkshopForm = () => {
@@ -40,7 +57,13 @@ export const useWorkshopForm = () => {
       const savedDraft = localStorage.getItem('arcade_workshop_draft');
       if (savedDraft) {
         try {
-          return JSON.parse(savedDraft);
+          const parsed = JSON.parse(savedDraft);
+          return {
+            ...initialData,
+            ...parsed,
+            pricing: { ...initialData.pricing, ...(parsed.pricing || {}) },
+            settings: { ...initialData.settings, ...(parsed.settings || {}) }
+          };
         } catch (e) {
           console.error('Failed to parse saved draft', e);
         }

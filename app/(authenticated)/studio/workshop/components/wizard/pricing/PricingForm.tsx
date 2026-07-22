@@ -1,5 +1,5 @@
 import React from 'react';
-import { PricingModel, RegistrationType } from '@/app/(authenticated)/studio/workshop/types';
+import { PricingModel, RegistrationType, SeatType, RefundPolicy } from '@/app/(authenticated)/studio/workshop/types';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 
 interface Props {
@@ -16,7 +16,7 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
   };
 
   const isFree = pricing.pricingModel === PricingModel.FREE;
-  const isUnlimited = !pricing.seatLimit || pricing.seatLimit <= 0;
+  const isUnlimited = pricing.seatType === SeatType.UNLIMITED;
 
   return (
     <div className="space-y-10">
@@ -114,8 +114,8 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Registration Window (Starts)</label>
               <input
                 type="datetime-local"
-                value={pricing.registrationStartsAt ? new Date(pricing.registrationStartsAt).toISOString().slice(0,16) : ''}
-                onChange={(e) => updatePricing('registrationStartsAt', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+                value={pricing.registrationStart ? new Date(pricing.registrationStart).toISOString().slice(0,16) : ''}
+                onChange={(e) => updatePricing('registrationStart', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
               />
             </div>
@@ -123,8 +123,8 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Registration Window (Ends)</label>
               <input
                 type="datetime-local"
-                value={pricing.registrationEndsAt ? new Date(pricing.registrationEndsAt).toISOString().slice(0,16) : ''}
-                onChange={(e) => updatePricing('registrationEndsAt', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+                value={pricing.registrationEnd ? new Date(pricing.registrationEnd).toISOString().slice(0,16) : ''}
+                onChange={(e) => updatePricing('registrationEnd', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
               />
             </div>
@@ -141,8 +141,8 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
             <label className="flex items-center space-x-2">
               <input
                 type="radio"
-                checked={isUnlimited}
-                onChange={() => updatePricing('seatLimit', undefined)}
+                checked={pricing.seatType === SeatType.UNLIMITED}
+                onChange={() => updatePricing('seatType', SeatType.UNLIMITED)}
                 className="text-indigo-600 focus:ring-indigo-500"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Unlimited Seats</span>
@@ -150,8 +150,8 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
             <label className="flex items-center space-x-2">
               <input
                 type="radio"
-                checked={!isUnlimited}
-                onChange={() => updatePricing('seatLimit', 50)}
+                checked={pricing.seatType === SeatType.LIMITED}
+                onChange={() => updatePricing('seatType', SeatType.LIMITED)}
                 className="text-indigo-600 focus:ring-indigo-500"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Limited Seats</span>
@@ -237,13 +237,35 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
                 <label className="block text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-1.5">Ends On</label>
                 <input
                   type="datetime-local"
-                  value={pricing.earlyBirdEndsAt ? new Date(pricing.earlyBirdEndsAt).toISOString().slice(0,16) : ''}
-                  onChange={(e) => updatePricing('earlyBirdEndsAt', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+                  value={pricing.earlyBirdEndDate ? new Date(pricing.earlyBirdEndDate).toISOString().slice(0,16) : ''}
+                  onChange={(e) => updatePricing('earlyBirdEndDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
                   className="w-full rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
                 />
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {/* Coupons Section (Hidden if Free) */}
+      {!isFree && (
+        <section>
+          <div className="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Coupons</h3>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Coupons</span>
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  className="sr-only" 
+                  checked={pricing.couponEnabled || false}
+                  onChange={(e) => updatePricing('couponEnabled', e.target.checked)}
+                />
+                <div className={`block w-10 h-6 rounded-full transition-colors ${pricing.couponEnabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${pricing.couponEnabled ? 'transform translate-x-4' : ''}`}></div>
+              </div>
+            </label>
+          </div>
         </section>
       )}
 
@@ -270,13 +292,15 @@ export const PricingForm: React.FC<Props> = ({ form }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Refund Policy</label>
-            <textarea
-              value={pricing.refundPolicy || ''}
+            <select
+              value={pricing.refundPolicy || RefundPolicy.NO_REFUND}
               onChange={(e) => updatePricing('refundPolicy', e.target.value)}
-              rows={4}
-              placeholder="Explain your refund policy..."
               className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
-            />
+            >
+              {Object.keys(RefundPolicy).map((policy) => (
+                <option key={policy} value={policy}>{policy.replace('_', ' ')}</option>
+              ))}
+            </select>
           </div>
         </div>
       </section>

@@ -1,9 +1,10 @@
 export enum WorkshopStatus {
   DRAFT = 'DRAFT',
+  READY_FOR_REVIEW = 'READY_FOR_REVIEW',
   PUBLISHED = 'PUBLISHED',
+  UNPUBLISHED = 'UNPUBLISHED',
   ARCHIVED = 'ARCHIVED',
-  CANCELLED = 'CANCELLED',
-  COMPLETED = 'COMPLETED',
+  COMPLETED = 'COMPLETED'
 }
 
 export enum WorkshopType {
@@ -31,6 +32,7 @@ export enum Visibility {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
   UNLISTED = 'UNLISTED',
+  DRAFT_ONLY = 'DRAFT_ONLY'
 }
 
 export interface Workshop {
@@ -68,6 +70,7 @@ export interface WorkshopFormData extends Partial<CreateWorkshopRequest> {
   pricing: Partial<WorkshopPricing>;
   folders: Partial<WorkshopFolder>[];
   resources: Partial<WorkshopResource>[];
+  settings: Partial<WorkshopSettings>;
 }
 
 export enum SessionStatus {
@@ -126,6 +129,18 @@ export enum RegistrationType {
   PRIVATE = 'PRIVATE'
 }
 
+export enum SeatType {
+  UNLIMITED = 'UNLIMITED',
+  LIMITED = 'LIMITED'
+}
+
+export enum RefundPolicy {
+  NO_REFUND = 'NO_REFUND',
+  FULL_REFUND = 'FULL_REFUND',
+  PARTIAL_REFUND = 'PARTIAL_REFUND',
+  CUSTOM = 'CUSTOM'
+}
+
 export interface WorkshopPricing {
   id: string;
   workshopId: string;
@@ -133,21 +148,80 @@ export interface WorkshopPricing {
   price: number;
   currency: string;
   registrationType: RegistrationType;
+  seatType: SeatType;
   seatLimit?: number;
   waitlistEnabled: boolean;
-  registrationStartsAt?: string; // ISO OffsetDateTime
-  registrationEndsAt?: string;
+  registrationStart?: string; // ISO OffsetDateTime
+  registrationEnd?: string;
   earlyBirdEnabled: boolean;
   earlyBirdPrice?: number;
-  earlyBirdEndsAt?: string;
-  couponSupported: boolean;
-  refundPolicy?: string;
+  earlyBirdEndDate?: string;
+  couponEnabled: boolean;
+  refundPolicy?: RefundPolicy;
   allowCancellation: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export type SaveWorkshopPricingRequest = Omit<WorkshopPricing, 'id' | 'workshopId' | 'createdAt' | 'updatedAt'>;
+
+export enum ListingStatus {
+  LISTED = 'LISTED',
+  UNLISTED = 'UNLISTED',
+  FEATURED = 'FEATURED'
+}
+
+export enum RecordingVisibility {
+  REGISTERED_ONLY = 'REGISTERED_ONLY',
+  PUBLIC = 'PUBLIC',
+  INSTRUCTOR_ONLY = 'INSTRUCTOR_ONLY'
+}
+
+export interface WorkshopSettings {
+  id: string;
+  workshopId: string;
+  visibility: Visibility;
+  listingStatus: ListingStatus;
+  allowReviews: boolean;
+  allowDiscussion: boolean;
+  certificateEnabled: boolean;
+  recordingAvailable: boolean;
+  recordingVisibility?: RecordingVisibility;
+  chatEnabled: boolean;
+  enableReminders: boolean;
+  emailNotifications: boolean;
+  mobileNotifications: boolean;
+  calendarIntegration: boolean;
+  autoPublish: boolean;
+  customUrlEnabled: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SaveWorkshopSettingsRequest = Omit<WorkshopSettings, 'id' | 'workshopId' | 'createdAt' | 'updatedAt'>;
+
+export interface ValidationIssue {
+  section: string;
+  issue: string;
+  resolutionAction: string;
+}
+
+export interface PublishValidationResponse {
+  isReady: boolean;
+  completionPercentage: number;
+  issues: ValidationIssue[];
+}
+
+export interface WorkshopPreviewDto {
+  basicInfo: Workshop;
+  schedule: WorkshopSession[];
+  resources: WorkshopResource[];
+  pricing: WorkshopPricing;
+  settings: WorkshopSettings;
+}
 
 export enum ResourceType {
   PDF = 'PDF',

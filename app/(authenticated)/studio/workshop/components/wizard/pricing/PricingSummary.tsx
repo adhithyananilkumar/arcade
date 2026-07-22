@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
-import { PricingModel, RegistrationType } from '@/app/(authenticated)/studio/workshop/types';
+import { PricingModel, RegistrationType, SeatType } from '@/app/(authenticated)/studio/workshop/types';
 
 interface Props {
   form: ReturnType<typeof useWorkshopForm>;
@@ -12,7 +12,7 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
   if (!pricing) return null;
 
   const isFree = pricing.pricingModel === PricingModel.FREE;
-  const isUnlimited = !pricing.seatLimit || pricing.seatLimit <= 0;
+  const isUnlimited = pricing.seatType === SeatType.UNLIMITED;
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -61,10 +61,10 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
                 {formatCurrency(pricing.earlyBirdPrice || 0, pricing.currency || 'USD')}
               </span>
             </div>
-            {pricing.earlyBirdEndsAt && (
+            {pricing.earlyBirdEndDate && (
               <div className="flex justify-end">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Ends {new Date(pricing.earlyBirdEndsAt).toLocaleDateString()}
+                  Ends {new Date(pricing.earlyBirdEndDate).toLocaleDateString()}
                 </span>
               </div>
             )}
@@ -82,7 +82,7 @@ export const PricingSummary: React.FC<Props> = ({ form }) => {
           <div className="flex justify-between items-start mt-2">
             <span className="text-sm text-gray-500 dark:text-gray-400">Window</span>
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100 text-right max-w-[150px]">
-              {formatDateRange(pricing.registrationStartsAt, pricing.registrationEndsAt)}
+              {formatDateRange(pricing.registrationStart, pricing.registrationEnd)}
             </span>
           </div>
         </div>
