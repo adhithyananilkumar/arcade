@@ -655,6 +655,11 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
 
+  // Fingerprint of the last body we persisted, so an autosave triggered by a
+  // transaction that didn't actually change the document is dropped before it costs
+  // a CRDT encode and a network round-trip.
+  const lastSavedBodyRef = useRef<string | null>(null);
+
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
       if (!activeLessonId) return;
