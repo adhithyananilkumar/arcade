@@ -7,7 +7,7 @@ export function ToolbarSkeleton() {
   return (
     <div
       aria-hidden
-      className="flex items-center gap-2 !p-1 !border-b !border-solid !border-border"
+      className="flex items-center gap-0.5 !px-2 !py-1 !border-b !border-solid !border-border"
     >
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="h-7 w-7 animate-pulse rounded bg-gray-100" />

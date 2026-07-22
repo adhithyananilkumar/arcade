@@ -475,6 +475,71 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   Toolbar density
+   Two things fight a single-row toolbar inside the 764px canvas: the
+   heading / font-family / font-size triggers ship a 6rem min-width each
+   (288px of strip for three labels), and the library mixes h-9 and h-8
+   controls so the row reads ragged. Both are pinned here.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.arcade-toolbar-selects button {
+  min-width: 4.5rem;
+}
+
+/* One uniform control height across every group — the library ships a mix
+   of h-9 (36px) and h-8 (32px) triggers, which made the strip look ragged. */
+.arcade-toolbar button {
+  height: 32px;
+}
+
+/* In collaborative mode the Y.Doc owns undo/redo, so the library's History
+   extension is dropped and its two buttons render nothing — leaving an empty
+   group and an orphaned leading separator. Collapse both. */
+.arcade-toolbar > div:not([role="separator"]):empty,
+.arcade-toolbar > div:not([role="separator"]):empty + [role="separator"] {
+  display: none;
+}
+
+/* Pins the strip below the host's top bar as the canvas scrolls. The host sets
+   --arcade-toolbar-top to its own bar height; standalone/card mounts get 0 and
+   the toolbar simply sits at the top of its container as before.
+   The surface colour is spelled out rather than left to `bg-background`: that
+   utility resolves to `transparent` here, which let the document scroll
+   straight through the pinned toolbar. Same story for `border-border` and the
+   separators' `bg-border` — all three were silently no-ops. */
+.arcade-toolbar {
+  position: sticky;
+  top: var(--arcade-toolbar-top, 0px);
+  z-index: 20;
+  background: #ffffff;
+  /* Inset shadow rather than border-bottom: a global border reset zeroes the
+     width, and this keeps the rule out of the box model either way. */
+  box-shadow: inset 0 -1px 0 #f1f5f9;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dark .arcade-toolbar {
+  background: #000000;
+  box-shadow: inset 0 -1px 0 #27272a;
+}
+
+/* `flex: 0 0 1px` — as plain flex items the 1px separators were being shrunk
+   to nothing to make the row fit, so none of them were visible. */
+.arcade-toolbar [role="separator"] {
+  flex: 0 0 1px;
+  background: #e5e7eb;
+}
+
+.dark .arcade-toolbar [role="separator"] {
+  background: #3f3f46;
+}
+
+.arcade-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    Slash (/) command menu
    ══════════════════════════════════════════════════════════════════════ */
 

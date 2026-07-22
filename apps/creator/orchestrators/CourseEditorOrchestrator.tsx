@@ -21,6 +21,7 @@
 // features/content/course/components/CourseEditorShell.tsx
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
 import { ArcadeEditor } from "@/apps/creator/editor";
@@ -580,8 +581,8 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       // slow link this halves the delay between clicking a lesson and seeing it.
       const flushPending = editorRef.current
         ? Promise.resolve(editorRef.current.flush()).catch(() => {
-            // best-effort — proceed with the switch regardless
-          })
+          // best-effort — proceed with the switch regardless
+        })
         : Promise.resolve();
 
       const documentPending = api
@@ -958,30 +959,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       onConfirm: () => deleteQuizNow(quiz.id),
     });
 
-  // ── Lesson title save (from main editor input) ────────────────────────────
-
-  const saveLessonTitle = useCallback(
-    async (newTitle: string) => {
-      if (!activeLessonId) return;
-      const value = newTitle.trim() || "Untitled Lesson";
-      setActiveLessonTitle(value);
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          lessons: m.lessons.map((l) =>
-            l.id === activeLessonId ? { ...l, title: value } : l
-          ),
-        }))
-      );
-      try {
-        await api.patch(`/api/lessons/${activeLessonId}`, { title: value });
-      } catch (e) {
-        console.warn("Lesson title save failed", e);
-      }
-    },
-    [activeLessonId]
-  );
-
   // ── Quiz title save (from main panel input) ───────────────────────────────
 
   const saveQuizTitle = useCallback(
@@ -1023,15 +1000,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       }, 1500);
     },
     [courseId]
-  );
-
-  /** Course title committed from the header field (already debounced by the input). */
-  const handleCourseTitleCommit = useCallback(
-    (next: string) => {
-      setTitle(next);
-      scheduleCourseMetaSave({ title: next });
-    },
-    [scheduleCourseMetaSave]
   );
 
   // ── Back to dashboard (flush every pending save first) ────────────────────
@@ -1217,15 +1185,18 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             </button>
           </div>
 
-          {/* Center: course title, centered on the viewport regardless of side widths */}
+          {/* Center: name of whatever is open. Read-only — renaming happens on the
+              canvas title field (lesson/quiz) or in Course Settings. */}
           <div className="min-w-0 justify-self-center">
-            <DebouncedTitleInput
-              value={title}
-              onCommit={handleCourseTitleCommit}
-              placeholder="Course title"
-              autoSize
-              className="max-w-[60vw] rounded-lg border-0 bg-transparent px-1.5 py-1 text-center text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 sm:max-w-md"
-            />
+            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-semibold text-gray-900 sm:max-w-md">
+              {view === "settings"
+                ? "Course Settings"
+                : activeLessonId
+                  ? activeLessonTitle
+                  : activeQuizId
+                    ? activeQuizTitle
+                    : ""}
+            </span>
           </div>
 
           {/* Right: status + secondary actions, flush to the page margin */}
@@ -1272,235 +1243,235 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
               <PanelLeftOpen size={18} />
             </button>
           ) : (
-          <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
-            {/* ── Sidebar header ───────────────── */}
-            <div className="flex flex-shrink-0 items-center px-2.5 py-2">
-              <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                Course Structure
-              </span>
-              <button
-                type="button"
-                title="Collapse sidebar"
-                onClick={() => setSidebarOpen(false)}
-                className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-              >
-                <PanelLeftClose size={16} />
-              </button>
-            </div>
+            <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+              {/* ── Sidebar header ───────────────── */}
+              <div className="flex flex-shrink-0 items-center px-2.5 py-2">
+                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                  Course Structure
+                </span>
+                <button
+                  type="button"
+                  title="Collapse sidebar"
+                  onClick={() => setSidebarOpen(false)}
+                  className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <PanelLeftClose size={16} />
+                </button>
+              </div>
 
-            {/* ── Body ──────────────────────────────── */}
-            <div className="flex min-h-0 flex-1 flex-col">
-            {/* Tree scroll area */}
-            <div className="flex-1 overflow-y-auto p-2">
-              {modules.length === 0 && (
-                <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                  <Layers size={28} className="text-gray-300" />
-                  <p className="text-xs text-gray-400">
-                    No modules yet. Add a module to get started.
-                  </p>
-                </div>
-              )}
-
-              {modules.map((mod) => (
-                <div key={mod.id} className="mb-0.5">
-                  {/* Module row */}
-                  <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setModules((prev) =>
-                          prev.map((m) =>
-                            m.id === mod.id ? { ...m, expanded: !m.expanded } : m
-                          )
-                        )
-                      }
-                      className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                    >
-                      {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                    </button>
-
-                    {isEditing("module", mod.id) ? (
-                      renameInput("text-xs font-semibold text-gray-700")
-                    ) : (
-                      <span
-                        onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                        className="flex-1 truncate text-xs font-semibold text-gray-700"
-                        title={mod.title}
-                      >
-                        {mod.title}
-                      </span>
-                    )}
-
-                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          title="Add lesson or quiz"
-                          className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                        >
-                          <Plus size={12} />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" sideOffset={4}>
-                          <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                            <FileText size={13} />
-                            Lesson
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                            <ListChecks size={13} />
-                            Quiz
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                        <Pencil size={12} />
-                      </IconBtn>
-                      <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                        <Trash2 size={12} />
-                      </IconBtn>
-                    </div>
-                  </div>
-
-                  {/* Lessons and quizzes, interleaved by position */}
-                  {mod.expanded && (
-                    <div className="ml-3 border-l border-gray-200 pl-1.5">
-                      {[
-                        ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
-                        ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
-                      ]
-                        .sort((a, b) => a.node.position - b.node.position)
-                        .map((item) => {
-                          const isActive =
-                            item.kind === "lesson"
-                              ? activeLessonId === item.node.id
-                              : activeQuizId === item.node.id;
-                          return (
-                            <div
-                              key={item.node.id}
-                              className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
-                                }`}
-                            >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  item.kind === "lesson"
-                                    ? openLesson(item.node)
-                                    : openQuiz(item.node)
-                                }
-                                className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                  ? "font-medium text-indigo-700"
-                                  : "text-gray-500"
-                                  }`}
-                              >
-                                {item.kind === "lesson" ? (
-                                  <FileText size={11} className="flex-shrink-0" />
-                                ) : (
-                                  <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
-                                )}
-                                {isEditing(item.kind, item.node.id) ? (
-                                  renameInput("text-xs")
-                                ) : (
-                                  <span className="truncate" title={item.node.title}>
-                                    {item.node.title}
-                                  </span>
-                                )}
-                              </button>
-                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                {item.kind === "quiz" && (
-                                  <IconBtn
-                                    title="Copy quiz ID — paste into an inline Quiz block"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(item.node.id);
-                                      setCopiedQuizId(item.node.id);
-                                      setTimeout(() => setCopiedQuizId(null), 1500);
-                                    }}
-                                  >
-                                    {copiedQuizId === item.node.id ? (
-                                      <Check size={12} className="text-emerald-500" />
-                                    ) : (
-                                      <Copy size={12} />
-                                    )}
-                                  </IconBtn>
-                                )}
-                                <IconBtn
-                                  title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                  onClick={() =>
-                                    startEdit(item.kind, item.node.id, item.node.title)
-                                  }
-                                >
-                                  <Pencil size={12} />
-                                </IconBtn>
-                                <IconBtn
-                                  title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                  danger
-                                  onClick={() =>
-                                    item.kind === "lesson"
-                                      ? askDeleteLesson(item.node)
-                                      : askDeleteQuiz(item.node)
-                                  }
-                                >
-                                  <Trash2 size={12} />
-                                </IconBtn>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                      {/* Add lesson / quiz to this module */}
-                      <div className="mt-0.5 flex items-center gap-3 pl-2">
-                        <button
-                          type="button"
-                          onClick={() => addLesson(mod.id)}
-                          className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                        >
-                          <Plus size={11} />
-                          Add lesson
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => addQuiz(mod.id)}
-                          className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                        >
-                          <Plus size={11} />
-                          Add quiz
-                        </button>
-                      </div>
+              {/* ── Body ──────────────────────────────── */}
+              <div className="flex min-h-0 flex-1 flex-col">
+                {/* Tree scroll area */}
+                <div className="flex-1 overflow-y-auto p-2">
+                  {modules.length === 0 && (
+                    <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                      <Layers size={28} className="text-gray-300" />
+                      <p className="text-xs text-gray-400">
+                        No modules yet. Add a module to get started.
+                      </p>
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
 
-            {/* Sidebar footer */}
-            <div className="space-y-0.5 border-t border-gray-100 p-1.5">
-              <button
-                type="button"
-                onClick={addModule}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
-              >
-                <Plus size={14} />
-                Add Module
-              </button>
-              <button
-                type="button"
-                onClick={() => setQbOpen(true)}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-              >
-                <FileText size={13} />
-                Create Question Bank
-              </button>
-              <button
-                type="button"
-                onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
-                  ? "bg-indigo-50 text-indigo-700"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                  }`}
-              >
-                <Settings size={13} />
-                Course Settings
-              </button>
+                  {modules.map((mod) => (
+                    <div key={mod.id} className="mb-0.5">
+                      {/* Module row */}
+                      <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setModules((prev) =>
+                              prev.map((m) =>
+                                m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                              )
+                            )
+                          }
+                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                        >
+                          {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </button>
+
+                        {isEditing("module", mod.id) ? (
+                          renameInput("text-xs font-semibold text-gray-700")
+                        ) : (
+                          <span
+                            onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                            className="flex-1 truncate text-xs font-semibold text-gray-700"
+                            title={mod.title}
+                          >
+                            {mod.title}
+                          </span>
+                        )}
+
+                        <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              title="Add lesson or quiz"
+                              className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                            >
+                              <Plus size={12} />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" sideOffset={4}>
+                              <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                <FileText size={13} />
+                                Lesson
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                                <ListChecks size={13} />
+                                Quiz
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                            <Pencil size={12} />
+                          </IconBtn>
+                          <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                            <Trash2 size={12} />
+                          </IconBtn>
+                        </div>
+                      </div>
+
+                      {/* Lessons and quizzes, interleaved by position */}
+                      {mod.expanded && (
+                        <div className="ml-3 border-l border-gray-200 pl-1.5">
+                          {[
+                            ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
+                            ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
+                          ]
+                            .sort((a, b) => a.node.position - b.node.position)
+                            .map((item) => {
+                              const isActive =
+                                item.kind === "lesson"
+                                  ? activeLessonId === item.node.id
+                                  : activeQuizId === item.node.id;
+                              return (
+                                <div
+                                  key={item.node.id}
+                                  className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
+                                    }`}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      item.kind === "lesson"
+                                        ? openLesson(item.node)
+                                        : openQuiz(item.node)
+                                    }
+                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
+                                      ? "font-medium text-indigo-700"
+                                      : "text-gray-500"
+                                      }`}
+                                  >
+                                    {item.kind === "lesson" ? (
+                                      <FileText size={11} className="flex-shrink-0" />
+                                    ) : (
+                                      <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
+                                    )}
+                                    {isEditing(item.kind, item.node.id) ? (
+                                      renameInput("text-xs")
+                                    ) : (
+                                      <span className="truncate" title={item.node.title}>
+                                        {item.node.title}
+                                      </span>
+                                    )}
+                                  </button>
+                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                    {item.kind === "quiz" && (
+                                      <IconBtn
+                                        title="Copy quiz ID — paste into an inline Quiz block"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(item.node.id);
+                                          setCopiedQuizId(item.node.id);
+                                          setTimeout(() => setCopiedQuizId(null), 1500);
+                                        }}
+                                      >
+                                        {copiedQuizId === item.node.id ? (
+                                          <Check size={12} className="text-emerald-500" />
+                                        ) : (
+                                          <Copy size={12} />
+                                        )}
+                                      </IconBtn>
+                                    )}
+                                    <IconBtn
+                                      title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                      onClick={() =>
+                                        startEdit(item.kind, item.node.id, item.node.title)
+                                      }
+                                    >
+                                      <Pencil size={12} />
+                                    </IconBtn>
+                                    <IconBtn
+                                      title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                      danger
+                                      onClick={() =>
+                                        item.kind === "lesson"
+                                          ? askDeleteLesson(item.node)
+                                          : askDeleteQuiz(item.node)
+                                      }
+                                    >
+                                      <Trash2 size={12} />
+                                    </IconBtn>
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                          {/* Add lesson / quiz to this module */}
+                          <div className="mt-0.5 flex items-center gap-3 pl-2">
+                            <button
+                              type="button"
+                              onClick={() => addLesson(mod.id)}
+                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                            >
+                              <Plus size={11} />
+                              Add lesson
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => addQuiz(mod.id)}
+                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                            >
+                              <Plus size={11} />
+                              Add quiz
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sidebar footer */}
+                <div className="space-y-0.5 border-t border-gray-100 p-1.5">
+                  <button
+                    type="button"
+                    onClick={addModule}
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                  >
+                    <Plus size={14} />
+                    Add Module
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQbOpen(true)}
+                    className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  >
+                    <FileText size={13} />
+                    Create Question Bank
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                    className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
+                      ? "bg-indigo-50 text-indigo-700"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                      }`}
+                  >
+                    <Settings size={13} />
+                    Course Settings
+                  </button>
+                </div>
+              </div>
             </div>
-            </div>
-          </div>
           )}
         </aside>
 
@@ -1526,14 +1497,14 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
               </div>
             </div>
           ) : activeLessonId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-44 pt-24 sm:px-12">
+            <div
+              className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
+              // Height of the top bar above — the editor toolbar sticks flush beneath it.
+              style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
+            >
+              {/* The lesson name lives in the top bar; renaming happens from the
+                  sidebar's pencil action. No second title on the canvas. */}
               <div>
-                <DebouncedTitleInput
-                  value={activeLessonTitle}
-                  onCommit={saveLessonTitle}
-                  className="mb-3 w-full border-0 bg-transparent text-4xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                  placeholder="Lesson title"
-                />
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}

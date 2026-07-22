@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  serverExternalPackages: ["yjs"],
   reactStrictMode: false,
   async redirects() {
     return [

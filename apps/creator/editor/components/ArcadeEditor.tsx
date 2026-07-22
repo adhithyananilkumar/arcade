@@ -6,6 +6,17 @@ import { RichTextProvider } from "reactjs-tiptap-editor";
 import dynamic from "next/dynamic";
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type * as Y from "yjs";
+
+// Suppress React 19 flushSync console error caused by reactjs-tiptap-editor
+if (typeof console !== "undefined") {
+  const originalError = console.error;
+  console.error = (...args) => {
+    if (typeof args[0] === "string" && args[0].includes("flushSync was called from inside a lifecycle method")) {
+      return;
+    }
+    originalError.apply(console, args);
+  };
+}
 import { EditorSkeleton } from "./EditorSkeleton";
 import { ToolbarSkeleton } from "./ToolbarSkeleton";
 import {
