@@ -250,26 +250,4 @@
   }
 }
 
-/* Giant display watermark styling in the footer (Laravel Style) */
-.arc-footer__watermark {
-  position: absolute;
-  bottom: -40px;
-  /* Overlaps bottom margin edge slightly */
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(20, 23, 31, 0.08);
-  /* Increased brand watermark visibility */
-  user-select: none;
-  pointer-events: none;
-  z-index: 1;
-  text-align: center;
-  width: min(800px, 90%);
-  display: flex;
-  justify-content: center;
-}
-
-.arc-footer__watermark svg {
-  width: 100%;
-  height: auto;
-  fill: currentColor;
-}
+
