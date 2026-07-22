@@ -341,32 +341,31 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
   const [workshopType, setWorkshopType] = useState<string>(WorkshopType.WORKSHOP);
   const [creating, setCreating] = useState(false);
 
-  function handleCreate(e: React.FormEvent) {
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setCreating(true);
+    setError(null);
 
     try {
-      const draft = {
+      const workshop = await api.post<{ id: string }>("/api/workshops", {
         title: title.trim(),
         description: description.trim() || undefined,
         workshopType: workshopType,
-      };
-      
-      // Load existing draft if any, so we don't overwrite unrelated fields, just in case
-      let existingDraft = {};
-      try {
-        const stored = localStorage.getItem('arcade_workshop_draft');
-        if (stored) {
-          existingDraft = JSON.parse(stored);
-        }
-      } catch (e) {
-        // ignore
-      }
-
-      localStorage.setItem('arcade_workshop_draft', JSON.stringify({ ...existingDraft, ...draft }));
-      router.push('/studio/workshop/new');
+        category: "uncategorized",
+        tags: [],
+        deliveryMode: "ONLINE",
+        difficulty: "BEGINNER",
+        language: "en",
+        price: 0,
+        currency: "USD",
+        visibility: "PRIVATE"
+      });
+      router.push(`/studio/workshop/${workshop.id}/edit`);
     } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create workshop");
       setCreating(false);
     }
   }
@@ -391,6 +390,12 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
             <p className="text-xs text-gray-500">Give it a title to get started.</p>
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
@@ -420,6 +425,8 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
               type="text"
               required
               autoFocus
+              minLength={5}
+              maxLength={120}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Advanced TypeScript"

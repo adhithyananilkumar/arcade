@@ -68,7 +68,7 @@ export const WorkshopWizard: React.FC = () => {
 
       toast.success('Workshop draft saved successfully!');
       if (navigateAfterSave) {
-        router.push('/studio');
+        router.push(`/studio/workshop/${savedId}/edit`);
       }
       return savedId;
     } catch (error: any) {
