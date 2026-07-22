@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
+import Link from "next/link";
+import { CATEGORY_DATA, categoriesList, courseToSlug } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
 
 const CATEGORY_TOPICS: Record<string, string[]> = {
@@ -443,7 +444,7 @@ export default function CategoryDetailedView() {
     setActiveCategory(category);
     setCourseSearchQuery("");
     setActiveEditorTab(0);
-    router.push(`/explore?category=${encodeURIComponent(category)}`);
+    router.push(`/courses?category=${encodeURIComponent(category)}`);
   };
 
   const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
@@ -945,6 +946,18 @@ export default function CategoryDetailedView() {
                     }}
                     className="course-card-premium"
                   >
+                    {/* Invisible full-card link overlay */}
+                    <Link
+                      href={`/courses/${courseToSlug(activeCategoryName, course.title)}`}
+                      aria-label={`View ${course.title}`}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 3,
+                        borderRadius: "14px"
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     {/* Card Graphic Header - Matching clean flat design */}
                     <div
                       style={{
@@ -999,6 +1012,7 @@ export default function CategoryDetailedView() {
                           alignItems: "center",
                           justifyContent: "center",
                           cursor: "pointer",
+                          zIndex: 4,
                           boxShadow: "0 4px 10px rgba(0,0,0,0.03)",
                           color: isWishlisted ? "#EF4444" : "#8886A0",
                           transition: "all 0.2s"
@@ -1069,7 +1083,8 @@ export default function CategoryDetailedView() {
                             display: "flex",
                             alignItems: "center",
                             gap: "5px",
-                            cursor: "pointer"
+                            position: "relative",
+                            zIndex: 4
                           }}
                         >
                           View Course

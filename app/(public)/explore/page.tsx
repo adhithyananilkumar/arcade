@@ -196,6 +196,49 @@ export const CATEGORY_DATA: Record<string, {
 
 export const categoriesList = Object.keys(CATEGORY_DATA);
 
+/** Turn any string into a URL-safe slug */
+export function slugify(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/**
+ * Build the [id] segment used in /courses/[id].
+ * Format: "<category-slug>--<course-title-slug>"
+ */
+export function courseToSlug(category: string, courseTitle: string): string {
+  return `${slugify(category)}--${slugify(courseTitle)}`;
+}
+
+/**
+ * Parse a slug back into { category, courseTitle, courseData }.
+ * Returns null if the slug doesn't match any known course.
+ */
+export function slugToCourse(slug: string): {
+  category: string;
+  courseData: { title: string; duration: string; level: string; desc: string };
+  categoryData: typeof CATEGORY_DATA[string];
+} | null {
+  const sepIdx = slug.indexOf("--");
+  if (sepIdx === -1) return null;
+  const catSlug = slug.slice(0, sepIdx);
+  const courseSlug = slug.slice(sepIdx + 2);
+
+  for (const [category, data] of Object.entries(CATEGORY_DATA)) {
+    if (slugify(category) !== catSlug) continue;
+    const course = data.courses.find(
+      (c) => slugify(c.title) === courseSlug
+    );
+    if (course) {
+      return { category, courseData: course, categoryData: data };
+    }
+  }
+  return null;
+}
+
 // Static Webinar Content
 const WEBINARS_DATA = [
   { title: "Future of Generative AI in Production", category: "Artificial Intelligence", host: "Dr. Emily Stone", date: "Tomorrow, 3:00 PM", status: "Live Today", duration: "60 mins" },
@@ -1182,18 +1225,34 @@ function CoursesContent() {
               </h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "20px" }}>
                 {activeData.courses.map((course) => (
-                  <div
+                  <Link
                     key={course.title}
+                    href={`/courses/${courseToSlug(activeCategory, course.title)}`}
                     style={{
                       background: "#FFFFFF",
-                      border: "1px solid #E5E7EB",
+                      border: `1px solid #E5E7EB`,
                       borderRadius: "12px",
                       padding: "24px",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
                       minHeight: "180px",
-                      cursor: "default"
+                      cursor: "pointer",
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
+                    }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLAnchorElement;
+                      el.style.borderColor = activeData.colors.primary;
+                      el.style.boxShadow = `0 12px 28px -8px ${activeData.colors.secondary.replace("0.08", "0.3")}`;
+                      el.style.transform = "translateY(-4px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLAnchorElement;
+                      el.style.borderColor = "#E5E7EB";
+                      el.style.boxShadow = "none";
+                      el.style.transform = "translateY(0)";
                     }}
                   >
                     <div>
@@ -1210,10 +1269,13 @@ function CoursesContent() {
                         {course.desc}
                       </p>
                     </div>
-                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#6B7280" }}>Syllabus Available</span>
+                    <div style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "0.75rem", color: "#9CA3AF" }}>Syllabus Available</span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: "700", color: activeData.colors.primary }}>
+                        View Course →
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
