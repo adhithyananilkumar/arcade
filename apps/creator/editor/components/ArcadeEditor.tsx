@@ -1,15 +1,42 @@
-// features/content/editor/components/ArcadeEditor.tsx
+// apps/creator/editor/components/ArcadeEditor.tsx
 "use client";
 
 import { EditorContent } from "@tiptap/react";
-import { forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import { RichTextProvider } from "reactjs-tiptap-editor";
+import dynamic from "next/dynamic";
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type * as Y from "yjs";
 import { EditorSkeleton } from "./EditorSkeleton";
-import { EditorToolbar } from "./EditorToolbar";
-import { BlockHandle } from "./BlockHandle";
+import { ToolbarSkeleton } from "./ToolbarSkeleton";
+import {
+  createSaveStatusStore,
+  SaveStatusFooter,
+  type SaveStatusStore,
+} from "./SaveStatusFooter";
 import { useArcadeEditor } from "../hooks/useArcadeEditor";
+import "reactjs-tiptap-editor/style.css";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+
+// ── Code-split chrome ────────────────────────────────────────────────────────
+// The toolbar (43 library buttons) and the bubble layer both resolve into
+// `reactjs-tiptap-editor`'s barrel modules, which statically pull in Excalidraw,
+// Mermaid, KaTeX and easydrawer — a single ~3.5 MB chunk fused with Tiptap itself.
+// Loading them eagerly blocked first paint of the writing surface for seconds.
+//
+// Deferring them means the caret is live almost immediately and the heavy chrome
+// streams in behind it. `ssr: false` is required: both trees reach for `document`
+// during module evaluation. The Excalidraw/easydrawer/KaTeX stylesheets are imported
+// inside RichTextBubbles so they travel with that chunk rather than the entry.
+const RichTextToolbar = dynamic(
+  () => import("./RichTextToolbar").then((m) => m.RichTextToolbar),
+  { ssr: false, loading: () => <ToolbarSkeleton /> }
+);
+
+const RichTextBubbles = dynamic(
+  () => import("./RichTextBubbles").then((m) => m.RichTextBubbles),
+  { ssr: false }
+);
 
 /** Imperative handle exposed via ref — force-save, restore, or read current content. */
 export interface ArcadeEditorHandle {
@@ -40,46 +67,46 @@ interface ArcadeEditorProps {
   className?: string;
   /**
    * Drop the card border/background/scroll so the editor blends into a host canvas
-   * (Figma-style). The host owns padding + scrolling. The formatting toolbar and
-   * character-count footer are suppressed in favour of {@link floatingToolbar}.
+   * (Figma-style). The host owns padding + scrolling.
    */
   chromeless?: boolean;
-  /** Render the formatting toolbar as a floating bottom-centre pill instead of a top strip. */
-  floatingToolbar?: boolean;
 }
 
-type SaveStatus = "idle" | "saving" | "saved";
-
-export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
-  function ArcadeEditor(
-    {
-      initialContent,
-      placeholder,
-      readOnly = false,
-      onSave,
-      ydoc,
-      seedContent,
-      className = "",
-      chromeless = false,
-      floatingToolbar = false,
-    },
+// Memoized because the host is a large orchestrator: a keystroke in the course-title
+// field, a sidebar toggle, or any unrelated state change would otherwise re-render the
+// entire editor tree. All props passed by the orchestrator are referentially stable
+// (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
+export const ArcadeEditor = memo(
+  forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false },
     ref
   ) {
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  // The autosave indicator lives in an external store, NOT in React state — see
+  // SaveStatusFooter for the measurement that motivated this. Nothing in this
+  // component re-renders when the save status changes.
+  const [statusStore] = useState<SaveStatusStore>(createSaveStatusStore);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    },
+    []
+  );
 
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
-      setSaveStatus("saving");
+      statusStore.set("saving");
       try {
         await onSave?.(doc);
-        setSaveStatus("saved");
-        // Reset to idle after 3s
-        setTimeout(() => setSaveStatus("idle"), 3000);
+        statusStore.set("saved");
+        if (idleTimer.current) clearTimeout(idleTimer.current);
+        idleTimer.current = setTimeout(() => statusStore.set("idle"), 3000);
       } catch {
-        setSaveStatus("idle");
+        statusStore.set("idle");
       }
     },
-    [onSave]
+    [onSave, statusStore]
   );
 
   const { editor, flushSave, setContent, getJSON } = useArcadeEditor({
@@ -116,37 +143,27 @@ export const ArcadeEditor = forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(
     <div
       className={
         chromeless
-          ? `flex flex-col ${className}`
-          : `rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
+          ? `relative flex flex-col ${className}`
+          : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
-      {!readOnly && !floatingToolbar && (
-        <EditorToolbar editor={editor} saveStatus={saveStatus} />
-      )}
-      <EditorContent
-        editor={editor}
-        className={
-          chromeless
-            ? "flex-1 min-h-[300px] focus-within:outline-none"
-            : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
-        }
-      />
-      {/* Notion-style block gutter: drag-to-reorder handle + "+" add-block button.
-          Self-positions against the hovered block; edit mode only. */}
-      {!readOnly && <BlockHandle editor={editor} />}
-      {/* Character count — subtle footer (card mode only) */}
+      <RichTextProvider editor={editor}>
+        {!readOnly && <RichTextToolbar />}
+        <EditorContent
+          editor={editor}
+          className={
+            chromeless
+              ? "flex-1 min-h-[300px] focus-within:outline-none"
+              : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
+          }
+        />
+        {!readOnly && <RichTextBubbles editor={editor} />}
+      </RichTextProvider>
+      {/* Autosave status — subtle footer (card mode only) */}
       {!readOnly && !chromeless && (
-        <div className="flex items-center justify-end px-8 py-2 border-t border-gray-100">
-          <span className="text-xs text-gray-400">
-            {editor.storage.characterCount?.characters?.() ?? 0} characters
-          </span>
-        </div>
-      )}
-      {/* Floating bottom-centre toolbar (Figma-style) */}
-      {!readOnly && floatingToolbar && (
-        <EditorToolbar editor={editor} saveStatus={saveStatus} variant="floating" />
+        <SaveStatusFooter store={statusStore} editor={editor} />
       )}
     </div>
   );
-  }
+  })
 );

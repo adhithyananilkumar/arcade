@@ -39,12 +39,20 @@ export function encodeSnapshotBase64(ydoc: Y.Doc): string {
 // ── base64 ⇄ Uint8Array (browser-safe, no Buffer) ─────────────────────────────
 
 export function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
+  // Chunked, and using `apply` rather than spread: spreading a 32k subarray pushes
+  // 32k arguments onto the stack per iteration and allocates an array each time.
+  // This runs over the entire CRDT state on every autosave, so it stays on the hot path.
   const chunk = 0x8000; // avoid stack overflow on large blobs
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  if (bytes.length <= chunk) {
+    return btoa(String.fromCharCode.apply(null, bytes as unknown as number[]));
   }
-  return btoa(binary);
+  const parts: string[] = [];
+  for (let i = 0; i < bytes.length; i += chunk) {
+    parts.push(
+      String.fromCharCode.apply(null, bytes.subarray(i, i + chunk) as unknown as number[])
+    );
+  }
+  return btoa(parts.join(""));
 }
 
 export function base64ToBytes(base64: string): Uint8Array {
