@@ -4,7 +4,6 @@ const STEPS = [
   'Basic Information',
   'Schedule',
   'Pricing',
-  'Resources',
   'Settings',
   'Review',
 ];

@@ -8,7 +8,6 @@ import { WorkshopStepper } from '@/app/(authenticated)/studio/workshop/component
 import { WorkshopFooter } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/workshop/components/wizard/BasicInformationStep';
 import { ScheduleStep } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/ScheduleStep';
-import { ResourcesStep } from '@/app/(authenticated)/studio/workshop/components/wizard/resources/ResourcesStep';
 import { PricingStep } from '@/app/(authenticated)/studio/workshop/components/wizard/pricing/PricingStep';
 import { SettingsStep } from '@/app/(authenticated)/studio/workshop/components/wizard/settings/SettingsStep';
 import { ReviewStep } from '@/app/(authenticated)/studio/workshop/components/wizard/review/ReviewStep';
@@ -116,7 +115,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
   };
 
   const handleContinue = () => {
-    if (currentStep < 5) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -145,19 +144,19 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
           {currentStep === 0 && <BasicInformationStep form={form} />}
           {currentStep === 1 && <ScheduleStep form={form} />}
           {currentStep === 2 && <PricingStep form={form} />}
-          {currentStep === 3 && <ResourcesStep form={form} />}
-          {currentStep === 4 && <SettingsStep form={form} />}
-          {currentStep === 5 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} onSaveDraft={handleSaveDraft} isSaving={form.isSubmitting} />}
+          {currentStep === 3 && <SettingsStep form={form} />}
+          {currentStep === 4 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} onSaveDraft={handleSaveDraft} isSaving={form.isSubmitting} />}
 
-          {(currentStep < 5 || !((form.formData as any).id || workshopId)) && (
+          {(currentStep < 4 || !((form.formData as any).id || workshopId)) && (
             <WorkshopFooter
               onBack={handleBack}
               onSaveDraft={handleSaveDraft}
-              onContinue={currentStep < 5 ? handleContinue : undefined}
+              onContinue={currentStep < 4 ? handleContinue : undefined}
               canContinue={currentStep === 0 ? form.isValid : true}
               isSaving={form.isSubmitting}
             />
           )}
+
         </div>
       </div>
     </div>
