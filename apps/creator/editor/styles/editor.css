@@ -134,6 +134,39 @@
   margin: 0.75rem 0;
 }
 
+.ProseMirror img[data-uploading="true"] {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  animation: arcade-image-uploading-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes arcade-image-uploading-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.65; }
+}
+
+.ProseMirror img[data-align="center"] { display: block; margin-left: auto; margin-right: auto; }
+.ProseMirror img[data-align="right"] { display: block; margin-left: auto; margin-right: 0; }
+.ProseMirror img[data-align="full"] { width: 100%; }
+
+/* ── Mentions ── */
+.arcade-mention {
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 550;
+}
+
+/* ── Search & replace highlights ── */
+.arcade-search-match {
+  background: #fef9c3;
+  border-radius: 2px;
+}
+.arcade-search-match.is-current {
+  background: #fde047;
+}
+
 /* ── Links ── */
 .ProseMirror a {
   color: #6366f1;

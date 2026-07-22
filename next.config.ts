@@ -1,6 +1,13 @@
+import path from "path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Pin the workspace root to this app. A stray package-lock.json in the parent
+  // directory otherwise makes Turbopack infer the parent as root, which breaks
+  // module resolution for Next's built-in client components.
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   async redirects() {
     return [
       {

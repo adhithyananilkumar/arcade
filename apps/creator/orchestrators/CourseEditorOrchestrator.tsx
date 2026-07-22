@@ -27,6 +27,7 @@ import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "./VersionHistoryOrchestrator";
 import { LessonFeedbackOrchestrator } from "./LessonFeedbackOrchestrator";
+import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
 import {
   createYDoc,
@@ -35,6 +36,7 @@ import {
   encodeSnapshotBase64,
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
+import { TiptapContentView } from "@/domains/learning";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -75,6 +77,14 @@ import {
 
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
+
+/** Run work when the browser is next idle, falling back to a macrotask. */
+function scheduleIdle(fn: () => void) {
+  const ric = (globalThis as { requestIdleCallback?: (cb: () => void) => number })
+    .requestIdleCallback;
+  if (ric) ric(fn);
+  else setTimeout(fn, 0);
+}
 
 interface CourseEditorOrchestratorProps {
   courseId?: string; // required in practice — new courses are created via the dashboard modal
@@ -560,13 +570,22 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       // Flush pending edits in the currently-open lesson before switching away.
       // Unmounting the editor cancels its debounced auto-save, so without this the
       // last few seconds of typing would be lost on a lesson switch.
-      if (editorRef.current) {
-        try {
-          await editorRef.current.flush();
-        } catch {
-          // best-effort — proceed with the switch regardless
-        }
-      }
+      //
+      // The flush and the incoming document fetch are independent — they target
+      // different lessons — so they run concurrently instead of head-to-tail. On a
+      // slow link this halves the delay between clicking a lesson and seeing it.
+      const flushPending = editorRef.current
+        ? Promise.resolve(editorRef.current.flush()).catch(() => {
+            // best-effort — proceed with the switch regardless
+          })
+        : Promise.resolve();
+
+      const documentPending = api
+        .get<{
+          ydocState: string | null;
+          body: string | null;
+        } | null>(`/api/lessons/${lesson.id}/document`)
+        .catch(() => null);
 
       // The previous lesson's Y.Doc is torn down by the activeYDoc effect cleanup
       // below, which runs only after its editor has unmounted (safe unbind).
@@ -578,10 +597,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       let seed: TiptapDocument | undefined;
 
       try {
-        const doc = await api.get<{
-          ydocState: string | null;
-          body: string | null;
-        } | null>(`/api/lessons/${lesson.id}/document`);
+        const [, doc] = await Promise.all([flushPending, documentPending]);
         if (doc?.ydocState) {
           applyBase64Update(ydoc, doc.ydocState);
         } else {
@@ -631,6 +647,11 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
 
+  // Fingerprint of the last body we persisted, so an autosave triggered by a
+  // transaction that didn't actually change the document is dropped before it costs
+  // a CRDT encode and a network round-trip.
+  const lastSavedBodyRef = useRef<string | null>(null);
+
   const handleSave = useCallback(
     async (doc: TiptapDocument) => {
       if (!activeLessonId) return;
@@ -638,14 +659,25 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       if (!ydoc) return;
 
       const jsonStr = JSON.stringify(doc);
+      if (jsonStr === lastSavedBodyRef.current) return; // nothing changed
+
       // localStorage mirror keeps a resilient JSON fallback if the backend is down.
-      localStorage.setItem(`arcade-draft-${activeLessonId}`, jsonStr);
+      // Writing it is synchronous and O(document size), so it is deferred out of the
+      // save path — it must not sit between the user's keystroke and the next frame.
+      scheduleIdle(() => {
+        try {
+          localStorage.setItem(`arcade-draft-${activeLessonId}`, jsonStr);
+        } catch {
+          // quota exceeded or storage disabled — the backend save below is the real path
+        }
+      });
 
       try {
         await api.put(`/api/lessons/${activeLessonId}/document`, {
           ydocState: encodeStateBase64(ydoc),
           body: jsonStr,
         });
+        lastSavedBodyRef.current = jsonStr;
       } catch (e) {
         console.warn("Document save failed, localStorage preserved.", e);
         return; // don't snapshot if the head save didn't land
@@ -653,19 +685,19 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
       // Auto-periodic snapshot: once the interval has elapsed since the last one,
       // capture a Yjs snapshot as a new version (the Google-Docs-style timeline).
+      // Deliberately not awaited — the head save is already durable, and the caller
+      // is the autosave path, which shouldn't stay pending on timeline bookkeeping.
       const now = Date.now();
       if (now - lastSnapshotAtRef.current > SNAPSHOT_INTERVAL_MS) {
         lastSnapshotAtRef.current = now;
-        try {
-          await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+        void api
+          .post(`/api/lessons/${activeLessonId}/document/versions`, {
             snapshot: encodeSnapshotBase64(ydoc),
             body: jsonStr,
             kind: "AUTO",
-          });
-          setHistoryRefreshKey((k) => k + 1);
-        } catch (e) {
-          console.warn("Auto-snapshot failed", e);
-        }
+          })
+          .then(() => setHistoryRefreshKey((k) => k + 1))
+          .catch((e) => console.warn("Auto-snapshot failed", e));
       }
     },
     [activeLessonId]
@@ -990,6 +1022,15 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
     [courseId]
   );
 
+  /** Course title committed from the header field (already debounced by the input). */
+  const handleCourseTitleCommit = useCallback(
+    (next: string) => {
+      setTitle(next);
+      scheduleCourseMetaSave({ title: next });
+    },
+    [scheduleCourseMetaSave]
+  );
+
   // ── Back to dashboard (flush every pending save first) ────────────────────
 
   const handleBack = useCallback(async () => {
@@ -1143,13 +1184,14 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
           onClose={() => setHistoryOpen(false)}
           refreshKey={historyRefreshKey}
           onRestore={handleRestore}
+          // Version previews are read-only, so they go through the JSON -> React
+          // renderer instead of a second full Tiptap instance. Mounting ArcadeEditor
+          // here spun up the entire extension set and bubble layer just to display a
+          // snapshot, and it pulled the heavy editor chunk into the history panel.
           renderEditor={(previewDoc, selectedId) => (
-            <ArcadeEditor
-              key={selectedId}
-              readOnly
-              initialContent={previewDoc}
-              className="bg-white"
-            />
+            <div key={selectedId} className="bg-white">
+              <TiptapContentView body={JSON.stringify(previewDoc)} />
+            </div>
           )}
         />
       )}
@@ -1174,15 +1216,11 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
           {/* Center: course title, centered on the viewport regardless of side widths */}
           <div className="min-w-0 justify-self-center">
-            <input
-              type="text"
+            <DebouncedTitleInput
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                scheduleCourseMetaSave({ title: e.target.value });
-              }}
+              onCommit={handleCourseTitleCommit}
               placeholder="Course title"
-              size={Math.max(title.length, 12)}
+              autoSize
               className="max-w-[60vw] rounded-lg border-0 bg-transparent px-1.5 py-1 text-center text-base font-semibold text-gray-900 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 sm:max-w-md"
             />
           </div>
@@ -1487,11 +1525,9 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
           ) : activeLessonId ? (
             <div className="mx-auto max-w-[860px] px-6 pb-44 pt-24 sm:px-12">
               <div>
-                <input
-                  type="text"
+                <DebouncedTitleInput
                   value={activeLessonTitle}
-                  onBlur={(e) => saveLessonTitle(e.target.value)}
-                  onChange={(e) => setActiveLessonTitle(e.target.value)}
+                  onCommit={saveLessonTitle}
                   className="mb-3 w-full border-0 bg-transparent text-4xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
                   placeholder="Lesson title"
                 />
@@ -1504,7 +1540,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}
                     chromeless
-                    floatingToolbar
                   />
                 )}
               </div>
@@ -1514,11 +1549,9 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
               <div>
                 <div className="mb-5 flex items-center gap-3">
                   <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
-                  <input
-                    type="text"
+                  <DebouncedTitleInput
                     value={activeQuizTitle}
-                    onBlur={(e) => saveQuizTitle(e.target.value)}
-                    onChange={(e) => setActiveQuizTitle(e.target.value)}
+                    onCommit={saveQuizTitle}
                     className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
                     placeholder="Quiz title"
                   />
