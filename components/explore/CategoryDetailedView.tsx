@@ -30,8 +30,90 @@ const HoneycombIllustration: React.FC = () => {
         height="100%"
         style={{ overflow: "visible", display: "block", maxWidth: "450px" }}
       >
+        <style>{`
+          @keyframes flowForward {
+            from { stroke-dashoffset: 24; }
+            to { stroke-dashoffset: 0; }
+          }
+          @keyframes flowBackward {
+            from { stroke-dashoffset: -24; }
+            to { stroke-dashoffset: 0; }
+          }
+          @keyframes shuttleFlight {
+            0% {
+              transform: translate(350px, 45px) rotate(-30deg);
+            }
+            35% {
+              /* Flying towards the racket */
+              transform: translate(322px, 60px) rotate(-55deg);
+            }
+            45% {
+              /* Contact with racket, flip orientation */
+              transform: translate(316px, 66px) rotate(35deg);
+            }
+            80% {
+              /* Flying back to peak height */
+              transform: translate(372px, 28px) rotate(10deg);
+            }
+            100% {
+              /* Returning to resting orbit position */
+              transform: translate(350px, 45px) rotate(-30deg);
+            }
+          }
+          @keyframes racketSwing {
+            0%, 100% { transform: rotate(0deg); }
+            30% { transform: rotate(-8deg); }     /* Swing back */
+            38% { transform: rotate(15deg); }    /* Forward strike */
+            50% { transform: rotate(5deg); }     /* Follow through */
+            65% { transform: rotate(0deg); }     /* Return to idle */
+          }
+          @keyframes sparkleTwinkleRight {
+            0%, 100% { transform: translate(380px, 210px) scale(0.8); opacity: 0.6; }
+            50% { transform: translate(380px, 210px) scale(1.05); opacity: 1; }
+          }
+          @keyframes sparkleTwinkleLeft {
+            0%, 100% { transform: translate(60px, 60px) scale(0.6); opacity: 0.5; }
+            50% { transform: translate(60px, 60px) scale(0.85); opacity: 1; }
+          }
+          @keyframes clinkSparksPulse {
+            0%, 100% { transform: translate(210px, 208px) scale(0.85); opacity: 0.6; }
+            50% { transform: translate(210px, 208px) scale(1.15); opacity: 1; }
+          }
+          @keyframes expandArrowsPulse {
+            0%, 100% { transform: translate(390px, 250px) scale(0.95); }
+            50% { transform: translate(390px, 250px) scale(1.15); }
+          }
+
+          .flow-forward {
+            animation: flowForward 2s linear infinite;
+          }
+          .flow-backward {
+            animation: flowBackward 2s linear infinite;
+          }
+          .animate-shuttle {
+            animation: shuttleFlight 5s ease-in-out infinite;
+          }
+          .animate-racket {
+            animation: racketSwing 5s ease-in-out infinite;
+            transform-origin: -2px 2px;
+          }
+          .animate-sparkle-right {
+            animation: sparkleTwinkleRight 3s ease-in-out infinite;
+          }
+          .animate-sparkle-left {
+            animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;
+          }
+          .animate-clink-sparks {
+            animation: clinkSparksPulse 2.5s ease-in-out infinite;
+          }
+          .animate-expand-arrows {
+            animation: expandArrowsPulse 4s ease-in-out infinite;
+          }
+        `}</style>
+
         {/* Background dotted line paths / orbits */}
         <path
+          className="flow-forward"
           d="M 120,40 C 200,-10 320,10 340,90"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -39,6 +121,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
+          className="flow-backward"
           d="M 50,110 C 30,50 120,10 200,60"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -46,6 +129,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
+          className="flow-forward"
           d="M 280,240 C 360,250 430,190 410,120"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -53,6 +137,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
+          className="flow-backward"
           d="M 60,190 C 80,250 180,270 230,240"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -60,23 +145,53 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
 
+        {/* Glitter particles sliding along dotted paths */}
+        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+          <animateMotion
+            path="M 120,40 C 200,-10 320,10 340,90"
+            dur="6s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+          <animateMotion
+            path="M 50,110 C 30,50 120,10 200,60"
+            dur="7s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+          <animateMotion
+            path="M 280,240 C 360,250 430,190 410,120"
+            dur="8s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+          <animateMotion
+            path="M 60,190 C 80,250 180,270 230,240"
+            dur="6.5s"
+            repeatCount="indefinite"
+          />
+        </circle>
+
         {/* Small floating elements like badminton shuttles or balls */}
-        <g transform="translate(350, 45) rotate(-30)">
+        <g className="animate-shuttle" transform="translate(350, 45) rotate(-30)">
           <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
           <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
           <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
         </g>
         
         {/* Sparkles / star outlines */}
-        <g transform="translate(380, 210) scale(0.8)">
+        <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
-        <g transform="translate(60, 60) scale(0.6)">
+        <g className="animate-sparkle-left" transform="translate(60, 60) scale(0.6)">
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
 
         {/* Diagonal Expand Arrows in bottom-right */}
-        <g transform="translate(390, 250)">
+        <g className="animate-expand-arrows" transform="translate(390, 250)">
           <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
           <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -143,20 +258,22 @@ const HoneycombIllustration: React.FC = () => {
           <path d="M1,-5 L4,-4 L1,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
           <circle cx="-4" cy="-7" r="1" fill="#1E293B" />
           <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
-          <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <g transform="translate(28, -32) rotate(45)">
-            <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-            <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
-            <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
-            <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
-            <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+          <g className="animate-racket">
+            <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+            <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
+            <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <g transform="translate(28, -32) rotate(45)">
+              <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
+              <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
+              <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
+              <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+              <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+            </g>
           </g>
           <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Middle-Left Hexagon: Spiky Hair waving (Center: 54, 150, radius: 52) */}
+        {/* Middle-Left Hexagon: Spiky Hair waving`,StartLine:24,TargetContent: (Center: 54, 150, radius: 52) */}
         <g transform="translate(54, 150)">
           <polygon
             points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
@@ -237,7 +354,7 @@ const HoneycombIllustration: React.FC = () => {
         </g>
         
         {/* Clink sparks between bottom left & right cups */}
-        <g transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
+        <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
           <line x1="-8" y1="-8" x2="-3" y2="-3" />
           <line x1="8" y1="-8" x2="3" y2="-3" />
           <line x1="-8" y1="8" x2="-3" y2="3" />
@@ -2005,7 +2122,7 @@ export default function CategoryDetailedView() {
             {/* Difficulty Filter */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Difficulty Level
+                Course Level
               </label>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {difficultyLevels.map((level) => {
@@ -2030,7 +2147,7 @@ export default function CategoryDetailedView() {
             {/* Topic Filter */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
               <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Topic
+                Course Type
               </label>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 {topics.map((topic) => {
