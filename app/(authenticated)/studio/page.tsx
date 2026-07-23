@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
+import { WorkshopType } from "@/app/(authenticated)/studio/workshop/types";
 import {
   BookOpen,
   Wrench,
@@ -109,16 +110,23 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: string }) {
-  const isRoadmap = type === "ROADMAP";
+  if (type === "ROADMAP") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200">
+        <Map size={10} /> Roadmap
+      </span>
+    );
+  }
+  if (type === "WORKSHOP") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
+        <Wrench size={10} /> Workshop
+      </span>
+    );
+  }
   return (
-    <span
-      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isRoadmap
-          ? "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200"
-          : "bg-indigo-50 text-indigo-700 border-indigo-200"
-        }`}
-    >
-      {isRoadmap ? <Map size={10} /> : <BookOpen size={10} />}
-      {isRoadmap ? "Roadmap" : "Course"}
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200">
+      <BookOpen size={10} /> Course
     </span>
   );
 }
@@ -331,6 +339,142 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ── New Workshop creation modal ─────────────────────────────────────────────────
+
+function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [workshopType, setWorkshopType] = useState<string>(WorkshopType.WORKSHOP);
+  const [creating, setCreating] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    setCreating(true);
+    setError(null);
+
+    try {
+      const workshop = await api.post<{ id: string }>("/api/workshops", {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        workshopType: workshopType,
+        category: "uncategorized",
+        tags: [],
+        deliveryMode: "ONLINE",
+        difficulty: "BEGINNER",
+        language: "en",
+        price: 0,
+        currency: "USD",
+        visibility: "PRIVATE"
+      });
+      router.push(`/studio/workshop/${workshop.id}/edit`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create workshop");
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50">
+            <Wrench size={20} className="text-violet-600" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">New Workshop</h3>
+            <p className="text-xs text-gray-500">Give it a title to get started.</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="workshop-type" className="mb-1 block text-sm font-medium text-gray-700">
+              Workshop Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="workshop-type"
+              required
+              value={workshopType}
+              onChange={(e) => setWorkshopType(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 bg-white"
+            >
+              <option value={WorkshopType.WORKSHOP}>Workshop</option>
+              <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
+              <option value={WorkshopType.MASTERCLASS}>Masterclass</option>
+              <option value={WorkshopType.WEBINAR}>Webinar</option>
+              <option value={WorkshopType.AMA}>AMA</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="workshop-title" className="mb-1 block text-sm font-medium text-gray-700">
+              Workshop Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="workshop-title"
+              type="text"
+              required
+              autoFocus
+              minLength={5}
+              maxLength={120}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Advanced TypeScript"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+            />
+          </div>
+          <div>
+            <label htmlFor="workshop-desc" className="mb-1 block text-sm font-medium text-gray-700">
+              Description <span className="text-gray-400">(optional)</span>
+            </label>
+            <textarea
+              id="workshop-desc"
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What will learners achieve?"
+              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!title.trim() || creating}
+              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
+            >
+              {creating ? "Creating…" : "Create Workshop"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Rename roadmap modal (title/description only — ported from the old /roadmaps list) ─
 
 function RenameRoadmapModal({
@@ -520,7 +664,12 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const editHref = isRoadmap ? `/studio/roadmap/${item.id}/edit` : `/studio/course/${item.id}/edit`;
+  const isWorkshop = item.type === "WORKSHOP";
+  const editHref = isRoadmap 
+    ? `/studio/roadmap/${item.id}/edit` 
+    : isWorkshop
+      ? `/studio/workshop/${item.id}`
+      : `/studio/course/${item.id}/edit`;
 
   return (
     <div className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3 relative">
@@ -606,7 +755,7 @@ function ContentCard({
 
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
 
@@ -665,6 +814,7 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col">
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
@@ -774,8 +924,8 @@ export default function DashboardPage() {
                       );
                       const cls =
                         "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
-                      // "Course" and "Roadmap" open creation modals; other types navigate (stubs for now).
-                      return type.id === "course" || type.id === "roadmap" ? (
+                      // "Course", "Roadmap", and "Workshop" open creation modals; other types navigate (stubs for now).
+                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" ? (
                         <button
                           key={type.id}
                           type="button"
