@@ -11,6 +11,8 @@ export type PricingModel = "FREE" | "PAID";
 export type ContentStatus =
   | "DRAFT"
   | "SUBMITTED"
+  | "PENDING_PLATFORM_REVIEW"
+  | "CHANGES_REQUESTED"
   | "APPROVED"
   | "PUBLISHED"
   | "ARCHIVED";
@@ -63,6 +65,16 @@ export interface PatchCourseRequest {
   title?: string;
   description?: string;
   pricingModel?: PricingModel;
+}
+
+export interface PlatformReviewResponse {
+  id: string;
+  title: string;
+  channelId?: string;
+  channelName?: string;
+  authorName: string;
+  status: ContentStatus;
+  submittedAt: string;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────

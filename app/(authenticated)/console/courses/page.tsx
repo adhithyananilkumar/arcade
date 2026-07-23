@@ -12,22 +12,26 @@ import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { api } from "@/infrastructure/http/api";
-import type { CourseResponse } from "@/shared/types/api.types";
+import type { CourseResponse, PlatformReviewResponse } from "@/shared/types/api.types";
 import { ArrowLeft, ClipboardCheck, Clock, Inbox, User, Search } from "lucide-react";
 
 // Statuses that count as "in the review queue". SUBMITTED is the one the Submit
 // button produces; APPROVED is kept visible so a reviewed course doesn't vanish
 // before the teammate's pipeline decides what happens next.
-const REVIEW_STATUSES: ReadonlyArray<CourseResponse["status"]> = [
-  "SUBMITTED",
-  "APPROVED",
+const REVIEW_STATUSES: ReadonlyArray<PlatformReviewResponse["status"]> = [
+  "PENDING_PLATFORM_REVIEW",
+  "CHANGES_REQUESTED",
+  "PUBLISHED",
+  "APPROVED", // Legacy fallback
 ];
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
-    APPROVED: "bg-green-50 text-green-700 border-green-200",
+    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200", // Legacy fallback
+    PENDING_PLATFORM_REVIEW: "bg-blue-50 text-blue-700 border-blue-200",
+    CHANGES_REQUESTED: "bg-orange-50 text-orange-700 border-orange-200",
+    APPROVED: "bg-green-50 text-green-700 border-green-200", // Legacy fallback
     PUBLISHED: "bg-green-50 text-green-700 border-green-200",
     ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
   };
@@ -48,7 +52,7 @@ export default function ReviewCoursesPage() {
     notFound();
   }
 
-  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [courses, setCourses] = useState<PlatformReviewResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("TO_BE_REVIEWED");
@@ -60,9 +64,9 @@ export default function ReviewCoursesPage() {
     courses.forEach((c) => {
       if (c.status === "PUBLISHED") {
         published++;
-      } else if (c.status === "SUBMITTED" || c.status === "APPROVED") {
-        if (c.wasPublished) updations++;
-        else toBeReviewed++;
+        published++;
+      } else if (c.status === "PENDING_PLATFORM_REVIEW" || c.status === "CHANGES_REQUESTED" || c.status === "SUBMITTED" || c.status === "APPROVED") {
+        toBeReviewed++;
       }
     });
     return { toBeReviewed, updations, published };
@@ -70,13 +74,15 @@ export default function ReviewCoursesPage() {
 
   const filteredCourses = useMemo(() => {
     return courses.filter((c) => {
+      const isReviewState = c.status === "PENDING_PLATFORM_REVIEW" || c.status === "CHANGES_REQUESTED" || c.status === "SUBMITTED" || c.status === "APPROVED";
       if (statusFilter === "TO_BE_REVIEWED") {
-        if (c.status !== "SUBMITTED" && c.status !== "APPROVED") return false;
-        if (c.wasPublished) return false;
+        if (!isReviewState) return false;
+        // c.wasPublished is not available in PlatformReviewResponse
       }
       if (statusFilter === "UPDATIONS") {
-        if (c.status !== "SUBMITTED" && c.status !== "APPROVED") return false;
-        if (!c.wasPublished) return false;
+        if (!isReviewState) return false;
+        // c.wasPublished is not available in PlatformReviewResponse, we rely on status logic later
+        // return false;
       }
       if (statusFilter === "PUBLISHED" && c.status !== "PUBLISHED") return false;
       if (searchQuery) {
@@ -91,7 +97,7 @@ export default function ReviewCoursesPage() {
 
   useEffect(() => {
     api
-      .get<CourseResponse[]>("/api/courses/review")
+      .get<PlatformReviewResponse[]>("/api/platform/reviews")
       .then((all) => setCourses(all))
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));
@@ -192,27 +198,17 @@ export default function ReviewCoursesPage() {
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <User size={12} className="text-gray-400" />
-                  {course.authorUsername ? (
-                    <Link
-                      href={`/${course.authorUsername}`}
-                      target="_blank"
-                      className="hover:text-indigo-600 hover:underline"
-                    >
-                      {course.authorName}
-                    </Link>
-                  ) : (
-                    course.authorName
-                  )}
+                  {course.authorName}
                 </div>
-                {course.description && (
+                {course.channelName && (
                   <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                    {course.description}
+                    Channel: {course.channelName}
                   </p>
                 )}
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
                   <Clock size={11} />
-                  Last edited:{" "}
-                  {new Date(course.updatedAt).toLocaleString("en-IN", {
+                  Submitted:{" "}
+                  {new Date(course.submittedAt || new Date()).toLocaleString("en-IN", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

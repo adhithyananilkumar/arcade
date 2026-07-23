@@ -1,9 +1,11 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Home, Compass, BookOpen, Trophy } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
+import { channelService } from '@/domains/channels';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 const dockItems = [
@@ -45,6 +47,18 @@ const dockItems = [
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
+  const [hasChannels, setHasChannels] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      channelService.getMyChannels(),
+      channelService.getMyWorkspaces()
+    ])
+      .then(([channels, workspaces]) => {
+        setHasChannels(channels.length > 0 || workspaces.length > 0);
+      })
+      .catch(() => setHasChannels(false));
+  }, []);
 
   // Hide the dock on content studio, roadmaps, and settings pages
   if (
@@ -58,6 +72,11 @@ export default function LearnerDock() {
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href) && href !== '/';
 
+  const visibleItems = dockItems.filter(item => {
+    if (item.id === 'achievements') return hasChannels;
+    return true;
+  });
+
   return (
     // Fixed bottom-center. pointer-events-none on the full-width row so
     // only the capsule is interactive.
@@ -70,7 +89,7 @@ export default function LearnerDock() {
           distance={90}
           panelHeight={60}
         >
-          {dockItems.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
             return (
@@ -79,7 +98,7 @@ export default function LearnerDock() {
                 className="cursor-pointer"
                 onClick={() => router.push(item.href)}
               >
-                <DockLabel>{item.label}</DockLabel>
+                <DockLabel>{item.label === 'Achievements' ? 'Studio' : item.label}</DockLabel>
                 <DockIcon>
                   {/* Bare icon — magnification is the only hover effect */}
                   <Icon

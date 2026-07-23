@@ -16,15 +16,7 @@ export default function ContentStudioLayout({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // If the user can manage channels or review courses, they have access
-    const hasAdminAccess = AuthorizationService.canManageChannels(user) || AuthorizationService.canReviewCourses(user);
-    
-    if (hasAdminAccess) {
-      setIsAuthorized(true);
-      return;
-    }
-
-    // Otherwise, check if they have any channels or workspaces
+    // Check if they have any channels or workspaces
     Promise.all([
       channelService.getMyChannels(),
       channelService.getMyWorkspaces()

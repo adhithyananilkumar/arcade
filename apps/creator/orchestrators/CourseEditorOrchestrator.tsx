@@ -27,6 +27,8 @@ import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "./VersionHistoryOrchestrator";
 import { LessonFeedbackOrchestrator } from "./LessonFeedbackOrchestrator";
+import { CreatorVersionTimeline } from "../components/CreatorVersionTimeline";
+import { CreatorReviewFeedback } from "../components/CreatorReviewFeedback";
 
 import {
   createYDoc,
@@ -76,7 +78,7 @@ import {
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
-interface CourseEditorOrchestratorProps {
+export interface CourseEditorOrchestratorProps {
   courseId?: string; // required in practice — new courses are created via the dashboard modal
 }
 
@@ -255,6 +257,8 @@ function StatusPill({ status }: { status: string }) {
   const styles: Record<string, { badge: string; dot: string }> = {
     DRAFT: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-400" },
     SUBMITTED: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
+    PENDING_PLATFORM_REVIEW: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
+    CHANGES_REQUESTED: { badge: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-400" },
     APPROVED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
     PUBLISHED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
     ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
@@ -441,9 +445,15 @@ function CourseSettingsPanel({
 
 // ── Main Shell ────────────────────────────────────────────────────────────────
 
+type CourseTab = 'editor' | 'versions' | 'review_feedback';
+
+
+
 export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEditorOrchestratorProps) {
   const router = useRouter();
   const [courseId] = useState<string | undefined>(initialCourseId);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [activeTab, setActiveTab] = useState<CourseTab>('editor');
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
@@ -475,7 +485,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [qbOpen, setQbOpen] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [navigatingBack, setNavigatingBack] = useState(false);
 
   // Imperative handle to force-save the open lesson before navigating away.
@@ -1136,6 +1145,18 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
       <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
+      
+      {status === 'PENDING_PLATFORM_REVIEW' && (
+        <div className="bg-indigo-50 border-b border-indigo-100 px-6 py-2 flex items-center justify-center gap-2">
+          <span className="text-sm font-medium text-indigo-800">
+            A version of this course is currently under review.
+          </span>
+          <span className="text-sm text-indigo-600">
+            You are editing the current draft. Changes made here will not affect the version under review.
+          </span>
+        </div>
+      )}
+
       {activeLessonId && (
         <VersionHistoryOrchestrator
           lessonId={activeLessonId}
@@ -1186,23 +1207,23 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
         </div>
       )}
 
-      {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
-          row regardless of how wide the left/right action groups are ────── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
-          {/* Left: Back, flush to the page margin */}
-          <div className="justify-self-start">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={navigatingBack}
-              title="Save and return to dashboard"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
-            </button>
-          </div>
+      {/* ── Top Bar ───────────────────────────────────────── */}
+      <header className="absolute inset-x-0 top-0 z-30 flex flex-col bg-white/80 backdrop-blur">
+        <div className="border-b border-gray-100">
+          <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
+            {/* Left: Back */}
+            <div className="justify-self-start">
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={navigatingBack}
+                title="Save and return to dashboard"
+                className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+              >
+                <ArrowLeft size={16} />
+                <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+              </button>
+            </div>
 
           {/* Center: course title, centered on the viewport regardless of side widths */}
           <div className="min-w-0 justify-self-center">
@@ -1235,7 +1256,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
               </button>
             )}
 
-            {status === "DRAFT" && (
+            {(status === "DRAFT" || status === "CHANGES_REQUESTED") && (
               <button
                 type="button"
                 onClick={askSubmit}
@@ -1246,6 +1267,41 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
               </button>
             )}
           </div>
+        </div>
+      </div>
+        
+      {/* Sub-header Tabs */}
+        <div className="flex px-6 space-x-6 border-b border-gray-100 mt-1">
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'editor'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Editor
+          </button>
+          <button
+            onClick={() => setActiveTab('versions')}
+            className={`pb-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'versions'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Versions
+          </button>
+          <button
+            onClick={() => setActiveTab('review_feedback')}
+            className={`pb-3 text-sm font-medium transition-colors border-b-2 flex items-center gap-1.5 ${
+              activeTab === 'review_feedback'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Review Feedback
+          </button>
         </div>
       </header>
 
@@ -1497,7 +1553,28 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="absolute inset-0 z-0 overflow-y-auto">
-          {view === "settings" ? (
+          {activeTab === 'versions' ? (
+            <CreatorVersionTimeline courseId={courseId!} />
+          ) : activeTab === 'review_feedback' ? (
+            <CreatorReviewFeedback 
+              courseId={courseId!} 
+              onNavigate={(type, id) => {
+                if (type === 'LESSON') {
+                  const lesson = modules.flatMap(m => m.lessons).find(l => l.id === id);
+                  if (lesson) {
+                    setActiveTab('editor');
+                    openLesson(lesson);
+                  }
+                } else if (type === 'QUIZ') {
+                  const quiz = modules.flatMap(m => m.quizzes).find(q => q.id === id);
+                  if (quiz) {
+                    setActiveTab('editor');
+                    openQuiz(quiz);
+                  }
+                }
+              }} 
+            />
+          ) : view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
               <div className="overflow-hidden rounded-2xl border border-gray-100">
                 <CourseSettingsPanel

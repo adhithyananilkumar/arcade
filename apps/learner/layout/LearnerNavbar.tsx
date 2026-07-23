@@ -247,7 +247,7 @@ export default function LearnerNavbar() {
                 My Channel
               </MenuItem>
             )}
-            {(hasChannels || showArcConsole) && (
+            {(hasChannels) && (
               <MenuItem 
                 icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
                 onClick={() => router.push('/studio')}
