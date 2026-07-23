@@ -8,7 +8,7 @@ import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
-import { api } from "@/lib/api";
+import { api } from "@/infrastructure/http/api";
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
