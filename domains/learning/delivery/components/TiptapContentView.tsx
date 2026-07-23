@@ -247,15 +247,178 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
+      const align = typeof node.attrs?.align === "string" ? node.attrs.align : "left";
+      const alignClass =
+        align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "";
+      const flipX = node.attrs?.flipX === true;
+      const flipY = node.attrs?.flipY === true;
+      const transform =
+        flipX || flipY ? `scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})` : undefined;
+      // eslint-disable-next-line @next/next/no-img-element
+      return (
+        <img
+          key={key}
+          src={src}
+          alt={alt}
+          style={transform ? { transform } : undefined}
+          className={`mb-4 block max-w-full rounded-lg ${alignClass}`}
+        />
+      );
+    }
+
+    // reactjs-tiptap-editor's ImageGif shares Image's shape (src/alt/width/align).
+    case "imageGif": {
+      const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
+      if (!src) return null;
+      const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
       // eslint-disable-next-line @next/next/no-img-element
       return <img key={key} src={src} alt={alt} className="mb-4 max-w-full rounded-lg" />;
     }
 
+    case "video": {
+      const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
+      if (!src) return null;
+      return (
+        <video key={key} src={src} controls className="mb-4 w-full max-w-3xl rounded-lg bg-black" />
+      );
+    }
+
+    // Legacy node type from our own (now removed) YouTube/video-player extensions —
+    // kept so lesson content authored before this editor swap still renders.
     case "video-player": {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       return (
         <video key={key} src={src} controls className="mb-4 w-full max-w-3xl rounded-lg bg-black" />
+      );
+    }
+
+    case "iframe": {
+      const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
+      if (!src) return null;
+      return (
+        <div key={key} className="mb-4 overflow-hidden rounded-lg border border-gray-200">
+          <iframe
+            src={src}
+            className="aspect-video w-full"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
+            allow="fullscreen"
+          />
+        </div>
+      );
+    }
+
+    case "twitter": {
+      const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
+      if (!src) return null;
+      return (
+        <a
+          key={key}
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 block rounded-lg border border-gray-200 px-4 py-3 text-sm text-indigo-600 underline hover:text-indigo-800"
+        >
+          {src}
+        </a>
+      );
+    }
+
+    case "attachment": {
+      const url = typeof node.attrs?.url === "string" ? node.attrs.url : undefined;
+      const fileName = typeof node.attrs?.fileName === "string" ? node.attrs.fileName : "Attachment";
+      if (!url) return null;
+      return (
+        <a
+          key={key}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={fileName}
+          className="mb-4 flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-200 hover:text-indigo-700"
+        >
+          📎 {fileName}
+        </a>
+      );
+    }
+
+    case "katex": {
+      // `text` is stored URL-encoded LaTeX; rendering needs the `katex` package (edit-side
+      // only per the "delivery never loads Tiptap/heavy authoring deps" rule) — until a
+      // lightweight read-only KaTeX render path is added, show the raw source.
+      const text = typeof node.attrs?.text === "string" ? decodeURIComponent(node.attrs.text) : "";
+      if (!text) return null;
+      return (
+        <code key={key} className="mb-4 block rounded bg-gray-50 px-3 py-2 text-sm text-gray-700">
+          {text}
+        </code>
+      );
+    }
+
+    case "mermaid": {
+      // Attr name for the diagram source wasn't confirmed against the installed package's
+      // compiled output (see changelog "not fully portable") — check a few plausible names
+      // defensively rather than assuming one.
+      const source =
+        (typeof node.attrs?.value === "string" && node.attrs.value) ||
+        (typeof node.attrs?.source === "string" && node.attrs.source) ||
+        (typeof node.attrs?.text === "string" && node.attrs.text) ||
+        "";
+      if (!source) return null;
+      return (
+        <pre key={key} className="mb-4 overflow-x-auto rounded-lg bg-gray-50 p-4 text-xs text-gray-600">
+          {source}
+        </pre>
+      );
+    }
+
+    case "excalidraw":
+    case "richTextDrawer":
+      // Both store a raw scene/stroke data blob that needs the authoring-only
+      // Excalidraw/Drawer runtime to render — not portable to this no-Tiptap read view.
+      // See changelog "what's not portable".
+      return (
+        <div
+          key={key}
+          className="mb-4 flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 py-10 text-sm text-gray-400"
+        >
+          {node.type === "excalidraw" ? "Excalidraw drawing" : "Sketch"} — open in the editor to view
+        </div>
+      );
+
+    case "columns":
+      return (
+        <div key={key} className="mb-4 grid grid-cols-2 gap-4">
+          {children}
+        </div>
+      );
+
+    case "callout": {
+      const title = typeof node.attrs?.title === "string" ? node.attrs.title : "";
+      const body = typeof node.attrs?.body === "string" ? node.attrs.body : "";
+      return (
+        <div key={key} className="mb-4 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-gray-800">
+          {title && <p className="mb-1 font-semibold">{title}</p>}
+          {body && <p>{body}</p>}
+          {children}
+        </div>
+      );
+    }
+
+    // reactjs-tiptap-editor wraps its Mention node as "richTextMentionWrapper".
+    case "richTextMentionWrapper":
+    case "mention": {
+      const label =
+        typeof node.attrs?.label === "string"
+          ? node.attrs.label
+          : typeof node.attrs?.id === "string"
+            ? node.attrs.id
+            : "user";
+      return (
+        <span key={key} className="rounded bg-indigo-50 px-1 py-0.5 font-medium text-indigo-700">
+          @{label}
+        </span>
       );
     }
 
