@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
+import { TiptapContentView } from "@/domains/learning";
 import { VersionHistoryOrchestrator } from "./VersionHistoryOrchestrator";
 import { LessonFeedbackOrchestrator } from "./LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";

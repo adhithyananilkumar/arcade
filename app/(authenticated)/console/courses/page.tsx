@@ -248,7 +248,7 @@ export default function ReviewCoursesPage() {
                   })}
                 </div>
                   <Link
-                    href={`/content/published/${course.id}`}
+                    href={`/studio/published/${course.id}`}
                     className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors mt-2"
                   >
                     Review Course →
