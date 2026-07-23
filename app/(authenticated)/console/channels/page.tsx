@@ -2,7 +2,7 @@
 
 import { Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PendingChannels } from '@/app/(authenticated)/dashboard/PendingChannels'; // Reusing the component
+import { PendingChannels } from '@/apps/learner/components/channels/PendingChannels'; // Reusing the component
 
 import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';

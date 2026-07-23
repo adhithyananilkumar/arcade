@@ -6,8 +6,8 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
 import { Loader2 } from 'lucide-react';
 
-import DashboardNavbar from '@/apps/learner/layout/DashboardNavbar';
-import DashboardLoading from '@/app/(authenticated)/dashboard/loading';
+import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
+import DashboardLoading from '@/app/(authenticated)/loading';
 
 function OAuthRedirectHandler() {
   const router = useRouter();
@@ -33,7 +33,7 @@ function OAuthRedirectHandler() {
       UserService.getMe()
         .then((user) => {
           setAuth(user, token);
-          router.push('/dashboard');
+          router.push('/');
         })
         .catch((err) => {
           console.error('Failed to fetch user profile after OAuth:', err);
@@ -53,7 +53,7 @@ function OAuthRedirectHandler() {
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden relative z-10">
-        <DashboardNavbar />
+        <LearnerNavbar />
         <main className="flex-1 overflow-y-auto p-6 md:p-8 relative">
           <DashboardLoading />
         </main>

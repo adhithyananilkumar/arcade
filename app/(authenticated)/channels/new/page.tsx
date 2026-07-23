@@ -32,7 +32,7 @@ export default function NewChannelPage() {
       setLoading(true);
       await channelService.createChannelRequest(name, description, isPersonal, iconFile || undefined);
       toast.success('Channel request submitted successfully!');
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       toast.error('Failed to submit channel request');
     } finally {
@@ -42,7 +42,7 @@ export default function NewChannelPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-12">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors">
+      <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 transition-colors">
         <ArrowLeft size={16} />
         Back to Dashboard
       </Link>
@@ -127,7 +127,7 @@ export default function NewChannelPage() {
         {/* Submit */}
         <div className="flex justify-end gap-3">
           <Link
-            href="/dashboard"
+            href="/"
             className="rounded-xl px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
           >
             Cancel

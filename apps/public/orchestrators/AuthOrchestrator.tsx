@@ -55,7 +55,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: 'login' | 'sign
         setAuth(user, accessToken);
         
         const returnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl');
-        const safePath = returnTo?.startsWith('/') ? returnTo : '/dashboard';
+        const safePath = returnTo?.startsWith('/') ? returnTo : '/';
         router.push(safePath);
       } else {
         await AuthService.register({ firstName: data.firstName, lastName: data.lastName, email: data.email, password: data.password });

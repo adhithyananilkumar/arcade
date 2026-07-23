@@ -31,7 +31,7 @@ function JoinOrganizationContent() {
       setStatus('success');
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
-        router.push('/dashboard/organizations');
+        router.push('/organizations');
       }, 2000);
     } catch (err: any) {
       setStatus('error');
@@ -75,7 +75,7 @@ function JoinOrganizationContent() {
             <p className="text-sm text-gray-500 mt-2">{errorMessage}</p>
             
             <Link 
-              href="/dashboard/organizations"
+              href="/organizations"
               className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
             >
               Go to Dashboard

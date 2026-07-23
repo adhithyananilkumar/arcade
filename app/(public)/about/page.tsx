@@ -167,6 +167,61 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* --- CORE VALUES (from compile branch) --- */}
+      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 space-y-16">
+        <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+            Our Core Values
+          </h2>
+          <p className="text-base text-slate-500">
+            Everything we build is guided by these core principles to ensure the best experience for our community.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {values.map((val, idx) => {
+            const Icon = val.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group"
+              >
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${val.bg} ${val.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{val.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{val.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* --- CTA (from compile branch) --- */}
+      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 mb-12">
+        <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 rounded-[32px] p-12 md:p-20 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 space-y-8 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
+              Ready to transform the way you teach?
+            </h2>
+            <p className="text-blue-100/80 text-lg">
+              Join thousands of educators and institutions already building on Arcade.
+            </p>
+            <div className="pt-4">
+              <Link
+                href="/creators"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white hover:bg-blue-50 text-slate-900 font-bold text-sm tracking-wide shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <span>Become a Creator</span>
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* --- SECTION 2: POWERED BY AJCE --- */}
       <AJCESection />
 

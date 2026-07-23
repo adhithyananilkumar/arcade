@@ -71,7 +71,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       if (user.onboardingCompleted === false && !isOnboarding) {
         router.push('/onboarding');
       } else if (user.onboardingCompleted === true && isOnboarding) {
-        router.push('/dashboard');
+        router.push('/');
       }
     }
   }, [mounted, status, user, pathname, router]);

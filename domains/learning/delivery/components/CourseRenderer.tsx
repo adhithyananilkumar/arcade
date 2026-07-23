@@ -87,7 +87,7 @@ export function CourseRenderer({
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 text-center">
         <p className="text-sm text-red-500">{error ?? "Course not found"}</p>
-        <Link href="/dashboard/content/published" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/studio/published" className="text-sm text-indigo-600 hover:underline">
           Back to Published Courses
         </Link>
       </div>
@@ -99,7 +99,7 @@ export function CourseRenderer({
       <aside className="flex w-80 flex-shrink-0 flex-col border-r border-gray-200 bg-gray-50">
         <div className="border-b border-gray-200 px-5 py-4">
           <Link
-            href={canPublish ? "/dashboard/content/review" : "/dashboard/content/published"}
+            href={canPublish ? "/studio/review" : "/studio/published"}
             className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft size={14} />

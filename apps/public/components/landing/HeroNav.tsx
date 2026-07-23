@@ -8,10 +8,13 @@ import "@/apps/public/landing.css";
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "About", href: "/about" },
-  { label: "For creators", href: "/for-creators" },
+  { label: "For creators", href: "/creators" },
 ];
 
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+
 export default function HeroNav() {
+  const { status } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
   const [isHidden, setIsHidden] = useState(false);
 
@@ -107,9 +110,15 @@ export default function HeroNav() {
 
       {/* Right actions */}
       <div className="l-nav__actions">
-        <Link href="/sign" className="l-nav__get-started">
-          Get Started
-        </Link>
+        {status === 'authenticated' ? (
+          <Link href="/" className="l-nav__get-started">
+            Open Arcade
+          </Link>
+        ) : (
+          <Link href="/sign" className="l-nav__get-started">
+            Get Started
+          </Link>
+        )}
       </div>
     </motion.nav>
   );

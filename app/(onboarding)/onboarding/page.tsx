@@ -73,7 +73,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (user?.onboardingCompleted) {
-      router.push('/dashboard');
+      router.push('/');
     }
   }, [user, router]);
 
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
 
       const profileRes = await api.put<any>('/api/v1/users/me', payload);
       updateUser(profileRes);
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       console.error('Failed to complete onboarding', error);
       setIsSubmitting(false);
