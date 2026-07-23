@@ -91,12 +91,10 @@ export const RichTextToolbar = memo(function RichTextToolbar() {
       {/* Insert Dropdown (Popover) - pushed to the right */}
       <div className="ml-auto flex items-center pl-1">
         <Popover>
-          <PopoverTrigger render={
-            <Button variant="outline" size="sm" className="h-8 px-3 flex items-center gap-1.5 border-border bg-transparent hover:bg-muted text-foreground">
-              <Plus size={14} />
-              <span className="text-xs font-semibold">Insert</span>
-            </Button>
-          } />
+          <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 px-3 flex items-center gap-1.5 border-border bg-transparent hover:bg-muted text-foreground" />}>
+            <Plus size={14} />
+            <span className="text-xs font-semibold">Insert</span>
+          </PopoverTrigger>
           <PopoverContent className="w-64 p-3" align="end">
             <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Insert Elements

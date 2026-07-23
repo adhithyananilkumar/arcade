@@ -93,10 +93,11 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     try {
+      console.error("API ERROR RAW TEXT:", text);
       const err = JSON.parse(text);
-      message = err.message ?? message;
+      message = (err.message ?? message) + " RAW: " + text;
     } catch {
-      // body wasn't JSON — keep the generic message
+      message = message + " RAW: " + text;
     }
     throw new Error(message);
   }

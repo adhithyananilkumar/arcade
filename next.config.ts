@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["yjs"],
   reactStrictMode: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      }
+    ]
+  },
   async redirects() {
     return [
       {
