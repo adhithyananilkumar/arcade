@@ -38,7 +38,6 @@ import {
   encodeSnapshotBase64,
 } from "@/apps/creator/editor";
 import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
-import { TiptapContentView } from "@/domains/learning";
 import { CourseSubmitDialog } from "../components/CourseSubmitDialog";
 import {
   DropdownMenu,
