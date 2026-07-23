@@ -1,4 +1,4 @@
-// app/(authenticated)/content/review/page.tsx
+// app/(authenticated)/console/courses/page.tsx
 // "Review Courses" page: lists courses the author has submitted for review.
 // A course lands here the moment its author presses "Submit for Review" in the
 // editor (which flips the course status to SUBMITTED via /api/courses/{id}/submit).
@@ -247,13 +247,12 @@ export default function ReviewCoursesPage() {
                     hour12: true,
                   })}
                 </div>
-                  <Link
-                    href={`/content/published/${course.id}`}
-                    className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors mt-2"
-                  >
-                    Review Course →
-                  </Link>
-                </div>
+                <Link
+                  href={`/studio/published/${course.id}`}
+                  className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
+                >
+                  Review Course →
+                </Link>
               </div>
             ))}
           </div>

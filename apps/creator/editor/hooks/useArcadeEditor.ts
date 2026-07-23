@@ -60,16 +60,26 @@ export function useArcadeEditor({
   ydoc,
   seedContent,
 }: UseArcadeEditorOptions = {}) {
-  const debouncedSave = useMemo(
-    () =>
-      debounce((doc: TiptapDocument) => {
-        if (onSave) {
-          onSave(doc);
-        }
-      }, DEBOUNCE_MS),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // stable ref — onSave is captured at creation; use closure pattern
-  );
+  // The debounced function must be referentially stable (recreating it would drop
+  // pending saves), but it must also call the *current* onSave. Reading through a
+  // ref gives us both — capturing `onSave` in the closure instead would pin the
+  // callback from first render and silently save against a stale lesson id.
+  const onSaveRef = useRef(onSave);
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
+
+  // Defer editor.getJSON() until the debounce actually fires — it's an
+  // O(document size) full-tree serialization, too expensive to run synchronously
+  // on every keystroke via onUpdate.
+  const runSave = useCallback((editorInstance: { getJSON: () => unknown }) => {
+    onSaveRef.current?.(editorInstance.getJSON() as TiptapDocument);
+  }, []);
+
+  // `runSave` reads onSaveRef, but only when the debounce timer fires — never during
+  // render. The lint rule can't see through the debounce wrapper, hence the exemption.
+  // eslint-disable-next-line react-hooks/refs
+  const debouncedSave = useMemo(() => debounce(runSave, DEBOUNCE_MS), [runSave]);
 
   // Cancel pending debounce on unmount to prevent state updates after unmount
   useEffect(() => {
@@ -78,16 +88,27 @@ export function useArcadeEditor({
     };
   }, [debouncedSave]);
 
+  // buildExtensions() instantiates 50+ Tiptap extensions (each `.configure()` call
+  // produces a new object). Without memoizing, useEditor's internal option-diffing
+  // sees a "changed" extensions array on every re-render of this component and
+  // calls editor.setOptions(), which rebuilds the entire schema/plugin set —
+  // expensive, and easy to trigger from state changes unrelated to typing.
+  const extensions = useMemo(
+    () => buildExtensions(placeholder, ydoc),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ydoc] // placeholder changes shouldn't tear down the whole extension set
+  );
+
   const editor = useEditor({
     // CRITICAL: prevents React hydration mismatch on Next.js SSR
     immediatelyRender: false,
-    extensions: buildExtensions(placeholder, ydoc),
+    extensions,
     // In collaborative mode the Y.Doc supplies content; passing `content` too would
     // duplicate it. Only seed `content` in the non-collaborative path.
     content: ydoc ? undefined : initialContent ?? null,
     editable: !readOnly,
     onUpdate: ({ editor }) => {
-      debouncedSave(editor.getJSON() as TiptapDocument);
+      debouncedSave(editor);
     },
   });
 
@@ -111,10 +132,10 @@ export function useArcadeEditor({
    */
   const flushSave = useCallback(async () => {
     debouncedSave.cancel();
-    if (editor && onSave) {
-      await onSave(editor.getJSON() as TiptapDocument);
+    if (editor && onSaveRef.current) {
+      await onSaveRef.current(editor.getJSON() as TiptapDocument);
     }
-  }, [editor, onSave, debouncedSave]);
+  }, [editor, debouncedSave]);
 
   /**
    * Replace the editor's content — used to restore a past version. In collaborative
