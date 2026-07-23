@@ -518,8 +518,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [isInitializing, setIsInitializing] = useState(true);
   const [navigatingBack, setNavigatingBack] = useState(false);
 
-  // Workshop Session Settings
+  // Workshop Day Settings dialog — keyed on the session (container) ID, not the lesson.
   const [sessionSettingsSessionId, setSessionSettingsSessionId] = useState<string | null>(null);
+  // Track which module (Day) currently contains the active lesson for the Settings button.
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
 
   // Imperative handle to force-save the open lesson before navigating away.
   const editorRef = useRef<ArcadeEditorHandle>(null);
@@ -797,7 +799,38 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
   }, [contentId, modules.length, adapter]);
 
-  // ── Tree mutation: Add Lesson (directly under a module) ────────────────────
+  // ── Tree mutation: Add Day (container) — workshop only ───────────────────
+
+  const addWorkshopDay = useCallback(
+    async () => {
+      if (!contentId) return;
+      try {
+        const nextIndex = modules.length + 1;
+        const newContainer = await adapter.addContainer(
+          contentId,
+          `${adapter.terminology.container} ${nextIndex}`
+        );
+        setModules((prev) => [
+          ...prev,
+          {
+            id: newContainer.id,
+            title: newContainer.title,
+            position: newContainer.position,
+            expanded: true,
+            lessons: [],
+            quizzes: [],
+          },
+        ]);
+        // Auto-open Day Settings dialog so the creator can set schedule details.
+        setSessionSettingsSessionId(newContainer.id);
+      } catch (e) {
+        console.error("Failed to add day", e);
+      }
+    },
+    [contentId, modules.length, adapter]
+  );
+
+  // ── Tree mutation: Add Lesson (directly under a module/Day) ──────────────
 
   const addLesson = useCallback(
     async (moduleId: string) => {
@@ -817,10 +850,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               : m
           )
         );
+        setActiveModuleId(moduleId);
         await openLesson(newLesson as any);
-        if (contentType === "workshop") {
-          setSessionSettingsSessionId(newLesson.id);
-        }
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
@@ -1189,6 +1220,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         onClose={() => setSessionSettingsSessionId(null)}
         workshopId={contentId!}
         sessionId={sessionSettingsSessionId}
+        onSaved={(updatedSession) => {
+          // Sync the new Day title into the sidebar module (container) row.
+          if (updatedSession.title && sessionSettingsSessionId) {
+            const newTitle = updatedSession.title;
+            setModules((prev) =>
+              prev.map((m) =>
+                m.id === sessionSettingsSessionId ? { ...m, title: newTitle } : m
+              )
+            );
+          }
+          // Dialog closes itself via its own onClose prop after calling onSaved.
+        }}
       />
       {activeLessonId && (
         <VersionHistoryOrchestrator
@@ -1257,10 +1300,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {activeLessonId && contentType === "workshop" && (
+            {activeLessonId && contentType === "workshop" && activeModuleId && (
               <button
                 type="button"
-                onClick={() => setSessionSettingsSessionId(activeLessonId)}
+                onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
                 className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
               >
@@ -1418,11 +1461,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                 >
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      item.kind === "lesson"
-                                        ? openLesson(item.node)
-                                        : openQuiz(item.node)
-                                    }
+                                    onClick={() => {
+                                      if (item.kind === "lesson") {
+                                        setActiveModuleId(mod.id);
+                                        openLesson(item.node);
+                                      } else {
+                                        openQuiz(item.node);
+                                      }
+                                    }}
                                     className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
                                       ? "font-medium text-indigo-700"
                                       : "text-gray-500"
@@ -1482,17 +1528,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               );
                             })}
 
-                          {/* Add lesson / quiz to this module */}
-                          {contentType !== "workshop" && (
-                            <div className="mt-0.5 flex items-center gap-3 pl-2">
-                              <button
-                                type="button"
-                                onClick={() => addLesson(mod.id)}
-                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                              >
-                                <Plus size={11} />
-                                Add lesson
-                              </button>
+                          {/* Add lesson / quiz to this Day/module */}
+                          <div className="mt-0.5 flex items-center gap-3 pl-2">
+                            <button
+                              type="button"
+                              onClick={() => addLesson(mod.id)}
+                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                            >
+                              <Plus size={11} />
+                              Add {adapter.terminology.leafDocument}
+                            </button>
+                            {contentType !== "workshop" && (
                               <button
                                 type="button"
                                 onClick={() => addQuiz(mod.id)}
@@ -1501,8 +1547,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                 <Plus size={11} />
                                 Add quiz
                               </button>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1511,10 +1557,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                 {/* Sidebar footer */}
                 <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
-                  {contentType === "workshop" && modules.length > 0 && (
+                  {contentType === "workshop" && (
                     <button
                       type="button"
-                      onClick={() => addLesson(modules[0].id)}
+                      onClick={addWorkshopDay}
                       className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
                     >
                       <Plus size={14} />

@@ -9,7 +9,7 @@ interface Props {
   onClose: () => void;
   workshopId: string;
   sessionId: string | null;
-  onSaved?: () => void;
+  onSaved?: (updatedSession: Partial<WorkshopSession>) => void;
 }
 
 export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, workshopId, sessionId, onSaved }) => {
@@ -49,7 +49,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, workshop
     setError(null);
     try {
       await api.patch(`/api/workshops/${workshopId}/sessions/${sessionId}`, session);
-      onSaved?.();
+      onSaved?.(session);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Failed to save session');

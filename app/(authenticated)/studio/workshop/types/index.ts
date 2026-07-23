@@ -98,6 +98,15 @@ export enum MeetingProvider {
   CUSTOM = 'CUSTOM'
 }
 
+export interface WorkshopLesson {
+  id: string;
+  sessionId: string;
+  title: string;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface WorkshopSession {
   id: string;
   workshopId: string;
@@ -120,10 +129,12 @@ export interface WorkshopSession {
   isManuallyReleased?: boolean;
   createdAt: string;
   updatedAt: string;
+  lessons?: WorkshopLesson[];
 }
 
-export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'isManuallyReleased' | 'createdAt' | 'updatedAt'>;
+export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'isManuallyReleased' | 'createdAt' | 'updatedAt' | 'lessons'>;
 export type UpdateWorkshopSessionRequest = Partial<CreateWorkshopSessionRequest> & { status?: SessionStatus };
+
 
 export enum PricingModel {
   FREE = 'FREE',
