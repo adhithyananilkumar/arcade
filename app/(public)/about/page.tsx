@@ -10,6 +10,7 @@ import {
   Building,
   CheckCircle,
   Code,
+  Globe,
   GraduationCap,
   Layout,
   Lightbulb,
@@ -47,6 +48,37 @@ const staggerContainer: Variants = {
 
 export default function AboutPage() {
   const headerRef = useRef<HTMLDivElement>(null);
+
+  const values = [
+    {
+      title: "Global Reach",
+      description: "Empowering learners from every corner of the world with accessible education.",
+      icon: Globe,
+      color: "text-blue-500",
+      bg: "bg-blue-50"
+    },
+    {
+      title: "Community First",
+      description: "Built by educators for educators, fostering an active and supportive network.",
+      icon: Users,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50"
+    },
+    {
+      title: "Lightning Fast",
+      description: "Experience uncompromised speed with our optimized learning delivery network.",
+      icon: Zap,
+      color: "text-amber-500",
+      bg: "bg-amber-50"
+    },
+    {
+      title: "Secure & Reliable",
+      description: "Enterprise-grade security protecting your intellectual property and data.",
+      icon: Shield,
+      color: "text-rose-500",
+      bg: "bg-rose-50"
+    },
+  ];
 
   return (
     <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
