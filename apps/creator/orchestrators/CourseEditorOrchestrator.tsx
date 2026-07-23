@@ -73,6 +73,7 @@ import {
   MessageSquare,
   Lock,
 } from "lucide-react";
+import { toast } from "sonner";
 
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
@@ -227,12 +228,13 @@ function StatusPill({ status }: { status: string }) {
     ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
   };
   const s = styles[status] ?? styles.ARCHIVED;
+  const displayStatus = status === 'SUBMITTED' ? 'REQUESTED' : status;
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.badge}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      {status}
+      {displayStatus}
     </span>
   );
 }
@@ -1058,8 +1060,10 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
         setCourseData({ ...courseData, ...data, status: updated.status });
       }
       setHistoryRefreshKey((k) => k + 1);
+      toast.success("Request has been sent for review!");
     } catch (e) {
       console.error("Failed to submit course", e);
+      toast.error("Failed to submit course. Please try again.");
       throw e;
     }
   };

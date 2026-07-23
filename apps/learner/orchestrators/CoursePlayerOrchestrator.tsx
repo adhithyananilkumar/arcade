@@ -6,6 +6,8 @@ import { getQuizStats, type QuizStatsResponse } from "@/domains/assessments";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { api } from "@/infrastructure/http/api";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
+import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
+import { ArcadeEditor } from "@/apps/creator/editor";
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
@@ -17,6 +19,8 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
   const [quizStats, setQuizStats] = useState<Record<string, QuizStatsResponse>>({});
   const { user } = useAuthStore();
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLessonId, setHistoryLessonId] = useState<string | null>(null);
 
   const canPublish =
     user?.permissions?.some((p) => p === "courses.review" || p === "channel.courses.review") ||
@@ -123,27 +127,53 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   };
 
   return (
-    <CourseRenderer
-      course={course}
-      loading={loading}
-      error={error}
-      selectedItem={selectedItem}
-      setSelectedItem={setSelectedItem}
-      collapsedModules={collapsedModules}
-      toggleModule={toggleModule}
-      quizStats={quizStats}
-      canPublish={!!canPublish}
-      onPublish={handlePublish}
-      onReject={handleReject}
-      onAttemptGraded={handleAttemptGraded}
-      mode={mode}
-      isFeedbackOpen={isFeedbackOpen}
-      setIsFeedbackOpen={setIsFeedbackOpen}
-      comments={comments}
-      commentsLoading={commentsLoading}
-      commentsError={commentsError}
-      onAddComment={handleAddComment}
-      currentUser={user}
-    />
+    <>
+      <CourseRenderer
+        course={course}
+        loading={loading}
+        error={error}
+        selectedItem={selectedItem}
+        setSelectedItem={setSelectedItem}
+        collapsedModules={collapsedModules}
+        toggleModule={toggleModule}
+        quizStats={quizStats}
+        canPublish={!!canPublish}
+        onPublish={handlePublish}
+        onReject={handleReject}
+        onAttemptGraded={handleAttemptGraded}
+        mode={mode}
+        isFeedbackOpen={isFeedbackOpen}
+        setIsFeedbackOpen={setIsFeedbackOpen}
+        comments={comments}
+        commentsLoading={commentsLoading}
+        commentsError={commentsError ?? undefined}
+        onAddComment={handleAddComment}
+        currentUser={user ? { id: user.id, name: `${user.firstName} ${user.lastName}`, avatarUrl: user.avatarUrl ?? undefined } : undefined}
+        onViewHistory={(lessonId) => {
+          setHistoryLessonId(lessonId);
+          setHistoryOpen(true);
+        }}
+      />
+      {historyLessonId && (
+        <VersionHistoryOrchestrator
+          lessonId={historyLessonId}
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          refreshKey={0}
+          onRestore={async () => {
+             // Admin doesn't restore versions in review mode. We can just no-op or close.
+             setHistoryOpen(false);
+          }}
+          renderEditor={(previewDoc, selectedId) => (
+            <ArcadeEditor
+              key={selectedId}
+              readOnly
+              initialContent={previewDoc}
+              className="bg-white"
+            />
+          )}
+        />
+      )}
+    </>
   );
 }

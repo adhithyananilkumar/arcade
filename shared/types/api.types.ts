@@ -156,5 +156,8 @@ export interface CourseRenderResponse {
   description?: string;
   coverImageUrl?: string;
   status: ContentStatus;
+  pricingModel: PricingModel;
+  priceAmount?: number;
+  examSchedule?: string;
   modules: ModuleRenderResponse[];
 }

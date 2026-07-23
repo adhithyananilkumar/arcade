@@ -6,7 +6,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuestion } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuestion, History } from "lucide-react";
 import { TiptapContentView } from "./TiptapContentView";
 import { QuizPlayer, type QuizStatsResponse } from "@/domains/assessments";
 import { LessonReviewFeedback } from "./LessonReviewFeedback";
@@ -37,9 +37,10 @@ interface CourseRendererProps {
   setIsFeedbackOpen: (open: boolean) => void;
   comments: any[];
   commentsLoading: boolean;
-  commentsError: string | null;
-  onAddComment: (content: string) => Promise<void>;
-  currentUser: any;
+  commentsError?: string;
+  onAddComment?: (lessonId: string, content: string) => Promise<void>;
+  onViewHistory?: (lessonId: string) => void;
+  currentUser?: { id: string; name: string; avatarUrl?: string };
 }
 
 export function CourseRenderer({
@@ -62,6 +63,7 @@ export function CourseRenderer({
   commentsLoading,
   commentsError,
   onAddComment,
+  onViewHistory,
   currentUser
 }: CourseRendererProps) {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
@@ -243,7 +245,18 @@ export function CourseRenderer({
         <div className="mx-auto max-w-3xl px-10 py-10">
           {selectedLesson ? (
             <>
-              <h2 className="mb-6 text-2xl font-bold text-gray-900">{selectedLesson.title}</h2>
+              <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedLesson.title}</h2>
+                {canPublish && onViewHistory && (
+                  <button
+                    onClick={() => onViewHistory(selectedLesson.id)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                  >
+                    <History size={14} />
+                    View Edit History
+                  </button>
+                )}
+              </div>
               <TiptapContentView body={selectedLesson.body} emptyMessage="This lesson has no content yet." />
             </>
           ) : selectedQuizId ? (
@@ -253,7 +266,40 @@ export function CourseRenderer({
               onAttemptGraded={(attempt) => onAttemptGraded(attempt, selectedQuizId)}
             />
           ) : (
-            <p className="text-sm text-gray-400">Select a lesson from the sidebar to begin.</p>
+            <div className="flex flex-col items-center justify-center text-center pt-10">
+              {course.coverImageUrl ? (
+                <div className="w-full max-w-lg aspect-video rounded-xl overflow-hidden shadow-lg mb-8 border border-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={course.coverImageUrl} alt={course.title} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-full max-w-lg aspect-video rounded-xl bg-gray-100 flex items-center justify-center mb-8 border border-gray-200">
+                  <span className="text-gray-400 font-medium">No cover image</span>
+                </div>
+              )}
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{course.title}</h2>
+              <div className="flex items-center gap-4 text-sm font-medium text-gray-500 mb-8 bg-gray-50 px-6 py-3 rounded-full border border-gray-100">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  {course.pricingModel === 'PAID' ? `$${course.priceAmount?.toFixed(2)}` : 'Free Course'}
+                </span>
+                {course.examSchedule && (
+                   <>
+                    <span className="text-gray-300">•</span>
+                    <span>Exam scheduled</span>
+                  </>
+                )}
+                {canPublish && (
+                  <>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-indigo-600">Review Mode</span>
+                  </>
+                )}
+              </div>
+              <p className="text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">{course.description || "No description provided."}</p>
+              
+              <p className="text-sm text-gray-400 font-medium">Select a lesson from the sidebar to begin.</p>
+            </div>
           )}
         </div>
       </main>
@@ -276,8 +322,10 @@ export function CourseRenderer({
               <LessonReviewFeedback
                 comments={comments}
                 loading={commentsLoading}
-                error={commentsError}
-                onAddComment={onAddComment}
+                error={commentsError ?? null}
+                onAddComment={async (content) => {
+                  if (onAddComment) await onAddComment(selectedLesson.id, content);
+                }}
                 currentUser={currentUser}
                 className="flex-1 min-h-0"
               />

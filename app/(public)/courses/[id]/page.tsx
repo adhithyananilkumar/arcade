@@ -361,6 +361,8 @@ function CourseHero({
   authorAvatarUrl?: string | null
   lessonCount?: number
   onEnroll?: () => void
+  pricingModel?: string
+  priceAmount?: number | null
 }) {
   const [saved, setSaved] = useState(false)
 

@@ -182,14 +182,26 @@ export default function ReviewCoursesPage() {
             {filteredCourses.map((course) => (
               <div
                 key={course.id}
-                className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3"
+                className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all flex flex-col overflow-hidden"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
-                    {course.title}
-                  </h3>
-                  <StatusBadge status={course.status} />
-                </div>
+                {course.coverImageUrl ? (
+                  <div className="w-full h-32 bg-gray-100 overflow-hidden shrink-0 border-b border-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={course.coverImageUrl} alt={course.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                  </div>
+                ) : (
+                  <div className="w-full h-32 bg-gray-50 flex items-center justify-center shrink-0 border-b border-gray-100">
+                     <span className="text-gray-300 text-xs font-medium uppercase tracking-widest">No Cover</span>
+                  </div>
+                )}
+                
+                <div className="p-5 flex flex-col gap-3 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
+                      {course.title}
+                    </h3>
+                    <StatusBadge status={course.status} />
+                  </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <User size={12} className="text-gray-400" />
                   {course.authorUsername ? (
@@ -209,6 +221,20 @@ export default function ReviewCoursesPage() {
                     {course.description}
                   </p>
                 )}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-auto">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                    {course.pricingModel === 'PAID' ? (
+                      <span className="text-emerald-600">${course.priceAmount?.toFixed(2)}</span>
+                    ) : (
+                      <span>Free</span>
+                    )}
+                  </div>
+                  {course.examSchedule && (
+                     <div className="flex items-center gap-1 text-[11px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                       Exam Scheduled
+                     </div>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
                   <Clock size={11} />
                   Last edited:{" "}
@@ -221,12 +247,13 @@ export default function ReviewCoursesPage() {
                     hour12: true,
                   })}
                 </div>
-                <Link
-                  href={`/content/published/${course.id}`}
-                  className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
-                >
-                  Review Course →
-                </Link>
+                  <Link
+                    href={`/content/published/${course.id}`}
+                    className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors mt-2"
+                  >
+                    Review Course →
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
