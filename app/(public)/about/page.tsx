@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, Variants, useScroll, useTransform } from "framer-motion";
+import { motion, Variants, useScroll, useTransform, useInView } from "framer-motion";
 import {
   ArrowRight,
   Award,
@@ -174,35 +174,12 @@ export default function AboutPage() {
 
 
       {/* --- SECTION 5: WHO IS ARCADE FOR? --- */}
-      <section className="py-24 bg-slate-50 border-t border-slate-200/50">
+      <section className="py-24 md:py-32 bg-slate-50 border-t border-slate-200/50 overflow-hidden">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
           <SectionHeader title="Who is Arcade For?" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
-            <PersonaCard
-              title="Students"
-              features={["Learn practical skills", "Build your portfolio", "Earn verifiable certificates"]}
-              icon={GraduationCap}
-              color="bg-blue-50 text-blue-700"
-            />
-            <PersonaCard
-              title="Organizations"
-              features={["Host technical events", "Reach targeted learners", "Build vibrant communities"]}
-              icon={Building}
-              color="bg-indigo-50 text-indigo-700"
-            />
-            <PersonaCard
-              title="Content Creators"
-              features={["Conduct live workshops", "Share domain expertise", "Grow your audience"]}
-              icon={PlaySquare}
-              color="bg-emerald-50 text-emerald-700"
-            />
-            <PersonaCard
-              title="Institutions"
-              features={["Partner with Arcade", "Reach larger communities", "Co-certify programs"]}
-              icon={Layout}
-              color="bg-purple-50 text-purple-700"
-            />
-          </div>
+          
+          <TimelineSection />
+
         </div>
       </section>
 
@@ -214,6 +191,194 @@ export default function AboutPage() {
 }
 
 // --- SUB-COMPONENTS ---
+
+function TimelineSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Subtle parallax for the whole block
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  const yParallax = useTransform(scrollYProgress, [0, 1], [30, -30]);
+
+  const personas = [
+    {
+      label: "For Students",
+      title: "Accelerate your career with verified credentials",
+      description: "Master new skills and prove your expertise to employers with institution-backed certificates.",
+      features: ["Learn highly practical skills", "Build your technical portfolio", "Earn verifiable certificates"],
+      icon: GraduationCap,
+      color: "text-blue-600",
+      glowColor: "rgba(37,99,235,0.35)",
+      ringColor: "rgba(37,99,235,0.7)",
+      iconBg: "bg-blue-50"
+    },
+    {
+      label: "For Organizations",
+      title: "Scale your technical events & reach top talent",
+      description: "Host hackathons, coding challenges, and tech talks for an engaged community of learners.",
+      features: ["Host robust technical events", "Reach highly targeted learners", "Build vibrant communities"],
+      icon: Building,
+      color: "text-orange-500",
+      glowColor: "rgba(249,115,22,0.35)",
+      ringColor: "rgba(249,115,22,0.7)",
+      iconBg: "bg-orange-50"
+    },
+    {
+      label: "For Content Creators",
+      title: "Monetize your expertise & grow your audience",
+      description: "Deliver live workshops and courses to students eager to learn from industry professionals.",
+      features: ["Conduct interactive live workshops", "Share your domain expertise", "Grow your loyal audience"],
+      icon: PlaySquare,
+      color: "text-emerald-500",
+      glowColor: "rgba(16,185,129,0.35)",
+      ringColor: "rgba(16,185,129,0.7)",
+      iconBg: "bg-emerald-50"
+    },
+    {
+      label: "For Institutions",
+      title: "Expand your educational impact globally",
+      description: "Partner with Arcade to co-certify programs and offer your curriculum to a broader audience.",
+      features: ["Partner directly with Arcade", "Reach larger academic communities", "Co-certify premium programs"],
+      icon: Layout,
+      color: "text-purple-600",
+      glowColor: "rgba(147,51,234,0.35)",
+      ringColor: "rgba(147,51,234,0.7)",
+      iconBg: "bg-purple-50"
+    }
+  ];
+
+  return (
+    <motion.div ref={containerRef} style={{ y: yParallax }} className="relative max-w-5xl mx-auto mt-24">
+      {/* Mobile Vertical Line */}
+      <div className="absolute left-[calc(50%-1.5px)] top-32 bottom-32 w-[3px] bg-slate-200 md:hidden z-0" />
+
+      {/* Desktop connecting pipes (pure CSS — no pulse) */}
+      <div className="absolute inset-0 hidden md:block pointer-events-none z-0">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className={`absolute border-slate-200 opacity-80 ${
+              i % 2 === 0
+                ? "border-l-[3px] border-b-[3px] rounded-bl-[100px]"
+                : "border-r-[3px] border-b-[3px] rounded-br-[100px]"
+            }`}
+            style={{
+              top: `calc(${i * 25}% + 12.5%)`,
+              bottom: `calc(${(2 - i) * 25}%)`,
+              left: i % 2 === 0 ? "calc(25% - 1.5px)" : undefined,
+              right: i % 2 !== 0 ? "calc(25% - 1.5px)" : undefined,
+              width: "50%",
+            }}
+          />
+        ))}
+      </div>
+
+      {personas.map((persona, index) => (
+        <TimelineNode
+          key={index}
+          persona={persona}
+          isLeft={index % 2 === 0}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+function TimelineNode({ persona, isLeft }: { persona: any; isLeft: boolean }) {
+  const nodeRef = useRef<HTMLDivElement>(null);
+  // Fire once when the node's center crosses 35% from the bottom of the viewport
+  const isInView = useInView(nodeRef, { once: true, margin: "-30% 0px -30% 0px" });
+
+  return (
+    <div className="relative w-full">
+      <div
+        className={`relative z-10 flex flex-col md:flex-row items-center w-full py-16 md:py-0 md:h-[500px] gap-12 md:gap-0 ${
+          isLeft ? "" : "md:flex-row-reverse"
+        }`}
+      >
+        {/* Icon Half */}
+        <div ref={nodeRef} className="w-full md:w-1/2 flex justify-center">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={isInView ? { scale: 1, opacity: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-xl flex items-center justify-center border-[6px] border-slate-50 relative z-20 group hover:-translate-y-1 transition-transform duration-500"
+          >
+            {/* Ambient glow bloom — expands in then settles */}
+            <motion.div
+              className="absolute inset-0 rounded-full pointer-events-none blur-xl"
+              style={{ backgroundColor: persona.glowColor }}
+              initial={{ opacity: 0, scale: 1 }}
+              animate={isInView
+                ? { opacity: [0, 1, 0.25], scale: [1, 1.35, 1.15] }
+                : {}
+              }
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+
+            {/* Ring flash — appears briefly then fades */}
+            <motion.div
+              className="absolute rounded-full border-2 pointer-events-none"
+              style={{
+                inset: "-8px",
+                borderColor: persona.ringColor,
+              }}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={isInView
+                ? { opacity: [0, 1, 0], scale: [0.85, 1.05, 1.15] }
+                : {}
+              }
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            />
+
+            <persona.icon
+              className={`w-12 h-12 md:w-14 md:h-14 ${persona.color} relative z-10 transition-transform duration-500 group-hover:scale-110`}
+            />
+          </motion.div>
+        </div>
+
+        {/* Text Half */}
+        <div className="w-full md:w-1/2 flex flex-col justify-center px-6 md:px-0">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+            className={`flex flex-col gap-6 w-full max-w-[420px] ${
+              isLeft ? "md:mr-auto md:ml-16" : "md:ml-auto md:mr-16"
+            } mx-auto md:mx-0`}
+          >
+            {/* Header */}
+            <div className="flex flex-col gap-4 text-left">
+              <span className={`text-sm font-bold tracking-widest uppercase ${persona.color}`}>
+                {persona.label}
+              </span>
+              <h3 className="text-3xl md:text-4xl font-bold font-bricolage text-slate-900 leading-tight">
+                {persona.title}
+              </h3>
+              <p className="text-lg text-slate-600 leading-relaxed font-medium">
+                {persona.description}
+              </p>
+            </div>
+
+            {/* Checklist */}
+            <ul className="space-y-4 pt-2">
+              {persona.features.map((feat: string, idx: number) => (
+                <li key={idx} className="flex items-start gap-4 text-slate-700 font-medium text-base text-left">
+                  <div className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${persona.iconBg}`}>
+                    <CheckCircle className={`w-4 h-4 ${persona.color}`} />
+                  </div>
+                  <span className="leading-snug">{feat}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AJCESection() {
   const containerRef = useRef<HTMLElement>(null);
@@ -395,31 +560,7 @@ function LargeFeatureCard({ icon: Icon, title, description, color }: { icon: any
   );
 }
 
-function PersonaCard({ title, features, icon: Icon, color }: { title: string; features: string[]; icon: any; color: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row gap-8 items-start"
-    >
-      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${color}`}>
-        <Icon className="w-8 h-8" />
-      </div>
-      <div>
-        <h3 className="text-2xl font-bold font-bricolage text-slate-900 mb-4">{title}</h3>
-        <ul className="space-y-3">
-          {features.map((feat, idx) => (
-            <li key={idx} className="flex items-center gap-3 text-slate-600 font-medium">
-              <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span>{feat}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </motion.div>
-  );
-}
+
 
 
 
