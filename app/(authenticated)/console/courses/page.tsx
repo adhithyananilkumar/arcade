@@ -1,4 +1,4 @@
-// app/(authenticated)/content/review/page.tsx
+// app/(authenticated)/console/courses/page.tsx
 // "Review Courses" page: lists courses the author has submitted for review.
 // A course lands here the moment its author presses "Submit for Review" in the
 // editor (which flips the course status to SUBMITTED via /api/courses/{id}/submit).

@@ -5,7 +5,15 @@ import LearnerNavbar from '@/apps/learner/layout/LearnerNavbar';
 import LearnerDock from '@/apps/learner/layout/LearnerDock';
 import { TimeTracker } from "@/domains/learning";
 import { useThemeStore } from '@/infrastructure/state/theme.store';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+/**
+ * Routes that own their entire viewport and supply their own top chrome. The
+ * learner navbar is `fixed top-6 z-40`, so on these it floats over the page's
+ * own bar and toolbar instead of sitting above them.
+ */
+const IMMERSIVE_ROUTES = [/^\/studio\/course\/[^/]+\/edit\/?$/];
 
 export default function LearnerShell({
   children,
@@ -13,7 +21,10 @@ export default function LearnerShell({
   children: React.ReactNode;
 }) {
   const { theme } = useThemeStore();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+
+  const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
 
   // Prevent hydration mismatch
   useEffect(() => {

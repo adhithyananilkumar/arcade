@@ -6,14 +6,18 @@
 // from this list instead of being hand-edited independently. See docs on Phase 0 of the
 // block-editing architecture for why this exists.
 
+// NOTE (editor UI replacement): callout/columns/math/mermaid/embed used to be registered
+// here too, but are now superseded 1:1 by reactjs-tiptap-editor's own Callout/Column/
+// Katex/Mermaid/Iframe extensions (wired directly in apps/creator/editor/extensions/index.ts).
+// Only the truly custom, backend-tied blocks stay in this registry.
+
 import type { BlockDefinition } from "./types";
 import { buttonBlock } from "./button";
 import { toggleBlock } from "./toggle";
-import { calloutBlock } from "./callout";
 import { roadmapBlock } from "./roadmap";
 import { quizBlock } from "./quiz";
 
-const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, calloutBlock, quizBlock, roadmapBlock];
+const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, quizBlock, roadmapBlock];
 
 export function getBlockDefinitions(): BlockDefinition[] {
   return BLOCKS;
