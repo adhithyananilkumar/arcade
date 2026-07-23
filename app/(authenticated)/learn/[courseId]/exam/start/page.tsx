@@ -46,6 +46,16 @@ export default function ExamEnginePage() {
     }
   }, [params.courseId, router]);
 
+  // Handle anti-cheat strikes side effects safely
+  useEffect(() => {
+    if (strikes >= 3) {
+      sessionStorage.setItem(`exam_terminated_${params.courseId}`, 'true');
+      router.replace(`/learn/${params.courseId}/exam/terminated`);
+    } else if (strikes > 0) {
+      setShowWarning(true);
+    }
+  }, [strikes, params.courseId, router]);
+
   // Anti-Cheat Engine
   useEffect(() => {
     // Attempt fullscreen on mount (fallback)
@@ -63,16 +73,7 @@ export default function ExamEnginePage() {
     const handleStrike = (reason: string) => {
       if (isSubmitting) return;
       console.warn("Anti-Cheat Strike:", reason);
-      setStrikes(prev => {
-        const newStrikes = prev + 1;
-        if (newStrikes >= 3) {
-          sessionStorage.setItem(`exam_terminated_${params.courseId}`, 'true');
-          router.replace(`/learn/${params.courseId}/exam/terminated`);
-        } else {
-          setShowWarning(true);
-        }
-        return newStrikes;
-      });
+      setStrikes(prev => prev + 1);
     };
 
     const handleFullscreenChange = () => {
