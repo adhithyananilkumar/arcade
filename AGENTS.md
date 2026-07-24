@@ -74,6 +74,13 @@ Reverse dependencies are forbidden. Every domain exposes only `index.ts`. Never 
 
 ## Mock-first dev mode
 
+Why: the real backend is already integrated in this repo, but it isn't always
+running locally, some endpoints are still being built, reviewing every
+role/permission view normally requires logging in as multiple real accounts,
+and empty/error/huge-list UI states are hard to trigger on demand from a live
+backend. Mock mode removes that friction without touching real-mode code
+paths — it is not a statement that the backend is missing.
+
 See `mock/README.md` for the full picture. The one rule that matters when
 editing this repo: **write every API-calling function exactly as if it were
 prod-ready and talking to the real backend.** Mocking happens transparently

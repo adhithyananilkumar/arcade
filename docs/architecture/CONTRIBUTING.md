@@ -35,6 +35,25 @@ Never hardcode permissions, roles, policies, course states, workflow transitions
 - Always use Infrastructure APIs.
 - Business decisions belong to the server.
 
+> **Dev-only exception (branch `mockui`):** the root `mock/` folder simulates
+> backend responses strictly for local development, gated behind
+> `NEXT_PUBLIC_USE_MOCKS`/`NEXT_PUBLIC_AUTH_BYPASS`, structurally excluded from
+> production (build-time guard in `next.config.ts` + CI check). It plugs in
+> *underneath* `infrastructure/http/api.ts`, so the "always use Infrastructure
+> APIs" rule above still holds — no domain/app/page code is allowed to call
+> `mock/` directly (eslint-enforced).
+>
+> This exists to remove friction that's unrelated to whether the backend
+> works correctly: the real Spring Boot backend isn't always running on a UI
+> dev's machine, some endpoints this branch's pages need aren't built yet,
+> reviewing a permission-gated view normally requires a real login for that
+> exact role, and empty/error/pagination states are hard to force from a live
+> backend on demand. It is not permission to guess at backend behavior — the
+> "ask instead of assuming" rule above still applies; use `mock/types.ts` to
+> write down the assumed contract explicitly and get it confirmed by backend,
+> rather than leaving it undocumented. See `mock/README.md` before adding any
+> API-calling code on this branch.
+
 ## 2. Layer Responsibilities & Dependency Flow
 
 Dependencies flow exclusively downwards:
