@@ -68,9 +68,14 @@ export function PendingChannels() {
       toast.error('A reason is required to suspend a channel');
       return;
     }
+    // Standard suspend keeps the channel's content publicly visible for a 6-month grace
+    // period. Force skips that entirely — reserved for safety/policy-violation takedowns.
+    const force = window.confirm(
+      'Force suspend?\n\nOK = unlist this channel\'s content immediately (safety/policy violations).\nCancel = standard suspend, content stays visible for up to 6 months.'
+    );
     try {
-      await channelService.suspendChannel(id, reason.trim());
-      toast.success('Channel suspended');
+      await channelService.suspendChannel(id, reason.trim(), force);
+      toast.success(force ? 'Channel suspended — content unlisted immediately' : 'Channel suspended — content will be unlisted within 6 months');
       fetchChannels();
     } catch (error) {
       toast.error('Failed to suspend channel');

@@ -35,9 +35,21 @@ export function DeletionRequests() {
   };
 
   const handleReview = async (id: string, action: 'APPROVE' | 'REJECT') => {
+    let force = false;
+    if (action === 'APPROVE') {
+      force = window.confirm(
+        'Force delete?\n\nOK = unlist this channel\'s content immediately (use for policy violations).\nCancel = standard approval, content stays visible for up to 6 months while the owner/staff are notified.'
+      );
+    }
     try {
-      await channelService.reviewDeletionRequest(id, action);
-      toast.success(`Request ${action.toLowerCase()}d successfully`);
+      await channelService.reviewDeletionRequest(id, action, force);
+      toast.success(
+        action === 'REJECT'
+          ? 'Request rejected'
+          : force
+            ? 'Deletion approved — content unlisted immediately'
+            : 'Deletion approved — content will be unlisted within 6 months'
+      );
       setSelectedRequest(null);
       fetchRequests();
     } catch (error) {

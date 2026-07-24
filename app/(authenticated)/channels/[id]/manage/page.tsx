@@ -82,6 +82,13 @@ export default function ManageChannelPage() {
             <p className="text-sm text-red-600 mt-0.5">
               {channel.suspensionReason || 'A platform administrator has suspended this channel.'}
               {' '}No settings, staff, or role changes can be made until it is reactivated.
+              {' '}
+              {channel.forcedSuspension ? (
+                <strong>Its content has already been unlisted from public discovery.</strong>
+              ) : channel.contentUnlistDate ? (
+                <>Its content will remain publicly visible until{' '}
+                  <strong>{new Date(channel.contentUnlistDate).toLocaleDateString()}</strong>, after which it will be unlisted.</>
+              ) : null}
             </p>
           </div>
         </div>

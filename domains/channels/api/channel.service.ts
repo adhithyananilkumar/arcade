@@ -9,10 +9,25 @@ export interface Channel {
   isPersonal: boolean;
   status: string;
   suspensionReason?: string;
+  suspendedAt?: string;
+  forcedSuspension?: boolean;
+  /** When public listings will be unlisted, if suspended (non-forced). Null once already past. */
+  contentUnlistDate?: string;
   ownerId: string;
   ownerName: string;
   ownerEmail?: string;
   ownerPhone?: string;
+  createdAt: string;
+}
+
+export interface ChannelAuditLogEntry {
+  id: string;
+  channelId: string;
+  channelName: string;
+  action: string;
+  actorId?: string;
+  actorName?: string;
+  details?: string;
   createdAt: string;
 }
 
@@ -129,13 +144,13 @@ export const channelService = {
     return response;
   },
 
-  reviewDeletionRequest: async (requestId: string, action: 'APPROVE' | 'REJECT'): Promise<void> => {
-    const query = new URLSearchParams({ action }).toString();
+  reviewDeletionRequest: async (requestId: string, action: 'APPROVE' | 'REJECT', force: boolean = false): Promise<void> => {
+    const query = new URLSearchParams({ action, force: String(force) }).toString();
     await api.post(`/api/v1/channels/delete-requests/${requestId}/review?${query}`);
   },
 
-  suspendChannel: async (channelId: string, reason: string): Promise<Channel> => {
-    const query = new URLSearchParams({ reason }).toString();
+  suspendChannel: async (channelId: string, reason: string, force: boolean = false): Promise<Channel> => {
+    const query = new URLSearchParams({ reason, force: String(force) }).toString();
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/suspend?${query}`);
     return response;
   },
@@ -143,5 +158,10 @@ export const channelService = {
   reactivateChannel: async (channelId: string): Promise<Channel> => {
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/reactivate`);
     return response;
+  },
+
+  getAuditLog: async (): Promise<ChannelAuditLogEntry[]> => {
+    const response = await api.get<{ content: ChannelAuditLogEntry[] }>('/api/v1/channels/audit-log?size=100');
+    return response.content;
   }
 };

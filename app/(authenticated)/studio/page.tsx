@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
+import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { WorkshopType } from "@/app/(authenticated)/studio/workshop/types";
 import {
   BookOpen,
@@ -26,6 +27,7 @@ import {
   MoreVertical,
   Pencil,
   Copy,
+  Lock,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -39,6 +41,11 @@ interface ContentSummary {
   status: string;
   createdAt: string;
   updatedAt: string;
+  channelId: string;
+  channelName: string;
+  channelStatus: string;
+  channelSuspendedAt?: string | null;
+  channelForcedSuspension: boolean;
 }
 
 // ── Content type menu items ─────────────────────────────────────────────────────
@@ -139,16 +146,23 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !channelId) return;
     setCreating(true);
     setError(null);
     try {
       const course = await api.post<{ id: string }>("/api/courses", {
         title: name.trim(),
         description: description.trim() || undefined,
+        channelId,
       });
       router.push(`/studio/course/${course.id}/edit`);
     } catch (err) {
@@ -213,6 +227,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300"
             />
           </div>
+          {!channelsLoading && channels.length > 1 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-red-600">
+              You need a channel with content-authoring rights before you can create a course.
+            </p>
+          )}
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
@@ -223,7 +245,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!name.trim() || creating}
+              disabled={!name.trim() || !channelId || creating}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
@@ -243,16 +265,23 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !channelId) return;
     setCreating(true);
     setError(null);
     try {
       const roadmap = await roadmapService.createRoadmap({
         title: title.trim(),
         description: description.trim() || undefined,
+        channelId,
       });
       router.push(`/studio/roadmap/${roadmap.id}/edit`);
     } catch (err) {
@@ -317,6 +346,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-300"
             />
           </div>
+          {!channelsLoading && channels.length > 1 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-red-600">
+              You need a channel with content-authoring rights before you can create a roadmap.
+            </p>
+          )}
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
@@ -327,7 +364,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!title.trim() || creating}
+              disabled={!title.trim() || !channelId || creating}
               className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-fuchsia-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Roadmap"}
@@ -347,12 +384,18 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState("");
   const [workshopType, setWorkshopType] = useState<string>(WorkshopType.WORKSHOP);
   const [creating, setCreating] = useState(false);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
 
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !channelId) return;
     setCreating(true);
     setError(null);
 
@@ -368,7 +411,8 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
         language: "en",
         price: 0,
         currency: "USD",
-        visibility: "PRIVATE"
+        visibility: "PRIVATE",
+        channelId,
       });
       router.push(`/studio/workshop/${workshop.id}/edit`);
     } catch (err) {
@@ -453,6 +497,14 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
             />
           </div>
+          {!channelsLoading && channels.length > 1 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-red-600">
+              You need a channel with content-authoring rights before you can create a workshop.
+            </p>
+          )}
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
@@ -463,7 +515,7 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!title.trim() || creating}
+              disabled={!title.trim() || !channelId || creating}
               className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Workshop"}
@@ -665,11 +717,16 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
   const isWorkshop = item.type === "WORKSHOP";
-  const editHref = isRoadmap 
-    ? `/studio/roadmap/${item.id}/edit` 
+  const editHref = isRoadmap
+    ? `/studio/roadmap/${item.id}/edit`
     : isWorkshop
       ? `/studio/workshop/${item.id}`
       : `/studio/course/${item.id}/edit`;
+  const channelSuspended = item.channelStatus === "SUSPENDED";
+  const unlistDate =
+    channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
+      ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
+      : null;
 
   return (
     <div className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3 relative">
@@ -725,9 +782,23 @@ function ContentCard({
       {item.description && (
         <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
       )}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <TypeBadge type={item.type} />
         <StatusBadge status={item.status} />
+        {channelSuspended && (
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-200"
+            title={
+              item.channelForcedSuspension
+                ? "Channel suspended — already unlisted from public discovery"
+                : unlistDate
+                  ? `Channel suspended — will be unlisted on ${unlistDate.toLocaleDateString()}`
+                  : "Channel suspended"
+            }
+          >
+            <Lock size={10} /> Channel Suspended
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
         <Clock size={11} />
@@ -741,12 +812,21 @@ function ContentCard({
           hour12: true,
         })}
       </div>
-      <Link
-        href={editHref}
-        className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
-      >
-        {isRoadmap ? "Open Studio" : "Continue Editing"}
-      </Link>
+      {channelSuspended ? (
+        <span
+          className="text-center text-xs font-semibold text-gray-400 bg-gray-50 rounded-lg py-1.5 cursor-not-allowed"
+          title="This channel is suspended — editing is disabled until it's reactivated"
+        >
+          Editing Disabled
+        </span>
+      ) : (
+        <Link
+          href={editHref}
+          className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
+        >
+          {isRoadmap ? "Open Studio" : "Continue Editing"}
+        </Link>
+      )}
     </div>
   );
 }
@@ -758,6 +838,7 @@ export default function DashboardPage() {
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
+  const { channels: eligibleChannels } = useEligibleChannels();
 
   const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
@@ -796,10 +877,25 @@ export default function DashboardPage() {
           alert("Invalid roadmap JSON format.");
           return;
         }
+        if (eligibleChannels.length === 0) {
+          alert("You need a channel with content-authoring rights before you can import a roadmap.");
+          return;
+        }
+        let channelId = eligibleChannels[0].id;
+        if (eligibleChannels.length > 1) {
+          const choice = window.prompt(
+            `Which channel should this roadmap belong to?\n${eligibleChannels.map((c, i) => `${i + 1}. ${c.name}`).join('\n')}`,
+            "1"
+          );
+          const index = choice ? parseInt(choice, 10) - 1 : -1;
+          if (index < 0 || index >= eligibleChannels.length) return;
+          channelId = eligibleChannels[index].id;
+        }
         await roadmapService.createRoadmap({
           title: json.title + " (Imported)",
           description: json.description,
           graphJson: json.graphJson,
+          channelId,
         });
         fetchContent();
       } catch {

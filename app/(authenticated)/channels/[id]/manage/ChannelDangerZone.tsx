@@ -70,7 +70,7 @@ export function ChannelDangerZone({ channel }: Props) {
             <p className="text-sm text-gray-600 mt-1">
               {isSuspended
                 ? 'This channel is already suspended — there is nothing further to request.'
-                : 'Once deleted, your channel will be suspended and content ownership will be transferred.'}
+                : 'Once approved, your channel will be suspended. Its content stays owned by the channel and remains publicly visible for up to 6 months before being unlisted, giving you time to appeal or reactivate.'}
             </p>
           </div>
           <Button
