@@ -71,6 +71,48 @@ import { searchUsersForMention } from "../lib/mentionSuggestion";
 
 const lowlight = createLowlight(common);
 
+// Both lists replace the library's literal "Default" sentinel entry with the app's
+// real base value (Geist / 16px — same values as the `localeActions.setMessage`
+// trigger-label override in RichTextToolbar.tsx, and the `.ProseMirror` rule in
+// editor.css). One entry, not two: it's both what unstyled text already looks like
+// *and* a normal, explicitly-selectable preset, so there's nothing left to say
+// "Default" — that word never described anything the other entry didn't already
+// cover, once the trigger stopped using it too.
+const FONT_FAMILY_LIST = [
+  "Geist",
+  "Inter",
+  "Comic Sans MS, Comic Sans",
+  "serif",
+  "cursive",
+  "Arial",
+  "Arial Black",
+  "Georgia",
+  "Impact",
+  "Tahoma",
+  "Times New Roman",
+  "Verdana",
+  "Courier New",
+  "Lucida Console",
+  "Monaco",
+  "monospace",
+];
+const FONT_SIZE_LIST = [
+  "16px",
+  "10px",
+  "11px",
+  "12px",
+  "14px",
+  "18px",
+  "20px",
+  "22px",
+  "24px",
+  "26px",
+  "28px",
+  "36px",
+  "48px",
+  "72px",
+];
+
 /** Doc-level schema needs to allow the `columns` node as a top-level sibling of `block`. */
 const DocumentColumn = Document.extend({
   content: "(block|columns)+",
@@ -112,9 +154,9 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
 
     SearchAndReplace,
     Clear,
-    FontFamily,
+    FontFamily.configure({ fontFamilyList: FONT_FAMILY_LIST }),
     Heading,
-    FontSize,
+    FontSize.configure({ fontSizes: FONT_SIZE_LIST }),
     Bold,
     Italic,
     TextUnderline,
