@@ -6,6 +6,43 @@ and is structurally inert in a production build (see "Why this is safe to merge"
 below). See `docs/architecture/platform-architecture.md` for how this fits the
 rest of the frontend architecture.
 
+## Why this exists
+
+This repo already has a real, working backend integration —
+`infrastructure/auth/*` and `infrastructure/http/api.ts` talk to a live Spring
+Boot backend over JWT. This layer is **not** a replacement for that and does
+not mean the backend is missing. It exists to remove day-to-day friction that
+has nothing to do with whether the backend works:
+
+- **The backend isn't always running on a UI dev's machine.** Standing up the
+  Spring Boot service (and its DB) just to move a button or restyle a card is
+  wasted setup time, and it means UI work stalls whenever the backend is down,
+  mid-migration, or on a different branch than the frontend needs.
+- **New/in-progress endpoints don't exist yet.** When a page is built ahead of
+  its backend endpoint, mocking lets the UI ship against an agreed contract
+  (`mock/types.ts`) instead of guessing, and the mismatch surfaces later as a
+  type error, not a late surprise.
+- **Logging in for every role is slow and repetitive.** Reviewing a
+  platform-admin console, a learner view, and a creator flow in the same
+  session normally means three real accounts and three real logins. The auth
+  bypass seeds one of those instantly from a fixture.
+- **Edge-case UI (empty, error, huge lists) is hard to trigger for real.** You
+  can't easily coerce a live backend into returning an empty list or a 500 on
+  demand. The `?mockState=` convention below makes those states one query
+  param away, so loading/empty/error UI actually gets built and reviewed
+  instead of skipped.
+- **Stakeholders should be able to click through the whole app without
+  credentials.** `/dev-preview` exists so a non-technical reviewer can see
+  every page in one place without knowing the route structure or needing an
+  account provisioned for them.
+
+None of this is meant to encourage guessing at backend behavior — the
+existing "ask instead of assuming" rule in `docs/architecture/CONTRIBUTING.md`
+still applies. If a real endpoint's shape is unclear, that's exactly what
+`mock/types.ts` is for: write down the assumed contract explicitly, mock
+against it, and confirm it with backend before the real integration lands —
+rather than leaving it undocumented in someone's head.
+
 ## Enabling it locally
 
 `.env.development` is committed on this branch with both flags on, so mock mode

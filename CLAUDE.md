@@ -9,6 +9,25 @@ Arcade is a modern, modular frontend built with Next.js, React, and TypeScript. 
 > structural change — not a violation to revert. See
 > `docs/architecture/platform-architecture.md` §14 "Unified Content Model".
 
+> **Exception (branch `mockui`, human-approved):** a root-level `mock/` folder was
+> added as a dev-only, additive mock-data/auth-bypass layer, dormant unless
+> `NEXT_PUBLIC_USE_MOCKS`/`NEXT_PUBLIC_AUTH_BYPASS` are `true` (committed `true` by
+> default on this branch — see `.env.development`). This is not a violation of "the
+> frontend must never simulate backend behavior" (`docs/architecture/CONTRIBUTING.md`
+> §1) — it's a build-time-guarded, CI-guarded dev tool, never reachable in
+> production. It exists because the real backend already integrated here
+> (`infrastructure/auth/*`, `infrastructure/http/api.ts`) isn't always running
+> locally, some endpoints are still in progress, logging in as every
+> role/permission level to review a UI change is slow, and edge-case states
+> (empty/error/huge lists) are hard to trigger against a live backend on
+> demand — see "Why this exists" in `mock/README.md` for the full rationale.
+> **Read `mock/README.md` before writing any API-calling code on this
+> branch.** The one rule: write every `*.service.ts` function exactly as if it
+> talks to the real backend; never special-case mock mode inside a domain, app, or
+> component; never import from `mock/` outside `infrastructure/http/api.ts`,
+> `apps/core/components/AuthInitializer.tsx`, and `app/api/mock/**` (eslint enforces
+> this).
+
 ## Important Repository Rules
 - **No deep imports**: Always import from a domain's public `index.ts`.
 - **Strict Dependency Direction**: `app -> apps -> domains -> infrastructure -> shared`.

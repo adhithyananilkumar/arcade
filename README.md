@@ -32,6 +32,19 @@
 
 ---
 
+> **On branch `mockui`:** mock mode + dev auth bypass are on by default (see
+> committed `.env.development`) — `npm run dev` drops you straight into an
+> authenticated shell with no real backend needed. This exists so UI work
+> isn't blocked by whether the real Spring Boot backend happens to be running,
+> and so every role/permission view and every loading/empty/error state can be
+> reviewed on demand instead of waiting on a live account and real data to
+> line up — it does not mean the backend is missing or being replaced.
+> **Before writing or editing any API-calling code, read
+> [`mock/README.md`](./mock/README.md).** The one rule: write every service
+> function exactly as if it were talking to the real backend — mocking
+> happens transparently underneath `infrastructure/http/api.ts`, never inside
+> a domain, app, or component.
+
 ## About
 
 Arcade is the next evolution of digital education at Amal Jyothi College of Engineering.
