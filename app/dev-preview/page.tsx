@@ -43,7 +43,7 @@ const ROUTE_GROUPS: { label: string; routes: { label: string; href: string }[] }
     label: 'Authenticated',
     routes: [
       { label: 'Learn', href: '/learn' },
-      { label: 'My courses', href: '/my-courses' },
+      { label: 'My Learning', href: '/my-learning' },
       { label: 'Channels', href: '/channels' },
       { label: 'Manage channels', href: '/manage-channels' },
       { label: 'Studio', href: '/studio' },

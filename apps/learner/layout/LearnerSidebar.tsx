@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search, BookOpen, Map, Eye } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldAlert, Settings, Building2, Tv, Sparkles, User, Search, BookOpen, Map, Eye, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePermissions } from "@/domains/identity";
@@ -13,6 +13,8 @@ import { channelService } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
+  { name: 'My Learning', href: '/my-learning', icon: BookOpen },
+  { name: 'Achievements', href: '/achievements', icon: Trophy },
   { name: 'Roadmaps', href: '/roadmaps', icon: Map },
   { name: 'Profile', href: '/profile', icon: User },
 ];

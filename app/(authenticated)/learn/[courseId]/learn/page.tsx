@@ -57,8 +57,8 @@ export default function CourseLearnPage() {
       {/* Sidebar Navigation */}
       <aside className="w-full shrink-0 border-r border-slate-200 dark:border-neutral-800 bg-white dark:bg-black md:w-80 md:flex-col md:h-[calc(100vh-4rem)] md:sticky md:top-16 overflow-y-auto">
         <div className="p-4 border-b border-slate-200 dark:border-neutral-800">
-          <Link href="/my-courses" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-white transition-colors">
-            <ChevronLeft size={16} /> Back to My Courses
+          <Link href="/my-learning" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-white transition-colors">
+            <ChevronLeft size={16} /> Back to My Learning
           </Link>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight line-clamp-2">{course.title}</h2>
           <div className="mt-2 flex items-center gap-2">

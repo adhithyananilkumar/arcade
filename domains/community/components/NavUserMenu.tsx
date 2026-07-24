@@ -134,7 +134,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
             {/* Menu items */}
             <div style={{ padding: '4px 0' }}>
               <Link
-                href="/my-courses"
+                href="/my-learning"
                 onClick={() => setOpen(false)}
                 style={{
                   display: 'flex',
@@ -155,7 +155,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
                 }
               >
                 <BookOpen size={14} color="var(--text-muted)" />
-                My courses
+                My Learning
               </Link>
               <Link
                 href="/profile"

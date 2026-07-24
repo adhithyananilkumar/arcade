@@ -24,9 +24,9 @@ const dockItems = [
     exact: false,
   },
   {
-    id: 'my-courses',
-    label: 'My Courses',
-    href: '/my-courses',
+    id: 'my-learning',
+    label: 'My Learning',
+    href: '/my-learning',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
     exact: false,
@@ -34,7 +34,7 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/studio',
+    href: '/achievements',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,
@@ -62,6 +62,7 @@ export default function LearnerDock() {
   // Hide the dock on content studio, roadmaps, settings pages, and exam pages
   if (
     pathname.startsWith('/content') ||
+    pathname.startsWith('/studio') ||
     pathname.startsWith('/roadmaps') ||
     pathname.startsWith('/settings') ||
     pathname.includes('/exam/')

@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -242,6 +242,18 @@ export default function LearnerNavbar() {
               onClick={() => router.push('/profile')} 
             >
               Profile
+            </MenuItem>
+            <MenuItem 
+              icon={<BookOpen size={18} strokeWidth={2} className="text-teal-500" />} 
+              onClick={() => router.push('/my-learning')} 
+            >
+              My Learning
+            </MenuItem>
+            <MenuItem 
+              icon={<Trophy size={18} strokeWidth={2} className="text-amber-500" />} 
+              onClick={() => router.push('/achievements')} 
+            >
+              Achievements
             </MenuItem>
             {hasChannels && (
               <MenuItem 
