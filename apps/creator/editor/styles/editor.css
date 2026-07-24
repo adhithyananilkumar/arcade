@@ -512,7 +512,7 @@
 .arcade-toolbar {
   position: sticky;
   top: var(--arcade-toolbar-top, 0px);
-  z-index: 20;
+  z-index: 40;
   background: #ffffff;
   /* Inset shadow rather than border-bottom: a global border reset zeroes the
      width, and this keeps the rule out of the box model either way. */
