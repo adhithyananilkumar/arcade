@@ -38,14 +38,14 @@ export default function LearnerShell({
   return (
     <ProtectedLayout>
       <TimeTracker />
-      <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
+      <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''} ${immersive ? 'h-screen overflow-hidden' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
         {/* Main Content Area */}
-        <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white">
+        <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white h-full">
           {!immersive && <LearnerNavbar />}
-          <main className="relative bg-transparent flex flex-col flex-1 pb-28">
+          <main className={`relative bg-transparent flex flex-col flex-1 ${!immersive ? 'pb-28' : ''}`}>
             {children}
           </main>
-          <LearnerDock />
+          {!immersive && <LearnerDock />}
         </div>
       </div>
     </ProtectedLayout>
