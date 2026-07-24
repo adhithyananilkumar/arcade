@@ -2,6 +2,7 @@ import React from 'react';
 
 const STEPS = [
   'Basic Information',
+  'Schedule',
   'Pricing',
   'Settings',
   'Review',
@@ -24,14 +25,7 @@ export const WorkshopStepper: React.FC<Props> = ({ currentStep, onSelectStep }) 
 
             return (
               <li key={step} className="relative">
-                {/* Connecting line between steps */}
-                {!isLast && (
-                  <div
-                    className={`absolute top-8 left-4 -ml-px w-0.5 h-[calc(100%+8px)] ${isCompleted ? 'bg-violet-600' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}
-                    aria-hidden="true"
-                  />
-                )}
+
 
                 <div
                   onClick={() => onSelectStep?.(index)}

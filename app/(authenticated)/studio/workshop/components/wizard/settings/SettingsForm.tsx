@@ -57,8 +57,8 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Visibility</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[Visibility.PUBLIC, Visibility.PRIVATE, Visibility.UNLISTED].map((opt) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[Visibility.PUBLIC, Visibility.PRIVATE].map((opt) => (
                 <label 
                   key={opt}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -85,8 +85,8 @@ export const SettingsForm: React.FC<Props> = ({ form }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Listing Status</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[ListingStatus.LISTED, ListingStatus.FEATURED, ListingStatus.UNLISTED].map((opt) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[ListingStatus.LISTED, ListingStatus.FEATURED].map((opt) => (
                 <label 
                   key={opt}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${

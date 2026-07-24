@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { WorkshopHeader } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopHeader';
-import { WorkshopStepper } from '@/app/(authenticated)/studio/workshop/components/wizard/WorkshopStepper';
+
 import { WorkshopFooter } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/workshop/components/wizard/BasicInformationStep';
 import { ScheduleStep } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/ScheduleStep';
@@ -156,7 +156,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
       <WorkshopHeader />
 
       <div className="flex flex-col md:flex-row gap-8">
-        <WorkshopStepper currentStep={currentStep} onSelectStep={setCurrentStep} />
+
 
         <div className="flex-1 min-w-0">
           {currentStep === 0 && <BasicInformationStep form={form} />}

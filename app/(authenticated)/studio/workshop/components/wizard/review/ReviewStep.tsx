@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { PublishingChecklist } from './PublishingChecklist';
 import { WorkshopPreview } from './WorkshopPreview';
-import { validateWorkshop, publishWorkshop, archiveWorkshop, duplicateWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
+import { validateWorkshop, publishWorkshop, unpublishWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
 import { PublishValidationResponse, WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
 import { useRouter } from 'next/navigation';
 
@@ -20,8 +20,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
   const [preview, setPreview] = useState<WorkshopPreviewDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
 
   // Cast to any to check if an ID exists (i.e. if the draft was saved to backend)
   const workshopId = (form.formData as any).id;
@@ -68,7 +67,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
         localStorage.removeItem('arcade_workshop_draft');
       }
       toast.success('Workshop published successfully!');
-      router.push('/studio');
+      window.location.reload();
     } catch (e: any) {
       console.error('Publish error:', e);
       toast.error(e?.message || 'Failed to publish workshop.');
@@ -77,31 +76,17 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     }
   };
 
-  const handleArchive = async () => {
+  const handleUnpublish = async () => {
     if (!workshopId) return;
-    setIsArchiving(true);
+    setIsUnpublishing(true);
     try {
-      await archiveWorkshop(workshopId);
-      toast.success('Workshop archived.');
-      router.push('/studio');
+      await unpublishWorkshop(workshopId);
+      toast.success('Workshop unpublished.');
+      window.location.reload();
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to archive workshop.');
+      toast.error(e?.message || 'Failed to unpublish workshop.');
     } finally {
-      setIsArchiving(false);
-    }
-  };
-
-  const handleDuplicate = async () => {
-    if (!workshopId) return;
-    setIsDuplicating(true);
-    try {
-      const copy = await duplicateWorkshop(workshopId);
-      toast.success('Workshop duplicated.');
-      router.push(`/studio/workshop/new?id=${copy.id}`);
-    } catch (e: any) {
-      toast.error(e?.message || 'Failed to duplicate workshop.');
-    } finally {
-      setIsDuplicating(false);
+      setIsUnpublishing(false);
     }
   };
 
@@ -151,33 +136,29 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
             Actions
           </h3>
           <div className="space-y-3">
-            <button
-              onClick={handlePublish}
-              disabled={isPublishing}
-              className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
-            >
-              {isPublishing ? 'Publishing...' : 'Publish Workshop'}
-            </button>
+            {preview?.basicInfo.status === 'PUBLISHED' ? (
+              <button
+                onClick={handleUnpublish}
+                disabled={isUnpublishing}
+                className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50"
+              >
+                {isUnpublishing ? 'Unpublishing...' : 'Unpublish Workshop'}
+              </button>
+            ) : (
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
+              >
+                {isPublishing ? 'Publishing...' : 'Publish Workshop'}
+              </button>
+            )}
             <button
               onClick={onSaveDraft}
               disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
               {isSaving ? 'Saving...' : 'Save Draft'}
-            </button>
-            <button
-              onClick={handleDuplicate}
-              disabled={isDuplicating}
-              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
-            >
-              {isDuplicating ? 'Duplicating...' : 'Duplicate'}
-            </button>
-            <button
-              onClick={handleArchive}
-              disabled={isArchiving}
-              className="w-full py-2.5 px-4 border border-red-300 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-colors"
-            >
-              {isArchiving ? 'Archiving...' : 'Archive'}
             </button>
           </div>
         </div>
