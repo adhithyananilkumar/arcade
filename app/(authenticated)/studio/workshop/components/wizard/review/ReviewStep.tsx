@@ -64,6 +64,9 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
       }
 
       await publishWorkshop(targetId);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('arcade_workshop_draft');
+      }
       toast.success('Workshop published successfully!');
       router.push('/studio');
     } catch (e: any) {

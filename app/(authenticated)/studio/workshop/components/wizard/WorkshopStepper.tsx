@@ -2,7 +2,6 @@ import React from 'react';
 
 const STEPS = [
   'Basic Information',
-  'Schedule',
   'Pricing',
   'Settings',
   'Review',

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
 import { WorkshopWizard } from '../components/wizard/WorkshopWizard';
+import RegisteredMembersPage from './participants/page';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -12,15 +13,14 @@ const formatDate = (dateStr?: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish';
+type Tab = 'overview' | 'pricing' | 'resources' | 'settings' | 'participants';
 
 const TABS: { id: Tab; label: string; step: number }[] = [
   { id: 'overview',  label: 'Overview',          step: 0 },
-  { id: 'schedule',  label: 'Schedule',           step: 1 },
   { id: 'pricing',   label: 'Pricing',            step: 2 },
   { id: 'resources', label: 'Resources',          step: 3 },
   { id: 'settings',  label: 'Settings',           step: 4 },
-  { id: 'publish',   label: 'Review & Publish',   step: 5 },
+  { id: 'participants', label: 'Manage Members',  step: 6 },
 ];
 
 export default function SingleWorkshopDashboard() {
@@ -261,6 +261,10 @@ export default function SingleWorkshopDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        ) : activeTab === 'participants' ? (
+          <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-250px)]">
+            <RegisteredMembersPage />
           </div>
         ) : (
           /* Wizard steps embedded inline */

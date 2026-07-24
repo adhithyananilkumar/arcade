@@ -36,7 +36,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
 
   // Load existing workshop data when editing
   useEffect(() => {
-    if (workshopId && !( form.formData as any).id) {
+    if (workshopId) {
       getWorkshop(workshopId).then((data: any) => {
         // Populate form with existing workshop data
         form.handleChange('id' as any, data.id);
@@ -51,7 +51,14 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         if (data.price !== undefined) form.handleChange('price', data.price);
         if (data.coverImageUrl) form.handleChange('coverImageUrl', data.coverImageUrl);
         if (data.tags) form.handleChange('tags', data.tags);
-      }).catch(console.error);
+      }).catch((err) => {
+        console.error('Failed to load existing workshop:', err);
+        // Clear stale ID if workshop does not exist on server
+        form.handleChange('id' as any, undefined);
+      });
+    } else {
+      // On new workshop wizard, reset ID so we don't accidentally update a non-existent workshop
+      form.handleChange('id' as any, undefined);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workshopId]);
@@ -93,7 +100,18 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
       let savedId = existingId;
 
       if (existingId) {
-        await updateWorkshop(existingId, createPayload);
+        try {
+          await updateWorkshop(existingId, createPayload);
+        } catch (updateErr: any) {
+          // If the workshop was not found on server (e.g. stale ID), fallback to creating a new workshop
+          if (updateErr?.message?.includes('not found') || updateErr?.message?.includes('404')) {
+            const response = await createWorkshop(createPayload);
+            savedId = response.id;
+            form.handleChange('id' as any, response.id);
+          } else {
+            throw updateErr;
+          }
+        }
       } else {
         const response = await createWorkshop(createPayload);
         savedId = response.id;

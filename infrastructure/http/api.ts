@@ -93,11 +93,11 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     try {
-      console.error("API ERROR RAW TEXT:", text);
       const err = JSON.parse(text);
-      message = (err.message ?? message) + " RAW: " + text;
+      message = err.message ?? message;
     } catch {
-      message = message + " RAW: " + text;
+      // If it's not JSON, we might want to log it, but let's keep the generic message
+      console.error("Failed to parse API error:", text);
     }
     throw new Error(message);
   }
