@@ -11,6 +11,7 @@ import type { RoadmapData, RoadmapProgressData, NodeProgressData } from "../type
 import Link from "next/link";
 
 const nodeTypes = {
+  default: StudentLearningObjectNode,
   learningObject: StudentLearningObjectNode,
 };
 
@@ -77,17 +78,7 @@ export function StudentRoadmapView({ roadmapId }: StudentRoadmapViewProps) {
   const updateNodesWithProgress = (rawNodes: Node[], currentEdges: Edge[], progData: RoadmapProgressData) => {
     const updated = rawNodes.map(node => {
       const p = progData.nodes.find(n => n.nodeId === node.id);
-      
-      // Determine lock state: A node is locked if any of its incoming edges come from a node that is not completed.
-      const incomingEdges = currentEdges.filter(e => e.target === node.id);
-      let isLocked = false;
-      if (incomingEdges.length > 0) {
-        const uncompletedParents = incomingEdges.some(e => {
-          const parentProgress = progData.nodes.find(n => n.nodeId === e.source);
-          return !parentProgress || parentProgress.status !== "COMPLETED";
-        });
-        isLocked = uncompletedParents;
-      }
+      const isLocked = false;
 
       return {
         ...node,

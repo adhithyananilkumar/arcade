@@ -28,30 +28,7 @@ interface RoadmapViewerState {
 }
 
 const calculateLocks = (nodes: any[], edges: any[], progress: Record<string, NodeProgress>) => {
-  const locked = new Set<string>();
-  const incomingMap = new Map<string, string[]>();
-  
-  edges.forEach(edge => {
-    if (!incomingMap.has(edge.target)) {
-      incomingMap.set(edge.target, []);
-    }
-    incomingMap.get(edge.target)!.push(edge.source);
-  });
-  
-  nodes.forEach(node => {
-    const parents = incomingMap.get(node.id) || [];
-    if (parents.length > 0) {
-      const hasUncompletedParent = parents.some(parentId => {
-        const parentStatus = progress[parentId]?.status;
-        return parentStatus !== 'COMPLETED';
-      });
-      if (hasUncompletedParent) {
-        locked.add(node.id);
-      }
-    }
-  });
-  
-  return locked;
+  return new Set<string>();
 };
 
 export const useRoadmapViewerStore = create<RoadmapViewerState>((set, get) => ({

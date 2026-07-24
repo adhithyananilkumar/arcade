@@ -449,7 +449,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
   const lastSavedJsonRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isInitializedRef.current) return;
+    if (!isInitializedRef.current || readOnly) return;
     
     const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
     const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target, data: e.data }));
@@ -461,9 +461,10 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
     } else if (lastSavedJsonRef.current === null) {
       lastSavedJsonRef.current = newGraphJson;
     }
-  }, [nodes, edges, appearance, onGraphChange, getViewport]);
+  }, [nodes, edges, appearance, onGraphChange, getViewport, readOnly]);
 
   const onMoveEnd = useCallback(() => {
+    if (readOnly) return;
     // When panning/zooming stops, trigger a change check
     const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
     const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target }));
@@ -473,7 +474,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
       lastSavedJsonRef.current = newGraphJson;
       onGraphChange(newGraphJson);
     }
-  }, [nodes, edges, getViewport, onGraphChange, readOnly]);
+  }, [nodes, edges, getViewport, onGraphChange, readOnly, appearance]);
 
   const validatedNodes = useMemo(() => {
     const contentIds = new Set<string>();
@@ -587,14 +588,18 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
             type: 'progress',
             style: { strokeWidth: 2, stroke: '#94a3b8', transition: 'stroke-width 0.2s, stroke 0.2s' }
           }}
+          nodesDraggable={!readOnly}
+          nodesConnectable={!readOnly}
+          elementsSelectable={true}
+          deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
           panOnDrag={activeTool === 'hand' || activeTool === 'pointer'}
-          selectionOnDrag={activeTool === 'pointer'}
+          selectionOnDrag={!readOnly && activeTool === 'pointer'}
           panOnScroll={true}
           selectionMode={SelectionMode.Partial}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          onNodeContextMenu={onNodeContextMenu}
+          onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
           onPaneContextMenu={(e) => e.preventDefault()}
           onPaneClick={() => setContextMenu(null)}
           onMoveEnd={onMoveEnd}
@@ -694,6 +699,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
           onClose={() => setSelectedNodeId(null)}
           onUpdate={updateNodeData}
           roadmapId={roadmap.id}
+          readOnly={readOnly}
         />
       )}
     </div>

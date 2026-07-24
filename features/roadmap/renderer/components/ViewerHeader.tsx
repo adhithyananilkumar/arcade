@@ -80,14 +80,6 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
               <Clock className="w-3.5 h-3.5" />
               {estimatedDuration} Total
             </span>
-            <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-50/50 text-amber-600 rounded-lg text-xs font-bold border border-amber-100/30">
-              <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" />
-              4.9 (240 ratings)
-            </span>
-            <span className="flex items-center gap-1 px-2.5 py-1 bg-blue-50/50 text-blue-600 rounded-lg text-xs font-bold border border-blue-100/30">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Certificate Included
-            </span>
           </div>
         </div>
 

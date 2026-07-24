@@ -1,10 +1,15 @@
-import { RoadmapNode, RoadmapEdge } from '../types';
+import { RoadmapNode, RoadmapEdge, CanvasAppearance, defaultCanvasAppearance } from '../types';
 
-export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], edges: RoadmapEdge[] } {
+export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], edges: RoadmapEdge[], canvasAppearance: CanvasAppearance } {
   try {
     const raw = JSON.parse(graphJson);
     const rawNodes = Array.isArray(raw.nodes) ? raw.nodes : [];
     const rawEdges = Array.isArray(raw.edges) ? raw.edges : [];
+
+    // Extract canvas appearance saved by editor's AppearancePanel
+    const canvasAppearance: CanvasAppearance = raw.appearance
+      ? { ...defaultCanvasAppearance, ...raw.appearance }
+      : defaultCanvasAppearance;
 
     const nodes: RoadmapNode[] = rawNodes.map((rn: any) => ({
       id: rn.id,
@@ -14,22 +19,32 @@ export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], ed
       contentId: rn.data?.contentId,
       difficulty: rn.data?.difficulty,
       durationMinutes: rn.data?.durationMinutes,
+      duration: rn.data?.duration,
+      status: rn.data?.status || 'draft',
       completed: rn.data?.completed || false,
+
+      // Visual styling saved by editor
+      color: rn.data?.color || null,        // Tailwind bg class e.g. 'bg-indigo-600'
+      fontColor: rn.data?.fontColor || null, // Tailwind text class e.g. 'text-white'
+      fontFamily: rn.data?.fontFamily || null, // Tailwind font class e.g. 'font-sans'
+
       x: rn.position?.x ?? 0,
       y: rn.position?.y ?? 0,
-      width: 280, // Default card width
-      height: 120, // Default card height estimate
+      width: 280,
+      height: 120,
     }));
 
     const edges: RoadmapEdge[] = rawEdges.map((re: any) => ({
       id: re.id,
       source: re.source,
       target: re.target,
+      sourceHandle: re.sourceHandle || 'bottom',   // 'bottom' | 'source-right'
+      targetHandle: re.targetHandle || 'top',       // 'top'    | 'target-left'
       status: re.data?.status || 'locked',
       points: [],
     }));
 
-    // Post-process to calculate edge statuses if needed (e.g. if target node is completed, edge is completed)
+    // Post-process to calculate edge statuses based on node completion state
     const nodeMap = new Map<string, RoadmapNode>();
     nodes.forEach(n => nodeMap.set(n.id, n));
 
@@ -44,9 +59,9 @@ export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], ed
       }
     });
 
-    return { nodes, edges };
+    return { nodes, edges, canvasAppearance };
   } catch (e) {
     console.error("Failed to parse roadmap graphJson", e);
-    return { nodes: [], edges: [] };
+    return { nodes: [], edges: [], canvasAppearance: defaultCanvasAppearance };
   }
 }

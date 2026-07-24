@@ -87,10 +87,12 @@ export function RoadmapHeader({
       
       <div className="flex items-center gap-6">
         <div className="flex flex-col items-end text-xs text-gray-500 gap-1">
-          <span className="flex items-center gap-1">
-            <Clock size={12} />
-            {saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved changes' : `Last Saved: ${new Date(roadmap.updatedAt).toLocaleTimeString()}`}
-          </span>
+          {roadmap.status !== 'PUBLISHED' && (
+            <span className="flex items-center gap-1">
+              <Clock size={12} />
+              {saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved changes' : `Last Saved: ${new Date(roadmap.updatedAt).toLocaleTimeString()}`}
+            </span>
+          )}
           {roadmap.publishedAt && (
             <span className="text-emerald-600 font-medium">
               Published: {new Date(roadmap.publishedAt).toLocaleDateString()}

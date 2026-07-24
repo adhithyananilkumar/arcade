@@ -1,11 +1,12 @@
-import { RoadmapNode, RoadmapEdge, RenderableGraph } from '../types';
+import { RoadmapNode, RoadmapEdge, RenderableGraph, CanvasAppearance, defaultCanvasAppearance } from '../types';
 
 export type LayoutDirection = 'TB' | 'BT' | 'LR' | 'RL';
 
 export function calculateLayout(
   nodes: RoadmapNode[],
   edges: RoadmapEdge[],
-  viewportWidth: number
+  viewportWidth: number,
+  canvasAppearance?: CanvasAppearance
 ): RenderableGraph {
   if (nodes.length === 0) {
     return {
@@ -14,7 +15,8 @@ export function calculateLayout(
       width: 0,
       height: 0,
       minX: 0,
-      minY: 0
+      minY: 0,
+      canvasAppearance: canvasAppearance ?? defaultCanvasAppearance,
     };
   }
 
@@ -156,6 +158,7 @@ export function calculateLayout(
     width: layoutWidth,
     height: currentY + 40,
     minX: 0,
-    minY: 0
+    minY: 0,
+    canvasAppearance: canvasAppearance ?? defaultCanvasAppearance,
   };
 }

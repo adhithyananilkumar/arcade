@@ -95,9 +95,11 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
 
   // Compute layout positions dynamically based on current viewport width
   const graph = useMemo(() => {
-    const { nodes, edges } = parseRoadmapGraph(graphJson);
-    return calculateLayout(nodes, edges, containerWidth);
+    const { nodes, edges, canvasAppearance } = parseRoadmapGraph(graphJson);
+    return calculateLayout(nodes, edges, containerWidth, canvasAppearance);
   }, [graphJson, containerWidth]);
+
+  const canvasAppearance = graph.canvasAppearance;
 
   // Calculate which nodes are dimmed based on the search query and active filters
   const dimmedNodeIds = useMemo(() => {
@@ -319,7 +321,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 flex flex-col w-full h-screen bg-[#FAFAFA] relative overflow-hidden">
+    <div className="flex-1 flex flex-col w-full h-screen relative overflow-hidden" style={{ backgroundColor: canvasAppearance?.backgroundColor || '#FAFAFA' }}>
       <ViewerHeader 
         title={title}
         description={description}
@@ -342,6 +344,27 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
         ref={containerRef}
         id="roadmap-scroll-container"
         className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-12 relative w-full flex flex-col items-center scrollbar-thin scrollbar-thumb-gray-200 scroll-smooth"
+        style={{
+          backgroundColor: canvasAppearance?.backgroundType === 'color'
+            ? canvasAppearance.backgroundColor
+            : canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
+            ? 'transparent'
+            : undefined,
+          backgroundImage: canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
+            ? canvasAppearance.gradient
+            : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.url
+            ? `url(${canvasAppearance.image.url})`
+            : undefined,
+          backgroundSize: canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fill'
+            ? 'cover'
+            : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fit'
+            ? 'contain'
+            : undefined,
+          backgroundRepeat: canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'
+            ? 'repeat'
+            : 'no-repeat',
+          backgroundPosition: 'center',
+        }}
       >
         {/* Max width container centering the layout absolutely */}
         <div 

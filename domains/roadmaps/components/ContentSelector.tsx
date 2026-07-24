@@ -26,9 +26,10 @@ interface ContentSelectorProps {
   value: string | undefined;
   onChange: (id: string) => void;
   nodeType: string;
+  readOnly?: boolean;
 }
 
-export function ContentSelector({ value, onChange, nodeType }: ContentSelectorProps) {
+export function ContentSelector({ value, onChange, nodeType, readOnly }: ContentSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,19 @@ export function ContentSelector({ value, onChange, nodeType }: ContentSelectorPr
     }
     return c.title.toLowerCase().includes(query.toLowerCase());
   }).slice(0, 5);
+
+  if (readOnly) {
+    return (
+      <div className="relative">
+        <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+          Linked Arcade Content
+        </label>
+        <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800">
+          {selectedItem ? selectedItem.title : 'None'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative" ref={containerRef}>

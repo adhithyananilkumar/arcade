@@ -9,7 +9,7 @@ interface EdgeRendererProps {
 }
 
 export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds }) => {
-  const { nodes, focusMode, activeNodeId, progress, lockedNodeIds, hoveredNodeId } = useRoadmapViewerStore();
+  const { nodes, focusMode, activeNodeId, progress, hoveredNodeId } = useRoadmapViewerStore();
 
   const nodeMap = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
 
@@ -20,17 +20,68 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
         const targetNode = nodeMap.get(edge.target);
         if (!sourceNode || !targetNode) return null;
 
-        const sx = sourceNode.x + sourceNode.width / 2;
-        const sy = sourceNode.y + sourceNode.height; // Connect bottom center of source
-        const tx = targetNode.x + targetNode.width / 2;
-        const ty = targetNode.y; // Connect top center of target
+        const sx_raw = sourceNode.x;
+        const sy_raw = sourceNode.y;
+        const sw = sourceNode.width;
+        const sh = sourceNode.height;
+        const tx_raw = targetNode.x;
+        const ty_raw = targetNode.y;
+        const tw = targetNode.width;
+        const th = targetNode.height;
+
+        // Determine connection anchor points from saved handle IDs
+        const srcH = edge.sourceHandle || 'bottom';
+        const tgtH = edge.targetHandle || 'top';
+
+        let sx: number, sy: number, tx: number, ty: number;
+
+        // Source anchor
+        if (srcH === 'source-right') {
+          sx = sx_raw + sw; sy = sy_raw + sh / 2;
+        } else if (srcH === 'target-left') {
+          sx = sx_raw;     sy = sy_raw + sh / 2;
+        } else if (srcH === 'top') {
+          sx = sx_raw + sw / 2; sy = sy_raw;
+        } else { // bottom (default)
+          sx = sx_raw + sw / 2; sy = sy_raw + sh;
+        }
+
+        // Target anchor
+        if (tgtH === 'target-left') {
+          tx = tx_raw;         ty = ty_raw + th / 2;
+        } else if (tgtH === 'source-right') {
+          tx = tx_raw + tw;    ty = ty_raw + th / 2;
+        } else if (tgtH === 'bottom') {
+          tx = tx_raw + tw / 2; ty = ty_raw + th;
+        } else { // top (default)
+          tx = tx_raw + tw / 2; ty = ty_raw;
+        }
 
         const dx = tx - sx;
         const dy = ty - sy;
 
-        // Smooth orthogonal routing with rounded corners
+        // Smooth orthogonal path with rounded corners
         let pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-        if (Math.abs(dx) > 8 && dy > 16) {
+
+        const isHorizontal = srcH === 'source-right' || srcH === 'target-left'
+                          || tgtH === 'target-left'   || tgtH === 'source-right';
+
+        if (isHorizontal && Math.abs(dx) > 8) {
+          // Horizontal routing: go right/left then turn
+          const mx = sx + dx / 2;
+          const R = Math.min(16, Math.abs(dx) / 2, Math.abs(dy) / 2 || 100);
+          if (Math.abs(dy) < 8) {
+            pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+          } else {
+            const dySign = Math.sign(dy);
+            pathD = `M ${sx} ${sy} ` +
+                    `L ${mx - R * (dx < 0 ? -1 : 1)} ${sy} ` +
+                    `Q ${mx} ${sy} ${mx} ${sy + dySign * R} ` +
+                    `L ${mx} ${ty - dySign * R} ` +
+                    `Q ${mx} ${ty} ${mx + R * (dx < 0 ? -1 : 1)} ${ty} ` +
+                    `L ${tx} ${ty}`;
+          }
+        } else if (!isHorizontal && Math.abs(dx) > 8 && dy > 16) {
           const my = sy + dy / 2;
           const R = Math.min(16, dy / 2, Math.abs(dx) / 2);
           const dxSign = Math.sign(dx);
@@ -48,16 +99,27 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
         
         const sourceCompleted = progress[edge.source]?.status === 'COMPLETED';
         const targetCompleted = progress[edge.target]?.status === 'COMPLETED';
-        const targetLocked = lockedNodeIds.has(edge.target);
         
-        let edgeStatus: 'completed' | 'current' | 'locked' | 'upcoming' = 'upcoming';
+        let edgeStatus: 'completed' | 'current' | 'upcoming' = 'upcoming';
         if (sourceCompleted && targetCompleted) {
           edgeStatus = 'completed';
-        } else if (sourceCompleted && !targetLocked) {
+        } else if (sourceCompleted) {
           edgeStatus = 'current';
-        } else if (targetLocked) {
-          edgeStatus = 'locked';
         }
+
+        // Map node BG color to edge theme color
+        const BG_MAP: Record<string, string> = {
+          'bg-white':        '#d1d5db', // Default pending connection color
+          'bg-indigo-50':    '#c7d2fe',
+          'bg-indigo-600':   '#4f46e5',
+          'bg-rose-500':     '#f43f5e',
+          'bg-amber-500':    '#f59e0b',
+          'bg-emerald-500':  '#10b981',
+          'bg-sky-500':      '#0ea5e9',
+          'bg-slate-800':    '#1e293b',
+        };
+
+        const themeColor = sourceNode.color ? (BG_MAP[sourceNode.color] || '#6366f1') : '#d1d5db';
 
         const sourcePt = { x: sx, y: sy };
         const targetPt = { x: tx, y: ty };
@@ -66,13 +128,12 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
 
         return (
           <g key={uniqueKey} style={{ opacity: isFaded ? 0.15 : isEdgeDimmed ? 0.1 : 1, transition: 'opacity 0.2s ease' }}>
-            {/* Background Path (gray base) */}
+            {/* Background Path (theme color or green if completed) */}
             <path
               d={pathD}
               fill="none"
-              stroke={edgeStatus === 'locked' ? '#E5E7EB' : '#D1D5DB'}
+              stroke={edgeStatus === 'completed' ? '#22C55E' : themeColor}
               strokeWidth={isHovered ? 5 : 4}
-              strokeDasharray={edgeStatus === 'locked' ? "5 5" : undefined}
               strokeLinejoin="round"
               strokeLinecap="round"
               style={{ transition: 'stroke-width 0.2s, stroke 0.2s' }}
@@ -107,13 +168,13 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
               </>
             )}
             
-            {/* Current Path (Purple drawing & flow animation) */}
+            {/* Current Path (Theme drawing & green flow animation) */}
             {edgeStatus === 'current' && !isFaded && (
               <>
                 <motion.path
                   d={pathD}
                   fill="none"
-                  stroke="#6366F1"
+                  stroke={themeColor}
                   strokeWidth={isHovered ? 5 : 4}
                   strokeLinejoin="round"
                   strokeLinecap="round"
@@ -124,7 +185,7 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                 <motion.path
                   d={pathD}
                   fill="none"
-                  stroke="#818CF8"
+                  stroke="#10B981"
                   strokeWidth={isHovered ? 6 : 4.5}
                   strokeLinejoin="round"
                   strokeLinecap="round"
@@ -141,7 +202,7 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
               <path
                 d={pathD}
                 fill="none"
-                stroke={edgeStatus === 'completed' ? '#4ADE80' : edgeStatus === 'current' ? '#818CF8' : '#9CA3AF'}
+                stroke={edgeStatus === 'completed' ? '#4ADE80' : '#818CF8'}
                 strokeWidth={8}
                 opacity={0.2}
                 strokeLinejoin="round"
@@ -157,8 +218,8 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                 r={4}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                fill={sourceCompleted ? "#22C55E" : (edgeStatus === 'current' || activeNodeId === edge.source) ? "#6366F1" : "#FFFFFF"}
-                stroke={sourceCompleted ? "#22C55E" : (edgeStatus === 'current' || activeNodeId === edge.source) ? "#6366F1" : "#D1D5DB"}
+                fill={sourceCompleted ? "#22C55E" : themeColor}
+                stroke={sourceCompleted ? "#22C55E" : themeColor}
                 strokeWidth={2.5}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               />
@@ -171,8 +232,8 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                 r={4}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                fill={targetCompleted ? "#22C55E" : (edgeStatus === 'current' || activeNodeId === edge.target) ? "#6366F1" : "#FFFFFF"}
-                stroke={targetCompleted ? "#22C55E" : (edgeStatus === 'current' || activeNodeId === edge.target) ? "#6366F1" : "#D1D5DB"}
+                fill={targetCompleted ? "#22C55E" : themeColor}
+                stroke={targetCompleted ? "#22C55E" : themeColor}
                 strokeWidth={2.5}
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               />

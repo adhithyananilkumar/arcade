@@ -22,7 +22,12 @@ export const HoverPreview: React.FC<HoverPreviewProps> = ({ nodeId, anchorRect, 
   const isCompleted = nodeProgress?.status === 'COMPLETED';
 
   // Calculate positioning state
-  const [position, setPosition] = useState({ left: 0, top: 0, arrowDir: 'left' });
+  const [position, setPosition] = useState({ 
+    left: 0, 
+    top: 0, 
+    arrowDir: 'left', 
+    arrowStyle: {} as React.CSSProperties 
+  });
 
   const resources = useMemo(() => {
     if (!node) return [];
@@ -61,42 +66,123 @@ export const HoverPreview: React.FC<HoverPreviewProps> = ({ nodeId, anchorRect, 
   useLayoutEffect(() => {
     if (!previewRef.current || !anchorRect) return;
 
-    const elHeight = previewRef.current.offsetHeight || 380;
+    const elHeight = previewRef.current.offsetHeight || 340;
     const elWidth = 340;
     const padding = 16;
 
-    let targetLeft = anchorRect.right + 16;
-    let targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
+    // Viewport-aware calculations of available spaces around the node card
+    const spaceRight = window.innerWidth - anchorRect.right;
+    const spaceLeft = anchorRect.left;
+    const spaceBottom = window.innerHeight - anchorRect.bottom;
+    const spaceTop = anchorRect.top;
+
     let arrowDir = 'left';
+    let targetLeft = 0;
+    let targetTop = 0;
 
-    // 1. Right overflow checks
-    if (targetLeft + elWidth > window.innerWidth - padding) {
-      // Try Left
-      targetLeft = anchorRect.left - elWidth - 16;
+    // Priority Check: Right -> Left -> Bottom -> Top
+    if (spaceRight >= elWidth + 16) {
+      arrowDir = 'left';
+      targetLeft = anchorRect.right + 16;
+      targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
+    } else if (spaceLeft >= elWidth + 16) {
       arrowDir = 'right';
-
-      // 2. Left overflow checks
-      if (targetLeft < padding) {
-        // Try Bottom
+      targetLeft = anchorRect.left - elWidth - 16;
+      targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
+    } else if (spaceBottom >= elHeight + 16) {
+      arrowDir = 'top';
+      targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
+      targetTop = anchorRect.bottom + 16;
+    } else if (spaceTop >= elHeight + 16) {
+      arrowDir = 'bottom';
+      targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
+      targetTop = anchorRect.top - elHeight - 16;
+    } else {
+      // Fallback: Choose the side with maximum free space and center
+      const maxSpace = Math.max(spaceRight, spaceLeft, spaceBottom, spaceTop);
+      if (maxSpace === spaceRight) {
+        arrowDir = 'left';
+        targetLeft = anchorRect.right + 16;
+        targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
+      } else if (maxSpace === spaceLeft) {
+        arrowDir = 'right';
+        targetLeft = anchorRect.left - elWidth - 16;
+        targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
+      } else if (maxSpace === spaceBottom) {
+        arrowDir = 'top';
         targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
         targetTop = anchorRect.bottom + 16;
-        arrowDir = 'top';
-
-        // 3. Bottom overflow checks
-        if (targetTop + elHeight > window.innerHeight - padding) {
-          // Try Top
-          targetTop = anchorRect.top - elHeight - 16;
-          arrowDir = 'bottom';
-        }
+      } else {
+        arrowDir = 'bottom';
+        targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
+        targetTop = anchorRect.top - elHeight - 16;
       }
     }
 
-    // Clamp coordinates to screen boundaries
+    // Clamp coordinates to keep preview fully visible on screen
     const clampedLeft = Math.max(padding, Math.min(targetLeft, window.innerWidth - elWidth - padding));
     const clampedTop = Math.max(padding, Math.min(targetTop, window.innerHeight - elHeight - padding));
 
-    setPosition({ left: clampedLeft, top: clampedTop, arrowDir });
+    // Dynamic arrow positioning so that arrow aligns exactly with node center even if popover is clamped
+    const arrowStyle: React.CSSProperties = {};
+    if (arrowDir === 'left') {
+      const arrowTop = Math.max(16, Math.min(anchorRect.top + anchorRect.height / 2 - clampedTop, elHeight - 16));
+      arrowStyle.top = `${arrowTop}px`;
+      arrowStyle.left = '-6px';
+      arrowStyle.transform = 'translateY(-50%)';
+    } else if (arrowDir === 'right') {
+      const arrowTop = Math.max(16, Math.min(anchorRect.top + anchorRect.height / 2 - clampedTop, elHeight - 16));
+      arrowStyle.top = `${arrowTop}px`;
+      arrowStyle.right = '-6px';
+      arrowStyle.transform = 'translateY(-50%)';
+    } else if (arrowDir === 'top') {
+      const arrowLeft = Math.max(16, Math.min(anchorRect.left + anchorRect.width / 2 - clampedLeft, elWidth - 16));
+      arrowStyle.left = `${arrowLeft}px`;
+      arrowStyle.top = '-6px';
+      arrowStyle.transform = 'translateX(-50%)';
+    } else if (arrowDir === 'bottom') {
+      const arrowLeft = Math.max(16, Math.min(anchorRect.left + anchorRect.width / 2 - clampedLeft, elWidth - 16));
+      arrowStyle.left = `${arrowLeft}px`;
+      arrowStyle.bottom = '-6px';
+      arrowStyle.transform = 'translateX(-50%)';
+    }
+
+    setPosition({ left: clampedLeft, top: clampedTop, arrowDir, arrowStyle });
   }, [anchorRect]);
+
+  const motionProps = useMemo(() => {
+    const dir = position.arrowDir;
+    if (dir === 'left') {
+      return {
+        initial: { opacity: 0, scale: 0.92, x: -16 },
+        animate: { opacity: 1, scale: 1, x: 0 },
+        exit: { opacity: 0, scale: 0.92, x: -16 },
+        style: { transformOrigin: 'left center' }
+      };
+    }
+    if (dir === 'right') {
+      return {
+        initial: { opacity: 0, scale: 0.92, x: 16 },
+        animate: { opacity: 1, scale: 1, x: 0 },
+        exit: { opacity: 0, scale: 0.92, x: 16 },
+        style: { transformOrigin: 'right center' }
+      };
+    }
+    if (dir === 'top') {
+      return {
+        initial: { opacity: 0, scale: 0.92, y: -16 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.92, y: -16 },
+        style: { transformOrigin: 'center top' }
+      };
+    }
+    return {
+      initial: { opacity: 0, scale: 0.92, y: 16 },
+      animate: { opacity: 1, scale: 1, y: 0 },
+      exit: { opacity: 0, scale: 0.92, y: 16 },
+      style: { transformOrigin: 'center bottom' }
+    };
+  }, [position.arrowDir]);
 
   if (!node) return null;
 
@@ -142,26 +228,24 @@ export const HoverPreview: React.FC<HoverPreviewProps> = ({ nodeId, anchorRect, 
     >
       <motion.div
         ref={previewRef}
-        initial={{ opacity: 0, scale: 0.96, y: 4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 4 }}
-        transition={{ duration: 0.15 }}
+        {...motionProps}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         className="w-[340px] bg-white border border-gray-100 rounded-2xl shadow-xl shadow-gray-200/60 p-5 relative select-none"
         role="dialog"
         aria-label={`Preview details for topic ${node.label}`}
       >
-        {/* Sub-arrow indicator pointing to card */}
+        {/* Dynamic Arrow Indicator pointing to card center */}
         {position.arrowDir === 'left' && (
-          <div className="absolute top-[50%] left-[-6px] translate-y-[-50%] border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-white drop-shadow-[-1px_0_1px_rgba(0,0,0,0.04)]" />
+          <div style={position.arrowStyle} className="absolute border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[6px] border-r-white drop-shadow-[-1px_0_1px_rgba(0,0,0,0.04)]" />
         )}
         {position.arrowDir === 'right' && (
-          <div className="absolute top-[50%] right-[-6px] translate-y-[-50%] border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-white drop-shadow-[1px_0_1px_rgba(0,0,0,0.04)]" />
+          <div style={position.arrowStyle} className="absolute border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-white drop-shadow-[1px_0_1px_rgba(0,0,0,0.04)]" />
         )}
         {position.arrowDir === 'top' && (
-          <div className="absolute top-[-6px] left-[50%] translate-x-[-50%] border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white" />
+          <div style={position.arrowStyle} className="absolute border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white drop-shadow-[0_-1px_1px_rgba(0,0,0,0.04)]" />
         )}
         {position.arrowDir === 'bottom' && (
-          <div className="absolute bottom-[-6px] left-[50%] translate-x-[-50%] border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white" />
+          <div style={position.arrowStyle} className="absolute border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.04)]" />
         )}
 
         {/* Header Metadata */}

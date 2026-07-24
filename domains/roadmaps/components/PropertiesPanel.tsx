@@ -10,6 +10,7 @@ interface PropertiesPanelProps {
   onClose: () => void;
   onUpdate: (id: string, data: any) => void;
   roadmapId?: string;
+  readOnly?: boolean;
 }
 
 const COLORS = [
@@ -52,7 +53,7 @@ const STATUSES = [
   { label: 'Archived', value: 'archived' },
 ];
 
-export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: PropertiesPanelProps) {
+export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, readOnly }: PropertiesPanelProps) {
   const [activeTab, setActiveTab] = useState<'general' | 'learning' | 'appearance' | 'comments'>('general');
   const [comments, setComments] = useState<CommentData[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -120,26 +121,34 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                 Title
               </label>
-              <input
-                type="text"
-                value={(data.label as string) || ''}
-                onChange={(e) => handleChange('label', e.target.value)}
-                placeholder="Enter node title"
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow"
-              />
+              {readOnly ? (
+                <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800">{data.label as string || 'Untitled'}</div>
+              ) : (
+                <input
+                  type="text"
+                  value={(data.label as string) || ''}
+                  onChange={(e) => handleChange('label', e.target.value)}
+                  placeholder="Enter node title"
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow"
+                />
+              )}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                 Description
               </label>
-              <textarea
-                rows={4}
-                value={(data.description as string) || ''}
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Brief description or learning objective..."
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-shadow"
-              />
+              {readOnly ? (
+                <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-wrap min-h-[4rem]">{data.description as string || 'No description provided.'}</div>
+              ) : (
+                <textarea
+                  rows={4}
+                  value={(data.description as string) || ''}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  placeholder="Brief description or learning objective..."
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-shadow"
+                />
+              )}
             </div>
           </div>
         )}
@@ -148,60 +157,76 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
           <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                   Node Type
                 </label>
-                <select
-                  value={(data.nodeType as string) || 'lesson'}
-                  onChange={(e) => handleChange('nodeType', e.target.value)}
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                >
-                  {NODE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
+                {readOnly ? (
+                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 capitalize">{(data.nodeType as string) || 'lesson'}</div>
+                ) : (
+                  <select
+                    value={(data.nodeType as string) || 'lesson'}
+                    onChange={(e) => handleChange('nodeType', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                  >
+                    {NODE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                )}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                   Status
                 </label>
-                <select
-                  value={(data.status as string) || 'draft'}
-                  onChange={(e) => handleChange('status', e.target.value)}
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                >
-                  {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                </select>
+                {readOnly ? (
+                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 capitalize">{(data.status as string) || 'draft'}</div>
+                ) : (
+                  <select
+                    value={(data.status as string) || 'draft'}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                  >
+                    {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                   Duration
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 15 min"
-                  value={(data.duration as string) || ''}
-                  onChange={(e) => handleChange('duration', e.target.value)}
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                />
+                {readOnly ? (
+                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800">{data.duration as string || 'N/A'}</div>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="e.g. 15 min"
+                    value={(data.duration as string) || ''}
+                    onChange={(e) => handleChange('duration', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
                   Difficulty
                 </label>
-                <select
-                  value={(data.difficulty as string) || ''}
-                  onChange={(e) => handleChange('difficulty', e.target.value)}
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                >
-                  <option value="">None</option>
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
+                {readOnly ? (
+                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800">{data.difficulty as string || 'N/A'}</div>
+                ) : (
+                  <select
+                    value={(data.difficulty as string) || ''}
+                    onChange={(e) => handleChange('difficulty', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                  >
+                    <option value="">None</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                )}
               </div>
             </div>
 
@@ -210,6 +235,7 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
                 value={(data.contentId as string) || undefined} 
                 onChange={(val) => handleChange('contentId', val)} 
                 nodeType={(data.nodeType as string) || 'lesson'}
+                readOnly={readOnly}
               />
             </div>
           </div>
@@ -217,61 +243,69 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId }: 
 
         {activeTab === 'appearance' && (
           <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                Node Background Color
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {COLORS.map((c) => {
-                  const isActive = (data.color as string) === c.value || (!data.color && c.value === 'bg-white');
-                  return (
-                    <button
-                      key={c.value}
-                      onClick={() => handleChange('color', c.value)}
-                      title={c.label}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${c.value} ${
-                        isActive ? 'border-gray-900 scale-110 shadow-md ring-2 ring-indigo-500/30 ring-offset-1' : 'border-gray-200 hover:scale-105 shadow-sm'
-                      }`}
-                    />
-                  );
-                })}
+            {readOnly ? (
+              <div className="text-sm text-gray-500 p-4 text-center bg-gray-50 rounded-lg border border-gray-100">
+                Appearance settings are locked while roadmap is published.
               </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                    Node Background Color
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {COLORS.map((c) => {
+                      const isActive = (data.color as string) === c.value || (!data.color && c.value === 'bg-white');
+                      return (
+                        <button
+                          key={c.value}
+                          onClick={() => handleChange('color', c.value)}
+                          title={c.label}
+                          className={`w-10 h-10 rounded-full border-2 transition-all ${c.value} ${
+                            isActive ? 'border-gray-900 scale-110 shadow-md ring-2 ring-indigo-500/30 ring-offset-1' : 'border-gray-200 hover:scale-105 shadow-sm'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                Font Color
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {TEXT_COLORS.map((c) => {
-                  const isActive = (data.fontColor as string) === c.value || (!data.fontColor && c.value === 'text-gray-900');
-                  return (
-                    <button
-                      key={c.value}
-                      onClick={() => handleChange('fontColor', c.value)}
-                      title={c.label}
-                      style={{ backgroundColor: c.colorCode }}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        isActive ? 'border-indigo-500 scale-110 shadow-md ring-2 ring-indigo-500/30 ring-offset-1' : 'border-gray-200 hover:scale-105 shadow-sm'
-                      }`}
-                    />
-                  );
-                })}
-              </div>
-            </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                    Font Color
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {TEXT_COLORS.map((c) => {
+                      const isActive = (data.fontColor as string) === c.value || (!data.fontColor && c.value === 'text-gray-900');
+                      return (
+                        <button
+                          key={c.value}
+                          onClick={() => handleChange('fontColor', c.value)}
+                          title={c.label}
+                          style={{ backgroundColor: c.colorCode }}
+                          className={`w-8 h-8 rounded-full border-2 transition-all ${
+                            isActive ? 'border-indigo-500 scale-110 shadow-md ring-2 ring-indigo-500/30 ring-offset-1' : 'border-gray-200 hover:scale-105 shadow-sm'
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                Font Family
-              </label>
-              <select
-                value={(data.fontFamily as string) || 'font-sans'}
-                onChange={(e) => handleChange('fontFamily', e.target.value)}
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-              >
-                {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3">
+                    Font Family
+                  </label>
+                  <select
+                    value={(data.fontFamily as string) || 'font-sans'}
+                    onChange={(e) => handleChange('fontFamily', e.target.value)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
+                  >
+                    {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  </select>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
