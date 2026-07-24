@@ -19,6 +19,7 @@ import { Button } from '@/shared/design-system/ui/button';
 interface ChannelPolicyManagerProps {
   channelId: string;
   permissions: string[];
+  isSuspended?: boolean;
 }
 
 const formatPermissionKey = (key: string) => {
@@ -33,7 +34,7 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId, permissions: userPermissions }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -130,7 +131,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
         {canManageStaff && (
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
             <Plus size={16} /> Create Role
           </Button>
         )}
@@ -156,10 +157,10 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
 
                 {!role.systemRole && canManageStaff && (
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} title="Edit Role">
+                    <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'}>
                       <Edit3 size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePolicy(role.id)} title="Delete Role">
+                    <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePolicy(role.id)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Delete Role'}>
                       <Trash2 size={16} />
                     </Button>
                   </div>

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/channels";
 import { UserService } from "@/domains/identity";
 import { Role, roleService } from "@/domains/identity";
 import { toast } from 'sonner';
-import { Users, Mail, Check, X, Trash2, Plus, Loader2 } from 'lucide-react';
+import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -26,13 +27,16 @@ import {
 interface ChannelStaffManagerProps {
   channelId: string;
   permissions: string[];
+  isSuspended?: boolean;
 }
 
-export function ChannelStaffManager({ channelId, permissions }: ChannelStaffManagerProps) {
+export function ChannelStaffManager({ channelId, permissions, isSuspended }: ChannelStaffManagerProps) {
+  const router = useRouter();
   const [staff, setStaff] = useState<ChannelStaff[]>([]);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isInvitationsExpanded, setIsInvitationsExpanded] = useState(false);
@@ -48,25 +52,36 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [staffData, invitesData, rolesData] = await Promise.all([
-        ChannelStaffService.getStaff(channelId),
-        ChannelStaffService.getInvitations(channelId),
-        roleService.getChannelRoles(channelId)
-      ]);
+      setAccessDenied(false);
+
+      // Viewing the roster only requires membership; invitations/roles are manager-only. Fetch
+      // them independently so a non-manager staff member (who can see the roster but not those)
+      // isn't shown a false "failed to load" error for permissions they were never meant to have.
+      const staffData = await ChannelStaffService.getStaff(channelId);
       setStaff(staffData);
+
+      const [invitesData, rolesData] = await Promise.all([
+        ChannelStaffService.getInvitations(channelId).catch(() => []),
+        roleService.getChannelRoles(channelId).catch(() => [])
+      ]);
       setInvitations(invitesData);
       setRoles(rolesData);
     } catch (error) {
-      toast.error('Failed to load staff information');
+      // Not a member of this channel (e.g. viewed via a platform-admin link, or after leaving).
+      setAccessDenied(true);
     } finally {
       setLoading(false);
     }
   };
 
   const { user } = useAuthStore();
-  // We can't access channel.ownerId directly here since channel is fetched in page, 
-  // but we can rely on permissions array containing 'ALL' if they are owner.
-  const canManageStaff = permissions.includes('ALL') || permissions.includes('channel.staff.manage');
+  // We can't access channel.ownerId directly here since channel is fetched in page,
+  // but we can rely on permissions array containing 'ALL' if they are owner. Deliberately no
+  // platform-admin bypass — a channel's staff/roles are its own internal governance, isolated
+  // from the platform layer. A platform admin's tool for a problem channel is suspending it
+  // wholesale, not reaching in to manage its roster.
+  const canManageStaff =
+    permissions.includes('ALL') || permissions.includes('channel.staff.manage');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -115,14 +130,22 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
     }
   };
 
-  const handleRemoveStaff = async (userId: string) => {
-    if (confirm('Are you sure you want to remove this staff member?')) {
+  const handleRemoveStaff = async (userId: string, isSelf: boolean) => {
+    const confirmMessage = isSelf
+      ? 'Are you sure you want to leave this channel?'
+      : 'Are you sure you want to remove this staff member?';
+    if (confirm(confirmMessage)) {
       try {
         await ChannelStaffService.removeStaff(channelId, userId);
-        toast.success('Staff removed');
-        fetchData();
+        toast.success(isSelf ? 'You left the channel' : 'Staff removed');
+        if (isSelf) {
+          // No longer a member — this page's data (roster, roles) is no longer visible to us.
+          router.push('/');
+        } else {
+          fetchData();
+        }
       } catch {
-        toast.error('Failed to remove staff');
+        toast.error(isSelf ? 'Failed to leave channel' : 'Failed to remove staff');
       }
     }
   };
@@ -136,6 +159,15 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
     );
   }
 
+  if (accessDenied) {
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
+        <p className="text-sm font-semibold text-gray-700">You're not a member of this channel</p>
+        <p className="text-sm text-gray-500 mt-1">Only the owner and staff can view its roster and roles.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -144,7 +176,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
           <p className="text-sm text-gray-500">Manage who has access to this channel and their permissions.</p>
         </div>
         {canManageStaff && (
-          <Button onClick={() => setIsInviteModalOpen(true)}>
+          <Button onClick={() => setIsInviteModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
             <Plus size={16} />
             Invite Staff
           </Button>
@@ -166,11 +198,13 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
               <TableRow>
                 <TableHead>Member</TableHead>
                 <TableHead>Role</TableHead>
-                {canManageStaff && <TableHead className="w-10" />}
+                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff.map(member => (
+              {staff.map(member => {
+                const isSelf = member.userId === user?.id;
+                return (
                 <TableRow key={member.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
@@ -178,7 +212,9 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
                         <AvatarFallback>{member.userName.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{member.userName}</p>
+                        <p className="text-sm font-bold text-gray-900">
+                          {member.userName} {isSelf && <span className="text-gray-400 font-normal">(You)</span>}
+                        </p>
                         <p className="text-xs text-gray-500">{member.email}</p>
                       </div>
                     </div>
@@ -188,20 +224,22 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
                       {member.roleName}
                     </Badge>
                   </TableCell>
-                  {canManageStaff && (
+                  {(canManageStaff || isSelf) && (
                     <TableCell>
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => handleRemoveStaff(member.userId)}
+                        onClick={() => handleRemoveStaff(member.userId, isSelf)}
                         className="text-gray-400 hover:text-red-600"
+                        title={isSelf ? 'Leave channel' : 'Remove staff member'}
                       >
-                        <Trash2 size={16} />
+                        {isSelf ? <LogOut size={16} /> : <Trash2 size={16} />}
                       </Button>
                     </TableCell>
                   )}
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}
@@ -326,7 +364,7 @@ export function ChannelStaffManager({ channelId, permissions }: ChannelStaffMana
       </Dialog>
 
       {/* Role Management Section */}
-      <ChannelPolicyManager channelId={channelId} permissions={permissions} />
+      <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} />
     </div>
   );
 }

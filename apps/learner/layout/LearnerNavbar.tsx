@@ -9,7 +9,7 @@ import { AuthService } from '@/infrastructure/auth/auth.service';
 import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-import { channelService } from "@/domains/channels";
+import { channelService, useStudioAccess } from "@/domains/channels";
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
@@ -125,6 +125,11 @@ export default function LearnerNavbar() {
   };
 
   const showArcConsole = AuthorizationService.canAccessConsole(user);
+  // "Content Studio" specifically needs real content-authoring capability in a channel the
+  // user owns or staffs — no bypass for platform admins, who do their platform-level work in
+  // the Console instead. Being a platform admin isn't a reason to see this button.
+  const { hasAccess: hasStudioAccess } = useStudioAccess();
+  const showStudio = hasStudioAccess;
 
   if (pathname.includes('/exam')) {
     return null;
@@ -251,7 +256,7 @@ export default function LearnerNavbar() {
                 My Channel
               </MenuItem>
             )}
-            {(hasChannels || showArcConsole) && (
+            {showStudio && (
               <MenuItem 
                 icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
                 onClick={() => router.push('/studio')}

@@ -59,15 +59,33 @@ export default function ManageChannelPage() {
 
   if (!channel) return null;
 
+  const isSuspended = channel.status === 'SUSPENDED';
+  // Content creation needs the actual channel.videos.upload permission (or owner's implicit
+  // ALL) — bare access to this manage page doesn't imply that, so the button must reflect it.
+  const canCreateContent = permissions.includes('ALL') || permissions.includes('channel.videos.upload');
+
   return (
     <div className="w-full space-y-8 pb-12">
-      <button 
+      <button
         onClick={() => router.push('/')}
         className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
       >
         <ArrowLeft size={16} />
         Back to Dashboard
       </button>
+
+      {isSuspended && (
+        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <AlertTriangle className="text-red-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="font-bold text-red-700">This channel is suspended</h3>
+            <p className="text-sm text-red-600 mt-0.5">
+              {channel.suspensionReason || 'A platform administrator has suspended this channel.'}
+              {' '}No settings, staff, or role changes can be made until it is reactivated.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Channel Banner & Header (YouTube Style) */}
       <motion.div 
@@ -116,13 +134,15 @@ export default function ManageChannelPage() {
                 <Settings size={18} />
                 Settings
               </button>
-              <button 
-                onClick={() => router.push('/studio')}
-                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
-              >
-                <Upload size={18} />
-                Create Content
-              </button>
+              {canCreateContent && (
+                <button
+                  onClick={() => router.push('/studio')}
+                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
+                >
+                  <Upload size={18} />
+                  Create Content
+                </button>
+              )}
             </div>
           </div>
           
@@ -179,18 +199,20 @@ export default function ManageChannelPage() {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
-          <div 
-            onClick={() => router.push('/studio')}
-            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
-              <Video size={24} />
+          {canCreateContent && (
+            <div
+              onClick={() => router.push('/studio')}
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
+                <Video size={24} />
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900">Content</h4>
+                <p className="text-sm text-gray-500">Manage videos and courses</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-bold text-gray-900">Content</h4>
-              <p className="text-sm text-gray-500">Manage videos and courses</p>
-            </div>
-          </div>
+          )}
 
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 group-hover:scale-110 transition-transform">
@@ -217,7 +239,7 @@ export default function ManageChannelPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <ChannelStaffManager channelId={channelId} permissions={permissions} />
+          <ChannelStaffManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} />
         </motion.div>
       ) : (
         <motion.div

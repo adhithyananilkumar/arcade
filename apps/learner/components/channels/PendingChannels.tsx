@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Channel, channelService } from "@/domains/channels";
-import { Search, Check, X, Tv } from 'lucide-react';
+import { Search, Check, X, Tv, ShieldOff, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -58,6 +58,32 @@ export function PendingChannels() {
       fetchChannels();
     } catch (error) {
       toast.error('Failed to delete request');
+    }
+  };
+
+  const handleSuspend = async (id: string) => {
+    const reason = window.prompt('Reason for suspending this channel (shown to the owner/staff):');
+    if (reason === null) return; // cancelled
+    if (!reason.trim()) {
+      toast.error('A reason is required to suspend a channel');
+      return;
+    }
+    try {
+      await channelService.suspendChannel(id, reason.trim());
+      toast.success('Channel suspended');
+      fetchChannels();
+    } catch (error) {
+      toast.error('Failed to suspend channel');
+    }
+  };
+
+  const handleReactivate = async (id: string) => {
+    try {
+      await channelService.reactivateChannel(id);
+      toast.success('Channel reactivated');
+      fetchChannels();
+    } catch (error) {
+      toast.error('Failed to reactivate channel');
     }
   };
 
@@ -132,7 +158,10 @@ export function PendingChannels() {
                 {activeTab === 'ALL' && (
                   <>
                     <span>•</span>
-                    <span className={channel.status === 'ACTIVE' ? 'text-emerald-600' : 'text-amber-600'}>{channel.status}</span>
+                    <span className={
+                      channel.status === 'ACTIVE' ? 'text-emerald-600' :
+                      channel.status === 'SUSPENDED' ? 'text-red-600' : 'text-amber-600'
+                    }>{channel.status}</span>
                   </>
                 )}
               </p>
@@ -161,8 +190,8 @@ export function PendingChannels() {
               )}
             </div>
           )}
-          {activeTab === 'ALL' && channel.status === 'ACTIVE' && (
-            <div onClick={(e) => e.stopPropagation()}>
+          {activeTab === 'ALL' && (channel.status === 'ACTIVE' || channel.status === 'SUSPENDED') && (
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
               <a
                 href={`/channels/${channel.id}/manage`}
                 target="_blank"
@@ -171,6 +200,24 @@ export function PendingChannels() {
               >
                 View
               </a>
+              {canSuspend && channel.status === 'ACTIVE' && (
+                <button
+                  onClick={() => handleSuspend(channel.id)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                  title="Suspend channel"
+                >
+                  <ShieldOff size={14} /> Suspend
+                </button>
+              )}
+              {canSuspend && channel.status === 'SUSPENDED' && (
+                <button
+                  onClick={() => handleReactivate(channel.id)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+                  title="Reactivate channel"
+                >
+                  <ShieldCheck size={14} /> Reactivate
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -201,7 +248,8 @@ export function PendingChannels() {
                       {selectedChannel.isPersonal ? 'Personal' : 'Organization'}
                     </span>
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      selectedChannel.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      selectedChannel.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
+                      selectedChannel.status === 'SUSPENDED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                     }`}>
                       {selectedChannel.status}
                     </span>
@@ -213,6 +261,13 @@ export function PendingChannels() {
                 <div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                   <h4 className="text-sm font-bold text-gray-900">Description</h4>
                   <p className="text-sm text-gray-600 leading-relaxed">{selectedChannel.description}</p>
+                </div>
+              )}
+
+              {selectedChannel.status === 'SUSPENDED' && selectedChannel.suspensionReason && (
+                <div className="space-y-2 bg-red-50 p-4 rounded-xl border border-red-100">
+                  <h4 className="text-sm font-bold text-red-700">Suspension Reason</h4>
+                  <p className="text-sm text-red-600 leading-relaxed">{selectedChannel.suspensionReason}</p>
                 </div>
               )}
 
@@ -264,6 +319,34 @@ export function PendingChannels() {
                       <X size={18} /> Reject
                     </button>
                   )}
+                </div>
+              )}
+
+              {canSuspend && selectedChannel.status === 'ACTIVE' && (
+                <div className="flex gap-3 pt-6 border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      handleSuspend(selectedChannel.id);
+                      setSelectedChannel(null);
+                    }}
+                    className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-semibold text-sm"
+                  >
+                    <ShieldOff size={18} /> Suspend Channel
+                  </button>
+                </div>
+              )}
+
+              {canSuspend && selectedChannel.status === 'SUSPENDED' && (
+                <div className="flex gap-3 pt-6 border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      handleReactivate(selectedChannel.id);
+                      setSelectedChannel(null);
+                    }}
+                    className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold text-sm shadow-sm"
+                  >
+                    <ShieldCheck size={18} /> Reactivate Channel
+                  </button>
                 </div>
               )}
             </div>

@@ -20,3 +20,4 @@ export type { ChannelStaff, ChannelInvitation } from './api/channel-staff.servic
 export { channelService } from './api/channel.service';
 export type { ChannelDeletionRequestDto, Channel } from './api/channel.service';
 export { CreateChannelModal } from './components/CreateChannelModal';
+export { useStudioAccess } from './hooks/useStudioAccess';

@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { channelService } from '@/domains/channels';
+import { useStudioAccess } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
@@ -13,41 +13,23 @@ export default function ContentStudioLayout({
 }) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const { hasAccess, loading } = useStudioAccess();
+
+  // Platform admins / course reviewers get in regardless of channel affiliation.
+  const hasAdminAccess = AuthorizationService.canManageChannels(user) || AuthorizationService.canReviewCourses(user);
+  const isAuthorized = hasAdminAccess || hasAccess;
 
   useEffect(() => {
-    // If the user can manage channels or review courses, they have access
-    const hasAdminAccess = AuthorizationService.canManageChannels(user) || AuthorizationService.canReviewCourses(user);
-    
-    if (hasAdminAccess) {
-      setIsAuthorized(true);
-      return;
+    if (!hasAdminAccess && !loading && !hasAccess) {
+      router.push('/');
     }
+  }, [hasAdminAccess, loading, hasAccess, router]);
 
-    // Otherwise, check if they have any channels or workspaces
-    Promise.all([
-      channelService.getMyChannels(),
-      channelService.getMyWorkspaces()
-    ])
-      .then(([channels, workspaces]) => {
-        if (channels.length > 0 || workspaces.length > 0) {
-          setIsAuthorized(true);
-        } else {
-          setIsAuthorized(false);
-          router.push('/');
-        }
-      })
-      .catch(() => {
-        setIsAuthorized(false);
-        router.push('/');
-      });
-  }, [user, router]);
-
-  if (isAuthorized === null) {
+  if (!hasAdminAccess && loading) {
     return <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50"><p className="text-gray-500 font-medium animate-pulse">Loading Studio...</p></div>;
   }
 
-  if (isAuthorized === false) {
+  if (!isAuthorized) {
     return null; // Will redirect
   }
 

@@ -53,6 +53,8 @@ export function ChannelDangerZone({ channel }: Props) {
     );
   }
 
+  const isSuspended = channel.status === 'SUSPENDED';
+
   return (
     <div className="max-w-3xl">
       <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
@@ -66,10 +68,17 @@ export function ChannelDangerZone({ channel }: Props) {
           <div>
             <h4 className="font-semibold text-gray-900">Delete this channel</h4>
             <p className="text-sm text-gray-600 mt-1">
-              Once deleted, your channel will be suspended and content ownership will be transferred.
+              {isSuspended
+                ? 'This channel is already suspended — there is nothing further to request.'
+                : 'Once deleted, your channel will be suspended and content ownership will be transferred.'}
             </p>
           </div>
-          <Button variant="destructive" onClick={() => setIsDeleteModalOpen(true)} className="shrink-0">
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="shrink-0"
+            disabled={isSuspended}
+          >
             Request Deletion
           </Button>
         </CardContent>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Loader2, Shield } from 'lucide-react';
+import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 interface Props {
@@ -25,7 +25,8 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
   const [loading, setLoading] = useState(false);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
-  const canManageSettings = isOwner || permissions.includes('channel.settings.manage');
+  const isSuspended = channel.status === 'SUSPENDED';
+  const canManageSettings = (isOwner || permissions.includes('channel.settings.manage')) && !isSuspended;
 
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,7 +70,11 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
           <h2 className="text-lg font-bold text-gray-900">Branding & Profile</h2>
           <p className="text-sm text-gray-500">Update your channel's public appearance.</p>
         </div>
-        {!canManageSettings && (
+        {isSuspended ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+            <AlertTriangle size={12} /> Suspended — Read Only
+          </span>
+        ) : !canManageSettings && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
             <Shield size={12} /> Read Only
           </span>

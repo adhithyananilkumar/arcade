@@ -8,6 +8,7 @@ export interface Channel {
   description?: string;
   isPersonal: boolean;
   status: string;
+  suspensionReason?: string;
   ownerId: string;
   ownerName: string;
   ownerEmail?: string;
@@ -131,5 +132,16 @@ export const channelService = {
   reviewDeletionRequest: async (requestId: string, action: 'APPROVE' | 'REJECT'): Promise<void> => {
     const query = new URLSearchParams({ action }).toString();
     await api.post(`/api/v1/channels/delete-requests/${requestId}/review?${query}`);
+  },
+
+  suspendChannel: async (channelId: string, reason: string): Promise<Channel> => {
+    const query = new URLSearchParams({ reason }).toString();
+    const response = await api.post<Channel>(`/api/v1/channels/${channelId}/suspend?${query}`);
+    return response;
+  },
+
+  reactivateChannel: async (channelId: string): Promise<Channel> => {
+    const response = await api.post<Channel>(`/api/v1/channels/${channelId}/reactivate`);
+    return response;
   }
 };
