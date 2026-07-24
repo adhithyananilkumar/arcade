@@ -2,6 +2,10 @@
 
 import React, { useState } from "react";
 import { X, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/shared/design-system/ui/dialog";
+import { Button } from "@/shared/design-system/ui/button";
+import { Input } from "@/shared/design-system/ui/input";
+import { Textarea } from "@/shared/design-system/ui/textarea";
 import { roadmapTemplateService } from "../services/template";
 
 export const CATEGORIES = [
@@ -63,18 +67,17 @@ export function SaveAsTemplateModal({ roadmapId, defaultName, defaultDescription
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-        <button type="button" onClick={onClose} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg p-6 bg-white overflow-hidden" showCloseButton={false}>
+        <Button variant="ghost" size="icon" type="button" onClick={onClose} className="absolute right-4 top-4 h-8 w-8 text-gray-400 hover:text-gray-600">
           <X size={18} />
-        </button>
+        </Button>
         <div className="mb-5 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
             <Save size={20} className="text-indigo-600" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">Save as Template</h3>
+            <DialogTitle className="text-base font-semibold text-gray-900">Save as Template</DialogTitle>
             <p className="text-xs text-gray-500">Create a reusable learning path template.</p>
           </div>
         </div>
@@ -88,29 +91,29 @@ export function SaveAsTemplateModal({ roadmapId, defaultName, defaultDescription
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Template Name <span className="text-red-500">*</span></label>
-            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300" />
+            <Input required value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
-            <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300" />
+            <Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300">
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Difficulty</label>
-              <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300">
+              <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
                 {DIFFICULTIES.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Tags (press Enter to add)</label>
-            <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleAddTag} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300" placeholder="e.g. basics, core..." />
+            <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleAddTag} placeholder="e.g. basics, core..." />
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {tags.map(t => (
@@ -122,13 +125,13 @@ export function SaveAsTemplateModal({ roadmapId, defaultName, defaultDescription
             )}
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100">Cancel</button>
-            <button type="submit" disabled={!name.trim() || saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60">
+            <Button variant="outline" type="button" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={!name.trim() || saving} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {saving ? "Saving…" : "Save Template"}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

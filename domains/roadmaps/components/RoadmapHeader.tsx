@@ -2,6 +2,8 @@
 
 import React from "react";
 import { CheckCircle2, Clock, Eye, FileEdit, Archive, ShieldAlert } from "lucide-react";
+import { Button } from "@/shared/design-system/ui/button";
+import { Badge } from "@/shared/design-system/ui/badge";
 import type { RoadmapData } from "../types";
 
 interface RoadmapHeaderProps {
@@ -13,6 +15,7 @@ interface RoadmapHeaderProps {
   onManualSave: () => void;
   onSaveAsTemplateClick: () => void;
   onExportClick: () => void;
+  onImportClick: () => void;
 }
 
 export function RoadmapHeader({ 
@@ -23,34 +26,35 @@ export function RoadmapHeader({
   onClose,
   onManualSave,
   onSaveAsTemplateClick,
-  onExportClick
+  onExportClick,
+  onImportClick
 }: RoadmapHeaderProps) {
 
   const getStatusBadge = () => {
     switch (roadmap.status) {
       case 'published':
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
             <CheckCircle2 size={12} className="mr-1" /> Published
-          </span>
+          </Badge>
         );
       case 'review':
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
             <Eye size={12} className="mr-1" /> In Review
-          </span>
+          </Badge>
         );
       case 'archived':
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+          <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200">
             <Archive size={12} className="mr-1" /> Archived
-          </span>
+          </Badge>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+          <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200">
             <FileEdit size={12} className="mr-1" /> Draft
-          </span>
+          </Badge>
         );
     }
   };
@@ -59,14 +63,16 @@ export function RoadmapHeader({
     <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
       <div className="flex items-center gap-4">
         {onClose && (
-          <button 
+          <Button 
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-2 -ml-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="-ml-2 text-gray-400 hover:text-gray-600"
             title="Close Studio"
           >
             {/* Using a simple back arrow SVG here to avoid importing ArrowLeft again if not needed, but we can just use standard lucide */}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-          </button>
+          </Button>
         )}
         <div>
           <div className="flex items-center gap-3 mb-1">
@@ -93,78 +99,96 @@ export function RoadmapHeader({
         </div>
 
         <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
-          <button 
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={onImportClick}
+            title="Import from JSON"
+          >
+            Import
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
             onClick={onExportClick}
-            className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center gap-1"
             title="Export to JSON"
           >
             Export
-          </button>
-          <button 
+          </Button>
+          <Button 
+            variant="secondary"
+            size="sm"
             onClick={onSaveAsTemplateClick}
-            className="px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded hover:bg-indigo-100 flex items-center gap-1 mr-2"
+            className="mr-2 text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100"
           >
             Save as Template
-          </button>
+          </Button>
 
           {roadmap.status === 'draft' && (
             <>
-              <button 
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => onStatusChange('review')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Request Review
-              </button>
-              <button 
+              </Button>
+              <Button 
+                size="sm"
                 onClick={onPublishClick}
-                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >
                 Publish Roadmap
-              </button>
+              </Button>
             </>
           )}
 
           {roadmap.status === 'review' && (
             <>
-              <button 
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => onStatusChange('draft')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Back to Draft
-              </button>
-              <button 
+              </Button>
+              <Button 
+                size="sm"
                 onClick={onPublishClick}
-                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >
                 Publish Roadmap
-              </button>
+              </Button>
             </>
           )}
 
           {roadmap.status === 'published' && (
             <>
-              <button 
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => onStatusChange('archived')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Archive
-              </button>
-              <button 
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
                 onClick={() => onStatusChange('draft')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Unpublish to Draft
-              </button>
+              </Button>
             </>
           )}
 
           {roadmap.status === 'archived' && (
-            <button 
+            <Button 
+              variant="outline"
+              size="sm"
               onClick={() => onStatusChange('draft')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               Restore to Draft
-            </button>
+            </Button>
           )}
         </div>
       </div>

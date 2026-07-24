@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo, useRef } from "react";
 import { useRoadmapAutoSave } from "../hooks/useRoadmapAutoSave";
 import { AlertCircle } from "lucide-react";
 import { RoadmapCanvas } from "./RoadmapCanvas";
 import { RoadmapHeader } from "./RoadmapHeader";
 import { PublishConfirmationModal } from "./PublishConfirmationModal";
 import { SaveAsTemplateModal } from "./SaveAsTemplateModal";
-import { RoadmapAnalyticsPanel } from "./RoadmapAnalyticsPanel";
-import { CollaborationPanel } from "./CollaborationPanel";
 import type { RoadmapData } from "../types";
+import { roadmapService } from "../services/roadmap";
 
 interface RoadmapStudioProps {
   roadmap: RoadmapData;
@@ -20,7 +19,28 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
   const [roadmap, setRoadmap] = useState<RoadmapData>(initialRoadmap);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"editor" | "analytics" | "collaboration">("editor");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [canvasKey, setCanvasKey] = useState(0);
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const jsonStr = event.target?.result as string;
+        // Validate it's a JSON
+        JSON.parse(jsonStr);
+        setRoadmap(prev => ({ ...prev, graphJson: jsonStr }));
+        setCanvasKey(k => k + 1);
+        forceOverride(jsonStr);
+      } catch (err) {
+        alert("Invalid JSON file.");
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleExport = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(roadmap, null, 2));
@@ -110,25 +130,16 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
 
   const handleStatusChange = async (newStatus: RoadmapData['status']) => {
     try {
-      const response = await fetch(`/api/roadmaps/${roadmap.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          status: newStatus, 
-          version: roadmap.version,
-          title: roadmap.title,
-          description: roadmap.description,
-          graphJson: roadmap.graphJson
-        })
+      const updated = await roadmapService.updateRoadmap(roadmap.id, {
+        status: newStatus, 
+        version: roadmap.version,
+        title: roadmap.title,
+        description: roadmap.description,
+        graphJson: roadmap.graphJson
       });
-      if (response.ok) {
-        const updated = await response.json();
-        setRoadmap(updated);
-      } else {
-        alert("Failed to update status.");
-      }
-    } catch (e) {
-      alert("Network error.");
+      setRoadmap(updated);
+    } catch (e: any) {
+      alert("Failed to update status.");
     }
   };
 
@@ -155,27 +166,15 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
           onManualSave={manualSave}
           onSaveAsTemplateClick={() => setIsTemplateModalOpen(true)}
           onExportClick={handleExport}
+          onImportClick={() => fileInputRef.current?.click()}
         />
-        <div className="px-6 py-2 border-t border-gray-100 flex gap-4 text-sm font-medium">
-          <button 
-            onClick={() => setActiveTab("editor")}
-            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'editor' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Graph Editor
-          </button>
-          <button 
-            onClick={() => setActiveTab("analytics")}
-            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'analytics' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Student Analytics
-          </button>
-          <button 
-            onClick={() => setActiveTab("collaboration")}
-            className={`pb-2 px-1 border-b-2 transition-colors ${activeTab === 'collaboration' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-          >
-            Collaboration
-          </button>
-        </div>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          className="hidden" 
+          accept=".json" 
+          onChange={handleImportFile} 
+        />
       </div>
 
       {saveState === 'conflict' && (
@@ -218,22 +217,14 @@ export function RoadmapStudio({ roadmap: initialRoadmap, onClose }: RoadmapStudi
       )}
 
       <div className="flex-1 relative flex overflow-hidden">
-        {activeTab === "editor" || activeTab === "collaboration" ? (
-          <>
-            <RoadmapCanvas 
-              roadmap={roadmap} 
-              saveState={saveState}
-              onGraphChange={scheduleSave}
-              onManualSave={manualSave}
-              readOnly={isReadOnly}
-            />
-            {activeTab === "collaboration" && (
-               <CollaborationPanel roadmapId={roadmap.id} />
-            )}
-          </>
-        ) : (
-          <RoadmapAnalyticsPanel roadmapId={roadmap.id} />
-        )}
+        <RoadmapCanvas 
+          key={canvasKey}
+          roadmap={roadmap} 
+          saveState={saveState}
+          onGraphChange={scheduleSave}
+          onManualSave={manualSave}
+          readOnly={isReadOnly}
+        />
       </div>
 
       <PublishConfirmationModal 

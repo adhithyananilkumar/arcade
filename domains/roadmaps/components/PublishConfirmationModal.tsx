@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+import { Button } from '@/shared/design-system/ui/button';
 
 interface PublishConfirmationModalProps {
   isOpen: boolean;
@@ -27,13 +29,13 @@ export function PublishConfirmationModal({
   const isValid = validationErrors.length === 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden gap-0 bg-white" showCloseButton={false}>
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Publish Roadmap</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 rounded-lg p-1">
+          <DialogTitle className="text-lg font-bold text-gray-900">Publish Roadmap</DialogTitle>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-gray-400 hover:text-gray-600 rounded-lg">
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         <div className="p-6 space-y-6">
@@ -87,26 +89,24 @@ export function PublishConfirmationModal({
         </div>
 
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             disabled={!isValid}
             onClick={() => {
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-sm transition-colors ${
-              isValid ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-400 cursor-not-allowed opacity-50'
-            }`}
+            className={isValid ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : ''}
           >
             {hasUnsavedChanges ? 'Save & Publish' : 'Publish Now'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
