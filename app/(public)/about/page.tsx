@@ -26,10 +26,13 @@ import {
   FileBadge,
   Building2,
   Handshake,
+  Mail,
+  ArrowDown,
 } from "lucide-react";
 import Link from "next/link";
 
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
+import HeroBlobImage from "@/apps/public/components/landing/HeroBlobImage";
 import "@/apps/public/landing.css";
 
 // Reusable Animation Variants
@@ -91,55 +94,87 @@ export default function AboutPage() {
       {/* --- HERO SECTION --- */}
       <header
         ref={headerRef}
-        className="max-w-[1000px] mx-auto w-full px-6 md:px-12 pt-32 pb-24 relative z-10 flex flex-col items-center justify-center text-center"
+        className="max-w-[1320px] mx-auto w-full px-6 md:px-12 pt-28 pb-16 relative z-10 flex flex-col items-center"
       >
-        <div className="space-y-8 flex flex-col items-center">
-          <h1 className="text-5xl md:text-7xl font-bold font-bricolage text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            <VariableProximity
-              label="Learn. Compete. Get Certified."
-              fromFontVariationSettings="'wght' 300, 'opsz' 20"
-              toFontVariationSettings="'wght' 800, 'opsz' 80"
-              containerRef={headerRef}
-              radius={250}
-              falloff="linear"
-              className="font-bricolage text-slate-900 flex justify-center"
-            />
-          </h1>
-
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            className="text-lg md:text-xl font-medium text-slate-600 leading-relaxed max-w-3xl"
-          >
-            Arcade is the official learning, innovation, and event platform by Amal
-            Jyothi College of Engineering, empowering learners, organizations, and
-            educators through certified webinars, hackathons, workshops,
-            competitions, and collaborative learning experiences.
-          </motion.p>
-
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 transition-all duration-300"
+        <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+          {/* Left Column: Hero Content */}
+          <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
+            {/* Headline */}
+            <motion.h1
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold font-bricolage text-slate-900 tracking-tight leading-[1.12]"
             >
-              <span>Explore Events</span>
-              <ArrowRight size={18} />
-            </Link>
-            <button
-              disabled
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
-              title="Verification feature coming soon"
+              Empowering <br />
+              Learning, <br />
+              Innovation &amp; <br />
+              <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 pb-2">
+                Collaboration.
+                {/* Curved underline accent */}
+                <svg
+                  className="absolute bottom-0 left-0 w-full h-3 text-indigo-500/80 pointer-events-none"
+                  viewBox="0 0 200 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 9C50 3 150 3 197 9"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </motion.h1>
+
+            {/* Description */}
+            <motion.p
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="text-base sm:text-lg font-normal text-slate-600 leading-relaxed max-w-xl"
             >
-              <ShieldCheck size={18} />
-              <span>Verify Certificates</span>
-            </button>
-          </motion.div>
+              Arcade is the official learning, innovation, and event platform of Amal
+              Jyothi College of Engineering, connecting students, educators,
+              creators, and organizations through immersive learning experiences,
+              certifications, hackathons, and community-driven innovation.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={fadeInUp}
+              className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 w-full sm:w-auto"
+            >
+              <Link
+                href="/explore"
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl bg-[#0B132B] hover:bg-[#1C2541] text-white font-semibold text-base shadow-lg shadow-slate-900/10 hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
+              >
+                <ArrowRight size={18} />
+                <span>Explore Events</span>
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/90 text-slate-700 font-semibold text-base shadow-sm hover:shadow-md transition-all duration-300 w-full sm:w-auto"
+              >
+                <Mail size={18} className="text-slate-500" />
+                <span>Contact Us</span>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Hero Visual Blob Image */}
+          <div className="w-full lg:w-1/2 flex items-center justify-center relative">
+            <HeroBlobImage />
+          </div>
+        </div>
+
+        {/* Scroll to Discover Indicator */}
+        <div className="w-full flex flex-col items-center justify-center pt-16 text-blue-600 font-bold text-[11px] tracking-widest uppercase gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+          <span>SCROLL TO DISCOVER</span>
+          <ArrowDown className="w-4 h-4 animate-bounce" />
         </div>
       </header>
 
