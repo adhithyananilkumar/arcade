@@ -214,8 +214,8 @@ Editor engine performance pass complete — steady-state typing cost in the cour
   - Fixed a latent stale-closure bug: `debouncedSave` captured `onSave` from first render; it now reads through a ref. Was masked only by the editor's `key` remount.
   - `openLesson` now runs the outgoing flush and the incoming document fetch concurrently instead of head-to-tail.
 - **Next.js workspace root pinned** — a stray empty `package-lock.json` in the parent directory made Turbopack infer the wrong root, breaking the React Client Manifest for `global-error.js`. `turbopack.root` is now set explicitly in `next.config.ts`.
-- **Second Merge of `auth` Branch**: Pulled the latest changes from `auth` and successfully merged them into `studio`. This brought in additional public course pages, fonts, and minor dashboard navigation updates without conflicts.
-- **Merge `auth` Branch**: Successfully merged the latest changes from the `auth` branch into `studio` in both frontend and backend repositories, bringing in dashboards, onboarding features, and channel management without disrupting the content editor engine. Resolved merge conflicts in `package.json` for rich text dependencies.
+- **Second Merge of `auth` Branch**: Pulled the latest changes from `auth` and successfully merged them into `render-engine`. This brought in additional public course pages, fonts, and minor dashboard navigation updates without conflicts.
+- **Merge `auth` Branch**: Successfully merged the latest changes from the `auth` branch into `render-engine` in both frontend and backend repositories, bringing in dashboards, onboarding features, and channel management without disrupting the content editor engine. Resolved merge conflicts in `package.json` for rich text dependencies.
 - **Navbar Cleanup**: Removed course description input field and free/paid pricing model dropdown selector from the header of [CourseEditorShell.tsx](file:///c:/Users/athul/OneDrive/Documents/Akash%20A/project_arcade/arcade/features/content/course/components/CourseEditorShell.tsx).
 - **Settings Description Editing**: Swapped the static description display with a dynamic, left-aligned `<textarea>` on the settings panel that triggers debounced updates via `onDescriptionChange` back to the parent component and the backend API.
 - **Collapsible Sidebar**: Implemented a transition-based collapsible side panel. The panel shrinks to a sleek sidebar rail containing a larger, responsive toggle button (`PanelLeftClose` / `PanelLeftOpen` icons resized to `20px`). Other elements are dynamically hidden and disabled when closed.
@@ -244,7 +244,7 @@ Editor engine performance pass complete — steady-state typing cost in the cour
 - **`/dev-editor-perf` still ships in production builds.** It is marked "TEMPORARY — DELETE" in its own header but is genuinely useful for this work, and was extended with a `?mode=chromeless` variant that mirrors the real course-editor configuration. Decide whether to keep it (and gate it) or remove it.
 
 ### 6. How to Resume
-- Ensure you are working on the `studio` branch in both repositories.
+- Ensure you are working on the `render-engine` branch in both repositories.
 - Run `npm install` inside the `arcade/` directory if needed, then run `npm run dev` to start the frontend.
 
 ---
