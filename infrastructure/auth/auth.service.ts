@@ -20,6 +20,11 @@ export class AuthService {
   }
 
   static async refresh() {
+    // Fast path: If running in browser and no refreshToken cookie exists, fail fast without network call
+    if (typeof document !== 'undefined' && !document.cookie.includes('refreshToken=')) {
+      return Promise.reject(new Error('No refresh token cookie found'));
+    }
+
     if (!refreshPromise) {
       refreshPromise = axios.post('/api/internal/auth/refresh', {}, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
