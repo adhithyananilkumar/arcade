@@ -19,11 +19,15 @@ interface RoadmapViewerProps {
 }
 
 export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, description, graphJson }) => {
-  const { init, focusMode, activeNodeId, setActiveNode, progress } = useRoadmapViewerStore();
+  const { init, focusMode, activeNodeId, setActiveNode, progress, lockedNodeIds } = useRoadmapViewerStore();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   const [containerWidth, setContainerWidth] = useState(960);
+  
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'current' | 'locked'>('all');
 
   const [activeHoverNodeId, setActiveHoverNodeId] = useState<string | null>(null);
   const [hoverAnchorRect, setHoverAnchorRect] = useState<DOMRect | null>(null);
@@ -94,6 +98,65 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
     const { nodes, edges } = parseRoadmapGraph(graphJson);
     return calculateLayout(nodes, edges, containerWidth);
   }, [graphJson, containerWidth]);
+
+  // Calculate which nodes are dimmed based on the search query and active filters
+  const dimmedNodeIds = useMemo(() => {
+    const dimmed = new Set<string>();
+    const hasActiveFilter = selectedFilter !== 'all';
+    const hasActiveSearch = searchQuery.trim().length > 0;
+    if (!hasActiveFilter && !hasActiveSearch) return dimmed;
+
+    graph.nodes.forEach(node => {
+      const nodeProgress = progress[node.id];
+      const isCompleted = nodeProgress?.status === 'COMPLETED';
+      const isLocked = lockedNodeIds.has(node.id);
+      let matches = true;
+
+      if (hasActiveSearch) {
+        const labelMatch = node.label.toLowerCase().includes(searchQuery.toLowerCase());
+        const descMatch = (node.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+        matches = matches && (labelMatch || descMatch);
+      }
+
+      if (hasActiveFilter) {
+        if (selectedFilter === 'completed') matches = matches && isCompleted;
+        if (selectedFilter === 'current') {
+          // Identify the current step
+          const nextNode = graph.nodes.find(n => {
+            const p = progress[n.id];
+            return p?.status !== 'COMPLETED' && !lockedNodeIds.has(n.id);
+          });
+          const isActiveStep = activeNodeId === node.id || (activeNodeId === null && nextNode?.id === node.id);
+          matches = matches && isActiveStep;
+        }
+        if (selectedFilter === 'locked') matches = matches && isLocked;
+      }
+
+      if (!matches) {
+        dimmed.add(node.id);
+      }
+    });
+    return dimmed;
+  }, [graph.nodes, progress, lockedNodeIds, searchQuery, selectedFilter, activeNodeId]);
+
+  // Persistent Continue Learning Action - Scrolls viewport directly to the active lesson card
+  const handleContinueLearning = useCallback(() => {
+    const nextNode = graph.nodes.find(node => {
+      const nodeProgress = progress[node.id];
+      const isCompleted = nodeProgress?.status === 'COMPLETED';
+      const isLocked = lockedNodeIds.has(node.id);
+      return !isCompleted && !isLocked;
+    });
+    
+    const targetId = nextNode?.id || graph.nodes[0]?.id;
+    if (targetId) {
+      const el = document.getElementById(`node-card-${targetId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setActiveNode(targetId);
+      }
+    }
+  }, [graph.nodes, progress, lockedNodeIds, setActiveNode]);
 
   // Initialize store once on mount
   useEffect(() => {
@@ -267,6 +330,12 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
         completedNodesCount={completedNodesCount}
         currentNodeLabel={currentNodeLabel}
         remainingNodesCount={remainingNodesCount}
+        
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedFilter={selectedFilter}
+        setSelectedFilter={setSelectedFilter}
+        onContinueLearning={handleContinueLearning}
       />
       
       <div 
@@ -283,7 +352,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
           }}
         >
           {/* Synchronous connection lines */}
-          <EdgeRenderer edges={graph.edges} />
+          <EdgeRenderer edges={graph.edges} dimmedNodeIds={dimmedNodeIds} />
 
           {/* Absolute positioning of card nodes */}
           {graph.nodes.map(node => (
@@ -292,6 +361,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
               node={node} 
               onMouseEnter={handleNodeMouseEnter}
               onMouseLeave={handleNodeMouseLeave}
+              isDimmed={dimmedNodeIds.has(node.id)}
             />
           ))}
         </div>

@@ -5,9 +5,10 @@ import { useRoadmapViewerStore } from '../store/useRoadmapViewerStore';
 
 interface EdgeRendererProps {
   edges: RoadmapEdge[];
+  dimmedNodeIds?: Set<string>;
 }
 
-export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges }) => {
+export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds }) => {
   const { nodes, focusMode, activeNodeId, progress, lockedNodeIds, hoveredNodeId } = useRoadmapViewerStore();
 
   const nodeMap = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
@@ -43,6 +44,7 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges }) => {
 
         const isFaded = focusMode && activeNodeId !== null && edge.source !== activeNodeId && edge.target !== activeNodeId;
         const isHovered = hoveredNodeId === edge.source || hoveredNodeId === edge.target;
+        const isEdgeDimmed = dimmedNodeIds && (dimmedNodeIds.has(edge.source) || dimmedNodeIds.has(edge.target));
         
         const sourceCompleted = progress[edge.source]?.status === 'COMPLETED';
         const targetCompleted = progress[edge.target]?.status === 'COMPLETED';
@@ -63,7 +65,7 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges }) => {
         const uniqueKey = edge.id ? `${edge.id}-${index}` : `${edge.source}-${edge.target}-${index}`;
 
         return (
-          <g key={uniqueKey} style={{ opacity: isFaded ? 0.15 : 1, transition: 'opacity 0.2s ease' }}>
+          <g key={uniqueKey} style={{ opacity: isFaded ? 0.15 : isEdgeDimmed ? 0.1 : 1, transition: 'opacity 0.2s ease' }}>
             {/* Background Path (gray base) */}
             <path
               d={pathD}
@@ -76,19 +78,33 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges }) => {
               style={{ transition: 'stroke-width 0.2s, stroke 0.2s' }}
             />
             
-            {/* Completed Path (Green drawing animation) */}
+            {/* Completed Path (Green drawing animation + energy flow) */}
             {edgeStatus === 'completed' && !isFaded && (
-              <motion.path
-                d={pathD}
-                fill="none"
-                stroke="#22C55E"
-                strokeWidth={isHovered ? 5 : 4}
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.8, ease: "easeInOut" }}
-              />
+              <>
+                <motion.path
+                  d={pathD}
+                  fill="none"
+                  stroke="#22C55E"
+                  strokeWidth={isHovered ? 5 : 4}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                />
+                <motion.path
+                  d={pathD}
+                  fill="none"
+                  stroke="#4ADE80"
+                  strokeWidth={isHovered ? 5.5 : 4.5}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  opacity={0.8}
+                  strokeDasharray="16 100"
+                  animate={{ strokeDashoffset: [-116, 0] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+                />
+              </>
             )}
             
             {/* Current Path (Purple drawing & flow animation) */}

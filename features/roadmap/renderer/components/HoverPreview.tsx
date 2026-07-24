@@ -195,18 +195,7 @@ export const HoverPreview: React.FC<HoverPreviewProps> = ({ nodeId, anchorRect, 
           {node.description || "No description available."}
         </p>
 
-        {/* Learning Objectives */}
-        <div className="mb-4">
-          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
-            Objectives
-          </h4>
-          <ul className="space-y-1 text-xs text-gray-600 list-disc list-inside">
-            <li>Master the basics of {node.label}.</li>
-            <li>Apply concepts in interactive challenges.</li>
-            <li>Launch assessments to test your knowledge.</li>
-          </ul>
-        </div>
+
 
         {/* Dynamic Resource Preview */}
         {resources.length > 0 && (

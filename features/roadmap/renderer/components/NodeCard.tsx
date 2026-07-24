@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { RoadmapNode } from '../types';
 import { Play, FileText, HelpCircle, Code, BookOpen, Lock, Award, Beaker, Laptop } from 'lucide-react';
@@ -8,6 +8,7 @@ interface NodeCardProps {
   node: RoadmapNode;
   onMouseEnter?: (nodeId: string, rect: DOMRect) => void;
   onMouseLeave?: () => void;
+  isDimmed?: boolean;
 }
 
 const getNodeIcon = (node: RoadmapNode) => {
@@ -38,15 +39,18 @@ const getNodeIcon = (node: RoadmapNode) => {
   return <BookOpen className="w-4 h-4 text-indigo-500" />;
 };
 
-export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseLeave }) => {
+export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseLeave, isDimmed }) => {
   const { 
+    nodes,
+    edges,
     activeNodeId, 
     setActiveNode, 
     focusMode, 
     progress, 
     lockedNodeIds, 
     setHoveredNode, 
-    toggleNodeCompletion 
+    toggleNodeCompletion,
+    hoveredNodeId
   } = useRoadmapViewerStore();
   
   const cardRef = useRef<HTMLDivElement>(null);
@@ -84,6 +88,27 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
   const isCompleted = nodeProgress?.status === 'COMPLETED';
   const isLocked = lockedNodeIds.has(node.id);
 
+  // Identify the Current node (user's active step)
+  const isFirstIncompleteUnlocked = useMemo(() => {
+    const nextNode = nodes.find(n => {
+      const p = progress[n.id];
+      return p?.status !== 'COMPLETED' && !lockedNodeIds.has(n.id);
+    });
+    return nextNode?.id === node.id;
+  }, [nodes, progress, lockedNodeIds, node.id]);
+
+  const isCurrent = isActive || (activeNodeId === null && isFirstIncompleteUnlocked);
+
+  // Dim unrelated nodes when hovering over another node
+  const isUnrelatedHover = useMemo(() => {
+    if (!hoveredNodeId || hoveredNodeId === node.id) return false;
+    const isConnected = edges.some(e => 
+      (e.source === hoveredNodeId && e.target === node.id) || 
+      (e.target === hoveredNodeId && e.source === node.id)
+    );
+    return !isConnected;
+  }, [hoveredNodeId, edges, node.id]);
+
   // Auto-scroll into view when this node becomes active
   useEffect(() => {
     if (isActive && cardRef.current) {
@@ -113,28 +138,34 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
       ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
       animate={{ 
-        opacity: isFaded ? 0.35 : 1, 
+        opacity: isDimmed ? 0.15 : isUnrelatedHover ? 0.75 : isLocked ? 0.6 : 1, 
         y: 0,
-        scale: isActive ? [1.02, 1.04, 1.02] : 1,
-        borderColor: isActive ? '#6366F1' : isCompleted ? '#22C55E' : isLocked ? '#F3F4F6' : '#E5E7EB',
-        boxShadow: isActive 
-          ? '0 0 18px 3px rgba(99, 102, 241, 0.3), 0 10px 25px -5px rgba(99, 102, 241, 0.2)' 
-          : isCompleted 
-            ? '0 4px 14px rgba(34, 197, 94, 0.06)'
-            : '0 4px 8px -1px rgba(0, 0, 0, 0.04)'
+        scale: 1,
+        borderColor: isCompleted 
+          ? '#22C55E' 
+          : isCurrent 
+            ? '#6366F1' 
+            : '#E5E7EB',
+        boxShadow: isCompleted
+          ? '0 4px 12px rgba(34, 197, 94, 0.15)' 
+          : isCurrent
+            ? ['0 0 0 0px rgba(99, 102, 241, 0.3)', '0 0 0 6px rgba(99, 102, 241, 0)', '0 0 0 0px rgba(99, 102, 241, 0)']
+            : '0 4px 8px -1px rgba(0, 0, 0, 0.04)',
       }}
-      whileHover={!isFaded && !isLocked ? { 
+      transition={isCurrent && !isCompleted ? {
+        boxShadow: {
+          repeat: Infinity,
+          duration: 1.8,
+          ease: "easeInOut"
+        },
+        default: { duration: 0.2 }
+      } : { duration: 0.2 }}
+      whileHover={!isLocked ? { 
         y: -4, 
         scale: 1.02,
-        boxShadow: '0 16px 24px -8px rgba(0, 0, 0, 0.08)',
-        borderColor: isActive ? '#6366F1' : isCompleted ? '#22C55E' : '#C7D2FE'
+        boxShadow: '0 12px 20px -5px rgba(0, 0, 0, 0.08)',
+        borderColor: isCompleted ? '#22C55E' : '#6366F1',
       } : {}}
-      transition={{ 
-        scale: isActive 
-          ? { repeat: Infinity, duration: 2, ease: "easeInOut" } 
-          : { duration: 0.2 },
-        default: { duration: 0.2 }
-      }}
       ref={cardRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -145,7 +176,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
       className={`
         absolute flex flex-col p-5 bg-white rounded-2xl cursor-pointer lp-node-card
         border-2 transition-all duration-200 select-none shadow-sm hover:shadow-md
-        ${isCompleted ? 'bg-green-50/15' : ''}
+        ${isCompleted ? 'bg-green-50/5' : ''}
         ${isLocked ? 'bg-gray-50/60 cursor-not-allowed opacity-60' : ''}
       `}
       style={{
@@ -161,7 +192,7 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
         <motion.button
           onClick={handleCheckboxClick}
           disabled={isLocked}
-          whileHover={!isLocked ? { scale: 1.15, boxShadow: '0 0 8px rgba(99, 102, 241, 0.3)', borderColor: '#6366F1' } : {}}
+          whileHover={!isLocked ? { scale: 1.15, borderColor: '#6366F1' } : {}}
           whileTap={!isLocked ? { scale: 0.92 } : {}}
           transition={{ type: "spring", stiffness: 450, damping: 15 }}
           className={`relative w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
@@ -169,19 +200,23 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
               ? 'border-green-500 bg-green-500 text-white'
               : isLocked
                 ? 'border-gray-200 bg-gray-50 cursor-not-allowed text-gray-300'
-                : isActive
+                : isCurrent
                   ? 'border-indigo-500 bg-white ring-2 ring-indigo-100'
                   : 'border-gray-300 bg-white text-transparent'
           }`}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-            <motion.polyline
-              points="20 6 9 17 4 12"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: isCompleted ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-            />
-          </svg>
+          {isLocked ? (
+            <Lock className="w-3 h-3 text-gray-400" />
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+              <motion.polyline
+                points="20 6 9 17 4 12"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: isCompleted ? 1 : 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+              />
+            </svg>
+          )}
           
           {/* Gentle pulse ring outer layer */}
           {isActive && !isCompleted && (
@@ -202,10 +237,16 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseL
                 <span>{node.type || 'Lesson'}</span>
               </div>
               
-              {isLocked && <Lock className="text-gray-400 w-3 h-3" />}
+              {isCompleted ? (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-50 text-green-600 border border-green-200/50">
+                  Completed
+                </span>
+              ) : isLocked ? (
+                <Lock className="text-gray-400 w-3 h-3" />
+              ) : null}
             </div>
             
-            <h3 className={`font-bold text-sm text-gray-900 leading-snug line-clamp-2 ${isCompleted ? 'text-gray-400 line-through' : ''}`} style={{ letterSpacing: '-0.01em' }}>
+            <h3 className={`font-bold text-sm leading-snug line-clamp-2 ${isCompleted ? 'text-gray-400' : 'text-gray-900'}`} style={{ letterSpacing: '-0.01em' }}>
               {node.label}
             </h3>
           </div>
