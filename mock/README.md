@@ -8,19 +8,17 @@ rest of the frontend architecture.
 
 ## Enabling it locally
 
-Add to `.env.development` (gitignored, per-developer):
+`.env.development` is committed on this branch with both flags on, so mock mode
+is **on by default** the moment you check out `mockui` and run `npm run dev` —
+no setup needed. You'll land straight into an authenticated shell (no sign-in),
+every `*.service.ts` call that goes through `infrastructure/http/api.ts` is
+served from `mock/` fixtures, and `/dev-preview` lists every page in the app.
 
-```
-NEXT_PUBLIC_USE_MOCKS=true
-NEXT_PUBLIC_AUTH_BYPASS=true
-```
-
-Restart `npm run dev`. You'll land straight into an authenticated shell (no
-sign-in), every `*.service.ts` call that goes through `infrastructure/http/api.ts`
-is served from `mock/` fixtures, and `/dev-preview` lists every page in the app.
-
-Set `NEXT_PUBLIC_USE_MOCKS=false` (or unset both) to go back to the real backend
-— that's the only change needed; no domain, app, or page code changes.
+If you want real backend/auth while on this branch, flip the flags to `false`
+in your local `.env.development` (or delete the file — `.env.development.example`
+documents the same two vars if you need to restore it). Set
+`NEXT_PUBLIC_USE_MOCKS=false` — that's the only change needed to hit the real
+backend; no domain, app, or page code changes.
 
 ## The one rule
 
