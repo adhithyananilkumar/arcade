@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { localeActions } from "reactjs-tiptap-editor/locale-bundle";
 import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
 import { RichTextHeading } from "reactjs-tiptap-editor/heading";
 import { RichTextFontFamily } from "reactjs-tiptap-editor/fontfamily";
@@ -37,6 +38,20 @@ import { Separator } from "@/shared/design-system/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/design-system/ui/popover";
 import { Button } from "@/shared/design-system/ui/button";
 import { Plus } from "lucide-react";
+
+// The font family/size dropdowns show this string for unstyled text — the library's
+// own copy is the literal word "Default", which is honest about "no override" but
+// tells the author nothing about what they're actually looking at. Arcade's actual
+// base typography (app/globals.css `body`, mirrored in editor.css's `.ProseMirror`
+// rule) is Geist at 16px, so that's what unmarked text really renders as — the label
+// should say so. This is a one-time i18n string override, not a document mutation:
+// it changes what "no override" is *called*, not what's stored in any lesson's
+// content, so redefining the actual default later is a one-line change here (plus
+// the matching CSS rule), not a content migration.
+localeActions.setMessage("en", {
+  "editor.fontFamily.default.tooltip": "Geist",
+  "editor.fontSize.default.tooltip": "16px",
+});
 
 export const RichTextToolbar = memo(function RichTextToolbar() {
   return (

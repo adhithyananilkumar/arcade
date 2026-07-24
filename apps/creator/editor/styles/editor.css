@@ -10,6 +10,13 @@
   -webkit-font-smoothing: antialiased;
   caret-color: black;
   cursor: text;
+  /* Matches `body` in app/globals.css and the toolbar's "Geist" / "16px" default
+     label (RichTextToolbar.tsx). Declared explicitly rather than left to inherit —
+     the toolbar's claim of what "Default" means should be backed by a real rule
+     here, not an accident of the surrounding page. Unmarked text carries no
+     textStyle mark at all, so this is genuinely what renders for it. */
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
 }
 
 /* ── Typography ── */

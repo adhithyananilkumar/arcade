@@ -99,9 +99,13 @@ const BaseKit = [
 export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
   return [
     ...BaseKit,
+    // `includeChildren` is deliberately omitted: combined with the extension's
+    // default `showOnlyCurrent`, it routes decorations through the incremental
+    // state-field path, which was leaving stale "empty" decorations on every
+    // paragraph the caret had previously visited instead of just the current one.
+    // The default (single current empty block) is what we want here.
     Placeholder.configure({
       placeholder: placeholder ?? "Press '/' for commands",
-      includeChildren: true,
     }),
     CharacterCount,
     ...(ydoc ? [Collaboration.configure({ document: ydoc })] : [History]),
