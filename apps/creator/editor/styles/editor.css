@@ -8,6 +8,8 @@
   padding: 0;
   word-break: break-word;
   -webkit-font-smoothing: antialiased;
+  caret-color: black;
+  cursor: text;
 }
 
 /* ── Typography ── */
@@ -332,12 +334,12 @@
 /* Smooth drag: dim the rest of the doc and hide the caret while reordering so
    the dragged block + drop cursor are the only focal points (Notion feel). */
 .ProseMirror.arcade-dragging {
-  cursor: grabbing;
-  caret-color: transparent;
+  cursor: text;
+  caret-color: black;
 }
 
 .ProseMirror.arcade-dragging * {
-  cursor: grabbing !important;
+  cursor: text !important;
 }
 
 /* Settle newly-moved blocks in with a subtle fade rather than a hard jump. */
@@ -386,7 +388,7 @@
   height: 24px;
   border-radius: 5px;
   color: #9ca3af;
-  cursor: grab;
+  cursor: pointer;
   transition: background-color 0.12s, color 0.12s;
 }
 
@@ -396,7 +398,7 @@
 }
 
 .arcade-handle-btn:active {
-  cursor: grabbing;
+  cursor: pointer;
 }
 
 /* The "+" button is a click target, not a drag source. */
