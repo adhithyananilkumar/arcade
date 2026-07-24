@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Channel, channelService } from "@/domains/channels";
-import { Search, Check, X, Tv, ShieldOff, ShieldCheck } from 'lucide-react';
+import { Channel, ChannelContentItem, channelService } from "@/domains/channels";
+import { Search, Check, X, Tv, ShieldOff, ShieldCheck, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -15,7 +15,12 @@ export function PendingChannels() {
   const [loading, setLoading] = useState(true);
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [suspendTarget, setSuspendTarget] = useState<Channel | null>(null);
+  const [suspendReason, setSuspendReason] = useState('');
+  const [suspendForce, setSuspendForce] = useState(false);
+  const [channelContent, setChannelContent] = useState<ChannelContentItem[]>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
   const canApprove = hasPermission('platform.channels.manage');
@@ -24,6 +29,19 @@ export function PendingChannels() {
   useEffect(() => {
     fetchChannels();
   }, []);
+
+  useEffect(() => {
+    if (!selectedChannel) {
+      setChannelContent([]);
+      return;
+    }
+    setContentLoading(true);
+    channelService
+      .getChannelContent(selectedChannel.id)
+      .then(setChannelContent)
+      .catch(() => toast.error('Failed to load channel content'))
+      .finally(() => setContentLoading(false));
+  }, [selectedChannel]);
 
   const fetchChannels = async () => {
     try {
@@ -61,21 +79,27 @@ export function PendingChannels() {
     }
   };
 
-  const handleSuspend = async (id: string) => {
-    const reason = window.prompt('Reason for suspending this channel (shown to the owner/staff):');
-    if (reason === null) return; // cancelled
-    if (!reason.trim()) {
+  const openSuspendDialog = (channel: Channel) => {
+    setSuspendTarget(channel);
+    setSuspendReason('');
+    setSuspendForce(false);
+  };
+
+  const confirmSuspend = async () => {
+    if (!suspendTarget) return;
+    if (!suspendReason.trim()) {
       toast.error('A reason is required to suspend a channel');
       return;
     }
-    // Standard suspend keeps the channel's content publicly visible for a 6-month grace
-    // period. Force skips that entirely — reserved for safety/policy-violation takedowns.
-    const force = window.confirm(
-      'Force suspend?\n\nOK = unlist this channel\'s content immediately (safety/policy violations).\nCancel = standard suspend, content stays visible for up to 6 months.'
-    );
     try {
-      await channelService.suspendChannel(id, reason.trim(), force);
-      toast.success(force ? 'Channel suspended — content unlisted immediately' : 'Channel suspended — content will be unlisted within 6 months');
+      await channelService.suspendChannel(suspendTarget.id, suspendReason.trim(), suspendForce);
+      toast.success(
+        suspendForce
+          ? 'Channel suspended — content unlisted immediately'
+          : 'Channel suspended — content will be unlisted within 6 months'
+      );
+      setSuspendTarget(null);
+      setSelectedChannel(null);
       fetchChannels();
     } catch (error) {
       toast.error('Failed to suspend channel');
@@ -207,7 +231,7 @@ export function PendingChannels() {
               </a>
               {canSuspend && channel.status === 'ACTIVE' && (
                 <button
-                  onClick={() => handleSuspend(channel.id)}
+                  onClick={() => openSuspendDialog(channel)}
                   className="flex items-center gap-1.5 text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
                   title="Suspend channel"
                 >
@@ -300,6 +324,41 @@ export function PendingChannels() {
                 </div>
               </div>
 
+              {selectedChannel.status !== 'PENDING' && (
+                <div className="space-y-4 pt-6 border-t border-gray-100">
+                  <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <BookOpen size={16} className="text-gray-400" /> Content
+                    {channelContent.length > 0 && (
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">{channelContent.length}</span>
+                    )}
+                  </h4>
+                  {contentLoading ? (
+                    <p className="text-sm text-gray-400">Loading content...</p>
+                  ) : channelContent.length === 0 ? (
+                    <p className="text-sm text-gray-400">No content under this channel.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {channelContent.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between gap-3 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
+                            <p className="text-xs text-gray-500">{item.type}</p>
+                          </div>
+                          <span className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-lg border ${
+                            item.status.toUpperCase() === 'PUBLISHED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                            item.status.toUpperCase() === 'DRAFT' ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                            item.status.toUpperCase() === 'REJECTED' ? 'bg-red-50 text-red-600 border-red-100' :
+                            'bg-amber-50 text-amber-700 border-amber-100'
+                          }`}>
+                            {item.status.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {selectedChannel.status === 'PENDING' && (
                 <div className="flex gap-3 pt-6 border-t border-gray-100">
                   {canApprove && (
@@ -330,10 +389,7 @@ export function PendingChannels() {
               {canSuspend && selectedChannel.status === 'ACTIVE' && (
                 <div className="flex gap-3 pt-6 border-t border-gray-100">
                   <button
-                    onClick={() => {
-                      handleSuspend(selectedChannel.id);
-                      setSelectedChannel(null);
-                    }}
+                    onClick={() => openSuspendDialog(selectedChannel)}
                     className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors font-semibold text-sm"
                   >
                     <ShieldOff size={18} /> Suspend Channel
@@ -354,6 +410,69 @@ export function PendingChannels() {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!suspendTarget} onOpenChange={(open) => !open && setSuspendTarget(null)}>
+        <DialogContent className="max-w-md p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-red-600 flex items-center gap-2">
+              <ShieldOff size={20} /> Suspend Channel
+            </DialogTitle>
+          </DialogHeader>
+
+          {suspendTarget && (
+            <div className="space-y-6 mt-4">
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Channel</h4>
+                <p className="text-base text-gray-700">{suspendTarget.name}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-900" htmlFor="suspend-reason">
+                  Reason (shown to the owner/staff)
+                </label>
+                <textarea
+                  id="suspend-reason"
+                  value={suspendReason}
+                  onChange={(e) => setSuspendReason(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+                  placeholder="e.g. Policy violation, billing dispute..."
+                />
+              </div>
+
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-red-100 bg-red-50/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={suspendForce}
+                  onChange={(e) => setSuspendForce(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-red-600"
+                />
+                <span className="text-sm text-gray-700">
+                  <span className="font-bold text-red-700">Force suspend</span> — unlist this
+                  channel's content immediately, for safety/policy-violation takedowns. Leave
+                  unchecked for a standard suspend, where content stays publicly visible for up
+                  to 6 months.
+                </span>
+              </label>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={confirmSuspend}
+                  className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-semibold text-sm shadow-sm"
+                >
+                  <ShieldOff size={18} /> {suspendForce ? 'Force Suspend' : 'Suspend Channel'}
+                </button>
+                <button
+                  onClick={() => setSuspendTarget(null)}
+                  className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-semibold text-sm"
+                >
+                  <X size={18} /> Cancel
+                </button>
+              </div>
             </div>
           )}
         </DialogContent>

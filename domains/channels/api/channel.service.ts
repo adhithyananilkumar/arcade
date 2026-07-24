@@ -20,6 +20,17 @@ export interface Channel {
   createdAt: string;
 }
 
+export interface ChannelContentItem {
+  id: string;
+  type: string;
+  title: string;
+  description?: string | null;
+  coverImageUrl?: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ChannelAuditLogEntry {
   id: string;
   channelId: string;
@@ -103,6 +114,11 @@ export const channelService = {
 
   getMyWorkspaces: async (): Promise<Channel[]> => {
     const response = await api.get<Channel[]>('/api/v1/channels/workspaces');
+    return response;
+  },
+
+  getChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {
+    const response = await api.get<ChannelContentItem[]>(`/api/v1/channels/${channelId}/content`);
     return response;
   },
 
