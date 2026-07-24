@@ -48,15 +48,27 @@ export function calculateLayout(
     lvl.nodes.sort((a, b) => a.x - b.x);
   });
 
-  // 2. Reflow nodes based on available viewport width
+  // 2. Reflow nodes based on available viewport width with dynamic spacing compression
   const layoutWidth = Math.min(viewportWidth, 960) || 960;
   const padding = 24;
   const maxAvailableWidth = layoutWidth - 2 * padding;
   
   const cardWidth = 280;
   const cardHeight = 120;
-  const horizontalGap = 32;
-  const verticalGap = 48; // compact spacing
+
+  // Compress spacing as viewport becomes smaller
+  let horizontalGap = 48; // Desktop gap
+  let verticalGap = 160;  // Desktop gap (center-to-center is 280px)
+
+  if (viewportWidth < 640) {
+    // Mobile
+    horizontalGap = 16;
+    verticalGap = 120;
+  } else if (viewportWidth < 1024) {
+    // Laptop / Tablet
+    horizontalGap = 32;
+    verticalGap = 140;
+  }
 
   let currentY = 40; // initial top margin
 

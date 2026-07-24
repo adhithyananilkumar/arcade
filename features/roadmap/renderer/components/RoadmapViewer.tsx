@@ -8,6 +8,8 @@ import { LearningDrawer } from './LearningDrawer';
 import { useRoadmapViewerStore } from '../store/useRoadmapViewerStore';
 import { useRouter } from 'next/navigation';
 import { RoadmapNode } from '../types';
+import { AnimatePresence } from 'framer-motion';
+import { HoverPreview } from './HoverPreview';
 
 interface RoadmapViewerProps {
   roadmapId: string;
@@ -22,6 +24,56 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
   const router = useRouter();
 
   const [containerWidth, setContainerWidth] = useState(960);
+
+  const [activeHoverNodeId, setActiveHoverNodeId] = useState<string | null>(null);
+  const [hoverAnchorRect, setHoverAnchorRect] = useState<DOMRect | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleNodeMouseEnter = (nodeId: string, rect: DOMRect) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoverAnchorRect(rect);
+      setActiveHoverNodeId(nodeId);
+    }, 150);
+  };
+
+  const handleNodeMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveHoverNodeId(null);
+      setHoverAnchorRect(null);
+    }, 200);
+  };
+
+  const handlePreviewMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handlePreviewMouseLeave = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveHoverNodeId(null);
+      setHoverAnchorRect(null);
+    }, 200);
+  };
 
   // Track scroll container width dynamically to reflow layouts
   const containerRef = useCallback((node: HTMLDivElement | null) => {
@@ -84,6 +136,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
 
       if (e.key === 'Escape') {
         setActiveNode(null);
+        setActiveHoverNodeId(null);
         return;
       }
       
@@ -234,12 +287,28 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
 
           {/* Absolute positioning of card nodes */}
           {graph.nodes.map(node => (
-            <NodeCard key={node.id} node={node} />
+            <NodeCard 
+              key={node.id} 
+              node={node} 
+              onMouseEnter={handleNodeMouseEnter}
+              onMouseLeave={handleNodeMouseLeave}
+            />
           ))}
         </div>
       </div>
 
       <LearningDrawer nodes={graph.nodes} />
+
+      <AnimatePresence>
+        {activeHoverNodeId && hoverAnchorRect && (
+          <HoverPreview
+            nodeId={activeHoverNodeId}
+            anchorRect={hoverAnchorRect}
+            onMouseEnter={handlePreviewMouseEnter}
+            onMouseLeave={handlePreviewMouseLeave}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

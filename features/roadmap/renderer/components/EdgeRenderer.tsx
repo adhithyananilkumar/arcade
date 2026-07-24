@@ -27,8 +27,19 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges }) => {
         const dx = tx - sx;
         const dy = ty - sy;
 
-        // Clean vertical downward S-curve
-        const pathD = `M ${sx} ${sy} C ${sx} ${sy + dy / 2}, ${tx} ${ty - dy / 2}, ${tx} ${ty}`;
+        // Smooth orthogonal routing with rounded corners
+        let pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+        if (Math.abs(dx) > 8 && dy > 16) {
+          const my = sy + dy / 2;
+          const R = Math.min(16, dy / 2, Math.abs(dx) / 2);
+          const dxSign = Math.sign(dx);
+          pathD = `M ${sx} ${sy} ` +
+                  `L ${sx} ${my - R} ` +
+                  `Q ${sx} ${my} ${sx + dxSign * R} ${my} ` +
+                  `L ${tx - dxSign * R} ${my} ` +
+                  `Q ${tx} ${my} ${tx} ${my + R} ` +
+                  `L ${tx} ${ty}`;
+        }
 
         const isFaded = focusMode && activeNodeId !== null && edge.source !== activeNodeId && edge.target !== activeNodeId;
         const isHovered = hoveredNodeId === edge.source || hoveredNodeId === edge.target;

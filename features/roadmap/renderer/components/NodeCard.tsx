@@ -6,6 +6,8 @@ import { useRoadmapViewerStore } from '../store/useRoadmapViewerStore';
 
 interface NodeCardProps {
   node: RoadmapNode;
+  onMouseEnter?: (nodeId: string, rect: DOMRect) => void;
+  onMouseLeave?: () => void;
 }
 
 const getNodeIcon = (node: RoadmapNode) => {
@@ -36,7 +38,7 @@ const getNodeIcon = (node: RoadmapNode) => {
   return <BookOpen className="w-4 h-4 text-indigo-500" />;
 };
 
-export const NodeCard: React.FC<NodeCardProps> = ({ node }) => {
+export const NodeCard: React.FC<NodeCardProps> = ({ node, onMouseEnter, onMouseLeave }) => {
   const { 
     activeNodeId, 
     setActiveNode, 
@@ -48,6 +50,32 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node }) => {
   } = useRoadmapViewerStore();
   
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseEnter = () => {
+    if (onMouseEnter && cardRef.current) {
+      onMouseEnter(node.id, cardRef.current.getBoundingClientRect());
+    }
+    setHoveredNode(node.id);
+  };
+
+  const handleMouseLeave = () => {
+    if (onMouseLeave) {
+      onMouseLeave();
+    }
+    setHoveredNode(null);
+  };
+
+  const handleFocus = () => {
+    if (onMouseEnter && cardRef.current) {
+      onMouseEnter(node.id, cardRef.current.getBoundingClientRect());
+    }
+  };
+
+  const handleBlur = () => {
+    if (onMouseLeave) {
+      onMouseLeave();
+    }
+  };
 
   const isActive = activeNodeId === node.id;
   const isFaded = activeNodeId !== null && !isActive;
@@ -107,8 +135,12 @@ export const NodeCard: React.FC<NodeCardProps> = ({ node }) => {
           : { duration: 0.2 },
         default: { duration: 0.2 }
       }}
-      onMouseEnter={() => !isLocked && setHoveredNode(node.id)}
-      onMouseLeave={() => setHoveredNode(null)}
+      ref={cardRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      tabIndex={0}
       onClick={handleCardClick}
       className={`
         absolute flex flex-col p-5 bg-white rounded-2xl cursor-pointer lp-node-card
