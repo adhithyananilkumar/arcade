@@ -1,25 +1,29 @@
 'use client';
 
-'use client';
-
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, Shield } from 'lucide-react';
+import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
+import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelDangerZone } from './ChannelDangerZone';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+
+type ManageTab = 'OVERVIEW' | 'STAFF' | 'DANGER';
 
 export default function ManageChannelPage() {
   const params = useParams();
   const router = useRouter();
   const channelId = params.id as string;
+  const { user } = useAuthStore();
 
   const [channel, setChannel] = useState<Channel | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'STAFF'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
@@ -132,21 +136,40 @@ export default function ManageChannelPage() {
       </motion.div>
 
       {/* Tabs Menu */}
-      <div className="flex gap-6 border-b border-gray-200 mt-8 mb-6">
+      <div className="flex gap-1 rounded-2xl border border-gray-100 bg-gray-50/60 p-1.5 mt-8 mb-6 w-fit">
         <button
           onClick={() => setActiveTab('OVERVIEW')}
-          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'OVERVIEW' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+            activeTab === 'OVERVIEW' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+          }`}
         >
+          <LayoutGrid size={16} />
           Overview
-          {activeTab === 'OVERVIEW' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
         </button>
-        <button
-          onClick={() => setActiveTab('STAFF')}
-          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
-        >
-          Staff & Permissions
-          {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
-        </button>
+        {/* Individual channels have a single, all-powerful owner and nothing to delegate —
+            only org channels get a Staff & Permissions tab. */}
+        {!channel.isPersonal && (
+          <button
+            onClick={() => setActiveTab('STAFF')}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+              activeTab === 'STAFF' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <Users size={16} />
+            Staff & Permissions
+          </button>
+        )}
+        {user?.id === channel.ownerId && (
+          <button
+            onClick={() => setActiveTab('DANGER')}
+            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${
+              activeTab === 'DANGER' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-red-600'
+            }`}
+          >
+            <AlertTriangle size={16} />
+            Danger Zone
+          </button>
+        )}
       </div>
 
       {activeTab === 'OVERVIEW' ? (
@@ -189,32 +212,28 @@ export default function ManageChannelPage() {
             </div>
           </div>
         </motion.div>
-      ) : (
-        <motion.div 
+      ) : activeTab === 'STAFF' ? (
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
         >
-          <div className="lg:col-span-2">
-            {/* Staff Management Component Placeholder */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Channel Staff</h3>
-              <p className="text-sm text-gray-500">Manage members and their roles here.</p>
-            </div>
-          </div>
+          <ChannelStaffManager channelId={channelId} permissions={permissions} />
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <ChannelDangerZone channel={channel} />
         </motion.div>
       )}
 
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="max-w-6xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Channel Settings</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} />
-            </div>
-          </div>
+          <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} />
         </DialogContent>
       </Dialog>
     </div>

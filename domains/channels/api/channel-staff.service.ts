@@ -19,10 +19,18 @@ export interface ChannelInvitation {
   createdAt: string;
 }
 
+interface Page<T> {
+  content: T[];
+}
+
 export class ChannelStaffService {
   static async getStaff(channelId: string): Promise<ChannelStaff[]> {
-    const data = await api.get<ChannelStaff[]>(`/api/v1/channels/${channelId}/staff`);
-    return data;
+    // Backend paginates this endpoint (see ChannelStaffController#getStaff); request a page
+    // large enough to cover typical channel rosters until the UI grows real page controls.
+    const data = await api.get<Page<ChannelStaff>>(
+      `/api/v1/channels/${channelId}/staff?size=100`
+    );
+    return data.content;
   }
 
   static async removeStaff(channelId: string, userId: string): Promise<void> {
@@ -30,8 +38,10 @@ export class ChannelStaffService {
   }
 
   static async getInvitations(channelId: string): Promise<ChannelInvitation[]> {
-    const data = await api.get<ChannelInvitation[]>(`/api/v1/channels/${channelId}/staff/invitations`);
-    return data;
+    const data = await api.get<Page<ChannelInvitation>>(
+      `/api/v1/channels/${channelId}/staff/invitations?size=100`
+    );
+    return data.content;
   }
 
   static async inviteStaff(channelId: string, email: string, roleId: string): Promise<ChannelInvitation> {
