@@ -58,6 +58,7 @@ export function LearningNode({ id, data, selected }: NodeProps) {
       onRename={handleRename}
       validationError={validationError}
       selected={selected}
+      hideCheckbox={true}
     />
   );
 }

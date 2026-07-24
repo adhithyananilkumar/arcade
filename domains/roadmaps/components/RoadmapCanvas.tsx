@@ -49,6 +49,10 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { screenToFlowPosition, fitView, setNodes: setNodesFlow, getViewport, setViewport } = useReactFlow();
 
+  const [draggingBranchIds, setDraggingBranchIds] = useState<Set<string>>(new Set());
+  const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+  const dragStartPositionsRef = useRef<Map<string, {x: number, y: number}>>(new Map());
+
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, nodeId: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -242,6 +246,82 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
   });
 
   const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
+
+  const getDescendants = useCallback((nodeId: string, currentEdges: Edge[]): string[] => {
+    const descendants = new Set<string>();
+    const stack = [nodeId];
+    
+    while (stack.length > 0) {
+      const current = stack.pop()!;
+      const children = currentEdges.filter(e => e.source === current).map(e => e.target);
+      for (const child of children) {
+        if (!descendants.has(child)) {
+          descendants.add(child);
+          stack.push(child);
+        }
+      }
+    }
+    return Array.from(descendants);
+  }, []);
+
+  const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node) => {
+    if (readOnly) return;
+    
+    if (event.altKey) {
+      setDraggingNodeId(node.id);
+      setDraggingBranchIds(new Set());
+      dragStartPositionsRef.current.clear();
+      return;
+    }
+
+    const descendants = getDescendants(node.id, edges);
+    const branchIds = new Set([node.id, ...descendants]);
+    
+    setDraggingNodeId(node.id);
+    setDraggingBranchIds(branchIds);
+
+    const positions = new Map<string, {x: number, y: number}>();
+    nodes.forEach(n => {
+      if (branchIds.has(n.id)) {
+        positions.set(n.id, { x: n.position.x, y: n.position.y });
+      }
+    });
+    dragStartPositionsRef.current = positions;
+  }, [edges, nodes, getDescendants, readOnly]);
+
+  const onNodeDrag = useCallback((event: React.MouseEvent, node: Node) => {
+    if (readOnly || draggingBranchIds.size === 0) return;
+
+    const startPos = dragStartPositionsRef.current.get(node.id);
+    if (!startPos) return;
+
+    const dx = node.position.x - startPos.x;
+    const dy = node.position.y - startPos.y;
+
+    setNodes(nds => 
+      nds.map(n => {
+        if (n.id !== node.id && draggingBranchIds.has(n.id)) {
+          const initialPos = dragStartPositionsRef.current.get(n.id);
+          if (initialPos) {
+            return {
+              ...n,
+              position: {
+                x: initialPos.x + dx,
+                y: initialPos.y + dy
+              }
+            };
+          }
+        }
+        return n;
+      })
+    );
+  }, [draggingBranchIds, setNodes, readOnly]);
+
+  const onNodeDragStop = useCallback(() => {
+    setDraggingNodeId(null);
+    setDraggingBranchIds(new Set());
+    dragStartPositionsRef.current.clear();
+  }, []);
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -509,11 +589,36 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
         nodeData.readOnly = true;
       }
       
-      return { ...n, data: nodeData };
+      let style = n.style || {};
+      if (draggingBranchIds.size > 0) {
+        if (!draggingBranchIds.has(n.id)) {
+          style = { ...style, opacity: 0.3 };
+        } else {
+          style = { ...style, opacity: 1, zIndex: 1000 };
+        }
+      }
+      
+      return { ...n, data: nodeData, style };
     });
-  }, [nodes, readOnly]);
+  }, [nodes, readOnly, draggingBranchIds]);
 
 
+
+  const renderedEdges = useMemo(() => {
+    if (draggingBranchIds.size === 0) return edges;
+    return edges.map(e => {
+      const isMoving = draggingBranchIds.has(e.source) && draggingBranchIds.has(e.target);
+      return {
+        ...e,
+        style: {
+          ...e.style,
+          stroke: isMoving ? '#60A5FA' : '#cbd5e1',
+          strokeWidth: isMoving ? 3 : 2,
+          opacity: isMoving ? 1 : 0.2,
+        }
+      };
+    });
+  }, [edges, draggingBranchIds]);
 
   const hasSelection = nodes.some(n => n.selected) || edges.some(e => e.selected);
 
@@ -581,7 +686,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
         `}</style>
         <ReactFlow
           nodes={validatedNodes}
-          edges={edges}
+          edges={renderedEdges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={{
@@ -598,6 +703,9 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
           selectionMode={SelectionMode.Partial}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeDragStart={onNodeDragStart}
+          onNodeDrag={onNodeDrag}
+          onNodeDragStop={onNodeDragStop}
           onConnect={onConnect}
           onNodeContextMenu={readOnly ? undefined : onNodeContextMenu}
           onPaneContextMenu={(e) => e.preventDefault()}

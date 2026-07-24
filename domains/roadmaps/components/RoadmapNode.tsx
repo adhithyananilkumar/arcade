@@ -28,6 +28,7 @@ interface RoadmapNodeProps {
   onMouseLeave?: () => void;
   validationError?: string;
   selected?: boolean;
+  hideCheckbox?: boolean;
 }
 
 const BG_MAP: Record<string, string> = {
@@ -97,6 +98,7 @@ export function RoadmapNode({
   onMouseLeave,
   validationError,
   selected = false,
+  hideCheckbox = false,
 }: RoadmapNodeProps) {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(initialLabel);
@@ -200,60 +202,62 @@ export function RoadmapNode({
       {/* Inner Node Layout */}
       <div className="p-3.5 h-full flex items-start gap-4">
         {/* Left side: Circular Checkbox */}
-        <motion.button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onCheckboxClick) onCheckboxClick(e);
-          }}
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-          className="relative flex items-center justify-center shrink-0 w-6 h-6 rounded-full border-2 transition-all mt-0.5"
-          style={{
-            borderColor: isCompleted ? '#10b981' : baseText,
-            backgroundColor: isCompleted ? '#10b981' : 'transparent',
-          }}
-        >
-          <AnimatePresence mode="wait">
-            {isCompleted ? (
-              <motion.svg
-                key="check"
-                initial={{ scale: 0, rotate: -45 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#ffffff"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </motion.svg>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="w-1.5 h-1.5 rounded-full bg-transparent"
+        {!hideCheckbox && (
+          <motion.button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onCheckboxClick) onCheckboxClick(e);
+            }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+            className="relative flex items-center justify-center shrink-0 w-6 h-6 rounded-full border-2 transition-all mt-0.5"
+            style={{
+              borderColor: isCompleted ? '#10b981' : baseText,
+              backgroundColor: isCompleted ? '#10b981' : 'transparent',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {isCompleted ? (
+                <motion.svg
+                  key="check"
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </motion.svg>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="w-1.5 h-1.5 rounded-full bg-transparent"
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Ripple animation on completion */}
+            {isCompleted && (
+              <motion.span
+                className="absolute inset-0 rounded-full border border-emerald-500 pointer-events-none"
+                initial={{ scale: 0.8, opacity: 0.8 }}
+                animate={{ scale: 1.8, opacity: 0 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
               />
             )}
-          </AnimatePresence>
-
-          {/* Ripple animation on completion */}
-          {isCompleted && (
-            <motion.span
-              className="absolute inset-0 rounded-full border border-emerald-500 pointer-events-none"
-              initial={{ scale: 0.8, opacity: 0.8 }}
-              animate={{ scale: 1.8, opacity: 0 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            />
-          )}
-        </motion.button>
+          </motion.button>
+        )}
 
         {/* Right side: Title & Sub-metadata layout */}
         <div className="flex-1 min-w-0 flex flex-col justify-between h-full">

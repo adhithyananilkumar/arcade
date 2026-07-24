@@ -20,13 +20,26 @@ export function calculateLayout(
     };
   }
 
-  // Set default dimensions on nodes if missing
+  // Preferred widths and padding
+  const cardWidth = 260; 
+  let horizontalGap = 80;
+  let verticalGap = 160;
+
+  if (viewportWidth < 768) {
+    horizontalGap = 40;
+    verticalGap = 120;
+  }
+
+  const padding = 80;
+  const maxAvailableWidth = (viewportWidth || 1200) - 2 * padding;
+
+  // Set default dimensions and sanitize
   const sanitizedNodes = nodes.map(n => ({
     ...n,
     x: Number(n.x) || 0,
     y: Number(n.y) || 0,
-    width: Number(n.width) || 280,
-    height: Number(n.height) || 120
+    width: cardWidth,
+    height: 140 // max estimated height for layout spacing
   }));
 
   // 1. Group nodes into levels/rows by their original y coordinate (within 80px tolerance)
@@ -42,121 +55,81 @@ export function calculateLayout(
     }
   });
 
-  // Sort levels by original Y coordinate
   levels.sort((a, b) => a.originalY - b.originalY);
-
-  // Sort nodes within each level horizontally by original X coordinate
-  levels.forEach(lvl => {
-    lvl.nodes.sort((a, b) => a.x - b.x);
-  });
-
-  // 2. Reflow nodes based on available viewport width with dynamic spacing compression
-  const layoutWidth = Math.min(viewportWidth, 960) || 960;
-  const padding = 24;
-  const maxAvailableWidth = layoutWidth - 2 * padding;
   
-  const cardWidth = 280;
-  const cardHeight = 120;
-
-  // Compress spacing as viewport becomes smaller
-  let horizontalGap = 48; // Desktop gap
-  let verticalGap = 160;  // Desktop gap (center-to-center is 280px)
-
-  if (viewportWidth < 640) {
-    // Mobile
-    horizontalGap = 16;
-    verticalGap = 120;
-  } else if (viewportWidth < 1024) {
-    // Laptop / Tablet
-    horizontalGap = 32;
-    verticalGap = 140;
-  }
-
-  let currentY = 40; // initial top margin
-
+  let currentY = 0;
   const layoutedNodes: RoadmapNode[] = [];
 
+  // 2. Reflow nodes row by row
   levels.forEach(lvl => {
-    const totalLevelWidth = lvl.nodes.length * cardWidth + (lvl.nodes.length - 1) * horizontalGap;
-    
-    if (totalLevelWidth <= maxAvailableWidth) {
-      // 2a. All nodes in this level fit: preserve creator's layout offsets/spacing
-      let minOrigX = Infinity;
-      let maxOrigX = -Infinity;
-      lvl.nodes.forEach(n => {
-        minOrigX = Math.min(minOrigX, n.x);
-        maxOrigX = Math.max(maxOrigX, n.x + n.width);
-      });
-      if (minOrigX === Infinity) minOrigX = 0;
-      
-      const origLevelWidth = maxOrigX - minOrigX;
-      
-      lvl.nodes.forEach(node => {
-        let newX = 0;
-        if (lvl.nodes.length === 1) {
-          newX = (layoutWidth - cardWidth) / 2;
-        } else {
-          const origCenter = minOrigX + origLevelWidth / 2;
-          const offsetFromCenter = (node.x + node.width / 2) - origCenter;
-          newX = (layoutWidth / 2) + offsetFromCenter - cardWidth / 2;
-        }
+    // Sort horizontally by original X to maintain logical left-right hierarchy
+    lvl.nodes.sort((a, b) => a.x - b.x);
 
-        // Clamp to prevent overflow at edges
-        newX = Math.max(padding, Math.min(newX, layoutWidth - cardWidth - padding));
+    const subRows: (typeof sanitizedNodes)[] = [];
+    let currentRow: typeof sanitizedNodes = [];
+    let currentRowWidth = 0;
 
+    lvl.nodes.forEach(node => {
+      const neededWidth = currentRow.length === 0 ? cardWidth : cardWidth + horizontalGap;
+      if (currentRowWidth + neededWidth <= maxAvailableWidth || currentRow.length === 0) {
+        currentRow.push(node);
+        currentRowWidth += neededWidth;
+      } else {
+        subRows.push(currentRow);
+        currentRow = [node];
+        currentRowWidth = cardWidth;
+      }
+    });
+    if (currentRow.length > 0) {
+      subRows.push(currentRow);
+    }
+
+    subRows.forEach(sr => {
+      const srWidth = sr.length * cardWidth + (sr.length - 1) * horizontalGap;
+      const startX = (maxAvailableWidth - srWidth) / 2;
+
+      sr.forEach((node, idx) => {
         layoutedNodes.push({
           ...node,
-          x: newX,
+          x: startX + idx * (cardWidth + horizontalGap),
           y: currentY
         });
       });
 
-      currentY += cardHeight + verticalGap;
-    } else {
-      // 2b. Sibling nodes do not fit: wrap them like CSS flex-wrap
-      let subRow: typeof sanitizedNodes = [];
-      let subRowWidth = 0;
-
-      const subRows: (typeof sanitizedNodes)[] = [];
-
-      lvl.nodes.forEach(node => {
-        const neededWidth = subRow.length === 0 ? cardWidth : cardWidth + horizontalGap;
-        if (subRowWidth + neededWidth <= maxAvailableWidth) {
-          subRow.push(node);
-          subRowWidth += neededWidth;
-        } else {
-          subRows.push(subRow);
-          subRow = [node];
-          subRowWidth = cardWidth;
-        }
-      });
-      if (subRow.length > 0) {
-        subRows.push(subRow);
-      }
-
-      // Position each sub-row
-      subRows.forEach(sr => {
-        const srWidth = sr.length * cardWidth + (sr.length - 1) * horizontalGap;
-        const startX = (layoutWidth - srWidth) / 2;
-
-        sr.forEach((node, idx) => {
-          layoutedNodes.push({
-            ...node,
-            x: startX + idx * (cardWidth + horizontalGap),
-            y: currentY
-          });
-        });
-
-        currentY += cardHeight + verticalGap;
-      });
-    }
+      // Advance Y for the next sub-row/level
+      currentY += 140 /* estimated node height */ + verticalGap;
+    });
   });
+
+  // 3. Compute graph bounds and zero-align to eliminate massive top/left gaps
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  
+  layoutedNodes.forEach(n => {
+    minX = Math.min(minX, n.x);
+    maxX = Math.max(maxX, n.x + cardWidth);
+    minY = Math.min(minY, n.y);
+    maxY = Math.max(maxY, n.y + 140);
+  });
+  
+  if (minX === Infinity) minX = 0;
+  if (minY === Infinity) minY = 0;
+
+  layoutedNodes.forEach(n => {
+    n.x -= minX;
+    n.y -= minY;
+  });
+
+  const graphWidth = maxX - minX;
+  const graphHeight = maxY - minY;
 
   return {
     nodes: layoutedNodes,
-    edges: edges.map(edge => ({ ...edge, points: [] })),
-    width: layoutWidth,
-    height: currentY + 40,
+    edges: edges.map(edge => ({ ...edge, points: [] })), // We'll let EdgeRenderer handle precise routing
+    width: graphWidth,
+    height: graphHeight,
     minX: 0,
     minY: 0,
     canvasAppearance: canvasAppearance ?? defaultCanvasAppearance,

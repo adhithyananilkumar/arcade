@@ -70,54 +70,27 @@ export const HoverPreview: React.FC<HoverPreviewProps> = ({ nodeId, anchorRect, 
     const elWidth = 340;
     const padding = 16;
 
-    // Viewport-aware calculations of available spaces around the node card
+
     const spaceRight = window.innerWidth - anchorRect.right;
     const spaceLeft = anchorRect.left;
     const spaceBottom = window.innerHeight - anchorRect.bottom;
     const spaceTop = anchorRect.top;
 
-    let arrowDir = 'left';
-    let targetLeft = 0;
-    let targetTop = 0;
+    const spaces = [
+      { dir: 'left', space: spaceRight, targetLeft: anchorRect.right + 16, targetTop: anchorRect.top + (anchorRect.height - elHeight) / 2, valid: spaceRight >= elWidth + 16 },
+      { dir: 'right', space: spaceLeft, targetLeft: anchorRect.left - elWidth - 16, targetTop: anchorRect.top + (anchorRect.height - elHeight) / 2, valid: spaceLeft >= elWidth + 16 },
+      { dir: 'top', space: spaceBottom, targetLeft: anchorRect.left + (anchorRect.width - elWidth) / 2, targetTop: anchorRect.bottom + 16, valid: spaceBottom >= elHeight + 16 },
+      { dir: 'bottom', space: spaceTop, targetLeft: anchorRect.left + (anchorRect.width - elWidth) / 2, targetTop: anchorRect.top - elHeight - 16, valid: spaceTop >= elHeight + 16 }
+    ];
 
-    // Priority Check: Right -> Left -> Bottom -> Top
-    if (spaceRight >= elWidth + 16) {
-      arrowDir = 'left';
-      targetLeft = anchorRect.right + 16;
-      targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
-    } else if (spaceLeft >= elWidth + 16) {
-      arrowDir = 'right';
-      targetLeft = anchorRect.left - elWidth - 16;
-      targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
-    } else if (spaceBottom >= elHeight + 16) {
-      arrowDir = 'top';
-      targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
-      targetTop = anchorRect.bottom + 16;
-    } else if (spaceTop >= elHeight + 16) {
-      arrowDir = 'bottom';
-      targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
-      targetTop = anchorRect.top - elHeight - 16;
-    } else {
-      // Fallback: Choose the side with maximum free space and center
-      const maxSpace = Math.max(spaceRight, spaceLeft, spaceBottom, spaceTop);
-      if (maxSpace === spaceRight) {
-        arrowDir = 'left';
-        targetLeft = anchorRect.right + 16;
-        targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
-      } else if (maxSpace === spaceLeft) {
-        arrowDir = 'right';
-        targetLeft = anchorRect.left - elWidth - 16;
-        targetTop = anchorRect.top + (anchorRect.height - elHeight) / 2;
-      } else if (maxSpace === spaceBottom) {
-        arrowDir = 'top';
-        targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
-        targetTop = anchorRect.bottom + 16;
-      } else {
-        arrowDir = 'bottom';
-        targetLeft = anchorRect.left + (anchorRect.width - elWidth) / 2;
-        targetTop = anchorRect.top - elHeight - 16;
-      }
-    }
+    const validSpaces = spaces.filter(s => s.valid);
+    let bestSpace = validSpaces.length > 0 
+      ? validSpaces.reduce((prev, curr) => (curr.space > prev.space ? curr : prev))
+      : spaces.reduce((prev, curr) => (curr.space > prev.space ? curr : prev));
+
+    let arrowDir = bestSpace.dir;
+    let targetLeft = bestSpace.targetLeft;
+    let targetTop = bestSpace.targetTop;
 
     // Clamp coordinates to keep preview fully visible on screen
     const clampedLeft = Math.max(padding, Math.min(targetLeft, window.innerWidth - elWidth - padding));

@@ -17,8 +17,8 @@ interface ViewerHeaderProps {
   // Search & Filter Props
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  selectedFilter: 'all' | 'completed' | 'current' | 'locked';
-  setSelectedFilter: (filter: 'all' | 'completed' | 'current' | 'locked') => void;
+  selectedFilter: 'all' | 'completed' | 'current';
+  setSelectedFilter: (filter: 'all' | 'completed' | 'current') => void;
   
   // Continue Learning Action
   onContinueLearning: () => void;
@@ -142,7 +142,7 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
 
         {/* Filter Switcher Tabs */}
         <div className="flex bg-gray-50/70 border border-gray-100/60 p-1 rounded-xl w-full sm:w-auto">
-          {(['all', 'completed', 'current', 'locked'] as const).map((f) => (
+          {(['all', 'completed', 'current'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setSelectedFilter(f)}

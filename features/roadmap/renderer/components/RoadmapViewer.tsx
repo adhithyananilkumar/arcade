@@ -19,15 +19,16 @@ interface RoadmapViewerProps {
 }
 
 export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, description, graphJson }) => {
-  const { init, focusMode, activeNodeId, setActiveNode, progress, lockedNodeIds } = useRoadmapViewerStore();
+  const { init, focusMode, activeNodeId, setActiveNode, progress } = useRoadmapViewerStore();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
-  const [containerWidth, setContainerWidth] = useState(960);
+  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerHeight, setContainerHeight] = useState(800);
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'current' | 'locked'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'current'>('all');
 
   const [activeHoverNodeId, setActiveHoverNodeId] = useState<string | null>(null);
   const [hoverAnchorRect, setHoverAnchorRect] = useState<DOMRect | null>(null);
@@ -82,11 +83,13 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
   // Track scroll container width dynamically to reflow layouts
   const containerRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
-    setContainerWidth(node.clientWidth || 960);
+    setContainerWidth(node.clientWidth || 1200);
+    setContainerHeight(node.clientHeight || 800);
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setContainerWidth(entry.contentRect.width || 960);
+        setContainerWidth(entry.contentRect.width || 1200);
+        setContainerHeight(entry.contentRect.height || 800);
       }
     });
 
@@ -111,7 +114,6 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
     graph.nodes.forEach(node => {
       const nodeProgress = progress[node.id];
       const isCompleted = nodeProgress?.status === 'COMPLETED';
-      const isLocked = lockedNodeIds.has(node.id);
       let matches = true;
 
       if (hasActiveSearch) {
@@ -126,12 +128,11 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
           // Identify the current step
           const nextNode = graph.nodes.find(n => {
             const p = progress[n.id];
-            return p?.status !== 'COMPLETED' && !lockedNodeIds.has(n.id);
+            return p?.status !== 'COMPLETED';
           });
           const isActiveStep = activeNodeId === node.id || (activeNodeId === null && nextNode?.id === node.id);
           matches = matches && isActiveStep;
         }
-        if (selectedFilter === 'locked') matches = matches && isLocked;
       }
 
       if (!matches) {
@@ -139,15 +140,14 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
       }
     });
     return dimmed;
-  }, [graph.nodes, progress, lockedNodeIds, searchQuery, selectedFilter, activeNodeId]);
+  }, [graph.nodes, progress, searchQuery, selectedFilter, activeNodeId]);
 
   // Persistent Continue Learning Action - Scrolls viewport directly to the active lesson card
   const handleContinueLearning = useCallback(() => {
     const nextNode = graph.nodes.find(node => {
       const nodeProgress = progress[node.id];
       const isCompleted = nodeProgress?.status === 'COMPLETED';
-      const isLocked = lockedNodeIds.has(node.id);
-      return !isCompleted && !isLocked;
+      return !isCompleted;
     });
     
     const targetId = nextNode?.id || graph.nodes[0]?.id;
@@ -158,7 +158,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
         setActiveNode(targetId);
       }
     }
-  }, [graph.nodes, progress, lockedNodeIds, setActiveNode]);
+  }, [graph.nodes, progress, setActiveNode]);
 
   // Initialize store once on mount
   useEffect(() => {
@@ -343,35 +343,43 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
       <div 
         ref={containerRef}
         id="roadmap-scroll-container"
-        className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-12 relative w-full flex flex-col items-center scrollbar-thin scrollbar-thumb-gray-200 scroll-smooth"
-        style={{
-          backgroundColor: canvasAppearance?.backgroundType === 'color'
-            ? canvasAppearance.backgroundColor
-            : canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
-            ? 'transparent'
-            : undefined,
-          backgroundImage: canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
-            ? canvasAppearance.gradient
-            : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.url
-            ? `url(${canvasAppearance.image.url})`
-            : undefined,
-          backgroundSize: canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fill'
-            ? 'cover'
-            : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fit'
-            ? 'contain'
-            : undefined,
-          backgroundRepeat: canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'
-            ? 'repeat'
-            : 'no-repeat',
-          backgroundPosition: 'center',
-        }}
+        className="flex-1 overflow-auto relative w-full flex scrollbar-thin scrollbar-thumb-gray-200 scroll-smooth"
+        style={{ backgroundColor: canvasAppearance?.backgroundColor || '#FAFAFA' }}
       >
-        {/* Max width container centering the layout absolutely */}
+        <div 
+          className="absolute inset-0 z-0 pointer-events-none" 
+          style={{
+            backgroundImage: canvasAppearance?.backgroundPattern === 'grid' 
+              ? `linear-gradient(to right, ${canvasAppearance?.gridColor || '#e2e8f0'} 1px, transparent 1px), linear-gradient(to bottom, ${canvasAppearance?.gridColor || '#e2e8f0'} 1px, transparent 1px)`
+              : canvasAppearance?.backgroundPattern === 'dots'
+              ? `radial-gradient(circle, ${canvasAppearance?.gridColor || '#cbd5e1'} 1px, transparent 1px)`
+              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.url
+              ? `url(${canvasAppearance.image.url})`
+              : canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
+              ? canvasAppearance.gradient
+              : undefined,
+            backgroundSize: canvasAppearance?.backgroundPattern === 'grid' || canvasAppearance?.backgroundPattern === 'dots'
+              ? `${canvasAppearance?.gridSize || 20}px ${canvasAppearance?.gridSize || 20}px`
+              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fill'
+              ? 'cover'
+              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fit'
+              ? 'contain'
+              : undefined,
+            backgroundRepeat: (canvasAppearance?.backgroundPattern || (canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'))
+              ? 'repeat'
+              : 'no-repeat',
+            backgroundPosition: 'center',
+            opacity: canvasAppearance?.backgroundPattern ? 0.15 : 1
+          }} 
+        />
+        {/* Dynamic Scale & Center Wrapper */}
         <div 
           id="roadmap-content-wrapper"
-          className="w-full max-w-[960px] relative transition-all duration-300 mx-auto"
+          className="relative transition-all duration-300 origin-top-left z-10"
           style={{ 
-            height: `${graph.height}px` 
+            width: `${graph.width}px`,
+            height: `${graph.height}px`,
+            transform: `translate(${Math.max(80, (containerWidth - graph.width * Math.min(1, (containerWidth - 160) / graph.width)) / 2)}px, ${Math.max(80, (containerHeight - graph.height * Math.min(1, (containerHeight - 160) / graph.height)) / 2)}px) scale(${Math.min(1, (containerWidth - 160) / graph.width, (containerHeight - 160) / graph.height)})`
           }}
         >
           {/* Synchronous connection lines */}

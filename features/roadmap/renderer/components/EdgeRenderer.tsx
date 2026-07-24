@@ -60,37 +60,44 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
         const dx = tx - sx;
         const dy = ty - sy;
 
-        // Smooth orthogonal path with rounded corners
+        // Smooth orthogonal path with rounded corners. Gutter avoidance logic.
         let pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+        const R = Math.min(16, Math.abs(dx) / 2, Math.abs(dy) / 2 || 100);
 
-        const isHorizontal = srcH === 'source-right' || srcH === 'target-left'
-                          || tgtH === 'target-left'   || tgtH === 'source-right';
-
-        if (isHorizontal && Math.abs(dx) > 8) {
-          // Horizontal routing: go right/left then turn
-          const mx = sx + dx / 2;
-          const R = Math.min(16, Math.abs(dx) / 2, Math.abs(dy) / 2 || 100);
-          if (Math.abs(dy) < 8) {
-            pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
-          } else {
-            const dySign = Math.sign(dy);
-            pathD = `M ${sx} ${sy} ` +
-                    `L ${mx - R * (dx < 0 ? -1 : 1)} ${sy} ` +
-                    `Q ${mx} ${sy} ${mx} ${sy + dySign * R} ` +
-                    `L ${mx} ${ty - dySign * R} ` +
-                    `Q ${mx} ${ty} ${mx + R * (dx < 0 ? -1 : 1)} ${ty} ` +
-                    `L ${tx} ${ty}`;
-          }
-        } else if (!isHorizontal && Math.abs(dx) > 8 && dy > 16) {
-          const my = sy + dy / 2;
-          const R = Math.min(16, dy / 2, Math.abs(dx) / 2);
+        if (Math.abs(dx) > 8 && Math.abs(dy) > 8) {
           const dxSign = Math.sign(dx);
-          pathD = `M ${sx} ${sy} ` +
-                  `L ${sx} ${my - R} ` +
-                  `Q ${sx} ${my} ${sx + dxSign * R} ${my} ` +
-                  `L ${tx - dxSign * R} ${my} ` +
-                  `Q ${tx} ${my} ${tx} ${my + R} ` +
-                  `L ${tx} ${ty}`;
+          const dySign = Math.sign(dy);
+
+          if (srcH === 'bottom' && tgtH === 'top') {
+            // Standard vertical flow - route through the gutter midpoint
+            const midY = sy + (dy / 2);
+            pathD = `M ${sx} ${sy} ` +
+                    `L ${sx} ${midY - R * dySign} ` +
+                    `Q ${sx} ${midY} ${sx + dxSign * R} ${midY} ` +
+                    `L ${tx - dxSign * R} ${midY} ` +
+                    `Q ${tx} ${midY} ${tx} ${midY + R * dySign} ` +
+                    `L ${tx} ${ty}`;
+          } else if ((srcH === 'source-right' || srcH === 'target-left') && (tgtH === 'source-right' || tgtH === 'target-left')) {
+            // Horizontal flow - route through horizontal gutter midpoint
+            const midX = sx + (dx / 2);
+            pathD = `M ${sx} ${sy} ` +
+                    `L ${midX - R * dxSign} ${sy} ` +
+                    `Q ${midX} ${sy} ${midX} ${sy + dySign * R} ` +
+                    `L ${midX} ${ty - dySign * R} ` +
+                    `Q ${midX} ${ty} ${midX + R * dxSign} ${ty} ` +
+                    `L ${tx} ${ty}`;
+          } else {
+            // Mixed or fallback - simple L shape
+            if (srcH === 'bottom' || srcH === 'top') {
+              pathD = `M ${sx} ${sy} L ${sx} ${ty - R * dySign} Q ${sx} ${ty} ${sx + dxSign * R} ${ty} L ${tx} ${ty}`;
+            } else {
+              pathD = `M ${sx} ${sy} L ${tx - R * dxSign} ${sy} Q ${tx} ${sy} ${tx} ${sy + dySign * R} L ${tx} ${ty}`;
+            }
+          }
+        } else if (Math.abs(dx) > 8) { // purely horizontal
+          pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
+        } else if (Math.abs(dy) > 8) { // purely vertical
+          pathD = `M ${sx} ${sy} L ${tx} ${ty}`;
         }
 
         const isFaded = focusMode && activeNodeId !== null && edge.source !== activeNodeId && edge.target !== activeNodeId;
@@ -107,9 +114,8 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
           edgeStatus = 'current';
         }
 
-        // Map node BG color to edge theme color
         const BG_MAP: Record<string, string> = {
-          'bg-white':        '#d1d5db', // Default pending connection color
+          'bg-white':        '#d1d5db',
           'bg-indigo-50':    '#c7d2fe',
           'bg-indigo-600':   '#4f46e5',
           'bg-rose-500':     '#f43f5e',
@@ -127,34 +133,39 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
         const uniqueKey = edge.id ? `${edge.id}-${index}` : `${edge.source}-${edge.target}-${index}`;
 
         return (
-          <g key={uniqueKey} style={{ opacity: isFaded ? 0.15 : isEdgeDimmed ? 0.1 : 1, transition: 'opacity 0.2s ease' }}>
-            {/* Background Path (theme color or green if completed) */}
-            <path
-              d={pathD}
+          <motion.g 
+            key={uniqueKey} 
+            animate={{ opacity: isFaded ? 0.15 : isEdgeDimmed ? 0.1 : 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Background Path */}
+            <motion.path
+              animate={{ d: pathD }}
+              transition={{ duration: 0.3 }}
               fill="none"
               stroke={edgeStatus === 'completed' ? '#22C55E' : themeColor}
               strokeWidth={isHovered ? 5 : 4}
               strokeLinejoin="round"
               strokeLinecap="round"
-              style={{ transition: 'stroke-width 0.2s, stroke 0.2s' }}
             />
             
-            {/* Completed Path (Green drawing animation + energy flow) */}
+            {/* Completed Path */}
             {edgeStatus === 'completed' && !isFaded && (
               <>
                 <motion.path
-                  d={pathD}
+                  animate={{ d: pathD, pathLength: 1 }}
+                  transition={{ d: { duration: 0.3 }, pathLength: { duration: 0.8, ease: "easeInOut" } }}
+                  initial={{ pathLength: 0 }}
                   fill="none"
                   stroke="#22C55E"
                   strokeWidth={isHovered ? 5 : 4}
                   strokeLinejoin="round"
                   strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.4))' }}
                 />
                 <motion.path
-                  d={pathD}
+                  animate={{ d: pathD, strokeDashoffset: [-116, 0] }}
+                  transition={{ d: { duration: 0.3 }, strokeDashoffset: { duration: 1.6, repeat: Infinity, ease: "linear" } }}
                   fill="none"
                   stroke="#4ADE80"
                   strokeWidth={isHovered ? 5.5 : 4.5}
@@ -162,28 +173,30 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                   strokeLinecap="round"
                   opacity={0.8}
                   strokeDasharray="16 100"
-                  animate={{ strokeDashoffset: [-116, 0] }}
-                  transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
                 />
               </>
             )}
             
-            {/* Current Path (Theme drawing & green flow animation) */}
+            {/* Current Path */}
             {edgeStatus === 'current' && !isFaded && (
               <>
                 <motion.path
-                  d={pathD}
+                  animate={{ d: pathD, pathLength: 1, opacity: [0.6, 1, 0.6] }}
+                  transition={{ 
+                    d: { duration: 0.3 },
+                    pathLength: { duration: 0.6, ease: "easeOut" },
+                    opacity: { duration: 2.2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  initial={{ pathLength: 0 }}
                   fill="none"
                   stroke={themeColor}
                   strokeWidth={isHovered ? 5 : 4}
                   strokeLinejoin="round"
                   strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.6, ease: "easeOut" }}
                 />
                 <motion.path
-                  d={pathD}
+                  animate={{ d: pathD, strokeDashoffset: [-140, 0] }}
+                  transition={{ d: { duration: 0.3 }, strokeDashoffset: { duration: 1.8, repeat: Infinity, ease: "linear" } }}
                   fill="none"
                   stroke="#10B981"
                   strokeWidth={isHovered ? 6 : 4.5}
@@ -191,20 +204,19 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                   strokeLinecap="round"
                   opacity={0.8}
                   strokeDasharray="20 120"
-                  animate={{ strokeDashoffset: [-140, 0] }}
-                  transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
                 />
               </>
             )}
 
             {/* Hover Highlight Glow */}
             {isHovered && !isFaded && (
-              <path
-                d={pathD}
+              <motion.path
+                animate={{ d: pathD }}
+                transition={{ duration: 0.3 }}
                 fill="none"
-                stroke={edgeStatus === 'completed' ? '#4ADE80' : '#818CF8'}
+                stroke={edgeStatus === 'completed' ? '#4ADE80' : themeColor}
                 strokeWidth={8}
-                opacity={0.2}
+                opacity={0.25}
                 strokeLinejoin="round"
                 strokeLinecap="round"
               />
@@ -238,7 +250,7 @@ export const EdgeRenderer: React.FC<EdgeRendererProps> = ({ edges, dimmedNodeIds
                 transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               />
             )}
-          </g>
+          </motion.g>
         );
       })}
     </svg>
