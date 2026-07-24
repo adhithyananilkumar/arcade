@@ -1,5 +1,10 @@
 # Arcade Frontend Architecture
 
+> **Exception (human-approved, branch `mockui`):** a root-level `mock/` folder
+> was added as a dev-only, additive mock-data/auth-bypass layer. This was an
+> explicit, requested addition — not a violation to revert. See
+> `mock/README.md` for what it is and why it's safe to merge to `main`.
+
 ## Read First
 
 Before modifying the codebase, read:
@@ -66,3 +71,14 @@ Otherwise, leave existing code unchanged.
 app ↓ apps ↓ domains ↓ infrastructure ↓ shared
 
 Reverse dependencies are forbidden. Every domain exposes only `index.ts`. Never deep import another domain.
+
+## Mock-first dev mode
+
+See `mock/README.md` for the full picture. The one rule that matters when
+editing this repo: **write every API-calling function exactly as if it were
+prod-ready and talking to the real backend.** Mocking happens transparently
+underneath `infrastructure/http/api.ts` — never special-case
+`NEXT_PUBLIC_USE_MOCKS`/`NEXT_PUBLIC_AUTH_BYPASS` inside a domain, app, or
+page/component. Never import from `mock/` outside
+`infrastructure/http/api.ts`, `apps/core/components/AuthInitializer.tsx`, and
+`app/api/mock/**` — eslint enforces this.

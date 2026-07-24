@@ -1,0 +1,32 @@
+[
+  {
+    "id": "roadmap-1",
+    "title": "Frontend Engineering Path",
+    "description": "From HTML basics to production React apps.",
+    "ownerType": "USER",
+    "ownerId": "00000000-0000-0000-0000-000000000001",
+    "graphJson": "{\"nodes\":[],\"edges\":[]}",
+    "version": 3,
+    "status": "published",
+    "publishedAt": "2026-04-01T00:00:00.000Z",
+    "publishedBy": "00000000-0000-0000-0000-000000000001",
+    "createdById": "00000000-0000-0000-0000-000000000001",
+    "createdByName": "Dev User",
+    "createdAt": "2026-01-10T00:00:00.000Z",
+    "updatedAt": "2026-04-01T00:00:00.000Z"
+  },
+  {
+    "id": "roadmap-2",
+    "title": "Cloud Native Fundamentals",
+    "description": "Containers, orchestration, and CI/CD.",
+    "ownerType": "USER",
+    "ownerId": "00000000-0000-0000-0000-000000000002",
+    "graphJson": "{\"nodes\":[],\"edges\":[]}",
+    "version": 1,
+    "status": "draft",
+    "createdById": "00000000-0000-0000-0000-000000000002",
+    "createdByName": "Priya Nair",
+    "createdAt": "2026-05-20T00:00:00.000Z",
+    "updatedAt": "2026-05-20T00:00:00.000Z"
+  }
+]

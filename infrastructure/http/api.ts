@@ -23,7 +23,11 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthService } from "@/infrastructure/auth/auth.service";
 import { queryClient } from "../state/queryClient";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+// Dev-only mock mode: see mock/README.md. Flipping NEXT_PUBLIC_USE_MOCKS off
+// (or unset) restores real-backend behavior with no other code changes.
+const BASE_URL = process.env.NEXT_PUBLIC_USE_MOCKS === "true"
+  ? "/api/mock"
+  : process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 // A single in-flight refresh shared across concurrent 401s
 let refreshPromise: Promise<boolean> | null = null;

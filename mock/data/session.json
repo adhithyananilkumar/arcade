@@ -1,0 +1,20 @@
+{
+  "user": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "email": "dev@arcade.local",
+    "firstName": "Dev",
+    "lastName": "User",
+    "fullName": "Dev User",
+    "username": "devuser",
+    "emailVerified": true,
+    "onboardingCompleted": true,
+    "avatarUrl": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=200&h=200&fit=crop",
+    "platformRoles": [
+      { "id": "role-platform-admin", "code": "PLATFORM_ADMIN", "name": "Platform Admin" }
+    ],
+    "channelMemberships": [],
+    "permissions": ["ALL"],
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  "accessToken": "mock-access-token"
+}

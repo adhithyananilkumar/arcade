@@ -1,6 +1,21 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+// ---- Mock-mode / auth-bypass production guard --------------------------
+// Defense in depth alongside the CI check in scripts/check-mock-safety.mjs:
+// this throws at build time (not just in CI) if either dev-only flag is set
+// in a production build, so it's structurally impossible to ship. See
+// mock/README.md.
+if (
+  process.env.NODE_ENV === "production" &&
+  (process.env.NEXT_PUBLIC_USE_MOCKS === "true" || process.env.NEXT_PUBLIC_AUTH_BYPASS === "true")
+) {
+  throw new Error(
+    "NEXT_PUBLIC_USE_MOCKS / NEXT_PUBLIC_AUTH_BYPASS cannot be enabled in a production build."
+  );
+}
+// ---------------------------------------------------------------------------
+
 const nextConfig: NextConfig = {
   // Pin the workspace root to this app. A stray package-lock.json in the parent
   // directory otherwise makes Turbopack infer the parent as root, which breaks
