@@ -11,7 +11,6 @@ import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, X, Check, AlertCircle, Video, Image as ImageIcon } from "lucide-react";
 
 import { Button } from "@/shared/design-system/ui/button";
-import { cn } from "@/shared/utils/utils";
 import { useUploadQueueStore, type UploadItem } from "../lib/uploadQueueStore";
 
 function formatEta(seconds: number): string {
@@ -53,6 +52,32 @@ function useAggregateStatusText(items: UploadItem[]): string {
   return formatEta(remaining / rate);
 }
 
+// Google-Drive-style ring: an SVG stroke arc (not a conic-gradient fill), since a
+// filled wedge reads as a solid dot at low percentages — a thin arc against a light
+// track is what actually reads as "progress" at a glance.
+function CircularProgress({ progress }: { progress: number }) {
+  const radius = 7;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - progress / 100);
+  return (
+    <svg viewBox="0 0 18 18" className="size-[18px] -rotate-90">
+      <circle cx="9" cy="9" r={radius} fill="none" stroke="var(--muted)" strokeWidth="2" />
+      <circle
+        cx="9"
+        cy="9"
+        r={radius}
+        fill="none"
+        stroke="var(--primary)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-[stroke-dashoffset] duration-200 ease-linear"
+      />
+    </svg>
+  );
+}
+
 function StatusIndicator({ item, onCancel, onRetry }: { item: UploadItem; onCancel: () => void; onRetry: () => void }) {
   if (item.status === "done") {
     return (
@@ -75,11 +100,6 @@ function StatusIndicator({ item, onCancel, onRetry }: { item: UploadItem; onCanc
   }
 
   // queued or uploading: progress ring by default, swaps to a cancel button on hover.
-  const ringStyle =
-    item.status === "uploading"
-      ? { background: `conic-gradient(var(--primary) ${item.progress * 3.6}deg, var(--muted) 0deg)` }
-      : undefined;
-
   return (
     <button
       type="button"
@@ -87,14 +107,10 @@ function StatusIndicator({ item, onCancel, onRetry }: { item: UploadItem; onCanc
       aria-label="Cancel upload"
       className="group/ring relative flex size-5 items-center justify-center rounded-full"
     >
-      <span
-        className={cn(
-          "absolute inset-0 rounded-full border-2 border-muted-foreground/30 group-hover/ring:hidden",
-          item.status === "uploading" && "border-none"
-        )}
-        style={ringStyle}
-      />
-      <span className="absolute inset-[2px] hidden rounded-full bg-foreground text-background group-hover/ring:flex group-hover/ring:items-center group-hover/ring:justify-center">
+      <span className="transition-opacity group-hover/ring:opacity-0">
+        <CircularProgress progress={item.status === "uploading" ? item.progress : 0} />
+      </span>
+      <span className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground text-background opacity-0 transition-opacity group-hover/ring:opacity-100">
         <X className="size-3" />
       </span>
     </button>

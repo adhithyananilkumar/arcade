@@ -47,7 +47,7 @@ const runtime = new Map<string, RuntimeEntry>();
 
 // Completed/cancelled rows linger briefly so the success checkmark is actually visible,
 // then clean themselves out of the list.
-const AUTO_REMOVE_MS = 2500;
+const AUTO_REMOVE_MS = 2000;
 
 interface UploadQueueState {
   items: UploadItem[];
