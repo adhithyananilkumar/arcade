@@ -1211,7 +1211,10 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       </header>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1">
+      <div 
+        className="relative min-h-0 flex-1"
+        style={{ "--arcade-toolbar-top": "44px" } as React.CSSProperties}
+      >
         {/* ── Floating collapsible sidebar: course tree ─────────────── */}
         <aside className="absolute left-3 top-14 z-20 flex">
           {!sidebarOpen ? (

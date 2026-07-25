@@ -61,8 +61,7 @@ export default function LearnerDock() {
 
   // Hide the dock on content studio, roadmaps, settings pages, and exam pages
   if (
-    pathname.startsWith('/content') ||
-    pathname.startsWith('/roadmaps') ||
+    pathname.startsWith('/studio') ||
     pathname.startsWith('/settings') ||
     pathname.includes('/exam/')
   ) {

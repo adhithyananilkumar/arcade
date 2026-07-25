@@ -2,7 +2,7 @@
 
 > **Status:** Reference architecture (target state). Design-approved, incrementally adopted.
 > **Scope:** Both repositories — `arcade` (Next.js frontend) and `arcade-backend` (Spring Boot backend).
-> **Branch context:** authored on `studio` while the content editor-engine is being built.
+> **Branch context:** authored on `render-engine` while the content editor-engine is being built.
 > **Last updated:** 2026-07-15.
 
 This document is the **single, authoritative map of how the Arcade platform is
