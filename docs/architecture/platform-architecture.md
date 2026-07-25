@@ -1162,3 +1162,103 @@ added at the end of the migration always has something to point at.
 | Date | Change |
 |---|---|
 | 2026-07-24 | Content moved from raw user ownership to channel ownership; added suspension grace period, force-suspend, and enrolled-learner continuity guarantees. See §15. |
+
+---
+
+## 16. Generic Notification System (2026-07-25)
+
+**Context.** Before this change, "notifications" meant one thing only: a polled list of
+pending `ChannelInvitation` rows, rendered directly in `LearnerNavbar.tsx` with hardcoded
+copy ("You are invited to join as X") that didn't even use the channel name, inviter
+name, or timestamp already present on the DTO. There was no record of *anything else* —
+a channel being approved or rejected, a deletion request being approved or rejected, an
+invitation being accepted — and the one thing that did exist vanished the instant a user
+acted on it (accepting an invite removed it from the pending list, which was the only
+place it ever showed up). Separately, a real, working WebSocket/STOMP transport already
+existed (`WebSocketConfig`, JWT-authenticated on CONNECT, backing the forum's live
+comment/upvote notifications) — but nothing in the channel/platform side of the app used
+it.
+
+**The fix generalizes the notification mechanism instead of adding another
+one-off list.** `com.arcade.backend.infrastructure.notification.Notification` is a single,
+context-agnostic entity: any bounded context can fire one via `NotificationService.send`
+without the notification system needing to know anything about that context's domain
+model. It lives under **Infrastructure**, not any single domain — the same reasoning as
+`FileStorageService`: it's a technical capability other contexts consume, not something
+that belongs to Platform, Studio, or Community specifically.
+
+### 16.1 Adding a new notification type from anywhere in the app
+
+This is the whole point of the design — it should be small:
+
+1. Pick a `type` string. There is no central enum to extend — `Notification.type` is a
+   plain `String` column specifically so a new context never has to modify a shared file
+   to add its own event. (Callers that want compile-time safety for their own set of
+   types can do what `platform.tenancy.ChannelNotificationType` does: a tiny `public
+   static final String` constants class living next to the code that fires them.)
+2. Call `notificationService.send(recipientId, type, title, message, actorId, linkUrl,
+   metadata)` from wherever the event happens. `actorId`, `linkUrl`, and `metadata` are
+   all nullable — not every notification has a "who did this," a place to navigate to, or
+   extra structured data.
+3. That's it. No frontend change is required for the notification to show up, be
+   counted as unread, and be markable read — `NotificationList` (see §16.3) renders
+   `title`/`message`/`createdAt` generically and links to `linkUrl` if present. A
+   frontend change is only needed if the *rendering* itself should be richer than
+   title/message/timestamp (e.g. rendering `metadata` into something structured).
+
+Channel/platform lifecycle events already wired this way (`platform.tenancy.
+ChannelService`/`ChannelStaffService`, types in `ChannelNotificationType`):
+`CHANNEL_APPROVED`, `CHANNEL_REJECTED`, `DELETION_APPROVED`, `DELETION_REJECTED`,
+`STAFF_INVITED`, `STAFF_INVITE_ACCEPTED`.
+
+### 16.2 Delivery: persisted first, pushed live second
+
+`NotificationService.send` always writes the row first, then pushes it live via
+`SimpMessagingTemplate.convertAndSendToUser(recipientEmail, "/queue/notifications", ...)`
+over the existing STOMP transport. This ordering is deliberate: a notification must be
+recoverable on next page load (`GET /api/v1/notifications`) whether or not the recipient
+was online when it fired — the live push is a nice-to-have on top of that, never the only
+delivery path. `actorName` is a denormalized snapshot captured at send time (same pattern
+as `ChannelAuditLog#channelNameSnapshot`), so a notification stays fully readable even if
+the actor's account is later deleted.
+
+**Never cleared on action.** Marking a notification read (`POST
+/api/v1/notifications/{id}/read`, or `/mark-all-read`) only flips `is_read` — it is never
+deleted. This was a deliberate fix for the old behavior, where accepting an invitation
+made it disappear from the only list it ever appeared in. A user's notification history
+is now a permanent (if eventually paginated-away) record, not an ephemeral queue.
+
+### 16.3 Frontend
+
+`arcade/domains/notifications/` — generic, no channel/forum-specific knowledge:
+- `api/notification.service.ts` — REST client for list/unread-count/mark-all-read/mark-read.
+- `hooks/useNotifications.ts` — initial page + unread count via REST, then live updates
+  via `infrastructure/websocket/useWebSocket.ts` (a new, generic STOMP client hook,
+  intentionally decoupled from the forum-specific one in `domains/community/hooks/
+  useWebSocket.ts` — see below for why they weren't merged).
+- `components/NotificationList.tsx` — pure presentational (per the "domain UI is pure"
+  rule): takes `notifications`/`onItemClick` as props, renders title/message/timestamp,
+  links to `linkUrl` when present. No fetching, no side effects.
+
+`LearnerNavbar.tsx` composes this with the pre-existing actionable-invitations UI in one
+dropdown: an "Action Required" section for pending `ChannelInvitation`s with Accept/
+Decline buttons (unchanged mechanism — accepting/rejecting still calls the invitation
+endpoints directly, since those need a real state transition, not just an "acknowledged"
+flag), followed by the generic `NotificationList` for everything else. The unread badge
+counts both.
+
+**Why a second `useWebSocket` hook instead of reusing the forum's.** The community
+domain's `useWebSocket.ts` pushes its connection state into `useForumStore` — a
+forum-specific Zustand store — coupling the transport to one domain's state management.
+Rather than risk touching a working forum feature to generalize it, `infrastructure/
+websocket/useWebSocket.ts` is a clean equivalent with its own local `connected` state,
+suitable for any domain to depend on (per the `domains -> infrastructure` dependency
+direction). The two hooks currently duplicate the STOMP-client setup; unifying them by
+having the community hook delegate to the infrastructure one is a safe, natural follow-up
+that doesn't need to happen atomically with this change.
+
+### 16.4 Change log
+
+| Date | Change |
+|---|---|
+| 2026-07-25 | Added a generic, infrastructure-owned notification system (persisted + live WebSocket push) and migrated channel-lifecycle events onto it. See §16. |

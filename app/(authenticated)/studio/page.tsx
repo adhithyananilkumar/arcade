@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
@@ -164,9 +165,12 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
         description: description.trim() || undefined,
         channelId,
       });
+      toast.success(`"${name.trim()}" created`);
       router.push(`/studio/course/${course.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create course");
+      const message = err instanceof Error ? err.message : "Could not create course";
+      setError(message);
+      toast.error(message);
       setCreating(false);
     }
   }
@@ -283,9 +287,12 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
         description: description.trim() || undefined,
         channelId,
       });
+      toast.success(`"${title.trim()}" created`);
       router.push(`/studio/roadmap/${roadmap.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create roadmap");
+      const message = err instanceof Error ? err.message : "Could not create roadmap";
+      setError(message);
+      toast.error(message);
       setCreating(false);
     }
   }
@@ -414,9 +421,12 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
         visibility: "PRIVATE",
         channelId,
       });
+      toast.success(`"${title.trim()}" created`);
       router.push(`/studio/workshop/${workshop.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create workshop");
+      const message = err instanceof Error ? err.message : "Could not create workshop";
+      setError(message);
+      toast.error(message);
       setCreating(false);
     }
   }

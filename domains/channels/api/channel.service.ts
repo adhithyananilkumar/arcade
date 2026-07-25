@@ -122,6 +122,16 @@ export const channelService = {
     return response;
   },
 
+  /**
+   * Permanent, non-recoverable deletion — removes the channel and ALL of its content
+   * immediately, no grace period. `confirmName` must exactly match the channel's current name
+   * (type-to-confirm safety check enforced by the backend).
+   */
+  hardDeleteChannel: async (channelId: string, reason: string, confirmName: string): Promise<void> => {
+    const query = new URLSearchParams({ reason, confirmName }).toString();
+    await api.delete(`/api/v1/channels/${channelId}/hard-delete?${query}`);
+  },
+
   getMyChannelPermissions: async (channelId: string): Promise<string[]> => {
     const response = await api.get<string[]>(`/api/v1/channels/${channelId}/permissions`);
     return response;

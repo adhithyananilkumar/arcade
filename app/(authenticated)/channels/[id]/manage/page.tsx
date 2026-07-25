@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Channel, channelService } from "@/domains/channels";
+import { Channel, ChannelDeletionRequestDto, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
 import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, LayoutGrid, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -22,6 +22,7 @@ export default function ManageChannelPage() {
 
   const [channel, setChannel] = useState<Channel | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [pendingDeletionRequest, setPendingDeletionRequest] = useState<ChannelDeletionRequestDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -35,12 +36,16 @@ export default function ManageChannelPage() {
   const fetchChannel = async () => {
     try {
       setLoading(true);
-      const [channelData, perms] = await Promise.all([
+      const [channelData, perms, myDeletionRequests] = await Promise.all([
         channelService.getChannel(channelId),
-        channelService.getMyChannelPermissions(channelId)
+        channelService.getMyChannelPermissions(channelId),
+        channelService.getMyDeletionRequests().catch(() => [])
       ]);
       setChannel(channelData);
       setPermissions(perms);
+      setPendingDeletionRequest(
+        myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null
+      );
     } catch (error) {
       toast.error('Failed to load channel details');
       router.push('/');
@@ -60,6 +65,11 @@ export default function ManageChannelPage() {
   if (!channel) return null;
 
   const isSuspended = channel.status === 'SUSPENDED';
+  // Backend locks all mutations (settings/staff/roles/content) the moment a deletion request is
+  // submitted, before any admin has reviewed it — see ChannelStatusGuard. The UI should reflect
+  // that the same way it reflects a suspension, rather than letting the owner hit a surprise
+  // 403 on submit.
+  const isLocked = isSuspended || !!pendingDeletionRequest;
   // Content creation needs the actual channel.videos.upload permission (or owner's implicit
   // ALL) — bare access to this manage page doesn't imply that, so the button must reflect it.
   const canCreateContent = permissions.includes('ALL') || permissions.includes('channel.videos.upload');
@@ -73,6 +83,21 @@ export default function ManageChannelPage() {
         <ArrowLeft size={16} />
         Back to Dashboard
       </button>
+
+      {!isSuspended && pendingDeletionRequest && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="font-bold text-amber-700">Deletion request pending review</h3>
+            <p className="text-sm text-amber-700 mt-0.5">
+              You requested to delete this channel on{' '}
+              {new Date(pendingDeletionRequest.createdAt).toLocaleDateString()}. Until a
+              platform administrator reviews it, no settings, staff, role, or content changes
+              can be made.
+            </p>
+          </div>
+        </div>
+      )}
 
       {isSuspended && (
         <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
@@ -246,7 +271,7 @@ export default function ManageChannelPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <ChannelStaffManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} />
+          <ChannelStaffManager channelId={channelId} permissions={permissions} isSuspended={isLocked} />
         </motion.div>
       ) : (
         <motion.div
@@ -262,7 +287,7 @@ export default function ManageChannelPage() {
           <DialogHeader>
             <DialogTitle>Channel Settings</DialogTitle>
           </DialogHeader>
-          <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} />
+          <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} locked={isLocked} />
         </DialogContent>
       </Dialog>
     </div>

@@ -1,18 +1,23 @@
 import { api } from '@/infrastructure/http/api';
 
+export interface ChannelRoleSummary {
+  id: string;
+  displayName: string;
+}
+
 export interface ChannelStaff {
   id: string;
   userId: string;
   userName: string;
   email: string;
-  roleName: string;
+  roles: ChannelRoleSummary[];
   joinedAt: string;
 }
 
 export interface ChannelInvitation {
   id: string;
   email: string;
-  roleName: string;
+  roleNames: string[];
   status: string;
   channelName: string;
   invitedByName: string;
@@ -37,6 +42,13 @@ export class ChannelStaffService {
     await api.delete(`/api/v1/channels/${channelId}/staff/${userId}`);
   }
 
+  static async updateStaffRoles(channelId: string, userId: string, roleIds: string[]): Promise<ChannelStaff> {
+    const data = await api.patch<ChannelStaff>(`/api/v1/channels/${channelId}/staff/${userId}/roles`, {
+      roleIds
+    });
+    return data;
+  }
+
   static async getInvitations(channelId: string): Promise<ChannelInvitation[]> {
     const data = await api.get<Page<ChannelInvitation>>(
       `/api/v1/channels/${channelId}/staff/invitations?size=100`
@@ -44,10 +56,14 @@ export class ChannelStaffService {
     return data.content;
   }
 
-  static async inviteStaff(channelId: string, email: string, roleId: string): Promise<ChannelInvitation> {
+  static async inviteStaff(
+    channelId: string,
+    identifier: { email: string } | { username: string },
+    roleIds: string[]
+  ): Promise<ChannelInvitation> {
     const data = await api.post<ChannelInvitation>(`/api/v1/channels/${channelId}/staff/invitations`, {
-      email,
-      roleId
+      ...identifier,
+      roleIds
     });
     return data;
   }

@@ -10,12 +10,15 @@ interface Props {
   channel: Channel;
   onUpdate: (updatedChannel: Channel) => void;
   permissions: string[];
+  // True while a deletion request is pending review, in addition to an actual suspension —
+  // backend blocks mutations in both cases (see ChannelStatusGuard).
+  locked?: boolean;
 }
 
 // Pure branding/profile editor — staff & role management lives in its own "Staff &
 // Permissions" tab, and destructive channel actions live in their own "Danger Zone" tab.
 // This dialog only edits what it's named for: the channel's public appearance and details.
-export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props) {
+export function ChannelSettingsManager({ channel, onUpdate, permissions, locked }: Props) {
   const [description, setDescription] = useState(channel.description || '');
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -25,7 +28,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
   const [loading, setLoading] = useState(false);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
-  const isSuspended = channel.status === 'SUSPENDED';
+  const isSuspended = channel.status === 'SUSPENDED' || !!locked;
   const canManageSettings = (isOwner || permissions.includes('channel.settings.manage')) && !isSuspended;
 
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,13 +123,24 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
             <div className="space-y-4">
                 {canManageSettings ? (
                   <>
-                    <label className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none">
-                      <span className="flex items-center space-x-2">
-                        <Upload className="w-6 h-6 text-gray-400" />
-                        <span className="font-medium text-gray-600">
-                          Drop files to Attach, or <span className="text-indigo-600 underline">browse</span>
+                    <label className="relative flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none overflow-hidden group">
+                      {iconPreview ? (
+                        <>
+                          <img src={iconPreview} alt="Logo Preview" className="h-full w-auto mx-auto object-contain" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-white font-medium flex items-center gap-2">
+                              <Upload size={18} /> Change Logo
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <span className="flex items-center space-x-2">
+                          <Upload className="w-6 h-6 text-gray-400" />
+                          <span className="font-medium text-gray-600">
+                            Drop files to Attach, or <span className="text-indigo-600 underline">browse</span>
+                          </span>
                         </span>
-                      </span>
+                      )}
                       <input type="file" name="icon" className="hidden" accept="image/*" onChange={handleIconChange} />
                     </label>
                     <p className="text-xs text-gray-500 text-center">
@@ -135,7 +149,11 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
                   </>
                 ) : (
                   <div className="flex items-center justify-center w-full h-32 px-4 bg-gray-50 border-2 border-gray-200 border-dashed rounded-xl">
-                    <span className="text-sm text-gray-400">Cannot modify icon</span>
+                    {iconPreview ? (
+                      <img src={iconPreview} alt="Logo" className="h-full w-auto mx-auto object-contain" />
+                    ) : (
+                      <span className="text-sm text-gray-400">Cannot modify icon</span>
+                    )}
                   </div>
                 )}
             </div>

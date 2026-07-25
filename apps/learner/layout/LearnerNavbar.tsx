@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
+import { useNotifications, NotificationList } from "@/domains/notifications";
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { channelService, useStudioAccess } from "@/domains/channels";
@@ -25,6 +26,7 @@ export default function LearnerNavbar() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
+  const { notifications, unreadCount, markAllRead } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
   
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -169,52 +171,69 @@ export default function LearnerNavbar() {
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
             >
               <Bell size={20} strokeWidth={2} />
-              {invitations.length > 0 && (
+              {(invitations.length > 0 || unreadCount > 0) && (
                 <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-neutral-900 shadow-sm"></span>
               )}
             </button>
-            
+
             {isNotificationsOpen && (
               <>
-                <div 
-                  className="fixed inset-0 z-40 cursor-default" 
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
                   onClick={() => setIsNotificationsOpen(false)}
                 />
                 <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5">
+                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        Mark all read
+                      </button>
+                    )}
                   </div>
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {invitations.length === 0 ? (
-                      <div className="p-4 text-center text-sm text-slate-500">No new notifications</div>
-                    ) : (
-                      <div className="divide-y divide-black/5 dark:divide-white/5">
-                        {invitations.map(inv => (
-                          <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                            <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
-                              Channel Invitation
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                              You've been invited to join as <span className="font-bold text-slate-700 dark:text-slate-300">{inv.roleName}</span>.
-                            </p>
-                            <div className="flex gap-2">
-                              <button 
-                                onClick={() => { handleAcceptInvite(inv.id); setIsNotificationsOpen(false); }}
-                                className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1"
-                              >
-                                <Check size={14} /> Accept
-                              </button>
-                              <button 
-                                onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
-                                className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1"
-                              >
-                                <X size={14} /> Decline
-                              </button>
+                  <div className="max-h-[420px] overflow-y-auto">
+                    {invitations.length > 0 && (
+                      <div className="border-b border-black/5 dark:border-white/5">
+                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
+                        <div className="divide-y divide-black/5 dark:divide-white/5">
+                          {invitations.map(inv => (
+                            <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
+                                Invitation to join <span className="font-bold">{inv.channelName}</span>
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                <span className="font-bold text-slate-700 dark:text-slate-300">{inv.invitedByName}</span> invited you as <span className="font-bold text-slate-700 dark:text-slate-300">{inv.roleNames.join(', ')}</span>.
+                              </p>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">
+                                {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                              </p>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => { handleAcceptInvite(inv.id); setIsNotificationsOpen(false); }}
+                                  className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1"
+                                >
+                                  <Check size={14} /> Accept
+                                </button>
+                                <button
+                                  onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
+                                  className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1"
+                                >
+                                  <X size={14} /> Decline
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
+                    <NotificationList
+                      notifications={notifications}
+                      onItemClick={() => setIsNotificationsOpen(false)}
+                      emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
+                    />
                   </div>
                 </div>
               </>

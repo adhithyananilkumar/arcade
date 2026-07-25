@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Channel, ChannelContentItem, channelService } from "@/domains/channels";
-import { Search, Check, X, Tv, ShieldOff, ShieldCheck, BookOpen } from 'lucide-react';
+import { Search, Check, X, Tv, ShieldOff, ShieldCheck, BookOpen, AlertTriangle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -20,6 +20,11 @@ export function PendingChannels() {
   const [suspendForce, setSuspendForce] = useState(false);
   const [channelContent, setChannelContent] = useState<ChannelContentItem[]>([]);
   const [contentLoading, setContentLoading] = useState(false);
+  const [hardDeleteTarget, setHardDeleteTarget] = useState<Channel | null>(null);
+  const [hardDeleteReason, setHardDeleteReason] = useState('');
+  const [hardDeleteConfirmText, setHardDeleteConfirmText] = useState('');
+  const [hardDeleteAcknowledged, setHardDeleteAcknowledged] = useState(false);
+  const [hardDeleteSubmitting, setHardDeleteSubmitting] = useState(false);
 
   const { hasPermission } = usePermissions();
   const { user } = useAuthStore();
@@ -103,6 +108,41 @@ export function PendingChannels() {
       fetchChannels();
     } catch (error) {
       toast.error('Failed to suspend channel');
+    }
+  };
+
+  const openHardDeleteDialog = (channel: Channel) => {
+    setHardDeleteTarget(channel);
+    setHardDeleteReason('');
+    setHardDeleteConfirmText('');
+    setHardDeleteAcknowledged(false);
+  };
+
+  const confirmHardDelete = async () => {
+    if (!hardDeleteTarget) return;
+    if (!hardDeleteReason.trim()) {
+      toast.error('A reason is required to permanently delete a channel');
+      return;
+    }
+    if (hardDeleteConfirmText !== hardDeleteTarget.name) {
+      toast.error('Type the channel name exactly to confirm');
+      return;
+    }
+    if (!hardDeleteAcknowledged) {
+      toast.error('You must acknowledge the consequences before proceeding');
+      return;
+    }
+    setHardDeleteSubmitting(true);
+    try {
+      await channelService.hardDeleteChannel(hardDeleteTarget.id, hardDeleteReason.trim(), hardDeleteConfirmText);
+      toast.success('Channel and all its content have been permanently deleted');
+      setHardDeleteTarget(null);
+      setSelectedChannel(null);
+      fetchChannels();
+    } catch (error) {
+      toast.error('Failed to permanently delete channel');
+    } finally {
+      setHardDeleteSubmitting(false);
     }
   };
 
@@ -410,6 +450,24 @@ export function PendingChannels() {
                   </button>
                 </div>
               )}
+
+              {canSuspend && (selectedChannel.status === 'ACTIVE' || selectedChannel.status === 'SUSPENDED') && (
+                <div className="space-y-3 pt-6 border-t-2 border-dashed border-red-200">
+                  <h4 className="text-sm font-bold text-red-700 flex items-center gap-2">
+                    <AlertTriangle size={16} /> Danger Zone
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    Permanently and immediately delete this channel and everything it owns. This
+                    bypasses the standard suspend/grace-period flow entirely — there is no undo.
+                  </p>
+                  <button
+                    onClick={() => openHardDeleteDialog(selectedChannel)}
+                    className="w-full flex justify-center items-center gap-2 px-4 py-3 bg-red-700 text-white rounded-xl hover:bg-red-800 transition-colors font-semibold text-sm shadow-sm"
+                  >
+                    <Trash2 size={18} /> Force Hard Delete
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -468,6 +526,97 @@ export function PendingChannels() {
                 </button>
                 <button
                   onClick={() => setSuspendTarget(null)}
+                  className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-semibold text-sm"
+                >
+                  <X size={18} /> Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!hardDeleteTarget} onOpenChange={(open) => !open && setHardDeleteTarget(null)}>
+        <DialogContent className="max-w-md p-6 sm:p-8">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-red-700 flex items-center gap-2">
+              <AlertTriangle size={20} /> Permanently Delete Channel
+            </DialogTitle>
+          </DialogHeader>
+
+          {hardDeleteTarget && (
+            <div className="space-y-5 mt-4">
+              <div className="space-y-2 p-4 rounded-xl border-2 border-red-200 bg-red-50">
+                <p className="text-sm font-bold text-red-800">This cannot be undone.</p>
+                <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+                  <li>Every course, roadmap, and workshop under this channel is deleted immediately — not soft-deleted, not recoverable.</li>
+                  <li>There is no 6-month grace period, unlike a normal suspend.</li>
+                  <li>Learners already enrolled in this channel's content lose access immediately.</li>
+                  <li>Staff, roles, and pending invitations for this channel are also removed.</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-gray-900">Channel</h4>
+                <p className="text-base text-gray-700">{hardDeleteTarget.name}</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-900" htmlFor="hard-delete-reason">
+                  Reason (recorded in the permanent audit log)
+                </label>
+                <textarea
+                  id="hard-delete-reason"
+                  value={hardDeleteReason}
+                  onChange={(e) => setHardDeleteReason(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all"
+                  placeholder="e.g. Legal takedown, GDPR erasure request, severe policy violation..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-900" htmlFor="hard-delete-confirm">
+                  Type <span className="font-mono text-red-700">{hardDeleteTarget.name}</span> to confirm
+                </label>
+                <input
+                  id="hard-delete-confirm"
+                  type="text"
+                  value={hardDeleteConfirmText}
+                  onChange={(e) => setHardDeleteConfirmText(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all font-mono"
+                  autoComplete="off"
+                />
+              </div>
+
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-red-200 bg-red-50/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hardDeleteAcknowledged}
+                  onChange={(e) => setHardDeleteAcknowledged(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-red-700"
+                />
+                <span className="text-sm text-gray-700">
+                  I understand this permanently deletes the channel and all its content, and that
+                  enrolled learners will immediately lose access.
+                </span>
+              </label>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={confirmHardDelete}
+                  disabled={
+                    hardDeleteSubmitting ||
+                    hardDeleteConfirmText !== hardDeleteTarget.name ||
+                    !hardDeleteAcknowledged ||
+                    !hardDeleteReason.trim()
+                  }
+                  className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-red-700 text-white rounded-xl hover:bg-red-800 transition-colors font-semibold text-sm shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={18} /> {hardDeleteSubmitting ? 'Deleting...' : 'Permanently Delete'}
+                </button>
+                <button
+                  onClick={() => setHardDeleteTarget(null)}
                   className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-semibold text-sm"
                 >
                   <X size={18} /> Cancel

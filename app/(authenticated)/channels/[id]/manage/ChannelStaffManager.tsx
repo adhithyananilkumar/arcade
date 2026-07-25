@@ -6,7 +6,7 @@ import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/
 import { UserService } from "@/domains/identity";
 import { Role, roleService } from "@/domains/identity";
 import { toast } from 'sonner';
-import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut } from 'lucide-react';
+import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -16,13 +16,6 @@ import { Avatar, AvatarFallback } from '@/shared/design-system/ui/avatar';
 import { Skeleton } from '@/shared/design-system/ui/skeleton';
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/shared/design-system/ui/select';
 
 interface ChannelStaffManagerProps {
   channelId: string;
@@ -40,10 +33,15 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isInvitationsExpanded, setIsInvitationsExpanded] = useState(false);
+  const [staffSearch, setStaffSearch] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [emailStatus, setEmailStatus] = useState<'IDLE' | 'LOADING' | 'FOUND' | 'NOT_FOUND'>('IDLE');
   const [foundUser, setFoundUser] = useState<any>(null);
+
+  const [editRolesTarget, setEditRolesTarget] = useState<ChannelStaff | null>(null);
+  const [editRoleIds, setEditRoleIds] = useState<string[]>([]);
+  const [editRolesSubmitting, setEditRolesSubmitting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -83,10 +81,17 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
   const canManageStaff =
     permissions.includes('ALL') || permissions.includes('channel.staff.manage');
 
+  const filteredStaff = staffSearch.trim()
+    ? staff.filter((member) => {
+        const q = staffSearch.trim().toLowerCase();
+        return member.userName.toLowerCase().includes(q) || member.email.toLowerCase().includes(q);
+      })
+    : staff;
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (inviteEmail && inviteEmail.includes('@')) {
-        verifyEmail(inviteEmail);
+      if (inviteEmail.trim()) {
+        verifyIdentifier(inviteEmail.trim());
       } else {
         setEmailStatus('IDLE');
         setFoundUser(null);
@@ -95,38 +100,80 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
     return () => clearTimeout(timer);
   }, [inviteEmail]);
 
-  const verifyEmail = async (email: string) => {
+  // Accepts either an email address or a username — whichever the admin typed.
+  const verifyIdentifier = async (identifier: string) => {
     setEmailStatus('LOADING');
     try {
-      const user = await UserService.checkEmail(email);
-      if (user) {
-        setFoundUser(user);
-        setEmailStatus('FOUND');
+      if (identifier.includes('@')) {
+        const user = await UserService.checkEmail(identifier);
+        if (user) {
+          setFoundUser(user);
+          setEmailStatus('FOUND');
+          return;
+        }
       } else {
-        setFoundUser(null);
-        setEmailStatus('NOT_FOUND');
+        const profile = await UserService.getPublicProfile(identifier).catch(() => null);
+        if (profile) {
+          setFoundUser(profile);
+          setEmailStatus('FOUND');
+          return;
+        }
       }
+      setFoundUser(null);
+      setEmailStatus('NOT_FOUND');
     } catch {
       setFoundUser(null);
       setEmailStatus('NOT_FOUND');
     }
   };
 
+  const toggleRole = (roleId: string, selected: string[], setSelected: (ids: string[]) => void) => {
+    setSelected(
+      selected.includes(roleId) ? selected.filter((id) => id !== roleId) : [...selected, roleId]
+    );
+  };
+
   const handleInvite = async () => {
-    if (!inviteEmail || !selectedRole || emailStatus !== 'FOUND') {
-      toast.error('Please enter a valid registered email and select a policy');
+    if (!inviteEmail || selectedRoleIds.length === 0 || emailStatus !== 'FOUND') {
+      toast.error('Please enter a valid registered email/username and select at least one policy');
       return;
     }
     try {
-      await ChannelStaffService.inviteStaff(channelId, inviteEmail, selectedRole);
+      const identifier = inviteEmail.includes('@')
+        ? { email: inviteEmail.trim() }
+        : { username: inviteEmail.trim() };
+      await ChannelStaffService.inviteStaff(channelId, identifier, selectedRoleIds);
       toast.success('Invitation sent successfully!');
       setIsInviteModalOpen(false);
       setInviteEmail('');
-      setSelectedRole('');
+      setSelectedRoleIds([]);
       setFoundUser(null);
       fetchData();
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to send invitation');
+    }
+  };
+
+  const openEditRoles = (member: ChannelStaff) => {
+    setEditRolesTarget(member);
+    setEditRoleIds(member.roles.map((r) => r.id));
+  };
+
+  const handleUpdateRoles = async () => {
+    if (!editRolesTarget || editRoleIds.length === 0) {
+      toast.error('Select at least one policy');
+      return;
+    }
+    setEditRolesSubmitting(true);
+    try {
+      await ChannelStaffService.updateStaffRoles(channelId, editRolesTarget.userId, editRoleIds);
+      toast.success('Policies updated');
+      setEditRolesTarget(null);
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update policies');
+    } finally {
+      setEditRolesSubmitting(false);
     }
   };
 
@@ -184,25 +231,37 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h4 className="font-semibold text-gray-900 flex items-center gap-2">
             <Users size={18} className="text-indigo-600" />
             Active Staff
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700">{staff.length}</span>
           </h4>
+          {staff.length > 0 && (
+            <Input
+              type="text"
+              value={staffSearch}
+              onChange={(e) => setStaffSearch(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full sm:w-64"
+            />
+          )}
         </div>
         {staff.length === 0 ? (
           <div className="p-6 text-center text-sm text-gray-500">No active staff members.</div>
+        ) : filteredStaff.length === 0 ? (
+          <div className="p-6 text-center text-sm text-gray-500">No staff match "{staffSearch}".</div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Member</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="w-10" />
+                <TableHead>Policies</TableHead>
+                <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {staff.map(member => {
+              {filteredStaff.map(member => {
                 const isSelf = member.userId === user?.id;
                 return (
                 <TableRow key={member.id}>
@@ -220,23 +279,40 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-purple-700 border-purple-100 bg-purple-50">
-                      {member.roleName}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1.5">
+                      {member.roles.map((role) => (
+                        <Badge key={role.id} variant="outline" className="text-purple-700 border-purple-100 bg-purple-50">
+                          {role.displayName}
+                        </Badge>
+                      ))}
+                    </div>
                   </TableCell>
-                  {(canManageStaff || isSelf) && (
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleRemoveStaff(member.userId, isSelf)}
-                        className="text-gray-400 hover:text-red-600"
-                        title={isSelf ? 'Leave channel' : 'Remove staff member'}
-                      >
-                        {isSelf ? <LogOut size={16} /> : <Trash2 size={16} />}
-                      </Button>
-                    </TableCell>
-                  )}
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      {canManageStaff && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => openEditRoles(member)}
+                          className="text-gray-400 hover:text-indigo-600"
+                          title="Edit policies"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                      )}
+                      {(canManageStaff || isSelf) && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleRemoveStaff(member.userId, isSelf)}
+                          className="text-gray-400 hover:text-red-600"
+                          title={isSelf ? 'Leave channel' : 'Remove staff member'}
+                        >
+                          {isSelf ? <LogOut size={16} /> : <Trash2 size={16} />}
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
                 );
               })}
@@ -270,7 +346,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
                         'text-gray-600 border-gray-200 bg-gray-50'
                       }
                     >
-                      {inv.roleName} - {inv.status}
+                      {inv.roleNames.join(', ')} - {inv.status}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -334,17 +410,22 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Organization Policy</label>
-              <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value ?? '')}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a policy..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map(role => (
-                    <SelectItem key={role.id} value={role.id}>{role.displayName || role.code}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Organization Policies <span className="text-gray-400 font-normal">(select one or more)</span>
+              </label>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-gray-200 p-2">
+                {roles.map(role => (
+                  <label key={role.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedRoleIds.includes(role.id)}
+                      onChange={() => toggleRole(role.id, selectedRoleIds, setSelectedRoleIds)}
+                      className="h-4 w-4 accent-indigo-600"
+                    />
+                    <span className="text-sm text-gray-800">{role.displayName || role.code}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="pt-4 flex gap-3">
@@ -354,12 +435,53 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
               <Button
                 className="flex-1"
                 onClick={handleInvite}
-                disabled={emailStatus !== 'FOUND' || !selectedRole}
+                disabled={emailStatus !== 'FOUND' || selectedRoleIds.length === 0}
               >
                 Send Invite
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editRolesTarget} onOpenChange={(open) => !open && setEditRolesTarget(null)}>
+        <DialogContent className="max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle>Edit Policies</DialogTitle>
+          </DialogHeader>
+
+          {editRolesTarget && (
+            <div className="space-y-4 mt-4">
+              <p className="text-sm text-gray-600">
+                Update policies for <span className="font-bold">{editRolesTarget.userName}</span>.
+              </p>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-gray-200 p-2">
+                {roles.map(role => (
+                  <label key={role.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editRoleIds.includes(role.id)}
+                      onChange={() => toggleRole(role.id, editRoleIds, setEditRoleIds)}
+                      className="h-4 w-4 accent-indigo-600"
+                    />
+                    <span className="text-sm text-gray-800">{role.displayName || role.code}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="pt-2 flex gap-3">
+                <Button variant="secondary" className="flex-1" onClick={() => setEditRolesTarget(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleUpdateRoles}
+                  disabled={editRolesSubmitting || editRoleIds.length === 0}
+                >
+                  {editRolesSubmitting ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -8,7 +8,7 @@ import { PolicyManager } from './PolicyManager';
 import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-export default function AdminSettingsPage() {
+export default function IamPage() {
   const { user } = useAuthStore();
   
   if (!AuthorizationService.canManageSettings(user) && !AuthorizationService.canManageUsers(user) && !AuthorizationService.canManageRoles(user) && !AuthorizationService.canManagePermissions(user)) {
@@ -24,7 +24,7 @@ export default function AdminSettingsPage() {
       className="w-full space-y-8"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Settings</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">IAM</h1>
         <p className="text-gray-500">Manage users, custom policies, and IAM permissions across the platform.</p>
       </div>
       
