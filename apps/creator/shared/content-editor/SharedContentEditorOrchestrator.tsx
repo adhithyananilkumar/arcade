@@ -1618,7 +1618,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         </aside>
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="absolute inset-0 z-0 overflow-y-auto">
+        <main className="absolute inset-0 overflow-y-auto">
           {view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
               <div className="overflow-hidden rounded-2xl border border-gray-100">

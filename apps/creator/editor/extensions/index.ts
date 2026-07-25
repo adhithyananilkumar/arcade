@@ -32,7 +32,6 @@ import { Column, ColumnNode, MultipleColumnNode } from "reactjs-tiptap-editor/co
 import { Drawer } from "reactjs-tiptap-editor/drawer";
 import { Emoji } from "reactjs-tiptap-editor/emoji";
 import { Excalidraw } from "reactjs-tiptap-editor/excalidraw";
-import { ExportPdf } from "reactjs-tiptap-editor/exportpdf";
 import { ExportWord } from "reactjs-tiptap-editor/exportword";
 import { FontFamily } from "reactjs-tiptap-editor/fontfamily";
 import { FontSize } from "reactjs-tiptap-editor/fontsize";
@@ -71,6 +70,48 @@ import { searchUsersForMention } from "../lib/mentionSuggestion";
 
 const lowlight = createLowlight(common);
 
+// Both lists replace the library's literal "Default" sentinel entry with the app's
+// real base value (Geist / 16px — same values as the `localeActions.setMessage`
+// trigger-label override in RichTextToolbar.tsx, and the `.ProseMirror` rule in
+// editor.css). One entry, not two: it's both what unstyled text already looks like
+// *and* a normal, explicitly-selectable preset, so there's nothing left to say
+// "Default" — that word never described anything the other entry didn't already
+// cover, once the trigger stopped using it too.
+const FONT_FAMILY_LIST = [
+  "Geist",
+  "Inter",
+  "Comic Sans MS, Comic Sans",
+  "serif",
+  "cursive",
+  "Arial",
+  "Arial Black",
+  "Georgia",
+  "Impact",
+  "Tahoma",
+  "Times New Roman",
+  "Verdana",
+  "Courier New",
+  "Lucida Console",
+  "Monaco",
+  "monospace",
+];
+const FONT_SIZE_LIST = [
+  "16px",
+  "10px",
+  "11px",
+  "12px",
+  "14px",
+  "18px",
+  "20px",
+  "22px",
+  "24px",
+  "26px",
+  "28px",
+  "36px",
+  "48px",
+  "72px",
+];
+
 /** Doc-level schema needs to allow the `columns` node as a top-level sibling of `block`. */
 const DocumentColumn = Document.extend({
   content: "(block|columns)+",
@@ -99,18 +140,22 @@ const BaseKit = [
 export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
   return [
     ...BaseKit,
+    // `includeChildren` is deliberately omitted: combined with the extension's
+    // default `showOnlyCurrent`, it routes decorations through the incremental
+    // state-field path, which was leaving stale "empty" decorations on every
+    // paragraph the caret had previously visited instead of just the current one.
+    // The default (single current empty block) is what we want here.
     Placeholder.configure({
       placeholder: placeholder ?? "Press '/' for commands",
-      includeChildren: true,
     }),
     CharacterCount,
     ...(ydoc ? [Collaboration.configure({ document: ydoc })] : [History]),
 
     SearchAndReplace,
     Clear,
-    FontFamily,
+    FontFamily.configure({ fontFamilyList: FONT_FAMILY_LIST }),
     Heading,
-    FontSize,
+    FontSize.configure({ fontSizes: FONT_SIZE_LIST }),
     Bold,
     Italic,
     TextUnderline,
@@ -152,7 +197,6 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
     MultipleColumnNode,
     Table,
     Iframe,
-    ExportPdf,
     ImportWord,
     ExportWord,
     TextDirection,
