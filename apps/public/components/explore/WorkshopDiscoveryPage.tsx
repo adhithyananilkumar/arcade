@@ -152,7 +152,7 @@ export default function WorkshopDiscoveryPage() {
 function WorkshopCard({ workshop, idx }: { workshop: Workshop; idx: number }) {
   const theme = THEMES[idx % THEMES.length];
   // Calculate duration or fallback
-  const duration = workshop.sessions ? `${workshop.sessions.length} Days` : 'Self-paced';
+  const duration = (workshop as any).sessions ? `${(workshop as any).sessions.length} Days` : 'Self-paced';
 
   return (
     <motion.div

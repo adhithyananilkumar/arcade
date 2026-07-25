@@ -160,7 +160,7 @@ export const ArcadeEditor = memo(
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && <RichTextToolbar />}
+        {!readOnly && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={
