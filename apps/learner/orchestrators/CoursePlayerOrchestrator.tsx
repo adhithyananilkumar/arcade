@@ -21,6 +21,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const { user } = useAuthStore();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLessonId, setHistoryLessonId] = useState<string | null>(null);
+  const [publishedCourse, setPublishedCourse] = useState<CourseRenderResponse | null>(null);
 
   const canPublish =
     user?.permissions?.some((p) => p === "courses.review" || p === "channel.courses.review") ||
@@ -49,6 +50,17 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       .finally(() => setLoading(false));
   }, [courseId]);
 
+  useEffect(() => {
+    if (canPublish) {
+      api
+        .get<CourseRenderResponse>(`/api/courses/${courseId}/render?publishedOnly=true`)
+        .then((pubData) => setPublishedCourse(pubData ?? null))
+        .catch(() => setPublishedCourse(null));
+    } else {
+      setPublishedCourse(null);
+    }
+  }, [courseId, canPublish]);
+
   function toggleModule(moduleId: string) {
     setCollapsedModules((prev) => {
       const next = new Set(prev);
@@ -59,8 +71,11 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   }
 
   const handlePublish = async () => {
+    const note = window.prompt("Any approval notes/logs? (Optional)");
+    if (note === null) return; // User cancelled
+
     try {
-      await api.post(`/api/courses/${courseId}/approve`, {});
+      await api.post(`/api/courses/${courseId}/approve`, { note });
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
@@ -138,6 +153,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         toggleModule={toggleModule}
         quizStats={quizStats}
         canPublish={!!canPublish}
+        publishedCourse={publishedCourse}
         onPublish={handlePublish}
         onReject={handleReject}
         onAttemptGraded={handleAttemptGraded}
@@ -150,18 +166,19 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         onAddComment={handleAddComment}
         currentUser={user ? { id: user.id, name: `${user.firstName} ${user.lastName}`, avatarUrl: user.avatarUrl ?? undefined } : undefined}
         onViewHistory={(lessonId) => {
-          setHistoryLessonId(lessonId);
+          setHistoryLessonId(lessonId || (selectedItem?.kind === "lesson" ? selectedItem.id : course?.modules[0]?.lessons[0]?.id) || "");
           setHistoryOpen(true);
         }}
       />
-      {historyLessonId && (
+      {historyOpen && (
         <VersionHistoryOrchestrator
-          lessonId={historyLessonId}
+          lessonId={historyLessonId || (selectedItem?.kind === "lesson" ? selectedItem.id : course?.modules[0]?.lessons[0]?.id) || ""}
+          courseId={courseId}
+          isSuView={!!canPublish}
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           refreshKey={0}
           onRestore={async () => {
-             // Admin doesn't restore versions in review mode. We can just no-op or close.
              setHistoryOpen(false);
           }}
           renderEditor={(previewDoc, selectedId) => (

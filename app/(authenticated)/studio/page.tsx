@@ -745,7 +745,7 @@ function ContentCard({
         href={editHref}
         className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
       >
-        {isRoadmap ? "Open Studio" : "Continue Editing"}
+        {isRoadmap ? "Open Studio" : (item.status === "SUBMITTED" ? "View (Under Review)" : "Continue Editing")}
       </Link>
     </div>
   );

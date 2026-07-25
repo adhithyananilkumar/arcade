@@ -45,6 +45,7 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
+import { CourseStatusHistoryModal } from "@/domains/publishing/components/CourseStatusHistoryModal";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -53,8 +54,9 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor } from "@/domains/assessments";
+import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
+import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -91,6 +93,7 @@ import {
   History,
   MessageSquare,
   Lock,
+  Eye,
 } from "lucide-react";
 
 /** How long (of edit activity) between automatic version snapshots. */
@@ -483,9 +486,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
-  const [status, setStatus] = useState("DRAFT");
+  const [status, setStatus] = useState<string>("DRAFT");
+  const [hasDraftChanges, setHasDraftChanges] = useState<boolean>(false);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<any>(null);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -512,6 +518,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [qbOpen, setQbOpen] = useState(false);
@@ -553,8 +560,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setDescription(meta.description ?? "");
         setPricingModel(meta.pricingModel as "FREE" | "PAID");
         setStatus(meta.status);
+        setHasDraftChanges(meta.raw?.hasDraftChanges === true);
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
+        if (contentType === "course") {
+          setCourseData(meta.raw);
+        }
         setModules(
           containers.map((m) => ({
             id: m.id,
@@ -709,6 +720,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           body: jsonStr,
         });
         lastSavedBodyRef.current = jsonStr;
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Document save failed, localStorage preserved.", e);
         return; // don't snapshot if the head save didn't land
@@ -823,6 +835,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         ]);
         // Auto-open Day Settings dialog so the creator can set schedule details.
         setSessionSettingsSessionId(newContainer.id);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add day", e);
       }
@@ -852,6 +865,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         );
         setActiveModuleId(moduleId);
         await openLesson(newLesson as any);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
@@ -880,6 +894,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )
         );
         await openQuiz(newQuiz as any);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add quiz", e);
       }
@@ -905,6 +920,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setModules((prev) => prev.map((m) => (m.id === id ? { ...m, title: value } : m)));
       try {
         await adapter.renameContainer(id, value);
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Module rename failed", e);
       }
@@ -918,6 +934,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       if (activeQuizId === id) setActiveQuizTitle(value);
       try {
         await adapter.renameLeaf(id, value, "quiz");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Quiz rename failed", e);
       }
@@ -931,6 +948,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       if (activeLessonId === id) setActiveLessonTitle(value);
       try {
         await adapter.renameLeaf(id, value, "document");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Lesson rename failed", e);
       }
@@ -954,6 +972,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteContainer(mod.id);
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete module", e);
     }
@@ -973,6 +992,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteLeaf(lessonId, "document");
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete lesson", e);
     }
@@ -1005,6 +1025,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteLeaf(quizId, "quiz");
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete quiz", e);
     }
@@ -1036,6 +1057,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       );
       try {
         await adapter.renameLeaf(activeQuizId, value, "quiz");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Quiz title save failed", e);
       }
@@ -1054,6 +1076,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       metaSaveTimeout.current = setTimeout(async () => {
         try {
           await adapter.updateMeta(contentId, patch);
+          setHasDraftChanges(true);
         } catch (e) {
           console.warn("Course metadata save failed", e);
         }
@@ -1136,43 +1159,46 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const askSubmit = () =>
+  const askSubmit = () => {
+    if (contentType === "course") {
+      setSubmitDialogOpen(true);
+      return;
+    }
     setConfirm({
-      title: contentType === "workshop" ? "Proceed to next steps?" : "Ready for review?",
-      message:
-        contentType === "workshop"
-          ? "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published."
-          : "Once submitted, reviewers will be notified and your content will be locked for editing until approved.",
-      confirmLabel: contentType === "workshop" ? "Proceed.." : "Submit for Review",
+      title: "Proceed to next steps?",
+      message: "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published.",
+      confirmLabel: "Proceed..",
       onConfirm: async () => {
-        if (contentType === "workshop") {
-          router.push(`/studio/workshop/${contentId}`);
-          return;
-        }
-
-        if (!contentId) return;
-        // Flush the open lesson first so its latest edits are persisted before the
-        // backend snapshots the whole course into WORKFLOW versions.
-        if (editorRef.current) {
-          try {
-            await editorRef.current.flush();
-          } catch {
-            // best-effort — proceed with submit regardless
-          }
-        }
-        try {
-          const updated = await api.post<CourseResponse>(
-            `/api/courses/${contentId}/submit`,
-            {}
-          );
-          setStatus(updated.status);
-          // Surface the new "Submitted for review" checkpoint if the panel is open.
-          setHistoryRefreshKey((k) => k + 1);
-        } catch (e) {
-          console.error("Failed to submit course", e);
-        }
+        router.push(`/studio/workshop/${contentId}`);
       },
     });
+  };
+
+  const handleCourseSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => {
+    if (!contentId) return;
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
+         await api.patch(`/api/courses/${contentId}`, data);
+      }
+      const updated = await api.post<CourseResponse>(`/api/courses/${contentId}/submit`, { message: data.message });
+      setStatus(updated.status);
+      setUpdatedAt(updated.updatedAt);
+      setPricingModel(updated.pricingModel as "FREE" | "PAID");
+      setHistoryRefreshKey((k) => k + 1);
+      setSubmitDialogOpen(false);
+      setHasDraftChanges(false);
+    } catch (e) {
+      console.error("Failed to submit course", e);
+      throw e;
+    }
+  };
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1213,7 +1239,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   return (
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      {contentType === "course" && contentId ? (
+        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
+      ) : (
+        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      )}
+      {contentType === "course" && courseData && (
+        <CourseSubmitDialog
+          course={courseData}
+          open={submitDialogOpen}
+          onClose={() => setSubmitDialogOpen(false)}
+          onSubmit={handleCourseSubmit}
+        />
+      )}
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       <SessionSettingsDialog
         open={!!sessionSettingsSessionId}
@@ -1229,6 +1267,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 m.id === sessionSettingsSessionId ? { ...m, title: newTitle } : m
               )
             );
+            setHasDraftChanges(true);
           }
           // Dialog closes itself via its own onClose prop after calling onSaved.
         }}
@@ -1312,14 +1351,30 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {status === "DRAFT" && contentType !== "workshop" && (
+            {status !== "DRAFT" && (
+              <button
+                type="button"
+                onClick={() => setStatusHistoryOpen(true)}
+                title="View status history"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                <History size={14} />
+                <span className="hidden sm:inline">Status</span>
+              </button>
+            )}
+
+            {status !== "SUBMITTED" && contentType !== "workshop" && (
               <button
                 type="button"
                 onClick={askSubmit}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                disabled={!hasDraftChanges && (status === "PUBLISHED" || status === "APPROVED" || status === "REJECTED" || status === "DRAFT")}
+                title={!hasDraftChanges ? "No new changes to submit" : ""}
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={14} />
-                <span className="hidden sm:inline">Submit for Review</span>
+                <span className="hidden sm:inline">
+                  {status === "PUBLISHED" || status === "APPROVED" ? "Submit Updates" : status === "REJECTED" ? "Resubmit for Review" : "Submit for Review"}
+                </span>
               </button>
             )}
 
@@ -1412,32 +1467,34 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </span>
                         )}
 
-                        <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              title="Add lesson or quiz"
-                              className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                            >
-                              <Plus size={12} />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={4}>
-                              <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                <FileText size={13} />
-                                Lesson
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                <ListChecks size={13} />
-                                Quiz
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                            <Pencil size={12} />
-                          </IconBtn>
-                          <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                            <Trash2 size={12} />
-                          </IconBtn>
-                        </div>
+                        {status !== "SUBMITTED" && (
+                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                title="Add lesson or quiz"
+                                className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                              >
+                                <Plus size={12} />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" sideOffset={4}>
+                                <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                  <FileText size={13} />
+                                  Lesson
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                                  <ListChecks size={13} />
+                                  Quiz
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                              <Pencil size={12} />
+                            </IconBtn>
+                            <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                              <Trash2 size={12} />
+                            </IconBtn>
+                          </div>
+                        )}
                       </div>
 
                       {/* Lessons and quizzes, interleaved by position */}
@@ -1487,68 +1544,72 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                       </span>
                                     )}
                                   </button>
-                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {item.kind === "quiz" && (
+                                  {status !== "SUBMITTED" && (
+                                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                      {item.kind === "quiz" && (
+                                        <IconBtn
+                                          title="Copy quiz ID — paste into an inline Quiz block"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(item.node.id);
+                                            setCopiedQuizId(item.node.id);
+                                            setTimeout(() => setCopiedQuizId(null), 1500);
+                                          }}
+                                        >
+                                          {copiedQuizId === item.node.id ? (
+                                            <Check size={12} className="text-emerald-500" />
+                                          ) : (
+                                            <Copy size={12} />
+                                          )}
+                                        </IconBtn>
+                                      )}
                                       <IconBtn
-                                        title="Copy quiz ID — paste into an inline Quiz block"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(item.node.id);
-                                          setCopiedQuizId(item.node.id);
-                                          setTimeout(() => setCopiedQuizId(null), 1500);
-                                        }}
+                                        title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                        onClick={() =>
+                                          startEdit(item.kind, item.node.id, item.node.title)
+                                        }
                                       >
-                                        {copiedQuizId === item.node.id ? (
-                                          <Check size={12} className="text-emerald-500" />
-                                        ) : (
-                                          <Copy size={12} />
-                                        )}
+                                        <Pencil size={12} />
                                       </IconBtn>
-                                    )}
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                      onClick={() =>
-                                        startEdit(item.kind, item.node.id, item.node.title)
-                                      }
-                                    >
-                                      <Pencil size={12} />
-                                    </IconBtn>
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                      danger
-                                      onClick={() =>
-                                        item.kind === "lesson"
-                                          ? askDeleteLesson(item.node)
-                                          : askDeleteQuiz(item.node)
-                                      }
-                                    >
-                                      <Trash2 size={12} />
-                                    </IconBtn>
-                                  </div>
+                                      <IconBtn
+                                        title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                        danger
+                                        onClick={() =>
+                                          item.kind === "lesson"
+                                            ? askDeleteLesson(item.node)
+                                            : askDeleteQuiz(item.node)
+                                        }
+                                      >
+                                        <Trash2 size={12} />
+                                      </IconBtn>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
 
                           {/* Add lesson / quiz to this Day/module */}
-                          <div className="mt-0.5 flex items-center gap-3 pl-2">
-                            <button
-                              type="button"
-                              onClick={() => addLesson(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add {adapter.terminology.leafDocument}
-                            </button>
-                            {contentType !== "workshop" && (
+                          {status !== "SUBMITTED" && (
+                            <div className="mt-0.5 flex items-center gap-3 pl-2">
                               <button
                                 type="button"
-                                onClick={() => addQuiz(mod.id)}
+                                onClick={() => addLesson(mod.id)}
                                 className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
                               >
                                 <Plus size={11} />
-                                Add quiz
+                                Add {adapter.terminology.leafDocument}
                               </button>
-                            )}
-                          </div>
+                              {contentType !== "workshop" && (
+                                <button
+                                  type="button"
+                                  onClick={() => addQuiz(mod.id)}
+                                  className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                >
+                                  <Plus size={11} />
+                                  Add quiz
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1557,7 +1618,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                 {/* Sidebar footer */}
                 <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
-                  {contentType === "workshop" && (
+                  {status !== "SUBMITTED" && contentType === "workshop" && (
                     <button
                       type="button"
                       onClick={addWorkshopDay}
@@ -1570,7 +1631,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   {contentType === "workshop" && (
                     <div className="border-t border-gray-100 my-1"></div>
                   )}
-                  {contentType !== "workshop" && (
+                  {status !== "SUBMITTED" && contentType !== "workshop" && (
                     <button
                       type="button"
                       onClick={addModule}
@@ -1580,7 +1641,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       Add Module
                     </button>
                   )}
-                  {contentType !== "workshop" && (
+                  {status !== "SUBMITTED" && contentType !== "workshop" && (
                     <button
                       type="button"
                       onClick={() => setQbOpen(true)}
@@ -1590,7 +1651,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       Create Question Bank
                     </button>
                   )}
-                  {contentType === "workshop" && (
+                  {status !== "SUBMITTED" && contentType === "workshop" && (
                     <button
                       type="button"
                       className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
@@ -1618,24 +1679,31 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         </aside>
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="absolute inset-0 overflow-y-auto">
+        <main className="absolute inset-0 z-0 overflow-y-auto">
+          {status === "SUBMITTED" && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
+              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
+            </div>
+          )}
           {view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
               <div className="overflow-hidden rounded-2xl border border-gray-100">
-                <ContentSettingsPanel terminology={adapter.terminology}
-                  contentId={contentId}
-                  title={title}
-                  description={description}
-                  status={status}
-                  pricingModel={pricingModel}
-                  createdAt={createdAt}
-                  updatedAt={updatedAt}
-                  onDeleted={() => router.push("/")}
-                  onDescriptionChange={(desc) => {
-                    setDescription(desc);
-                    scheduleCourseMetaSave({ description: desc });
-                  }}
-                />
+                <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
+                  <ContentSettingsPanel terminology={adapter.terminology}
+                    contentId={contentId}
+                    title={title}
+                    description={description}
+                    status={status}
+                    pricingModel={pricingModel}
+                    createdAt={createdAt}
+                    updatedAt={updatedAt}
+                    onDeleted={() => router.push("/")}
+                    onDescriptionChange={(desc) => {
+                      setDescription(desc);
+                      scheduleCourseMetaSave({ description: desc });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ) : activeLessonId ? (
@@ -1656,13 +1724,21 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}
                     chromeless
+                    readOnly={status === "SUBMITTED"}
                   />
                 )}
               </div>
             </div>
           ) : activeQuizId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div>
+            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12 relative">
+              {status === "SUBMITTED" && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                  <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-lg border border-gray-100 font-medium text-amber-600">
+                    <Lock size={16} /> Locked for Review
+                  </div>
+                </div>
+              )}
+              <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
                 <div className="mb-5 flex items-center gap-3">
                   <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
                   <DebouncedTitleInput
@@ -1670,6 +1746,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     onCommit={saveQuizTitle}
                     className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
                     placeholder="Quiz title"
+                    disabled={status === "SUBMITTED"}
                   />
                 </div>
                 <QuizEditor key={activeQuizId} quizId={activeQuizId} />
@@ -1696,6 +1773,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
+      <CourseStatusHistoryModal
+        courseId={contentId!}
+        open={statusHistoryOpen}
+        onClose={() => setStatusHistoryOpen(false)}
+      />
     </div>
   );
 }

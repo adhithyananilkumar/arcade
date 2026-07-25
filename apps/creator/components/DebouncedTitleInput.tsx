@@ -22,6 +22,7 @@ interface DebouncedTitleInputProps {
   /** Renders `size` on the input — used by the auto-width course title field. */
   autoSize?: boolean;
   minSize?: number;
+  disabled?: boolean;
 }
 
 export function DebouncedTitleInput({
@@ -32,6 +33,7 @@ export function DebouncedTitleInput({
   className,
   autoSize = false,
   minSize = 12,
+  disabled = false,
 }: DebouncedTitleInputProps) {
   const [local, setLocal] = useState(value);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,6 +95,7 @@ export function DebouncedTitleInput({
   return (
     <input
       type="text"
+      disabled={disabled}
       value={local}
       placeholder={placeholder}
       className={className}

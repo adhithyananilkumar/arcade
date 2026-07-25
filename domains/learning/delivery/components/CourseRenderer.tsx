@@ -41,6 +41,7 @@ interface CourseRendererProps {
   onAddComment?: (lessonId: string, content: string) => Promise<void>;
   onViewHistory?: (lessonId: string) => void;
   currentUser?: { id: string; name: string; avatarUrl?: string };
+  publishedCourse?: CourseRenderResponse | null;
 }
 
 export function CourseRenderer({
@@ -64,11 +65,13 @@ export function CourseRenderer({
   commentsError,
   onAddComment,
   onViewHistory,
-  currentUser
+  currentUser,
+  publishedCourse,
 }: CourseRendererProps) {
   const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [showUpdatedContent, setShowUpdatedContent] = useState(true);
 
   const selectedLesson = useMemo(() => {
     if (!course || selectedItem?.kind !== "lesson") return null;
@@ -78,6 +81,16 @@ export function CourseRenderer({
     }
     return null;
   }, [course, selectedItem]);
+
+  const publishedLesson = useMemo(() => {
+    if (!publishedCourse || !selectedLesson) return null;
+    for (const mod of publishedCourse.modules) {
+      for (const les of mod.lessons) {
+        if (les.id === selectedLesson.id || les.title === selectedLesson.title) return les;
+      }
+    }
+    return null;
+  }, [publishedCourse, selectedLesson]);
 
   const selectedQuizId = selectedItem?.kind === "quiz" ? selectedItem.id : null;
 
@@ -247,17 +260,35 @@ export function CourseRenderer({
             <>
               <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
                 <h2 className="text-2xl font-bold text-gray-900">{selectedLesson.title}</h2>
-                {canPublish && onViewHistory && (
-                  <button
-                    onClick={() => onViewHistory(selectedLesson.id)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                  >
-                    <History size={14} />
-                    View Edit History
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {canPublish && publishedCourse && (
+                    <button
+                      onClick={() => setShowUpdatedContent(!showUpdatedContent)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors border shadow-sm ${
+                        showUpdatedContent
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                          : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                      }`}
+                    >
+                      <span>{showUpdatedContent ? "✨ Show Updated Content (Active)" : "📄 Show Published Content"}</span>
+                    </button>
+                  )}
+                  {canPublish && onViewHistory && (
+                    <button
+                      onClick={() => onViewHistory(selectedLesson.id)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                    >
+                      <History size={14} />
+                      History
+                    </button>
+                  )}
+                </div>
               </div>
-              <TiptapContentView body={selectedLesson.body} emptyMessage="This lesson has no content yet." />
+              <TiptapContentView
+                body={showUpdatedContent ? selectedLesson.body : (publishedLesson?.body || selectedLesson.body)}
+                publishedBody={showUpdatedContent && publishedCourse ? (publishedLesson?.body || null) : undefined}
+                emptyMessage="This lesson has no content yet."
+              />
             </>
           ) : selectedQuizId ? (
             <QuizPlayer
