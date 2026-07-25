@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import type { Editor } from "@tiptap/react";
 import { localeActions } from "reactjs-tiptap-editor/locale-bundle";
 import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
 import { RichTextHeading } from "reactjs-tiptap-editor/heading";
@@ -20,7 +21,6 @@ import { RichTextIndent } from "reactjs-tiptap-editor/indent";
 // Insert tools
 import { RichTextEmoji } from "reactjs-tiptap-editor/emoji";
 import { RichTextImage } from "reactjs-tiptap-editor/image";
-import { RichTextVideo } from "reactjs-tiptap-editor/video";
 import { RichTextImageGif } from "reactjs-tiptap-editor/imagegif";
 import { RichTextTable } from "reactjs-tiptap-editor/table";
 import { RichTextColumn } from "reactjs-tiptap-editor/column";
@@ -38,6 +38,7 @@ import { Separator } from "@/shared/design-system/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/design-system/ui/popover";
 import { Button } from "@/shared/design-system/ui/button";
 import { Plus } from "lucide-react";
+import { VideoUploadButton } from "./VideoUploadButton";
 
 // The font family/size dropdowns show this string for unstyled text — the library's
 // own copy is the literal word "Default", which is honest about "no override" but
@@ -53,7 +54,11 @@ localeActions.setMessage("en", {
   "editor.fontSize.default.tooltip": "16px",
 });
 
-export const RichTextToolbar = memo(function RichTextToolbar() {
+interface RichTextToolbarProps {
+  editor: Editor | null;
+}
+
+export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
   return (
     // Surface colour, bottom rule and separator colour live in editor.css —
     // the design-system utilities for them don't resolve inside this tree.
@@ -117,7 +122,7 @@ export const RichTextToolbar = memo(function RichTextToolbar() {
             <div className="flex flex-wrap gap-1.5">
               <RichTextEmoji />
               <RichTextImage />
-              <RichTextVideo />
+              <VideoUploadButton editor={editor} />
               <RichTextImageGif />
               <RichTextTable />
               <RichTextColumn />

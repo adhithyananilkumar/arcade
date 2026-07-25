@@ -64,3 +64,72 @@ export function uploadImageFile(file: File): Promise<string> {
 export function uploadMediaFile(file: File): Promise<string> {
   return uploadFile(file, null);
 }
+
+/**
+ * Video upload with progress reporting, used by the custom VideoUploadButton dialog
+ * (apps/creator/editor/components/VideoUploadButton.tsx). Unlike `uploadFile` above —
+ * which swallows errors into a toast so it never rejects the promise the vendor Video
+ * modal is built to ignore — this rejects on failure so the dialog can show an inline
+ * error state and let the user retry, and supports cancellation via AbortSignal.
+ */
+export function uploadVideoFile(
+  file: File,
+  options?: { onProgress?: (percent: number) => void; signal?: AbortSignal }
+): Promise<string> {
+  return uploadFileWithProgress(file, options?.onProgress, options?.signal);
+}
+
+async function uploadFileWithProgress(
+  file: File,
+  onProgress?: (percent: number) => void,
+  signal?: AbortSignal
+): Promise<string> {
+  if (file.size > MAX_BYTES) {
+    throw new Error(`File exceeds the ${MAX_BYTES / 1024 / 1024}MB limit`);
+  }
+  if (signal?.aborted) {
+    throw new DOMException("Upload cancelled", "AbortError");
+  }
+
+  const presign = await api.post<PresignResponse>("/api/media/presign", {
+    fileName: file.name,
+    contentType: file.type,
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    const onAbort = () => xhr.abort();
+    signal?.addEventListener("abort", onAbort);
+    const cleanup = () => signal?.removeEventListener("abort", onAbort);
+
+    xhr.open("PUT", presign.uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onload = () => {
+      cleanup();
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error("Upload to storage failed"));
+    };
+    xhr.onerror = () => {
+      cleanup();
+      reject(new Error("Upload to storage failed"));
+    };
+    xhr.onabort = () => {
+      cleanup();
+      reject(new DOMException("Upload cancelled", "AbortError"));
+    };
+    xhr.send(file);
+  });
+
+  await api.post("/api/media/metadata", {
+    key: presign.key,
+    fileName: file.name,
+    contentType: file.type,
+    sizeBytes: file.size,
+  });
+
+  return presign.publicUrl;
+}

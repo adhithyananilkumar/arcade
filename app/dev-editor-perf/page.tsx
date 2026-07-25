@@ -61,7 +61,7 @@ function BareEditor({
   if (!chrome) return content;
   return (
     <RichTextProvider editor={editor}>
-      {chrome === "toolbar" && <RichTextToolbar />}
+      {chrome === "toolbar" && <RichTextToolbar editor={editor} />}
       {content}
       {chrome === "bubbles" && <RichTextBubbles editor={editor} />}
       {chrome === "leanbubbles" && <LeanBubbles />}
