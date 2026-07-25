@@ -143,7 +143,7 @@ export default function AboutPage() {
           }
         `}</style>
 
-        {/* Parallax Background Layer (Image unchanged, mouse movement interpolation X ±6px, Y ±4px) */}
+        {/* Parallax Background Layer (Sharpened pen-line contrast & 4K edge clarity) */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -153,6 +153,17 @@ export default function AboutPage() {
             backgroundSize: "cover",
             backgroundPosition: "center 100px",
             backgroundRepeat: "no-repeat",
+            imageRendering: "-webkit-optimize-contrast",
+            filter: "contrast(1.06) brightness(1.01)",
+            WebkitFilter: "contrast(1.06) brightness(1.01)",
+          }}
+        />
+
+        {/* Seamless Anti-Banding Smooth Radial Gradient Dome Layer */}
+        <div
+          className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[75vw] max-w-[1000px] h-[400px] pointer-events-none rounded-t-full opacity-50 mix-blend-multiply"
+          style={{
+            background: "radial-gradient(ellipse 100% 100% at 50% 100%, rgba(195, 218, 255, 0.4) 0%, rgba(215, 232, 255, 0.2) 50%, transparent 80%)",
           }}
         />
 
