@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, AlertTriangle, History } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PendingChannels } from '@/apps/learner/components/channels/PendingChannels'; // Reusing the component
 import { DeletionRequests } from '@/apps/learner/components/admin/DeletionRequests';
 import { ChannelAuditLog } from '@/apps/learner/components/admin/ChannelAuditLog';
+import { channelService } from '@/domains/channels';
 
 import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -16,6 +17,22 @@ type AdminTab = 'CHANNELS' | 'DELETION_REQUESTS' | 'AUDIT_LOG';
 export default function AdminChannelsPage() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<AdminTab>('CHANNELS');
+  const [deletionRequestCount, setDeletionRequestCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    channelService
+      .getPendingDeletionRequests()
+      .then((requests) => {
+        if (!cancelled) setDeletionRequestCount(requests.length);
+      })
+      .catch(() => {
+        if (!cancelled) setDeletionRequestCount(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   if (!AuthorizationService.canManageChannels(user)) {
     notFound();
@@ -31,6 +48,25 @@ export default function AdminChannelsPage() {
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">Admin Channels</h1>
         <p className="text-gray-500">Manage all channel requests and active channels across the platform.</p>
       </div>
+
+      {!!deletionRequestCount && (
+        <button
+          onClick={() => setActiveTab('DELETION_REQUESTS')}
+          className="w-full flex items-center gap-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-left transition-colors hover:bg-red-100"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+            <AlertTriangle size={22} />
+          </div>
+          <div className="flex-1">
+            <p className="text-2xl font-bold text-red-700 leading-none">{deletionRequestCount}</p>
+            <p className="text-sm text-red-700/80 mt-1">
+              {deletionRequestCount === 1
+                ? 'channel deletion request awaiting your review'
+                : 'channel deletion requests awaiting your review'}
+            </p>
+          </div>
+        </button>
+      )}
 
       <div className="rounded-3xl border border-indigo-200 bg-white p-6 md:p-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
@@ -62,6 +98,11 @@ export default function AdminChannelsPage() {
           >
             <AlertTriangle size={16} />
             Deletion Requests
+            {!!deletionRequestCount && (
+              <span className="ml-0.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-600 text-white text-[11px] font-bold">
+                {deletionRequestCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('AUDIT_LOG')}

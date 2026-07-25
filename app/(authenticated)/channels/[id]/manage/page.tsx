@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Channel, ChannelDeletionRequestDto, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, LayoutGrid, AlertTriangle } from 'lucide-react';
+import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, LayoutGrid, AlertTriangle, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
@@ -72,7 +72,10 @@ export default function ManageChannelPage() {
   const isLocked = isSuspended || !!pendingDeletionRequest;
   // Content creation needs the actual channel.videos.upload permission (or owner's implicit
   // ALL) — bare access to this manage page doesn't imply that, so the button must reflect it.
-  const canCreateContent = permissions.includes('ALL') || permissions.includes('channel.videos.upload');
+  const canCreateContent =
+    permissions.includes('ALL') ||
+    permissions.includes('channel.videos.upload') ||
+    permissions.includes('channel.videos.upload.own');
 
   return (
     <div className="w-full space-y-8 pb-12">
@@ -159,7 +162,14 @@ export default function ManageChannelPage() {
             </div>
             
             <div className="flex shrink-0 gap-3 mt-4 md:mt-0 flex-wrap">
-              <button 
+              <button
+                onClick={() => router.push(`/channels/${channelId}`)}
+                className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
+              >
+                <ExternalLink size={18} />
+                View Channel
+              </button>
+              <button
                 onClick={() => setIsSettingsOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
               >

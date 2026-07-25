@@ -10,7 +10,8 @@ export interface EligibleChannelsState {
 
 /**
  * Every channel the current user could create content under right now — their owned channel(s)
- * plus any org channel they staff with content-authoring rights (channel.videos.upload / ALL).
+ * plus any org channel they staff with content-authoring rights (channel.videos.upload,
+ * channel.videos.upload.own, or ALL).
  * Used to drive the channel picker in content-creation flows: auto-select when there's exactly
  * one, otherwise the caller must ask the user to pick. Purely a UI convenience — the backend
  * (ContentChannelResolver) is the real authority and re-validates whatever is submitted.
@@ -31,7 +32,10 @@ export function useEligibleChannels(): EligibleChannelsState {
         const staffedChecks = await Promise.all(
           staffedCandidates.map(async (channel) => {
             const perms = await channelService.getMyChannelPermissions(channel.id).catch((): string[] => []);
-            const canAuthor = perms.includes('ALL') || perms.includes('channel.videos.upload');
+            const canAuthor =
+              perms.includes('ALL') ||
+              perms.includes('channel.videos.upload') ||
+              perms.includes('channel.videos.upload.own');
             return canAuthor ? channel : null;
           })
         );

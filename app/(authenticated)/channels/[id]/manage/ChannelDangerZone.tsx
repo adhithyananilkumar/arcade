@@ -22,8 +22,8 @@ export function ChannelDangerZone({ channel }: Props) {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
-  const [deletePhone, setDeletePhone] = useState(user?.mobileNumber || channel.ownerPhone || '');
-  const [deleteEmail, setDeleteEmail] = useState(user?.email || channel.ownerEmail || '');
+  const deletePhone = user?.mobileNumber || channel.ownerPhone || '';
+  const deleteEmail = user?.email || channel.ownerEmail || '';
   const [deleteDeclaration, setDeleteDeclaration] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -119,9 +119,11 @@ export function ChannelDangerZone({ channel }: Props) {
                 required
                 type="tel"
                 value={deletePhone}
-                onChange={e => setDeletePhone(e.target.value)}
-                placeholder="+1 234 567 8900"
+                readOnly
+                disabled
+                className="bg-gray-50 text-gray-600 cursor-not-allowed"
               />
+              <p className="text-xs text-gray-400 mt-1">From your account — update it in account settings.</p>
             </div>
 
             <div>
@@ -130,9 +132,11 @@ export function ChannelDangerZone({ channel }: Props) {
                 required
                 type="email"
                 value={deleteEmail}
-                onChange={e => setDeleteEmail(e.target.value)}
-                placeholder="owner@example.com"
+                readOnly
+                disabled
+                className="bg-gray-50 text-gray-600 cursor-not-allowed"
               />
+              <p className="text-xs text-gray-400 mt-1">From your account — update it in account settings.</p>
             </div>
 
             <label className="flex items-start gap-3 cursor-pointer mt-2 group">

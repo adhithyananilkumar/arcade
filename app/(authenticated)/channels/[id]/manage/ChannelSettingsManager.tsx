@@ -5,6 +5,7 @@ import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
 import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 
 interface Props {
   channel: Channel;
@@ -26,6 +27,8 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
   const [iconPreview, setIconPreview] = useState<string>(channel.iconUrl || '');
   const [bannerPreview, setBannerPreview] = useState<string>(channel.bannerUrl || '');
   const [loading, setLoading] = useState(false);
+  const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
+  const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
   const isSuspended = channel.status === 'SUSPENDED' || !!locked;
@@ -33,18 +36,38 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
 
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (file) {
-      setIconFile(file);
-      setIconPreview(URL.createObjectURL(file));
+      setCropSourceFile(file);
+      setCropTarget('icon');
     }
   };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (file) {
-      setBannerFile(file);
-      setBannerPreview(URL.createObjectURL(file));
+      setCropSourceFile(file);
+      setCropTarget('banner');
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropTarget(null);
+    setCropSourceFile(null);
+  };
+
+  const handleCropped = (croppedFile: File) => {
+    const previewUrl = URL.createObjectURL(croppedFile);
+    if (cropTarget === 'icon') {
+      setIconFile(croppedFile);
+      setIconPreview(previewUrl);
+    } else if (cropTarget === 'banner') {
+      setBannerFile(croppedFile);
+      setBannerPreview(previewUrl);
+    }
+    setCropTarget(null);
+    setCropSourceFile(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,6 +90,15 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
   };
 
   return (
+    <>
+    <ImageCropModal
+      open={cropTarget !== null}
+      file={cropSourceFile}
+      aspectRatio={cropTarget === 'banner' ? 4 : 1}
+      title={cropTarget === 'banner' ? 'Crop channel banner' : 'Crop channel logo'}
+      onCancel={handleCropCancel}
+      onCropped={handleCropped}
+    />
     <form onSubmit={handleSubmit} className="border border-gray-200 rounded-2xl overflow-hidden max-w-3xl">
       <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
         <div>
@@ -202,5 +234,6 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
         </div>
       )}
     </form>
+    </>
   );
 }

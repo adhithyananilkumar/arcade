@@ -29,6 +29,7 @@ import {
   Pencil,
   Copy,
   Lock,
+  User,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -47,6 +48,8 @@ interface ContentSummary {
   channelStatus: string;
   channelSuspendedAt?: string | null;
   channelForcedSuspension: boolean;
+  authorId?: string | null;
+  authorName?: string | null;
 }
 
 // ── Content type menu items ─────────────────────────────────────────────────────
@@ -791,6 +794,12 @@ function ContentCard({
       </div>
       {item.description && (
         <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
+      )}
+      {item.authorName && (
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <User size={11} className="text-gray-400" />
+          <span className="truncate">{item.authorName}</span>
+        </div>
       )}
       <div className="flex items-center gap-2 flex-wrap">
         <TypeBadge type={item.type} />

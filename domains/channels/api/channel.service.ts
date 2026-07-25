@@ -29,6 +29,8 @@ export interface ChannelContentItem {
   status: string;
   createdAt: string;
   updatedAt: string;
+  authorId?: string | null;
+  authorName?: string | null;
 }
 
 export interface ChannelAuditLogEntry {
@@ -119,6 +121,14 @@ export const channelService = {
 
   getChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {
     const response = await api.get<ChannelContentItem[]>(`/api/v1/channels/${channelId}/content`);
+    return response;
+  },
+
+  /** The channel home page's content grid — published content only, visible to any user. */
+  getPublishedChannelContent: async (channelId: string): Promise<ChannelContentItem[]> => {
+    const response = await api.get<ChannelContentItem[]>(
+      `/api/v1/channels/${channelId}/published-content`
+    );
     return response;
   },
 
