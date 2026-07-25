@@ -20,7 +20,6 @@ import { RichTextIndent } from "reactjs-tiptap-editor/indent";
 
 // Insert tools
 import { RichTextEmoji } from "reactjs-tiptap-editor/emoji";
-import { RichTextImage } from "reactjs-tiptap-editor/image";
 import { RichTextImageGif } from "reactjs-tiptap-editor/imagegif";
 import { RichTextTable } from "reactjs-tiptap-editor/table";
 import { RichTextColumn } from "reactjs-tiptap-editor/column";
@@ -39,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared/design-system/
 import { Button } from "@/shared/design-system/ui/button";
 import { Plus } from "lucide-react";
 import { VideoUploadButton } from "./VideoUploadButton";
+import { ImageUploadButton } from "./ImageUploadButton";
 
 // The font family/size dropdowns show this string for unstyled text — the library's
 // own copy is the literal word "Default", which is honest about "no override" but
@@ -121,7 +121,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
             </div>
             <div className="flex flex-wrap gap-1.5">
               <RichTextEmoji />
-              <RichTextImage />
+              <ImageUploadButton editor={editor} />
               <VideoUploadButton editor={editor} />
               <RichTextImageGif />
               <RichTextTable />

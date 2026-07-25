@@ -6,7 +6,6 @@
 import { api } from "@/infrastructure/http/api";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
-const MAX_BYTES = 25 * 1024 * 1024; // 25MB — mirrors MediaService's server-side ceiling
 
 interface PresignResponse {
   key: string;
@@ -20,9 +19,6 @@ async function uploadFile(file: File, allowedTypes: string[] | null): Promise<st
   try {
     if (allowedTypes && !allowedTypes.includes(file.type)) {
       throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
-    }
-    if (file.size > MAX_BYTES) {
-      throw new Error(`File exceeds the ${MAX_BYTES / 1024 / 1024}MB limit`);
     }
 
     const presign = await api.post<PresignResponse>("/api/media/presign", {
@@ -76,16 +72,29 @@ export function uploadVideoFile(
   file: File,
   options?: { onProgress?: (percent: number) => void; signal?: AbortSignal }
 ): Promise<string> {
-  return uploadFileWithProgress(file, options?.onProgress, options?.signal);
+  return uploadFileWithProgress(file, null, options?.onProgress, options?.signal);
+}
+
+/**
+ * Image upload with progress reporting, used by the custom ImageUploadButton dialog
+ * (apps/creator/editor/components/ImageUploadButton.tsx). Same rejects-on-failure /
+ * cancellable contract as `uploadVideoFile`, restricted to IMAGE_TYPES.
+ */
+export function uploadImageFileWithProgress(
+  file: File,
+  options?: { onProgress?: (percent: number) => void; signal?: AbortSignal }
+): Promise<string> {
+  return uploadFileWithProgress(file, IMAGE_TYPES, options?.onProgress, options?.signal);
 }
 
 async function uploadFileWithProgress(
   file: File,
+  allowedTypes: string[] | null,
   onProgress?: (percent: number) => void,
   signal?: AbortSignal
 ): Promise<string> {
-  if (file.size > MAX_BYTES) {
-    throw new Error(`File exceeds the ${MAX_BYTES / 1024 / 1024}MB limit`);
+  if (allowedTypes && !allowedTypes.includes(file.type)) {
+    throw new Error(`Unsupported file type: ${file.type || "unknown"}`);
   }
   if (signal?.aborted) {
     throw new DOMException("Upload cancelled", "AbortError");
