@@ -349,27 +349,27 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
         <div 
           className="absolute inset-0 z-0 pointer-events-none" 
           style={{
-            backgroundImage: canvasAppearance?.backgroundPattern === 'grid' 
-              ? `linear-gradient(to right, ${canvasAppearance?.gridColor || '#e2e8f0'} 1px, transparent 1px), linear-gradient(to bottom, ${canvasAppearance?.gridColor || '#e2e8f0'} 1px, transparent 1px)`
-              : canvasAppearance?.backgroundPattern === 'dots'
-              ? `radial-gradient(circle, ${canvasAppearance?.gridColor || '#cbd5e1'} 1px, transparent 1px)`
+            backgroundImage: canvasAppearance?.grid?.show && (canvasAppearance.grid.type === 'lines' || canvasAppearance.grid.type === 'cross')
+              ? `linear-gradient(to right, ${canvasAppearance.grid.color || '#e2e8f0'} 1px, transparent 1px), linear-gradient(to bottom, ${canvasAppearance.grid.color || '#e2e8f0'} 1px, transparent 1px)`
+              : canvasAppearance?.grid?.show && canvasAppearance.grid.type === 'dots'
+              ? `radial-gradient(circle, ${canvasAppearance.grid.color || '#cbd5e1'} 1px, transparent 1px)`
               : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.url
               ? `url(${canvasAppearance.image.url})`
               : canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
               ? canvasAppearance.gradient
               : undefined,
-            backgroundSize: canvasAppearance?.backgroundPattern === 'grid' || canvasAppearance?.backgroundPattern === 'dots'
-              ? `${canvasAppearance?.gridSize || 20}px ${canvasAppearance?.gridSize || 20}px`
+            backgroundSize: canvasAppearance?.grid?.show
+              ? `${canvasAppearance.grid.size || 20}px ${canvasAppearance.grid.size || 20}px`
               : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fill'
               ? 'cover'
               : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fit'
               ? 'contain'
               : undefined,
-            backgroundRepeat: (canvasAppearance?.backgroundPattern || (canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'))
+            backgroundRepeat: (canvasAppearance?.grid?.show || (canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'))
               ? 'repeat'
               : 'no-repeat',
             backgroundPosition: 'center',
-            opacity: canvasAppearance?.backgroundPattern ? 0.15 : 1
+            opacity: canvasAppearance?.grid?.show ? (canvasAppearance.grid.opacity || 0.15) : 1
           }} 
         />
         {/* Dynamic Scale & Center Wrapper */}

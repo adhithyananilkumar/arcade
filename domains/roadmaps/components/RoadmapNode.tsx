@@ -160,7 +160,7 @@ export function RoadmapNode({
       onClick={onClick}
       onDoubleClick={handleDoubleClick}
       tabIndex={0}
-      className={`relative select-none transition-all rounded-xl border-2 duration-200 ${
+      className={`relative select-none transition-all rounded-xl border-2 duration-200 min-w-[200px] max-w-[280px] break-words ${
         editable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
       } ${selected ? 'ring-4 ring-indigo-500/20' : ''}`}
       style={{

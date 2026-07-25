@@ -54,7 +54,7 @@ const STATUSES = [
 ];
 
 export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, readOnly }: PropertiesPanelProps) {
-  const [activeTab, setActiveTab] = useState<'general' | 'learning' | 'appearance' | 'comments'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'comments'>('general');
   const [comments, setComments] = useState<CommentData[]>([]);
   const [newComment, setNewComment] = useState("");
 
@@ -101,12 +101,6 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, re
           <div className="flex items-center justify-center gap-1.5"><Settings size={14} /> General</div>
         </button>
         <button 
-          onClick={() => setActiveTab('learning')}
-          className={`flex-1 pb-2 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'learning' ? 'border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          <div className="flex items-center justify-center gap-1.5"><GraduationCap size={14} /> Learning</div>
-        </button>
-        <button 
           onClick={() => setActiveTab('appearance')}
           className={`flex-1 pb-2 text-xs font-semibold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'appearance' ? 'border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
@@ -141,54 +135,26 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, re
               {readOnly ? (
                 <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-wrap min-h-[4rem]">{data.description as string || 'No description provided.'}</div>
               ) : (
-                <textarea
-                  rows={4}
-                  value={(data.description as string) || ''}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Brief description or learning objective..."
-                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-shadow"
-                />
+                <div className="relative">
+                  <textarea
+                    rows={4}
+                    value={(data.description as string) || ''}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+                      const currentText = (data.description as string) || '';
+                      if (wordCount <= 30 || text.length < currentText.length) {
+                        handleChange('description', text);
+                      }
+                    }}
+                    placeholder="Brief description or learning objective..."
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-shadow"
+                  />
+                  <div className="text-[10px] text-gray-400 mt-1 text-right">
+                    {((data.description as string) || '').trim() ? ((data.description as string).trim().split(/\s+/).length) : 0} / 30 words
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'learning' && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-right-2 duration-200">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-              <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                  Node Type
-                </label>
-                {readOnly ? (
-                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 capitalize">{(data.nodeType as string) || 'lesson'}</div>
-                ) : (
-                  <select
-                    value={(data.nodeType as string) || 'lesson'}
-                    onChange={(e) => handleChange('nodeType', e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                  >
-                    {NODE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                  Status
-                </label>
-                {readOnly ? (
-                  <div className="text-sm px-3 py-2 bg-gray-50 rounded-lg text-gray-800 capitalize">{(data.status as string) || 'draft'}</div>
-                ) : (
-                  <select
-                    value={(data.status as string) || 'draft'}
-                    onChange={(e) => handleChange('status', e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white"
-                  >
-                    {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                )}
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -267,6 +233,20 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, re
                         />
                       );
                     })}
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="color"
+                        title="Custom Background Color"
+                        value={(data.color as string)?.startsWith('#') ? (data.color as string) : '#ffffff'}
+                        onChange={(e) => handleChange('color', e.target.value)}
+                        className={`w-10 h-10 p-0 border-0 rounded-full cursor-pointer overflow-hidden transition-all shadow-sm bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full ${
+                          (data.color as string)?.startsWith('#') ? 'ring-2 ring-gray-900 ring-offset-1 scale-110 shadow-md' : 'hover:scale-105'
+                        }`}
+                      />
+                      {!(data.color as string)?.startsWith('#') && (
+                        <div className="absolute inset-0 rounded-full pointer-events-none border-2 border-gray-200"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -289,6 +269,20 @@ export function PropertiesPanel({ selectedNode, onClose, onUpdate, roadmapId, re
                         />
                       );
                     })}
+                    <div className="relative flex items-center justify-center">
+                      <input
+                        type="color"
+                        title="Custom Font Color"
+                        value={(data.fontColor as string)?.startsWith('#') ? (data.fontColor as string) : '#000000'}
+                        onChange={(e) => handleChange('fontColor', e.target.value)}
+                        className={`w-8 h-8 p-0 border-0 rounded-full cursor-pointer overflow-hidden transition-all shadow-sm bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-full ${
+                          (data.fontColor as string)?.startsWith('#') ? 'ring-2 ring-indigo-500 ring-offset-1 scale-110 shadow-md' : 'hover:scale-105'
+                        }`}
+                      />
+                      {!(data.fontColor as string)?.startsWith('#') && (
+                        <div className="absolute inset-0 rounded-full pointer-events-none border-2 border-gray-200"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

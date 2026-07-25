@@ -88,7 +88,7 @@ export function RoadmapHeader({
       
       <div className="flex items-center gap-6">
         <div className="flex flex-col items-end text-xs text-gray-500 gap-1">
-          {roadmap.status !== 'PUBLISHED' && (
+          {roadmap.status !== 'published' && (
             <span className="flex items-center gap-1">
               <Clock size={12} />
               {saveState === 'saving' ? 'Saving...' : saveState === 'unsaved' ? 'Unsaved changes' : `Last Saved: ${new Date(roadmap.updatedAt).toLocaleTimeString()}`}
@@ -118,17 +118,14 @@ export function RoadmapHeader({
           >
             Export
           </Button>
-          <Button 
-            asChild
-            variant="outline"
-            size="sm"
+          <Link 
+            href="/studio/roadmap/templates" 
+            className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground text-sm font-medium text-gray-700"
             title="Template Library"
           >
-            <Link href="/studio/roadmap/templates" className="flex items-center gap-1.5 text-gray-700">
-              <Library size={14} />
-              Templates
-            </Link>
-          </Button>
+            <Library size={14} />
+            Templates
+          </Link>
           <Button 
             variant="secondary"
             size="sm"

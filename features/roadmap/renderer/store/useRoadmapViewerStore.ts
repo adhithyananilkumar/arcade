@@ -98,7 +98,7 @@ export const useRoadmapViewerStore = create<RoadmapViewerState>((set, get) => ({
     const isNowCompleted = currentProgress?.status !== 'COMPLETED';
     const nextStatus = isNowCompleted ? 'COMPLETED' : 'NOT_STARTED';
 
-    const updatedProgress = {
+    const updatedProgress: Record<string, any> = {
       ...progress,
       [nodeId]: {
         status: nextStatus,

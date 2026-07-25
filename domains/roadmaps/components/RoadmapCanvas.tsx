@@ -264,7 +264,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
     return Array.from(descendants);
   }, []);
 
-  const onNodeDragStart = useCallback((event: React.MouseEvent, node: Node) => {
+  const onNodeDragStart = useCallback((event: any, node: Node) => {
     if (readOnly) return;
     
     if (event.altKey) {
@@ -289,7 +289,7 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
     dragStartPositionsRef.current = positions;
   }, [edges, nodes, getDescendants, readOnly]);
 
-  const onNodeDrag = useCallback((event: React.MouseEvent, node: Node) => {
+  const onNodeDrag = useCallback((event: any, node: Node) => {
     if (readOnly || draggingBranchIds.size === 0) return;
 
     const startPos = dragStartPositionsRef.current.get(node.id);
@@ -718,9 +718,6 @@ function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, r
           proOptions={{ hideAttribution: true }}
           snapToGrid={true}
           snapGrid={[20, 20]}
-          nodesDraggable={true}
-          nodesConnectable={true}
-          elementsSelectable={true}
           connectionRadius={40}
           connectionMode={ConnectionMode.Loose}
           isValidConnection={() => true}
