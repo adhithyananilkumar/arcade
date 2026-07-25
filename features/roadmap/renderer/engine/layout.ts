@@ -20,8 +20,69 @@ export function calculateLayout(
     };
   }
 
-  // Preferred widths and padding
-  const cardWidth = 260; 
+  const cardWidth = 280;
+  const cardHeight = 120;
+
+  // Check if ALL nodes have valid saved x and y positions
+  const hasSavedPositions = nodes.every(
+    n => n.x !== undefined && n.y !== undefined && !isNaN(Number(n.x)) && !isNaN(Number(n.y))
+  );
+
+  let finalNodes: RoadmapNode[] = [];
+
+  if (hasSavedPositions) {
+    // WYSIWYG Mode: Preserve exact saved coordinates from editor without modifying, reflowing or normalizing!
+    finalNodes = nodes.map(n => ({
+      ...n,
+      x: Number(n.x),
+      y: Number(n.y),
+      width: n.width || cardWidth,
+      height: n.height || cardHeight,
+    }));
+  } else {
+    // Fallback: Run auto-layout ONLY if any node is missing coordinates
+    finalNodes = runAutoLayout(nodes, viewportWidth, cardWidth, cardHeight);
+  }
+
+  // Calculate overall graph bounds
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  finalNodes.forEach(n => {
+    minX = Math.min(minX, n.x);
+    maxX = Math.max(maxX, n.x + (n.width || cardWidth));
+    minY = Math.min(minY, n.y);
+    maxY = Math.max(maxY, n.y + (n.height || cardHeight));
+  });
+
+  if (minX === Infinity) minX = 0;
+  if (maxX === -Infinity) maxX = 1200;
+  if (minY === Infinity) minY = 0;
+  if (maxY === -Infinity) maxY = 800;
+
+  const padding = 120;
+  const graphWidth = Math.max(maxX + padding, 1200);
+  const graphHeight = Math.max(maxY + padding, 800);
+
+  return {
+    nodes: finalNodes,
+    edges: edges.map(edge => ({ ...edge, points: [] })),
+    width: graphWidth,
+    height: graphHeight,
+    minX,
+    minY,
+    canvasAppearance: canvasAppearance ?? defaultCanvasAppearance,
+  };
+}
+
+function runAutoLayout(
+  nodes: RoadmapNode[],
+  viewportWidth: number,
+  cardWidth: number,
+  cardHeight: number
+): RoadmapNode[] {
   let horizontalGap = 80;
   let verticalGap = 160;
 
@@ -33,16 +94,14 @@ export function calculateLayout(
   const padding = 80;
   const maxAvailableWidth = (viewportWidth || 1200) - 2 * padding;
 
-  // Set default dimensions and sanitize
   const sanitizedNodes = nodes.map(n => ({
     ...n,
     x: Number(n.x) || 0,
     y: Number(n.y) || 0,
     width: cardWidth,
-    height: 140 // max estimated height for layout spacing
+    height: cardHeight,
   }));
 
-  // 1. Group nodes into levels/rows by their original y coordinate (within 80px tolerance)
   const sortedByY = [...sanitizedNodes].sort((a, b) => a.y - b.y);
   const levels: { originalY: number; nodes: typeof sanitizedNodes }[] = [];
 
@@ -60,9 +119,7 @@ export function calculateLayout(
   let currentY = 0;
   const layoutedNodes: RoadmapNode[] = [];
 
-  // 2. Reflow nodes row by row
   levels.forEach(lvl => {
-    // Sort horizontally by original X to maintain logical left-right hierarchy
     lvl.nodes.sort((a, b) => a.x - b.x);
 
     const subRows: (typeof sanitizedNodes)[] = [];
@@ -96,42 +153,9 @@ export function calculateLayout(
         });
       });
 
-      // Advance Y for the next sub-row/level
-      currentY += 140 /* estimated node height */ + verticalGap;
+      currentY += cardHeight + verticalGap;
     });
   });
 
-  // 3. Compute graph bounds and zero-align to eliminate massive top/left gaps
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  
-  layoutedNodes.forEach(n => {
-    minX = Math.min(minX, n.x);
-    maxX = Math.max(maxX, n.x + cardWidth);
-    minY = Math.min(minY, n.y);
-    maxY = Math.max(maxY, n.y + 140);
-  });
-  
-  if (minX === Infinity) minX = 0;
-  if (minY === Infinity) minY = 0;
-
-  layoutedNodes.forEach(n => {
-    n.x -= minX;
-    n.y -= minY;
-  });
-
-  const graphWidth = maxX - minX;
-  const graphHeight = maxY - minY;
-
-  return {
-    nodes: layoutedNodes,
-    edges: edges.map(edge => ({ ...edge, points: [] })), // We'll let EdgeRenderer handle precise routing
-    width: graphWidth,
-    height: graphHeight,
-    minX: 0,
-    minY: 0,
-    canvasAppearance: canvasAppearance ?? defaultCanvasAppearance,
-  };
+  return layoutedNodes;
 }

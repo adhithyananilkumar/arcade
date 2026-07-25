@@ -28,8 +28,8 @@ export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], ed
       fontColor: rn.data?.fontColor || null, // Tailwind text class e.g. 'text-white'
       fontFamily: rn.data?.fontFamily || null, // Tailwind font class e.g. 'font-sans'
 
-      x: rn.position?.x ?? 0,
-      y: rn.position?.y ?? 0,
+      x: (rn.position?.x ?? rn.x) !== undefined && !isNaN(Number(rn.position?.x ?? rn.x)) ? Number(rn.position?.x ?? rn.x) : (undefined as any),
+      y: (rn.position?.y ?? rn.y) !== undefined && !isNaN(Number(rn.position?.y ?? rn.y)) ? Number(rn.position?.y ?? rn.y) : (undefined as any),
       width: 280,
       height: 120,
     }));
