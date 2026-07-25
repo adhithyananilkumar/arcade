@@ -17,7 +17,19 @@ export type { User } from '@/infrastructure/auth/auth.store';
 export type { Channel } from '@/domains/channels';
 export type { RoadmapData } from '@/domains/roadmaps';
 
+export interface ContentSummary {
+  id: string;
+  type: string;
+  title: string;
+  description?: string | null;
+  coverImageUrl?: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MockErrorResponse {
   message: string;
   status: number;
 }
+

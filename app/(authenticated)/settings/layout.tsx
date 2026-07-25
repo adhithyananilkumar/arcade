@@ -55,9 +55,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-80px)] pt-20 md:pt-24 pb-12 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
-      {/* Sticky Static Sidebar Navigation */}
-      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-24 self-start">
+    <div className="flex flex-col md:flex-row min-h-screen pt-20 md:pt-24 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
+      {/* Sticky Sidebar Navigation */}
+      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-24 self-start z-10">
         <nav className="space-y-1.5">
           {sidebarItems.map((item) => {
             const isActive = pathname === item.href || (pathname === '/settings' && item.href === '/settings/info');
@@ -75,7 +75,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 )}
               >
                 <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
+                  "flex items-center justify-center w-8 h-8 rounded-full shrink-0 shadow-2xs",
                   item.iconBg
                 )}>
                   <Icon size={16} strokeWidth={2} />
@@ -87,11 +87,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         </nav>
       </aside>
 
-      {/* Main Content Area (Scrolls independently) */}
+      {/* Main Content Area */}
       <main className="flex-1 bg-transparent py-1 w-full min-w-0">
         <div className="w-full">
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 mb-5 font-semibold">
+          {/* Sticky Breadcrumb Header with Top-Extended Background Shield */}
+          <div className="sticky top-0 z-30 bg-white dark:bg-[#202124] pt-20 md:pt-24 pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold -mt-20 md:-mt-24">
             <Link href="/settings" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>
@@ -106,7 +106,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             )}
           </div>
 
-          {children}
+          <div className="space-y-6">
+            {children}
+          </div>
         </div>
       </main>
     </div>

@@ -6,6 +6,7 @@
  */
 import { getChannel, listChannels } from './handlers/channels';
 import { getRoadmap, listRoadmaps } from './handlers/roadmaps';
+import { createCourse, createRoadmap, createWorkshop, listContent, listCourses } from './handlers/content';
 import type { MockRequest, MockResult } from './handlers/shared';
 
 type RouteHandler = (req: MockRequest, params: string[]) => MockResult;
@@ -22,7 +23,14 @@ const routes: Route[] = [
   { method: 'GET', pattern: ['api', 'v1', 'channels', ':id'], handler: (req, p) => getChannel(req, p[0]) },
   { method: 'GET', pattern: ['api', 'roadmaps'], handler: (req) => listRoadmaps(req) },
   { method: 'GET', pattern: ['api', 'roadmaps', ':id'], handler: (req, p) => getRoadmap(req, p[0]) },
+  { method: 'POST', pattern: ['api', 'roadmaps'], handler: (req) => createRoadmap(req) },
+  { method: 'GET', pattern: ['api', 'content'], handler: (req) => listContent(req) },
+  { method: 'GET', pattern: ['api', 'courses'], handler: (req) => listCourses(req) },
+  { method: 'POST', pattern: ['api', 'courses'], handler: (req) => createCourse(req) },
+  { method: 'POST', pattern: ['api', 'workshops'], handler: (req) => createWorkshop(req) },
 ];
+
+
 
 export function resolveMockRoute(method: string, pathSegments: string[]): { handler: RouteHandler; params: string[] } | null {
   for (const route of routes) {
