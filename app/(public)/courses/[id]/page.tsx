@@ -27,6 +27,7 @@ import { useParams, useRouter } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -365,6 +366,7 @@ function CourseHero({
   priceAmount?: number | null
 }) {
   const [saved, setSaved] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
 
   const words = title.split(' ')
   const lastWord = words.pop() || ''
@@ -447,7 +449,16 @@ function CourseHero({
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>
               )}
             </div>
-            <EnrollButton onClick={onEnroll}>Enroll now</EnrollButton>
+            <EnrollButton onClick={() => {
+              setEnrolling(true);
+              try {
+                if (onEnroll) onEnroll();
+              } finally {
+                setEnrolling(false);
+              }
+            }}>
+              {enrolling ? "Enrolling..." : "Enroll now"}
+            </EnrollButton>
             <button
               onClick={() => setSaved((s) => !s)}
               aria-pressed={saved}
@@ -778,7 +789,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
+function EnrollCta({ onEnroll, priceAmount }: { onEnroll?: () => void; priceAmount?: number }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -794,7 +805,7 @@ function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <EnrollButton onClick={onEnroll}>Enroll for $20</EnrollButton>
+        <EnrollButton onClick={onEnroll}>Enroll for ${priceAmount || 20}</EnrollButton>
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
         </button>
@@ -812,9 +823,23 @@ export default function CoursePreviewPage() {
   const router = useRouter()
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const { user } = useAuthStore()
 
-  const handleEnrollClick = () => {
-    router.push('/sign?mode=login')
+  const handleEnrollClick = async () => {
+    if (!user) {
+      router.push('/sign?mode=login')
+      return
+    }
+
+    if (params?.id) {
+      try {
+        await api.post(`/api/v1/learning/enrollments/${params.id}`)
+        router.push(`/learn/${params.id}`)
+      } catch (err: any) {
+        console.error("Failed to enroll:", err)
+        alert(err.message || "Failed to enroll")
+      }
+    }
   }
 
   useEffect(() => {
@@ -866,7 +891,7 @@ export default function CoursePreviewPage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnrollClick} />
+          <EnrollCta onEnroll={handleEnrollClick} priceAmount={course?.priceAmount || 20} />
         </div>
       </div>
     </main>

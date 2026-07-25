@@ -202,7 +202,7 @@ export function Doodle({
           <motion.svg width="24" height="24" viewBox="0 0 24 24" animate={isIdleAnimating ? { opacity: [1, 0.7, 1] } : {}}>
             <rect x="2" y="4" width="20" height="16" rx="2" {...strokeProps} />
             <path d="M6 8l4 4-4 4M14 16h4" {...strokeProps} />
-            <path d="M14 16h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={accentStroke} animate={isIdleAnimating ? { opacity: [1, 0, 1, 0, 1] } : {}} />
+            <motion.path d="M14 16h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className={accentStroke} animate={isIdleAnimating ? { opacity: [1, 0, 1, 0, 1] } : {}} />
           </motion.svg>
         );
       case "code":

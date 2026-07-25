@@ -19,13 +19,14 @@ interface CourseSubmitDialogProps {
   course: CourseResponse;
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number }) => Promise<void>;
+  onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
 }
 
 export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSubmitDialogProps) {
   const [coverImageUrl, setCoverImageUrl] = useState(course.coverImageUrl || "");
   const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course.pricingModel || 'FREE');
   const [priceAmount, setPriceAmount] = useState<number | "">(course.priceAmount || "");
+  const [message, setMessage] = useState("");
   
   const [schedule, setSchedule] = useState<ExamScheduleSlot[]>(() => {
     try {
@@ -91,7 +92,8 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
       await onSubmit({
         coverImageUrl: coverImageUrl || undefined,
         pricingModel,
-        priceAmount: pricingModel === 'PAID' ? Number(priceAmount) : undefined
+        priceAmount: pricingModel === 'PAID' ? Number(priceAmount) : undefined,
+        message
       });
       onClose();
     } catch (e) {
@@ -171,6 +173,17 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
             )}
           </div>
 
+          {/* Submission Note */}
+          <div className="space-y-3 pt-3 border-t border-slate-100">
+            <h3 className="text-sm font-semibold text-slate-800">Submission Note (Optional)</h3>
+            <p className="text-xs text-slate-500 mb-2">Leave a comment for the reviewer summarizing your changes.</p>
+            <textarea
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px]"
+              placeholder="e.g., Added new module on React Hooks and fixed typo in Lesson 1."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </div>
 
         </div>
 
