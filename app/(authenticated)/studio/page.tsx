@@ -124,6 +124,13 @@ function TypeBadge({ type }: { type: string }) {
       </span>
     );
   }
+  if (type === "WEBINAR") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+        <Radio size={10} /> Webinar
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200">
       <BookOpen size={10} /> Course
@@ -341,11 +348,11 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
 
 // ── New Workshop creation modal ─────────────────────────────────────────────────
 
-function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
+function CreateWorkshopModal({ onClose, initialType }: { onClose: () => void; initialType?: string }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [workshopType, setWorkshopType] = useState<string>(WorkshopType.WORKSHOP);
+  const [workshopType, setWorkshopType] = useState<string>(initialType || WorkshopType.WORKSHOP);
   const [creating, setCreating] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -370,12 +377,23 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
         currency: "USD",
         visibility: "PRIVATE"
       });
-      router.push(`/studio/workshop/${workshop.id}/edit`);
+      router.push(`/studio/workshop/${workshop.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create workshop");
       setCreating(false);
     }
   }
+
+  const typeLabel = workshopType === WorkshopType.AMA
+    ? "AMA"
+    : workshopType.charAt(0).toUpperCase() + workshopType.slice(1).toLowerCase();
+  
+  const isWebinar = workshopType === WorkshopType.WEBINAR;
+  const Icon = isWebinar ? Radio : Wrench;
+  const iconColorClass = isWebinar ? "text-blue-600" : "text-violet-600";
+  const iconBgClass = isWebinar ? "bg-blue-50" : "bg-violet-50";
+  const btnColorClass = isWebinar ? "bg-blue-600 hover:bg-blue-700" : "bg-violet-600 hover:bg-violet-700";
+  const focusClass = isWebinar ? "focus:border-blue-400 focus:ring-blue-300" : "focus:border-violet-400 focus:ring-violet-300";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -389,11 +407,11 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
           <X size={18} />
         </button>
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50">
-            <Wrench size={20} className="text-violet-600" />
+          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBgClass}`}>
+            <Icon size={20} className={iconColorClass} />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">New Workshop</h3>
+            <h3 className="text-base font-semibold text-gray-900">New {typeLabel}</h3>
             <p className="text-xs text-gray-500">Give it a title to get started.</p>
           </div>
         </div>
@@ -405,27 +423,10 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="workshop-type" className="mb-1 block text-sm font-medium text-gray-700">
-              Workshop Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="workshop-type"
-              required
-              value={workshopType}
-              onChange={(e) => setWorkshopType(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 bg-white"
-            >
-              <option value={WorkshopType.WORKSHOP}>Workshop</option>
-              <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
-              <option value={WorkshopType.MASTERCLASS}>Masterclass</option>
-              <option value={WorkshopType.WEBINAR}>Webinar</option>
-              <option value={WorkshopType.AMA}>AMA</option>
-            </select>
-          </div>
+
           <div>
             <label htmlFor="workshop-title" className="mb-1 block text-sm font-medium text-gray-700">
-              Workshop Title <span className="text-red-500">*</span>
+              {typeLabel} Title <span className="text-red-500">*</span>
             </label>
             <input
               id="workshop-title"
@@ -436,8 +437,8 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
               maxLength={120}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Advanced TypeScript"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+              placeholder={`e.g. Advanced TypeScript`}
+              className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-1 ${focusClass}`}
             />
           </div>
           <div>
@@ -450,7 +451,7 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+              className={`w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-1 ${focusClass}`}
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">
@@ -464,9 +465,9 @@ function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
             <button
               type="submit"
               disabled={!title.trim() || creating}
-              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
+              className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${btnColorClass}`}
             >
-              {creating ? "Creating…" : "Create Workshop"}
+              {creating ? "Creating…" : `Create ${typeLabel}`}
             </button>
           </div>
         </form>
@@ -664,7 +665,7 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const isWorkshop = item.type === "WORKSHOP";
+  const isWorkshop = ["WORKSHOP", "BOOTCAMP", "MASTERCLASS", "AMA", "WEBINAR"].includes(item.type?.toUpperCase() || "");
   const editHref = isRoadmap 
     ? `/studio/roadmap/${item.id}/edit` 
     : isWorkshop
@@ -755,7 +756,7 @@ function ContentCard({
 
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | "webinar" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
 
@@ -814,7 +815,12 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col">
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} />}
+      {(createOpen === "workshop" || createOpen === "webinar") && (
+        <CreateWorkshopModal 
+          onClose={() => setCreateOpen(null)} 
+          initialType={createOpen === "webinar" ? "WEBINAR" : "WORKSHOP"} 
+        />
+      )}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
@@ -847,19 +853,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800 cursor-pointer">
-              <Upload size={16} />
-              Import Roadmap
-              <input type="file" accept=".json" className="hidden" onChange={handleImport} />
-            </label>
-            <Link
-              href="/studio/roadmap/templates"
-              title="Roadmap Templates"
-              className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-800"
-            >
-              <Library size={16} />
-              Templates
-            </Link>
             <Link
               href="/studio/review"
               title="Review Courses"
@@ -924,8 +917,8 @@ export default function DashboardPage() {
                       );
                       const cls =
                         "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
-                      // "Course", "Roadmap", and "Workshop" open creation modals; other types navigate (stubs for now).
-                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" ? (
+                      // "Course", "Roadmap", "Workshop", and "Webinar" open creation modals; other types navigate (stubs for now).
+                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" || type.id === "webinar" ? (
                         <button
                           key={type.id}
                           type="button"

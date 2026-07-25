@@ -48,6 +48,7 @@ export interface Workshop {
   coverImageUrl?: string;
   promoVideoUrl?: string;
   workshopType: WorkshopType;
+  meetingUrl?: string;
   deliveryMode: DeliveryMode;
   difficulty: Difficulty;
   language: string;

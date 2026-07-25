@@ -1,21 +1,23 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export default function ParticipantsLayout({
+export default async function ParticipantsLayout({
   children,
   params,
 }: {
   children: ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+  
   const tabs = [
-    { name: "Registered Members", href: `/studio/workshop/${params.id}/participants` },
-    { name: "Pending Approvals", href: `/studio/workshop/${params.id}/participants/pending` },
-    { name: "Waitlist", href: `/studio/workshop/${params.id}/participants/waitlist` },
-    { name: "Attendance", href: `/studio/workshop/${params.id}/participants/attendance` },
-    { name: "Certificates", href: `/studio/workshop/${params.id}/participants/certificates` },
-    { name: "Messages", href: `/studio/workshop/${params.id}/participants/messages` },
-    { name: "Analytics", href: `/studio/workshop/${params.id}/participants/analytics` },
+    { name: "Registered Members", href: `/studio/workshop/${id}/participants` },
+    { name: "Pending Approvals", href: `/studio/workshop/${id}/participants/pending` },
+    { name: "Waitlist", href: `/studio/workshop/${id}/participants/waitlist` },
+    { name: "Attendance", href: `/studio/workshop/${id}/participants/attendance` },
+    { name: "Certificates", href: `/studio/workshop/${id}/participants/certificates` },
+    { name: "Messages", href: `/studio/workshop/${id}/participants/messages` },
+    { name: "Analytics", href: `/studio/workshop/${id}/participants/analytics` },
   ];
 
   return (

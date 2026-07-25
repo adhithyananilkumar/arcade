@@ -1,7 +1,8 @@
 'use client';
 
 import React from "react";
-import { CheckCircle2, Clock, Eye, FileEdit, Archive, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Clock, Eye, FileEdit, Archive, ShieldAlert, Library } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/shared/design-system/ui/button";
 import { Badge } from "@/shared/design-system/ui/badge";
 import type { RoadmapData } from "../types";
@@ -116,6 +117,17 @@ export function RoadmapHeader({
             title="Export to JSON"
           >
             Export
+          </Button>
+          <Button 
+            asChild
+            variant="outline"
+            size="sm"
+            title="Template Library"
+          >
+            <Link href="/studio/roadmap/templates" className="flex items-center gap-1.5 text-gray-700">
+              <Library size={14} />
+              Templates
+            </Link>
           </Button>
           <Button 
             variant="secondary"

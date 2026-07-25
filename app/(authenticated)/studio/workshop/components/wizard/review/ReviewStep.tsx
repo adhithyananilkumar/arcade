@@ -22,8 +22,10 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
   const [isPublishing, setIsPublishing] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
 
-  // Cast to any to check if an ID exists (i.e. if the draft was saved to backend)
   const workshopId = (form.formData as any).id;
+  const isWebinar = form.formData.workshopType === 'WEBINAR';
+  const rootTerm = isWebinar ? 'webinar' : 'workshop';
+  const RootTerm = isWebinar ? 'Webinar' : 'Workshop';
 
   useEffect(() => {
     if (!workshopId) {
@@ -66,11 +68,11 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
       if (typeof window !== 'undefined') {
         localStorage.removeItem('arcade_workshop_draft');
       }
-      toast.success('Workshop published successfully!');
+      toast.success(`${RootTerm} published successfully!`);
       window.location.reload();
     } catch (e: any) {
       console.error('Publish error:', e);
-      toast.error(e?.message || 'Failed to publish workshop.');
+      toast.error(e?.message || `Failed to publish ${rootTerm}.`);
     } finally {
       setIsPublishing(false);
     }
@@ -81,10 +83,10 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     setIsUnpublishing(true);
     try {
       await unpublishWorkshop(workshopId);
-      toast.success('Workshop unpublished.');
+      toast.success(`${RootTerm} unpublished.`);
       window.location.reload();
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to unpublish workshop.');
+      toast.error(e?.message || `Failed to unpublish ${rootTerm}.`);
     } finally {
       setIsUnpublishing(false);
     }
@@ -95,7 +97,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
       <div className="p-8 text-center bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg max-w-2xl mx-auto space-y-4">
         <p className="text-yellow-800 dark:text-yellow-400 font-semibold text-lg">Save Draft to Review & Publish</p>
         <p className="text-sm text-yellow-700 dark:text-yellow-500">
-          You need to save your workshop draft to the server before reviewing and publishing.
+          You need to save your {rootTerm} draft to the server before reviewing and publishing.
         </p>
         <button
           onClick={() => onSaveDraft?.(false)}
@@ -127,7 +129,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
         
         {/* Checklist */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <PublishingChecklist validation={validation} onNavigateToStep={onNavigateToStep} />
+          <PublishingChecklist validation={validation} onNavigateToStep={onNavigateToStep} rootTerm={rootTerm} />
         </div>
 
         {/* Actions */}
@@ -142,7 +144,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
                 disabled={isUnpublishing}
                 className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50"
               >
-                {isUnpublishing ? 'Unpublishing...' : 'Unpublish Workshop'}
+                {isUnpublishing ? 'Unpublishing...' : `Unpublish ${RootTerm}`}
               </button>
             ) : (
               <button
@@ -150,11 +152,11 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
                 disabled={isPublishing}
                 className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
               >
-                {isPublishing ? 'Publishing...' : 'Publish Workshop'}
+                {isPublishing ? 'Publishing...' : `Publish ${RootTerm}`}
               </button>
             )}
             <button
-              onClick={onSaveDraft}
+              onClick={() => onSaveDraft?.()}
               disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >

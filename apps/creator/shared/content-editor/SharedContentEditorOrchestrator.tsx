@@ -40,6 +40,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
+import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
@@ -321,6 +322,8 @@ function ContentSettingsPanel({ terminology,
   updatedAt,
   onDeleted,
   onDescriptionChange,
+  onPublish,
+  onUnpublish,
 }: {
   contentId?: string;
   title: string;
@@ -330,7 +333,10 @@ function ContentSettingsPanel({ terminology,
   createdAt: string | null;
   updatedAt: string | null;
   onDeleted: () => void;
-  onDescriptionChange: (desc: string) => void; terminology: { root: string; container: string; leafDocument: string; leafQuiz: string };
+  onDescriptionChange: (desc: string) => void; 
+  onPublish?: () => void;
+  onUnpublish?: () => void;
+  terminology: { root: string; container: string; leafDocument: string; leafQuiz: string };
 }) {
   const [dangerOpen, setDangerOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -405,6 +411,39 @@ function ContentSettingsPanel({ terminology,
         <InfoRow label="Pricing">{pricingModel === "PAID" ? "Paid" : "Free"}</InfoRow>
         <InfoRow label="Created">{fmt(createdAt)}</InfoRow>
         <InfoRow label="Last updated">{fmt(updatedAt)}</InfoRow>
+      </div>
+
+      {/* Actions */}
+      <div className="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-3">
+          <h3 className="text-sm font-semibold text-gray-800">Publishing Actions</h3>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-sm text-gray-600 mb-4">
+            {status === "PUBLISHED"
+              ? "This content is currently live. You can unpublish it to hide it from students."
+              : "This content is currently a draft. Publish it to make it live for students."}
+          </p>
+          <div className="flex gap-3">
+            {status === "PUBLISHED" ? (
+              <button
+                type="button"
+                onClick={onUnpublish}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Unpublish
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onPublish}
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              >
+                Publish {terminology.root}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Danger Zone */}
@@ -1136,43 +1175,37 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const askSubmit = () =>
-    setConfirm({
-      title: contentType === "workshop" ? "Proceed to next steps?" : "Ready for review?",
-      message:
-        contentType === "workshop"
-          ? "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published."
-          : "Once submitted, reviewers will be notified and your content will be locked for editing until approved.",
-      confirmLabel: contentType === "workshop" ? "Proceed.." : "Submit for Review",
-      onConfirm: async () => {
-        if (contentType === "workshop") {
-          router.push(`/studio/workshop/${contentId}`);
-          return;
-        }
+  const handlePublish = useCallback(async () => {
+    if (!contentId) return;
+    try {
+      if (contentType === "course") {
+        await api.post(`/api/courses/${contentId}/publish`, {});
+      } else {
+        await api.post(`/api/workshops/${contentId}/publish`, {});
+      }
+      setStatus("PUBLISHED");
+      toast?.success("Published successfully");
+    } catch (e) {
+      console.error(e);
+      toast?.error("Failed to publish");
+    }
+  }, [contentId, contentType]);
 
-        if (!contentId) return;
-        // Flush the open lesson first so its latest edits are persisted before the
-        // backend snapshots the whole course into WORKFLOW versions.
-        if (editorRef.current) {
-          try {
-            await editorRef.current.flush();
-          } catch {
-            // best-effort — proceed with submit regardless
-          }
-        }
-        try {
-          const updated = await api.post<CourseResponse>(
-            `/api/courses/${contentId}/submit`,
-            {}
-          );
-          setStatus(updated.status);
-          // Surface the new "Submitted for review" checkpoint if the panel is open.
-          setHistoryRefreshKey((k) => k + 1);
-        } catch (e) {
-          console.error("Failed to submit course", e);
-        }
-      },
-    });
+  const handleUnpublish = useCallback(async () => {
+    if (!contentId) return;
+    try {
+      if (contentType === "course") {
+        await api.post(`/api/courses/${contentId}/unpublish`, {});
+      } else {
+        await api.post(`/api/workshops/${contentId}/unpublish`, {});
+      }
+      setStatus("DRAFT");
+      toast?.success("Unpublished successfully");
+    } catch (e) {
+      console.error(e);
+      toast?.error("Failed to unpublish");
+    }
+  }, [contentId, contentType]);
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1312,14 +1345,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {status === "DRAFT" && contentType !== "workshop" && (
+            {contentType !== "workshop" && (
               <button
                 type="button"
-                onClick={askSubmit}
+                onClick={() => setView("settings")}
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
-                <Send size={14} />
-                <span className="hidden sm:inline">Submit for Review</span>
+                <Settings size={14} />
+                <span className="hidden sm:inline">Course Settings</span>
               </button>
             )}
 
@@ -1330,7 +1363,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
                 <Settings size={14} />
-                <span className="hidden sm:inline">Manage Workshop</span>
+                <span className="hidden sm:inline">Manage {adapter.terminology.root}</span>
               </button>
             )}
           </div>
@@ -1635,6 +1668,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     setDescription(desc);
                     scheduleCourseMetaSave({ description: desc });
                   }}
+                  onPublish={handlePublish}
+                  onUnpublish={handleUnpublish}
                 />
               </div>
             </div>
@@ -1683,12 +1718,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <div>
                 <h3 className="text-base font-semibold text-gray-700">
                   {contentType === "workshop"
-                    ? "Select a workshop day or create a new day to start editing."
+                    ? `Select a ${adapter.terminology.root.toLowerCase()} day or create a new day to start editing.`
                     : "Select a lesson or quiz to start editing."}
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
                   {contentType === "workshop"
-                    ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                    ? `Create your first ${adapter.terminology.root.toLowerCase()} day and start building the agenda, notes, resources, and instructions.`
                     : "Open the sidebar, add a module, then a lesson or quiz to begin."}
                 </p>
               </div>

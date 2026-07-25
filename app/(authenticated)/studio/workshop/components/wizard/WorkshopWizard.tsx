@@ -44,6 +44,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         form.handleChange('description', data.description || '');
         form.handleChange('category', data.category || '');
         form.handleChange('workshopType', data.workshopType || 'WORKSHOP');
+        if (data.meetingUrl) form.handleChange('meetingUrl', data.meetingUrl);
         form.handleChange('deliveryMode', data.deliveryMode || 'ONLINE');
         form.handleChange('difficulty', data.difficulty || 'BEGINNER');
         form.handleChange('language', data.language || 'en');
@@ -86,13 +87,14 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         thumbnailUrl: form.formData.thumbnailUrl,
         coverImageUrl: form.formData.coverImageUrl,
         promoVideoUrl: form.formData.promoVideoUrl,
+        meetingUrl: form.formData.meetingUrl,
         workshopType: form.formData.workshopType,
         deliveryMode: form.formData.deliveryMode,
         difficulty: form.formData.difficulty,
         language: form.formData.language || 'en',
         price: form.formData.price || 0,
         currency: form.formData.currency || 'USD',
-        capacity: form.formData.capacity === '' ? null : form.formData.capacity,
+        capacity: (form.formData.capacity as any) === '' ? null : form.formData.capacity,
         visibility: form.formData.visibility
       };
 
@@ -151,9 +153,13 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
     }
   };
 
+  const isWebinar = form.formData.workshopType === 'WEBINAR';
+  const hasId = !!((form.formData as any).id || workshopId);
+  const headerTitle = hasId ? (isWebinar ? 'Edit Webinar' : 'Edit Workshop') : (isWebinar ? 'Create Webinar' : 'Create Workshop');
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <WorkshopHeader />
+      <WorkshopHeader title={headerTitle} />
 
       <div className="flex flex-col md:flex-row gap-8">
 
