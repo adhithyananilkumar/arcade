@@ -1,19 +1,18 @@
 // apps/creator/editor/components/MediaUploadDialog.tsx
-// Shared upload-or-link dialog behind both VideoUploadButton and ImageUploadButton.
-// Gives whatever media type it's configured for the same explicit states: pick a file
-// -> review it -> press Upload to actually start -> progress bar -> success (inserts
-// and closes) or an inline, retryable error — plus a "paste a URL" tab as the second
-// way to insert. See VideoUploadButton.tsx for why this replaces the vendor dialogs.
+// Shared upload-or-link picker behind both VideoUploadButton and ImageUploadButton.
+// Selecting one or more files hands them straight to the global upload queue
+// (uploadQueueStore.ts) and closes immediately — the actual upload runs in the
+// background, tracked by the floating UploadQueuePanel, so it never blocks the author
+// from continuing to edit (Google Docs' upload-tray pattern). A "paste a URL" tab is
+// the second way to insert, since a link doesn't need queueing at all.
 
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import type { Editor } from "@tiptap/react";
-import { X, RotateCcw } from "lucide-react";
 
 import { Button } from "@/shared/design-system/ui/button";
 import { Input } from "@/shared/design-system/ui/input";
-import { Progress, ProgressTrack, ProgressIndicator } from "@/shared/design-system/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -23,14 +22,9 @@ import {
 } from "@/shared/design-system/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/design-system/ui/tooltip";
 import { cn } from "@/shared/utils/utils";
+import { useUploadQueueStore, type UploadKind } from "../lib/uploadQueueStore";
 
-type UploadStatus = "idle" | "uploading" | "error";
 type Mode = "upload" | "link";
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 
 function isValidHttpUrl(value: string): boolean {
   try {
@@ -43,6 +37,7 @@ function isValidHttpUrl(value: string): boolean {
 
 export interface MediaUploadDialogProps {
   editor: Editor | null;
+  kind: UploadKind;
   /** Trigger button icon (e.g. a lucide-react icon element). */
   icon: ReactNode;
   /** Tooltip shown on the trigger button. */
@@ -61,6 +56,7 @@ export interface MediaUploadDialogProps {
 
 export function MediaUploadDialog({
   editor,
+  kind,
   icon,
   tooltip,
   title,
@@ -72,16 +68,10 @@ export function MediaUploadDialog({
   upload,
   onInsert,
 }: MediaUploadDialogProps) {
+  const enqueue = useUploadQueueStore((s) => s.enqueue);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("upload");
-
-  // Upload-tab state
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<UploadStatus>("idle");
-  const [progress, setProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Link-tab state
   const [urlValue, setUrlValue] = useState("");
@@ -89,11 +79,6 @@ export function MediaUploadDialog({
 
   const reset = useCallback(() => {
     setMode("upload");
-    setFile(null);
-    setStatus("idle");
-    setProgress(0);
-    setErrorMessage("");
-    abortControllerRef.current = null;
     if (fileInputRef.current) fileInputRef.current.value = "";
     setUrlValue("");
     setUrlError("");
@@ -101,64 +86,28 @@ export function MediaUploadDialog({
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
-      if (!nextOpen && status === "uploading") {
-        abortControllerRef.current?.abort();
-      }
       setOpen(nextOpen);
       if (!nextOpen) reset();
     },
-    [status, reset]
+    [reset]
   );
-
-  const handleSwitchMode = useCallback(
-    (nextMode: Mode) => {
-      if (status === "uploading") return;
-      setMode(nextMode);
-    },
-    [status]
-  );
-
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = event.target.files?.[0];
-    if (!selected) return;
-    setFile(selected);
-    setStatus("idle");
-    setProgress(0);
-    setErrorMessage("");
-  }, []);
 
   const handleChooseFile = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
 
-  const handleUpload = useCallback(async () => {
-    if (!file || !editor || editor.isDestroyed) return;
-
-    setStatus("uploading");
-    setProgress(0);
-    setErrorMessage("");
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      const src = await upload(file, { onProgress: setProgress, signal: controller.signal });
-      if (controller.signal.aborted) return;
-      onInsert(editor, src);
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (!files || files.length === 0 || !editor || editor.isDestroyed) return;
+      for (const file of Array.from(files)) {
+        enqueue({ file, kind, editor, upload, onInsert });
+      }
       setOpen(false);
       reset();
-    } catch (error) {
-      if ((error as { name?: string }).name === "AbortError") {
-        reset();
-        return;
-      }
-      setStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : "Failed to upload file");
-    }
-  }, [file, editor, upload, onInsert, reset]);
-
-  const handleCancelUpload = useCallback(() => {
-    abortControllerRef.current?.abort();
-  }, []);
+    },
+    [editor, kind, upload, onInsert, enqueue, reset]
+  );
 
   const handleInsertLink = useCallback(() => {
     if (!editor || editor.isDestroyed) return;
@@ -201,8 +150,7 @@ export function MediaUploadDialog({
             variant={mode === "upload" ? "default" : "ghost"}
             size="sm"
             className={cn(mode !== "upload" && "bg-transparent")}
-            disabled={status === "uploading"}
-            onClick={() => handleSwitchMode("upload")}
+            onClick={() => setMode("upload")}
           >
             Upload
           </Button>
@@ -211,8 +159,7 @@ export function MediaUploadDialog({
             variant={mode === "link" ? "default" : "ghost"}
             size="sm"
             className={cn(mode !== "link" && "bg-transparent")}
-            disabled={status === "uploading"}
-            onClick={() => handleSwitchMode("link")}
+            onClick={() => setMode("link")}
           >
             URL
           </Button>
@@ -224,65 +171,13 @@ export function MediaUploadDialog({
               ref={fileInputRef}
               type="file"
               accept={accept}
+              multiple
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
-
-            {!file && (
-              <Button className="w-full" size="sm" onClick={handleChooseFile}>
-                {chooseFileLabel}
-              </Button>
-            )}
-
-            {file && (
-              <div className="flex min-w-0 flex-col gap-2">
-                <div className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                  </div>
-                  {status !== "uploading" && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleChooseFile}
-                      aria-label="Choose a different file"
-                    >
-                      <RotateCcw />
-                    </Button>
-                  )}
-                </div>
-
-                {status === "uploading" && (
-                  <div className="flex items-center gap-2">
-                    <Progress value={progress} className="flex-1 gap-0">
-                      <ProgressTrack>
-                        <ProgressIndicator />
-                      </ProgressTrack>
-                    </Progress>
-                    <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-                      {progress}%
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleCancelUpload}
-                      aria-label="Cancel upload"
-                    >
-                      <X />
-                    </Button>
-                  </div>
-                )}
-
-                {status === "error" && <p className="text-sm text-destructive">{errorMessage}</p>}
-
-                {status !== "uploading" && (
-                  <Button className="w-full" size="sm" onClick={handleUpload}>
-                    {status === "error" ? "Retry upload" : "Upload"}
-                  </Button>
-                )}
-              </div>
-            )}
+            <Button className="w-full" size="sm" onClick={handleChooseFile}>
+              {chooseFileLabel}
+            </Button>
           </>
         )}
 
@@ -316,5 +211,3 @@ export function MediaUploadDialog({
     </Dialog>
   );
 }
-
-export { formatFileSize };

@@ -25,6 +25,7 @@ export function VideoUploadButton({ editor }: VideoUploadButtonProps) {
   return (
     <MediaUploadDialog
       editor={editor}
+      kind="video"
       icon={<VideoIcon />}
       tooltip="Video"
       title="Insert video"

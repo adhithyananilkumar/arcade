@@ -24,7 +24,6 @@ import { RichTextImageGif } from "reactjs-tiptap-editor/imagegif";
 import { RichTextTable } from "reactjs-tiptap-editor/table";
 import { RichTextColumn } from "reactjs-tiptap-editor/column";
 import { RichTextIframe } from "reactjs-tiptap-editor/iframe";
-import { RichTextExportPdf } from "reactjs-tiptap-editor/exportpdf";
 import { RichTextImportWord } from "reactjs-tiptap-editor/importword";
 import { RichTextAttachment } from "reactjs-tiptap-editor/attachment";
 import { RichTextExcalidraw } from "reactjs-tiptap-editor/excalidraw";
@@ -39,6 +38,7 @@ import { Button } from "@/shared/design-system/ui/button";
 import { Plus } from "lucide-react";
 import { VideoUploadButton } from "./VideoUploadButton";
 import { ImageUploadButton } from "./ImageUploadButton";
+import { UploadQueuePanel } from "./UploadQueuePanel";
 
 // The font family/size dropdowns show this string for unstyled text — the library's
 // own copy is the literal word "Default", which is honest about "no override" but
@@ -127,7 +127,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
               <RichTextTable />
               <RichTextColumn />
               <RichTextIframe />
-              <RichTextExportPdf />
               <RichTextImportWord />
               <RichTextAttachment />
               <RichTextExcalidraw />
@@ -139,6 +138,10 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* Portalled to <body> — tracks background uploads queued from ImageUploadButton /
+          VideoUploadButton above, independent of where this toolbar sits on the page. */}
+      <UploadQueuePanel />
     </div>
   );
 });

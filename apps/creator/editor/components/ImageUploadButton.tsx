@@ -21,6 +21,7 @@ export function ImageUploadButton({ editor }: ImageUploadButtonProps) {
   return (
     <MediaUploadDialog
       editor={editor}
+      kind="image"
       icon={<ImageIcon />}
       tooltip="Image"
       title="Insert image"

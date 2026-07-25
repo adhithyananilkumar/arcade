@@ -32,7 +32,6 @@ import { Column, ColumnNode, MultipleColumnNode } from "reactjs-tiptap-editor/co
 import { Drawer } from "reactjs-tiptap-editor/drawer";
 import { Emoji } from "reactjs-tiptap-editor/emoji";
 import { Excalidraw } from "reactjs-tiptap-editor/excalidraw";
-import { ExportPdf } from "reactjs-tiptap-editor/exportpdf";
 import { ExportWord } from "reactjs-tiptap-editor/exportword";
 import { FontFamily } from "reactjs-tiptap-editor/fontfamily";
 import { FontSize } from "reactjs-tiptap-editor/fontsize";
@@ -198,7 +197,6 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
     MultipleColumnNode,
     Table,
     Iframe,
-    ExportPdf,
     ImportWord,
     ExportWord,
     TextDirection,
