@@ -737,44 +737,81 @@ function DeleteRoadmapModal({
           onClick={onClose}
         />
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 16 }}
+          initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.94, y: 10 }}
-          transition={{ type: "spring", stiffness: 380, damping: 28 }}
-          className="relative w-full max-w-sm rounded-[32px] bg-white dark:bg-[#202124] p-7 shadow-2xl border border-[#dadce0] dark:border-[#3c4043]"
+          exit={{ opacity: 0, scale: 0.92, y: 12 }}
+          transition={{ type: "spring", stiffness: 400, damping: 28 }}
+          className="relative w-full max-w-md rounded-[32px] bg-white dark:bg-[#202124] p-7 shadow-[0_25px_60px_-15px_rgba(225,29,72,0.25)] border border-rose-100 dark:border-rose-950/40 overflow-hidden"
         >
-          <div className="mb-4 flex items-center gap-3.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-200">
-              <Trash2 size={20} />
+          {/* Top Danger Glowing Accent Bar */}
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-rose-500 via-red-500 to-amber-500" />
+
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-5 top-5 p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-slate-100 dark:hover:bg-[#303134] transition-colors"
+          >
+            <X size={18} />
+          </button>
+
+          {/* Header & Animated Trash Icon */}
+          <div className="mb-5 flex items-start gap-4">
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200/80 dark:border-rose-900/60 shadow-inner">
+              <span className="absolute inset-0 rounded-3xl bg-rose-500/20 animate-ping opacity-75" />
+              <Trash2 size={24} className="relative z-10" />
             </div>
-            <h3 className="text-base font-semibold text-[#0f172a] dark:text-white">Delete Item</h3>
+            <div>
+              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2.5 py-0.5 rounded-full border border-rose-200/50 mb-1">
+                Permanent Action
+              </span>
+              <h3 className="text-lg font-bold text-[#0f172a] dark:text-white leading-tight">
+                Delete Content Item
+              </h3>
+            </div>
           </div>
+
+          {/* Target Item Context Box */}
+          <div className="mb-6 rounded-2xl bg-slate-50 dark:bg-[#2d2d2d] p-4 border border-slate-200/80 dark:border-[#3c4043]">
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className="text-[11px] font-semibold text-[#64748b] dark:text-[#9aa0a6] uppercase tracking-wider">
+                Selected Item
+              </span>
+              <TypeBadge type={item.type} />
+            </div>
+            <p className="text-sm font-bold text-[#0f172a] dark:text-white line-clamp-1">
+              {item.title}
+            </p>
+          </div>
+
           <p className="text-xs text-[#64748b] dark:text-gray-300 mb-6 leading-relaxed">
-            Are you sure you want to delete <strong>{item.title}</strong>? This action will remove it from your studio workspace.
+            Are you sure you want to permanently delete this item? This action <strong className="text-rose-600 dark:text-rose-400">cannot be undone</strong> and will remove all associated content from your workspace.
           </p>
 
           {error && (
-            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
               {error}
             </div>
           )}
 
-          <div className="flex justify-end gap-2.5">
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={deleting}
-              className="rounded-full px-5 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#303134]"
+              className="rounded-full border border-[#cbd5e1] dark:border-[#5f6368] px-5 py-2.5 text-xs font-semibold text-[#475569] dark:text-[#e8eaed] hover:bg-slate-100 dark:hover:bg-[#2d2d2d] transition-all active:scale-[0.98]"
             >
-              Cancel
+              Keep Item
             </button>
             <button
               type="button"
               onClick={handleDelete}
               disabled={deleting}
-              className="rounded-full bg-red-600 hover:bg-red-700 text-white px-5 py-2 text-xs font-semibold shadow-xs disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white px-6 py-2.5 text-xs font-bold shadow-md hover:shadow-rose-500/25 transition-all active:scale-[0.98] disabled:opacity-60"
             >
-              {deleting ? "Deleting…" : "Delete"}
+              <Trash2 size={14} />
+              {deleting ? "Deleting…" : "Yes, Delete"}
             </button>
           </div>
         </motion.div>
