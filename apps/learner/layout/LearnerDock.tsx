@@ -42,7 +42,7 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/studio',
+    href: '/profile',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,

@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import GradientText from "@/apps/public/components/landing/GradientText";
 import Link from "next/link";
 import WorkshopDiscoveryPage from "@/apps/public/components/explore/WorkshopDiscoveryPage";
+import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
 import { roadmapService, roadmapProgressService, type RoadmapData } from "@/domains/roadmaps";
 
@@ -1019,7 +1020,18 @@ function parseRoadmapMetadata(graphJson: string) {
 }
 
 function CoursesContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
 
+  // Keep category detail inside the authenticated hub (/search), not the public /courses landing.
+  if (categoryParam) {
+    return <CategoryDetailedView hubBasePath="/search" />;
+  }
+
+  return <ExploreCatalog />;
+}
+
+function ExploreCatalog() {
   const router = useRouter();
 
   // Tab State
@@ -1072,7 +1084,7 @@ function CoursesContent() {
   };
 
   const handleCategorySwitch = (category: string) => {
-    router.push(`/courses?category=${encodeURIComponent(category)}`);
+    router.push(`/search?category=${encodeURIComponent(category)}`);
   };
 
   // RENDER MAIN EXPLORE HUB DASHBOARD
@@ -1142,16 +1154,13 @@ function CoursesContent() {
         }
       `}</style>
 
-      {/* Spacer to prevent banner content/diagonal background from sliding under the fixed header navigation bar */}
-      <div style={{ height: "64px" }} />
-
-      {/* Neobrutalist Typography Header */}
+      {/* Content clears the floating navbar; page gradient runs underneath it */}
       <div
         style={{
           width: "100%",
           maxWidth: "1400px",
           margin: "0 auto",
-          padding: "80px 48px 24px",
+          padding: "88px 48px 24px",
           textAlign: "center",
           display: "flex",
           flexDirection: "column",

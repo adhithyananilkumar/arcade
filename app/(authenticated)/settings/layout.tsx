@@ -55,9 +55,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   );
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen pt-20 md:pt-24 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
+    <div className="flex flex-col md:flex-row min-h-screen pt-28 md:pt-32 pb-16 bg-white dark:bg-[#202124] gap-10 md:gap-14 px-6 md:px-12 items-start">
       {/* Sticky Sidebar Navigation */}
-      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-24 self-start z-10">
+      <aside className="w-full md:w-[240px] shrink-0 bg-transparent py-1 md:sticky md:top-28 self-start z-10">
         <nav className="space-y-1.5">
           {sidebarItems.map((item) => {
             const isActive = pathname === item.href || (pathname === '/settings' && item.href === '/settings/info');
@@ -90,8 +90,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       {/* Main Content Area */}
       <main className="flex-1 bg-transparent py-1 w-full min-w-0">
         <div className="w-full">
-          {/* Sticky Breadcrumb Header with Top-Extended Background Shield */}
-          <div className="sticky top-0 z-30 bg-white dark:bg-[#202124] pt-20 md:pt-24 pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold -mt-20 md:-mt-24">
+          {/* Sticky breadcrumb sits just under the floating navbar */}
+          <div className="sticky top-24 md:top-28 z-30 bg-white dark:bg-[#202124] pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold">
             <Link href="/settings/info" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>

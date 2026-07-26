@@ -772,7 +772,7 @@ function ProfilePageContent() {
       {/* Global Background (Pure White / Dark) */}
       <div className="fixed inset-0 pointer-events-none z-0 bg-white dark:bg-[#020617]"></div>
       <motion.div 
-        className="mx-auto max-w-6xl w-full space-y-6 pb-16 px-4 sm:px-6 relative transition-colors z-10 pt-8"
+        className="mx-auto max-w-6xl w-full space-y-6 pb-16 px-4 sm:px-6 relative transition-colors z-10 pt-28 md:pt-32"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
