@@ -1365,8 +1365,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={askSubmit}
-                disabled={!hasDraftChanges && (status === "PUBLISHED" || status === "APPROVED" || status === "REJECTED" || status === "DRAFT")}
-                title={!hasDraftChanges ? "No new changes to submit" : ""}
+                disabled={!hasDraftChanges && (status === "PUBLISHED" || status === "APPROVED" || status === "DRAFT")}
+                title={!hasDraftChanges && status !== "REJECTED" ? "No new changes to submit" : ""}
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={14} />
