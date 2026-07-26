@@ -96,8 +96,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               <SettingsIcon size={15} />
               <span>Settings</span>
             </Link>
-            <ChevronRight size={15} className="text-slate-400 dark:text-neutral-600" />
-            <span className="text-slate-700 dark:text-slate-300 font-semibold">Account & Preferences</span>
             {activeItem && (
               <>
                 <ChevronRight size={15} className="text-slate-400 dark:text-neutral-600" />
