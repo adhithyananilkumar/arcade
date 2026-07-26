@@ -1242,9 +1242,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       ) : (
         <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
       )}
-      {contentType === "course" && courseData && (
+      {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
+          roadmap={roadmapData}
+          contentType={contentType}
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
           onSubmit={handleSubmit}
