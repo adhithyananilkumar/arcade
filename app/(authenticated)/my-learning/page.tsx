@@ -60,7 +60,6 @@ import {
   Star
 } from 'lucide-react';
 import Link from 'next/link';
-import GradientText from '@/apps/public/components/landing/GradientText';
 
 interface LearningItem {
   id: string;
@@ -550,41 +549,26 @@ export default function MyLearningPage() {
 
       <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 pb-32 pt-28 md:px-8 md:pt-32">
 
-        {/* Hero — Explore-style framed title, unique Learning Shelf copy */}
+        {/* Hero — centered My Learning */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto flex max-w-3xl flex-col items-center pt-2 text-center"
+          className="relative mx-auto max-w-2xl pt-1 text-center"
         >
-          <h1 className="text-[clamp(1.85rem,4.5vw,2.85rem)] font-black leading-[1.12] tracking-[-0.04em] text-[#14142b]">
-            LEARNING{' '}
-            <span className="relative ml-1.5 inline-block rounded-md border-2 border-[#4B6189] bg-white px-3.5 py-1">
-              <GradientText
-                colors={['#4C6FFF', '#0EA5E9', '#06B6D4', '#1DB876', '#4C6FFF']}
-                animationSpeed={8}
-              >
-                Shelf
-              </GradientText>
-              <span className="absolute -top-3.5 left-[-2px] h-3.5 w-0.5 bg-[#4B6189]">
-                <span className="absolute -left-[3px] -top-1.5 h-2 w-2 rounded-full bg-[#4B6189]" />
-              </span>
-              <span className="absolute -bottom-3.5 right-[-2px] h-3.5 w-0.5 bg-[#4B6189]">
-                <span className="absolute -right-[3px] -bottom-1.5 h-2 w-2 rounded-full bg-[#4B6189]" />
-              </span>
-              <span className="absolute -right-1 -top-1 h-2 w-2 border border-white bg-[#4B6189]" />
-              <span className="absolute -bottom-1 -left-1 h-2 w-2 border border-white bg-[#4B6189]" />
-            </span>
+          <h1 className="text-[clamp(2rem,4.2vw,2.75rem)] font-bold leading-[1.08] tracking-tight text-[#14142b]">
+            My Learning
           </h1>
-          <p className="mt-4 max-w-xl text-[0.95rem] font-medium leading-relaxed text-slate-500">
-            Search your enrollments, jump back into half-finished lessons, and keep every workshop,
-            webinar, and course on one quiet shelf —{' '}
-            <span className="font-semibold text-[#4C6FFF]">
-              {(currentUser.firstName || currentUser.fullName || currentUser.username || 'Learner')
-                .split(' ')[0]
-                .toLowerCase()}
-            </span>
-            ’s.
+          <div
+            aria-hidden
+            className="mx-auto mt-3 h-[2px] w-14 rounded-full"
+            style={{
+              background: 'linear-gradient(90deg, #4C6FFF, #0EA5E9)',
+            }}
+          />
+          <p className="mx-auto mt-3.5 max-w-md text-[14px] font-medium leading-relaxed text-slate-500">
+            Search what you enrolled in. Resume unfinished lessons. Filter courses,
+            workshops, and webinars without leaving this page.
           </p>
         </motion.div>
 
@@ -604,7 +588,7 @@ export default function MyLearningPage() {
               </div>
               <input
                 type="text"
-                placeholder="Search courses, webinars, or instructors…"
+                placeholder="Search your shelf — courses, instructors, topics…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {

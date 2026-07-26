@@ -235,6 +235,7 @@ export default function LearnerHomePage() {
     () =>
       getDynamicGreeting({
         firstName: user?.firstName || user?.fullName,
+        userKey: user?.id || user?.username || user?.email || user?.firstName,
         createdAt: user?.createdAt,
         enrolledCount,
         streak,
@@ -276,17 +277,15 @@ export default function LearnerHomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            <h1 className="max-w-lg text-[1.75rem] font-bold leading-[1.18] tracking-tight text-[#14142b] md:text-[2.15rem]">
+            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.15] tracking-tight text-[#14142b] md:text-[2.35rem]">
               {greeting.before}
-              {greeting.name ? (
-                <GradientText
-                  colors={NAME_GRADIENT}
-                  animationSpeed={4.5}
-                  className="!cursor-default"
-                >
-                  {greeting.name}
-                </GradientText>
-              ) : null}
+              <GradientText
+                colors={NAME_GRADIENT}
+                animationSpeed={4.5}
+                className="!cursor-default !text-[1.05em] !font-extrabold"
+              >
+                {greeting.name}
+              </GradientText>
               {greeting.after}
             </h1>
             <p className="mt-2 max-w-md text-[14px] font-medium leading-relaxed text-slate-500">
