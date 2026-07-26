@@ -40,6 +40,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
+import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
@@ -109,9 +110,10 @@ function scheduleIdle(fn: () => void) {
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
+import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop";
+  contentType: "course" | "workshop" | "roadmap";
   contentId?: string;
 }
 
@@ -480,6 +482,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const adapter = useMemo(() => {
     return contentType === "course"
       ? new CourseAdapter()
+      : contentType === "roadmap"
+      ? new RoadmapAdapter()
       : new WorkshopAdapter(contentId || "");
   }, [contentType, contentId]);
 
