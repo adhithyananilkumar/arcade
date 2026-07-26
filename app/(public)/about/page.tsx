@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import { motion, Variants, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, Variants, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 import {
   ArrowRight,
+  ArrowUpRight,
   Award,
   BookOpen,
   Briefcase,
@@ -48,6 +49,31 @@ const staggerContainer: Variants = {
 
 export default function AboutPage() {
   const headerRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Mouse Parallax values (X ±6px, Y ±4px)
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 120 };
+  const mouseXSpring = useSpring(mouseX, springConfig);
+  const mouseYSpring = useSpring(mouseY, springConfig);
+
+  const bgX = useTransform(mouseXSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-6, 6]);
+  const bgY = useTransform(mouseYSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-4, 4]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (shouldReduceMotion) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   const values = [
     {
@@ -89,59 +115,126 @@ export default function AboutPage() {
       </div>
 
       {/* --- HERO SECTION --- */}
-      <header
+      <section
         ref={headerRef}
-        className="max-w-[1000px] mx-auto w-full px-6 md:px-12 pt-32 pb-24 relative z-10 flex flex-col items-center justify-center text-center"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative w-full h-[100vh] min-h-[100vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white pt-24 md:pt-28"
       >
-        <div className="space-y-8 flex flex-col items-center">
-          <h1 className="text-5xl md:text-7xl font-bold font-bricolage text-slate-900 tracking-tight leading-[1.1] max-w-4xl mx-auto">
-            <VariableProximity
-              label="Learn. Compete. Get Certified."
-              fromFontVariationSettings="'wght' 300, 'opsz' 20"
-              toFontVariationSettings="'wght' 800, 'opsz' 80"
-              containerRef={headerRef}
-              radius={250}
-              falloff="linear"
-              className="font-bricolage text-slate-900 flex justify-center"
-            />
-          </h1>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
 
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            className="text-lg md:text-xl font-medium text-slate-600 leading-relaxed max-w-3xl"
+          @keyframes gradientShift15s {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          .animate-gradient-15s {
+            background-size: 200% 200%;
+            animation: gradientShift15s 15s ease-in-out infinite;
+          }
+
+          @keyframes floatBirds {
+            0%, 100% { transform: translate(0px, 0px); }
+            50% { transform: translate(6px, -4px); }
+          }
+          .animate-birds-float {
+            animation: floatBirds 10s ease-in-out infinite;
+          }
+        `}</style>
+
+        {/* Parallax Background Layer (Sharpened pen-line contrast & 4K edge clarity) */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            x: bgX,
+            y: bgY,
+            backgroundImage: "url('/ink-dome-bg.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center 100px",
+            backgroundRepeat: "no-repeat",
+            imageRendering: "-webkit-optimize-contrast",
+            filter: "contrast(1.06) brightness(1.01)",
+            WebkitFilter: "contrast(1.06) brightness(1.01)",
+          }}
+        />
+
+        {/* Seamless Anti-Banding Smooth Radial Gradient Dome Layer */}
+        <div
+          className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[75vw] max-w-[1000px] h-[400px] pointer-events-none rounded-t-full opacity-50 mix-blend-multiply"
+          style={{
+            background: "radial-gradient(ellipse 100% 100% at 50% 100%, rgba(195, 218, 255, 0.4) 0%, rgba(215, 232, 255, 0.2) 50%, transparent 80%)",
+          }}
+        />
+
+        {/* Gentle floating motion for birds (infinite 10s float, Y ±4px, X ±6px) */}
+        <div className="absolute inset-0 pointer-events-none animate-birds-float opacity-30" />
+
+        <div className="relative z-10 max-w-[800px] mx-auto text-center space-y-8 my-auto py-12">
+          {/* HEADLINE */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
+            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif", fontWeight: 600 }}
           >
-            Arcade is the official learning, innovation, and event platform by Amal
-            Jyothi College of Engineering, empowering learners, organizations, and
-            educators through certified webinars, hackathons, workshops,
-            competitions, and collaborative learning experiences.
+            <span className="block">
+              Where{" "}
+              <span className="relative inline-block">
+                Ideas
+                <motion.span
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-none origin-left"
+                />
+              </span>
+            </span>
+            <span className="block mt-1 sm:mt-2">
+              Become{" "}
+              <span
+                className="inline-block animate-gradient-15s"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Impact.
+              </span>
+            </span>
+          </motion.h1>
+
+          {/* DESCRIPTION */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
+            className="text-[18px] sm:text-[19px] leading-[1.75] text-[#475569] max-w-[560px] mx-auto font-sans font-normal drop-shadow-[0_2px_8px_rgba(11,19,43,0.02)]"
+          >
+            Arcade is AJCE's official platform for learning, innovation, and collaboration, offering certified webinars, hackathons, workshops, and engaging community experiences.
           </motion.p>
 
+          {/* BUTTON */}
           <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
+            className="pt-2 flex justify-center"
           >
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base shadow-lg shadow-blue-600/20 hover:shadow-xl hover:shadow-blue-600/30 transition-all duration-300"
+              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#121E42] text-white font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[3px] active:translate-y-0 transition-all duration-250 ease-out group"
             >
-              <span>Explore Events</span>
-              <ArrowRight size={18} />
+              <span>Learn More</span>
+              <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-inner group-hover:translate-x-[4px] transition-transform duration-250 ease-out">
+                <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
+              </span>
             </Link>
-            <button
-              disabled
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
-              title="Verification feature coming soon"
-            >
-              <ShieldCheck size={18} />
-              <span>Verify Certificates</span>
-            </button>
           </motion.div>
         </div>
-      </header>
+      </section>
 
       {/* --- SECTION 1: WHY GET CERTIFIED? --- */}
       <section className="py-24 bg-white border-y border-slate-200/50">
