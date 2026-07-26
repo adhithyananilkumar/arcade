@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, Variants, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
+import Image from "next/image";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -114,7 +115,7 @@ export default function AboutPage() {
         <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[100px]" />
       </div>
 
-      {/* --- HERO SECTION --- */}
+      {/* --- HERO SECTION (from aboutn) --- */}
       <section
         ref={headerRef}
         onMouseMove={handleMouseMove}
@@ -236,7 +237,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- SECTION 1: WHY GET CERTIFIED? --- */}
+      {/* --- SECTION 1: WHY GET CERTIFIED? (from abel2) --- */}
       <section className="py-24 bg-white border-y border-slate-200/50">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
           <SectionHeader
@@ -280,7 +281,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="md:w-1/3 flex justify-center relative z-10">
-              <motion.div 
+              <motion.div
                 whileHover={{ scale: 1.05, rotate: [0, -5, 5, -5, 0] }}
                 transition={{ duration: 0.5 }}
                 className="w-32 h-32 bg-white rounded-full shadow-xl shadow-blue-500/10 flex items-center justify-center border-4 border-blue-50"
@@ -292,7 +293,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- CORE VALUES (from compile branch) --- */}
+      {/* --- CORE VALUES (from abel2) --- */}
       <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 space-y-16">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
@@ -322,7 +323,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- CTA (from compile branch) --- */}
+      {/* --- CTA (from abel2) --- */}
       <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 mb-12">
         <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 rounded-[32px] p-12 md:p-20 text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -347,129 +348,176 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- SECTION 2: POWERED BY AJCE --- */}
+      {/* --- SECTION 2: POWERED BY AJCE (from abel2) --- */}
       <AJCESection />
 
-
-
-
-      {/* --- SECTION 5: WHO IS ARCADE FOR? --- */}
+      {/* --- SECTION 5: WHO IS ARCADE FOR? (from abel2) --- */}
       <section className="py-24 md:py-32 bg-slate-50 border-t border-slate-200/50 overflow-hidden">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
           <SectionHeader title="Who is Arcade For?" />
-          
           <TimelineSection />
-
         </div>
       </section>
-
-
-
-
     </div>
   );
 }
 
-// --- SUB-COMPONENTS ---
+function SectionHeader({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="text-center space-y-4 max-w-2xl mx-auto">
+      <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+        {title}
+      </h2>
+      {description && (
+        <p className="text-slate-600 text-lg leading-relaxed font-medium">
+          {description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function FeatureCard({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) {
+  return (
+    <motion.div
+      variants={fadeInUp}
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.2 }}
+      className="bg-white border border-slate-200/70 hover:border-blue-500/30 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between group"
+    >
+      <div>
+        <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-colors duration-300 mb-6">
+          <Icon className="w-6 h-6" />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+          {title}
+        </h3>
+        <p className="text-slate-600 text-sm leading-relaxed font-normal">
+          {desc}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
 function TimelineSection() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Subtle parallax for the whole block
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
   });
-  const yParallax = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const yParallax = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   const personas = [
     {
-      label: "For Students",
-      title: "Accelerate your career with verified credentials",
-      description: "Master new skills and prove your expertise to employers with institution-backed certificates.",
-      features: ["Learn highly practical skills", "Build your technical portfolio", "Earn verifiable certificates"],
+      label: "For Students & Learners",
+      title: "Elevate your skills, prove your expertise",
+      description: "Gain practical knowledge through curated courses, prove your skills in real-world hackathons, and earn verified credentials backed by AJCE to stand out in the job market.",
+      features: [
+        "Interactive workshops & live webinars",
+        "Competitions with real-world impact",
+        "Digitally verifiable certificates"
+      ],
       icon: GraduationCap,
       color: "text-blue-600",
-      glowColor: "rgba(37,99,235,0.35)",
-      ringColor: "rgba(37,99,235,0.7)",
-      iconBg: "bg-blue-50"
+      bgColor: "bg-blue-500/5",
+      borderColor: "border-blue-500/20",
+      glowColor: "rgba(37, 99, 235, 0.12)",
+      ringColor: "rgba(37, 99, 235, 0.4)",
+      iconBg: "bg-blue-50",
     },
     {
-      label: "For Organizations",
-      title: "Scale your technical events & reach top talent",
-      description: "Host hackathons, coding challenges, and tech talks for an engaged community of learners.",
-      features: ["Host robust technical events", "Reach highly targeted learners", "Build vibrant communities"],
-      icon: Building,
-      color: "text-orange-500",
-      glowColor: "rgba(249,115,22,0.35)",
-      ringColor: "rgba(249,115,22,0.7)",
-      iconBg: "bg-orange-50"
+      label: "For Educators & Creators",
+      title: "Inspire the next generation of innovators",
+      description: "Publish your knowledge, host interactive events, and manage student growth with built-in tools for assessment, live sessions, and automated certification.",
+      features: [
+        "Simple course & event creation studio",
+        "Automated grading & certificate generation",
+        "Direct engagement with motivated learners"
+      ],
+      icon: Lightbulb,
+      color: "text-amber-600",
+      bgColor: "bg-amber-500/5",
+      borderColor: "border-amber-500/20",
+      glowColor: "rgba(217, 119, 6, 0.12)",
+      ringColor: "rgba(217, 119, 6, 0.4)",
+      iconBg: "bg-amber-50",
     },
     {
-      label: "For Content Creators",
-      title: "Monetize your expertise & grow your audience",
-      description: "Deliver live workshops and courses to students eager to learn from industry professionals.",
-      features: ["Conduct interactive live workshops", "Share your domain expertise", "Grow your loyal audience"],
-      icon: PlaySquare,
-      color: "text-emerald-500",
-      glowColor: "rgba(16,185,129,0.35)",
-      ringColor: "rgba(16,185,129,0.7)",
-      iconBg: "bg-emerald-50"
-    },
-    {
-      label: "For Institutions",
-      title: "Expand your educational impact globally",
-      description: "Partner with Arcade to co-certify programs and offer your curriculum to a broader audience.",
-      features: ["Partner directly with Arcade", "Reach larger academic communities", "Co-certify premium programs"],
-      icon: Layout,
-      color: "text-purple-600",
-      glowColor: "rgba(147,51,234,0.35)",
-      ringColor: "rgba(147,51,234,0.7)",
-      iconBg: "bg-purple-50"
+      label: "For Organizations & Orgs",
+      title: "Discover talent and foster innovation",
+      description: "Partner with AJCE to host branded hackathons, sponsor technical workshops, and connect directly with high-performing students ready to solve real challenges.",
+      features: [
+        "Branded hackathons & innovation challenges",
+        "Access to a verified talent pool",
+        "Collaborative learning partnerships"
+      ],
+      icon: Building2,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-500/5",
+      borderColor: "border-emerald-500/20",
+      glowColor: "rgba(5, 150, 105, 0.12)",
+      ringColor: "rgba(5, 150, 105, 0.4)",
+      iconBg: "bg-emerald-50",
     }
   ];
 
   return (
-    <motion.div ref={containerRef} style={{ y: yParallax }} className="relative max-w-5xl mx-auto mt-24">
-      {/* Mobile Vertical Line */}
-      <div className="absolute left-[calc(50%-1.5px)] top-32 bottom-32 w-[3px] bg-slate-200 md:hidden z-0" />
-
-      {/* Desktop connecting pipes (pure CSS — no pulse) */}
-      <div className="absolute inset-0 hidden md:block pointer-events-none z-0">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className={`absolute border-slate-200 opacity-80 ${
-              i % 2 === 0
-                ? "border-l-[3px] border-b-[3px] rounded-bl-[100px]"
-                : "border-r-[3px] border-b-[3px] rounded-br-[100px]"
-            }`}
-            style={{
-              top: `calc(${i * 25}% + 12.5%)`,
-              bottom: `calc(${(2 - i) * 25}%)`,
-              left: i % 2 === 0 ? "calc(25% - 1.5px)" : undefined,
-              right: i % 2 !== 0 ? "calc(25% - 1.5px)" : undefined,
-              width: "50%",
-            }}
+    <div ref={containerRef} className="relative mt-20">
+      {/* Curved Snake/S-Curve SVG Line (Desktop Only) */}
+      <div className="hidden md:block absolute left-0 right-0 top-0 bottom-0 pointer-events-none z-0">
+        <svg className="w-full h-full" preserveAspectRatio="none">
+          {/* Subtle glow layer behind the main curve */}
+          <path
+            d="M 50% 0 C 15% 150, 15% 350, 50% 500 C 85% 650, 85% 850, 50% 1000"
+            fill="none"
+            stroke="url(#snakeGlowGrad)"
+            strokeWidth="8"
+            className="opacity-40"
           />
-        ))}
+          {/* Main animated snake path */}
+          <path
+            d="M 50% 0 C 15% 150, 15% 350, 50% 500 C 85% 650, 85% 850, 50% 1000"
+            fill="none"
+            stroke="url(#snakeGrad)"
+            strokeWidth="3"
+            strokeDasharray="8 8"
+            className="animate-pulse opacity-60"
+          />
+          <defs>
+            <linearGradient id="snakeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#2563EB" />
+              <stop offset="50%" stopColor="#D97706" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+            <linearGradient id="snakeGlowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#93C5FD" />
+              <stop offset="50%" stopColor="#FDE68A" />
+              <stop offset="100%" stopColor="#6EE7B7" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
 
-      {personas.map((persona, index) => (
-        <TimelineNode
-          key={index}
-          persona={persona}
-          isLeft={index % 2 === 0}
-        />
-      ))}
-    </motion.div>
+      {/* Vertical straight line for mobile */}
+      <div className="md:hidden absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-amber-500 to-emerald-500 z-0" />
+
+      {/* Alternating Persona Nodes */}
+      <div className="relative z-10 space-y-24 md:space-y-32">
+        {personas.map((persona, index) => (
+          <PersonaTimelineNode key={index} persona={persona} index={index} />
+        ))}
+      </div>
+    </div>
   );
 }
 
-function TimelineNode({ persona, isLeft }: { persona: any; isLeft: boolean }) {
+function PersonaTimelineNode({ persona, index }: { persona: any; index: number }) {
   const nodeRef = useRef<HTMLDivElement>(null);
-  // Fire once when the node's center crosses 35% from the bottom of the viewport
-  const isInView = useInView(nodeRef, { once: true, margin: "-30% 0px -30% 0px" });
+  const isInView = useInView(nodeRef, { once: true, margin: "-100px" });
+  const isLeft = index % 2 === 0;
 
   return (
     <div className="relative w-full">
@@ -481,22 +529,16 @@ function TimelineNode({ persona, isLeft }: { persona: any; isLeft: boolean }) {
         {/* Icon Half */}
         <div ref={nodeRef} className="w-full md:w-1/2 flex justify-center">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.6, opacity: 0 }}
             animate={isInView ? { scale: 1, opacity: 1 } : {}}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-xl flex items-center justify-center border-[6px] border-slate-50 relative z-20 group hover:-translate-y-1 transition-transform duration-500"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className={`relative w-28 h-28 md:w-36 md:h-36 rounded-full flex items-center justify-center border-2 ${persona.borderColor} shadow-2xl bg-white group cursor-pointer`}
+            style={{
+              boxShadow: `0 20px 50px -10px ${persona.glowColor}`,
+            }}
           >
-            {/* Ambient glow bloom — expands in then settles */}
-            <motion.div
-              className="absolute inset-0 rounded-full pointer-events-none blur-xl"
-              style={{ backgroundColor: persona.glowColor }}
-              initial={{ opacity: 0, scale: 1 }}
-              animate={isInView
-                ? { opacity: [0, 1, 0.25], scale: [1, 1.35, 1.15] }
-                : {}
-              }
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            />
+            {/* Background Tint */}
+            <div className={`absolute inset-2 rounded-full ${persona.bgColor} transition-transform duration-500 group-hover:scale-105`} />
 
             {/* Ring flash — appears briefly then fades */}
             <motion.div
@@ -566,14 +608,14 @@ function AJCESection() {
     target: containerRef,
     offset: ["start end", "end start"]
   });
-  
+
   // Parallax effect: moves up slowly as you scroll down
   const yParallax = useTransform(scrollYProgress, [0, 1], [30, -30]);
 
   return (
     <section ref={containerRef} className="relative py-32 overflow-hidden bg-white border-y border-slate-200/50">
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 relative z-10 flex flex-col lg:flex-row items-center min-h-[500px]">
-        
+
         {/* Left Column (Content) - 55% */}
         <div className="w-full lg:w-[55%] pr-0 lg:pr-12 relative z-20">
           <motion.div
@@ -582,11 +624,10 @@ function AJCESection() {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6 }}
           >
-            
             <h2 className="text-3xl md:text-5xl font-bold font-bricolage text-slate-900 tracking-tight leading-tight mb-6">
               Powered by Amal Jyothi College of Engineering
             </h2>
-            
+
             <p className="text-lg text-slate-600 leading-relaxed mb-10">
               Arcade is the official learning and event platform of Amal Jyothi College of Engineering, where every certificate is backed by an institution known for academic excellence, innovation, and industry engagement.
             </p>
@@ -598,18 +639,8 @@ function AJCESection() {
                   <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-1">Largest Engineering Campus</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">Kerala's largest infrastructure with a sprawling 68-acre campus and approximately 1.26 lakh sq. m. built-up area.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4 group">
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 shadow-sm">
-                  <Medal className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-slate-900 mb-1">KIRF Rank #4</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">Ranked #4 among all engineering colleges in Kerala by the Kerala Institutional Ranking Framework (KIRF).</p>
+                  <h4 className="text-lg font-bold text-slate-900 mb-1">State-of-the-Art Campus & Facilities</h4>
+                  <p className="text-sm text-slate-600 leading-relaxed">Spanning 68 acres with over 1.26 lakh sq. m. of built-up area dedicated to learning, research, and innovation.</p>
                 </div>
               </div>
 
@@ -663,7 +694,7 @@ function AJCESection() {
             style={{ y: yParallax }}
             className="w-full h-full relative flex items-center justify-end opacity-100"
           >
-            <div 
+            <div
               className="w-full h-[140%] max-w-[1000px] absolute -right-20"
               style={{
                 backgroundImage: 'url(/images/ajce-sketch2.png)',
@@ -679,69 +710,8 @@ function AJCESection() {
             />
           </motion.div>
         </div>
-        
+
       </div>
     </section>
   );
 }
-
-
-function SectionHeader({ title, description }: { title: string; description?: string }) {
-  return (
-    <div className="text-center space-y-4 max-w-2xl mx-auto">
-      <h2 className="text-3xl md:text-5xl font-bold font-bricolage text-slate-900 tracking-tight">
-        {title}
-      </h2>
-      {description && (
-        <p className="text-lg text-slate-600 leading-relaxed font-medium">
-          {description}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function FeatureCard({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) {
-  return (
-    <motion.div
-      variants={fadeInUp}
-      className="bg-slate-50 border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
-    >
-      <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-slate-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300">
-        <Icon className="w-6 h-6" />
-      </div>
-      <h3 className="text-xl font-bold font-bricolage text-slate-900 mb-2">{title}</h3>
-      <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
-    </motion.div>
-  );
-}
-
-function LargeFeatureCard({ icon: Icon, title, description, color }: { icon: any; title: string; description: string; color: string }) {
-  const colorMap: Record<string, string> = {
-    blue: "text-blue-600 bg-blue-50 group-hover:bg-blue-600 group-hover:text-white border-blue-100",
-    indigo: "text-indigo-600 bg-indigo-50 group-hover:bg-indigo-600 group-hover:text-white border-indigo-100",
-    emerald: "text-emerald-600 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white border-emerald-100",
-    amber: "text-amber-600 bg-amber-50 group-hover:bg-amber-600 group-hover:text-white border-amber-100",
-    rose: "text-rose-600 bg-rose-50 group-hover:bg-rose-600 group-hover:text-white border-rose-100",
-    purple: "text-purple-600 bg-purple-50 group-hover:bg-purple-600 group-hover:text-white border-purple-100",
-  };
-
-  return (
-    <motion.div
-      variants={fadeInUp}
-      className={`bg-white border-t-4 border-x border-b border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-2xl transition-all duration-500 group overflow-hidden relative ${colorMap[color].split(" ")[0].replace("text-", "border-t-")}`}
-    >
-      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors duration-500 ${colorMap[color]}`}>
-        <Icon className="w-7 h-7" />
-      </div>
-      <h3 className="text-2xl font-bold font-bricolage text-slate-900 mb-4">{title}</h3>
-      <p className="text-base text-slate-600 leading-relaxed relative z-10">{description}</p>
-    </motion.div>
-  );
-}
-
-
-
-
-
-
