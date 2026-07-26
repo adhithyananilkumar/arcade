@@ -392,24 +392,15 @@ export default function MyLearningPage() {
           Promise.allSettled(
             courseItems.map(item => courseProgressService.getCourseProgress(item.id))
           ).then(results => {
-            setLearningItems(prev => {
-              const nextItems = prev.map(item => {
-                if (item.type !== 'Course') return item;
-                const index = courseItems.findIndex(c => c.id === item.id);
-                if (index !== -1) {
-                  const result = results[index];
-                  if (result.status === 'rejected') {
-                    // The course does not exist or access is denied
-                    return null;
-                  }
-                  if (result.status === 'fulfilled' && result.value) {
-                    return { ...item, progress: result.value.percent || 0 };
-                  }
-                }
-                return item;
-              });
-              return nextItems.filter(Boolean) as LearningItem[];
-            });
+            setLearningItems(prev => prev.map(item => {
+              if (item.type !== 'Course') return item;
+              const index = courseItems.findIndex(c => c.id === item.id);
+              const result = results[index];
+              if (result && result.status === 'fulfilled' && result.value) {
+                return { ...item, progress: result.value.percent || 0 };
+              }
+              return item;
+            }));
           });
         }).catch(err => console.error("Failed to load course progress", err));
       }
