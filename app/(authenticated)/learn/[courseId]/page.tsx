@@ -780,22 +780,24 @@ function CourseTabs() {
         )}
 
         {tab === "Exam" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 text-center sm:items-center">
-            <div className="flex flex-col items-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 px-3 py-1.5 text-[12px] font-semibold text-indigo-500">
-                <BadgeCheck size={14} className="text-indigo-500" /> Final Assessment
-              </span>
-              <h3 className="mt-4 font-serif text-3xl font-light text-ink">Take the Final Exam</h3>
-              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                Test your knowledge with a 25-question, 60-minute exam covering all course modules. Complete this exam in a proctored fullscreen environment to earn your certificate!
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-slate-200/80 bg-white/95 p-8 text-center shadow-[0_8px_24px_rgba(20,20,43,0.05)] sm:p-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
+              <BadgeCheck size={14} /> Final assessment
+            </span>
+            <div>
+              <h3 className="text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+                Take the final exam
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-slate-500">
+                25 questions · 60 minutes · secure fullscreen session. Pass to earn your certificate.
               </p>
-              <Link 
-                href={`/learn/${params.courseId}/exam`}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-8 py-3.5 font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95"
-              >
-                Proceed to Exam <ChevronRight size={18} />
-              </Link>
             </div>
+            <Link
+              href={`/learn/${params.courseId}/exam`}
+              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+            >
+              Proceed to exam <ChevronRight size={16} />
+            </Link>
           </div>
         )}
       </div>

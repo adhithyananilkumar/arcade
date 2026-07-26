@@ -67,12 +67,12 @@ export default function LearnerDock() {
   // Otherwise, point to a default test course for demonstration.
   const currentCourseId = params?.courseId || 'default';
 
-  // Hide the dock on content studio, roadmaps, settings pages, and exam pages
+  // Hide the dock on content studio, roadmaps, settings, and active proctored exams
   if (
     pathname.startsWith('/content') ||
     pathname.startsWith('/roadmaps') ||
     pathname.startsWith('/settings') ||
-    pathname.includes('/exam/')
+    /\/exam\/(start|terminated)/.test(pathname)
   ) {
     return null;
   }

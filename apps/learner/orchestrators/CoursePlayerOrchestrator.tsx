@@ -76,10 +76,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
     });
   }
 
-  const handlePublish = async () => {
-    const note = window.prompt("Any approval notes/logs? (Optional)");
-    if (note === null) return;
-
+  const handlePublish = async (note: string) => {
     try {
       if (reviewId) {
         await platformReviewApi.decide(reviewId, { decision: "APPROVE", note });
@@ -89,8 +86,8 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
-    } catch (err) {
-      alert("Failed to publish the course.");
+    } catch {
+      throw new Error("Failed to publish the course.");
     }
   };
 
@@ -107,8 +104,8 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       if (course) {
         setCourse({ ...course, status: "REJECTED" });
       }
-    } catch (err) {
-      alert("Failed to reject the course.");
+    } catch {
+      throw new Error("Failed to reject the course.");
     }
   };
 

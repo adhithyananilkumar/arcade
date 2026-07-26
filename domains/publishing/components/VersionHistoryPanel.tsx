@@ -1,8 +1,23 @@
 // features/content/version-history/components/VersionHistoryPanel.tsx
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { History, X, RotateCcw, Clock, Loader2, Bookmark, Zap, GitCommitVertical, CheckCircle, XCircle, Send, AlertCircle } from "lucide-react";
+import { useCallback, useState } from "react";
+import {
+  History,
+  X,
+  RotateCcw,
+  Clock,
+  Loader2,
+  Bookmark,
+  Zap,
+  GitCommitVertical,
+  CheckCircle,
+  XCircle,
+  Send,
+  AlertCircle,
+  MessageSquareText,
+  FileClock,
+} from "lucide-react";
 
 import type { TiptapDocument } from "@/shared/types/editor.types";
 
@@ -69,12 +84,58 @@ function formatRelative(iso: string): string {
 
 const KIND_META: Record<
   VersionSummary["kind"],
-  { icon: typeof Zap; label: string; className: string }
+  { icon: typeof Zap; label: string; chip: string }
 > = {
-  AUTO: { icon: Zap, label: "Auto-saved", className: "text-gray-400" },
-  MANUAL: { icon: Bookmark, label: "Named", className: "text-indigo-500" },
-  WORKFLOW: { icon: GitCommitVertical, label: "Milestone", className: "text-green-500" },
+  AUTO: {
+    icon: Zap,
+    label: "Auto-saved",
+    chip: "bg-slate-100 text-slate-500",
+  },
+  MANUAL: {
+    icon: Bookmark,
+    label: "Named",
+    chip: "bg-[#14142b]/8 text-[#14142b]",
+  },
+  WORKFLOW: {
+    icon: GitCommitVertical,
+    label: "Milestone",
+    chip: "bg-emerald-50 text-emerald-700",
+  },
 };
+
+function statusMeta(label: string) {
+  const l = label.toLowerCase();
+  if (l.startsWith("approved")) {
+    return {
+      icon: CheckCircle,
+      iconClass: "text-emerald-600",
+      ring: "border-emerald-200",
+      accent: "border-l-emerald-400",
+    };
+  }
+  if (l.startsWith("rejected")) {
+    return {
+      icon: XCircle,
+      iconClass: "text-rose-600",
+      ring: "border-rose-200",
+      accent: "border-l-rose-400",
+    };
+  }
+  if (l.startsWith("submitted")) {
+    return {
+      icon: Send,
+      iconClass: "text-sky-600",
+      ring: "border-sky-200",
+      accent: "border-l-sky-400",
+    };
+  }
+  return {
+    icon: AlertCircle,
+    iconClass: "text-slate-500",
+    ring: "border-slate-200",
+    accent: "border-l-slate-300",
+  };
+}
 
 // ── Component ───────────────────────────────────────────────────────────────────
 
@@ -118,132 +179,156 @@ export function VersionHistoryPanel({
 
   if (!open) return null;
 
-  const getIcon = (label: string) => {
-    const l = label.toLowerCase();
-    if (l.startsWith("approved")) return <CheckCircle className="text-emerald-500" size={18} />;
-    if (l.startsWith("rejected")) return <XCircle className="text-red-500" size={18} />;
-    if (l.startsWith("submitted")) return <Send className="text-blue-500" size={18} />;
-    return <AlertCircle className="text-gray-400" size={18} />;
-  };
-
   return (
     <div className="fixed inset-0 z-40 flex justify-end">
-      {/* Scrim */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Drawer */}
-      <aside className="relative flex h-full w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl">
+      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
         {/* Header */}
-        <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-200 px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <History size={18} className="text-indigo-500" />
-            <h2 className="text-base font-semibold text-gray-900">
-              {isSuView ? "History" : "Version history"}
-            </h2>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
+              <History size={17} />
+            </span>
+            <div>
+              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
+                {isSuView ? "History" : "Version history"}
+              </h2>
+              <p className="text-[11px] font-medium text-slate-400">
+                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
           >
             <X size={18} />
           </button>
         </div>
 
-        {/* Tab navigation for SU view */}
+        {/* Tabs — SU review */}
         {isSuView && (
-          <div className="flex flex-shrink-0 border-b border-gray-200 bg-gray-50 px-5 pt-2">
-            <button
-              type="button"
-              onClick={() => setTab("log")}
-              className={`pb-2.5 px-4 text-xs font-semibold border-b-2 transition-colors ${
-                tab === "log"
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Log
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("comment")}
-              className={`pb-2.5 px-4 text-xs font-semibold border-b-2 transition-colors ${
-                tab === "comment"
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Comment
-            </button>
+          <div className="shrink-0 px-5 pt-3 pb-3">
+            <div className="flex gap-1 rounded-full border border-slate-200/80 bg-slate-50 p-1">
+              <button
+                type="button"
+                onClick={() => setTab("log")}
+                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
+                  tab === "log"
+                    ? "bg-[#14142b] text-white shadow-sm"
+                    : "text-slate-500 hover:text-[#14142b]"
+                }`}
+              >
+                <FileClock size={13} />
+                Log
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("comment")}
+                className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-[12px] font-semibold transition-all ${
+                  tab === "comment"
+                    ? "bg-[#14142b] text-white shadow-sm"
+                    : "text-slate-500 hover:text-[#14142b]"
+                }`}
+              >
+                <MessageSquareText size={13} />
+                Comment
+              </button>
+            </div>
           </div>
         )}
 
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col">
           {isSuView && tab === "comment" ? (
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-6">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-2 pb-6">
               {statusHistoryLoading ? (
-                <div className="flex flex-1 items-center justify-center text-gray-400">
+                <div className="flex flex-1 items-center justify-center text-slate-400">
                   <Loader2 size={22} className="animate-spin" />
                 </div>
               ) : !statusHistory || statusHistory.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
-                  <AlertCircle size={28} className="text-gray-300" />
-                  <p className="text-sm text-gray-500">No status history recorded yet.</p>
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+                  <span className="grid size-14 place-items-center rounded-2xl bg-slate-50">
+                    <MessageSquareText size={24} className="text-slate-300" />
+                  </span>
+                  <p className="text-[13px] font-semibold text-[#14142b]">No workflow comments</p>
+                  <p className="max-w-[220px] text-[11px] leading-relaxed text-slate-400">
+                    Approvals, rejections, and submission notes will appear here.
+                  </p>
                 </div>
               ) : (
-                <div className="relative border-l-2 border-gray-100 ml-3 space-y-8">
-                  {statusHistory.map((event, idx) => (
-                    <div key={idx} className="relative pl-6">
-                      <div className="absolute -left-[11px] top-1 bg-white rounded-full">
-                        {getIcon(event.label)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-gray-900">
-                          {event.label.split(":")[0]}
+                <div className="relative ml-3 space-y-0 border-l border-slate-200 pl-0">
+                  {statusHistory.map((event, idx) => {
+                    const meta = statusMeta(event.label);
+                    const Icon = meta.icon;
+                    const title = event.label.split(":")[0];
+                    const note = event.label.includes(":")
+                      ? event.label.substring(event.label.indexOf(":") + 1).trim()
+                      : null;
+                    return (
+                      <div key={idx} className="relative pb-6 pl-6 last:pb-0">
+                        <span
+                          className={`absolute -left-[13px] top-0 grid size-6 place-items-center rounded-full border bg-white ${meta.ring}`}
+                        >
+                          <Icon size={12} className={meta.iconClass} />
                         </span>
-                        {event.label.includes(":") && (
-                          <span className="mt-1 text-sm text-gray-600 italic bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                            "{event.label.substring(event.label.indexOf(":") + 1).trim()}"
-                          </span>
-                        )}
-                        <div className="mt-2 flex items-center text-xs text-gray-400">
-                          <span className="font-medium text-gray-500">{event.actorName}</span>
-                          <span className="mx-2">•</span>
-                          <span>{formatAbsolute(event.createdAt)}</span>
+                        <div
+                          className={`rounded-2xl border border-slate-100 border-l-[3px] bg-white p-3.5 shadow-[0_2px_8px_rgba(20,20,43,0.03)] ${meta.accent}`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-[13px] font-bold text-[#14142b]">{title}</p>
+                            <span className="shrink-0 text-[10px] font-medium text-slate-400">
+                              {formatRelative(event.createdAt)}
+                            </span>
+                          </div>
+                          {note && (
+                            <p className="mt-2 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2 text-[12px] italic leading-relaxed text-slate-600">
+                              “{note}”
+                            </p>
+                          )}
+                          <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+                            <span className="font-semibold text-slate-500">{event.actorName}</span>
+                            <span>·</span>
+                            <span>{formatAbsolute(event.createdAt)}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           ) : (
             <>
               {loading ? (
-                <div className="flex flex-1 items-center justify-center text-gray-400">
+                <div className="flex flex-1 items-center justify-center text-slate-400">
                   <Loader2 size={22} className="animate-spin" />
                 </div>
               ) : error ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
-                  <p className="text-sm text-red-600">{error}</p>
+                  <p className="text-sm text-rose-600">{error}</p>
                   <button
+                    type="button"
                     onClick={onRetryLoad}
-                    className="text-xs font-medium text-indigo-600 hover:underline"
+                    className="text-[12px] font-semibold text-[#14142b] hover:underline"
                   >
                     Try again
                   </button>
                 </div>
               ) : versions.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
-                  <Clock size={28} className="text-gray-300" />
-                  <p className="text-sm text-gray-500">No versions yet</p>
-                  <p className="text-xs text-gray-400">
-                    A snapshot is saved automatically as you keep editing.
+                  <span className="grid size-14 place-items-center rounded-2xl bg-slate-50">
+                    <Clock size={26} className="text-slate-300" />
+                  </span>
+                  <p className="text-[13px] font-semibold text-[#14142b]">No versions yet</p>
+                  <p className="max-w-[220px] text-[11px] leading-relaxed text-slate-400">
+                    Snapshots save automatically as content is edited.
                   </p>
                 </div>
               ) : (
-                <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
+                <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 py-2">
                   {versions.map((v) => {
                     const meta = KIND_META[v.kind];
                     const Icon = meta.icon;
@@ -253,31 +338,44 @@ export function VersionHistoryPanel({
                         key={v.id}
                         type="button"
                         onClick={() => onSelectVersion(v)}
-                        className={`flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                          isActive ? "bg-indigo-50" : "hover:bg-gray-50"
+                        className={`flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all ${
+                          isActive
+                            ? "border-[#14142b]/20 bg-[#14142b]/[0.04] shadow-[0_4px_12px_rgba(20,20,43,0.06)]"
+                            : "border-transparent hover:border-slate-100 hover:bg-slate-50"
                         }`}
                       >
-                        <Icon size={15} className={`mt-0.5 flex-shrink-0 ${meta.className}`} />
+                        <span
+                          className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl ${
+                            isActive ? "bg-[#14142b] text-white" : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          <Icon size={14} />
+                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline justify-between gap-2">
                             <span
-                              className={`truncate text-sm ${
-                                isActive ? "font-semibold text-indigo-700" : "font-medium text-gray-800"
+                              className={`truncate text-[13px] ${
+                                isActive
+                                  ? "font-bold text-[#14142b]"
+                                  : "font-semibold text-slate-800"
                               }`}
                             >
                               {v.label ?? formatAbsolute(v.createdAt)}
                             </span>
-                            <span className="flex-shrink-0 text-[11px] text-gray-400">
+                            <span className="shrink-0 text-[10px] font-medium text-slate-400">
                               {formatRelative(v.createdAt)}
                             </span>
                           </div>
-                          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-gray-400">
-                            <span>{meta.label}</span>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${meta.chip}`}
+                            >
+                              {meta.label}
+                            </span>
                             {v.createdByName && (
-                              <>
-                                <span>·</span>
-                                <span className="truncate">{v.createdByName}</span>
-                              </>
+                              <span className="truncate text-[11px] font-medium text-slate-400">
+                                {v.createdByName}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -292,36 +390,41 @@ export function VersionHistoryPanel({
 
         {/* Preview + restore footer */}
         {selected && (!isSuView || tab === "log") && (
-          <div className="flex max-h-[55%] flex-shrink-0 flex-col border-t border-gray-200 bg-gray-50">
-            <div className="flex items-center justify-between px-4 py-2.5">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Preview · {formatAbsolute(selected.createdAt)}
-              </span>
+          <div className="flex max-h-[52%] shrink-0 flex-col border-t border-slate-100 bg-slate-50/90">
+            <div className="flex items-center justify-between gap-2 px-4 py-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Preview
+                </p>
+                <p className="text-[12px] font-semibold text-[#14142b]">
+                  {formatAbsolute(selected.createdAt)}
+                </p>
+              </div>
               {!isSuView && (
                 <button
                   type="button"
                   onClick={handleRestore}
                   disabled={restoring || !previewDoc}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-50"
                 >
                   {restoring ? (
                     <Loader2 size={13} className="animate-spin" />
                   ) : (
                     <RotateCcw size={13} />
                   )}
-                  {restoring ? "Restoring…" : "Restore this version"}
+                  {restoring ? "Restoring…" : "Restore"}
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+            <div className="min-h-0 flex-1 overflow-y-auto border-t border-slate-100 bg-white px-4 py-4">
               {previewLoading ? (
-                <div className="flex items-center justify-center py-8 text-gray-400">
+                <div className="flex items-center justify-center py-8 text-slate-400">
                   <Loader2 size={18} className="animate-spin" />
                 </div>
               ) : previewDoc ? (
                 renderEditor(previewDoc, selected.id)
               ) : (
-                <p className="py-6 text-center text-xs text-gray-400">
+                <p className="py-6 text-center text-[12px] text-slate-400">
                   This version has no previewable content.
                 </p>
               )}

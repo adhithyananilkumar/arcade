@@ -171,31 +171,31 @@ function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md"
         onClick={() => !busy && onClose()}
       />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <div className="flex gap-3">
           <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${danger ? "bg-red-50" : "bg-indigo-50"
+            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50" : "bg-slate-100"
               }`}
           >
             <AlertTriangle
               size={20}
-              className={danger ? "text-red-500" : "text-indigo-500"}
+              className={danger ? "text-rose-500" : "text-[#14142b]"}
             />
           </div>
           <div className="flex-1 pt-0.5">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-gray-500">{message}</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">{title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{message}</p>
           </div>
         </div>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-50"
           >
             Cancel
           </button>
@@ -211,9 +211,9 @@ function ConfirmDialog({
                 setBusy(false);
               }
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
+            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
+              ? "bg-rose-600 hover:bg-rose-700"
+              : "bg-[#14142b] hover:bg-[#232735]"
               }`}
           >
             {busy ? "Working…" : confirmLabel}
@@ -1137,7 +1137,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    router.push("/");
+    router.push("/studio");
   }, [
     navigatingBack,
     contentId,
@@ -1147,6 +1147,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     activeLessonId,
     activeLessonTitle,
     router,
+    adapter,
   ]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
@@ -1298,75 +1299,76 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         />
       )}
 
-      {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
-          row regardless of how wide the left/right action groups are ────── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
-          {/* Left: Back, flush to the page margin */}
+      {/* ── Editor top bar — uniform across course / workshop / roadmap ───── */}
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 sm:px-6">
+          {/* Left: Back → Content Studio */}
           <div className="justify-self-start">
             <button
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
-              title="Save and return to dashboard"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+              title="Save and return to Content Studio"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
           </div>
 
-          {/* Center: name of whatever is open. Read-only — renaming happens on the
-              canvas title field (lesson/quiz) or in {terminology.root} Settings. */}
+          {/* Center title */}
           <div className="min-w-0 justify-self-center">
-            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-semibold text-gray-900 sm:max-w-md">
+            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-bold tracking-tight text-[#14142b] sm:max-w-md">
               {view === "settings"
-                ? "{terminology.root} Settings"
+                ? `${adapter.terminology.root} Settings`
                 : activeLessonId
                   ? activeLessonTitle
                   : activeQuizId
                     ? activeQuizTitle
-                    : ""}
+                    : title || adapter.terminology.root}
             </span>
           </div>
 
-          {/* Right: status + secondary actions, flush to the page margin */}
+          {/* Right actions */}
           <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
             <StatusPill status={status} />
 
-            {activeLessonId && (
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                title="Version history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <History size={15} />
-                <span className="hidden md:inline">History</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (activeLessonId) setHistoryOpen(true);
+                else setStatusHistoryOpen(true);
+              }}
+              title={activeLessonId ? "Version history" : "Status history"}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            >
+              <History size={15} />
+              <span className="hidden md:inline">History</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+              title={`${adapter.terminology.root} Settings`}
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${
+                view === "settings"
+                  ? "bg-[#14142b] text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
+              }`}
+            >
+              <Settings size={15} />
+              <span className="hidden md:inline">Settings</span>
+            </button>
 
             {activeLessonId && contentType === "workshop" && activeModuleId && (
               <button
                 type="button"
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
               >
                 <Settings size={15} />
-                <span className="hidden md:inline">Day Settings</span>
-              </button>
-            )}
-
-            {status !== "DRAFT" && (
-              <button
-                type="button"
-                onClick={() => setStatusHistoryOpen(true)}
-                title="View status history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                <History size={14} />
-                <span className="hidden sm:inline">Status</span>
+                <span className="hidden lg:inline">Day</span>
               </button>
             )}
 
@@ -1384,15 +1386,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     ? "No new changes to submit"
                     : ""
                 }
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={14} />
                 <span className="hidden sm:inline">
                   {status === "PUBLISHED" || status === "APPROVED"
                     ? "Submit Updates"
                     : status === "REJECTED"
-                      ? "Resubmit for Review"
-                      : "Submit for Review"}
+                      ? "Resubmit"
+                      : "Submit"}
                 </span>
               </button>
             )}
@@ -1401,10 +1403,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={() => router.push(`/studio/workshop/${contentId}`)}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
               >
-                <Settings size={14} />
-                <span className="hidden sm:inline">Manage Workshop</span>
+                <span className="hidden sm:inline">Manage</span>
               </button>
             )}
           </div>
@@ -1415,28 +1416,28 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       <div className="relative min-h-0 flex-1">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-3 top-14 z-20 flex">
+          <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
             {!sidebarOpen ? (
               <button
                 type="button"
                 title="Expand sidebar"
                 onClick={() => setSidebarOpen(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-400 shadow-[0_6px_18px_rgba(20,20,43,0.08)] transition-colors hover:text-[#14142b]"
               >
                 <PanelLeftOpen size={18} />
               </button>
             ) : (
-              <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+              <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
                 {/* ── Sidebar header ───────────────── */}
-                <div className="flex flex-shrink-0 items-center px-2.5 py-2">
-                  <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                    Course Structure
+                <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
+                  <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    {adapter.terminology.root} structure
                   </span>
                   <button
                     type="button"
                     title="Collapse sidebar"
                     onClick={() => setSidebarOpen(false)}
-                    className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    className="flex flex-shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
                   >
                     <PanelLeftClose size={16} />
                   </button>
@@ -1533,7 +1534,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                 return (
                                   <div
                                     key={item.node.id}
-                                    className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
+                                    className={`group flex items-center gap-1 rounded-lg pl-2 pr-1.5 ${isActive ? "bg-[#14142b] shadow-sm" : "hover:bg-slate-50"
                                       }`}
                                   >
                                     <button
@@ -1547,8 +1548,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                         }
                                       }}
                                       className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                        ? "font-medium text-indigo-700"
-                                        : "text-gray-500"
+                                        ? "font-semibold text-white"
+                                        : "text-slate-500"
                                         }`}
                                     >
                                       {item.kind === "lesson" ? (
@@ -1613,7 +1614,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                 <button
                                   type="button"
                                   onClick={() => addLesson(mod.id)}
-                                  className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                  className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
                                 >
                                   <Plus size={11} />
                                   Add {adapter.terminology.leafDocument}
@@ -1622,7 +1623,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                   <button
                                     type="button"
                                     onClick={() => addQuiz(mod.id)}
-                                    className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                    className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
                                   >
                                     <Plus size={11} />
                                     Add quiz
@@ -1636,45 +1637,42 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     ))}
                   </div>
 
-                  {/* Sidebar footer */}
-                  <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
+                  {/* Sidebar footer — settings also in top bar; keep quick access here */}
+                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
                         onClick={addWorkshopDay}
-                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
+                        className="mb-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
                       >
                         <Plus size={14} />
                         Add Day
                       </button>
                     )}
-                    {contentType === "workshop" && (
-                      <div className="border-t border-gray-100 my-1"></div>
-                    )}
                     {status !== "SUBMITTED" && contentType !== "workshop" && (
                       <button
                         type="button"
                         onClick={addModule}
-                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
                       >
                         <Plus size={14} />
-                        Add Module
+                        Add {adapter.terminology.container}
                       </button>
                     )}
                     {status !== "SUBMITTED" && contentType !== "workshop" && (
                       <button
                         type="button"
                         onClick={() => setQbOpen(true)}
-                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
                       >
                         <FileText size={13} />
-                        Create Question Bank
+                        Question Bank
                       </button>
                     )}
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
-                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
+                        className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-400 opacity-60"
                         title="Resources (Coming soon)"
                       >
                         <FileText size={13} />
@@ -1684,9 +1682,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     <button
                       type="button"
                       onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                      className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${view === "settings"
+                        ? "bg-[#14142b] text-white"
+                        : "text-slate-500 hover:bg-white hover:text-[#14142b]"
                         }`}
                     >
                       <Settings size={13} />
@@ -1718,7 +1716,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     pricingModel={pricingModel}
                     createdAt={createdAt}
                     updatedAt={updatedAt}
-                    onDeleted={() => router.push("/")}
+                    onDeleted={() => router.push("/studio")}
                     onDescriptionChange={(desc) => {
                       setDescription(desc);
                       scheduleCourseMetaSave({ description: desc });
@@ -1807,7 +1805,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       </div>
       <ContentStatusHistoryModal
         contentId={contentId!}
-        contentType={contentType === "roadmap" ? "roadmap" : "course"}
+        contentType={
+          contentType === "roadmap"
+            ? "roadmap"
+            : contentType === "workshop"
+              ? "workshop"
+              : "course"
+        }
         open={statusHistoryOpen}
         onClose={() => setStatusHistoryOpen(false)}
       />

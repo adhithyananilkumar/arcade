@@ -13,10 +13,24 @@ import { useEffect, useState } from 'react';
  * learner navbar is `fixed top-6 z-40`, so on these it floats over the page's
  * own bar and toolbar instead of sitting above them.
  */
-const IMMERSIVE_ROUTES = [/^\/studio\/course\/[^/]+\/edit\/?$/];
+const IMMERSIVE_ROUTES = [
+  /^\/studio\/course\/[^/]+\/edit\/?$/,
+  /^\/studio\/workshop\/[^/]+\/edit\/?$/,
+  /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
+  /^\/studio\/published\/[^/]+\/?$/,
+  /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+];
 
-/** Full-focus learning — hide the bottom dock so content can breathe. */
-const HIDE_DOCK_ROUTES = [/^\/learn\/[^/]+\/learn\/?$/];
+/** Full-focus surfaces — hide the bottom dock so content can breathe. */
+const HIDE_DOCK_ROUTES = [
+  /^\/learn\/[^/]+\/learn\/?$/,
+  /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+  /^\/studio(\/|$)/,
+  /^\/settings(\/|$)/,
+  /^\/console(\/|$)/,
+  /^\/manage-channels(\/|$)/,
+  /^\/channels\/[^/]+\/manage\/?$/,
+];
 
 export default function LearnerShell({
   children,

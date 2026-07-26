@@ -118,7 +118,17 @@ export default function LearnerNavbar() {
   const { hasAccess: hasStudioAccess } = useStudioAccess();
   const showStudio = hasStudioAccess;
 
-  if (pathname.includes('/exam')) {
+  const isConsole = pathname.startsWith('/console');
+  const consoleCrumb = (() => {
+    if (!isConsole) return null;
+    if (pathname.startsWith('/console/channels')) return 'Channels';
+    if (pathname.startsWith('/console/reviews')) return 'Reviews';
+    if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
+    if (pathname.startsWith('/console/iam')) return 'IAM';
+    return null;
+  })();
+
+  if (/\/learn\/[^/]+\/exam\/(start|terminated)\/?$/.test(pathname)) {
     return null;
   }
 
@@ -130,11 +140,11 @@ export default function LearnerNavbar() {
       }}
       animate={hidden ? "hidden" : "visible"}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between px-6 md:px-8 pointer-events-none"
+      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
     >
       {/* Left Island: Branding */}
-      <div className="pointer-events-auto flex items-center h-12 px-5 rounded-full apple-glass-dock">
-        <Link href="/" className="flex items-center group cursor-pointer">
+      <div className="pointer-events-auto flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock">
+        <Link href="/" className="group flex cursor-pointer items-center">
           <Image
             src="/arcade.svg"
             alt="Arcade"
@@ -145,9 +155,26 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Right Utilities: Completely Separate Islands for Notification & User */}
-      <div className="flex items-center gap-3">
-        
+      {/* Center: small Console breadcrumbs */}
+      {isConsole && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
+          <Link
+            href="/console"
+            className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+          >
+            Console
+          </Link>
+          {consoleCrumb && (
+            <>
+              <span className="text-[11px] text-slate-300">/</span>
+              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Right Utilities */}
+      <div className="flex shrink-0 items-center gap-3">
         {/* Island 1: Separate Notification Bell */}
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">

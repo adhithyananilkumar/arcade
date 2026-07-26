@@ -68,7 +68,7 @@ const CONTENT_TYPES = [
     label: "Roadmap",
     desc: "Visual learning path with nodes & connections",
     href: "",
-    color: "text-fuchsia-600",
+    color: "text-[#14142b]",
     bg: "bg-fuchsia-50",
   },
   {
@@ -77,7 +77,7 @@ const CONTENT_TYPES = [
     label: "Workshop / Bootcamp",
     desc: "Flexible sessions with videos, activities & resources",
     href: "/studio/workshop/new",
-    color: "text-violet-600",
+    color: "text-[#14142b]",
     bg: "bg-violet-50",
   },
   {
@@ -178,35 +178,35 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
         >
           <X size={18} />
         </button>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
-            <BookOpen size={20} className="text-indigo-600" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <BookOpen size={20} className="text-[#14142b]" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">New Course</h3>
-            <p className="text-xs text-gray-500">Give it a name to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Course</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="course-name" className="mb-1 block text-sm font-medium text-gray-700">
-              Course name <span className="text-red-500">*</span>
+            <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Course name <span className="text-rose-500">*</span>
             </label>
             <input
               id="course-name"
@@ -216,12 +216,12 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Intro to Spring Boot"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div>
-            <label htmlFor="course-desc" className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="text-gray-400">(optional)</span>
+            <label htmlFor="course-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
               id="course-desc"
@@ -229,29 +229,29 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners get out of this course?"
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-300"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 1 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-rose-600">
               You need a channel with content-authoring rights before you can create a course.
             </p>
           )}
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -300,34 +300,34 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
         >
           <X size={18} />
         </button>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-fuchsia-50">
-            <Map size={20} className="text-fuchsia-600" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <Map size={20} className="text-[#14142b]" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">New Roadmap</h3>
-            <p className="text-xs text-gray-500">Give it a title to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Roadmap</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="roadmap-title" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Roadmap Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -338,12 +338,12 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Java Backend Path"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-300"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div>
-            <label htmlFor="roadmap-desc" className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="text-gray-400">(optional)</span>
+            <label htmlFor="roadmap-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
               id="roadmap-desc"
@@ -351,14 +351,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-300"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 1 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-rose-600">
               You need a channel with content-authoring rights before you can create a roadmap.
             </p>
           )}
@@ -366,14 +366,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || !channelId || creating}
-              className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-fuchsia-700 disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Roadmap"}
             </button>
@@ -440,34 +440,34 @@ function CreateWorkshopModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
         >
           <X size={18} />
         </button>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50">
-            <Wrench size={20} className="text-violet-600" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <Wrench size={20} className="text-[#14142b]" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">New Workshop</h3>
-            <p className="text-xs text-gray-500">Give it a title to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Workshop</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="workshop-type" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="workshop-type" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Workshop Type <span className="text-red-500">*</span>
             </label>
             <select
@@ -475,7 +475,7 @@ function CreateWorkshopModal({
               required
               value={workshopType}
               onChange={(e) => setWorkshopType(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 bg-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60 bg-white"
             >
               <option value={WorkshopType.WORKSHOP}>Workshop</option>
               <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
@@ -485,7 +485,7 @@ function CreateWorkshopModal({
             </select>
           </div>
           <div>
-            <label htmlFor="workshop-title" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="workshop-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Workshop Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -498,12 +498,12 @@ function CreateWorkshopModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Advanced TypeScript"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div>
-            <label htmlFor="workshop-desc" className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="text-gray-400">(optional)</span>
+            <label htmlFor="workshop-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
               id="workshop-desc"
@@ -511,14 +511,14 @@ function CreateWorkshopModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 1 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-rose-600">
               You need a channel with content-authoring rights before you can create a workshop.
             </p>
           )}
@@ -526,14 +526,14 @@ function CreateWorkshopModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || !channelId || creating}
-              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-violet-700 disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Workshop"}
             </button>
@@ -579,31 +579,31 @@ function RenameRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
         >
           <X size={18} />
         </button>
-        <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-fuchsia-50">
-            <Pencil size={20} className="text-fuchsia-600" />
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <Pencil size={20} className="text-[#14142b]" />
           </div>
-          <h3 className="text-base font-semibold text-gray-900">Rename Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Rename Roadmap</h3>
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
-            <label htmlFor="rename-title" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Roadmap Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -613,33 +613,33 @@ function RenameRoadmapModal({
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-300"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div>
-            <label htmlFor="rename-desc" className="mb-1 block text-sm font-medium text-gray-700">
-              Description <span className="text-gray-400">(optional)</span>
+            <label htmlFor="rename-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
               id="rename-desc"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-300"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || updating}
-              className="rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-fuchsia-700 disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {updating ? "Saving…" : "Save Changes"}
             </button>
@@ -676,13 +676,13 @@ function DeleteRoadmapModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center gap-3">
+        <div className="mb-6 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
             <Trash2 size={20} className="text-red-600" />
           </div>
-          <h3 className="text-base font-semibold text-gray-900">Delete Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Delete Roadmap</h3>
         </div>
         <p className="text-sm text-gray-600 mb-6">
           Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
@@ -690,7 +690,7 @@ function DeleteRoadmapModal({
         </p>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
             {error}
           </div>
         )}
@@ -700,7 +700,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
           >
             Cancel
           </button>
@@ -708,7 +708,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>
@@ -969,7 +969,7 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-12 pt-28 sm:px-8 sm:pt-32">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

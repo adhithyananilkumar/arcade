@@ -148,7 +148,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <select 
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-9"
+                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 h-9"
                   value={pricingModel}
                   onChange={(e) => setPricingModel(e.target.value as 'FREE' | 'PAID')}
                 >
@@ -172,7 +172,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
               )}
             </div>
               {pricingModel === 'PAID' && (
-                <p className="mt-2 text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 p-2 rounded flex items-start gap-1.5 font-medium">
+                <p className="mt-2 text-xs text-[#14142b] bg-slate-50 border border-slate-200 p-2 rounded flex items-start gap-1.5 font-medium">
                   <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
                 </p>
               )}
@@ -185,7 +185,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
             <h3 className="text-sm font-semibold text-slate-800">Submission Note (Optional)</h3>
             <p className="text-xs text-slate-500 mb-2">Leave a comment for the reviewer summarizing your changes.</p>
             <textarea
-              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px]"
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 min-h-[80px]"
               placeholder="e.g., Added new module on React Hooks and fixed typo in Lesson 1."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
