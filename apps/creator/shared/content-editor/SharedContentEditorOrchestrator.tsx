@@ -111,6 +111,8 @@ function scheduleIdle(fn: () => void) {
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
+import { RoadmapCanvas } from "@/domains/roadmaps";
+import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
 interface SharedContentEditorOrchestratorProps {
   contentType: "course" | "workshop" | "roadmap";
@@ -495,6 +497,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [courseData, setCourseData] = useState<any>(null);
+  const [roadmapData, setRoadmapData] = useState<any>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
@@ -548,47 +551,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [editingValue, setEditingValue] = useState("");
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
 
-  // ── Bootstrap: create or load course on mount ─────────────────────────────
-
-  useEffect(() => {
-    // Courses are created via the dashboard modal; the editor only ever loads an
-    // existing course. A missing id means we arrived here without one — go home.
-    if (!initialContentId) {
-      router.replace("/");
-      return;
-    }
-    async function bootstrap() {
-      try {
-        const { meta, containers } = await adapter.loadContent(initialContentId!);
-        setTitle(meta.title);
-        setDescription(meta.description ?? "");
-        setPricingModel(meta.pricingModel as "FREE" | "PAID");
-        setStatus(meta.status);
-        setHasDraftChanges(meta.raw?.hasDraftChanges === true);
-        setCreatedAt(meta.createdAt);
-        setUpdatedAt(meta.updatedAt);
-        if (contentType === "course") {
-          setCourseData(meta.raw);
-        }
-        setModules(
-          containers.map((m) => ({
-            id: m.id,
-            title: m.title,
-            position: m.position,
-            expanded: true,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
-            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
-          }))
-        );
-      } catch (e) {
-        console.error("Failed to load course", e);
-      }
-      setIsInitializing(false);
-    }
-    bootstrap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // ── Draft-aware lesson selection ──────────────────────────────────────────
 
   /** Best-effort legacy content for a lesson without persisted CRDT state. */
@@ -617,13 +579,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setView("tree");
       setHistoryOpen(false);
 
-      // Flush pending edits in the currently-open lesson before switching away.
-      // Unmounting the editor cancels its debounced auto-save, so without this the
-      // last few seconds of typing would be lost on a lesson switch.
-      //
-      // The flush and the incoming document fetch are independent — they target
-      // different lessons — so they run concurrently instead of head-to-tail. On a
-      // slow link this halves the delay between clicking a lesson and seeing it.
       const flushPending = editorRef.current
         ? Promise.resolve(editorRef.current.flush()).catch(() => {
           // best-effort — proceed with the switch regardless
@@ -634,12 +589,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         .getLeafDocument(lesson.id)
         .catch(() => null);
 
-      // The previous lesson's Y.Doc is torn down by the activeYDoc effect cleanup
-      // below, which runs only after its editor has unmounted (safe unbind).
-
-      // Build a fresh Y.Doc and hydrate it BEFORE the editor mounts. The editor is
-      // keyed on activeLessonId; Collaboration reads the Y.Doc at mount, so the
-      // CRDT state must be in place at the moment the key changes.
       const ydoc = createYDoc();
       let seed: TiptapDocument | undefined;
 
@@ -658,21 +607,61 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       activeYDocRef.current = ydoc;
       lastSnapshotAtRef.current = 0; // snapshot early in a fresh editing session
-      // The no-op-save fingerprint belongs to the lesson we just left. Carrying it
-      // across would let an edit in the new lesson be skipped if its serialized body
-      // happened to match the previous lesson's last save.
       lastSavedBodyRef.current = null;
 
-      // Commit together: React batches these so the editor remounts once, bound to
-      // the hydrated Y.Doc with any legacy seed ready.
       setActiveQuizId(null);
       setActiveYDoc(ydoc);
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
     },
-    [resolveLegacyContent]
+    [adapter, resolveLegacyContent]
   );
+
+  // ── Bootstrap: create or load content on mount ───────────────────────────
+
+  useEffect(() => {
+    if (!initialContentId) {
+      router.replace("/");
+      return;
+    }
+    async function bootstrap() {
+      try {
+        const { meta, containers } = await adapter.loadContent(initialContentId!);
+        setTitle(meta.title);
+        setDescription(meta.description ?? "");
+        setPricingModel(meta.pricingModel as "FREE" | "PAID");
+        setStatus(meta.status);
+        setHasDraftChanges(meta.raw?.hasDraftChanges === true);
+        setCreatedAt(meta.createdAt);
+        setUpdatedAt(meta.updatedAt);
+        if (contentType === "course") {
+          setCourseData(meta.raw);
+        } else if (contentType === "roadmap") {
+          setRoadmapData(meta.raw);
+        }
+        setModules(
+          containers.map((m) => ({
+            id: m.id,
+            title: m.title,
+            position: m.position,
+            expanded: true,
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
+            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
+          }))
+        );
+        const firstLeaf = containers[0]?.leaves?.[0];
+        if (firstLeaf && firstLeaf.type === "document" && contentType !== "roadmap") {
+          await openLesson(firstLeaf as any);
+        }
+      } catch (e) {
+        console.error("Failed to load content", e);
+      }
+      setIsInitializing(false);
+    }
+    bootstrap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Open a quiz item (mutually exclusive with a lesson) ────────────────────
   const openQuiz = useCallback(async (quiz: QuizNode) => {
@@ -1414,289 +1403,291 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1">
-        {/* ── Floating collapsible sidebar: course tree ─────────────── */}
-        <aside className="absolute left-3 top-14 z-20 flex">
-          {!sidebarOpen ? (
-            <button
-              type="button"
-              title="Expand sidebar"
-              onClick={() => setSidebarOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              <PanelLeftOpen size={18} />
-            </button>
-          ) : (
-            <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
-              {/* ── Sidebar header ───────────────── */}
-              <div className="flex flex-shrink-0 items-center px-2.5 py-2">
-                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                  Course Structure
-                </span>
-                <button
-                  type="button"
-                  title="Collapse sidebar"
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                >
-                  <PanelLeftClose size={16} />
-                </button>
-              </div>
+        {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
+        {contentType !== "roadmap" && (
+          <aside className="absolute left-3 top-14 z-20 flex">
+            {!sidebarOpen ? (
+              <button
+                type="button"
+                title="Expand sidebar"
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <PanelLeftOpen size={18} />
+              </button>
+            ) : (
+              <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+                {/* ── Sidebar header ───────────────── */}
+                <div className="flex flex-shrink-0 items-center px-2.5 py-2">
+                  <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                    Course Structure
+                  </span>
+                  <button
+                    type="button"
+                    title="Collapse sidebar"
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  >
+                    <PanelLeftClose size={16} />
+                  </button>
+                </div>
 
-              {/* ── Body ──────────────────────────────── */}
-              <div className="flex min-h-0 flex-1 flex-col">
-                {/* Tree scroll area */}
-                <div className="flex-1 overflow-y-auto p-2">
-                  {modules.length === 0 && (
-                    <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                      <Layers size={28} className="text-gray-300" />
-                      <p className="text-xs text-gray-400">
-                        {contentType === "workshop"
-                          ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
-                          : "No modules yet. Add a module to get started."}
-                      </p>
-                    </div>
-                  )}
-
-                  {modules.map((mod) => (
-                    <div key={mod.id} className="mb-0.5">
-                      {/* Module row */}
-                      <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setModules((prev) =>
-                              prev.map((m) =>
-                                m.id === mod.id ? { ...m, expanded: !m.expanded } : m
-                              )
-                            )
-                          }
-                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                        >
-                          {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        </button>
-
-                        {isEditing("module", mod.id) ? (
-                          renameInput("text-xs font-semibold text-gray-700")
-                        ) : (
-                          <span
-                            onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                            className="flex-1 truncate text-xs font-semibold text-gray-700"
-                            title={mod.title}
-                          >
-                            {mod.title}
-                          </span>
-                        )}
-
-                        {status !== "SUBMITTED" && (
-                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger
-                                title="Add lesson or quiz"
-                                className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                              >
-                                <Plus size={12} />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" sideOffset={4}>
-                                <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                  <FileText size={13} />
-                                  Lesson
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                  <ListChecks size={13} />
-                                  Quiz
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                            <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                              <Pencil size={12} />
-                            </IconBtn>
-                            <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                              <Trash2 size={12} />
-                            </IconBtn>
-                          </div>
-                        )}
+                {/* ── Body ──────────────────────────────── */}
+                <div className="flex min-h-0 flex-1 flex-col">
+                  {/* Tree scroll area */}
+                  <div className="flex-1 overflow-y-auto p-2">
+                    {modules.length === 0 && (
+                      <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                        <Layers size={28} className="text-gray-300" />
+                        <p className="text-xs text-gray-400">
+                          {contentType === "workshop"
+                            ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                            : "No modules yet. Add a module to get started."}
+                        </p>
                       </div>
+                    )}
 
-                      {/* Lessons and quizzes, interleaved by position */}
-                      {mod.expanded && (
-                        <div className="ml-3 border-l border-gray-200 pl-1.5">
-                          {[
-                            ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
-                            ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
-                          ]
-                            .sort((a, b) => a.node.position - b.node.position)
-                            .map((item) => {
-                              const isActive =
-                                item.kind === "lesson"
-                                  ? activeLessonId === item.node.id
-                                  : activeQuizId === item.node.id;
-                              return (
-                                <div
-                                  key={item.node.id}
-                                  className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
-                                    }`}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (item.kind === "lesson") {
-                                        setActiveModuleId(mod.id);
-                                        openLesson(item.node);
-                                      } else {
-                                        openQuiz(item.node);
-                                      }
-                                    }}
-                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                      ? "font-medium text-indigo-700"
-                                      : "text-gray-500"
-                                      }`}
-                                  >
-                                    {item.kind === "lesson" ? (
-                                      <FileText size={11} className="flex-shrink-0" />
-                                    ) : (
-                                      <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
-                                    )}
-                                    {isEditing(item.kind, item.node.id) ? (
-                                      renameInput("text-xs")
-                                    ) : (
-                                      <span className="truncate" title={item.node.title}>
-                                        {item.node.title}
-                                      </span>
-                                    )}
-                                  </button>
-                                  {status !== "SUBMITTED" && (
-                                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                      {item.kind === "quiz" && (
-                                        <IconBtn
-                                          title="Copy quiz ID — paste into an inline Quiz block"
-                                          onClick={() => {
-                                            navigator.clipboard.writeText(item.node.id);
-                                            setCopiedQuizId(item.node.id);
-                                            setTimeout(() => setCopiedQuizId(null), 1500);
-                                          }}
-                                        >
-                                          {copiedQuizId === item.node.id ? (
-                                            <Check size={12} className="text-emerald-500" />
-                                          ) : (
-                                            <Copy size={12} />
-                                          )}
-                                        </IconBtn>
-                                      )}
-                                      <IconBtn
-                                        title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                        onClick={() =>
-                                          startEdit(item.kind, item.node.id, item.node.title)
-                                        }
-                                      >
-                                        <Pencil size={12} />
-                                      </IconBtn>
-                                      <IconBtn
-                                        title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                        danger
-                                        onClick={() =>
-                                          item.kind === "lesson"
-                                            ? askDeleteLesson(item.node)
-                                            : askDeleteQuiz(item.node)
-                                        }
-                                      >
-                                        <Trash2 size={12} />
-                                      </IconBtn>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                    {modules.map((mod) => (
+                      <div key={mod.id} className="mb-0.5">
+                        {/* Module row */}
+                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModules((prev) =>
+                                prev.map((m) =>
+                                  m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                                )
+                              )
+                            }
+                            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                          >
+                            {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
 
-                          {/* Add lesson / quiz to this Day/module */}
+                          {isEditing("module", mod.id) ? (
+                            renameInput("text-xs font-semibold text-gray-700")
+                          ) : (
+                            <span
+                              onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                              className="flex-1 truncate text-xs font-semibold text-gray-700"
+                              title={mod.title}
+                            >
+                              {mod.title}
+                            </span>
+                          )}
+
                           {status !== "SUBMITTED" && (
-                            <div className="mt-0.5 flex items-center gap-3 pl-2">
-                              <button
-                                type="button"
-                                onClick={() => addLesson(mod.id)}
-                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                              >
-                                <Plus size={11} />
-                                Add {adapter.terminology.leafDocument}
-                              </button>
-                              {contentType !== "workshop" && (
-                                <button
-                                  type="button"
-                                  onClick={() => addQuiz(mod.id)}
-                                  className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  title="Add lesson or quiz"
+                                  className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
                                 >
-                                  <Plus size={11} />
-                                  Add quiz
-                                </button>
-                              )}
+                                  <Plus size={12} />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" sideOffset={4}>
+                                  <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                    <FileText size={13} />
+                                    Lesson
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                                    <ListChecks size={13} />
+                                    Quiz
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                                <Pencil size={12} />
+                              </IconBtn>
+                              <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                                <Trash2 size={12} />
+                              </IconBtn>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
 
-                {/* Sidebar footer */}
-                <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
-                  {status !== "SUBMITTED" && contentType === "workshop" && (
+                        {/* Lessons and quizzes, interleaved by position */}
+                        {mod.expanded && (
+                          <div className="ml-3 border-l border-gray-200 pl-1.5">
+                            {[
+                              ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
+                              ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
+                            ]
+                              .sort((a, b) => a.node.position - b.node.position)
+                              .map((item) => {
+                                const isActive =
+                                  item.kind === "lesson"
+                                    ? activeLessonId === item.node.id
+                                    : activeQuizId === item.node.id;
+                                return (
+                                  <div
+                                    key={item.node.id}
+                                    className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
+                                      }`}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (item.kind === "lesson") {
+                                          setActiveModuleId(mod.id);
+                                          openLesson(item.node);
+                                        } else {
+                                          openQuiz(item.node);
+                                        }
+                                      }}
+                                      className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
+                                        ? "font-medium text-indigo-700"
+                                        : "text-gray-500"
+                                        }`}
+                                    >
+                                      {item.kind === "lesson" ? (
+                                        <FileText size={11} className="flex-shrink-0" />
+                                      ) : (
+                                        <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
+                                      )}
+                                      {isEditing(item.kind, item.node.id) ? (
+                                        renameInput("text-xs")
+                                      ) : (
+                                        <span className="truncate" title={item.node.title}>
+                                          {item.node.title}
+                                        </span>
+                                      )}
+                                    </button>
+                                    {status !== "SUBMITTED" && (
+                                      <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                        {item.kind === "quiz" && (
+                                          <IconBtn
+                                            title="Copy quiz ID — paste into an inline Quiz block"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(item.node.id);
+                                              setCopiedQuizId(item.node.id);
+                                              setTimeout(() => setCopiedQuizId(null), 1500);
+                                            }}
+                                          >
+                                            {copiedQuizId === item.node.id ? (
+                                              <Check size={12} className="text-emerald-500" />
+                                            ) : (
+                                              <Copy size={12} />
+                                            )}
+                                          </IconBtn>
+                                        )}
+                                        <IconBtn
+                                          title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                          onClick={() =>
+                                            startEdit(item.kind, item.node.id, item.node.title)
+                                          }
+                                        >
+                                          <Pencil size={12} />
+                                        </IconBtn>
+                                        <IconBtn
+                                          title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                          danger
+                                          onClick={() =>
+                                            item.kind === "lesson"
+                                              ? askDeleteLesson(item.node)
+                                              : askDeleteQuiz(item.node)
+                                          }
+                                        >
+                                          <Trash2 size={12} />
+                                        </IconBtn>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                            {/* Add lesson / quiz to this Day/module */}
+                            {status !== "SUBMITTED" && (
+                              <div className="mt-0.5 flex items-center gap-3 pl-2">
+                                <button
+                                  type="button"
+                                  onClick={() => addLesson(mod.id)}
+                                  className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                >
+                                  <Plus size={11} />
+                                  Add {adapter.terminology.leafDocument}
+                                </button>
+                                {contentType !== "workshop" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => addQuiz(mod.id)}
+                                    className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                  >
+                                    <Plus size={11} />
+                                    Add quiz
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sidebar footer */}
+                  <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
+                    {status !== "SUBMITTED" && contentType === "workshop" && (
+                      <button
+                        type="button"
+                        onClick={addWorkshopDay}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
+                      >
+                        <Plus size={14} />
+                        Add Day
+                      </button>
+                    )}
+                    {contentType === "workshop" && (
+                      <div className="border-t border-gray-100 my-1"></div>
+                    )}
+                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+                      <button
+                        type="button"
+                        onClick={addModule}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                      >
+                        <Plus size={14} />
+                        Add Module
+                      </button>
+                    )}
+                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+                      <button
+                        type="button"
+                        onClick={() => setQbOpen(true)}
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      >
+                        <FileText size={13} />
+                        Create Question Bank
+                      </button>
+                    )}
+                    {status !== "SUBMITTED" && contentType === "workshop" && (
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
+                        title="Resources (Coming soon)"
+                      >
+                        <FileText size={13} />
+                        Resources
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={addWorkshopDay}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
+                      onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                      className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
+                        ? "bg-indigo-50 text-indigo-700"
+                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        }`}
                     >
-                      <Plus size={14} />
-                      Add Day
+                      <Settings size={13} />
+                      {adapter.terminology.root} Settings
                     </button>
-                  )}
-                  {contentType === "workshop" && (
-                    <div className="border-t border-gray-100 my-1"></div>
-                  )}
-                  {status !== "SUBMITTED" && contentType !== "workshop" && (
-                    <button
-                      type="button"
-                      onClick={addModule}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
-                    >
-                      <Plus size={14} />
-                      Add Module
-                    </button>
-                  )}
-                  {status !== "SUBMITTED" && contentType !== "workshop" && (
-                    <button
-                      type="button"
-                      onClick={() => setQbOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                    >
-                      <FileText size={13} />
-                      Create Question Bank
-                    </button>
-                  )}
-                  {status !== "SUBMITTED" && contentType === "workshop" && (
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
-                      title="Resources (Coming soon)"
-                    >
-                      <FileText size={13} />
-                      Resources
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                      }`}
-                  >
-                    <Settings size={13} />
-                    {adapter.terminology.root} Settings
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </aside>
+            )}
+          </aside>
+        )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="absolute inset-0 z-0 overflow-y-auto">
@@ -1725,6 +1716,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   />
                 </div>
               </div>
+            </div>
+          ) : contentType === "roadmap" && roadmapData ? (
+            <div className="absolute inset-0 z-0 pt-[49px]">
+               <RoadmapCanvas 
+                 roadmap={roadmapData}
+                 readOnly={status === "SUBMITTED"}
+                 onGraphChange={async (graphJson) => {
+                   await roadmapService.updateRoadmap(contentId!, { graphJson });
+                   setHasDraftChanges(true);
+                 }}
+               />
             </div>
           ) : activeLessonId ? (
             <div

@@ -155,6 +155,8 @@ export const ArcadeEditor = memo(
   }
 
   const isRoadmap = contentType === "roadmap";
+console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
+
 
   return (
     <div

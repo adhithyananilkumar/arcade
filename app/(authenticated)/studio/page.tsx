@@ -388,11 +388,17 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
 
 // ── New Workshop creation modal ─────────────────────────────────────────────────
 
-function CreateWorkshopModal({ onClose }: { onClose: () => void }) {
+function CreateWorkshopModal({
+  onClose,
+  defaultType = WorkshopType.WORKSHOP,
+}: {
+  onClose: () => void;
+  defaultType?: string;
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [workshopType, setWorkshopType] = useState<string>(WorkshopType.WORKSHOP);
+  const [workshopType, setWorkshopType] = useState<string>(defaultType);
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -854,10 +860,19 @@ function ContentCard({
 
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | "webinar" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const { channels: eligibleChannels } = useEligibleChannels();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const create = params.get("create");
+    if (create === "webinar" || create === "workshop" || create === "course" || create === "roadmap") {
+      setCreateOpen(create);
+    }
+  }, []);
 
   const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
@@ -929,7 +944,8 @@ export default function DashboardPage() {
     <div className="flex-1 flex flex-col">
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WORKSHOP} />}
+      {createOpen === "webinar" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WEBINAR} />}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
@@ -1039,8 +1055,8 @@ export default function DashboardPage() {
                       );
                       const cls =
                         "flex items-start gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors w-full text-left";
-                      // "Course", "Roadmap", and "Workshop" open creation modals; other types navigate (stubs for now).
-                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" ? (
+                      // "Course", "Roadmap", "Workshop", and "Webinar" open creation modals; other types navigate (stubs for now).
+                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" || type.id === "webinar" ? (
                         <button
                           key={type.id}
                           type="button"

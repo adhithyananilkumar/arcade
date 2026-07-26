@@ -21,6 +21,7 @@ export class RoadmapAdapter implements ContentDataAdapter {
         status: roadmap.status,
         createdAt: roadmap.createdAt,
         updatedAt: roadmap.updatedAt,
+        raw: roadmap,
       },
       containers: [
         {

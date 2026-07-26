@@ -66,6 +66,8 @@ interface ToolbarProps {
   updateSelectedColor: (color: string) => void;
   currentNodeColor: string;
   autoLayout: () => void;
+  bgStyle: { bg: string; dotColor: string; dots: boolean; bgImage?: string };
+  setBgStyle: (style: { bg: string; dotColor: string; dots: boolean; bgImage?: string }) => void;
 }
 
 const BG_PRESETS = [
@@ -97,12 +99,36 @@ function FloatingRoadmapToolbar({
   updateSelectedColor,
   currentNodeColor,
   autoLayout,
+  bgStyle,
+  setBgStyle,
 }: ToolbarProps) {
   const { zoom } = useViewport();
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const [showColorPop, setShowColorPop] = useState(false);
   const [showBgPop, setShowBgPop] = useState(false);
-  const [bgStyle, setBgStyle] = useState({ bg: '#0b0f17', dotColor: '#334155', dots: true });
+  const [customImageUrl, setCustomImageUrl] = useState("");
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width, height = img.height;
+        const MAX_DIM = 1920;
+        if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+        else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+        setBgStyle({ ...bgStyle, bgImage: canvas.toDataURL('image/webp', 0.6) });
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const zoomPct = Math.round(zoom * 100);
 
   const toolBtn = (active: boolean, extra = '') =>
@@ -216,6 +242,55 @@ function FloatingRoadmapToolbar({
                 {p.label}
               </button>
             ))}
+            <div className="w-full h-px bg-white/10 my-1"></div>
+            <div className="px-2 py-1 text-xs">
+              <label className="text-gray-400 font-medium mb-1 block">Custom Color</label>
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6 rounded overflow-hidden border border-white/20 shrink-0">
+                  <input
+                    type="color"
+                    value={bgStyle.bg.startsWith('#') ? bgStyle.bg.substring(0, 7) : '#0b0f17'}
+                    onChange={(e) => setBgStyle({ ...bgStyle, bg: e.target.value, bgImage: undefined })}
+                    className="absolute inset-[-8px] w-10 h-10 cursor-pointer border-0 p-0"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="#000000"
+                  value={bgStyle.bg}
+                  onChange={(e) => setBgStyle({ ...bgStyle, bg: e.target.value, bgImage: undefined })}
+                  className="w-full bg-[#1e1e1e] border border-white/10 rounded px-2 py-1 text-white outline-none font-mono"
+                />
+              </div>
+            </div>
+            <div className="px-2 py-1 text-xs">
+              <label className="text-gray-400 font-medium mb-1 block">Background Image URL</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={customImageUrl || bgStyle.bgImage || ""}
+                onChange={(e) => setCustomImageUrl(e.target.value)}
+                onBlur={(e) => {
+                  if (e.target.value) {
+                    setBgStyle({ ...bgStyle, bgImage: e.target.value });
+                  } else {
+                    setBgStyle({ ...bgStyle, bgImage: undefined });
+                  }
+                }}
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded px-2 py-1 text-white outline-none"
+              />
+            </div>
+            <div className="px-2 pb-1 pt-2">
+              <label className="flex items-center justify-center w-full bg-[#1e1e1e] hover:bg-white/10 border border-white/10 rounded px-2 py-1.5 text-xs text-gray-300 cursor-pointer transition-colors">
+                <span className="font-medium text-[11px]">Upload from Gallery</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </label>
+            </div>
           </div>
         )}
       </div>
@@ -294,14 +369,14 @@ const DEFAULT_NODES: Node[] = [
 function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSelect }: RoadmapCanvasProps) {
   // ── Parse initial graph ──────────────────────────────────────────────────────
   const parseGraph = useCallback((graphJson?: string | null) => {
-    if (!graphJson) return { nodes: DEFAULT_NODES, edges: [] as Edge[] };
+    if (!graphJson) return { nodes: DEFAULT_NODES, edges: [] as Edge[], background: undefined };
     try {
       const parsed = JSON.parse(graphJson);
       const nodes: Node[] = (parsed.nodes || []).map((n: any) => ({ ...n, type: 'topic' }));
       const edges: Edge[] = parsed.edges || [];
-      return { nodes: nodes.length > 0 ? nodes : DEFAULT_NODES, edges };
+      return { nodes: nodes.length > 0 ? nodes : DEFAULT_NODES, edges, background: parsed.background };
     } catch {
-      return { nodes: DEFAULT_NODES, edges: [] as Edge[] };
+      return { nodes: DEFAULT_NODES, edges: [] as Edge[], background: undefined };
     }
   }, []);
 
@@ -313,6 +388,7 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
   const [activeTool, setActiveTool] = useState<string>('pointer');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showMinimap, setShowMinimap] = useState(false);
+  const [bgStyle, setBgStyle] = useState<{ bg: string; dotColor: string; dots: boolean; bgImage?: string }>(initial.background || { bg: '#0b0f17', dotColor: '#334155', dots: true });
 
   // ── History (undo/redo) ──────────────────────────────────────────────────────
   const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
@@ -416,9 +492,10 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
     const json = JSON.stringify({
       nodes: nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data })),
       edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target })),
+      background: bgStyle,
     });
     if (json !== lastSyncRef.current) { lastSyncRef.current = json; onGraphChange(json); }
-  }, [nodes, edges, readOnly, onGraphChange]);
+  }, [nodes, edges, bgStyle, readOnly, onGraphChange]);
 
   // ── Keyboard shortcuts ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -448,7 +525,15 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
   const currentNodeColor = (selectedNode?.data?.color as string) || '#f59e0b';
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-[#0b0f17]">
+    <div 
+      className="w-full h-full relative overflow-hidden" 
+      style={{ 
+        backgroundColor: bgStyle.bg,
+        backgroundImage: bgStyle.bgImage ? `url(${bgStyle.bgImage})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
 
       {/* ── CSS: strip ReactFlow default node styling ─────────────────────── */}
       <style>{`
@@ -504,8 +589,8 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
           variant={BackgroundVariant.Dots}
           gap={20}
           size={1.5}
-          color="#334155"
-          style={{ backgroundColor: '#0b0f17' }}
+          color={bgStyle.dotColor}
+          style={{ backgroundColor: 'transparent' }}
         />
         {showMinimap && (
           <MiniMap
@@ -539,6 +624,8 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
         updateSelectedColor={color => stableUpdateTopic(selectedNodeId!, { color })}
         currentNodeColor={currentNodeColor}
         autoLayout={autoLayout}
+        bgStyle={bgStyle}
+        setBgStyle={setBgStyle}
       />
 
       {/* ── Properties Panel (slides in when node selected) ──────────────── */}
@@ -560,7 +647,7 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
             </div>
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Color</label>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap items-center">
                 {NODE_COLORS.map(c => (
                   <button
                     key={c}
@@ -569,6 +656,15 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
                     style={{ backgroundColor: c, borderColor: selectedNode.data.color === c ? '#6366f1' : '#e5e7eb' }}
                   />
                 ))}
+                <div className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-dashed border-gray-300">
+                  <input
+                    type="color"
+                    value={((selectedNode.data.color as string) || '#f59e0b').startsWith('#') ? (selectedNode.data.color as string).substring(0, 7) : '#f59e0b'}
+                    onChange={e => stableUpdateTopic(selectedNode.id, { color: e.target.value })}
+                    className="absolute inset-[-8px] w-12 h-12 cursor-pointer border-0 p-0"
+                    title="Custom Color"
+                  />
+                </div>
               </div>
             </div>
             <div>

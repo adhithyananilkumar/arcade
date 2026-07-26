@@ -9,6 +9,8 @@ export default function RoadmapEditPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+console.log('RoadmapEditPage mounted');
+
 
   return (
     <div className="flex-1 flex flex-col w-full h-full relative overflow-hidden">

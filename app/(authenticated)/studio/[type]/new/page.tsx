@@ -41,8 +41,14 @@ interface Props {
   params: Promise<{ type: string }>;
 }
 
+import { redirect } from "next/navigation";
+
 export default async function ContentTypeComingSoonPage({ params }: Props) {
   const { type } = await params;
+  if (type === "webinar" || type === "workshop") {
+    redirect(`/studio?create=${type}`);
+  }
+
   const meta = TYPE_META[type];
 
   if (!meta) {
