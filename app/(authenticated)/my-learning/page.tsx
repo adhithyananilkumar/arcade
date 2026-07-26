@@ -79,6 +79,147 @@ interface LearningItem {
   accentColor: string;
 }
 
+// Character Star 1: Angry Red Star with "AARGHH!" badge
+const CharacterStar1 = ({ isSelected }: { isSelected: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
+    <svg viewBox="0 0 100 100" className="w-11 h-11 sm:w-13 sm:h-13 drop-shadow-md">
+      <polygon points="50,5 64,34 96,38 72,60 78,92 50,76 22,92 28,60 4,38 36,34" fill="#e54839" />
+      <line x1="34" y1="36" x2="44" y2="42" stroke="#1f2937" strokeWidth="3.5" strokeLinecap="round" />
+      <line x1="66" y1="36" x2="56" y2="42" stroke="#1f2937" strokeWidth="3.5" strokeLinecap="round" />
+    </svg>
+    <div className="absolute top-[46%] bg-[#1e293b] text-white text-[7px] sm:text-[8px] font-black px-1.5 py-0.5 rounded-xs -rotate-6 shadow-md border border-red-500/40 uppercase tracking-tighter whitespace-nowrap">
+      AARGHH!
+    </div>
+  </div>
+);
+
+// Character Star 2: Sad Sweat Drop Star
+const CharacterStar2 = ({ isSelected }: { isSelected: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
+    <svg viewBox="0 0 100 100" className="w-11 h-11 sm:w-13 sm:h-13 drop-shadow-md">
+      <polygon points="50,5 64,34 96,38 72,60 78,92 50,76 22,92 28,60 4,38 36,34" fill="#e5b567" />
+      <path d="M34 38 L42 42 L34 46" stroke="#5c4014" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path d="M66 38 L58 42 L66 46" stroke="#5c4014" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <ellipse cx="50" cy="56" rx="5" ry="7" fill="#603813" />
+      <path d="M28 30 C28 26 24 22 24 22 C24 22 20 26 20 30 C20 33 23.5 35 28 30 Z" fill="#0284c7" />
+    </svg>
+  </div>
+);
+
+// Character Star 3: Surprised / Neutral Star
+const CharacterStar3 = ({ isSelected }: { isSelected: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
+    <svg viewBox="0 0 100 100" className="w-11 h-11 sm:w-13 sm:h-13 drop-shadow-md">
+      <polygon points="50,5 64,34 96,38 72,60 78,92 50,76 22,92 28,60 4,38 36,34" fill="#deb15a" />
+      <circle cx="38" cy="42" r="3.5" fill="#5c4014" />
+      <circle cx="62" cy="42" r="3.5" fill="#5c4014" />
+      <circle cx="50" cy="54" r="4" fill="#603813" />
+    </svg>
+  </div>
+);
+
+// Character Star 4: Happy Star with "YUMM!" text
+const CharacterStar4 = ({ isSelected }: { isSelected: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
+    <svg viewBox="0 0 100 100" className="w-11 h-11 sm:w-13 sm:h-13 drop-shadow-md">
+      <polygon points="50,5 64,34 96,38 72,60 78,92 50,76 22,92 28,60 4,38 36,34" fill="#eab308" />
+      <circle cx="38" cy="40" r="3.5" fill="#5c4014" />
+      <circle cx="62" cy="40" r="3.5" fill="#5c4014" />
+      <path d="M38 52 C38 62, 62 62, 62 52 Z" fill="#603813" />
+    </svg>
+    <span className="absolute -top-1 -right-1 text-[8px] sm:text-[9px] font-black text-[#5c4014] dark:text-amber-300 tracking-tighter uppercase">
+      YUMM!
+    </span>
+    <span className="absolute -bottom-2 text-[7px] font-bold text-slate-500 dark:text-zinc-400 tracking-tighter uppercase">
+      YUMMAI
+    </span>
+  </div>
+);
+
+// Character Star 5: In Love / Kissing Star with Hearts
+const CharacterStar5 = ({ isSelected }: { isSelected: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}>
+    <div className="absolute -top-2 left-0.5 flex gap-0.5 text-rose-500 animate-bounce">
+      <span className="text-[10px]">❤️</span>
+      <span className="text-[8px]">❤️</span>
+    </div>
+    <svg viewBox="0 0 100 100" className="w-11 h-11 sm:w-13 sm:h-13 drop-shadow-md">
+      <polygon points="50,5 64,34 96,38 72,60 78,92 50,76 22,92 28,60 4,38 36,34" fill="#eab308" />
+      <circle cx="38" cy="40" r="3" fill="#5c4014" />
+      <path d="M60 40 Q64 36 68 40" stroke="#5c4014" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M48 54 C51 52 54 54 51 57 C54 60 51 62 48 60" stroke="#5c4014" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+    </svg>
+  </div>
+);
+
+const EXPRESSIVE_STARS_CONFIG = [
+  { rating: 1, Component: CharacterStar1 },
+  { rating: 2, Component: CharacterStar2 },
+  { rating: 3, Component: CharacterStar3 },
+  { rating: 4, Component: CharacterStar4 },
+  { rating: 5, Component: CharacterStar5 },
+];
+
+// Exact 3D Bevelled Golden Star Component matching user screenshot
+const Exact3DGoldStar = ({
+  size = 36,
+  isFilled = true,
+  className = ""
+}: {
+  size?: number;
+  isFilled?: boolean;
+  className?: string;
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      className={`drop-shadow-xs ${className}`}
+      fill="none"
+    >
+      {isFilled ? (
+        <g>
+          {/* Top & Left facets (Light Yellow-Gold) */}
+          <polygon points="50,8 63,33 50,52" fill="#fde047" />
+          <polygon points="50,8 37,33 50,52" fill="#eab308" />
+          <polygon points="28,60 6,38 50,52" fill="#fde047" />
+
+          {/* Center & Right facets (Warm Amber Gold) */}
+          <polygon points="63,33 94,38 50,52" fill="#eab308" />
+          <polygon points="94,38 72,60 50,52" fill="#d97706" />
+
+          {/* Bottom facets (Dark Amber Shadow) */}
+          <polygon points="72,60 77,92 50,52" fill="#d97706" />
+          <polygon points="77,92 50,76 50,52" fill="#b45309" />
+          <polygon points="50,76 23,92 50,52" fill="#eab308" />
+          <polygon points="23,92 28,60 50,52" fill="#d97706" />
+          <polygon points="6,38 37,33 50,52" fill="#eab308" />
+
+          {/* Subtle Outer Stroke */}
+          <polygon
+            points="50,8 63,33 94,38 72,60 77,92 50,76 23,92 28,60 6,38 37,33"
+            fill="none"
+            stroke="#b45309"
+            strokeWidth="1"
+            strokeLinejoin="round"
+          />
+        </g>
+      ) : (
+        /* Empty Unfilled Star */
+        <polygon
+          points="50,8 63,33 94,38 72,60 77,92 50,76 23,92 28,60 6,38 37,33"
+          fill="#cbd5e1"
+          stroke="#94a3b8"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          className="dark:fill-zinc-800 dark:stroke-zinc-700 opacity-60"
+        />
+      )}
+    </svg>
+  );
+};
+
 export default function MyLearningPage() {
   const { user, updateUser } = useAuthStore();
   const [profileData, setProfileData] = useState<any>(null);
@@ -1239,21 +1380,21 @@ export default function MyLearningPage() {
 
                             {/* Footer Row: LEFT = 5 Stars & Leave a rating, RIGHT = Completed Button */}
                             <div className="flex items-center justify-between pt-0.5">
-                              {/* LEFT SIDE: Rating Stars & "Leave a rating" Link */}
+                              {/* LEFT SIDE: Exact 3D Golden Stars & "Leave a rating" Link */}
                               <button
                                 type="button"
                                 onClick={() => handleOpenReview(item)}
                                 className="flex flex-col items-start gap-0.5 cursor-pointer focus:outline-none group/ratingBtn"
                               >
-                                <div className="flex items-center gap-0.5 text-amber-500">
+                                <div className="flex items-center gap-0.5">
                                   {Array.from({ length: 5 }).map((_, i) => {
                                     const itemRating = userReviews[item.id]?.rating || 0;
                                     const isFilled = i < itemRating;
                                     return (
-                                      <Star
+                                      <Exact3DGoldStar
                                         key={i}
-                                        size={13}
-                                        className={isFilled ? 'fill-amber-400 text-amber-400' : 'text-amber-500 stroke-[1.5]'}
+                                        size={14}
+                                        isFilled={isFilled}
                                       />
                                     );
                                   })}
@@ -1356,7 +1497,7 @@ export default function MyLearningPage() {
 
         </motion.div>
 
-        {/* Add / Edit Course Review Modal Dialog */}
+        {/* Clean & Sleek Course Rating Modal */}
         <AnimatePresence>
           {reviewingItem && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1366,155 +1507,109 @@ export default function MyLearningPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setReviewingItem(null)}
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                className="absolute inset-0 bg-slate-900/50 backdrop-blur-xs"
               />
 
-              {/* Modal Card */}
+              {/* Modal Card Container with Sleek Arcade Gradient Border & Glow */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden z-10 p-6 sm:p-7 space-y-5"
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="relative w-full max-w-md z-10 group/modalBorder"
               >
-                {/* Modal Header */}
-                <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-zinc-800 pb-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={reviewingItem.coverImage}
-                      alt={reviewingItem.title}
-                      className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-zinc-700 shadow-xs"
-                    />
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#2C83F5] dark:text-cyan-400">
-                        {reviewingItem.category} • Completed
-                      </span>
-                      <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight font-[family-name:var(--font-outfit)]">
-                        {reviewingItem.title}
-                      </h3>
+                {/* Backlight Ambient Glow Halo */}
+                <div className="absolute -inset-1 rounded-[32px] bg-gradient-to-r from-[#2962D6]/30 via-[#2C83F5]/40 to-[#27C5D8]/30 blur-md opacity-60 pointer-events-none" />
+
+                {/* Sleek Arcade Logo Gradient Border Wrapper */}
+                <div className="p-[1.5px] rounded-[30px] bg-gradient-to-r from-[#2962D6]/50 via-[#2C83F5]/60 to-[#27C5D8]/50 shadow-2xl">
+                  <div className="relative w-full bg-white dark:bg-zinc-900 rounded-[28px] p-6 space-y-4 overflow-hidden">
+
+                    {/* Modal Header */}
+                    <div className="flex items-start justify-between border-b border-slate-100 dark:border-zinc-800 pb-4">
+                      <div className="flex items-center gap-3.5">
+                        <img
+                          src={reviewingItem.coverImage}
+                          alt={reviewingItem.title}
+                          className="w-11 h-11 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-zinc-700 shadow-xs"
+                        />
+                        <div className="max-w-[260px] pt-1">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#2C83F5] dark:text-cyan-400 block mb-0.5">
+                            {reviewingItem.category}
+                          </span>
+                          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white leading-snug font-[family-name:var(--font-outfit)] line-clamp-2">
+                            {reviewingItem.title}
+                          </h3>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setReviewingItem(null)}
+                        className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer mt-0.5"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
+
+                    {/* Review Form */}
+                    <form onSubmit={handleSubmitReview} className="space-y-4">
+                      {/* Exact Reference Image 5 3D Golden Star Rating Bar */}
+                      <div className="bg-[#e5e7eb]/80 dark:bg-zinc-800/90 rounded-3xl p-5 sm:p-6 my-2 border border-slate-200/50 dark:border-zinc-700/50 flex items-center justify-center gap-3 sm:gap-5 shadow-xs">
+                        {[1, 2, 3, 4, 5].map((starVal) => {
+                          const isFilled = (hoverRating || rating) >= starVal;
+
+                          return (
+                            <button
+                              key={starVal}
+                              type="button"
+                              onMouseEnter={() => setHoverRating(starVal)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              onClick={() => setRating(starVal)}
+                              className="cursor-pointer transition-transform duration-200 hover:scale-125 focus:outline-none p-1"
+                            >
+                              <Exact3DGoldStar size={42} isFilled={isFilled} />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Simple Feedback Comment Textarea with Exterior Arcade Glow Effect */}
+                      <div className="relative group/arcadeReviewTextarea w-full my-1">
+                        {/* Backlight Ambient Glow Halo (Strictly OUTSIDE the box) */}
+                        <div className="absolute -inset-2 rounded-2xl bg-gradient-to-r from-[#2962D6]/40 via-[#2C83F5]/50 to-[#27C5D8]/40 blur-md opacity-0 group-focus-within/arcadeReviewTextarea:opacity-100 group-hover/arcadeReviewTextarea:opacity-60 transition-all duration-500 pointer-events-none" />
+
+                        {/* Arcade Logo Gradient Border Wrapper (Exterior Ring) */}
+                        <div className="p-[1.5px] rounded-2xl bg-gradient-to-r from-[#2962D6]/40 via-[#2C83F5]/50 to-[#27C5D8]/40 group-focus-within/arcadeReviewTextarea:from-[#2962D6] group-focus-within/arcadeReviewTextarea:via-[#2C83F5] group-focus-within/arcadeReviewTextarea:to-[#27C5D8] hover:from-[#2962D6] hover:via-[#2C83F5] hover:to-[#27C5D8] transition-all duration-300 shadow-xs relative z-10">
+                          {/* 100% Opaque Solid Inner Box */}
+                          <textarea
+                            rows={3}
+                            placeholder="Write a review (optional)..."
+                            value={reviewComment}
+                            onChange={(e) => setReviewComment(e.target.value)}
+                            className="w-full px-4 py-3 text-xs rounded-[14px] bg-white dark:bg-zinc-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-0 transition-colors resize-none border-none block relative z-10"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Modal Footer Actions */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                        <button
+                          type="button"
+                          onClick={() => setReviewingItem(null)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#2962D6] hover:bg-[#2051b8] shadow-xs cursor-pointer transition-colors"
+                        >
+                          Submit Rating
+                        </button>
+                      </div>
+                    </form>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setReviewingItem(null)}
-                    className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                  >
-                    <X size={18} />
-                  </button>
                 </div>
-
-                {/* Review Form */}
-                <form onSubmit={handleSubmitReview} className="space-y-4">
-                  {/* 5-Star Rating Selector */}
-                  <div className="space-y-2 text-center py-2 bg-slate-50 dark:bg-zinc-800/50 rounded-2xl p-4 border border-slate-100 dark:border-zinc-800">
-                    <label className="text-xs font-bold text-slate-700 dark:text-zinc-200 block">
-                      Overall Rating
-                    </label>
-                    <div className="flex items-center justify-center gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => {
-                        const isFilled = (hoverRating || rating) >= star;
-                        return (
-                          <motion.button
-                            key={star}
-                            type="button"
-                            whileHover={{ scale: 1.25 }}
-                            whileTap={{ scale: 0.9 }}
-                            onMouseEnter={() => setHoverRating(star)}
-                            onMouseLeave={() => setHoverRating(0)}
-                            onClick={() => setRating(star)}
-                            className="p-1 cursor-pointer transition-colors focus:outline-none"
-                          >
-                            <Star
-                              size={28}
-                              className={isFilled
-                                ? 'fill-amber-400 text-amber-400 filter drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]'
-                                : 'text-slate-300 dark:text-zinc-600'
-                                }
-                            />
-                          </motion.button>
-                        );
-                      })}
-                    </div>
-                    <p className="text-xs font-extrabold text-amber-600 dark:text-amber-400">
-                      {rating === 5 && '★ 5.0 • Exceptional!'}
-                      {rating === 4 && '★ 4.0 • Very Good'}
-                      {rating === 3 && '★ 3.0 • Good'}
-                      {rating === 2 && '★ 2.0 • Below Average'}
-                      {rating === 1 && '★ 1.0 • Poor'}
-                    </p>
-                  </div>
-
-                  {/* Quick Feedback Tags */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block">
-                      What stood out to you?
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {availableReviewTags.map((tag) => {
-                        const isSelected = reviewTags.includes(tag);
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => toggleReviewTag(tag)}
-                            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${isSelected
-                              ? 'bg-[#ebf3fe] dark:bg-blue-950/80 text-[#2962D6] dark:text-blue-300 border border-[#2C83F5]/60 shadow-2xs font-extrabold'
-                              : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 border border-slate-200/60 dark:border-zinc-700'
-                              }`}
-                          >
-                            {isSelected ? '✓ ' : '+ '}{tag}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Review Title Input */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block">
-                      Headline / Summary
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Hands down the best UI masterclass I have taken!"
-                      value={reviewTitle}
-                      onChange={(e) => setReviewTitle(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#2C83F5] transition-colors"
-                    />
-                  </div>
-
-                  {/* Detailed Review Comment */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block">
-                      Detailed Review <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="Share what you enjoyed, key takeaways, or feedback for the instructor..."
-                      value={reviewComment}
-                      onChange={(e) => setReviewComment(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#2C83F5] transition-colors resize-none"
-                    />
-                  </div>
-
-                  {/* Modal Footer Actions */}
-                  <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                    <button
-                      type="button"
-                      onClick={() => setReviewingItem(null)}
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] hover:opacity-95 shadow-md shadow-cyan-500/20 cursor-pointer transition-all hover:scale-[1.02]"
-                    >
-                      Submit Review
-                    </button>
-                  </div>
-
-                </form>
               </motion.div>
             </div>
           )}
