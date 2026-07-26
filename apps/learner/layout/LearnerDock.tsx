@@ -24,9 +24,9 @@ const dockItems = [
     exact: false,
   },
   {
-    id: 'my-courses',
-    label: 'My Courses',
-    href: '/my-courses',
+    id: 'my-learning',
+    label: 'My Learning',
+    href: '/my-learning',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
     exact: false,

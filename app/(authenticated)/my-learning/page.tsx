@@ -245,15 +245,7 @@ export default function MyLearningPage() {
   const [reviewTitle, setReviewTitle] = useState<string>('');
   const [reviewComment, setReviewComment] = useState<string>('');
   const [reviewTags, setReviewTags] = useState<string[]>([]);
-  const [userReviews, setUserReviews] = useState<Record<string, { rating: number; title: string; comment: string; tags: string[]; date: string }>>({
-    'course-3': {
-      rating: 5,
-      title: 'Outstanding UI/UX & Design System masterclass!',
-      comment: 'Everything was explained step-by-step with real-world enterprise components. Highly recommended!',
-      tags: ['Well Explained', 'Hands-on Projects', 'Great Instructor'],
-      date: '12 Jun 2026'
-    }
-  });
+  const [userReviews, setUserReviews] = useState<Record<string, { rating: number; title: string; comment: string; tags: string[]; date: string }>>({});
 
   const availableReviewTags = [
     'Well Explained',
@@ -363,104 +355,7 @@ export default function MyLearningPage() {
   };
 
   // Learning Content
-  const learningItems: LearningItem[] = [
-    {
-      id: 'course-1',
-      title: 'JavaScript Basics',
-      type: 'Course',
-      category: 'Software Development',
-      status: 'In Progress',
-      progress: 60,
-      completedModules: 12,
-      totalModules: 20,
-      timeLeft: '8h 15m left',
-      instructor: 'Arcade Engineering Team',
-      date: '01 May 2026',
-      coverImage: 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'indigo'
-    },
-    {
-      id: 'webinar-1',
-      title: 'Building Scalable APIs with Node.js',
-      type: 'Webinar',
-      category: 'Backend Architecture',
-      status: 'Live',
-      instructor: 'Arcade Guild',
-      date: '04 May 2025',
-      time: 'Live',
-      coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'emerald'
-    },
-    {
-      id: 'workshop-1',
-      title: 'Build a Portfolio Website from Scratch',
-      type: 'Workshop',
-      category: 'Frontend Engineering',
-      status: 'Upcoming',
-      instructor: 'Amal Jyothi Labs',
-      date: '31 May 2025',
-      time: '10:00 AM',
-      coverImage: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'purple'
-    },
-    {
-      id: 'article-1',
-      title: '10 Best UI/UX Practices for Developers',
-      type: 'Article',
-      category: 'Design Systems',
-      status: 'Completed',
-      readTime: '5 min read',
-      instructor: 'Design Guild',
-      date: '28 Apr 2026',
-      coverImage: 'https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'teal'
-    },
-    {
-      id: 'course-2',
-      title: 'Full-Stack Next.js 15 & Spring Boot Enterprise Architecture',
-      type: 'Course',
-      category: 'Enterprise Engineering',
-      status: 'In Progress',
-      progress: 68,
-      completedModules: 14,
-      totalModules: 20,
-      timeLeft: '12h left',
-      instructor: 'Arcade Core Guild',
-      date: '20 Jul 2026',
-      coverImage: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'indigo'
-    },
-    {
-      id: 'course-3',
-      title: 'Modern UI/UX Design System & Tailwind Masterclass',
-      type: 'Course',
-      category: 'Design Systems',
-      status: 'Completed',
-      progress: 100,
-      completedModules: 15,
-      totalModules: 15,
-      timeLeft: '0m left',
-      instructor: 'Design Guild',
-      date: '10 Jun 2026',
-      coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'purple'
-    },
-    {
-      id: 'course-4',
-      title: 'React Native & Expo Mobile App Architecture',
-      type: 'Course',
-      category: 'Software Development',
-      status: 'Completed',
-      progress: 100,
-      completedModules: 18,
-      totalModules: 18,
-      timeLeft: '0m left',
-      instructor: 'Arcade Engineering Team',
-      date: '15 May 2026',
-      coverImage: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&auto=format&fit=crop&q=80',
-      accentColor: 'indigo'
-    }
-  ];
+  const learningItems: LearningItem[] = [];
 
   // Dynamic Counts
   const inProgressCount = learningItems.filter(i => i.status === 'In Progress').length;
