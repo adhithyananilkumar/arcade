@@ -8,6 +8,15 @@
   padding: 0;
   word-break: break-word;
   -webkit-font-smoothing: antialiased;
+  caret-color: black;
+  cursor: text;
+  /* Matches `body` in app/globals.css and the toolbar's "Geist" / "16px" default
+     label (RichTextToolbar.tsx). Declared explicitly rather than left to inherit —
+     the toolbar's claim of what "Default" means should be backed by a real rule
+     here, not an accident of the surrounding page. Unmarked text carries no
+     textStyle mark at all, so this is genuinely what renders for it. */
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
 }
 
 /* ── Typography ── */
@@ -332,12 +341,12 @@
 /* Smooth drag: dim the rest of the doc and hide the caret while reordering so
    the dragged block + drop cursor are the only focal points (Notion feel). */
 .ProseMirror.arcade-dragging {
-  cursor: grabbing;
-  caret-color: transparent;
+  cursor: text;
+  caret-color: black;
 }
 
 .ProseMirror.arcade-dragging * {
-  cursor: grabbing !important;
+  cursor: text !important;
 }
 
 /* Settle newly-moved blocks in with a subtle fade rather than a hard jump. */
@@ -386,7 +395,7 @@
   height: 24px;
   border-radius: 5px;
   color: #9ca3af;
-  cursor: grab;
+  cursor: pointer;
   transition: background-color 0.12s, color 0.12s;
 }
 
@@ -396,7 +405,7 @@
 }
 
 .arcade-handle-btn:active {
-  cursor: grabbing;
+  cursor: pointer;
 }
 
 /* The "+" button is a click target, not a drag source. */
@@ -510,7 +519,7 @@
 .arcade-toolbar {
   position: sticky;
   top: var(--arcade-toolbar-top, 0px);
-  z-index: 20;
+  z-index: 40;
   background: #ffffff;
   /* Inset shadow rather than border-bottom: a global border reset zeroes the
      width, and this keeps the rule out of the box model either way. */

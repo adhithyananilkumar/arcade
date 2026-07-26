@@ -3,7 +3,7 @@
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Settings, Tv, BookOpen, Shield, Calendar } from 'lucide-react';
+import { Tv, BookOpen, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -18,7 +18,7 @@ export default function ArcConsoleLayout({
   const { user } = useAuthStore();
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviewCourses = AuthorizationService.canReviewCourses(user);
-  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showIam = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
 
   const navItems = [
     ...(showAdminChannels ? [{
@@ -35,10 +35,10 @@ export default function ArcConsoleLayout({
       href: '/console/exam-schedules',
       icon: Calendar,
     }] : []),
-    ...(showAdminSettings ? [{
-      name: 'Admin Settings',
-      href: '/console/settings',
-      icon: Settings,
+    ...(showIam ? [{
+      name: 'IAM',
+      href: '/console/iam',
+      icon: Shield,
     }] : []),
   ];
 

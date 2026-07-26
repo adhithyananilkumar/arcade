@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { UserService } from "@/domains/identity";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3, 
-  ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit, 
+  User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3,
+  ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit,
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
-  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Shield
+  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Shield, Map, Wrench
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import Image from 'next/image';
@@ -28,6 +28,51 @@ const badges = [
   { name: 'Hacktoberfest Participant', icon: Trophy, color: 'text-orange-500 dark:text-orange-400', fill: 'fill-orange-50 dark:fill-orange-500/20', stroke: 'stroke-orange-200 dark:stroke-orange-500/30' },
 ];
 
+function statusBadgeClasses(status?: string) {
+  switch ((status || '').toUpperCase()) {
+    case 'PUBLISHED':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    case 'DRAFT':
+      return 'bg-slate-100 text-slate-500 border-slate-200';
+    case 'IN_REVIEW':
+    case 'PENDING':
+      return 'bg-amber-50 text-amber-700 border-amber-100';
+    case 'ARCHIVED':
+      return 'bg-slate-100 text-slate-400 border-slate-200';
+    default:
+      return 'bg-slate-50 text-slate-500 border-slate-100';
+  }
+}
+
+// Read-only "body of work" card for a user's public profile — shows past authorship
+// regardless of whether the user still has editing rights on the content's channel.
+function AuthoredContentCard({ item }: { item: any }) {
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35px_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
+      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full text-slate-50/50 dark:text-neutral-900/50 fill-current stroke-[3.5] stroke-slate-200 dark:stroke-neutral-800 group-hover:stroke-indigo-300 dark:group-hover:stroke-indigo-600 group-hover:text-indigo-50/30 transition-all duration-300">
+        <path d="M0 0h100v100H0z" />
+      </svg>
+      <div className="relative z-10">
+        <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
+          {item.title}
+        </h4>
+        <p className="text-xs text-slate-400 font-medium leading-relaxed mt-2 line-clamp-3">
+          {item.description || 'No description provided.'}
+        </p>
+      </div>
+
+      <div className="relative z-10 mt-6 pt-4 border-t border-slate-50 flex items-center justify-between gap-4">
+        <span className={`rounded-lg px-2.5 py-1 text-[10px] font-bold border ${statusBadgeClasses(item.status)}`}>
+          {(item.status || 'UNKNOWN').replace(/_/g, ' ')}
+        </span>
+        <span className="text-[10px] font-extrabold text-slate-400 tracking-wide uppercase shrink-0">
+          {item.createdAt ? new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : ''}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const params = useParams();
   const usernameParam = params.username as string;
@@ -36,7 +81,7 @@ export default function PublicProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'courses' | 'enrolled' | 'certificates'>('courses');
+  const [activeTab, setActiveTab] = useState<'courses' | 'roadmaps' | 'workshops' | 'enrolled' | 'certificates'>('courses');
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [hoveredCell, setHoveredCell] = useState<{ count: number; dateStr: string; x: number; y: number } | null>(null);
   const [activityData, setActivityData] = useState<Record<string, number>>({});
@@ -446,10 +491,10 @@ export default function PublicProfilePage() {
       </div>
 
       <div className="space-y-6">
-        <div className="flex border-b border-slate-100 font-sans">
-          {(['courses', 'enrolled', 'certificates'] as const).map((tab) => {
-            const label = tab === 'courses' ? 'Courses' : tab === 'enrolled' ? 'Enrolled' : 'Certificates';
-            const TabIcon = tab === 'courses' ? Compass : tab === 'enrolled' ? GraduationCap : Award;
+        <div className="flex border-b border-slate-100 font-sans overflow-x-auto">
+          {(['courses', 'roadmaps', 'workshops', 'enrolled', 'certificates'] as const).map((tab) => {
+            const label = tab === 'courses' ? 'Courses' : tab === 'roadmaps' ? 'Roadmaps' : tab === 'workshops' ? 'Workshops' : tab === 'enrolled' ? 'Enrolled' : 'Certificates';
+            const TabIcon = tab === 'courses' ? Compass : tab === 'roadmaps' ? Map : tab === 'workshops' ? Wrench : tab === 'enrolled' ? GraduationCap : Award;
             const isActive = activeTab === tab;
 
             return (
@@ -487,36 +532,53 @@ export default function PublicProfilePage() {
               >
                 {profileData.courses && profileData.courses.length > 0 ? (
                   profileData.courses.map((course: any, idx: number) => (
-                    <div key={idx} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
-                      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full text-slate-50/50 dark:text-neutral-900/50 fill-current stroke-[3.5] stroke-slate-200 dark:stroke-neutral-800 group-hover:stroke-indigo-300 dark:group-hover:stroke-indigo-600 group-hover:text-indigo-50/30 transition-all duration-300">
-                        <path d="M0 0h100v100H0z" />
-                      </svg>
-                      <div className="relative z-10">
-                        <h4 className="text-sm font-bold text-slate-800 tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
-                          {course.title}
-                        </h4>
-                        <p className="text-xs text-slate-400 font-medium leading-relaxed mt-2">
-                          {course.description || 'No description provided.'}
-                        </p>
-                      </div>
-
-                      <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between gap-4">
-                        <div className="flex-1 space-y-1.5">
-                          <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 tracking-wider">
-                            <span>PROGRESS</span>
-                            <span className="text-indigo-600">{course.progress}%</span>
-                          </div>
-                          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${course.progress}%` }}></div>
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-extrabold text-slate-400 tracking-wide uppercase shrink-0">{course.duration}</span>
-                      </div>
-                    </div>
+                    <AuthoredContentCard key={idx} item={course} />
                   ))
                 ) : (
                   <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
                     No uploaded courses found for this user.
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'roadmaps' && (
+              <motion.div
+                key="roadmaps"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {profileData.roadmaps && profileData.roadmaps.length > 0 ? (
+                  profileData.roadmaps.map((roadmap: any, idx: number) => (
+                    <AuthoredContentCard key={idx} item={roadmap} />
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
+                    No authored roadmaps found for this user.
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'workshops' && (
+              <motion.div
+                key="workshops"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {profileData.workshops && profileData.workshops.length > 0 ? (
+                  profileData.workshops.map((workshop: any, idx: number) => (
+                    <AuthoredContentCard key={idx} item={workshop} />
+                  ))
+                ) : (
+                  <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20">
+                    No authored workshops found for this user.
                   </div>
                 )}
               </motion.div>

@@ -28,8 +28,8 @@ export default function LearnerHomePage() {
     api
       .get<CourseResponse[]>("/api/v1/public/courses")
       .then((data) => {
-        // Only show published courses on the dashboard
-        setCourses(data.filter(c => c.status === 'PUBLISHED' || c.status === 'APPROVED' || c.status === 'SUBMITTED' || c.status === 'DRAFT'));
+        // The backend ensures we only receive courses that have a published snapshot.
+        setCourses(data);
       })
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));

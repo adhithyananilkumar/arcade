@@ -77,9 +77,12 @@ interface ArcadeEditorProps {
   seedContent?: TiptapDocument;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
-  /** Whether the editor should render without Chrome layout wrappers. */
+  /**
+   * Drop the card border/background/scroll so the editor blends into a host canvas
+   * (Figma-style). The host owns padding + scrolling.
+   */
   chromeless?: boolean;
-  /** The content type being edited. */
+  /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
 }
 
@@ -157,17 +160,17 @@ export const ArcadeEditor = memo(
     <div
       className={
         chromeless
-          ? `relative flex flex-col h-full w-full flex-1 ${isRoadmap ? "arcade-roadmap-editor" : ""} ${className}`
+          ? `relative flex flex-col ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !isRoadmap && <RichTextToolbar />}
+        {!readOnly && !isRoadmap && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={
             chromeless
-              ? "flex-grow h-full w-full focus-within:outline-none flex flex-col"
+              ? `flex-1 min-h-[300px] focus-within:outline-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
               : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
           }
         />

@@ -2,7 +2,7 @@
 
 > **Status:** Reference architecture (target state). Design-approved, incrementally adopted.
 > **Scope:** Both repositories — `arcade` (Next.js frontend) and `arcade-backend` (Spring Boot backend).
-> **Branch context:** authored on `studio` while the content editor-engine is being built.
+> **Branch context:** authored on `render-engine` while the content editor-engine is being built.
 > **Last updated:** 2026-07-15.
 
 This document is the **single, authoritative map of how the Arcade platform is
@@ -1052,3 +1052,213 @@ check as the old `/content` (see `studio/layout.tsx`), and the old `/roadmaps` r
 *no* such gate, roadmap access for users without channels/admin rights is now more
 restrictive than before the merge. This is an inherent effect of folding Roadmaps into
 the gated Studio area, not an incidental bug — flagged here for product awareness.
+
+---
+
+## 15. Channel-Owned Content Model (2026-07-24)
+
+**Context.** Before this change, `Course`, `Roadmap`, and `Workshop` had no relationship
+to `Channel` at all — each was owned directly by the raw id of the user who created it
+(`ContentItem.ownerId` / `Workshop.createdBy`). This meant channel suspension or deletion
+had zero effect on content: a deleted channel's courses kept appearing, in full, in
+Studio's "My Content" dashboard and in public listings, because nothing existed to filter
+on. It also meant an org member who left the organization silently kept full edit rights
+over content they'd authored under that org, since edit checks only ever asked "is the
+caller the original author."
+
+**Principle: the channel owns the content; the author is provenance.** `ContentItem`
+(and `Workshop`, which is not a `ContentItem` subclass but mirrors the pattern) now
+carries a required `channel: Channel` field — a `@ManyToOne`, not-null, resolved at
+creation time. `ownerId`/`author`/`createdBy` remain on the entity, but their meaning is
+now scoped strictly to *authorship/provenance display* ("who wrote this"), never to
+*access control*. Every place in the codebase that used to branch on raw
+authorship for anything beyond pure display was audited and moved to branch on **current
+authoring rights on the content's channel** instead — channel owner, or a channel staff
+member holding `channel.videos.upload`/`ALL` via `AuthorizationService.hasPermission`.
+This applies uniformly to personal channels too: a personal channel is still a channel,
+and content under it is owned by that channel, not bare-metal by the user. See the class
+Javadoc on `ContentItem`, `ChannelSuspensionPolicy`, and `ContentChannelResolver`
+(`platform/tenancy/`) for the in-code version of this same explanation.
+
+Concretely, this rule now governs:
+- **Creation** — `CourseAuthoringService.createCourse`, `RoadmapService.createRoadmap`
+  (and `createFromTemplate`/`duplicateRoadmap`), `WorkshopService.createWorkshop` all
+  resolve a target channel via `ContentChannelResolver.resolve(userId, channelId)`
+  (explicit `channelId` if the caller has more than one eligible channel; auto-resolved
+  if they have exactly one; rejected if they have none) and set it on the content.
+- **Edit/publish/delete rights** — `CoursePublishingService`/`CourseAuthoringService`'s
+  `assertOwner`, `RoadmapService.assertChannelAuthority`, and `WorkshopService`'s
+  update/archive checks all call `ContentChannelResolver.assertAuthoringRights(channel,
+  userId)` instead of comparing against the original author id.
+- **Studio "My Content" dashboard** — `ContentService.listContent`,
+  `CourseReadService.listCoursesByAuthor`/`listTrashedCourses` are scoped by
+  `ContentChannelResolver.eligibleChannelIds(callerId)` (every channel the caller owns or
+  currently staffs with upload rights), not by raw `ownerId`. A departed staff member
+  stops seeing — and stops being able to edit — a channel's content the moment their
+  relationship to that channel ends, because the dashboard itself no longer surfaces it
+  to them.
+
+**Ex-authors keep a read-only record, on their profile only.** The one deliberate
+exception to "channel authority governs everything": each user's own public profile page
+(`app/(public)/[username]/page.tsx`, backed by `UserProfileService` →
+`StudioApi.findByUserId`/`findRoadmapsByAuthor` and the new `WorkshopApi.findByAuthor`)
+keeps listing content by raw authorship forever, independent of current channel standing
+— an Instagram/YouTube-style "body of work" grid (`AuthoredContentCard`), not an edit
+surface. A departed author can still see the courses/roadmaps/workshops they built years
+ago on their own profile; they just can no longer open them in Studio to edit, and if
+another org member did the same work under a *different* channel while co-staffing, that
+work still shows up under the channel that actually owns it, never duplicated. This is
+why the legacy `studio.authoring.Course`/`user_profile_courses` table — a disconnected
+stand-in that the profile's Courses tab was actually reading from until now, and which
+real authoring never wrote to — was deleted outright (`V166__drop_legacy_user_profile_
+courses.sql`) rather than kept: the profile now reads the real `Course`/`Roadmap`/
+`Workshop` entities directly.
+
+**Suspension doesn't cut off content instantly — there's a 6-month grace period.**
+`Channel` gained two fields: `suspendedAt` (set whenever the channel enters `SUSPENDED`,
+cleared on reactivation) and `forcedSuspension` (set only via the admin "force" option).
+`ChannelSuspensionPolicy.isContentUnlisted(channel)` is the single source of truth for
+whether a suspended channel's content should currently be hidden from *new* discovery:
+true immediately if `forcedSuspension`, otherwise only once `now()` is past
+`suspendedAt + 6 months`. There is deliberately no scheduled job computing this — no
+`@Scheduled` task flips a stored flag at the 6-month mark. The policy is evaluated live,
+inline, wherever a public listing query runs (`CourseReadService.getPublicCourse`/
+`listPublicCourses`, `WorkshopService.getPublishedWorkshops`), so there's no cron
+infrastructure to maintain and no eventual-consistency lag.
+
+- **Owner-initiated deletion** (`ChannelService.reviewDeletionRequest`'s APPROVE path)
+  always suspends with `force = false` — the full 6-month grace period applies, since
+  this is the owner's own request, not a policy violation.
+- **Platform-admin suspend** (`ChannelService.suspendChannel(channelId, reason, force,
+  actorId)`) exposes the `force` flag for policy-violation cases where immediate
+  unlisting is warranted; the admin console's suspend action surfaces this as an explicit
+  confirm-dialog choice (`PendingChannels.tsx`), and the resulting audit log entry
+  records which was used.
+- **Reactivation** (`ChannelService.reactivateChannel`) clears both `suspendedAt` and
+  `forcedSuspension`, immediately restoring listing eligibility.
+
+**Enrolled learners are never affected — this is the guarantee, not a side effect.**
+`ChannelSuspensionPolicy` is checked in exactly two kinds of place, and nowhere else:
+(1) public discovery listings, and (2) new-enrollment creation
+(`EnrollmentService.enrollInCourse` throws `ResourceNotFoundException` for unlisted
+content, but only when the caller is not already enrolled — an existing enrollment is
+never revoked). It is deliberately **not** checked in `CourseRenderService.renderCourse`
+or any lesson/session delivery path — those only ever checked soft-delete and
+authorship/review permission, and that stays true. A learner who enrolled before a
+channel was ever suspended keeps full access to finish the course indefinitely,
+regardless of what later happens to the channel; only *discovering* or *newly enrolling
+in* already-unlisted content is blocked.
+
+**Migration.** `V165__add_channel_ownership_to_content.sql` added
+`channels.suspended_at`/`forced_suspension`, then backfilled `content_items.channel_id`/
+`workshops.channel_id` from each author's owned channel. Since Roadmap and Workshop
+(unlike Course) never required their author to own a channel, the migration is
+self-healing: any author with no owned channel gets a personal channel auto-created for
+them as part of the same migration, then backfilled to it — so the not-null constraint
+added at the end of the migration always has something to point at.
+
+### 15.1 Change log
+
+| Date | Change |
+|---|---|
+| 2026-07-24 | Content moved from raw user ownership to channel ownership; added suspension grace period, force-suspend, and enrolled-learner continuity guarantees. See §15. |
+
+---
+
+## 16. Generic Notification System (2026-07-25)
+
+**Context.** Before this change, "notifications" meant one thing only: a polled list of
+pending `ChannelInvitation` rows, rendered directly in `LearnerNavbar.tsx` with hardcoded
+copy ("You are invited to join as X") that didn't even use the channel name, inviter
+name, or timestamp already present on the DTO. There was no record of *anything else* —
+a channel being approved or rejected, a deletion request being approved or rejected, an
+invitation being accepted — and the one thing that did exist vanished the instant a user
+acted on it (accepting an invite removed it from the pending list, which was the only
+place it ever showed up). Separately, a real, working WebSocket/STOMP transport already
+existed (`WebSocketConfig`, JWT-authenticated on CONNECT, backing the forum's live
+comment/upvote notifications) — but nothing in the channel/platform side of the app used
+it.
+
+**The fix generalizes the notification mechanism instead of adding another
+one-off list.** `com.arcade.backend.infrastructure.notification.Notification` is a single,
+context-agnostic entity: any bounded context can fire one via `NotificationService.send`
+without the notification system needing to know anything about that context's domain
+model. It lives under **Infrastructure**, not any single domain — the same reasoning as
+`FileStorageService`: it's a technical capability other contexts consume, not something
+that belongs to Platform, Studio, or Community specifically.
+
+### 16.1 Adding a new notification type from anywhere in the app
+
+This is the whole point of the design — it should be small:
+
+1. Pick a `type` string. There is no central enum to extend — `Notification.type` is a
+   plain `String` column specifically so a new context never has to modify a shared file
+   to add its own event. (Callers that want compile-time safety for their own set of
+   types can do what `platform.tenancy.ChannelNotificationType` does: a tiny `public
+   static final String` constants class living next to the code that fires them.)
+2. Call `notificationService.send(recipientId, type, title, message, actorId, linkUrl,
+   metadata)` from wherever the event happens. `actorId`, `linkUrl`, and `metadata` are
+   all nullable — not every notification has a "who did this," a place to navigate to, or
+   extra structured data.
+3. That's it. No frontend change is required for the notification to show up, be
+   counted as unread, and be markable read — `NotificationList` (see §16.3) renders
+   `title`/`message`/`createdAt` generically and links to `linkUrl` if present. A
+   frontend change is only needed if the *rendering* itself should be richer than
+   title/message/timestamp (e.g. rendering `metadata` into something structured).
+
+Channel/platform lifecycle events already wired this way (`platform.tenancy.
+ChannelService`/`ChannelStaffService`, types in `ChannelNotificationType`):
+`CHANNEL_APPROVED`, `CHANNEL_REJECTED`, `DELETION_APPROVED`, `DELETION_REJECTED`,
+`STAFF_INVITED`, `STAFF_INVITE_ACCEPTED`.
+
+### 16.2 Delivery: persisted first, pushed live second
+
+`NotificationService.send` always writes the row first, then pushes it live via
+`SimpMessagingTemplate.convertAndSendToUser(recipientEmail, "/queue/notifications", ...)`
+over the existing STOMP transport. This ordering is deliberate: a notification must be
+recoverable on next page load (`GET /api/v1/notifications`) whether or not the recipient
+was online when it fired — the live push is a nice-to-have on top of that, never the only
+delivery path. `actorName` is a denormalized snapshot captured at send time (same pattern
+as `ChannelAuditLog#channelNameSnapshot`), so a notification stays fully readable even if
+the actor's account is later deleted.
+
+**Never cleared on action.** Marking a notification read (`POST
+/api/v1/notifications/{id}/read`, or `/mark-all-read`) only flips `is_read` — it is never
+deleted. This was a deliberate fix for the old behavior, where accepting an invitation
+made it disappear from the only list it ever appeared in. A user's notification history
+is now a permanent (if eventually paginated-away) record, not an ephemeral queue.
+
+### 16.3 Frontend
+
+`arcade/domains/notifications/` — generic, no channel/forum-specific knowledge:
+- `api/notification.service.ts` — REST client for list/unread-count/mark-all-read/mark-read.
+- `hooks/useNotifications.ts` — initial page + unread count via REST, then live updates
+  via `infrastructure/websocket/useWebSocket.ts` (a new, generic STOMP client hook,
+  intentionally decoupled from the forum-specific one in `domains/community/hooks/
+  useWebSocket.ts` — see below for why they weren't merged).
+- `components/NotificationList.tsx` — pure presentational (per the "domain UI is pure"
+  rule): takes `notifications`/`onItemClick` as props, renders title/message/timestamp,
+  links to `linkUrl` when present. No fetching, no side effects.
+
+`LearnerNavbar.tsx` composes this with the pre-existing actionable-invitations UI in one
+dropdown: an "Action Required" section for pending `ChannelInvitation`s with Accept/
+Decline buttons (unchanged mechanism — accepting/rejecting still calls the invitation
+endpoints directly, since those need a real state transition, not just an "acknowledged"
+flag), followed by the generic `NotificationList` for everything else. The unread badge
+counts both.
+
+**Why a second `useWebSocket` hook instead of reusing the forum's.** The community
+domain's `useWebSocket.ts` pushes its connection state into `useForumStore` — a
+forum-specific Zustand store — coupling the transport to one domain's state management.
+Rather than risk touching a working forum feature to generalize it, `infrastructure/
+websocket/useWebSocket.ts` is a clean equivalent with its own local `connected` state,
+suitable for any domain to depend on (per the `domains -> infrastructure` dependency
+direction). The two hooks currently duplicate the STOMP-client setup; unifying them by
+having the community hook delegate to the infrastructure one is a safe, natural follow-up
+that doesn't need to happen atomically with this change.
+
+### 16.4 Change log
+
+| Date | Change |
+|---|---|
+| 2026-07-25 | Added a generic, infrastructure-owned notification system (persisted + live WebSocket push) and migrated channel-lifecycle events onto it. See §16. |

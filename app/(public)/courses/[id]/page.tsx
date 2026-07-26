@@ -27,6 +27,8 @@ import { useParams, useRouter } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
+import { UserService } from "@/domains/identity"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -345,16 +347,18 @@ function Breadcrumb({ title }: { title: string }) {
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseHero({ 
-  title, 
-  authorName, 
-  authorUsername, 
+function CourseHero({
+  title,
+  authorName,
+  authorUsername,
   authorAvatarUrl,
   lessonCount = 0,
   onEnroll,
   pricingModel,
-  priceAmount
-}: { 
+  priceAmount,
+  isEnrolled,
+  courseId
+}: {
   title: string
   authorName?: string
   authorUsername?: string
@@ -363,8 +367,11 @@ function CourseHero({
   onEnroll?: () => void
   pricingModel?: string
   priceAmount?: number | null
+  isEnrolled?: boolean
+  courseId?: string
 }) {
   const [saved, setSaved] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
 
   const words = title.split(' ')
   const lastWord = words.pop() || ''
@@ -447,7 +454,25 @@ function CourseHero({
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>
               )}
             </div>
-            <EnrollButton onClick={onEnroll}>Enroll now</EnrollButton>
+            {isEnrolled ? (
+              <Link
+                href={`/learn/${courseId}/learn`}
+                className="animated-button"
+              >
+                <span className="text">Go to course →</span>
+              </Link>
+            ) : (
+              <EnrollButton onClick={() => {
+                setEnrolling(true);
+                try {
+                  if (onEnroll) onEnroll();
+                } finally {
+                  setEnrolling(false);
+                }
+              }}>
+                {enrolling ? "Enrolling..." : "Enroll now"}
+              </EnrollButton>
+            )}
             <button
               onClick={() => setSaved((s) => !s)}
               aria-pressed={saved}
@@ -778,7 +803,17 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
+function EnrollCta({
+  onEnroll,
+  priceAmount,
+  isEnrolled,
+  courseId
+}: {
+  onEnroll?: () => void
+  priceAmount?: number
+  isEnrolled?: boolean
+  courseId?: string
+}) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -794,7 +829,16 @@ function EnrollCta({ onEnroll }: { onEnroll?: () => void }) {
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <EnrollButton onClick={onEnroll}>Enroll for $20</EnrollButton>
+        {isEnrolled ? (
+          <Link
+            href={`/learn/${courseId}/learn`}
+            className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
+          >
+            Go to course →
+          </Link>
+        ) : (
+          <EnrollButton onClick={onEnroll}>Enroll for ${priceAmount || 20}</EnrollButton>
+        )}
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
         </button>
@@ -812,9 +856,24 @@ export default function CoursePreviewPage() {
   const router = useRouter()
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const { user, updateUser } = useAuthStore()
 
-  const handleEnrollClick = () => {
-    router.push('/sign?mode=login')
+  const handleEnrollClick = async () => {
+    if (!user) {
+      router.push('/sign?mode=login')
+      return
+    }
+
+    if (params?.id) {
+      try {
+        const updatedUser = await UserService.enrollInCourse(params.id)
+        updateUser(updatedUser)
+        router.push(`/learn/${params.id}`)
+      } catch (err: any) {
+        console.error("Failed to enroll:", err)
+        alert(err.message || "Failed to enroll")
+      }
+    }
   }
 
   useEffect(() => {
@@ -841,6 +900,9 @@ export default function CoursePreviewPage() {
   const authorUsername = course?.authorUsername;
   const authorAvatarUrl = course?.authorAvatarUrl;
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+  const isEnrolled = Boolean(
+    params?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === params.id)
+  );
 
   return (
     <main className="min-h-screen bg-paper text-ink">
@@ -848,13 +910,15 @@ export default function CoursePreviewPage() {
       {/* Hero wash */}
       <div className="arcade-wash">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <CourseHero 
-            title={displayTitle} 
+          <CourseHero
+            title={displayTitle}
             authorName={authorName}
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
             lessonCount={lessonCount}
             onEnroll={handleEnrollClick}
+            isEnrolled={isEnrolled}
+            courseId={params?.id}
           />
         </div>
       </div>
@@ -866,7 +930,12 @@ export default function CoursePreviewPage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnrollClick} />
+          <EnrollCta
+            onEnroll={handleEnrollClick}
+            priceAmount={course?.priceAmount || 20}
+            isEnrolled={isEnrolled}
+            courseId={params?.id}
+          />
         </div>
       </div>
     </main>

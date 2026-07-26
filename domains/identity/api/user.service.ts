@@ -69,6 +69,11 @@ export class UserService {
     return this.getMe();
   }
 
+  static async unenrollFromCourse(courseId: string): Promise<User> {
+    await api.delete(`/api/v1/learning/enrollments/${courseId}`);
+    return this.getMe();
+  }
+
   static async acceptContentCreatorInvite(): Promise<void> {
     await api.post('/api/v1/content-creators/accept');
   }

@@ -11,10 +11,15 @@ import { roleService, Role, RoleRequest } from "@/domains/identity";
 import { toast } from 'sonner';
 import { Plus, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
 import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
+import { Card, CardContent, CardHeader } from '@/shared/design-system/ui/card';
+import { Badge } from '@/shared/design-system/ui/badge';
+import { Skeleton } from '@/shared/design-system/ui/skeleton';
+import { Button } from '@/shared/design-system/ui/button';
 
 interface ChannelPolicyManagerProps {
   channelId: string;
   permissions: string[];
+  isSuspended?: boolean;
 }
 
 const formatPermissionKey = (key: string) => {
@@ -29,13 +34,13 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId, permissions: userPermissions }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [saving, setSaving] = useState(false);
-  const canManageStaff = userPermissions.includes('channel.manage') || userPermissions.includes('channel.roles.manage');
+  const canManageStaff = userPermissions.includes('ALL') || userPermissions.includes('channel.staff.manage');
 
   useEffect(() => {
     fetchData();
@@ -105,7 +110,15 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
     setEditingRole(null);
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading roles...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-3 mt-8 pt-8 border-t border-gray-200">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 mt-8 pt-8 border-t border-gray-200">
@@ -118,67 +131,57 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions }
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
         {canManageStaff && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
-          >
+          <Button onClick={() => setIsModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
             <Plus size={16} /> Create Role
-          </button>
+          </Button>
         )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {roles.map(role => (
-          <div key={role.id} className="p-5 rounded-xl border border-gray-100 bg-white shadow-sm flex flex-col h-full">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-indigo-600" />
-                  {role.displayName}
-                  {role.systemRole && (
-                    <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">System</span>
-                  )}
-                  {!role.systemRole && (
-                    <span className="px-2 py-0.5 text-xs font-semibold bg-orange-100 text-orange-700 rounded-full">Custom</span>
-                  )}
-                </h4>
-                <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
-              </div>
-              
-              {!role.systemRole && canManageStaff && (
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    onClick={() => startEditRole(role)}
-                    className="p-1.5 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
-                    title="Edit Role"
-                  >
-                    <Edit3 size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDeletePolicy(role.id)}
-                    className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                    title="Delete Role"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+          <Card key={role.id} className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                    <ShieldCheck size={18} className="text-indigo-600" />
+                    {role.displayName}
+                    {role.systemRole ? (
+                      <Badge variant="secondary">System</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-orange-700 border-orange-200 bg-orange-50">Custom</Badge>
+                    )}
+                  </h4>
+                  <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
                 </div>
-              )}
-            </div>
-            
-            <div className="mt-auto pt-4 border-t border-gray-50">
+
+                {!role.systemRole && canManageStaff && (
+                  <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'}>
+                      <Edit3 size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePolicy(role.id)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Delete Role'}>
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="mt-auto pt-4 border-t border-gray-50">
               <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
               <div className="flex flex-wrap gap-1.5">
                 {role.permissions?.map((p: any) => (
-                  <span key={p.id} className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100">
+                  <Badge key={p.id} variant="outline" className="text-indigo-700 border-indigo-100 bg-indigo-50">
                     {formatPermissionKey(p.code)}
-                  </span>
+                  </Badge>
                 ))}
                 {(!role.permissions || role.permissions.length === 0) && (
                   <span className="text-xs text-gray-400 italic">No permissions assigned</span>
                 )}
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
 

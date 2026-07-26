@@ -22,6 +22,7 @@ export class CourseAdapter implements ContentDataAdapter {
         pricingModel: course.pricingModel,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
+        raw: course,
       },
       containers: course.modules.map((m) => ({
         id: m.id,

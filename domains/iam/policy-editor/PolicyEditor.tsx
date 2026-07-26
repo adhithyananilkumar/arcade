@@ -174,7 +174,7 @@ export function PolicyEditor({
     setSearch('');
 
     permissionService
-      .getAllPermissions(scope === 'PUBLISHER' ? undefined : scope)
+      .getAllPermissions(scope)
       .then((perms) => setAllPermissions(perms))
       .catch(() => setAllPermissions([]))
       .finally(() => setLoading(false));

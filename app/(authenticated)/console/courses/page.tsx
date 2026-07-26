@@ -58,11 +58,12 @@ export default function ReviewCoursesPage() {
     let updations = 0;
     let published = 0;
     courses.forEach((c) => {
-      if (c.status === "PUBLISHED") {
-        published++;
-      } else if (c.status === "SUBMITTED" || c.status === "APPROVED") {
+      if (c.status === "SUBMITTED" || c.status === "APPROVED") {
         if (c.wasPublished) updations++;
         else toBeReviewed++;
+      }
+      if (c.wasPublished || c.status === "PUBLISHED") {
+        published++;
       }
     });
     return { toBeReviewed, updations, published };
@@ -78,7 +79,9 @@ export default function ReviewCoursesPage() {
         if (c.status !== "SUBMITTED" && c.status !== "APPROVED") return false;
         if (!c.wasPublished) return false;
       }
-      if (statusFilter === "PUBLISHED" && c.status !== "PUBLISHED") return false;
+      if (statusFilter === "PUBLISHED") {
+        if (!c.wasPublished && c.status !== "PUBLISHED") return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!(c.title || "").toLowerCase().includes(q) && !(c.authorName || "").toLowerCase().includes(q)) {
@@ -249,9 +252,13 @@ export default function ReviewCoursesPage() {
                 </div>
                   <Link
                     href={`/studio/published/${course.id}`}
-                    className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors mt-2"
+                    className={`text-center text-xs font-semibold rounded-lg py-1.5 transition-colors mt-2 ${
+                      course.wasPublished
+                        ? "text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 shadow-sm"
+                        : "text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100"
+                    }`}
                   >
-                    Review Course →
+                    {course.wasPublished ? "Review Updates →" : "Review Course →"}
                   </Link>
                 </div>
               </div>

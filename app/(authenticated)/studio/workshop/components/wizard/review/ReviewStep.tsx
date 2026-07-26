@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { PublishingChecklist } from './PublishingChecklist';
 import { WorkshopPreview } from './WorkshopPreview';
-import { validateWorkshop, publishWorkshop, unpublishWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
+import { validateWorkshop, publishWorkshop, archiveWorkshop, duplicateWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
 import { PublishValidationResponse, WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
 import { useRouter } from 'next/navigation';
 
@@ -20,12 +20,11 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
   const [preview, setPreview] = useState<WorkshopPreviewDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isUnpublishing, setIsUnpublishing] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
 
+  // Cast to any to check if an ID exists (i.e. if the draft was saved to backend)
   const workshopId = (form.formData as any).id;
-  const isWebinar = form.formData.workshopType === 'WEBINAR';
-  const rootTerm = isWebinar ? 'webinar' : 'workshop';
-  const RootTerm = isWebinar ? 'Webinar' : 'Workshop';
 
   useEffect(() => {
     if (!workshopId) {
@@ -65,30 +64,41 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
       }
 
       await publishWorkshop(targetId);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('arcade_workshop_draft');
-      }
-      toast.success(`${RootTerm} published successfully!`);
-      window.location.reload();
+      toast.success('Workshop published successfully!');
+      router.push('/studio');
     } catch (e: any) {
       console.error('Publish error:', e);
-      toast.error(e?.message || `Failed to publish ${rootTerm}.`);
+      toast.error(e?.message || 'Failed to publish workshop.');
     } finally {
       setIsPublishing(false);
     }
   };
 
-  const handleUnpublish = async () => {
+  const handleArchive = async () => {
     if (!workshopId) return;
-    setIsUnpublishing(true);
+    setIsArchiving(true);
     try {
-      await unpublishWorkshop(workshopId);
-      toast.success(`${RootTerm} unpublished.`);
-      window.location.reload();
+      await archiveWorkshop(workshopId);
+      toast.success('Workshop archived.');
+      router.push('/studio');
     } catch (e: any) {
-      toast.error(e?.message || `Failed to unpublish ${rootTerm}.`);
+      toast.error(e?.message || 'Failed to archive workshop.');
     } finally {
-      setIsUnpublishing(false);
+      setIsArchiving(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!workshopId) return;
+    setIsDuplicating(true);
+    try {
+      const copy = await duplicateWorkshop(workshopId);
+      toast.success('Workshop duplicated.');
+      router.push(`/studio/workshop/new?id=${copy.id}`);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to duplicate workshop.');
+    } finally {
+      setIsDuplicating(false);
     }
   };
 
@@ -97,7 +107,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
       <div className="p-8 text-center bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/50 rounded-lg max-w-2xl mx-auto space-y-4">
         <p className="text-yellow-800 dark:text-yellow-400 font-semibold text-lg">Save Draft to Review & Publish</p>
         <p className="text-sm text-yellow-700 dark:text-yellow-500">
-          You need to save your {rootTerm} draft to the server before reviewing and publishing.
+          You need to save your workshop draft to the server before reviewing and publishing.
         </p>
         <button
           onClick={() => onSaveDraft?.(false)}
@@ -129,7 +139,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
         
         {/* Checklist */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <PublishingChecklist validation={validation} onNavigateToStep={onNavigateToStep} rootTerm={rootTerm} />
+          <PublishingChecklist validation={validation} onNavigateToStep={onNavigateToStep} />
         </div>
 
         {/* Actions */}
@@ -138,29 +148,33 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
             Actions
           </h3>
           <div className="space-y-3">
-            {preview?.basicInfo.status === 'PUBLISHED' ? (
-              <button
-                onClick={handleUnpublish}
-                disabled={isUnpublishing}
-                className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50"
-              >
-                {isUnpublishing ? 'Unpublishing...' : `Unpublish ${RootTerm}`}
-              </button>
-            ) : (
-              <button
-                onClick={handlePublish}
-                disabled={isPublishing}
-                className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
-              >
-                {isPublishing ? 'Publishing...' : `Publish ${RootTerm}`}
-              </button>
-            )}
             <button
-              onClick={() => onSaveDraft?.()}
+              onClick={handlePublish}
+              disabled={isPublishing}
+              className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
+            >
+              {isPublishing ? 'Publishing...' : 'Publish Workshop'}
+            </button>
+            <button
+              onClick={() => onSaveDraft?.(false)}
               disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
               {isSaving ? 'Saving...' : 'Save Draft'}
+            </button>
+            <button
+              onClick={handleDuplicate}
+              disabled={isDuplicating}
+              className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
+            >
+              {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+            </button>
+            <button
+              onClick={handleArchive}
+              disabled={isArchiving}
+              className="w-full py-2.5 px-4 border border-red-300 dark:border-red-900/50 rounded-lg text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-colors"
+            >
+              {isArchiving ? 'Archiving...' : 'Archive'}
             </button>
           </div>
         </div>

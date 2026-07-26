@@ -9,7 +9,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { useState, useEffect } from 'react';
-import { channelService } from "@/domains/channels";
+import { channelService, useStudioAccess } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
@@ -22,6 +22,7 @@ export default function LearnerSidebar() {
   const { user } = useAuthStore();
   const { hasPermission } = usePermissions();
   const [hasChannels, setHasChannels] = useState(false);
+  const { hasAccess: hasStudioAccess } = useStudioAccess();
 
   useEffect(() => {
     Promise.all([
@@ -37,10 +38,14 @@ export default function LearnerSidebar() {
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
   const showArcConsole = showAdminChannels || showAdminSettings || AuthorizationService.canReviewCourses(user);
+  // "Content Studio" specifically needs real content-authoring capability in a channel the
+  // user owns or staffs — no bypass for platform admins/reviewers, who do their platform-level
+  // work in the Console instead. Being a platform admin isn't a reason to see this button.
+  const showStudio = hasStudioAccess;
 
   const dynamicNavItems = [
     ...baseNavItems,
-    ...(hasChannels || showArcConsole ? [
+    ...(showStudio ? [
       { name: 'Content Studio', href: '/studio', icon: BookOpen },
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),

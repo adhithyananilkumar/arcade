@@ -40,12 +40,12 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
-import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
+import { CourseStatusHistoryModal } from "@/domains/publishing/components/CourseStatusHistoryModal";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -54,8 +54,9 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor } from "@/domains/assessments";
+import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
+import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -92,6 +93,7 @@ import {
   History,
   MessageSquare,
   Lock,
+  Eye,
 } from "lucide-react";
 
 /** How long (of edit activity) between automatic version snapshots. */
@@ -107,10 +109,9 @@ function scheduleIdle(fn: () => void) {
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
-import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop" | "roadmap";
+  contentType: "course" | "workshop";
   contentId?: string;
 }
 
@@ -323,8 +324,6 @@ function ContentSettingsPanel({ terminology,
   updatedAt,
   onDeleted,
   onDescriptionChange,
-  onPublish,
-  onUnpublish,
 }: {
   contentId?: string;
   title: string;
@@ -334,10 +333,7 @@ function ContentSettingsPanel({ terminology,
   createdAt: string | null;
   updatedAt: string | null;
   onDeleted: () => void;
-  onDescriptionChange: (desc: string) => void; 
-  onPublish?: () => void;
-  onUnpublish?: () => void;
-  terminology: { root: string; container: string; leafDocument: string; leafQuiz: string };
+  onDescriptionChange: (desc: string) => void; terminology: { root: string; container: string; leafDocument: string; leafQuiz: string };
 }) {
   const [dangerOpen, setDangerOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
@@ -414,39 +410,6 @@ function ContentSettingsPanel({ terminology,
         <InfoRow label="Last updated">{fmt(updatedAt)}</InfoRow>
       </div>
 
-      {/* Actions */}
-      <div className="mt-8 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-3">
-          <h3 className="text-sm font-semibold text-gray-800">Publishing Actions</h3>
-        </div>
-        <div className="px-5 py-4">
-          <p className="text-sm text-gray-600 mb-4">
-            {status === "PUBLISHED"
-              ? "This content is currently live. You can unpublish it to hide it from students."
-              : "This content is currently a draft. Publish it to make it live for students."}
-          </p>
-          <div className="flex gap-3">
-            {status === "PUBLISHED" ? (
-              <button
-                type="button"
-                onClick={onUnpublish}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                Unpublish
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onPublish}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
-              >
-                Publish {terminology.root}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
       {/* Danger Zone */}
       <div className="mt-8 rounded-xl border border-red-200 bg-white shadow-sm">
         <div className="border-b border-red-100 px-5 py-3">
@@ -515,7 +478,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const router = useRouter();
   const [contentId] = useState<string | undefined>(initialContentId);
   const adapter = useMemo(() => {
-    if (contentType === "roadmap") return new RoadmapAdapter();
     return contentType === "course"
       ? new CourseAdapter()
       : new WorkshopAdapter(contentId || "");
@@ -524,9 +486,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
-  const [status, setStatus] = useState("DRAFT");
+  const [status, setStatus] = useState<string>("DRAFT");
+  const [hasDraftChanges, setHasDraftChanges] = useState<boolean>(false);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<any>(null);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -553,6 +518,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [qbOpen, setQbOpen] = useState(false);
@@ -594,24 +560,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setDescription(meta.description ?? "");
         setPricingModel(meta.pricingModel as "FREE" | "PAID");
         setStatus(meta.status);
+        setHasDraftChanges(meta.raw?.hasDraftChanges === true);
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
-        const loadedModules = containers.map((m) => ({
-          id: m.id,
-          title: m.title,
-          position: m.position,
-          expanded: true,
-          lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
-          quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
-        }));
-        setModules(loadedModules);
-
-        if (contentType === "roadmap") {
-          const roadmapLeaf = loadedModules[0]?.lessons[0];
-          if (roadmapLeaf) {
-            await openLesson(roadmapLeaf);
-          }
+        if (contentType === "course") {
+          setCourseData(meta.raw);
         }
+        setModules(
+          containers.map((m) => ({
+            id: m.id,
+            title: m.title,
+            position: m.position,
+            expanded: true,
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
+            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
+          }))
+        );
       } catch (e) {
         console.error("Failed to load course", e);
       }
@@ -756,6 +720,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           body: jsonStr,
         });
         lastSavedBodyRef.current = jsonStr;
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Document save failed, localStorage preserved.", e);
         return; // don't snapshot if the head save didn't land
@@ -870,6 +835,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         ]);
         // Auto-open Day Settings dialog so the creator can set schedule details.
         setSessionSettingsSessionId(newContainer.id);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add day", e);
       }
@@ -899,6 +865,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         );
         setActiveModuleId(moduleId);
         await openLesson(newLesson as any);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
@@ -927,6 +894,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )
         );
         await openQuiz(newQuiz as any);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add quiz", e);
       }
@@ -952,6 +920,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setModules((prev) => prev.map((m) => (m.id === id ? { ...m, title: value } : m)));
       try {
         await adapter.renameContainer(id, value);
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Module rename failed", e);
       }
@@ -965,6 +934,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       if (activeQuizId === id) setActiveQuizTitle(value);
       try {
         await adapter.renameLeaf(id, value, "quiz");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Quiz rename failed", e);
       }
@@ -978,6 +948,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       if (activeLessonId === id) setActiveLessonTitle(value);
       try {
         await adapter.renameLeaf(id, value, "document");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Lesson rename failed", e);
       }
@@ -1001,6 +972,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteContainer(mod.id);
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete module", e);
     }
@@ -1020,6 +992,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteLeaf(lessonId, "document");
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete lesson", e);
     }
@@ -1052,6 +1025,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteLeaf(quizId, "quiz");
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete quiz", e);
     }
@@ -1083,6 +1057,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       );
       try {
         await adapter.renameLeaf(activeQuizId, value, "quiz");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Quiz title save failed", e);
       }
@@ -1101,6 +1076,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       metaSaveTimeout.current = setTimeout(async () => {
         try {
           await adapter.updateMeta(contentId, patch);
+          setHasDraftChanges(true);
         } catch (e) {
           console.warn("Course metadata save failed", e);
         }
@@ -1183,41 +1159,62 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const handlePublish = useCallback(async () => {
+  const handleRoadmapPublish = async () => {
     if (!contentId) return;
     try {
-      if (contentType === "course") {
-        await api.post(`/api/courses/${contentId}/publish`, {});
-      } else if (contentType === "roadmap") {
-        await adapter.updateMeta(contentId, { status: "published" as any });
-      } else {
-        await api.post(`/api/workshops/${contentId}/publish`, {});
-      }
+      await adapter.updateMeta(contentId, { status: "published" });
       setStatus("PUBLISHED");
-      toast?.success("Published successfully");
+      toast?.success("Roadmap published successfully");
     } catch (e) {
-      console.error(e);
-      toast?.error("Failed to publish");
+      console.error("Failed to publish roadmap", e);
+      toast?.error("Failed to publish roadmap");
     }
-  }, [contentId, contentType, adapter]);
+  };
 
-  const handleUnpublish = useCallback(async () => {
-    if (!contentId) return;
-    try {
-      if (contentType === "course") {
-        await api.post(`/api/courses/${contentId}/unpublish`, {});
-      } else if (contentType === "roadmap") {
-        await adapter.updateMeta(contentId, { status: "draft" as any });
-      } else {
-        await api.post(`/api/workshops/${contentId}/unpublish`, {});
-      }
-      setStatus("DRAFT");
-      toast?.success("Unpublished successfully");
-    } catch (e) {
-      console.error(e);
-      toast?.error("Failed to unpublish");
+  const askSubmit = () => {
+    if (contentType === "course") {
+      setSubmitDialogOpen(true);
+      return;
     }
-  }, [contentId, contentType, adapter]);
+    if (contentType === "roadmap") {
+      handleRoadmapPublish();
+      return;
+    }
+    setConfirm({
+      title: "Proceed to next steps?",
+      message: "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published.",
+      confirmLabel: "Proceed..",
+      onConfirm: async () => {
+        router.push(`/studio/workshop/${contentId}`);
+      },
+    });
+  };
+
+  const handleCourseSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => {
+    if (!contentId) return;
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
+         await api.patch(`/api/courses/${contentId}`, data);
+      }
+      const updated = await api.post<CourseResponse>(`/api/courses/${contentId}/submit`, { message: data.message });
+      setStatus(updated.status);
+      setUpdatedAt(updated.updatedAt);
+      setPricingModel(updated.pricingModel as "FREE" | "PAID");
+      setHistoryRefreshKey((k) => k + 1);
+      setSubmitDialogOpen(false);
+      setHasDraftChanges(false);
+    } catch (e) {
+      console.error("Failed to submit course", e);
+      throw e;
+    }
+  };
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1245,19 +1242,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  // ── Custom Event Listeners for Roadmap Sidebar ──────────────────────────
-  useEffect(() => {
-    if (contentType !== "roadmap") return;
-    const onBack = () => handleBack();
-    const onSettings = () => setView("settings");
-    window.addEventListener("roadmap-action-back", onBack);
-    window.addEventListener("roadmap-action-settings", onSettings);
-    return () => {
-      window.removeEventListener("roadmap-action-back", onBack);
-      window.removeEventListener("roadmap-action-settings", onSettings);
-    };
-  }, [contentType, handleBack]);
-
   if (isInitializing) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -1271,7 +1255,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   return (
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      {contentType === "course" && contentId ? (
+        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
+      ) : (
+        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      )}
+      {contentType === "course" && courseData && (
+        <CourseSubmitDialog
+          course={courseData}
+          open={submitDialogOpen}
+          onClose={() => setSubmitDialogOpen(false)}
+          onSubmit={handleCourseSubmit}
+        />
+      )}
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       <SessionSettingsDialog
         open={!!sessionSettingsSessionId}
@@ -1287,6 +1283,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 m.id === sessionSettingsSessionId ? { ...m, title: newTitle } : m
               )
             );
+            setHasDraftChanges(true);
           }
           // Dialog closes itself via its own onClose prop after calling onSaved.
         }}
@@ -1316,18 +1313,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
           {/* Left: Back, flush to the page margin */}
           <div className="justify-self-start">
-            {contentType !== "roadmap" && (
-              <button
-                type="button"
-                onClick={handleBack}
-                disabled={navigatingBack}
-                title="Save and return to dashboard"
-                className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
-              >
-                <ArrowLeft size={16} />
-                <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleBack}
+              disabled={navigatingBack}
+              title="Save and return to dashboard"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+            >
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+            </button>
           </div>
 
           {/* Center: name of whatever is open. Read-only — renaming happens on the
@@ -1372,15 +1367,29 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {contentType !== "workshop" && (
+            {status !== "DRAFT" && (
               <button
                 type="button"
-                onClick={() => setView("settings")}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                onClick={() => setStatusHistoryOpen(true)}
+                title="View status history"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
               >
-                <Settings size={14} />
+                <History size={14} />
+                <span className="hidden sm:inline">Status</span>
+              </button>
+            )}
+
+            {status !== "SUBMITTED" && contentType !== "workshop" && (
+              <button
+                type="button"
+                onClick={askSubmit}
+                disabled={!hasDraftChanges && (status === "PUBLISHED" || status === "APPROVED" || status === "REJECTED" || status === "DRAFT")}
+                title={!hasDraftChanges ? "No new changes to submit" : ""}
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send size={14} />
                 <span className="hidden sm:inline">
-                  {contentType === "roadmap" ? "Roadmap Settings" : "Course Settings"}
+                  {status === "PUBLISHED" || status === "APPROVED" ? "Submit Updates" : status === "REJECTED" ? "Resubmit for Review" : "Submit for Review"}
                 </span>
               </button>
             )}
@@ -1392,7 +1401,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
                 <Settings size={14} />
-                <span className="hidden sm:inline">Manage {adapter.terminology.root}</span>
+                <span className="hidden sm:inline">Manage Workshop</span>
               </button>
             )}
           </div>
@@ -1402,9 +1411,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1">
         {/* ── Floating collapsible sidebar: course tree ─────────────── */}
-        {contentType !== "roadmap" && (
-          <aside className="absolute left-3 top-14 z-20 flex">
-            {!sidebarOpen ? (
+        <aside className="absolute left-3 top-14 z-20 flex">
+          {!sidebarOpen ? (
             <button
               type="button"
               title="Expand sidebar"
@@ -1475,32 +1483,34 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </span>
                         )}
 
-                        <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              title="Add lesson or quiz"
-                              className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                            >
-                              <Plus size={12} />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={4}>
-                              <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                <FileText size={13} />
-                                Lesson
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                <ListChecks size={13} />
-                                Quiz
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                            <Pencil size={12} />
-                          </IconBtn>
-                          <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                            <Trash2 size={12} />
-                          </IconBtn>
-                        </div>
+                        {status !== "SUBMITTED" && (
+                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                title="Add lesson or quiz"
+                                className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                              >
+                                <Plus size={12} />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" sideOffset={4}>
+                                <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                  <FileText size={13} />
+                                  Lesson
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                                  <ListChecks size={13} />
+                                  Quiz
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                              <Pencil size={12} />
+                            </IconBtn>
+                            <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                              <Trash2 size={12} />
+                            </IconBtn>
+                          </div>
+                        )}
                       </div>
 
                       {/* Lessons and quizzes, interleaved by position */}
@@ -1550,68 +1560,72 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                       </span>
                                     )}
                                   </button>
-                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {item.kind === "quiz" && (
+                                  {status !== "SUBMITTED" && (
+                                    <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                      {item.kind === "quiz" && (
+                                        <IconBtn
+                                          title="Copy quiz ID — paste into an inline Quiz block"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(item.node.id);
+                                            setCopiedQuizId(item.node.id);
+                                            setTimeout(() => setCopiedQuizId(null), 1500);
+                                          }}
+                                        >
+                                          {copiedQuizId === item.node.id ? (
+                                            <Check size={12} className="text-emerald-500" />
+                                          ) : (
+                                            <Copy size={12} />
+                                          )}
+                                        </IconBtn>
+                                      )}
                                       <IconBtn
-                                        title="Copy quiz ID — paste into an inline Quiz block"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(item.node.id);
-                                          setCopiedQuizId(item.node.id);
-                                          setTimeout(() => setCopiedQuizId(null), 1500);
-                                        }}
+                                        title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                        onClick={() =>
+                                          startEdit(item.kind, item.node.id, item.node.title)
+                                        }
                                       >
-                                        {copiedQuizId === item.node.id ? (
-                                          <Check size={12} className="text-emerald-500" />
-                                        ) : (
-                                          <Copy size={12} />
-                                        )}
+                                        <Pencil size={12} />
                                       </IconBtn>
-                                    )}
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                      onClick={() =>
-                                        startEdit(item.kind, item.node.id, item.node.title)
-                                      }
-                                    >
-                                      <Pencil size={12} />
-                                    </IconBtn>
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                      danger
-                                      onClick={() =>
-                                        item.kind === "lesson"
-                                          ? askDeleteLesson(item.node)
-                                          : askDeleteQuiz(item.node)
-                                      }
-                                    >
-                                      <Trash2 size={12} />
-                                    </IconBtn>
-                                  </div>
+                                      <IconBtn
+                                        title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                        danger
+                                        onClick={() =>
+                                          item.kind === "lesson"
+                                            ? askDeleteLesson(item.node)
+                                            : askDeleteQuiz(item.node)
+                                        }
+                                      >
+                                        <Trash2 size={12} />
+                                      </IconBtn>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
 
                           {/* Add lesson / quiz to this Day/module */}
-                          <div className="mt-0.5 flex items-center gap-3 pl-2">
-                            <button
-                              type="button"
-                              onClick={() => addLesson(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add {adapter.terminology.leafDocument}
-                            </button>
-                            {contentType !== "workshop" && (
+                          {status !== "SUBMITTED" && (
+                            <div className="mt-0.5 flex items-center gap-3 pl-2">
                               <button
                                 type="button"
-                                onClick={() => addQuiz(mod.id)}
+                                onClick={() => addLesson(mod.id)}
                                 className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
                               >
                                 <Plus size={11} />
-                                Add quiz
+                                Add {adapter.terminology.leafDocument}
                               </button>
-                            )}
-                          </div>
+                              {contentType !== "workshop" && (
+                                <button
+                                  type="button"
+                                  onClick={() => addQuiz(mod.id)}
+                                  className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                >
+                                  <Plus size={11} />
+                                  Add quiz
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1620,7 +1634,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                 {/* Sidebar footer */}
                 <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
-                  {contentType === "workshop" && (
+                  {status !== "SUBMITTED" && contentType === "workshop" && (
                     <button
                       type="button"
                       onClick={addWorkshopDay}
@@ -1633,7 +1647,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   {contentType === "workshop" && (
                     <div className="border-t border-gray-100 my-1"></div>
                   )}
-                  {contentType !== "workshop" && (
+                  {status !== "SUBMITTED" && contentType !== "workshop" && (
                     <button
                       type="button"
                       onClick={addModule}
@@ -1643,7 +1657,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       Add Module
                     </button>
                   )}
-                  {contentType !== "workshop" && (
+                  {status !== "SUBMITTED" && contentType !== "workshop" && (
                     <button
                       type="button"
                       onClick={() => setQbOpen(true)}
@@ -1653,7 +1667,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       Create Question Bank
                     </button>
                   )}
-                  {contentType === "workshop" && (
+                  {status !== "SUBMITTED" && contentType === "workshop" && (
                     <button
                       type="button"
                       className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
@@ -1679,61 +1693,68 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           )}
         </aside>
-        )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="absolute inset-0 z-0 overflow-y-auto">
+          {status === "SUBMITTED" && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
+              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
+            </div>
+          )}
           {view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
               <div className="overflow-hidden rounded-2xl border border-gray-100">
-                <ContentSettingsPanel terminology={adapter.terminology}
-                  contentId={contentId}
-                  title={title}
-                  description={description}
-                  status={status}
-                  pricingModel={pricingModel}
-                  createdAt={createdAt}
-                  updatedAt={updatedAt}
-                  onDeleted={() => router.push("/")}
-                  onDescriptionChange={(desc) => {
-                    setDescription(desc);
-                    scheduleCourseMetaSave({ description: desc });
-                  }}
-                  onPublish={handlePublish}
-                  onUnpublish={handleUnpublish}
-                />
+                <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
+                  <ContentSettingsPanel terminology={adapter.terminology}
+                    contentId={contentId}
+                    title={title}
+                    description={description}
+                    status={status}
+                    pricingModel={pricingModel}
+                    createdAt={createdAt}
+                    updatedAt={updatedAt}
+                    onDeleted={() => router.push("/")}
+                    onDescriptionChange={(desc) => {
+                      setDescription(desc);
+                      scheduleCourseMetaSave({ description: desc });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ) : activeLessonId ? (
             <div
-              className={
-                contentType === "roadmap"
-                  ? "w-full h-[calc(100vh-49px)] p-0 m-0 overflow-hidden"
-                  : "mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
-              }
+              className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
               // Height of the top bar above — the editor toolbar sticks flush beneath it.
               style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
             >
               {/* The lesson name lives in the top bar; renaming happens from the
                   sidebar's pencil action. No second title on the canvas. */}
-              <div className={contentType === "roadmap" ? "w-full h-full p-0 m-0" : ""}>
+              <div>
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
                     ref={editorRef}
                     ydoc={activeYDoc}
                     seedContent={activeSeedContent}
-                    placeholder={contentType === "roadmap" ? "" : "Start writing your lesson content…"}
+                    placeholder="Start writing your lesson content…"
                     onSave={handleSave}
                     chromeless
-                    contentType={contentType}
+                    readOnly={status === "SUBMITTED"}
                   />
                 )}
               </div>
             </div>
           ) : activeQuizId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div>
+            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12 relative">
+              {status === "SUBMITTED" && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                  <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-lg border border-gray-100 font-medium text-amber-600">
+                    <Lock size={16} /> Locked for Review
+                  </div>
+                </div>
+              )}
+              <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
                 <div className="mb-5 flex items-center gap-3">
                   <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
                   <DebouncedTitleInput
@@ -1741,6 +1762,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     onCommit={saveQuizTitle}
                     className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
                     placeholder="Quiz title"
+                    disabled={status === "SUBMITTED"}
                   />
                 </div>
                 <QuizEditor key={activeQuizId} quizId={activeQuizId} />
@@ -1754,12 +1776,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <div>
                 <h3 className="text-base font-semibold text-gray-700">
                   {contentType === "workshop"
-                    ? `Select a ${adapter.terminology.root.toLowerCase()} day or create a new day to start editing.`
+                    ? "Select a workshop day or create a new day to start editing."
                     : "Select a lesson or quiz to start editing."}
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
                   {contentType === "workshop"
-                    ? `Create your first ${adapter.terminology.root.toLowerCase()} day and start building the agenda, notes, resources, and instructions.`
+                    ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
                     : "Open the sidebar, add a module, then a lesson or quiz to begin."}
                 </p>
               </div>
@@ -1767,6 +1789,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
+      <CourseStatusHistoryModal
+        courseId={contentId!}
+        open={statusHistoryOpen}
+        onClose={() => setStatusHistoryOpen(false)}
+      />
     </div>
   );
 }
