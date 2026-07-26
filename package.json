@@ -83,6 +83,9 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-react": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
