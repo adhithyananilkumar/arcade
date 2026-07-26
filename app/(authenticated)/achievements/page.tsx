@@ -251,7 +251,7 @@ export default function AchievementsPage() {
               <div>
                 <div className="text-xs font-medium text-indigo-200 uppercase tracking-wider">Level 8 Contributor</div>
                 <div className="text-lg font-bold text-white">
-                  {user?.fullName || user?.username || 'Learner'}
+                  {(user?.firstName || user?.fullName || user?.username || 'Learner').split(' ')[0]}
                 </div>
                 <div className="text-xs text-amber-300 font-semibold flex items-center gap-1 mt-0.5">
                   <Zap size={12} className="fill-amber-300" />
