@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
@@ -485,6 +486,11 @@ function ProfilePageContent() {
   const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
   
   // Avatar upload states
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -585,6 +591,15 @@ function ProfilePageContent() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [editUsername, isEditModalOpen, profileData, user]);
+
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isEditModalOpen]);
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -784,7 +799,7 @@ function ProfilePageContent() {
         {/* Edit Profile Button - Moved to Top Right Corner */}
         <button 
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-6 right-6 z-30 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-purple-600 bg-white/70 hover:bg-white shadow-sm border border-white dark:bg-neutral-900/50 dark:text-purple-400 dark:border-neutral-800 dark:hover:bg-neutral-900 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+          className="absolute top-6 right-6 z-30 inline-flex items-center gap-2 rounded-md border border-[#dadce0] bg-white px-3.5 py-2 text-xs font-semibold text-[#4C6FFF] shadow-sm transition-colors hover:bg-[#f8f9fa] cursor-pointer"
         >
           <Edit3 size={14} />
           Edit Profile
@@ -1145,266 +1160,231 @@ function ProfilePageContent() {
         </div>
       </div>
 
-      {/* ── Edit Profile Modal (Enhanced Premium Design) ── */}
-      <AnimatePresence>
-        {isEditModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Glass Backdrop Overlay */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsEditModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-            />
-            
-            {/* Modal Body Container */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              className="relative w-full max-w-xl rounded-[28px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_25px_60px_-15px_rgba(124,58,237,0.15)] z-10 flex flex-col max-h-[88vh] overflow-hidden transition-colors"
-            >
-              {/* Top Gradient Accent Bar */}
-              <div className="h-1.5 w-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 shrink-0" />
+      {/* Edit Profile — portaled above dock/nav */}
+      {portalReady && createPortal(
+        <AnimatePresence>
+          {isEditModalOpen && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsEditModalOpen(false)}
+                className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[2px]"
+              />
 
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-7 py-5 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/40 shadow-xs">
-                    <Edit3 size={18} />
+              <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="edit-profile-title"
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 flex max-h-[min(88vh,720px)] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-[#dadce0] bg-white shadow-[0_24px_48px_rgba(32,33,36,0.28)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#e8eaed] px-5 py-4 sm:px-6">
+                  <div className="min-w-0">
+                    <h3 id="edit-profile-title" className="text-lg font-medium tracking-tight text-[#202124]">
+                      Edit profile info
+                    </h3>
+                    <p className="mt-0.5 text-sm text-[#5f6368]">
+                      Update your details, credentials, and social profiles.
+                    </p>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Profile Info</h3>
-                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Update your personal details, credentials, and social profiles</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-600 dark:hover:text-white transition-all cursor-pointer focus:outline-none"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Form Body */}
-              <form onSubmit={handleEditSubmit} className="flex flex-col flex-grow overflow-hidden">
-                <div className="flex-grow overflow-y-auto px-7 py-6 space-y-5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
-                  
-                  {/* Name Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <UserIcon size={12} className="text-purple-500" />
-                        First Name
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={editFirstName}
-                        onChange={(e) => setEditFirstName(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <UserIcon size={12} className="text-purple-500" />
-                        Last Name
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={editLastName}
-                        onChange={(e) => setEditLastName(e.target.value)}
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Username Field with Validation & Suggestions */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Code size={12} className="text-purple-500" />
-                      Username
-                    </label>
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        required
-                        value={editUsername}
-                        onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                        className={`w-full rounded-2xl border bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 transition-all shadow-xs ${
-                          usernameAvailable === true ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10' :
-                          usernameAvailable === false ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' :
-                          'border-slate-200 dark:border-slate-800 focus:border-purple-500 focus:ring-purple-500/10'
-                        }`}
-                      />
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        {isCheckingUsername && <Loader2 className="animate-spin text-purple-500" size={14} />}
-                        {usernameAvailable === true && <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Available</span>}
-                        {usernameAvailable === false && <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">Taken</span>}
-                      </div>
-                    </div>
-                    {usernameAvailable === false && usernameSuggestions.length > 0 && (
-                      <div className="bg-rose-50/70 dark:bg-rose-950/30 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/50 text-[11px] space-y-1.5 mt-2">
-                        <span className="font-bold text-rose-700 dark:text-rose-400">Username is taken. Try one of these:</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {usernameSuggestions.map((s) => (
-                            <button
-                              key={s}
-                              type="button"
-                              onClick={() => setEditUsername(s)}
-                              className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-800 hover:border-purple-400 text-slate-700 dark:text-slate-300 font-extrabold px-2.5 py-1 rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Locked Email & Locked Gender */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <Mail size={12} className="text-purple-500" />
-                          Email Address
-                        </label>
-                        <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-slate-800">
-                          <Lock size={9} /> Locked
-                        </span>
-                      </div>
-                      <input 
-                        type="email" 
-                        disabled
-                        value={editEmail}
-                        className="w-full rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-100/70 dark:bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed select-none focus:outline-none transition-all"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <UserIcon size={12} className="text-purple-500" />
-                          Gender
-                        </label>
-                        <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-slate-800">
-                          <Lock size={9} /> Locked
-                        </span>
-                      </div>
-                      <select 
-                        disabled
-                        value={editGender}
-                        className="w-full appearance-none rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-100/70 dark:bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed select-none focus:outline-none transition-all"
-                      >
-                        <option value="MALE">Male</option>
-                        <option value="FEMALE">Female</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Social Links */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <FaLinkedin size={12} className="text-blue-600" />
-                        LinkedIn Profile Link
-                      </label>
-                      <input 
-                        type="url" 
-                        value={editLinkedinUrl}
-                        onChange={(e) => setEditLinkedinUrl(e.target.value)}
-                        placeholder="https://linkedin.com/in/username"
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <GitCommit size={12} className="text-slate-700 dark:text-slate-300" />
-                        GitHub Profile Link
-                      </label>
-                      <input 
-                        type="url" 
-                        value={editGithubUrl}
-                        onChange={(e) => setEditGithubUrl(e.target.value)}
-                        placeholder="https://github.com/username"
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Mobile & Address */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <Phone size={12} className="text-purple-500" />
-                        Mobile Number
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        value={editMobileNumber}
-                        onChange={(e) => setEditMobileNumber(e.target.value)}
-                        placeholder="+91 XXXXX XXXXX"
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <MapPin size={12} className="text-purple-500" />
-                        Address
-                      </label>
-                      <input 
-                        type="text" 
-                        value={editAddress}
-                        onChange={(e) => setEditAddress(e.target.value)}
-                        placeholder="House, Street, City, State, Country"
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Edit3 size={12} className="text-purple-500" />
-                      Bio (Split using &apos;|&apos; for multiple lines)
-                    </label>
-                    <textarea 
-                      rows={3}
-                      value={editBio}
-                      onChange={(e) => setEditBio(e.target.value)}
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none resize-none transition-all shadow-xs"
-                    />
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/80 px-7 py-4 flex items-center justify-end gap-3 transition-colors">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-5 py-2.5 rounded-2xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    className="rounded-md p-2 text-[#5f6368] transition-colors hover:bg-[#f1f3f4] hover:text-[#202124]"
+                    aria-label="Close"
                   >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit"
-                    disabled={isSaving || usernameAvailable === false}
-                    className="px-6 py-2.5 rounded-2xl text-sm font-extrabold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition-all shadow-md shadow-purple-500/20 active:scale-[0.98] flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSaving && <Loader2 size={16} className="animate-spin" />}
-                    Save Changes
+                    <X size={18} />
                   </button>
                 </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
+                <form onSubmit={handleEditSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">First name</label>
+                        <input
+                          type="text"
+                          required
+                          value={editFirstName}
+                          onChange={(e) => setEditFirstName(e.target.value)}
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Last name</label>
+                        <input
+                          type="text"
+                          required
+                          value={editLastName}
+                          onChange={(e) => setEditLastName(e.target.value)}
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Username</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          value={editUsername}
+                          onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                          className={`${
+                            usernameAvailable === true
+                              ? 'border-emerald-500 focus:border-emerald-600 focus:ring-emerald-600'
+                              : usernameAvailable === false
+                                ? 'border-[#d93025] focus:border-[#d93025] focus:ring-[#d93025]'
+                                : 'border-[#dadce0] focus:border-[#4C6FFF] focus:ring-[#4C6FFF]'
+                          } w-full rounded-md border bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition focus:ring-1`}
+                        />
+                        <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+                          {isCheckingUsername && <Loader2 className="animate-spin text-[#4C6FFF]" size={14} />}
+                          {usernameAvailable === true && (
+                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              Available
+                            </span>
+                          )}
+                          {usernameAvailable === false && (
+                            <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-[#d93025]">
+                              Taken
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {usernameAvailable === false && usernameSuggestions.length > 0 && (
+                        <div className="mt-2 rounded-md border border-[#fce8e6] bg-[#fce8e6]/50 p-3 text-[12px]">
+                          <p className="mb-1.5 font-medium text-[#c5221f]">Username is taken. Try:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {usernameSuggestions.map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => setEditUsername(s)}
+                                className="rounded-md border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#202124] transition hover:border-[#4C6FFF] hover:text-[#4C6FFF]"
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <label className="text-xs font-medium text-[#5f6368]">Email</label>
+                          <span className="inline-flex items-center gap-1 rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#80868b]">
+                            <Lock size={9} /> Locked
+                          </span>
+                        </div>
+                        <input type="email" disabled value={editEmail} className="w-full cursor-not-allowed select-none rounded-md border border-[#e8eaed] bg-[#f1f3f4] px-3.5 py-2.5 text-sm font-medium text-[#80868b] outline-none" />
+                      </div>
+                      <div>
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <label className="text-xs font-medium text-[#5f6368]">Gender</label>
+                          <span className="inline-flex items-center gap-1 rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#80868b]">
+                            <Lock size={9} /> Locked
+                          </span>
+                        </div>
+                        <select disabled value={editGender} className="w-full cursor-not-allowed select-none rounded-md border border-[#e8eaed] bg-[#f1f3f4] px-3.5 py-2.5 text-sm font-medium text-[#80868b] outline-none appearance-none">
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">LinkedIn</label>
+                        <input
+                          type="url"
+                          value={editLinkedinUrl}
+                          onChange={(e) => setEditLinkedinUrl(e.target.value)}
+                          placeholder="https://linkedin.com/in/username"
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">GitHub</label>
+                        <input
+                          type="url"
+                          value={editGithubUrl}
+                          onChange={(e) => setEditGithubUrl(e.target.value)}
+                          placeholder="https://github.com/username"
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Mobile</label>
+                        <input
+                          type="text"
+                          required
+                          value={editMobileNumber}
+                          onChange={(e) => setEditMobileNumber(e.target.value)}
+                          placeholder="+91 XXXXX XXXXX"
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Address</label>
+                        <input
+                          type="text"
+                          value={editAddress}
+                          onChange={(e) => setEditAddress(e.target.value)}
+                          placeholder="City, State, Country"
+                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Bio</label>
+                      <p className="mb-1.5 text-[11px] text-[#80868b]">Use | to split lines</p>
+                      <textarea
+                        rows={3}
+                        value={editBio}
+                        onChange={(e) => setEditBio(e.target.value)}
+                        className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF] resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center justify-end gap-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-5 py-3.5 sm:px-6">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditModalOpen(false)}
+                      className="rounded-md px-4 py-2 text-sm font-medium text-[#4C6FFF] transition hover:bg-[#4C6FFF]/08"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving || usernameAvailable === false}
+                      className="inline-flex items-center gap-2 rounded-md bg-[#4C6FFF] px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#3a5ae6] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isSaving && <Loader2 size={15} className="animate-spin" />}
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* Absolute Custom Hover Tooltip */}
       <AnimatePresence>
