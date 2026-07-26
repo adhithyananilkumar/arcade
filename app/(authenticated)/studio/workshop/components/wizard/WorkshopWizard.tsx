@@ -85,7 +85,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         language: form.formData.language || 'en',
         price: form.formData.price || 0,
         currency: form.formData.currency || 'USD',
-        capacity: form.formData.capacity === '' ? null : form.formData.capacity,
+        capacity: (form.formData.capacity as any) === '' ? null : form.formData.capacity,
         visibility: form.formData.visibility
       };
 

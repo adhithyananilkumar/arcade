@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import HeroSection from "@/apps/public/components/landing/HeroSection";
 import LogoStrip from "@/apps/public/components/landing/LogoStrip";
+import InteractiveCardFan from "@/apps/public/components/landing/InteractiveCardFan";
 import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
 import Testimonials from "@/apps/public/components/landing/Testimonials";
 import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
@@ -23,10 +24,12 @@ export default function PublicLandingPage() {
     <div className="landing-root">
       <HeroSection />
       <LogoStrip />
+      <InteractiveCardFan />
       <CourseShowcase />
       <Testimonials />
       <JourneyTimeline />
     </div>
   );
 }
+
 

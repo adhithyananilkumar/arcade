@@ -40,7 +40,7 @@ export default function LearnerShell({
       <TimeTracker />
       <div className={`relative flex flex-col flex-1 w-full transition-colors duration-300 ${theme === 'dark' ? 'dark' : ''}`} style={{ fontFamily: 'var(--font-geist-sans)' }}>
         {/* Main Content Area */}
-        <div className="flex flex-col flex-1 relative z-10 bg-white dark:bg-black text-slate-900 dark:text-white">
+        <div className="flex flex-col flex-1 relative z-10 bg-background text-slate-900 dark:text-white">
           {!immersive && <LearnerNavbar />}
           <main className="relative bg-transparent flex flex-col flex-1 pb-28">
             {children}
