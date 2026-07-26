@@ -28,6 +28,7 @@ import {
   Handshake,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
 import "@/apps/public/landing.css";
@@ -46,42 +47,117 @@ const staggerContainer: Variants = {
   },
 };
 
+const BookSide = ({ 
+  side, 
+  coverColor, 
+  children 
+}: { 
+  side: 'left' | 'right'; 
+  coverColor: string; 
+  children: React.ReactNode 
+}) => {
+  const isLeft = side === 'left';
+  return (
+    <div 
+      className="absolute top-0 bottom-0"
+      style={{
+        left: isLeft ? 0 : '50%',
+        width: '50%',
+        transformStyle: 'preserve-3d',
+        transform: isLeft ? 'rotateY(18deg) translateZ(-6px)' : 'rotateY(-18deg) translateZ(-6px)',
+        transformOrigin: isLeft ? 'right center' : 'left center'
+      }}
+    >
+      <div className="absolute inset-0 rounded-md" style={{ backgroundColor: coverColor, transform: 'translateZ(2px)' }} />
+      <div className="absolute inset-0 rounded-md shadow-md" style={{ backgroundColor: coverColor, transform: 'translateZ(-2px) rotateY(180deg)' }} />
+      <div className="absolute left-0 right-0 h-[4px] top-0 origin-top" style={{ backgroundColor: coverColor, transform: 'rotateX(-90deg) translateY(-2px)', filter: 'brightness(0.85)' }} />
+      <div className="absolute left-0 right-0 h-[4px] bottom-0 origin-bottom" style={{ backgroundColor: coverColor, transform: 'rotateX(90deg) translateY(2px)', filter: 'brightness(0.7)' }} />
+      {isLeft ? (
+        <div className="absolute top-0 bottom-0 w-[4px] left-0 origin-left" style={{ backgroundColor: coverColor, transform: 'rotateY(-90deg) translateX(-2px)', filter: 'brightness(0.75)' }} />
+      ) : (
+        <div className="absolute top-0 bottom-0 w-[4px] right-0 origin-right" style={{ backgroundColor: coverColor, transform: 'rotateY(90deg) translateX(2px)', filter: 'brightness(0.75)' }} />
+      )}
+      
+      <div 
+        className="absolute top-[4px] bottom-[4px]"
+        style={{
+          left: isLeft ? '4px' : '50%',
+          right: isLeft ? '50%' : '4px',
+          transformStyle: 'preserve-3d',
+          transform: isLeft ? 'rotateY(14deg) translateZ(-4px)' : 'rotateY(-14deg) translateZ(-4px)',
+          transformOrigin: isLeft ? 'right center' : 'left center'
+        }}
+      >
+        <div className="absolute inset-0 bg-white shadow-inner" style={{ transform: 'translateZ(8px)' }}>
+          <div className="w-full h-full relative" style={{ backfaceVisibility: 'hidden' }}>
+            {children}
+          </div>
+        </div>
+        <div className="absolute left-0 right-0 h-[8px] top-0 origin-top" style={{ background: '#f8fafc', transform: 'rotateX(-90deg) translateY(-4px)', filter: 'brightness(0.92)', borderBottom: '1px solid #cbd5e1' }} />
+        <div className="absolute left-0 right-0 h-[8px] bottom-0 origin-bottom" style={{ background: '#f8fafc', transform: 'rotateX(90deg) translateY(4px)', filter: 'brightness(0.82)', borderTop: '1px solid #cbd5e1' }} />
+        {isLeft ? (
+          <div className="absolute top-0 bottom-0 w-[8px] left-0 origin-left" style={{ background: 'repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 1px, #ffffff 1px, #ffffff 3px)', transform: 'rotateY(-90deg) translateX(-4px)', filter: 'brightness(0.88)' }} />
+        ) : (
+          <div className="absolute top-0 bottom-0 w-[8px] right-0 origin-right" style={{ background: 'repeating-linear-gradient(to left, #cbd5e1 0px, #cbd5e1 1px, #ffffff 1px, #ffffff 3px)', transform: 'rotateY(90deg) translateX(4px)', filter: 'brightness(0.88)' }} />
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function AboutPage() {
   const headerRef = useRef<HTMLDivElement>(null);
 
   const values = [
     {
-      title: "Global Reach",
-      description: "Empowering learners from every corner of the world with accessible education.",
-      icon: Globe,
-      color: "text-blue-500",
-      bg: "bg-blue-50"
+      title: "Academic Credibility",
+      description: "Every certificate is backed by Amal Jyothi College of Engineering and can be checked online by anyone in seconds.",
+      icon: Award,
+      coverColor: "#205ca8"
+    },
+    {
+      title: "Practical & Hands-on",
+      description: "We focus on real-world engineering outcomes through active workshops, hackathons, and technical projects.",
+      icon: Code,
+      coverColor: "#38bdf8"
+    },
+    {
+      title: "Continuous Growth",
+      description: "New workshops, webinar topics, and technical activities land constantly so you're always upskilling.",
+      icon: Zap,
+      coverColor: "#10b981"
     },
     {
       title: "Community First",
-      description: "Built by educators for educators, fostering an active and supportive network.",
+      description: "Built by educators for developers, fostering an active peer-to-peer network where everyone helps each other succeed.",
       icon: Users,
-      color: "text-emerald-500",
-      bg: "bg-emerald-50"
+      coverColor: "#8b5cf6"
     },
     {
-      title: "Lightning Fast",
-      description: "Experience uncompromised speed with our optimized learning delivery network.",
-      icon: Zap,
-      color: "text-amber-500",
-      bg: "bg-amber-50"
+      title: "Transparent by Design",
+      description: "You'll always know exactly where you stand, what milestones are complete, and what is required to earn your certification.",
+      icon: BookOpen,
+      coverColor: "#475569"
     },
     {
       title: "Secure & Reliable",
-      description: "Enterprise-grade security protecting your intellectual property and data.",
-      icon: Shield,
-      color: "text-rose-500",
-      bg: "bg-rose-50"
-    },
+      description: "We protect your accomplishments, credentials, and identity with enterprise-grade security. No shortcuts.",
+      icon: ShieldCheck,
+      coverColor: "#1d4ed8"
+    }
   ];
 
   return (
-    <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
+    <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900 justify-center">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .constellation-wrapper { position: relative; width: 100%; z-index: 10; }
+        .book-container { perspective: 1800px; position: relative; width: 100%; z-index: 10; }
+        .book-3d { position: relative; width: 100%; transform-style: preserve-3d; transform: rotateX(25deg) rotateY(-10deg) scale(0.95); }
+        .book-ambient-shadow { position: absolute; inset: 8px 16px; background: rgba(15, 23, 42, 0.18); border-radius: 8px; filter: blur(14px); transform: translateZ(-15px) translateY(16px) scale(0.96); pointer-events: none; }
+        .book-spine-3d { position: absolute; left: 50%; top: 4px; width: 12px; height: calc(100% - 8px); transform: translateX(-50%) translateZ(6.5px); background: linear-gradient(to right, #cbd5e1 0%, #94a3b8 30%, #475569 50%, #94a3b8 70%, #cbd5e1 100%); z-index: 30; box-shadow: 0 0 4px rgba(0,0,0,0.15); }
+        @keyframes pulse-ring { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.4; } 100% { transform: scale(0.95); opacity: 0.8; } }
+        .pulse-ring-glow { animation: pulse-ring 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      `}} />
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none -z-10 bg-slate-50">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] opacity-70" />
@@ -199,7 +275,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* --- CORE VALUES (from compile branch) --- */}
+      {/* --- CORE VALUES --- */}
       <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 space-y-16">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
@@ -210,49 +286,156 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((val, idx) => {
-            const Icon = val.icon;
-            return (
-              <div
-                key={idx}
-                className="bg-white border border-slate-100 rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${val.bg} ${val.color} group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{val.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{val.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+        <div className="relative w-full max-w-[1200px] mx-auto overflow-x-auto pb-32 pt-24 hide-scrollbar">
+          <div className="min-w-[1100px] w-full flex items-center justify-center py-10">
+            <div className="relative w-[700px] h-[300px]">
+            {/* SVG Wave */}
+            <svg 
+              viewBox="0 0 100 50" 
+              className="absolute inset-0 w-full h-full pointer-events-none z-0 drop-shadow-xl"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <defs>
+                <linearGradient id="left-grad" x1="100%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#c026d3" /> {/* Fuchsia 600 */}
+                  <stop offset="100%" stopColor="#7e22ce" /> {/* Purple 700 */}
+                </linearGradient>
+                <linearGradient id="right-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#3b82f6" /> {/* Blue 500 */}
+                  <stop offset="100%" stopColor="#1d4ed8" /> {/* Blue 700 */}
+                </linearGradient>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="-2" dy="2" stdDeviation="2" floodOpacity="0.4" />
+                </filter>
+              </defs>
+              {/* Left Loop */}
+              <path 
+                d="M 50,25 C 30,55 0,55 0,25 C 0,-5 30,-5 50,25" 
+                fill="none" 
+                stroke="url(#left-grad)" 
+                strokeWidth="24" 
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              {/* Right Loop (Renders on top at center) */}
+              <path 
+                d="M 50,25 C 70,55 100,55 100,25 C 100,-5 70,-5 50,25" 
+                fill="none" 
+                stroke="url(#right-grad)" 
+                strokeWidth="24" 
+                strokeLinecap="round"
+                filter="url(#shadow)"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
 
-      {/* --- CTA (from compile branch) --- */}
-      <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 py-24 mb-12">
-        <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 rounded-[32px] p-12 md:p-20 text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 space-y-8 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight leading-tight">
-              Ready to transform the way you teach?
-            </h2>
-            <p className="text-blue-100/80 text-lg">
-              Join thousands of educators and institutions already building on Arcade.
-            </p>
-            <div className="pt-4">
-              <Link
-                href="/creators"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white hover:bg-blue-50 text-slate-900 font-bold text-sm tracking-wide shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <span>Become a Creator</span>
-                <ArrowRight size={16} />
-              </Link>
+            {/* Nodes */}
+            
+            {/* 1. Academic Credibility (Top Left, on Left Loop) */}
+            <div className="absolute top-[18%] left-[25%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -bottom-2 -right-8 text-fuchsia-600 font-black text-2xl drop-shadow-sm">01</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <Medal className="w-6 h-6 text-fuchsia-600 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line UP-LEFT */}
+              <div className="absolute bottom-[80%] right-[80%] w-16 h-16 border-t-[1.5px] border-l-[1.5px] border-slate-300 rounded-tl-xl pointer-events-none">
+                <div className="absolute top-0 right-[100%] w-0 h-0 border-y-4 border-y-transparent border-r-4 border-r-slate-400 -translate-y-1/2 translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute bottom-[calc(100%+3rem)] right-[calc(100%+1rem)] w-48 text-left">
+                <h3 className="text-sm font-bold text-fuchsia-600 uppercase tracking-wider mb-1">Academic Credibility</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Institution-backed certificates you can trust and verify.</p>
+              </div>
+            </div>
+
+            {/* 2. Practical & Hands-On (Bottom Right crossover, on Right Loop) */}
+            <div className="absolute top-[72%] left-[68%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -top-2 -left-8 text-blue-500 font-black text-2xl drop-shadow-sm">02</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <Code className="w-6 h-6 text-blue-500 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line DOWN-RIGHT */}
+              <div className="absolute top-[80%] left-[80%] w-16 h-16 border-b-[1.5px] border-r-[1.5px] border-slate-300 rounded-br-xl pointer-events-none">
+                <div className="absolute bottom-0 left-[100%] w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-slate-400 translate-y-1/2 -translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute top-[calc(100%+3rem)] left-[calc(100%+1rem)] w-48 text-left">
+                <h3 className="text-sm font-bold text-blue-500 uppercase tracking-wider mb-1">Practical & Hands-On</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Build real-world skills through projects and workshops.</p>
+              </div>
+            </div>
+
+            {/* 3. Continuous Growth (Far Right, on Right Loop) */}
+            <div className="absolute top-[50%] left-[92%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -left-10 text-blue-700 font-black text-2xl drop-shadow-sm">03</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <Zap className="w-6 h-6 text-blue-700 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line RIGHT */}
+              <div className="absolute top-1/2 left-[100%] w-12 h-[1.5px] bg-slate-300 pointer-events-none -translate-y-1/2">
+                <div className="absolute top-1/2 left-[100%] w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-slate-400 -translate-y-1/2 -translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute top-1/2 left-[calc(100%+3rem)] w-48 text-left -translate-y-1/2">
+                <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-1">Continuous Growth</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Keep learning with new events, challenges and opportunities.</p>
+              </div>
+            </div>
+
+            {/* 4. Community First (Top Right, on Right Loop) */}
+            <div className="absolute top-[18%] left-[75%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -bottom-2 -left-8 text-blue-600 font-black text-2xl drop-shadow-sm">04</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line UP-RIGHT */}
+              <div className="absolute bottom-[80%] left-[80%] w-16 h-16 border-t-[1.5px] border-r-[1.5px] border-slate-300 rounded-tr-xl pointer-events-none">
+                <div className="absolute top-0 left-[100%] w-0 h-0 border-y-4 border-y-transparent border-l-4 border-l-slate-400 -translate-y-1/2 -translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute bottom-[calc(100%+3rem)] left-[calc(100%+1rem)] w-48 text-left">
+                <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-1">Community First</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Learn, collaborate and grow with a supportive community.</p>
+              </div>
+            </div>
+
+            {/* 5. Transparent by Design (Bottom Left crossover, on Left Loop) */}
+            <div className="absolute top-[72%] left-[32%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -top-2 -right-8 text-purple-700 font-black text-2xl drop-shadow-sm">05</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-purple-700 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line DOWN-LEFT */}
+              <div className="absolute top-[80%] right-[80%] w-16 h-16 border-b-[1.5px] border-l-[1.5px] border-slate-300 rounded-bl-xl pointer-events-none">
+                <div className="absolute bottom-0 right-[100%] w-0 h-0 border-y-4 border-y-transparent border-r-4 border-r-slate-400 translate-y-1/2 translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute top-[calc(100%+3rem)] right-[calc(100%+1rem)] w-48 text-right">
+                <h3 className="text-sm font-bold text-purple-700 uppercase tracking-wider mb-1">Transparent by Design</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Track your progress with clear milestones and goals.</p>
+              </div>
+            </div>
+
+            {/* 6. Secure & Reliable (Far Left, on Left Loop) */}
+            <div className="absolute top-[50%] left-[8%] -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center z-10 transition-transform hover:scale-110 cursor-default">
+              <span className="absolute -right-10 text-purple-600 font-black text-2xl drop-shadow-sm">06</span>
+              <div className="w-12 h-12 bg-white border-2 border-slate-100 rounded-full shadow-lg flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-purple-600 drop-shadow-sm" strokeWidth={2.5} />
+              </div>
+              {/* Dotted Line LEFT */}
+              <div className="absolute top-1/2 right-[100%] w-12 h-[1.5px] bg-slate-300 pointer-events-none -translate-y-1/2">
+                <div className="absolute top-1/2 right-[100%] w-0 h-0 border-y-4 border-y-transparent border-r-4 border-r-slate-400 -translate-y-1/2 translate-x-1/2"></div>
+              </div>
+              {/* Text */}
+              <div className="absolute top-1/2 right-[calc(100%+3rem)] w-48 text-right -translate-y-1/2">
+                <h3 className="text-sm font-bold text-purple-600 uppercase tracking-wider mb-1">Secure & Reliable</h3>
+                <p className="text-[10px] text-slate-500 font-medium">Your achievements are protected with trusted security.</p>
+              </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* --- SECTION 2: POWERED BY AJCE --- */}
       <AJCESection />

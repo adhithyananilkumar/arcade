@@ -19,40 +19,40 @@ export interface MagicBentoCardData {
 
 const defaultCardData: MagicBentoCardData[] = [
   {
-    color: '#120F17',
-    title: 'Analytics',
-    description: 'Track user behavior',
-    label: 'Insights'
+    color: '#ffffff',
+    title: 'Academic Credibility',
+    description: 'Institution-backed certificates you can trust and verify.',
+    label: 'Trust'
   },
   {
-    color: '#120F17',
-    title: 'Dashboard',
-    description: 'Centralized data view',
-    label: 'Overview'
+    color: '#ffffff',
+    title: 'Practical & Hands-On',
+    description: 'Build real-world skills through projects and workshops.',
+    label: 'Skills'
   },
   {
-    color: '#120F17',
-    title: 'Collaboration',
-    description: 'Work together seamlessly',
-    label: 'Teamwork'
+    color: '#ffffff',
+    title: 'Continuous Growth',
+    description: 'Keep learning with new events, challenges, and opportunities.',
+    label: 'Growth'
   },
   {
-    color: '#120F17',
-    title: 'Automation',
-    description: 'Streamline workflows',
-    label: 'Efficiency'
+    color: '#ffffff',
+    title: 'Community First',
+    description: 'Learn, collaborate, and grow with a supportive community.',
+    label: 'Community'
   },
   {
-    color: '#120F17',
-    title: 'Integration',
-    description: 'Connect favorite tools',
-    label: 'Connectivity'
+    color: '#ffffff',
+    title: 'Transparent by Design',
+    description: 'Track your progress with clear milestones and goals.',
+    label: 'Progress'
   },
   {
-    color: '#120F17',
-    title: 'Security',
-    description: 'Enterprise-grade protection',
-    label: 'Protection'
+    color: '#ffffff',
+    title: 'Secure & Reliable',
+    description: 'Your achievements are protected with trusted security.',
+    label: 'Security'
   }
 ];
 
