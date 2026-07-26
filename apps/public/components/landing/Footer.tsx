@@ -10,12 +10,11 @@ export default function Footer() {
       <div className="arc-footer__grid-overlay"></div>
 
       <div className="arc-footer__container">
-        {/* Editorial Top Headline & Campus Metadata */}
-        <div className="arc-footer__header-row">
-          <div className="arc-footer__brand-area">
+        {/* Main Row: Nav Columns & Newsletter Dispatch (Moved to Left) */}
+        <div className="arc-footer__monolith-grid">
+          {/* Col 1 (Left): Newsletter Box with Arcade Logo */}
+          <div className="arc-footer__mono-newsletter">
             <svg
-              width="110"
-              height="24"
               viewBox="0 0 347 77"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -33,26 +32,24 @@ export default function Footer() {
                 fill="url(#arcade-footer-gradient)"
               />
             </svg>
-
-            <span className="arc-footer__badge">
-              <span className="arc-footer__badge-dot"></span>
-              Amal Jyothi College of Engineering • Kanjirappally
-            </span>
+            <h4 className="arc-footer__mono-title">STAY UPDATED</h4>
+            <p className="arc-footer__news-desc">Get the latest updates on courses, hackathons, and verified credentials.</p>
+            <form className="arc-footer__mono-form" onSubmit={(e) => e.preventDefault()}>
+              <div className="arc-footer__input-group">
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="arc-footer__mono-input"
+                  required
+                />
+                <button type="submit" className="arc-footer__mono-btn">
+                  Subscribe
+                </button>
+              </div>
+            </form>
           </div>
 
-          <div className="arc-footer__headline-block">
-            <h2 className="arc-footer__main-title">
-              Elevating Education at AJCE Campus.
-            </h2>
-            <p className="arc-footer__lead-text">
-              Arcade is the official digital catalog platform for course curricula, academic schedules, and campus innovation.
-            </p>
-          </div>
-        </div>
-
-        {/* Middle Row: Clean Minimalist Nav Columns & Newsletter Dispatch */}
-        <div className="arc-footer__monolith-grid">
-          {/* Col 1: Departments */}
+          {/* Col 2: Departments */}
           <div className="arc-footer__mono-col">
             <h4 className="arc-footer__mono-title">DEPARTMENTS</h4>
             <ul className="arc-footer__mono-list">
@@ -63,68 +60,49 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 2: Platform Directory */}
+          {/* Col 3: Platform Directory */}
           <div className="arc-footer__mono-col">
             <h4 className="arc-footer__mono-title">DIRECTORY</h4>
             <ul className="arc-footer__mono-list">
               <li><Link href="/explore">Explore Courses</Link></li>
-              <li><Link href="/forum">Campus Forum</Link></li>
+              <li><Link href="/forum">Community Forum</Link></li>
               <li><Link href="/content-creator">Reach Us</Link></li>
               <li><Link href="/docs">Developer API</Link></li>
               <li><Link href="/status">Network Status</Link></li>
             </ul>
           </div>
 
-          {/* Col 3: Resources */}
+          {/* Col 4: Resources */}
           <div className="arc-footer__mono-col">
-            <h4 className="arc-footer__mono-title">CAMPUS PORTAL</h4>
+            <h4 className="arc-footer__mono-title">RESOURCES</h4>
             <ul className="arc-footer__mono-list">
-              <li><a href="https://www.amaljyothi.ac.in" target="_blank" rel="noreferrer">AJCE Main Portal ↗</a></li>
+              <li><a href="https://www.amaljyothi.ac.in" target="_blank" rel="noreferrer">College Portal ↗</a></li>
               <li><Link href="/placement">Placements 2026</Link></li>
               <li><Link href="/library">Digital Library</Link></li>
               <li><Link href="/calendar">Academic Calendar</Link></li>
             </ul>
-          </div>
-
-          {/* Col 4: Newsletter Box */}
-          <div className="arc-footer__mono-newsletter">
-            <h4 className="arc-footer__mono-title">DISPATCH SUBSCRIPTION</h4>
-            <p className="arc-footer__news-desc">Get official catalog updates and campus events directly.</p>
-            <form className="arc-footer__mono-form" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Enter college email"
-                className="arc-footer__mono-input"
-                required
-              />
-              <button type="submit" className="arc-footer__mono-btn">
-                Subscribe →
-              </button>
-            </form>
           </div>
         </div>
 
         {/* Bottom Minimalist Bar */}
         <div className="arc-footer__monolith-bottom">
           <div className="arc-footer__mono-copy">
-            © 2026 <strong>Arcade Catalog</strong>. AJCE Campus. All rights reserved.
+            © 2026 <strong>Arcade AJCE</strong>. All rights reserved.
           </div>
           
           <div className="arc-footer__mono-legal">
             <Link href="/privacy">Privacy Policy</Link>
             <span className="arc-footer__dot">•</span>
             <Link href="/terms">Terms of Service</Link>
-            <span className="arc-footer__dot">•</span>
-            <span>Node: Kerala, IN</span>
           </div>
         </div>
       </div>
 
-      {/* Architectural Building Sketch Watermark - Sits Cleanly Below All Content */}
+      {/* Architectural Building Sketch Watermark - Bigger Top View */}
       <div className="arc-footer__campus-sketch">
         <img
           src="/college-sketch.svg"
-          alt="Amal Jyothi College of Engineering Architecture Sketch"
+          alt="Campus Architecture Sketch"
           className="arc-footer__sketch-img"
         />
       </div>
