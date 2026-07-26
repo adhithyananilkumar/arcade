@@ -11,7 +11,7 @@ import {
   ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit, 
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
   Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Activity,
-  BadgeCheck
+  BadgeCheck, Lock
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 
@@ -87,6 +87,54 @@ const badges = [
     achievedDate: 'Jun 20, 2027',
     link: '/courses/ui-ux-design',
     type: 'crystal' 
+  },
+  {
+    name: 'Algorithmic Master',
+    subtitle: '1200+ XP',
+    courseName: 'Algorithmic Master',
+    achievedDate: 'Jul 01, 2027',
+    link: '/courses/algorithmic-master',
+    type: 'atom-science'
+  },
+  {
+    name: 'Web Security Pro',
+    subtitle: '1350+ XP',
+    courseName: 'Web Security Pro',
+    achievedDate: 'Aug 10, 2027',
+    link: '/courses/web-security-pro',
+    type: 'fire-flame'
+  },
+  {
+    name: 'Database Architect',
+    subtitle: '1500+ XP',
+    courseName: 'Database Architect',
+    achievedDate: 'Sep 05, 2027',
+    link: '/courses/database-architect',
+    type: 'code-brackets'
+  },
+  {
+    name: 'Mobile App Engineer',
+    subtitle: '1700+ XP',
+    courseName: 'Mobile App Engineer',
+    achievedDate: 'Oct 12, 2027',
+    link: '/courses/mobile-app-engineer',
+    type: 'compass-navigation'
+  },
+  {
+    name: 'AI/ML Specialist',
+    subtitle: '2000+ XP',
+    courseName: 'AI/ML Specialist',
+    achievedDate: 'Nov 20, 2027',
+    link: '/courses/aiml-specialist',
+    type: 'cpu-chip'
+  },
+  {
+    name: 'Open Source Champion',
+    subtitle: '2500+ XP',
+    courseName: 'Open Source Champion',
+    achievedDate: 'Dec 15, 2027',
+    link: '/courses/open-source-champion',
+    type: 'target-bullseye'
   },
 ];
 
@@ -270,6 +318,107 @@ function BadgeGraphic({ type }: { type: string }) {
           <polygon points="50,40 35,55 50,85" fill="#636e72" opacity="0.2" />
           <polygon points="45,35 55,35 60,45 40,45" fill="#74b9ff" />
           <polygon points="45,35 55,35 50,40" fill="#0984e3" />
+        </g>
+      )}
+
+      {/* 10. Atom Science */}
+      {type === 'atom-science' && (
+        <g>
+          <polygon points={outerHex} fill="#00cec9" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#051923" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <ellipse cx="50" cy="65" rx="25" ry="10" fill="none" stroke="#81ecec" strokeWidth="2.5" transform="rotate(-30 50 65)" />
+          <ellipse cx="50" cy="65" rx="25" ry="10" fill="none" stroke="#81ecec" strokeWidth="2.5" transform="rotate(30 50 65)" />
+          <circle cx="50" cy="65" r="7" fill="#74b9ff" />
+          <circle cx="50" cy="65" r="4" fill="#ffffff" />
+        </g>
+      )}
+
+      {/* 11. Fire Flame */}
+      {type === 'fire-flame' && (
+        <g>
+          <polygon points={outerHex} fill="#ff7675" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#4a0e17" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <path d="M 50,35 C 40,55 30,65 30,78 C 30,90 40,95 50,95 C 60,95 70,90 70,78 C 70,65 60,55 50,35 Z" fill="#e17055" />
+          <path d="M 50,50 C 43,62 36,70 36,80 C 36,88 42,91 50,91 C 58,91 64,88 64,80 C 64,70 57,62 50,50 Z" fill="#fdcb6e" />
+          <path d="M 50,65 C 46,72 42,76 42,82 C 42,86 45,88 50,88 C 55,88 58,86 58,82 C 58,76 54,72 50,65 Z" fill="#ffffff" />
+        </g>
+      )}
+
+      {/* 12. Code Brackets */}
+      {type === 'code-brackets' && (
+        <g>
+          <polygon points={outerHex} fill="#30336b" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#130f40" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <path d="M 38,45 L 28,55 L 28,62 L 35,65 L 28,68 L 28,75 L 38,85" fill="none" stroke="#f1c40f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 62,45 L 72,55 L 72,62 L 65,65 L 72,68 L 72,75 L 62,85" fill="none" stroke="#f1c40f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="54" y1="45" x2="46" y2="85" stroke="#48dbfb" strokeWidth="3.5" strokeLinecap="round" />
+        </g>
+      )}
+
+      {/* 13. Compass Navigation */}
+      {type === 'compass-navigation' && (
+        <g>
+          <polygon points={outerHex} fill="#d35400" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#3d1e03" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <circle cx="50" cy="65" r="28" fill="none" stroke="#f39c12" strokeWidth="2.5" />
+          <polygon points="50,40 55,65 50,65" fill="#e74c3c" />
+          <polygon points="50,40 45,65 50,65" fill="#c0392b" />
+          <polygon points="50,90 55,65 50,65" fill="#ecf0f1" />
+          <polygon points="50,90 45,65 50,65" fill="#bdc3c7" />
+          <circle cx="50" cy="65" r="4" fill="#f1c40f" />
+        </g>
+      )}
+
+      {/* 14. CPU Chip */}
+      {type === 'cpu-chip' && (
+        <g>
+          <polygon points={outerHex} fill="#0984e3" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#001427" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <rect x="35" y="50" width="30" height="30" rx="4" fill="#00cec9" stroke="#74b9ff" strokeWidth="2" />
+          <rect x="42" y="57" width="16" height="16" rx="2" fill="#001427" />
+          <line x1="40" y1="42" x2="40" y2="50" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="50" y1="42" x2="50" y2="50" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="60" y1="42" x2="60" y2="50" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="40" y1="80" x2="40" y2="88" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="50" y1="80" x2="50" y2="88" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="60" y1="80" x2="60" y2="88" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="27" y1="55" x2="35" y2="55" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="27" y1="65" x2="35" y2="65" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="27" y1="75" x2="35" y2="75" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="65" y1="55" x2="73" y2="55" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="65" y1="65" x2="73" y2="65" stroke="#00cec9" strokeWidth="2.5" />
+          <line x1="65" y1="75" x2="73" y2="75" stroke="#00cec9" strokeWidth="2.5" />
+        </g>
+      )}
+
+      {/* 15. Target Bullseye */}
+      {type === 'target-bullseye' && (
+        <g>
+          <polygon points={outerHex} fill="#6c5ce7" />
+          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
+          <polygon points={innerHex} fill="#111111" />
+          <polygon points={innerShadow} fill="#000000" opacity="0.25" />
+          
+          <circle cx="50" cy="65" r="26" fill="none" stroke="#ff7675" strokeWidth="3" />
+          <circle cx="50" cy="65" r="17" fill="none" stroke="#ffffff" strokeWidth="2.5" />
+          <circle cx="50" cy="65" r="8" fill="#d63031" />
+          <line x1="20" y1="65" x2="80" y2="65" stroke="#fdcb6e" strokeWidth="2" strokeDasharray="3 3" />
+          <line x1="50" y1="35" x2="50" y2="95" stroke="#fdcb6e" strokeWidth="2" strokeDasharray="3 3" />
         </g>
       )}
     </svg>
@@ -617,7 +766,6 @@ function ProfilePageContent() {
   };
 
   const username = currentUser.username || currentUser.email?.split('@')[0] || 'username';
-  const displayedBadges = showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 10);
 
   return (
     <>
@@ -736,14 +884,12 @@ function ProfilePageContent() {
       </div>
 
       {/* ── Badges Section ── */}
-      <div className="relative z-10 mb-8 mt-2">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-100 dark:border-neutral-900 pb-2">
-          <div className="relative w-fit">
-            <h3 className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest pr-2">
-              Badges
-            </h3>
-            <div className="absolute -bottom-[9px] left-0 right-0 h-[2.5px] bg-purple-600 rounded-full" />
-          </div>
+      <div className="relative z-10 mb-8 mt-2 px-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+            <Trophy size={18} className="text-purple-600" />
+            Badges
+          </h3>
           <button 
             onClick={() => setShowAllBadges(!showAllBadges)}
             className="text-[13px] font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 cursor-pointer focus:outline-none"
@@ -752,19 +898,54 @@ function ProfilePageContent() {
           </button>
         </div>
 
-        {/* Badges row flex */}
-        <div className="flex justify-center items-center gap-2 sm:gap-3 w-full pt-1 pb-2 flex-wrap">
-          <AnimatePresence>
-            {displayedBadges.map((badge, idx) => {
-              return (
-                <div 
-                  key={badge.name} 
-                  className="flex flex-col items-center justify-center group relative cursor-pointer"
-                >
-                  <div className="relative w-[55px] h-[55px] sm:w-[65px] sm:h-[65px] md:w-[75px] md:h-[75px] flex items-center justify-center z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">
+        {/* Row 1: Exactly 10 Badges in a single line */}
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3 w-full items-center justify-items-center pt-1 pb-2">
+          {dynamicBadges.slice(0, 10).map((badge) => (
+            <div 
+              key={badge.name} 
+              className="flex flex-col items-center justify-center group relative cursor-pointer w-full"
+            >
+              <div className="relative w-[48px] h-[48px] sm:w-[58px] sm:h-[58px] md:w-[68px] md:h-[68px] flex items-center justify-center z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">
+                <BadgeGraphic type={badge.type as string} />
+              </div>
+
+              {/* Tooltip Hover Box */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 mb-4 drop-shadow-md">
                     <BadgeGraphic type={badge.type as string} />
                   </div>
+                  <h4 className="font-extrabold text-[15px] text-slate-900 dark:text-white mb-1.5 leading-tight">{badge.courseName}</h4>
+                  <p className="text-[12px] font-semibold text-slate-400 dark:text-slate-500 mb-4">Achieved: {badge.achievedDate}</p>
+                  <a href={badge.link} className="text-[12px] font-extrabold bg-purple-50 hover:bg-purple-100 text-purple-600 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 dark:text-purple-400 py-2 px-5 rounded-full transition-colors w-full shadow-sm">
+                    View Course
+                  </a>
+                </div>
+                {/* Arrow pointing down */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-100 dark:border-slate-800 rotate-45"></div>
+              </div>
+            </div>
+          ))}
+        </div>
 
+        {/* Other Badges listed below the 10 badges when "View all badges" is clicked */}
+        <AnimatePresence>
+          {showAllBadges && dynamicBadges.length > 10 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3 w-full items-center justify-items-center pt-4 border-t border-slate-100 dark:border-neutral-900 mt-3"
+            >
+              {dynamicBadges.slice(10).map((badge) => (
+                <div 
+                  key={badge.name} 
+                  className="flex flex-col items-center justify-center group relative cursor-pointer w-full"
+                >
+                  <div className="relative w-[48px] h-[48px] sm:w-[58px] sm:h-[58px] md:w-[68px] md:h-[68px] flex items-center justify-center z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">
+                    <BadgeGraphic type={badge.type as string} />
+                  </div>
 
                   {/* Tooltip Hover Box */}
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
@@ -782,16 +963,16 @@ function ProfilePageContent() {
                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-100 dark:border-slate-800 rotate-45"></div>
                   </div>
                 </div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ── Working GitHub-Style Contribution Section (Purple Light Theme) ── */}
       <div className="rounded-[24px] border-[1px] border-slate-100/80 dark:border-neutral-900 bg-white/80 backdrop-blur-md dark:bg-black/60 px-8 py-8 shadow-[0_2px_15px_rgb(0,0,0,0.015)] text-slate-700 dark:text-neutral-300 font-sans relative transition-colors mt-8">
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
+          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
             <Activity size={18} className="text-purple-600 stroke-[2.5]" />
             Streak
           </h3>
@@ -925,7 +1106,7 @@ function ProfilePageContent() {
       </div>
 
       {/* ── Pinned Certificates Section ── */}
-      <div className="mt-12 mb-8 px-2">
+      <div className="mt-12 mb-8 px-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
             <Award size={18} className="text-amber-500" />
@@ -964,7 +1145,7 @@ function ProfilePageContent() {
         </div>
       </div>
 
-      {/* ── Edit Profile Modal (Supports all old and new fields) ── */}
+      {/* ── Edit Profile Modal (Enhanced Premium Design) ── */}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -974,23 +1155,34 @@ function ProfilePageContent() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsEditModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
             />
             
             {/* Modal Body Container */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: "spring", duration: 0.4 }}
-              className="relative w-full max-w-lg rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white dark:bg-black shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden transition-colors"
+              className="relative w-full max-w-xl rounded-[28px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_25px_60px_-15px_rgba(124,58,237,0.15)] z-10 flex flex-col max-h-[88vh] overflow-hidden transition-colors"
             >
-              {/* Pinned Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 px-6 py-4.5 transition-colors">
-                <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight transition-colors">Edit Profile Info</h3>
+              {/* Top Gradient Accent Bar */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 shrink-0" />
+
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-7 py-5 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800/40 shadow-xs">
+                    <Edit3 size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Profile Info</h3>
+                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Update your personal details, credentials, and social profiles</p>
+                  </div>
+                </div>
                 <button 
                   onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-lg p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors focus:outline-none"
+                  className="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-600 dark:hover:text-white transition-all cursor-pointer focus:outline-none"
                 >
                   <X size={18} />
                 </button>
@@ -998,66 +1190,72 @@ function ProfilePageContent() {
 
               {/* Scrollable Form Body */}
               <form onSubmit={handleEditSubmit} className="flex flex-col flex-grow overflow-hidden">
-                <div className="flex-grow overflow-y-auto px-6 py-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-200">
+                <div className="flex-grow overflow-y-auto px-7 py-6 space-y-5 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
                   
-
-
                   {/* Name Fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <UserIcon size={12} className="text-purple-500" />
+                        First Name
+                      </label>
                       <input 
                         type="text" 
                         required
                         value={editFirstName}
                         onChange={(e) => setEditFirstName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <UserIcon size={12} className="text-purple-500" />
+                        Last Name
+                      </label>
                       <input 
                         type="text" 
                         required
                         value={editLastName}
                         onChange={(e) => setEditLastName(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                   </div>
 
                   {/* Username Field with Validation & Suggestions */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Username</label>
+                    <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Code size={12} className="text-purple-500" />
+                      Username
+                    </label>
                     <div className="relative">
                       <input 
                         type="text" 
                         required
                         value={editUsername}
                         onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                        className={`w-full rounded-xl border bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 transition-colors ${
-                          usernameAvailable === true ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500' :
-
-                          usernameAvailable === false ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' :
-                          'border-slate-200 focus:border-purple-500 focus:ring-purple-500'
+                        className={`w-full rounded-2xl border bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 transition-all shadow-xs ${
+                          usernameAvailable === true ? 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/10' :
+                          usernameAvailable === false ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/10' :
+                          'border-slate-200 dark:border-slate-800 focus:border-purple-500 focus:ring-purple-500/10'
                         }`}
                       />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                         {isCheckingUsername && <Loader2 className="animate-spin text-purple-500" size={14} />}
-                        {usernameAvailable === true && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Available</span>}
-                        {usernameAvailable === false && <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100">Taken</span>}
+                        {usernameAvailable === true && <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Available</span>}
+                        {usernameAvailable === false && <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-800">Taken</span>}
                       </div>
                     </div>
                     {usernameAvailable === false && usernameSuggestions.length > 0 && (
-                      <div className="bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 text-[11px] space-y-1.5">
-                        <span className="font-bold text-rose-700">Username is taken. Try one of these:</span>
+                      <div className="bg-rose-50/70 dark:bg-rose-950/30 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/50 text-[11px] space-y-1.5 mt-2">
+                        <span className="font-bold text-rose-700 dark:text-rose-400">Username is taken. Try one of these:</span>
                         <div className="flex flex-wrap gap-1.5">
                           {usernameSuggestions.map((s) => (
                             <button
                               key={s}
                               type="button"
                               onClick={() => setEditUsername(s)}
-                              className="bg-white border border-rose-200 hover:border-purple-400 text-slate-700 font-bold px-2 py-0.5 rounded-lg active:scale-95 transition-all cursor-pointer"
+                              className="bg-white dark:bg-slate-900 border border-rose-200 dark:border-rose-800 hover:border-purple-400 text-slate-700 dark:text-slate-300 font-extrabold px-2.5 py-1 rounded-xl active:scale-95 transition-all cursor-pointer shadow-xs"
                             >
                               {s}
                             </button>
@@ -1071,25 +1269,35 @@ function ProfilePageContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
-                        <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-0.5 uppercase">Locked</span>
+                        <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Mail size={12} className="text-purple-500" />
+                          Email Address
+                        </label>
+                        <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-slate-800">
+                          <Lock size={9} /> Locked
+                        </span>
                       </div>
                       <input 
                         type="email" 
                         disabled
                         value={editEmail}
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-100/70 dark:bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed select-none focus:outline-none transition-all"
                       />
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
-                        <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-0.5 uppercase">Locked</span>
+                        <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <UserIcon size={12} className="text-purple-500" />
+                          Gender
+                        </label>
+                        <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-slate-800">
+                          <Lock size={9} /> Locked
+                        </span>
                       </div>
                       <select 
                         disabled
                         value={editGender}
-                        className="w-full appearance-none rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
+                        className="w-full appearance-none rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-slate-100/70 dark:bg-slate-900/40 px-4 py-2.5 text-sm font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed select-none focus:outline-none transition-all"
                       >
                         <option value="MALE">Male</option>
                         <option value="FEMALE">Female</option>
@@ -1101,23 +1309,29 @@ function ProfilePageContent() {
                   {/* Social Links */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">LinkedIn Profile Link</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <FaLinkedin size={12} className="text-blue-600" />
+                        LinkedIn Profile Link
+                      </label>
                       <input 
                         type="url" 
                         value={editLinkedinUrl}
                         onChange={(e) => setEditLinkedinUrl(e.target.value)}
                         placeholder="https://linkedin.com/in/username"
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">GitHub Profile Link</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <GitCommit size={12} className="text-slate-700 dark:text-slate-300" />
+                        GitHub Profile Link
+                      </label>
                       <input 
                         type="url" 
                         value={editGithubUrl}
                         onChange={(e) => setEditGithubUrl(e.target.value)}
                         placeholder="https://github.com/username"
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                   </div>
@@ -1125,53 +1339,62 @@ function ProfilePageContent() {
                   {/* Mobile & Address */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mobile Number</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Phone size={12} className="text-purple-500" />
+                        Mobile Number
+                      </label>
                       <input 
                         type="text" 
                         required
                         value={editMobileNumber}
                         onChange={(e) => setEditMobileNumber(e.target.value)}
                         placeholder="+91 XXXXX XXXXX"
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Address</label>
+                      <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <MapPin size={12} className="text-purple-500" />
+                        Address
+                      </label>
                       <input 
                         type="text" 
                         value={editAddress}
                         onChange={(e) => setEditAddress(e.target.value)}
                         placeholder="House, Street, City, State, Country"
-                        className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition-colors"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none transition-all shadow-xs"
                       />
                     </div>
                   </div>
 
                   {/* Bio */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bio (Split using &apos;|&apos; for multiple lines)</label>
+                    <label className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <Edit3 size={12} className="text-purple-500" />
+                      Bio (Split using &apos;|&apos; for multiple lines)
+                    </label>
                     <textarea 
                       rows={3}
                       value={editBio}
                       onChange={(e) => setEditBio(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none resize-none transition-colors"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-semibold text-slate-800 dark:text-white focus:border-purple-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-purple-500/10 focus:outline-none resize-none transition-all shadow-xs"
                     />
                   </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/30 px-6 py-4 flex items-center justify-end gap-3 transition-colors">
+                <div className="border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/80 px-7 py-4 flex items-center justify-end gap-3 transition-colors">
                   <button 
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors"
+                    className="px-5 py-2.5 rounded-2xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
                     disabled={isSaving || usernameAvailable === false}
-                    className="px-5 py-2 rounded-xl text-sm font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors shadow-sm active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2.5 rounded-2xl text-sm font-extrabold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition-all shadow-md shadow-purple-500/20 active:scale-[0.98] flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSaving && <Loader2 size={16} className="animate-spin" />}
                     Save Changes
