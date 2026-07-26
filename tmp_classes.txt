@@ -1,0 +1,115 @@
+348: <Loader2 className="animate-spin text-indigo-600" size={36} />
+349: <p className="text-sm font-semibold text-slate-400">Fetching profile details from database...</p>
+374: <div className="fixed inset-0 pointer-events-none -z-50 bg-gradient-to-br from-[#eaf2fb] via-[#f4f7f9] to-[#e4f4ed] dark:from-[#0f172a] dark:via-[#020617] dark:to-[#0f172a]" />
+389: className="absolute top-6 right-6 z-30 inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold text-indigo-600 bg-white/70 hover:bg-white shadow-sm border border-white dark:bg-neutral-900/50 dark:text-indigo-400 dark:border-neutral-800 dark:hover:bg-neutral-900 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+416: <div className="relative z-10 flex h-[116px] w-[116px] items-center justify-center rounded-full bg-white p-[3px] shadow-sm">
+417: <div className="flex h-full w-full items-center justify-center rounded-full overflow-hidden bg-slate-50 relative group">
+421: <UserIcon size={52} className="text-indigo-400" />
+428: className="absolute inset-0 bg-black/45 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+432: <Loader2 className="animate-spin text-white" size={24} />
+441: <div className="absolute bottom-[22px] right-[22px] h-[20px] w-[20px] rounded-full bg-emerald-400 border-[3px] border-white dark:border-black z-20 shadow-sm flex items-center justify-center">
+442: <div className="h-1.5 w-1.5 bg-white rounded-full"></div>
+455: <div className="flex-grow flex flex-col items-center md:items-start text-center md:text-left pt-5 w-full relative">
+457: <h1 className="text-[28px] sm:text-[32px] font-extrabold text-[#111827] dark:text-white tracking-tight leading-none transition-colors">
+462: <span className="flex items-center gap-1 rounded-full bg-indigo-100 dark:bg-indigo-900/60 px-2.5 py-1 text-[10px] font-bold text-indigo-700 dark:text-indigo-300">
+468: <p className="text-[13px] font-bold text-indigo-600 dark:text-indigo-400 mt-2 transition-colors">
+474: <div className="mt-5 flex items-start gap-1.5 text-[#4b5563] dark:text-neutral-400 text-[13px] font-bold leading-relaxed w-full transition-colors">
+475: <Code size={15} className="text-indigo-600 shrink-0 mt-[1px]" />
+480: {i < arr.length - 1 && <span className="mx-1.5 text-slate-300 dark:text-neutral-600">|</span>}
+488: <div className="mt-4 flex flex-wrap items-center gap-6 text-[13px] text-slate-500 dark:text-neutral-500 font-bold w-full transition-colors">
+490: <MapPin size={15} className="shrink-0 text-slate-400" />
+495: <Calendar size={15} className="shrink-0 text-slate-400" />
+558: <div className="rounded-[24px] border-[1px] border-slate-100/80 dark:border-neutral-900 bg-white/80 backdrop-blur-md dark:bg-black/60 px-8 py-8 shadow-[0_2px_15px_rgb(0,0,0,0.015)] transition-colors relative z-10 mb-8">
+559: <div className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-neutral-900 pb-2">
+561: <h3 className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest transition-colors pr-2">
+564: <div className="absolute -bottom-[9px] left-0 right-0 h-[2.5px] bg-indigo-600 rounded-full" />
+568: className="text-[13px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none"
+600: <span className="text-xs font-extrabold text-slate-800 dark:text-white whitespace-nowrap">
+603: <span className="text-[11px] font-semibold text-slate-400 dark:text-neutral-500 mt-0.5">
+615: <div className="rounded-[24px] border-[1px] border-slate-100/80 dark:border-neutral-900 bg-white/80 backdrop-blur-md dark:bg-black/60 px-8 py-8 shadow-[0_2px_15px_rgb(0,0,0,0.015)] text-slate-700 dark:text-neutral-300 font-sans relative transition-colors mt-8">
+617: <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
+618: <Activity size={18} className="text-purple-600 stroke-[2.5]" />
+626: className="text-xs font-bold text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border border-slate-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 transition-colors flex items-center gap-2 cursor-pointer focus:outline-none"
+642: className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-100 bg-white p-2.5 shadow-xl z-40 text-xs font-semibold text-slate-600"
+644: <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+649: className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
+652: {activityVisibility === 'Public' && <Check size={14} className="text-indigo-600" />}
+656: className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
+659: {activityVisibility === 'Private' && <Check size={14} className="text-indigo-600" />}
+662: <div className="h-px bg-slate-100 my-1.5"></div>
+666: className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
+669: {showPrivateActivity && <Check size={14} className="text-indigo-600" />}
+683: <div className="hidden sm:grid grid-rows-7 gap-[2px] md:gap-[3px] text-[8px] md:text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
+695: <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
+737: <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mt-6 text-xs text-slate-500 font-semibold">
+740: <div className="w-[12px] h-[12px] rounded-sm bg-purple-50 dark:bg-neutral-800"></div>
+741: <div className="w-[12px] h-[12px] rounded-sm bg-purple-200"></div>
+742: <div className="w-[12px] h-[12px] rounded-sm bg-purple-400"></div>
+743: <div className="w-[12px] h-[12px] rounded-sm bg-purple-600"></div>
+752: <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight">
+755: <span className="rounded-md bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-800 px-1.5 py-0.5 text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-wider">Live</span>
+760: <div className="flex border-b border-slate-100 font-sans">
+770: className={`relative flex items-center gap-2 px-6 py-4 text-sm font-bold transition-colors cursor-pointer focus:outline-none ${
+779: className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-600 dark:bg-purple-400"
+802: <div key={idx} className="group rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black p-5 shadow-[0_4px_20px_rgb(0,0,0,0.01)] hover:shadow-[0_8px_35_rgba(99,102,241,0.03)] transition-all flex flex-col justify-between">
+804: <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug group-hover:text-indigo-600 transition-colors">
+807: <p className="text-xs text-slate-400 dark:text-neutral-500 font-medium leading-relaxed mt-2 transition-colors">
+812: <div className="mt-6 pt-4 border-t border-slate-50 dark:border-neutral-900 flex items-center justify-between gap-4 transition-colors">
+814: <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-neutral-500 tracking-wider transition-colors">
+816: <span className="text-indigo-600 dark:text-indigo-400">{course.progress}%</span>
+818: <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden transition-colors">
+819: <div className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-300" style={{ width: `${course.progress}%` }}></div>
+822: <span className="text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 tracking-wide uppercase shrink-0 transition-colors">{course.duration}</span>
+827: <div className="col-span-2 text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
+845: <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-colors">
+847: <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors">
+851: <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug transition-colors">{item.title}</h4>
+852: <p className="text-xs text-slate-400 dark:text-neutral-500 font-semibold mt-1 transition-colors">Type: {item.type} • Date: {item.date}</p>
+855: <span className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 transition-colors">
+861: <div className="text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
+879: <div key={idx} className="flex items-center justify-between p-5 rounded-2xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-colors">
+881: <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 text-amber-500 dark:text-amber-400 transition-colors">
+885: <h4 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight leading-snug transition-colors">{cert.name}</h4>
+886: <p className="text-xs text-slate-400 dark:text-neutral-500 font-semibold mt-1 transition-colors">Issued by {cert.issuer} • {cert.date}</p>
+889: <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 px-3 py-1 rounded-lg select-none transition-colors">
+895: <div className="text-center py-12 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-2xl text-slate-400 text-sm font-semibold bg-slate-50/20 dark:bg-neutral-900/30 transition-colors">
+915: className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+924: className="relative w-full max-w-lg rounded-3xl border border-slate-100 dark:border-neutral-800 bg-white dark:bg-black shadow-2xl z-10 flex flex-col max-h-[85vh] overflow-hidden transition-colors"
+927: <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 px-6 py-4.5 transition-colors">
+928: <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight transition-colors">Edit Profile Info</h3>
+931: className="rounded-lg p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors focus:outline-none"
+946: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+952: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+956: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+962: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+969: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Username</label>
+976: className={`w-full rounded-xl border bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 transition-colors ${
+984: {isCheckingUsername && <Loader2 className="animate-spin text-indigo-500" size={14} />}
+985: {usernameAvailable === true && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Available</span>}
+986: {usernameAvailable === false && <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100">Taken</span>}
+990: <div className="bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 text-[11px] space-y-1.5">
+991: <span className="font-bold text-rose-700">Username is taken. Try one of these:</span>
+998: className="bg-white border border-rose-200 hover:border-indigo-400 text-slate-700 font-bold px-2 py-0.5 rounded-lg active:scale-95 transition-all cursor-pointer"
+1012: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Address</label>
+1013: <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-0.5 uppercase">Locked</span>
+1019: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
+1024: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+1025: <span className="text-[9px] font-extrabold text-slate-400 flex items-center gap-0.5 uppercase">Locked</span>
+1030: className="w-full appearance-none rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 px-3 py-2.5 text-sm text-slate-400 cursor-not-allowed select-none focus:outline-none transition-colors"
+1042: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">LinkedIn Profile Link</label>
+1048: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+1052: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">GitHub Profile Link</label>
+1058: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+1066: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mobile Number</label>
+1073: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+1077: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Address</label>
+1083: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none transition-colors"
+1090: <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bio (Split using &apos;|&apos; for multiple lines)</label>
+1095: className="w-full rounded-xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black px-3 py-2 text-sm text-slate-800 dark:text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none resize-none transition-colors"
+1101: <div className="border-t border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/30 px-6 py-4 flex items-center justify-end gap-3 transition-colors">
+1105: className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors"
+1112: className="px-5 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+1132: className="fixed z-50 bg-slate-900 text-white text-[12px] font-bold px-4 py-2.5 rounded-xl shadow-xl pointer-events-none -translate-x-1/2 -translate-y-full flex items-center gap-1.5 whitespace-nowrap"
+1136: <span className="text-slate-400 font-semibold">on {hoveredCell.dateStr}</span>
+1137: <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+1148: <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-indigo-600" /></div>}>

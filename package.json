@@ -42,6 +42,7 @@
     "@tiptap/starter-kit": "3.27.4",
     "@tiptap/suggestion": "3.27.4",
     "@tiptap/y-tiptap": "^3.0.7",
+    "@types/matter-js": "^0.20.2",
     "@types/sockjs-client": "^1.5.4",
     "@uiw/react-md-editor": "^4.1.1",
     "@vercel/analytics": "^2.0.1",
@@ -62,6 +63,7 @@
     "lowlight": "^3.3.0",
     "lucide-react": "^1.24.0",
     "mammoth": "^1.12.0",
+    "matter-js": "^0.20.0",
     "mermaid": "^11.16.0",
     "next": "16.2.10",
     "ogl": "^1.0.11",
@@ -81,6 +83,9 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-react": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
     "@tailwindcss/postcss": "^4",
     "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",

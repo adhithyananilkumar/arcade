@@ -3,19 +3,11 @@
  * Arcade Frontend Architecture
  * Layer: App
  * Type: Root Layout
- *
- * Purpose:
- * Declarative global HTML layout and Next.js root metadata.
- *
- * Rules:
- * - Do not place business logic here.
- * - Delegate to GlobalProviders in apps/core for React Context.
- * - See docs/architecture/ADR-001-frontend-architecture.md
  * ------------------------------------------------------------------
  */
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Bricolage_Grotesque, Plus_Jakarta_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,16 +20,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { Bricolage_Grotesque } from "next/font/google";
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+});
 
 import Providers from "@/apps/core/Providers";
 import { TooltipProvider } from "@/shared/design-system/ui/tooltip";
-
 
 export const metadata: Metadata = {
   title: "Arcade — Empowering Innovation. Building Communities.",
@@ -53,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${plusJakarta.variable} ${outfit.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-white" suppressHydrationWarning>

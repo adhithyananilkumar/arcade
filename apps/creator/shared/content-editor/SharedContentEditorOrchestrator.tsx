@@ -204,9 +204,9 @@ function ConfirmDialog({
                 setBusy(false);
               }
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
+            className={`rounded-full px-5 py-2 text-xs font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-60 ${danger
               ? "bg-red-600 hover:bg-red-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-gradient-to-r from-[#0284c7] to-[#06b6d4] hover:from-[#0369a1] hover:to-[#0891b2] shadow-md"
               }`}
           >
             {busy ? "Working…" : confirmLabel}
@@ -238,11 +238,11 @@ function QuestionBankDialog({ open, onClose }: { open: boolean; onClose: () => v
           <h3 className="text-lg font-semibold text-gray-900">Question Bank</h3>
           <p className="text-sm leading-relaxed text-gray-500">
             The Question Bank editor is coming in the next phase. You&apos;ll be able to
-            create MCQ, short answer, and coding questions linked to this course.
+            build pools of questions and attach them to any quiz.
           </p>
           <button
             onClick={onClose}
-            className="mt-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+            className="mt-2 rounded-full bg-gradient-to-r from-[#0284c7] to-[#06b6d4] px-5 py-2 text-xs font-semibold text-white transition-all active:scale-[0.98]"
           >
             Got it
           </button>
@@ -283,16 +283,16 @@ function IconBtn({
 
 function StatusPill({ status }: { status: string }) {
   const styles: Record<string, { badge: string; dot: string }> = {
-    DRAFT: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-400" },
-    SUBMITTED: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
-    APPROVED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    PUBLISHED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
+    DRAFT: { badge: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800", dot: "bg-amber-500" },
+    SUBMITTED: { badge: "bg-[#e0f2fe] text-[#0284c7] border-[#0284c7]/20 dark:bg-[#0c4a6e]/60 dark:text-[#38bdf8]", dot: "bg-[#0284c7] animate-pulse" },
+    APPROVED: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300", dot: "bg-emerald-500" },
+    PUBLISHED: { badge: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300", dot: "bg-emerald-500" },
+    ARCHIVED: { badge: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300", dot: "bg-slate-400" },
   };
   const s = styles[status] ?? styles.ARCHIVED;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.badge}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${s.badge}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {status}
@@ -1254,8 +1254,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
           row regardless of how wide the left/right action groups are ────── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-[#dadce0] dark:border-[#3c4043] bg-white/95 dark:bg-[#202124]/95 backdrop-blur-md">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 sm:px-6">
           {/* Left: Back, flush to the page margin */}
           <div className="justify-self-start">
             <button
@@ -1263,19 +1263,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               onClick={handleBack}
               disabled={navigatingBack}
               title="Save and return to dashboard"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold text-[#64748b] dark:text-[#9aa0a6] hover:bg-[#e0f2fe] dark:hover:bg-[#0c4a6e]/50 hover:text-[#0284c7] dark:hover:text-[#38bdf8] transition-colors disabled:opacity-60"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back to Studio"}</span>
             </button>
           </div>
 
           {/* Center: name of whatever is open. Read-only — renaming happens on the
               canvas title field (lesson/quiz) or in {terminology.root} Settings. */}
           <div className="min-w-0 justify-self-center">
-            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-semibold text-gray-900 sm:max-w-md">
+            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-bold text-[#0f172a] dark:text-[#e8eaed] sm:max-w-md">
               {view === "settings"
-                ? "{terminology.root} Settings"
+                ? `${adapter.terminology.container} Settings`
                 : activeLessonId
                   ? activeLessonTitle
                   : activeQuizId
@@ -1285,7 +1285,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Right: status + secondary actions, flush to the page margin */}
-          <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
+          <div className="flex flex-shrink-0 items-center justify-self-end gap-2">
             <StatusPill status={status} />
 
             {activeLessonId && (
@@ -1293,7 +1293,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 type="button"
                 onClick={() => setHistoryOpen(true)}
                 title="Version history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#64748b] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#2d2d2d] hover:text-[#0f172a] dark:hover:text-[#e8eaed] transition-colors"
               >
                 <History size={15} />
                 <span className="hidden md:inline">History</span>
@@ -1305,7 +1305,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 type="button"
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#64748b] dark:text-[#9aa0a6] hover:bg-[#f1f3f4] dark:hover:bg-[#2d2d2d] hover:text-[#0f172a] dark:hover:text-[#e8eaed] transition-colors"
               >
                 <Settings size={15} />
                 <span className="hidden md:inline">Day Settings</span>
@@ -1316,7 +1316,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={askSubmit}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#0284c7] to-[#06b6d4] hover:from-[#0369a1] hover:to-[#0891b2] px-5 py-2 text-xs font-semibold text-white shadow-md hover:shadow-cyan-500/25 transition-all active:scale-[0.98]"
               >
                 <Send size={14} />
                 <span className="hidden sm:inline">Submit for Review</span>
@@ -1327,7 +1327,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={() => router.push(`/studio/workshop/${contentId}`)}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#0284c7] to-[#06b6d4] hover:from-[#0369a1] hover:to-[#0891b2] px-5 py-2 text-xs font-semibold text-white shadow-md hover:shadow-cyan-500/25 transition-all active:scale-[0.98]"
               >
                 <Settings size={14} />
                 <span className="hidden sm:inline">Manage Workshop</span>
@@ -1351,17 +1351,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <PanelLeftOpen size={18} />
             </button>
           ) : (
-            <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
+            <div className="flex max-h-[calc(100vh-6rem)] w-64 flex-col overflow-hidden rounded-3xl border border-[#dadce0] dark:border-[#3c4043] bg-white dark:bg-[#202124] shadow-xl">
               {/* ── Sidebar header ───────────────── */}
-              <div className="flex flex-shrink-0 items-center px-2.5 py-2">
-                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+              <div className="flex flex-shrink-0 items-center justify-between px-4 py-3 border-b border-[#f1f3f4] dark:border-[#303134]">
+                <span className="min-w-0 flex-1 truncate text-[10px] font-extrabold uppercase tracking-wider text-[#0284c7] dark:text-[#38bdf8]">
                   Course Structure
                 </span>
                 <button
                   type="button"
                   title="Collapse sidebar"
                   onClick={() => setSidebarOpen(false)}
-                  className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                  className="flex flex-shrink-0 items-center justify-center rounded-xl p-1 text-[#64748b] dark:text-[#9aa0a6] transition-colors hover:bg-slate-100 dark:hover:bg-[#2d2d2d]"
                 >
                   <PanelLeftClose size={16} />
                 </button>
@@ -1370,11 +1370,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               {/* ── Body ──────────────────────────────── */}
               <div className="flex min-h-0 flex-1 flex-col">
                 {/* Tree scroll area */}
-                <div className="flex-1 overflow-y-auto p-2">
+                <div className="flex-1 overflow-y-auto p-2.5">
                   {modules.length === 0 && (
-                    <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                      <Layers size={28} className="text-gray-300" />
-                      <p className="text-xs text-gray-400">
+                    <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-[#e0f2fe] dark:bg-[#0c4a6e]/50 text-[#0284c7] dark:text-[#38bdf8] flex items-center justify-center border border-[#0284c7]/20 shadow-2xs">
+                        <Layers size={22} />
+                      </div>
+                      <p className="text-xs text-[#64748b] dark:text-[#9aa0a6] leading-relaxed">
                         {contentType === "workshop"
                           ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
                           : "No modules yet. Add a module to get started."}
@@ -1383,9 +1385,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   )}
 
                   {modules.map((mod) => (
-                    <div key={mod.id} className="mb-0.5">
+                    <div key={mod.id} className="mb-1">
                       {/* Module row */}
-                      <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                      <div className="group flex items-center gap-1.5 rounded-2xl px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-[#2d2d2d] transition-colors">
                         <button
                           type="button"
                           onClick={() =>
@@ -1395,17 +1397,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               )
                             )
                           }
-                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                          className="flex-shrink-0 text-gray-400 hover:text-[#0284c7]"
                         >
                           {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                         </button>
 
                         {isEditing("module", mod.id) ? (
-                          renameInput("text-xs font-semibold text-gray-700")
+                          renameInput("text-xs font-semibold text-[#0f172a] dark:text-[#e8eaed]")
                         ) : (
                           <span
                             onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                            className="flex-1 truncate text-xs font-semibold text-gray-700"
+                            className="flex-1 truncate text-xs font-semibold text-[#0f172a] dark:text-[#e8eaed]"
                             title={mod.title}
                           >
                             {mod.title}
@@ -1418,31 +1420,42 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               title="Add lesson or quiz"
                               className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
                             >
-                              <Plus size={12} />
+                              <Plus size={14} />
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={4}>
+                            <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                <FileText size={13} />
-                                Lesson
+                                <FileText size={14} className="mr-2" />
+                                Add {adapter.terminology.leafDocument}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                <ListChecks size={13} />
-                                Quiz
-                              </DropdownMenuItem>
+                              {contentType !== "workshop" && (
+                                <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
+                                  <ListChecks size={14} className="mr-2" />
+                                  Add Quiz
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+
+                          <IconBtn
+                            title={`Rename ${adapter.terminology.container}`}
+                            onClick={() => startEdit("module", mod.id, mod.title)}
+                          >
                             <Pencil size={12} />
                           </IconBtn>
-                          <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                          <IconBtn
+                            title={`Delete ${adapter.terminology.container}`}
+                            danger
+                            onClick={() => askDeleteModule(mod)}
+                          >
                             <Trash2 size={12} />
                           </IconBtn>
                         </div>
                       </div>
 
-                      {/* Lessons and quizzes, interleaved by position */}
+                      {/* Expanded children */}
                       {mod.expanded && (
-                        <div className="ml-3 border-l border-gray-200 pl-1.5">
+                        <div className="ml-3 border-l-2 border-[#e2e8f0] dark:border-[#3c4043] pl-2.5 space-y-1 my-1">
+                          {/* Mixed order list */}
                           {[
                             ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
                             ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
@@ -1450,47 +1463,39 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             .sort((a, b) => a.node.position - b.node.position)
                             .map((item) => {
                               const isActive =
-                                item.kind === "lesson"
-                                  ? activeLessonId === item.node.id
-                                  : activeQuizId === item.node.id;
+                                (item.kind === "lesson" && item.node.id === activeLessonId) ||
+                                (item.kind === "quiz" && item.node.id === activeQuizId);
                               return (
                                 <div
-                                  key={item.node.id}
-                                  className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
-                                    }`}
+                                  key={`${item.kind}-${item.node.id}`}
+                                  onClick={() =>
+                                    item.kind === "lesson"
+                                      ? openLesson(item.node)
+                                      : openQuiz(item.node)
+                                  }
+                                  className={`group flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${
+                                    isActive
+                                      ? "bg-[#e0f2fe] dark:bg-[#0c4a6e]/50 font-bold text-[#0284c7] dark:text-[#38bdf8]"
+                                      : "text-[#64748b] dark:text-[#9aa0a6] hover:bg-slate-100 dark:hover:bg-[#2d2d2d] hover:text-[#0f172a] dark:hover:text-[#e8eaed]"
+                                  }`}
                                 >
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (item.kind === "lesson") {
-                                        setActiveModuleId(mod.id);
-                                        openLesson(item.node);
-                                      } else {
-                                        openQuiz(item.node);
-                                      }
-                                    }}
-                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                      ? "font-medium text-indigo-700"
-                                      : "text-gray-500"
-                                      }`}
-                                  >
+                                  <div className="flex min-w-0 items-center gap-2">
                                     {item.kind === "lesson" ? (
-                                      <FileText size={11} className="flex-shrink-0" />
+                                      <FileText size={13} className="shrink-0 text-[#0284c7]" />
                                     ) : (
-                                      <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
+                                      <ListChecks size={13} className="shrink-0 text-amber-500" />
                                     )}
                                     {isEditing(item.kind, item.node.id) ? (
-                                      renameInput("text-xs")
+                                      renameInput("text-xs font-medium text-[#0f172a]")
                                     ) : (
-                                      <span className="truncate" title={item.node.title}>
-                                        {item.node.title}
-                                      </span>
+                                      <span className="truncate">{item.node.title}</span>
                                     )}
-                                  </button>
-                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                  </div>
+
+                                  <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
                                     {item.kind === "quiz" && (
                                       <IconBtn
-                                        title="Copy quiz ID — paste into an inline Quiz block"
+                                        title="Copy Quiz ID"
                                         onClick={() => {
                                           navigator.clipboard.writeText(item.node.id);
                                           setCopiedQuizId(item.node.id);
@@ -1529,11 +1534,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             })}
 
                           {/* Add lesson / quiz to this Day/module */}
-                          <div className="mt-0.5 flex items-center gap-3 pl-2">
+                          <div className="mt-1 flex items-center gap-3 pl-1">
                             <button
                               type="button"
                               onClick={() => addLesson(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                              className="flex items-center gap-1 py-1 text-[11px] font-semibold text-[#0284c7] hover:text-[#0369a1]"
                             >
                               <Plus size={11} />
                               Add {adapter.terminology.leafDocument}
@@ -1542,7 +1547,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               <button
                                 type="button"
                                 onClick={() => addQuiz(mod.id)}
-                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
+                                className="flex items-center gap-1 py-1 text-[11px] font-semibold text-[#0284c7] hover:text-[#0369a1]"
                               >
                                 <Plus size={11} />
                                 Add quiz
@@ -1556,25 +1561,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 </div>
 
                 {/* Sidebar footer */}
-                <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
+                <div className="space-y-1 border-t border-[#f1f3f4] dark:border-[#303134] p-2.5 bg-slate-50/50 dark:bg-[#1a1b1e]/50">
                   {contentType === "workshop" && (
                     <button
                       type="button"
                       onClick={addWorkshopDay}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
+                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold bg-[#e0f2fe] text-[#0284c7] hover:bg-[#bae6fd] transition-colors"
                     >
                       <Plus size={14} />
                       Add Day
                     </button>
                   )}
-                  {contentType === "workshop" && (
-                    <div className="border-t border-gray-100 my-1"></div>
-                  )}
                   {contentType !== "workshop" && (
                     <button
                       type="button"
                       onClick={addModule}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
+                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold bg-[#e0f2fe] text-[#0284c7] hover:bg-[#bae6fd] transition-colors"
                     >
                       <Plus size={14} />
                       Add Module
@@ -1584,28 +1586,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     <button
                       type="button"
                       onClick={() => setQbOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold text-[#64748b] dark:text-[#9aa0a6] hover:bg-slate-200 dark:hover:bg-[#2d2d2d] transition-colors"
                     >
                       <FileText size={13} />
                       Create Question Bank
                     </button>
                   )}
-                  {contentType === "workshop" && (
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
-                      title="Resources (Coming soon)"
-                    >
-                      <FileText size={13} />
-                      Resources
-                    </button>
-                  )}
                   <button
                     type="button"
                     onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    className={`flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${view === "settings"
+                      ? "bg-[#e0f2fe] text-[#0284c7] font-bold"
+                      : "text-[#64748b] dark:text-[#9aa0a6] hover:bg-slate-200 dark:hover:bg-[#2d2d2d]"
                       }`}
                   >
                     <Settings size={13} />
@@ -1621,7 +1613,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         <main className="absolute inset-0 z-0 overflow-y-auto">
           {view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div className="overflow-hidden rounded-2xl border border-gray-100">
+              <div className="overflow-hidden rounded-3xl border border-[#dadce0] dark:border-[#3c4043] bg-white dark:bg-[#202124] shadow-xl">
                 <ContentSettingsPanel terminology={adapter.terminology}
                   contentId={contentId}
                   title={title}
@@ -1668,7 +1660,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   <DebouncedTitleInput
                     value={activeQuizTitle}
                     onCommit={saveQuizTitle}
-                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
+                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-[#0f172a] dark:text-[#e8eaed] outline-none placeholder:text-gray-300"
                     placeholder="Quiz title"
                   />
                 </div>
@@ -1676,22 +1668,29 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </div>
             </div>
           ) : (
-            <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center gap-4 pt-20 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50">
-                <FileText size={28} className="text-indigo-400" />
+            <div className="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center gap-4 pt-20 px-6 text-center">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#e0f2fe] to-[#bae6fd] dark:from-[#0c4a6e] dark:to-[#0369a1] text-[#0284c7] dark:text-[#38bdf8] flex items-center justify-center mb-2 ring-8 ring-[#e0f2fe]/40 border border-[#0284c7]/20 shadow-lg">
+                <FileText size={34} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-gray-700">
+                <h3 className="text-lg font-bold text-[#0f172a] dark:text-[#e8eaed]">
                   {contentType === "workshop"
                     ? "Select a workshop day or create a new day to start editing."
                     : "Select a lesson or quiz to start editing."}
                 </h3>
-                <p className="mt-1 text-sm text-gray-400">
+                <p className="mt-1.5 text-sm text-[#64748b] dark:text-[#9aa0a6] max-w-sm mx-auto leading-relaxed">
                   {contentType === "workshop"
                     ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
-                    : "Open the sidebar, add a module, then a lesson or quiz to begin."}
+                    : "Open the sidebar, add a module, then a lesson or quiz to begin writing."}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={contentType === "workshop" ? addWorkshopDay : addModule}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#0284c7] to-[#06b6d4] hover:from-[#0369a1] hover:to-[#0891b2] text-white text-xs font-semibold px-6 py-2.5 shadow-md hover:shadow-cyan-500/25 transition-all active:scale-[0.98]"
+              >
+                <Plus size={16} /> Add First {contentType === "workshop" ? "Day" : "Module"}
+              </button>
             </div>
           )}
         </main>

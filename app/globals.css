@@ -1,7 +1,7 @@
 @font-face {
   font-family: "Voyage";
   src: url("/fonts/Voyage.otf") format("opentype"),
-       url("/fonts/Voyage.woff2") format("woff2");
+    url("/fonts/Voyage.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -223,25 +223,32 @@
       scroll-behavior: auto !important;
     }
   }
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
-    background-color: oklch(0.85 0 0); /* light mode grey */
+    background-color: oklch(0.85 0 0);
+    /* light mode grey */
     border-radius: 9999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background-color: oklch(0.75 0 0);
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
-    background-color: oklch(0.25 0 0); /* dark mode grey */
+    background-color: oklch(0.25 0 0);
+    /* dark mode grey */
   }
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background-color: oklch(0.35 0 0);
   }
@@ -359,13 +366,14 @@
       transparent,
       rgba(255, 255, 255, 0.3));
 }
+
 /* Apple-style floating dock */
 .apple-glass-dock {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 0.5px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
     inset 0 -1px 0 rgba(255, 255, 255, 0.3);
@@ -374,7 +382,7 @@
 .dark .apple-glass-dock {
   background: rgba(40, 40, 40, 0.65);
   border: 0.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     inset 0 -1px 0 rgba(255, 255, 255, 0.05);
@@ -510,20 +518,16 @@
 
 .logoloop--fade::before {
   left: 0;
-  background: linear-gradient(
-    to right,
-    var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to right,
+      var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
+      rgba(0, 0, 0, 0) 100%);
 }
 
 .logoloop--fade::after {
   right: 0;
-  background: linear-gradient(
-    to left,
-    var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to left,
+      var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
+      rgba(0, 0, 0, 0) 100%);
 }
 
 .logoloop--vertical.logoloop--fade::before,
@@ -537,21 +541,17 @@
 .logoloop--vertical.logoloop--fade::before {
   top: 0;
   bottom: auto;
-  background: linear-gradient(
-    to bottom,
-    var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to bottom,
+      var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
+      rgba(0, 0, 0, 0) 100%);
 }
 
 .logoloop--vertical.logoloop--fade::after {
   bottom: 0;
   top: auto;
-  background: linear-gradient(
-    to top,
-    var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: linear-gradient(to top,
+      var(--logoloop-fadeColor, var(--logoloop-fadeColorAuto)) 0%,
+      rgba(0, 0, 0, 0) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -565,3 +565,31 @@
   }
 }
 
+/* Custom ultra-sleek scrollbar without OS buttons/arrows */
+.ultra-sleek-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.ultra-sleek-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+
+.ultra-sleek-scrollbar::-webkit-scrollbar-track {
+  background: rgba(224, 242, 254, 0.5);
+  border-radius: 9999px;
+}
+
+.dark .ultra-sleek-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+}
+
+.ultra-sleek-scrollbar::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+  border-radius: 9999px;
+}
+
+.ultra-sleek-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}

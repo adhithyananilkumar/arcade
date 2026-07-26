@@ -89,41 +89,53 @@ export function MenuContainer({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="relative w-[150px] h-[48px]" data-expanded={isExpanded}>
+    <div className="relative w-[170px] h-[44px]" data-expanded={isExpanded}>
+      {/* Backdrop overlay to close when clicking outside */}
+      {isExpanded && (
+        <div 
+          className="fixed inset-0 z-30 cursor-default" 
+          onClick={() => setIsExpanded(false)}
+        />
+      )}
+
       {/* Container for all items */}
       <div className="relative w-full h-full">
         {/* First item - always visible (Trigger) */}
         <div 
-          className="absolute z-50 w-full h-full bg-white dark:bg-black shadow-[0_4px_12px_rgba(0,0,0,0.1)] cursor-pointer rounded-full group will-change-transform flex items-center justify-between px-1.5 overflow-hidden border border-slate-200 dark:border-neutral-800 transition-all hover:border-indigo-500 active:scale-95"
+          className={`absolute z-50 w-full h-full bg-white dark:bg-zinc-900 shadow-md cursor-pointer rounded-full group will-change-transform flex items-center justify-between px-2 overflow-hidden border-2 transition-all active:scale-95 ${
+            isExpanded 
+              ? 'border-purple-600 ring-4 ring-purple-100 dark:ring-purple-950/60 shadow-purple-500/20' 
+              : 'border-purple-500/70 hover:border-purple-600'
+          }`}
           onClick={handleToggle}
         >
           {childrenArray[0]}
         </div>
 
-        {/* Other items */}
+        {/* Folded items opening downwards */}
         {childrenArray.slice(1).map((child, index) => {
-          const delayExpand = index * 50;
-          const delayCollapse = (totalItems - index - 1) * 50;
+          const delayExpand = index * 40;
+          const delayCollapse = (totalItems - index - 1) * 35;
           const delay = isExpanded ? delayExpand : delayCollapse;
 
           return (
             <div 
               key={index} 
-              className="absolute top-0 right-0 w-full h-full will-change-transform"
+              className="absolute top-0 right-0 w-full h-[44px] will-change-transform"
               style={{
-                transform: `translateY(${isExpanded ? (index + 1) * 56 + 8 : 0}px)`,
+                transform: `translateY(${isExpanded ? (index + 1) * 52 : 0}px) scale(${isExpanded ? 1 : 0.9})`,
                 opacity: isExpanded ? 1 : 0,
                 zIndex: 40 - index,
                 pointerEvents: isExpanded ? "auto" : "none",
-                transition: `transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms,
-                           opacity 300ms ease ${delay}ms`,
+                transition: `transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms,
+                           opacity 280ms ease ${delay}ms`,
                 backfaceVisibility: 'hidden',
                 perspective: 1000,
                 WebkitFontSmoothing: 'antialiased'
               }}
             >
               <div 
-                className="h-full w-full bg-white dark:bg-black shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-slate-200 dark:border-neutral-800 rounded-full flex items-center justify-center hover:scale-[1.05] transition-transform duration-300 group"
+                className="h-full w-full bg-white dark:bg-zinc-900 shadow-lg border border-slate-200/90 dark:border-zinc-800 rounded-full flex items-center justify-between hover:scale-[1.03] hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-200 group cursor-pointer"
                 onClick={() => setIsExpanded(false)}
               >
                 {child}
