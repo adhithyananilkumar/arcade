@@ -964,7 +964,7 @@ export default function CoursePage() {
     <main className="min-h-screen bg-transparent text-ink">
       {/* Hero wash */}
       <div className="arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-8 sm:px-8 sm:pt-12">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
           <CourseHero 
             title={displayTitle} 
             authorName={authorName}

@@ -909,7 +909,7 @@ export default function CoursePreviewPage() {
 
       {/* Hero wash */}
       <div className="arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
           <CourseHero
             title={displayTitle}
             authorName={authorName}

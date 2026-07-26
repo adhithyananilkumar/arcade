@@ -15,6 +15,9 @@ import { useEffect, useState } from 'react';
  */
 const IMMERSIVE_ROUTES = [/^\/studio\/course\/[^/]+\/edit\/?$/];
 
+/** Full-focus learning — hide the bottom dock so content can breathe. */
+const HIDE_DOCK_ROUTES = [/^\/learn\/[^/]+\/learn\/?$/];
+
 export default function LearnerShell({
   children,
 }: {
@@ -25,6 +28,8 @@ export default function LearnerShell({
   const [mounted, setMounted] = useState(false);
 
   const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
+  const hideDock =
+    immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -46,10 +51,10 @@ export default function LearnerShell({
         */}
         <div className="flex flex-col flex-1 relative z-10 bg-transparent text-slate-900 dark:text-white h-full">
           {!immersive && <LearnerNavbar />}
-          <main className={`relative bg-transparent flex flex-col flex-1 ${!immersive ? 'pb-28' : ''}`}>
+          <main className={`relative bg-transparent flex flex-col flex-1 ${!hideDock ? 'pb-28' : ''}`}>
             {children}
           </main>
-          {!immersive && <LearnerDock />}
+          {!hideDock && <LearnerDock />}
         </div>
       </div>
     </ProtectedLayout>

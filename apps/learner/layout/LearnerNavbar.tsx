@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
 import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
@@ -24,12 +24,9 @@ export default function LearnerNavbar() {
   
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
-  
-  const profileDropdownRef = useRef<HTMLDivElement>(null);
   
   // Intelligent header scroll behavior
   const { scrollY } = useScroll();
@@ -57,18 +54,6 @@ export default function LearnerNavbar() {
         setHasChannels(channels.length > 0 || workspaces.length > 0);
       })
       .catch(() => setHasChannels(false));
-      
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => { 
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, []);
 
   const fetchInvitations = async () => {
@@ -242,19 +227,19 @@ export default function LearnerNavbar() {
           </div>
         </div>
 
-        {/* Island 2: User Profile Dropdown (Transparent without background shade) */}
-        <div className="pointer-events-auto flex items-center h-12 bg-transparent px-1 relative z-50">
+        {/* Island 2: User Profile Dropdown */}
+        <div className="pointer-events-auto relative z-50 flex items-center">
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2 cursor-pointer">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
+            <div className="flex h-full w-full items-center justify-between gap-2">
+              <span className="max-w-[100px] truncate text-sm font-bold text-[#14142b]">
                 {user?.username || user?.firstName || 'user'}
               </span>
-              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-black/5 dark:border-white/10 shadow-xs">
+              <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs">
                 {user?.avatarUrl ? (
                   <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[#2962D6]/10 text-[#2962D6] dark:text-cyan-400 text-xs font-black">
+                  <div className="flex h-full w-full items-center justify-center bg-slate-100 text-[11px] font-black text-[#14142b]">
                     {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
                   </div>
                 )}
@@ -263,14 +248,14 @@ export default function LearnerNavbar() {
 
             {/* Menu Items */}
             <MenuItem 
-              icon={<UserIcon size={18} strokeWidth={2} className="text-emerald-500" />} 
+              icon={<UserIcon className="text-emerald-600" strokeWidth={2} />} 
               onClick={() => router.push('/profile')} 
             >
               Profile
             </MenuItem>
             {hasChannels && (
               <MenuItem 
-                icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
+                icon={<Tv className="text-[#FF6B4A]" strokeWidth={2} />} 
                 onClick={() => router.push('/manage-channels')} 
               >
                 My Channel
@@ -278,7 +263,7 @@ export default function LearnerNavbar() {
             )}
             {showStudio && (
               <MenuItem 
-                icon={<BookOpen size={18} strokeWidth={2} className="text-indigo-500" />} 
+                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
                 Content Studio
@@ -286,27 +271,28 @@ export default function LearnerNavbar() {
             )}
             {showArcConsole && (
               <MenuItem 
-                icon={<ShieldAlert size={18} strokeWidth={2} className="text-pink-500" />} 
+                icon={<ShieldAlert className="text-rose-500" strokeWidth={2} />} 
                 onClick={() => router.push('/console')} 
               >
                 Console
               </MenuItem>
             )}
             <MenuItem 
-              icon={<Settings size={18} strokeWidth={2} className="text-slate-500" />} 
+              icon={<Settings className="text-slate-500" strokeWidth={2} />} 
               onClick={() => router.push('/settings')} 
             >
               Settings
             </MenuItem>
             <MenuItem 
-              icon={<Compass size={18} strokeWidth={2} className="text-sky-500" />} 
+              icon={<Compass className="text-slate-600" strokeWidth={2} />} 
               onClick={() => router.push('/?public=true')} 
             >
               Go to website
             </MenuItem>
             <MenuItem 
-              icon={<LogOut size={18} strokeWidth={2} className="text-red-500" />} 
-              onClick={handleLogout} 
+              icon={<LogOut className="text-rose-500" strokeWidth={2} />} 
+              onClick={handleLogout}
+              danger
             >
               Sign out
             </MenuItem>
