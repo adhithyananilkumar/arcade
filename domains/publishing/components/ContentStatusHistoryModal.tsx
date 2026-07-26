@@ -22,24 +22,26 @@ function timeAgo(dateString: string) {
 import { X, CheckCircle, XCircle, Send, AlertCircle, RefreshCw } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
 
-interface CourseStatusHistoryResponse {
+interface ContentStatusHistoryResponse {
   label: string;
   actorName: string;
   createdAt: string; // ISO timestamp
 }
 
-interface CourseStatusHistoryModalProps {
-  courseId: string;
+interface ContentStatusHistoryModalProps {
+  contentId: string;
+  contentType: "course" | "roadmap";
   open: boolean;
   onClose: () => void;
 }
 
-export function CourseStatusHistoryModal({
-  courseId,
+export function ContentStatusHistoryModal({
+  contentId,
+  contentType,
   open,
   onClose,
-}: CourseStatusHistoryModalProps) {
-  const [history, setHistory] = useState<CourseStatusHistoryResponse[]>([]);
+}: ContentStatusHistoryModalProps) {
+  const [history, setHistory] = useState<ContentStatusHistoryResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,16 +49,17 @@ export function CourseStatusHistoryModal({
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<CourseStatusHistoryResponse[]>(
-        `/api/courses/${courseId}/status-history`
-      );
+      const endpoint = contentType === "roadmap"
+        ? `/api/roadmaps/${contentId}/status-history`
+        : `/api/courses/${contentId}/status-history`;
+      const data = await api.get<ContentStatusHistoryResponse[]>(endpoint);
       setHistory(data ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load status history");
     } finally {
       setLoading(false);
     }
-  }, [courseId]);
+  }, [contentId, contentType]);
 
   useEffect(() => {
     if (open) {
@@ -87,7 +90,7 @@ export function CourseStatusHistoryModal({
       <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl transition-transform sm:border-l sm:border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">Course Status History</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Content Status History</h2>
           <button
             onClick={onClose}
             className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"

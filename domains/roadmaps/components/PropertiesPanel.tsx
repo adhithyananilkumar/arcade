@@ -36,13 +36,6 @@ const NODE_TYPE_OPTIONS = [
   { label: "Section Header", value: "section" },
 ];
 
-const STATUS_OPTIONS = [
-  { label: "Draft", value: "draft" },
-  { label: "Under Review", value: "review" },
-  { label: "Published", value: "published" },
-  { label: "Archived", value: "archived" },
-];
-
 const SHADOW_OPTIONS = [
   { label: "None", value: "shadow-none" },
   { label: "Small Shadow", value: "shadow-xs" },
@@ -202,34 +195,18 @@ export function PropertiesPanel() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Node Type</label>
-                <select
-                  disabled={readOnly}
-                  value={(data.nodeType as string) || "lesson"}
-                  onChange={(e) => handleChange("nodeType", e.target.value)}
-                  className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
-                >
-                  {NODE_TYPE_OPTIONS.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Status</label>
-                <select
-                  disabled={readOnly}
-                  value={(data.status as string) || "draft"}
-                  onChange={(e) => handleChange("status", e.target.value)}
-                  className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="mt-4">
+              <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Node Type</label>
+              <select
+                disabled={readOnly}
+                value={(data.nodeType as string) || "lesson"}
+                onChange={(e) => handleChange("nodeType", e.target.value)}
+                className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
+              >
+                {NODE_TYPE_OPTIONS.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -266,34 +243,18 @@ export function PropertiesPanel() {
         {/* 2. LEARNING TAB */}
         {activeTab === "learning" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Node Type</label>
-                <select
-                  disabled={readOnly}
-                  value={(data.nodeType as string) || "lesson"}
-                  onChange={(e) => handleChange("nodeType", e.target.value)}
-                  className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
-                >
-                  {NODE_TYPE_OPTIONS.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Status</label>
-                <select
-                  disabled={readOnly}
-                  value={(data.status as string) || "draft"}
-                  onChange={(e) => handleChange("status", e.target.value)}
-                  className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+              <label className="block text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Node Type</label>
+              <select
+                disabled={readOnly}
+                value={(data.nodeType as string) || "lesson"}
+                onChange={(e) => handleChange("nodeType", e.target.value)}
+                className="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
+              >
+                {NODE_TYPE_OPTIONS.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

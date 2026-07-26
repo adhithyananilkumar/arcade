@@ -13,4 +13,9 @@ export const roadmapService = {
   createFromTemplate: (templateId: string, channelId: string) =>
     api.post<RoadmapData>(`/api/roadmaps/from-template/${templateId}?channelId=${channelId}`, {}),
   exportRoadmap: (id: string) => api.get<RoadmapData>(`/api/roadmaps/${id}/export`),
+  submitRoadmap: (id: string, message?: string) => api.post<RoadmapData>(`/api/roadmaps/${id}/submit`, { message }),
+  approveRoadmap: (id: string, note?: string) => api.post<RoadmapData>(`/api/roadmaps/${id}/approve`, { note }),
+  rejectRoadmap: (id: string, reason: string) => api.post<RoadmapData>(`/api/roadmaps/${id}/reject`, { reason }),
+  revertToDraft: (id: string) => api.post<RoadmapData>(`/api/roadmaps/${id}/edit`, {}),
+  getRoadmapStatusHistory: (id: string) => api.get<any[]>(`/api/roadmaps/${id}/status-history`),
 };

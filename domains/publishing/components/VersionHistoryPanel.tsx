@@ -22,7 +22,7 @@ export interface VersionDetail extends VersionSummary {
   body: string | null; // JSON string of the Tiptap document
 }
 
-export interface CourseStatusHistoryResponse {
+export interface ContentStatusHistoryResponse {
   label: string;
   actorName: string;
   createdAt: string;
@@ -41,7 +41,7 @@ interface VersionHistoryPanelProps {
   onRestore: (body: TiptapDocument, source: VersionSummary) => Promise<void>;
   renderEditor: (previewDoc: TiptapDocument, selectedId: string) => React.ReactNode;
   isSuView?: boolean;
-  statusHistory?: CourseStatusHistoryResponse[];
+  statusHistory?: ContentStatusHistoryResponse[];
   statusHistoryLoading?: boolean;
 }
 

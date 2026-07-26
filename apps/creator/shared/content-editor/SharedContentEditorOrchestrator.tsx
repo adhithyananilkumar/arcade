@@ -46,7 +46,7 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { CourseStatusHistoryModal } from "@/domains/publishing/components/CourseStatusHistoryModal";
+import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -1094,9 +1094,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
     if (contentId) {
       tasks.push(
-        api
-          .patch(`/api/courses/${contentId}`, { title, description, pricingModel })
-          .catch((e) => console.warn("Course metadata flush failed", e))
+        adapter.updateMeta(contentId, { title, description, pricingModel: pricingModel as any })
+          .catch((e) => console.warn("Content metadata flush failed", e))
       );
     }
 
@@ -1152,25 +1151,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const handleRoadmapPublish = async () => {
-    if (!contentId) return;
-    try {
-      await adapter.updateMeta(contentId, { status: "published" });
-      setStatus("PUBLISHED");
-      toast?.success("Roadmap published successfully");
-    } catch (e) {
-      console.error("Failed to publish roadmap", e);
-      toast?.error("Failed to publish roadmap");
-    }
-  };
-
   const askSubmit = () => {
-    if (contentType === "course") {
+    if (contentType === "course" || contentType === "roadmap") {
       setSubmitDialogOpen(true);
-      return;
-    }
-    if (contentType === "roadmap") {
-      handleRoadmapPublish();
       return;
     }
     setConfirm({
@@ -1183,7 +1166,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     });
   };
 
-  const handleCourseSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => {
+  const handleSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => {
     if (!contentId) return;
     if (editorRef.current) {
       try {
@@ -1193,18 +1176,24 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
     try {
-      if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
-         await api.patch(`/api/courses/${contentId}`, data);
+      if (contentType === "course") {
+        if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
+           await api.patch(`/api/courses/${contentId}`, data);
+        }
+        const updated = await api.post<any>(`/api/courses/${contentId}/submit`, { message: data.message });
+        setStatus(updated.status);
+        setUpdatedAt(updated.updatedAt);
+        setPricingModel(updated.pricingModel as "FREE" | "PAID");
+      } else if (contentType === "roadmap") {
+        const updated = await api.post<any>(`/api/roadmaps/${contentId}/submit`, { message: data.message });
+        setStatus(updated.status);
+        setUpdatedAt(updated.updatedAt);
       }
-      const updated = await api.post<CourseResponse>(`/api/courses/${contentId}/submit`, { message: data.message });
-      setStatus(updated.status);
-      setUpdatedAt(updated.updatedAt);
-      setPricingModel(updated.pricingModel as "FREE" | "PAID");
       setHistoryRefreshKey((k) => k + 1);
       setSubmitDialogOpen(false);
       setHasDraftChanges(false);
     } catch (e) {
-      console.error("Failed to submit course", e);
+      console.error("Failed to submit content", e);
       throw e;
     }
   };
@@ -1258,7 +1247,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           course={courseData}
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
-          onSubmit={handleCourseSubmit}
+          onSubmit={handleSubmit}
         />
       )}
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
@@ -1795,8 +1784,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
-      <CourseStatusHistoryModal
-        courseId={contentId!}
+      <ContentStatusHistoryModal
+        contentId={contentId!}
+        contentType={contentType === "roadmap" ? "roadmap" : "course"}
         open={statusHistoryOpen}
         onClose={() => setStatusHistoryOpen(false)}
       />
