@@ -6,6 +6,7 @@
  */
 import { getChannel, listChannels } from './handlers/channels';
 import { getRoadmap, listRoadmaps } from './handlers/roadmaps';
+import { getMe, getUserActivity } from './handlers/users';
 import { createCourse, createRoadmap, createWorkshop, listContent, listCourses } from './handlers/content';
 import type { MockRequest, MockResult } from './handlers/shared';
 
@@ -23,6 +24,8 @@ const routes: Route[] = [
   { method: 'GET', pattern: ['api', 'v1', 'channels', ':id'], handler: (req, p) => getChannel(req, p[0]) },
   { method: 'GET', pattern: ['api', 'roadmaps'], handler: (req) => listRoadmaps(req) },
   { method: 'GET', pattern: ['api', 'roadmaps', ':id'], handler: (req, p) => getRoadmap(req, p[0]) },
+  { method: 'GET', pattern: ['api', 'v1', 'users', 'me'], handler: (req) => getMe(req) },
+  { method: 'GET', pattern: ['api', 'v1', 'public', 'profiles', ':username', 'activity'], handler: (req, p) => getUserActivity(req, p[0]) },
   { method: 'POST', pattern: ['api', 'roadmaps'], handler: (req) => createRoadmap(req) },
   { method: 'GET', pattern: ['api', 'content'], handler: (req) => listContent(req) },
   { method: 'GET', pattern: ['api', 'courses'], handler: (req) => listCourses(req) },
@@ -50,3 +53,5 @@ export function resolveMockRoute(method: string, pathSegments: string[]): { hand
   }
   return null;
 }
+
+
