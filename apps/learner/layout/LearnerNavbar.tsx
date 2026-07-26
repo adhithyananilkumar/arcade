@@ -268,18 +268,6 @@ export default function LearnerNavbar() {
             >
               Profile
             </MenuItem>
-            <MenuItem 
-              icon={<BookOpen size={18} strokeWidth={2} className="text-teal-500" />} 
-              onClick={() => router.push('/my-learning')} 
-            >
-              My Learning
-            </MenuItem>
-            <MenuItem 
-              icon={<Trophy size={18} strokeWidth={2} className="text-amber-500" />} 
-              onClick={() => router.push('/achievements')} 
-            >
-              Achievements
-            </MenuItem>
             {hasChannels && (
               <MenuItem 
                 icon={<Tv size={18} strokeWidth={2} className="text-purple-500" />} 
