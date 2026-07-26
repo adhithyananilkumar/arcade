@@ -221,16 +221,16 @@ export default function LearnerNavbar() {
           {/* Profile Dropdown */}
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2">
-              <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
-                {user?.username || user?.firstName || 'user'}
+            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2 cursor-pointer">
+              <span className="text-sm font-black text-slate-800 dark:text-zinc-100 truncate">
+                {user?.username || user?.firstName || 'devuser'}
               </span>
-              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-black/5 dark:border-white/10 shadow-sm">
+              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-purple-200 dark:border-purple-800 shadow-xs">
                 {user?.avatarUrl ? (
                   <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
-                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
+                  <div className="flex h-full w-full items-center justify-center bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs font-black">
+                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'D')}
                   </div>
                 )}
               </div>

@@ -22,21 +22,21 @@ interface WorkshopWizardProps {
 export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: propWorkshopId, initialStep = 0 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Support both prop-based and URL-param-based workshop id
   const urlId = searchParams?.get('id') || undefined;
   const workshopId = propWorkshopId || urlId;
-  
+
   // Support both prop-based and URL-param-based initial step (1-indexed from URL, 0-indexed internally)
   const urlStep = searchParams?.get('step');
   const startStep = urlStep ? Math.max(0, parseInt(urlStep, 10) - 1) : initialStep;
-  
+
   const [currentStep, setCurrentStep] = useState(startStep);
   const form = useWorkshopForm();
 
   // Load existing workshop data when editing
   useEffect(() => {
-    if (workshopId && !( form.formData as any).id) {
+    if (workshopId && !(form.formData as any).id) {
       getWorkshop(workshopId).then((data: any) => {
         // Populate form with existing workshop data
         form.handleChange('id' as any, data.id);
@@ -53,7 +53,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         if (data.tags) form.handleChange('tags', data.tags);
       }).catch(console.error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workshopId]);
 
   const handleSaveDraft = async (navigateAfterSave = true) => {

@@ -207,7 +207,7 @@ export default function AchievementsPage() {
     const matchesSearch = badge.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           badge.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || badge.category === categoryFilter;
-    const matchesTab = activeTab === 'all' || activeTab === 'badges' || (activeTab === 'all' && badge.earned);
+    const matchesTab = activeTab === 'all' || activeTab === 'badges';
     return matchesSearch && matchesCategory && matchesTab;
   });
 

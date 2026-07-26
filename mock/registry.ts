@@ -6,6 +6,7 @@
  */
 import { getChannel, listChannels } from './handlers/channels';
 import { getRoadmap, listRoadmaps } from './handlers/roadmaps';
+import mockSession from './data/session.json';
 import type { MockRequest, MockResult } from './handlers/shared';
 
 type RouteHandler = (req: MockRequest, params: string[]) => MockResult;
@@ -22,6 +23,7 @@ const routes: Route[] = [
   { method: 'GET', pattern: ['api', 'v1', 'channels', ':id'], handler: (req, p) => getChannel(req, p[0]) },
   { method: 'GET', pattern: ['api', 'roadmaps'], handler: (req) => listRoadmaps(req) },
   { method: 'GET', pattern: ['api', 'roadmaps', ':id'], handler: (req, p) => getRoadmap(req, p[0]) },
+  { method: 'GET', pattern: ['api', 'v1', 'users', 'me'], handler: () => ({ status: 200, body: mockSession.user }) },
 ];
 
 export function resolveMockRoute(method: string, pathSegments: string[]): { handler: RouteHandler; params: string[] } | null {

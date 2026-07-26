@@ -379,3 +379,27 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
     inset 0 -1px 0 rgba(255, 255, 255, 0.05);
 }
+
+/* Custom ultra-sleek scrollbar without OS buttons/arrows */
+.ultra-sleek-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.ultra-sleek-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+.ultra-sleek-scrollbar::-webkit-scrollbar-track {
+  background: rgba(224, 242, 254, 0.5);
+  border-radius: 9999px;
+}
+.dark .ultra-sleek-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+}
+.ultra-sleek-scrollbar::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+  border-radius: 9999px;
+}
+.ultra-sleek-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
