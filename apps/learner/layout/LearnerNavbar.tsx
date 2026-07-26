@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Crown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -138,7 +138,7 @@ export default function LearnerNavbar() {
       }}
       animate={hidden ? "hidden" : "visible"}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between px-6 md:px-8 pointer-events-none"
+      className="fixed top-6 left-0 right-0 z-40 flex w-full max-w-[1440px] mx-auto items-center justify-between px-6 md:px-12 pointer-events-none"
     >
       {/* Left Island: Branding */}
       <div className="pointer-events-auto flex items-center h-12 px-5 rounded-full apple-glass-dock">
@@ -242,6 +242,12 @@ export default function LearnerNavbar() {
               onClick={() => router.push('/profile')} 
             >
               Profile
+            </MenuItem>
+            <MenuItem 
+              icon={<Crown size={18} strokeWidth={2} className="text-amber-500" />} 
+              onClick={() => router.push('/leaderboard')} 
+            >
+              Leaderboard
             </MenuItem>
             {hasChannels && (
               <MenuItem 

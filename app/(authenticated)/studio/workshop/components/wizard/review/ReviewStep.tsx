@@ -156,7 +156,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
               {isPublishing ? 'Publishing...' : 'Publish Workshop'}
             </button>
             <button
-              onClick={onSaveDraft}
+              onClick={() => onSaveDraft?.()}
               disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
