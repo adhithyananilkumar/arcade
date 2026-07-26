@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -160,15 +160,16 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Right Island: Utilities */}
-      <div className="pointer-events-auto flex items-center h-12 rounded-full apple-glass-dock pr-1 pl-2">
-        <div className="relative z-50 flex items-center gap-2">
-          
-          {/* Notifications Dropdown */}
-          <div className="relative flex items-center">
+      {/* Right Utilities: Completely Separate Islands for Notification & User */}
+      <div className="flex items-center gap-3">
+        
+        {/* Island 1: Separate Notification Bell */}
+        <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
+          <div className="relative flex items-center justify-center">
             <button 
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+              title="Notifications"
             >
               <Bell size={20} strokeWidth={2} />
               {(invitations.length > 0 || unreadCount > 0) && (
@@ -184,7 +185,7 @@ export default function LearnerNavbar() {
                 />
                 <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100">Notifications</h3>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
@@ -239,21 +240,21 @@ export default function LearnerNavbar() {
               </>
             )}
           </div>
+        </div>
 
-          <div className="w-[1px] h-4 bg-black/10 dark:bg-white/10 mx-1"></div>
-
-          {/* Profile Dropdown */}
+        {/* Island 2: User Profile Dropdown (Transparent without background shade) */}
+        <div className="pointer-events-auto flex items-center h-12 bg-transparent px-1 relative z-50">
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
-            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2">
+            <div className="flex h-full w-full items-center justify-between pl-2 pr-1 gap-2 cursor-pointer">
               <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]">
                 {user?.username || user?.firstName || 'user'}
               </span>
-              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-black/5 dark:border-white/10 shadow-sm">
+              <div className="h-8 w-8 shrink-0 rounded-full overflow-hidden border border-black/5 dark:border-white/10 shadow-xs">
                 {user?.avatarUrl ? (
                   <img src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                  <div className="flex h-full w-full items-center justify-center bg-[#2962D6]/10 text-[#2962D6] dark:text-cyan-400 text-xs font-black">
                     {user?.firstName ? user.firstName.charAt(0).toUpperCase() : (user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U')}
                   </div>
                 )}
@@ -266,6 +267,18 @@ export default function LearnerNavbar() {
               onClick={() => router.push('/profile')} 
             >
               Profile
+            </MenuItem>
+            <MenuItem 
+              icon={<BookOpen size={18} strokeWidth={2} className="text-teal-500" />} 
+              onClick={() => router.push('/my-learning')} 
+            >
+              My Learning
+            </MenuItem>
+            <MenuItem 
+              icon={<Trophy size={18} strokeWidth={2} className="text-amber-500" />} 
+              onClick={() => router.push('/achievements')} 
+            >
+              Achievements
             </MenuItem>
             {hasChannels && (
               <MenuItem 
@@ -298,7 +311,7 @@ export default function LearnerNavbar() {
               Settings
             </MenuItem>
             <MenuItem 
-              icon={<Compass size={18} strokeWidth={2} className="text-blue-500" />} 
+              icon={<Compass size={18} strokeWidth={2} className="text-sky-500" />} 
               onClick={() => router.push('/?public=true')} 
             >
               Go to website
