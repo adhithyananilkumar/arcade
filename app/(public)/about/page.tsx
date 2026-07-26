@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 
 import VariableProximity from "@/apps/public/components/landing/VariableProximity";
+import WhyGetCertifiedSection from "@/apps/public/components/landing/WhyGetCertifiedSection";
 import "@/apps/public/landing.css";
 
 // Reusable Animation Variants
@@ -181,6 +182,9 @@ export default function AboutPage() {
 
       {/* --- AJCE ANIMATION + WHY AJCE SECTION --- */}
       <AJCESection />
+
+      {/* --- WHY GET CERTIFIED SECTION (from aboutt) --- */}
+      <WhyGetCertifiedSection />
     </div>
   );
 }
