@@ -107,9 +107,10 @@ function scheduleIdle(fn: () => void) {
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
+import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop";
+  contentType: "course" | "workshop" | "roadmap";
   contentId?: string;
 }
 
@@ -514,6 +515,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const router = useRouter();
   const [contentId] = useState<string | undefined>(initialContentId);
   const adapter = useMemo(() => {
+    if (contentType === "roadmap") return new RoadmapAdapter();
     return contentType === "course"
       ? new CourseAdapter()
       : new WorkshopAdapter(contentId || "");
@@ -594,16 +596,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setStatus(meta.status);
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
-        setModules(
-          containers.map((m) => ({
-            id: m.id,
-            title: m.title,
-            position: m.position,
-            expanded: true,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
-            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
-          }))
-        );
+        const loadedModules = containers.map((m) => ({
+          id: m.id,
+          title: m.title,
+          position: m.position,
+          expanded: true,
+          lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
+          quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
+        }));
+        setModules(loadedModules);
+
+        if (contentType === "roadmap") {
+          const roadmapLeaf = loadedModules[0]?.lessons[0];
+          if (roadmapLeaf) {
+            await openLesson(roadmapLeaf);
+          }
+        }
       } catch (e) {
         console.error("Failed to load course", e);
       }
@@ -1180,6 +1188,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     try {
       if (contentType === "course") {
         await api.post(`/api/courses/${contentId}/publish`, {});
+      } else if (contentType === "roadmap") {
+        await adapter.updateMeta(contentId, { status: "published" as any });
       } else {
         await api.post(`/api/workshops/${contentId}/publish`, {});
       }
@@ -1189,13 +1199,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       console.error(e);
       toast?.error("Failed to publish");
     }
-  }, [contentId, contentType]);
+  }, [contentId, contentType, adapter]);
 
   const handleUnpublish = useCallback(async () => {
     if (!contentId) return;
     try {
       if (contentType === "course") {
         await api.post(`/api/courses/${contentId}/unpublish`, {});
+      } else if (contentType === "roadmap") {
+        await adapter.updateMeta(contentId, { status: "draft" as any });
       } else {
         await api.post(`/api/workshops/${contentId}/unpublish`, {});
       }
@@ -1205,7 +1217,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       console.error(e);
       toast?.error("Failed to unpublish");
     }
-  }, [contentId, contentType]);
+  }, [contentId, contentType, adapter]);
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1232,6 +1244,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     editing?.kind === kind && editing.id === id;
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  // ── Custom Event Listeners for Roadmap Sidebar ──────────────────────────
+  useEffect(() => {
+    if (contentType !== "roadmap") return;
+    const onBack = () => handleBack();
+    const onSettings = () => setView("settings");
+    window.addEventListener("roadmap-action-back", onBack);
+    window.addEventListener("roadmap-action-settings", onSettings);
+    return () => {
+      window.removeEventListener("roadmap-action-back", onBack);
+      window.removeEventListener("roadmap-action-settings", onSettings);
+    };
+  }, [contentType, handleBack]);
 
   if (isInitializing) {
     return (
@@ -1291,16 +1316,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
           {/* Left: Back, flush to the page margin */}
           <div className="justify-self-start">
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={navigatingBack}
-              title="Save and return to dashboard"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
-            >
-              <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
-            </button>
+            {contentType !== "roadmap" && (
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={navigatingBack}
+                title="Save and return to dashboard"
+                className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+              >
+                <ArrowLeft size={16} />
+                <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+              </button>
+            )}
           </div>
 
           {/* Center: name of whatever is open. Read-only — renaming happens on the
@@ -1352,7 +1379,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
               >
                 <Settings size={14} />
-                <span className="hidden sm:inline">Course Settings</span>
+                <span className="hidden sm:inline">
+                  {contentType === "roadmap" ? "Roadmap Settings" : "Course Settings"}
+                </span>
               </button>
             )}
 
@@ -1373,8 +1402,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1">
         {/* ── Floating collapsible sidebar: course tree ─────────────── */}
-        <aside className="absolute left-3 top-14 z-20 flex">
-          {!sidebarOpen ? (
+        {contentType !== "roadmap" && (
+          <aside className="absolute left-3 top-14 z-20 flex">
+            {!sidebarOpen ? (
             <button
               type="button"
               title="Expand sidebar"
@@ -1649,6 +1679,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           )}
         </aside>
+        )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="absolute inset-0 z-0 overflow-y-auto">
@@ -1675,22 +1706,27 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           ) : activeLessonId ? (
             <div
-              className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
+              className={
+                contentType === "roadmap"
+                  ? "w-full h-[calc(100vh-49px)] p-0 m-0 overflow-hidden"
+                  : "mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
+              }
               // Height of the top bar above — the editor toolbar sticks flush beneath it.
               style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
             >
               {/* The lesson name lives in the top bar; renaming happens from the
                   sidebar's pencil action. No second title on the canvas. */}
-              <div>
+              <div className={contentType === "roadmap" ? "w-full h-full p-0 m-0" : ""}>
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
                     ref={editorRef}
                     ydoc={activeYDoc}
                     seedContent={activeSeedContent}
-                    placeholder="Start writing your lesson content…"
+                    placeholder={contentType === "roadmap" ? "" : "Start writing your lesson content…"}
                     onSave={handleSave}
                     chromeless
+                    contentType={contentType}
                   />
                 )}
               </div>

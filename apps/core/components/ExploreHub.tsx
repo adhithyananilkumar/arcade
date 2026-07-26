@@ -1035,7 +1035,7 @@ function CoursesContent() {
       setIsRoadmapsLoading(true);
       roadmapService.getAllRoadmaps()
         .then(async (data) => {
-          const published = data.filter(r => r.status === 'published');
+          const published = data.filter(r => r.status?.toLowerCase() === 'published');
           setRoadmaps(published);
           
           const progressMap: Record<string, boolean> = {};

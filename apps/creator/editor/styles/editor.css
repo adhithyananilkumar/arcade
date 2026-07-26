@@ -615,3 +615,54 @@
   color: #9ca3af;
   text-align: center;
 }
+
+/* ── Roadmap Editor Whiteboard Canvas mode ── */
+.arcade-roadmap-editor {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+.arcade-roadmap-editor .ProseMirror {
+  min-height: 100% !important;
+  height: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  caret-color: transparent !important;
+  overflow: hidden !important;
+}
+
+.arcade-roadmap-editor .ProseMirror > div[data-type="roadmap"] {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.arcade-roadmap-editor .roadmap-node-view {
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Style the ReactFlow Drag Selection Rectangle */
+.react-flow__selection {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border: 1.5px dashed #6366f1 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
+}
+

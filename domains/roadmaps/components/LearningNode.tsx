@@ -34,7 +34,9 @@ export function LearningNode({ id, data, selected }: NodeProps) {
   const isReadOnly = !!data.readOnly;
 
   const handleRename = (nodeId: string, newLabel: string) => {
-    if (data.onRename && typeof data.onRename === 'function') {
+    if (data.onUpdate && typeof data.onUpdate === 'function') {
+      data.onUpdate(nodeId, { label: newLabel, isEditing: false });
+    } else if (data.onRename && typeof data.onRename === 'function') {
       data.onRename(nodeId, newLabel);
     }
   };
@@ -50,10 +52,13 @@ export function LearningNode({ id, data, selected }: NodeProps) {
       duration={duration}
       color={(data.color as string) || undefined}
       fontColor={(data.fontColor as string) || undefined}
+      borderColor={(data.borderColor as string) || undefined}
+      icon={(data.icon as string) || undefined}
       fontFamily={(data.fontFamily as string) || undefined}
       isCompleted={!!data.completed}
       isCurrent={false}
       editable={!isReadOnly}
+      isEditing={!!data.isEditing}
       showHandles={true}
       onRename={handleRename}
       validationError={validationError}

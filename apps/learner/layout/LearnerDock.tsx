@@ -64,7 +64,8 @@ export default function LearnerDock() {
     pathname.startsWith('/content') ||
     pathname.startsWith('/roadmaps') ||
     pathname.startsWith('/settings') ||
-    pathname.includes('/exam/')
+    pathname.includes('/exam/') ||
+    pathname.startsWith('/studio/roadmap')
   ) {
     return null;
   }
