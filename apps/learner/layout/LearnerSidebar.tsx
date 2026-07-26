@@ -47,7 +47,7 @@ export default function LearnerSidebar() {
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
     ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Settings', href: '/settings/info', icon: Settings },
     ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])
   ];
 
@@ -63,9 +63,10 @@ export default function LearnerSidebar() {
           <Image
             src="/arcade.svg"
             alt="Arcade"
-            width={90}
-            height={26}
-            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+            width={100}
+            height={28}
+            priority
+            className="h-6 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
       </div>
@@ -73,7 +74,9 @@ export default function LearnerSidebar() {
       {/* Navigation Area */}
       <nav className="flex-grow overflow-y-auto space-y-1.5 px-4 py-6 scrollbar-thin scrollbar-thumb-slate-100">
         {dynamicNavItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = item.href === '/settings/info' 
+            ? pathname?.startsWith('/settings') 
+            : pathname === item.href;
           const Icon = item.icon;
 
           return (

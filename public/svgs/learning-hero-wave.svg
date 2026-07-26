@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" fill="none">
+  <defs>
+    <linearGradient id="heroWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.15" />
+      <stop offset="50%" stop-color="#3B82F6" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+  <path d="M0 60 Q 300 10, 600 60 T 1200 60 L 1200 120 L 0 120 Z" fill="url(#heroWaveGrad)" />
+  <path d="M0 40 Q 300 90, 600 40 T 1200 40" stroke="#6366F1" stroke-width="2" stroke-opacity="0.3" fill="none" />
+  <path d="M0 70 Q 300 20, 600 70 T 1200 70" stroke="#3B82F6" stroke-width="1.5" stroke-opacity="0.25" fill="none" stroke-dasharray="6 6" />
+</svg>
