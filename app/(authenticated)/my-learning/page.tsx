@@ -227,7 +227,7 @@ export default function MyLearningPage() {
 
   // Filters & Search
   const [activeTab, setActiveTab] = useState<'all' | 'courses' | 'webinars' | 'workshops' | 'articles' | 'completed'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'In Progress' | 'Upcoming' | 'Not Started'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'In Progress' | 'Upcoming' | 'Not Started' | 'Completed'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [instructorFilter, setInstructorFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
