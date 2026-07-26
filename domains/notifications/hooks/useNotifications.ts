@@ -9,13 +9,16 @@ import { NotificationService, NotificationDto } from '../api/notification.servic
  * Generic notification feed: initial page + unread count via REST, then live updates pushed
  * over `/user/queue/notifications` for the rest of the session. Works for any notification
  * `type` a backend context fires — see Notification.java's class docs for how to add a new one.
+ *
+ * Subscription is tied to WebSocket {@code connected} so reconnects (token refresh, network
+ * blip) re-attach without requiring a page reload.
  */
 export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationDto[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const { status } = useAuthStore();
-  const { subscribe, clientRef } = useWebSocket();
+  const { subscribe, connected } = useWebSocket();
 
   const refresh = useCallback(async () => {
     if (status !== 'authenticated') return;
@@ -39,22 +42,20 @@ export function useNotifications() {
   }, [refresh]);
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== 'authenticated' || !connected) return;
 
-    const interval = setInterval(() => {
-      if (clientRef.current?.connected) {
-        clearInterval(interval);
-        const unsub = subscribe('/user/queue/notifications', (body) => {
-          const notif = body as NotificationDto;
-          setNotifications((prev) => [notif, ...prev.slice(0, 49)]);
-          setUnreadCount((prev) => prev + 1);
-        });
-        return () => unsub();
-      }
-    }, 500);
+    const unsub = subscribe('/user/queue/notifications', (body) => {
+      const notif = body as NotificationDto;
+      if (!notif?.id) return;
+      setNotifications((prev) => {
+        if (prev.some((n) => n.id === notif.id)) return prev;
+        return [notif, ...prev.slice(0, 49)];
+      });
+      setUnreadCount((prev) => prev + 1);
+    });
 
-    return () => clearInterval(interval);
-  }, [status, subscribe, clientRef]);
+    return unsub;
+  }, [status, connected, subscribe]);
 
   const markAllRead = useCallback(async () => {
     try {

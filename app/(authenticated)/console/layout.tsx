@@ -3,9 +3,8 @@
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Tv, BookOpen, Shield, Calendar } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
-import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
@@ -17,7 +16,7 @@ export default function ArcConsoleLayout({
   const pathname = usePathname();
   const { user } = useAuthStore();
   const showAdminChannels = AuthorizationService.canManageChannels(user);
-  const showReviewCourses = AuthorizationService.canReviewCourses(user);
+  const showReviews = AuthorizationService.canReviewContent(user);
   const showIam = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
 
   const navItems = [
@@ -26,10 +25,10 @@ export default function ArcConsoleLayout({
       href: '/console/channels',
       icon: Tv,
     }] : []),
-    ...(showReviewCourses ? [{
-      name: 'Course Management',
-      href: '/console/courses',
-      icon: BookOpen,
+    ...(showReviews ? [{
+      name: 'Platform Reviews',
+      href: '/console/reviews',
+      icon: ClipboardCheck,
     }, {
       name: 'Exam Schedules',
       href: '/console/exam-schedules',
@@ -48,7 +47,6 @@ export default function ArcConsoleLayout({
 
   return (
     <div className="flex w-full gap-8 max-w-7xl mx-auto px-4 md:px-8 py-8">
-      {/* Left Navigation - Floating Pill */}
       <div className="hidden md:flex flex-col w-72 shrink-0">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
@@ -92,7 +90,6 @@ export default function ArcConsoleLayout({
         </motion.div>
       </div>
 
-      {/* Content Area */}
       <div className="flex-1 w-full min-w-0 pb-12">
         <motion.div
           initial={{ opacity: 0, y: 10 }}

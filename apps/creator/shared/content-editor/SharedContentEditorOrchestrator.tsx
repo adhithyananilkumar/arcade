@@ -1152,7 +1152,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => {
-    if (contentType === "course" || contentType === "roadmap") {
+    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
       setSubmitDialogOpen(true);
       return;
     }
@@ -1188,6 +1188,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         const updated = await api.post<any>(`/api/roadmaps/${contentId}/submit`, { message: data.message });
         setStatus(updated.status);
         setUpdatedAt(updated.updatedAt);
+      } else if (contentType === "workshop") {
+        const { submitWorkshop } = await import(
+          "@/app/(authenticated)/studio/workshop/api/publish"
+        );
+        const updated = await submitWorkshop(contentId, { message: data.message });
+        setStatus(updated.status);
+        if (updated.updatedAt) setUpdatedAt(updated.updatedAt);
       }
       setHistoryRefreshKey((k) => k + 1);
       setSubmitDialogOpen(false);
@@ -1363,17 +1370,29 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            {status !== "SUBMITTED" && contentType !== "workshop" && (
+            {status !== "SUBMITTED" && (
               <button
                 type="button"
                 onClick={askSubmit}
-                disabled={!hasDraftChanges && (status === "PUBLISHED" || status === "APPROVED" || status === "DRAFT")}
-                title={!hasDraftChanges && status !== "REJECTED" ? "No new changes to submit" : ""}
+                disabled={
+                  contentType !== "workshop" &&
+                  !hasDraftChanges &&
+                  (status === "PUBLISHED" || status === "APPROVED" || status === "DRAFT")
+                }
+                title={
+                  contentType !== "workshop" && !hasDraftChanges && status !== "REJECTED"
+                    ? "No new changes to submit"
+                    : ""
+                }
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={14} />
                 <span className="hidden sm:inline">
-                  {status === "PUBLISHED" || status === "APPROVED" ? "Submit Updates" : status === "REJECTED" ? "Resubmit for Review" : "Submit for Review"}
+                  {status === "PUBLISHED" || status === "APPROVED"
+                    ? "Submit Updates"
+                    : status === "REJECTED"
+                      ? "Resubmit for Review"
+                      : "Submit for Review"}
                 </span>
               </button>
             )}
@@ -1382,7 +1401,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={() => router.push(`/studio/workshop/${contentId}`)}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
               >
                 <Settings size={14} />
                 <span className="hidden sm:inline">Manage Workshop</span>

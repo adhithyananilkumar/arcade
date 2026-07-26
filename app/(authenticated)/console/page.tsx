@@ -21,7 +21,7 @@ export default function ArcConsoleIndex() {
     if (showAdminChannels) {
       router.replace('/console/channels');
     } else if (showReviewCourses) {
-      router.replace('/console/courses');
+      router.replace('/console/reviews');
     } else if (showIam) {
       router.replace('/console/iam');
     }

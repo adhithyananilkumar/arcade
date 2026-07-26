@@ -2,14 +2,27 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
+function toBrokerUrl(httpBase: string): string {
+  const base = httpBase.replace(/\/$/, '');
+  if (base.startsWith('https://')) return `wss://${base.slice('https://'.length)}/ws`;
+  if (base.startsWith('http://')) return `ws://${base.slice('http://'.length)}/ws`;
+  if (base.startsWith('wss://') || base.startsWith('ws://')) {
+    return base.endsWith('/ws') ? base : `${base}/ws`;
+  }
+  return `ws://${base}/ws`;
+}
+
 /**
- * Generic authenticated STOMP-over-SockJS client for the shared `/ws` endpoint
+ * Generic authenticated STOMP client for the shared `/ws` endpoint
  * (see backend WebSocketConfig). Any domain that needs a live push channel — notifications,
  * forum activity, presence, etc. — can subscribe to its own destination without standing up a
  * new connection; this hook owns exactly one underlying client per mounted consumer.
+ *
+ * Uses native WebSocket (same as TimeTracker) so it matches the Spring endpoint registered
+ * without SockJS. Consumers should subscribe when {@code connected} becomes true and clean up
+ * on disconnect — that way reconnects automatically re-attach handlers.
  */
 export function useWebSocket() {
   const clientRef = useRef<Client | null>(null);
@@ -42,10 +55,10 @@ export function useWebSocket() {
       return;
     }
 
-    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080') + '/ws';
+    const brokerURL = toBrokerUrl(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080');
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(wsUrl) as WebSocket,
+      brokerURL,
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -53,6 +66,7 @@ export function useWebSocket() {
       onConnect: () => setConnected(true),
       onDisconnect: () => setConnected(false),
       onStompError: () => setConnected(false),
+      onWebSocketClose: () => setConnected(false),
     });
 
     client.activate();
@@ -60,6 +74,7 @@ export function useWebSocket() {
 
     return () => {
       client.deactivate();
+      clientRef.current = null;
       setConnected(false);
     };
   }, [status, accessToken, disconnect]);

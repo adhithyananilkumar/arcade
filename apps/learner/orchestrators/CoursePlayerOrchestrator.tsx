@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { CourseRenderer, courseDeliveryService } from "@/domains/learning";
 import { getQuizStats, type QuizStatsResponse } from "@/domains/assessments";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
-import { api } from "@/infrastructure/http/api";
+import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
+import { platformReviewApi } from "@/domains/publishing";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { ArcadeEditor } from "@/apps/creator/editor";
+import { api } from "@/infrastructure/http/api";
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
@@ -22,10 +24,9 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLessonId, setHistoryLessonId] = useState<string | null>(null);
   const [publishedCourse, setPublishedCourse] = useState<CourseRenderResponse | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(null);
 
-  const canPublish =
-    user?.permissions?.some((p) => p === "courses.review" || p === "channel.courses.review") ||
-    user?.permissions?.includes("ROLE_SUPER_USER");
+  const canPublish = AuthorizationService.canReviewContent(user);
 
   useEffect(() => {
     courseDeliveryService
@@ -56,8 +57,13 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         .get<CourseRenderResponse>(`/api/courses/${courseId}/render?publishedOnly=true`)
         .then((pubData) => setPublishedCourse(pubData ?? null))
         .catch(() => setPublishedCourse(null));
+      platformReviewApi
+        .byContent("COURSE", courseId)
+        .then((r) => setReviewId(r.id))
+        .catch(() => setReviewId(null));
     } else {
       setPublishedCourse(null);
+      setReviewId(null);
     }
   }, [courseId, canPublish]);
 
@@ -72,10 +78,14 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
 
   const handlePublish = async () => {
     const note = window.prompt("Any approval notes/logs? (Optional)");
-    if (note === null) return; // User cancelled
+    if (note === null) return;
 
     try {
-      await api.post(`/api/courses/${courseId}/approve`, { note });
+      if (reviewId) {
+        await platformReviewApi.decide(reviewId, { decision: "APPROVE", note });
+      } else {
+        await api.post(`/api/courses/${courseId}/approve`, { note });
+      }
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
@@ -86,7 +96,14 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
 
   const handleReject = async (reason: string) => {
     try {
-      await api.post(`/api/courses/${courseId}/reject`, { reason });
+      if (reviewId) {
+        await platformReviewApi.decide(reviewId, {
+          decision: "REQUEST_CHANGES",
+          reason,
+        });
+      } else {
+        await api.post(`/api/courses/${courseId}/reject`, { reason });
+      }
       if (course) {
         setCourse({ ...course, status: "REJECTED" });
       }
@@ -117,25 +134,47 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const [commentsError, setCommentsError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedItem?.kind === 'lesson' && isFeedbackOpen) {
+    if (selectedItem?.kind === 'lesson' && isFeedbackOpen && reviewId) {
       setCommentsLoading(true);
       setCommentsError(null);
-      api
-        .get<any[]>(`/api/lessons/${selectedItem.id}/comments`)
-        .then(setComments)
+      platformReviewApi
+        .listComments(reviewId, "LESSON", selectedItem.id)
+        .then((rows) =>
+          setComments(
+            rows.map((c) => ({
+              id: c.id,
+              lessonId: c.targetId,
+              authorId: c.authorId,
+              authorName: c.authorName,
+              content: c.body,
+              createdAt: c.createdAt,
+            }))
+          )
+        )
         .catch(() => setCommentsError("You do not have access to view reviewer feedback."))
         .finally(() => setCommentsLoading(false));
     }
-  }, [selectedItem?.id, isFeedbackOpen]);
+  }, [selectedItem?.id, isFeedbackOpen, reviewId]);
 
   const handleAddComment = async (content: string) => {
-    if (selectedItem?.kind !== 'lesson') return;
+    if (selectedItem?.kind !== 'lesson' || !reviewId) return;
     try {
-      const added = await api.post<any>(
-        `/api/lessons/${selectedItem.id}/comments`,
-        { content }
-      );
-      setComments((prev) => [...prev, added]);
+      const added = await platformReviewApi.addComment(reviewId, {
+        targetType: "LESSON",
+        targetId: selectedItem.id,
+        body: content,
+      });
+      setComments((prev) => [
+        ...prev,
+        {
+          id: added.id,
+          lessonId: added.targetId,
+          authorId: added.authorId,
+          authorName: added.authorName,
+          content: added.body,
+          createdAt: added.createdAt,
+        },
+      ]);
     } catch (err) {
       alert("Failed to post feedback.");
     }

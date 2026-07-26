@@ -85,7 +85,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
   };
 
   const handleSubmit = async () => {
-    if (pricingModel === 'PAID' && (priceAmount === "" || priceAmount <= 0)) {
+    if (contentType === 'course' && pricingModel === 'PAID' && (priceAmount === "" || priceAmount <= 0)) {
       toast.error("Please enter a valid price for a paid course.");
       return;
     }
@@ -101,7 +101,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
       onClose();
     } catch (e) {
       console.error(e);
-      toast.error("Failed to submit course.");
+      toast.error(`Failed to submit ${contentType}.`);
     } finally {
       setIsSubmitting(false);
     }

@@ -118,7 +118,7 @@ export function CourseRenderer({
       <aside className="flex w-80 flex-shrink-0 flex-col border-r border-gray-200 bg-gray-50">
         <div className="border-b border-gray-200 px-5 py-4">
           <Link
-            href={canPublish ? "/studio/review" : "/studio/published"}
+            href={canPublish ? "/console/reviews" : "/studio/published"}
             className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft size={14} />
