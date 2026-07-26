@@ -400,8 +400,9 @@ function CourseHero({
   isEnrolling = false,
   isEnrolled = false,
   pricingModel,
-  priceAmount
-}: { 
+  priceAmount,
+  courseId
+}: {
   title: string
   authorName?: string
   authorUsername?: string
@@ -412,6 +413,7 @@ function CourseHero({
   isEnrolled?: boolean
   pricingModel?: string
   priceAmount?: number
+  courseId?: string
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -497,9 +499,12 @@ function CourseHero({
               )}
             </div>
             {isEnrolled ? (
-              <button className="flex h-11 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-6 font-semibold text-green-500 transition-all">
-                <Check size={18} /> Enrolled
-              </button>
+              <Link
+                href={`/learn/${courseId}/learn`}
+                className="flex h-11 items-center gap-2 rounded-full bg-green-500 px-6 font-semibold text-white transition-all hover:bg-green-600"
+              >
+                <Check size={18} /> Go to course
+              </Link>
             ) : (
               <EnrollButton onClick={onEnroll}>
                 {isEnrolling ? "Enrolling..." : "Enroll now"}
@@ -856,7 +861,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number }) {
+function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -873,9 +878,12 @@ function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingM
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {isEnrolled ? (
-          <button className="flex h-12 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-8 font-semibold text-green-500 transition-all">
-            <Check size={18} /> Enrolled
-          </button>
+          <Link
+            href={`/learn/${courseId}/learn`}
+            className="flex h-12 items-center gap-2 rounded-full bg-white px-8 font-semibold text-ink transition-all hover:bg-white/90"
+          >
+            <Check size={18} /> Go to course
+          </Link>
         ) : (
           <EnrollButton onClick={onEnroll}>
             {isEnrolling ? "Enrolling..." : "Enroll now"}
@@ -898,7 +906,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store"
 export default function CoursePage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuthStore()
+  const { user, updateUser } = useAuthStore()
   const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -906,23 +914,20 @@ export default function CoursePage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
 
   useEffect(() => {
-    if ((user as any)?.enrolledCourses && course?.title) {
-      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.title === course.title)
-      if (alreadyEnrolled) setIsEnrolled(true)
+    if ((user as any)?.enrolledCourses && params?.courseId) {
+      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.courseId === params.courseId)
+      setIsEnrolled(alreadyEnrolled)
     }
-  }, [user, course])
+  }, [user, params?.courseId])
 
   const handleEnroll = async () => {
     if (!params?.courseId) return;
     try {
       setIsEnrolling(true);
-      await UserService.enrollInCourse(params.courseId as string);
+      const updatedUser = await UserService.enrollInCourse(params.courseId as string);
+      updateUser(updatedUser);
       toast.success("Successfully enrolled!");
       setIsEnrolled(true);
-      
-      // Update local auth store so it shows up in profile immediately if we go there
-      // (The actual backend update will be reflected when the profile page refetches, 
-      // but if we want instant we could also just let the profile page fetch on mount).
     } catch (error) {
       toast.error("Failed to enroll. Please try again.");
     } finally {
@@ -971,6 +976,7 @@ export default function CoursePage() {
             isEnrolled={isEnrolled}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
+            courseId={params?.courseId as string}
           />
         </div>
       </div>
@@ -982,7 +988,7 @@ export default function CoursePage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} />
+          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
         </div>
       </div>
     </main>

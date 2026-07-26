@@ -5,7 +5,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, Loader2 } from 'lucide-react';
+import { GraduationCap, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MyCoursesPage() {
@@ -30,6 +30,20 @@ export default function MyCoursesPage() {
   }, []);
 
   const currentUser = profileData || user;
+
+  const handleUnenroll = async (e: React.MouseEvent, courseId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const data = await UserService.unenrollFromCourse(courseId);
+      updateUser(data);
+      setProfileData(data);
+      toast.success('Unenrolled from course');
+    } catch (err) {
+      console.error('Failed to unenroll:', err);
+      toast.error('Could not unenroll from course.');
+    }
+  };
 
   if (isLoading || !currentUser) {
     return (
@@ -57,10 +71,20 @@ export default function MyCoursesPage() {
         >
           {currentUser.enrolledCourses && currentUser.enrolledCourses.length > 0 ? (
             currentUser.enrolledCourses.map((item: any, idx: number) => {
-              const className = `group flex flex-col justify-between p-6 rounded-3xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-all min-h-[200px] ${item.courseId ? 'hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-100 dark:hover:border-indigo-900/50 cursor-pointer hover:-translate-y-1' : ''}`;
-              
+              const className = `group relative flex flex-col justify-between p-6 rounded-3xl border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_4px_20px_rgb(0,0,0,0.01)] transition-all min-h-[200px] ${item.courseId ? 'hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-100 dark:hover:border-indigo-900/50 cursor-pointer hover:-translate-y-1' : ''}`;
+
               const innerContent = (
                 <>
+                  {item.courseId && (
+                    <button
+                      onClick={(e) => handleUnenroll(e, item.courseId)}
+                      aria-label="Unenroll from course"
+                      title="Unenroll"
+                      className="absolute right-4 top-4 rounded-full p-1.5 text-slate-300 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:text-neutral-700 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                   <div className="flex flex-col gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100/50 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 transition-colors group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/40 group-hover:scale-105">
                       <GraduationCap size={22} />
@@ -74,9 +98,15 @@ export default function MyCoursesPage() {
                     <span className="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 transition-colors">
                       {item.status}
                     </span>
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100">
-                      Learn →
-                    </span>
+                    {item.courseId ? (
+                      <span className="rounded-lg bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 transition-colors group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/40">
+                        Go to course →
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-neutral-600">
+                        Unavailable
+                      </span>
+                    )}
                   </div>
                 </>
               );
@@ -86,7 +116,7 @@ export default function MyCoursesPage() {
                   {innerContent}
                 </Link>
               ) : (
-                <div key={idx} className={className}>
+                <div key={idx} className={className} title="This course is no longer available">
                   {innerContent}
                 </div>
               );
