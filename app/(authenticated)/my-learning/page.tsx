@@ -355,7 +355,66 @@ export default function MyLearningPage() {
   };
 
   // Learning Content
-  const learningItems: LearningItem[] = [];
+  const [learningItems, setLearningItems] = useState<LearningItem[]>([]);
+
+  useEffect(() => {
+    if (currentUser?.enrolledCourses) {
+      // The backend enrollment summary API provides basic details but omits coverImageUrl and numeric progress.
+      // For now, we use a placeholder cover image and set progress to 0% as fallbacks.
+      // Ensure all enrolled things will be here in this section.
+      const mappedItems: LearningItem[] = currentUser.enrolledCourses.map((course: any) => {
+        let mappedType: LearningItem['type'] = 'Course';
+        if (course.type) {
+          const upperType = course.type.toUpperCase();
+          if (upperType === 'WEBINAR') mappedType = 'Webinar';
+          else if (upperType === 'WORKSHOP') mappedType = 'Workshop';
+          else if (upperType === 'ARTICLE') mappedType = 'Article';
+        }
+        return {
+          id: course.courseId,
+          title: course.title,
+          type: mappedType,
+          category: 'General', // Not currently provided by backend
+          status: course.status === 'Completed' ? 'Completed' : 'In Progress',
+          progress: 0, // Placeholder, updated async below
+          instructor: 'Instructor', // Placeholder
+          date: course.date || '',
+          coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&auto=format&fit=crop&q=80', // Placeholder
+          accentColor: 'indigo'
+        };
+      });
+      setLearningItems(mappedItems);
+
+      // Async fetch real progress for courses
+      const courseItems = mappedItems.filter(item => item.type === 'Course');
+      if (courseItems.length > 0) {
+        import('@/domains/learning/progress/api/courseProgress').then(({ courseProgressService }) => {
+          Promise.allSettled(
+            courseItems.map(item => courseProgressService.getCourseProgress(item.id))
+          ).then(results => {
+            setLearningItems(prev => {
+              const nextItems = prev.map(item => {
+                if (item.type !== 'Course') return item;
+                const index = courseItems.findIndex(c => c.id === item.id);
+                if (index !== -1) {
+                  const result = results[index];
+                  if (result.status === 'rejected') {
+                    // The course does not exist or access is denied
+                    return null;
+                  }
+                  if (result.status === 'fulfilled' && result.value) {
+                    return { ...item, progress: result.value.percent || 0 };
+                  }
+                }
+                return item;
+              });
+              return nextItems.filter(Boolean) as LearningItem[];
+            });
+          });
+        }).catch(err => console.error("Failed to load course progress", err));
+      }
+    }
+  }, [currentUser]);
 
   // Dynamic Counts
   const inProgressCount = learningItems.filter(i => i.status === 'In Progress').length;
@@ -364,6 +423,14 @@ export default function MyLearningPage() {
   const enrolledCount = learningItems.filter(i => i.type === 'Course').length;
   const attendedCount = learningItems.filter(i => i.type === 'Webinar').length;
   const readCount = learningItems.filter(i => i.type === 'Article').length;
+
+  const continueLearningItem = [...learningItems]
+    .sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA;
+    })
+    .find(i => i.status === 'In Progress');
 
   const scrollToItems = () => {
     const el = document.getElementById('learning-items-section');
@@ -625,110 +692,105 @@ export default function MyLearningPage() {
           </div>
 
           {/* 3. CONTINUE LEARNING HERO CARD: SOLID WHITE CARD SURFACE */}
-          <div className="p-6 sm:p-7 rounded-[36px] bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-md space-y-5 relative overflow-hidden group">
+          {continueLearningItem && (
+            <div className="p-6 sm:p-7 rounded-[36px] bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-md space-y-5 relative overflow-hidden group">
 
-            {/* Top Label & Badge */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3.5 relative z-10">
-              <div className="flex items-center gap-2">
-                <motion.div
-                  whileHover={{ scale: 1.15, rotate: 90 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
-                  className="p-1.5 rounded-lg bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-xs cursor-pointer"
-                >
-                  <Play size={14} className="fill-current" />
-                </motion.div>
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-indigo-100 font-[family-name:var(--font-outfit)]">
-                  Continue Learning
-                </h3>
-              </div>
-
-              <span className="px-3 py-1 rounded-full text-[10px] font-black bg-[#ebf0fa] dark:bg-indigo-900/60 text-[#2962D6] dark:text-indigo-200 border border-[#6b93cc]/40 dark:border-indigo-800 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#2C83F5] animate-pulse" />
-                In Progress
-              </span>
-            </div>
-
-            {/* Course Content Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
-
-              {/* Cover Image Thumbnail */}
-              <div className="relative group/img w-full sm:w-44 h-28 rounded-2xl overflow-hidden bg-slate-900 shrink-0 shadow-md border border-slate-200 dark:border-zinc-700">
-                <img
-                  src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&auto=format&fit=crop&q=80"
-                  alt="React Development"
-                  className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-slate-900/30 group-hover/img:bg-slate-900/10 transition-colors flex items-center justify-center">
+              {/* Top Label & Badge */}
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3.5 relative z-10">
+                <div className="flex items-center gap-2">
                   <motion.div
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="p-2.5 rounded-full bg-white text-[#2C83F5] shadow-md backdrop-blur-xs"
+                    whileHover={{ scale: 1.15, rotate: 90 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                    className="p-1.5 rounded-lg bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-xs cursor-pointer"
                   >
-                    <Play size={14} className="fill-current ml-0.5" />
+                    <Play size={14} className="fill-current" />
                   </motion.div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-indigo-100 font-[family-name:var(--font-outfit)]">
+                    Continue Learning
+                  </h3>
                 </div>
+
+                <span className="px-3 py-1 rounded-full text-[10px] font-black bg-[#ebf0fa] dark:bg-indigo-900/60 text-[#2962D6] dark:text-indigo-200 border border-[#6b93cc]/40 dark:border-indigo-800 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2C83F5] animate-pulse" />
+                  In Progress
+                </span>
               </div>
 
-              {/* Details & Animated Progress Bar */}
-              <div className="flex-1 space-y-3.5 w-full">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-black text-[#2C83F5] dark:text-cyan-400 uppercase tracking-wider">
-                    Frontend Engineering
-                  </span>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-[family-name:var(--font-outfit)]">
-                    React Development
-                  </h2>
-                  <p className="text-xs font-semibold text-slate-600 dark:text-zinc-300">
-                    Chapter 4 • Building Interactive UIs
-                  </p>
-                </div>
+              {/* Course Content Row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
 
-                {/* Animated Progress Bar Fill */}
-                <div className="space-y-1.5 max-w-md">
-                  <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-zinc-300">
-                    <span>Course Progress</span>
-                    <span className="text-slate-900 dark:text-white font-mono">72%</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 dark:bg-indigo-950/80 rounded-full overflow-hidden">
+                {/* Cover Image Thumbnail */}
+                <div className="relative group/img w-full sm:w-44 h-28 rounded-2xl overflow-hidden bg-slate-900 shrink-0 shadow-md border border-slate-200 dark:border-zinc-700">
+                  <img
+                    src={continueLearningItem.coverImage}
+                    alt={continueLearningItem.title}
+                    className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-slate-900/30 group-hover/img:bg-slate-900/10 transition-colors flex items-center justify-center">
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '72%' }}
-                      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-                      className="h-full bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] rounded-full shadow-xs"
-                    />
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="p-2.5 rounded-full bg-white text-[#2C83F5] shadow-md backdrop-blur-xs"
+                    >
+                      <Play size={14} className="fill-current ml-0.5" />
+                    </motion.div>
                   </div>
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-2.5 w-full sm:w-auto shrink-0 sm:border-l sm:border-slate-100 sm:dark:border-zinc-800 sm:pl-6">
-                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                {/* Details & Animated Progress Bar */}
+                <div className="flex-1 space-y-3.5 w-full min-w-0">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black text-[#2C83F5] dark:text-cyan-400 uppercase tracking-wider">
+                      {continueLearningItem.category}
+                    </span>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-[family-name:var(--font-outfit)] truncate">
+                      {continueLearningItem.title}
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-zinc-300">
+                      {continueLearningItem.type} • {continueLearningItem.instructor}
+                    </p>
+                  </div>
+
+                  {/* Animated Progress Bar Fill */}
+                  <div className="space-y-1.5 max-w-md">
+                    <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-zinc-300">
+                      <span>Course Progress</span>
+                      <span className="text-slate-900 dark:text-white font-mono">{continueLearningItem.progress}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-indigo-950/80 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${continueLearningItem.progress}%` }}
+                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                        className="h-full bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] rounded-full shadow-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-2.5 w-full sm:w-auto shrink-0 sm:border-l sm:border-slate-100 sm:dark:border-zinc-800 sm:pl-6">
+                  <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                    <Link
+                      href={`/learn/${continueLearningItem.id}/learn`}
+                      className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] hover:opacity-95 text-white font-extrabold text-xs transition-all shadow-md shadow-cyan-500/20 border border-cyan-400/30 text-center"
+                    >
+                      <Play size={13} className="fill-current" />
+                      <span>Resume Lesson</span>
+                    </Link>
+                  </motion.div>
                   <Link
-                    href="/learn/react-dev/learn"
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] hover:opacity-95 text-white font-extrabold text-xs transition-all shadow-md shadow-cyan-500/20 border border-cyan-400/30 text-center"
+                    href={`/learn/${continueLearningItem.id}`}
+                    className="text-[11px] font-bold text-[#2C83F5] dark:text-cyan-400 hover:underline transition-colors flex items-center justify-center gap-1 py-1"
                   >
-                    <Play size={13} className="fill-current" />
-                    <span>Resume Lesson</span>
+                    <span>View Details</span>
+                    <ChevronRight size={12} />
                   </Link>
-                </motion.div>
-                <Link
-                  href="/learn/react-dev"
-                  className="text-[11px] font-bold text-[#2C83F5] dark:text-cyan-400 hover:underline transition-colors flex items-center justify-center gap-1 py-1"
-                >
-                  <span>View Details</span>
-                  <ChevronRight size={12} />
-                </Link>
+                </div>
+
               </div>
-
             </div>
-
-            {/* Bottom Lesson Meta */}
-            <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex items-center gap-6 text-xs font-semibold text-slate-600 dark:text-zinc-300 relative z-10">
-              <span className="flex items-center gap-1.5"><Clock size={13} className="text-[#2C83F5]" /> 18 min remaining</span>
-              <span className="flex items-center gap-1.5"><BookOpen size={13} className="text-purple-500" /> Lesson 4 of 24</span>
-            </div>
-
-          </div>
+          )}
 
           {/* 4. LEARNING ITEMS GRID MAIN CARD CONTAINER: SOLID WHITE SURFACE */}
           <div id="learning-items-section" className="p-6 sm:p-8 rounded-[36px] bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-md space-y-6 scroll-mt-28">

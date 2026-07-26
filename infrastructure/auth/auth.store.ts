@@ -23,6 +23,7 @@ export interface User {
   emailVerified: boolean;
   platformRoles?: { id: string; code: string; name: string }[];
   channelMemberships?: { channelId: string; channelName: string; channelType: string; roles: { id: string; code: string; name: string }[] }[];
+  enrolledCourses?: any[];
   // Legacy fields (kept for fallback)
   roles?: any[];
   permissions?: string[];
