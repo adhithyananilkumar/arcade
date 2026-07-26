@@ -6,9 +6,22 @@ export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], ed
     const rawNodes = Array.isArray(raw.nodes) ? raw.nodes : [];
     const rawEdges = Array.isArray(raw.edges) ? raw.edges : [];
 
-    // Extract canvas appearance saved by editor's AppearancePanel
+    // Extract canvas appearance saved by editor's AppearancePanel, or fallback to simple background
     const canvasAppearance: CanvasAppearance = raw.appearance
       ? { ...defaultCanvasAppearance, ...raw.appearance }
+      : raw.background
+      ? {
+          ...defaultCanvasAppearance,
+          backgroundType: raw.background.bgImage ? 'image' : 'color',
+          backgroundColor: raw.background.bg || defaultCanvasAppearance.backgroundColor,
+          image: raw.background.bgImage ? { url: raw.background.bgImage, display: 'tile', opacity: 100, blur: 0 } : undefined,
+          grid: {
+            ...defaultCanvasAppearance.grid,
+            show: raw.background.dots ?? defaultCanvasAppearance.grid.show,
+            type: 'dots',
+            color: raw.background.dotColor || defaultCanvasAppearance.grid.color,
+          }
+        }
       : defaultCanvasAppearance;
 
     const nodes: RoadmapNode[] = rawNodes.map((rn: any) => ({

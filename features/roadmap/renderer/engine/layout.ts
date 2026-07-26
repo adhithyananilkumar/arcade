@@ -62,6 +62,21 @@ export function calculateLayout(
   if (minY === Infinity) minY = 0;
   if (maxY === -Infinity) maxY = 800;
 
+  const shiftX = -minX;
+  const shiftY = -minY;
+
+  if (shiftX !== 0 || shiftY !== 0) {
+    finalNodes = finalNodes.map(n => ({
+      ...n,
+      x: n.x + shiftX,
+      y: n.y + shiftY,
+    }));
+    maxX += shiftX;
+    maxY += shiftY;
+    minX = 0;
+    minY = 0;
+  }
+
   const padding = 120;
   const graphWidth = Math.max(maxX + padding, 1200);
   const graphHeight = Math.max(maxY + padding, 800);

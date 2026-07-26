@@ -529,11 +529,15 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
       className="w-full h-full relative overflow-hidden" 
       style={{ 
         backgroundColor: bgStyle.bg,
-        backgroundImage: bgStyle.bgImage ? `url(${bgStyle.bgImage})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
+        backgroundImage: bgStyle.bgImage 
+          ? `url(${bgStyle.bgImage})` 
+          : bgStyle.dots 
+            ? `radial-gradient(circle, ${bgStyle.dotColor} 1px, transparent 1px)` 
+            : 'none',
+        backgroundSize: bgStyle.bgImage ? 'auto' : (bgStyle.dots ? '24px 24px' : undefined),
+        backgroundPosition: 'top left',
+        backgroundRepeat: bgStyle.bgImage ? 'repeat' : 'no-repeat'
+      }}>
 
       {/* ── CSS: strip ReactFlow default node styling ─────────────────────── */}
       <style>{`
