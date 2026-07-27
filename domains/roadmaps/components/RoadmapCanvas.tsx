@@ -132,10 +132,9 @@ function FloatingRoadmapToolbar({
   const zoomPct = Math.round(zoom * 100);
 
   const toolBtn = (active: boolean, extra = '') =>
-    `p-2 rounded-lg transition-all duration-150 ${
-      active
-        ? 'bg-indigo-600 text-white shadow-md'
-        : `text-gray-400 hover:text-white hover:bg-white/10 ${extra}`
+    `p-2 rounded-lg transition-all duration-150 ${active
+      ? 'bg-indigo-600 text-white shadow-md'
+      : `text-gray-400 hover:text-white hover:bg-white/10 ${extra}`
     }`;
 
   return (
@@ -347,13 +346,14 @@ function TopicNodeRenderer(props: any) {
       borderColor={data?.borderColor}
       icon={data?.icon}
       isCompleted={data?.completed}
+      validationError={data?.validationErr
       editable={!data?.readOnly}
       isEditing={data?.isEditing}
-      showHandles={true}
-      validationError={data?.validationError}
-      onRename={(nodeId, newLabel) => {
-        data?.onUpdate?.(nodeId, { label: newLabel, isEditing: false });
-      }}
+      showHandles={true} or}
+shape = { data?.shape || 'rectangle'}
+onRename = {(nodeId, newLabel) => {
+  data?.onUpdate?.(nodeId, { label: newLabel, isEditing: false });
+}}
     />
   );
 }
@@ -392,7 +392,7 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
 
   // ── History (undo/redo) ──────────────────────────────────────────────────────
   const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
-  const futureRef  = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const futureRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
 
   const pushHistory = useCallback((ns: Node[], es: Edge[]) => {
     historyRef.current.push({ nodes: ns, edges: es });
@@ -525,14 +525,14 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
   const currentNodeColor = (selectedNode?.data?.color as string) || '#f59e0b';
 
   return (
-    <div 
-      className="w-full h-full relative overflow-hidden" 
-      style={{ 
+    <div
+      className="w-full h-full relative overflow-hidden"
+      style={{
         backgroundColor: bgStyle.bg,
-        backgroundImage: bgStyle.bgImage 
-          ? `url(${bgStyle.bgImage})` 
-          : bgStyle.dots 
-            ? `radial-gradient(circle, ${bgStyle.dotColor} 1px, transparent 1px)` 
+        backgroundImage: bgStyle.bgImage
+          ? `url(${bgStyle.bgImage})`
+          : bgStyle.dots
+            ? `radial-gradient(circle, ${bgStyle.dotColor} 1px, transparent 1px)`
             : 'none',
         backgroundSize: bgStyle.bgImage ? 'auto' : (bgStyle.dots ? '24px 24px' : undefined),
         backgroundPosition: 'top left',
@@ -682,6 +682,19 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
                 <option value="published">Published</option>
                 <option value="review">Review</option>
                 <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Shape</label>
+              <select
+                value={(selectedNode.data.shape as string) || 'rectangle'}
+                onChange={e => stableUpdateTopic(selectedNode.id, { shape: e.target.value })}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="diamond">Diamond</option>
+                <option value="hexagon">Hexagon</option>
               </select>
             </div>
             <div>
