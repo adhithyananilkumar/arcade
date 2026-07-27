@@ -594,7 +594,7 @@ export default function MyLearningPage() {
 
           {/* Subtitle / Description for My Learning */}
           <p className="text-slate-600 dark:text-zinc-300 text-sm sm:text-base leading-relaxed font-normal max-w-3xl mx-auto px-4">
-            Welcome back, <span className="font-bold text-[#2C83F5] dark:text-indigo-400">{currentUser.fullName || currentUser.username || 'Learner'}</span>! Your space for every step of your learning path. Track your enrolled courses, upcoming workshops, attended webinars, and articles all in one place.
+            Welcome back, <span className="font-bold text-[#2C83F5] dark:text-indigo-400">{(currentUser.firstName || currentUser.fullName || currentUser.username || 'Learner').split(' ')[0]}</span>! Your space for every step of your learning path. Track your enrolled courses, upcoming workshops, attended webinars, and articles all in one place.
           </p>
 
 

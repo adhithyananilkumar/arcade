@@ -817,19 +817,14 @@ export default function AchievementsVarietyPage() {
                 <TrophyIcon className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{badgesCount}</div>
-                <div className="text-xs font-extrabold text-slate-700 dark:text-zinc-300 mt-1">Badges</div>
-                <div className="text-[10px] font-bold text-slate-400">Collected</div>
-              </div>
-            </div>
-
-            {/* Pod 2: Achievements Earned */}
-            <div
-              onClick={() => toast.info(`${totalAchievements} Achievements Earned`)}
-              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-indigo-400/80 dark:hover:border-indigo-500/80 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer select-none"
-            >
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <MedalIcon className="w-6 h-6" />
+                <div className="text-xs font-medium text-indigo-200 uppercase tracking-wider">Level 8 Contributor</div>
+                <div className="text-lg font-bold text-white">
+                  {user?.fullName || user?.username || 'Learner'}
+                </div>
+                <div className="text-xs text-amber-300 font-semibold flex items-center gap-1 mt-0.5">
+                  <Zap size={12} className="fill-amber-300" />
+                  {totalXp} Total XP Earned
+                </div>
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{totalAchievements}</div>

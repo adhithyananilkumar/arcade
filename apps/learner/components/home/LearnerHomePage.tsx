@@ -73,7 +73,13 @@ export default function LearnerHomePage() {
 
   if (status === 'loading' || !mounted) return <DashboardLoading />;
 
-  const firstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : 'Learner');
+  const displayName = (() => {
+    const rawName = user?.fullName || user?.firstName || user?.name || user?.username;
+    if (!rawName || rawName.trim().toLowerCase().startsWith('dev')) {
+      return 'Adhithyan';
+    }
+    return rawName.trim().split(' ')[0];
+  })();
 
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
@@ -229,7 +235,7 @@ export default function LearnerHomePage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-              {getTimeGreeting()}, {firstName}
+              {getTimeGreeting()}, {displayName}
             </h1>
             <p className="text-sm text-slate-500 dark:text-neutral-400 font-medium">
               Track your progress, solve daily challenges, and achieve your career roadmap.
