@@ -346,14 +346,14 @@ function TopicNodeRenderer(props: any) {
       borderColor={data?.borderColor}
       icon={data?.icon}
       isCompleted={data?.completed}
-      validationError={data?.validationErr
       editable={!data?.readOnly}
       isEditing={data?.isEditing}
-      showHandles={true} or}
-shape = { data?.shape || 'rectangle'}
-onRename = {(nodeId, newLabel) => {
-  data?.onUpdate?.(nodeId, { label: newLabel, isEditing: false });
-}}
+      showHandles={true}
+      validationError={data?.validationError}
+      shape={data?.shape || 'rectangle'}
+      onRename={(nodeId, newLabel) => {
+        data?.onUpdate?.(nodeId, { label: newLabel, isEditing: false });
+      }}
     />
   );
 }
