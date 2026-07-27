@@ -154,7 +154,9 @@ async function convertNode(node: TiptapNode): Promise<(Paragraph | Table)[]> {
     case "horizontalRule":
       return [new Paragraph({ text: "─────────────" })];
 
-    case "image": {
+    case "image":
+    case "imageBlock":
+    case "imageGif": {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : null;
       if (!src) return [];
       const buffer = await fetchImageBuffer(src);

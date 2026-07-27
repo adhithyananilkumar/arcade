@@ -20,6 +20,8 @@ export type TiptapNodeType =
   | "blockquote"
   | "horizontalRule"
   | "image"
+  | "imageBlock"
+  | "imageGif"
   | "hardBreak"
   | "table"
   | "tableRow"
