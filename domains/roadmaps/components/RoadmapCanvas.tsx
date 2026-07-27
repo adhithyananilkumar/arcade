@@ -214,7 +214,7 @@ function FloatingRoadmapToolbar({
       </button>
 
       {/* ── Fit View ─────────────────────────────────────────────────────── */}
-      <button type="button" title="Fit View (F)" onClick={() => fitView({ padding: 0.2, duration: 400 })} className={toolBtn(false)}>
+      <button type="button" title="Fit View (F)" onClick={() => fitView({ padding: 0.2, duration: 400, maxZoom: 1.0 })} className={toolBtn(false)}>
         <Maximize2 size={14} />
       </button>
 
@@ -575,7 +575,7 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
         nodesConnectable={!readOnly && activeTool === 'connect'}
         elementsSelectable={true}
         fitView
-        fitViewOptions={{ padding: 0.3 }}
+        fitViewOptions={{ padding: 0.3, maxZoom: 1.0 }}
         minZoom={0.1}
         maxZoom={2.5}
         connectionMode={ConnectionMode.Loose}

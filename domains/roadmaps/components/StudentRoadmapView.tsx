@@ -156,6 +156,7 @@ export function StudentRoadmapView({ roadmapId }: StudentRoadmapViewProps) {
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
+          fitViewOptions={{ maxZoom: 1.0 }}
           minZoom={0.5}
           maxZoom={1.5}
         >
