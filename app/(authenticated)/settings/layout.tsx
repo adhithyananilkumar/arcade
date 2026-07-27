@@ -92,7 +92,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="w-full">
           {/* Sticky Breadcrumb Header with Top-Extended Background Shield */}
           <div className="sticky top-0 z-30 bg-white dark:bg-[#202124] pt-20 md:pt-24 pb-3.5 mb-6 border-b border-slate-200/80 dark:border-neutral-800 flex items-center gap-2 text-sm text-slate-500 dark:text-neutral-400 font-semibold -mt-20 md:-mt-24">
-            <Link href="/settings" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
+            <Link href="/settings/info" className="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-1.5">
               <SettingsIcon size={15} />
               <span>Settings</span>
             </Link>

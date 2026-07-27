@@ -281,7 +281,7 @@ export default function LearnerNavbar() {
             )}
             <MenuItem 
               icon={<Settings size={18} strokeWidth={2} className="text-slate-500" />} 
-              onClick={() => router.push('/settings')} 
+              onClick={() => router.push('/settings/info')} 
             >
               Settings
             </MenuItem>
