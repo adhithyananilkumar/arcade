@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
 import { WorkshopWizard } from '../components/wizard/WorkshopWizard';
+import RegisteredMembersPage from './participants/page';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -12,16 +13,25 @@ const formatDate = (dateStr?: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish';
+type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish' | 'participants';
 
-const TABS: { id: Tab; label: string; step: number }[] = [
-  { id: 'overview',  label: 'Overview',          step: 0 },
-  { id: 'schedule',  label: 'Schedule',           step: 1 },
-  { id: 'pricing',   label: 'Pricing',            step: 2 },
-  { id: 'resources', label: 'Resources',          step: 3 },
-  { id: 'settings',  label: 'Settings',           step: 4 },
-  { id: 'publish',   label: 'Review & Publish',   step: 5 },
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'overview',  label: 'Overview' },
+  { id: 'pricing',   label: 'Pricing' },
+  { id: 'resources', label: 'Resources' },
+  { id: 'settings',  label: 'Settings' },
+  { id: 'participants', label: 'Manage Members' },
 ];
+
+const TAB_STEPS: Record<Tab, number> = {
+  overview: 0,
+  schedule: 1,
+  pricing: 2,
+  resources: -1, // Not implemented in Wizard yet
+  settings: 3,
+  publish: 4,
+  participants: 6,
+};
 
 export default function SingleWorkshopDashboard() {
   const { id } = useParams();
@@ -69,7 +79,7 @@ export default function SingleWorkshopDashboard() {
 
   if (!summary) return <div className="p-8 text-center text-zinc-500">Workshop not found</div>;
 
-  const activeTabData = TABS.find(t => t.id === activeTab)!;
+  const initialStep = TAB_STEPS[activeTab];
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -262,12 +272,16 @@ export default function SingleWorkshopDashboard() {
               </div>
             </div>
           </div>
+        ) : activeTab === 'participants' ? (
+          <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-250px)]">
+            <RegisteredMembersPage />
+          </div>
         ) : (
           /* Wizard steps embedded inline */
           <WorkshopWizard
             key={activeTab}
             workshopId={id as string}
-            initialStep={activeTabData.step}
+            initialStep={initialStep}
           />
         )}
       </div>

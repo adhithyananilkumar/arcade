@@ -8,14 +8,22 @@ export const AuthorizationService = {
 
   canAccessConsole: (user: User | null | undefined) => 
     AuthorizationService.hasPermission(user, 'platform.channels.manage') ||
-    AuthorizationService.hasPermission(user, 'platform.courses.review') ||
+    AuthorizationService.canReviewContent(user) ||
     AuthorizationService.hasPermission(user, 'platform.users.manage') ||
     AuthorizationService.hasPermission(user, 'platform.roles.assign') ||
     AuthorizationService.hasPermission(user, 'platform.permissions.manage') ||
     AuthorizationService.hasPermission(user, 'platform.system.manage'),
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
-  canReviewCourses: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.courses.review'),
+
+  /** Accepts platform.content.review or legacy platform.courses.review. */
+  canReviewContent: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.content.review') ||
+    AuthorizationService.hasPermission(user, 'platform.courses.review'),
+
+  /** @deprecated Use canReviewContent */
+  canReviewCourses: (user: User | null | undefined) => AuthorizationService.canReviewContent(user),
+
   canManageUsers: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.users.manage'),
   canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.roles.assign') || AuthorizationService.hasPermission(user, 'platform.roles.manage'),
   canManagePermissions: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.permissions.manage'),

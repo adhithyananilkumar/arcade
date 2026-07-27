@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/shared/design-system/ui/button";
 import { Input } from "@/shared/design-system/ui/input";
 import { CourseResponse } from "@/shared/types/api.types";
+import { RoadmapData } from "@/domains/roadmaps/types";
 import { X, Plus, Clock, CalendarDays, IndianRupee, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
@@ -16,20 +17,23 @@ interface ExamScheduleSlot {
 }
 
 interface CourseSubmitDialogProps {
-  course: CourseResponse;
+  course?: CourseResponse;
+  roadmap?: RoadmapData;
+  contentType?: 'course' | 'roadmap' | 'workshop';
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number }) => Promise<void>;
+  onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
 }
 
-export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSubmitDialogProps) {
-  const [coverImageUrl, setCoverImageUrl] = useState(course.coverImageUrl || "");
-  const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course.pricingModel || 'FREE');
-  const [priceAmount, setPriceAmount] = useState<number | "">(course.priceAmount || "");
+export function CourseSubmitDialog({ course, roadmap, contentType = 'course', open, onClose, onSubmit }: CourseSubmitDialogProps) {
+  const [coverImageUrl, setCoverImageUrl] = useState(course?.coverImageUrl || "");
+  const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course?.pricingModel || 'FREE');
+  const [priceAmount, setPriceAmount] = useState<number | "">(course?.priceAmount || "");
+  const [message, setMessage] = useState("");
   
   const [schedule, setSchedule] = useState<ExamScheduleSlot[]>(() => {
     try {
-      if (course.examSchedule) {
+      if (course?.examSchedule) {
         return JSON.parse(course.examSchedule);
       }
     } catch (e) {}
@@ -81,7 +85,7 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
   };
 
   const handleSubmit = async () => {
-    if (pricingModel === 'PAID' && (priceAmount === "" || priceAmount <= 0)) {
+    if (contentType === 'course' && pricingModel === 'PAID' && (priceAmount === "" || priceAmount <= 0)) {
       toast.error("Please enter a valid price for a paid course.");
       return;
     }
@@ -91,12 +95,13 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
       await onSubmit({
         coverImageUrl: coverImageUrl || undefined,
         pricingModel,
-        priceAmount: pricingModel === 'PAID' ? Number(priceAmount) : undefined
+        priceAmount: pricingModel === 'PAID' ? Number(priceAmount) : undefined,
+        message
       });
       onClose();
     } catch (e) {
       console.error(e);
-      toast.error("Failed to submit course.");
+      toast.error(`Failed to submit ${contentType}.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -106,14 +111,16 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit Course for Review</DialogTitle>
+          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Workshop' : 'Course'} for Review</DialogTitle>
           <DialogDescription>
-            Configure the final details before sending your course for approval.
+            Configure the final details before sending your {contentType === 'roadmap' ? 'roadmap' : contentType === 'workshop' ? 'workshop' : 'course'} for approval.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-8 py-4">
-          {/* Thumbnail Section */}
+          {contentType === 'course' && (
+            <>
+              {/* Thumbnail Section */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800"><ImageIcon size={16}/> Course Thumbnail</h3>
             <div className="flex gap-4 items-start">
@@ -141,7 +148,7 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <select 
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 h-9"
+                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 h-9"
                   value={pricingModel}
                   onChange={(e) => setPricingModel(e.target.value as 'FREE' | 'PAID')}
                 >
@@ -164,13 +171,26 @@ export function CourseSubmitDialog({ course, open, onClose, onSubmit }: CourseSu
                 </div>
               )}
             </div>
-            {pricingModel === 'PAID' && (
-              <p className="mt-2 text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 p-2 rounded flex items-start gap-1.5 font-medium">
-                <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
-              </p>
-            )}
-          </div>
+              {pricingModel === 'PAID' && (
+                <p className="mt-2 text-xs text-[#14142b] bg-slate-50 border border-slate-200 p-2 rounded flex items-start gap-1.5 font-medium">
+                  <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
+                </p>
+              )}
+            </div>
+            </>
+          )}
 
+          {/* Submission Note */}
+          <div className="space-y-3 pt-3 border-t border-slate-100">
+            <h3 className="text-sm font-semibold text-slate-800">Submission Note (Optional)</h3>
+            <p className="text-xs text-slate-500 mb-2">Leave a comment for the reviewer summarizing your changes.</p>
+            <textarea
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 min-h-[80px]"
+              placeholder="e.g., Added new module on React Hooks and fixed typo in Lesson 1."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+          </div>
 
         </div>
 

@@ -5,9 +5,10 @@ import { AlertCircle, CheckCircle2, ChevronRight } from 'lucide-react';
 interface Props {
   validation: PublishValidationResponse | null;
   onNavigateToStep: (step: number) => void;
+  rootTerm?: string;
 }
 
-export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToStep }) => {
+export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToStep, rootTerm = 'workshop' }) => {
   if (!validation) return null;
 
   const sectionMap: Record<string, number> = {
@@ -85,7 +86,7 @@ export const PublishingChecklist: React.FC<Props> = ({ validation, onNavigateToS
         <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg border border-green-200 dark:border-green-900/50">
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            <p className="text-sm font-medium">All checks passed! Your workshop is ready to be published.</p>
+            <p className="text-sm font-medium">All checks passed! Your {rootTerm} is ready to be published.</p>
           </div>
         </div>
       )}

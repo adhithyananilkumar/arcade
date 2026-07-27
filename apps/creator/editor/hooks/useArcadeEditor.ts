@@ -39,6 +39,8 @@ export interface UseArcadeEditorOptions {
    * mount; the resulting edit persists the migrated content on the next auto-save.
    */
   seedContent?: TiptapDocument;
+  /** Content type of the editor. */
+  contentType?: "course" | "workshop" | "roadmap";
 }
 
 const DEBOUNCE_MS = 2000;
@@ -59,6 +61,7 @@ export function useArcadeEditor({
   onSave,
   ydoc,
   seedContent,
+  contentType,
 }: UseArcadeEditorOptions = {}) {
   // The debounced function must be referentially stable (recreating it would drop
   // pending saves), but it must also call the *current* onSave. Reading through a
@@ -111,6 +114,10 @@ export function useArcadeEditor({
       debouncedSave(editor);
     },
   });
+
+  if (editor) {
+    (editor as any).contentType = contentType;
+  }
 
   // ── One-time legacy seeding ─────────────────────────────────────────────────
   // A lesson that predates version history has JSON but no persisted CRDT state.

@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { CourseRenderer, courseDeliveryService } from "@/domains/learning";
 import { getQuizStats, type QuizStatsResponse } from "@/domains/assessments";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
-import { api } from "@/infrastructure/http/api";
+import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
+import { platformReviewApi } from "@/domains/publishing";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { ArcadeEditor } from "@/apps/creator/editor";
+import { api } from "@/infrastructure/http/api";
 
 type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
 
@@ -21,10 +23,10 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const { user } = useAuthStore();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLessonId, setHistoryLessonId] = useState<string | null>(null);
+  const [publishedCourse, setPublishedCourse] = useState<CourseRenderResponse | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(null);
 
-  const canPublish =
-    user?.permissions?.some((p) => p === "courses.review" || p === "channel.courses.review") ||
-    user?.permissions?.includes("ROLE_SUPER_USER");
+  const canPublish = AuthorizationService.canReviewContent(user);
 
   useEffect(() => {
     courseDeliveryService
@@ -49,6 +51,22 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       .finally(() => setLoading(false));
   }, [courseId]);
 
+  useEffect(() => {
+    if (canPublish) {
+      api
+        .get<CourseRenderResponse>(`/api/courses/${courseId}/render?publishedOnly=true`)
+        .then((pubData) => setPublishedCourse(pubData ?? null))
+        .catch(() => setPublishedCourse(null));
+      platformReviewApi
+        .byContent("COURSE", courseId)
+        .then((r) => setReviewId(r.id))
+        .catch(() => setReviewId(null));
+    } else {
+      setPublishedCourse(null);
+      setReviewId(null);
+    }
+  }, [courseId, canPublish]);
+
   function toggleModule(moduleId: string) {
     setCollapsedModules((prev) => {
       const next = new Set(prev);
@@ -58,25 +76,36 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
     });
   }
 
-  const handlePublish = async () => {
+  const handlePublish = async (note: string) => {
     try {
-      await api.post(`/api/courses/${courseId}/approve`, {});
+      if (reviewId) {
+        await platformReviewApi.decide(reviewId, { decision: "APPROVE", note });
+      } else {
+        await api.post(`/api/courses/${courseId}/approve`, { note });
+      }
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
-    } catch (err) {
-      alert("Failed to publish the course.");
+    } catch {
+      throw new Error("Failed to publish the course.");
     }
   };
 
   const handleReject = async (reason: string) => {
     try {
-      await api.post(`/api/courses/${courseId}/reject`, { reason });
+      if (reviewId) {
+        await platformReviewApi.decide(reviewId, {
+          decision: "REQUEST_CHANGES",
+          reason,
+        });
+      } else {
+        await api.post(`/api/courses/${courseId}/reject`, { reason });
+      }
       if (course) {
         setCourse({ ...course, status: "REJECTED" });
       }
-    } catch (err) {
-      alert("Failed to reject the course.");
+    } catch {
+      throw new Error("Failed to reject the course.");
     }
   };
 
@@ -102,25 +131,47 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
   const [commentsError, setCommentsError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (selectedItem?.kind === 'lesson' && isFeedbackOpen) {
+    if (selectedItem?.kind === 'lesson' && isFeedbackOpen && reviewId) {
       setCommentsLoading(true);
       setCommentsError(null);
-      api
-        .get<any[]>(`/api/lessons/${selectedItem.id}/comments`)
-        .then(setComments)
+      platformReviewApi
+        .listComments(reviewId, "LESSON", selectedItem.id)
+        .then((rows) =>
+          setComments(
+            rows.map((c) => ({
+              id: c.id,
+              lessonId: c.targetId,
+              authorId: c.authorId,
+              authorName: c.authorName,
+              content: c.body,
+              createdAt: c.createdAt,
+            }))
+          )
+        )
         .catch(() => setCommentsError("You do not have access to view reviewer feedback."))
         .finally(() => setCommentsLoading(false));
     }
-  }, [selectedItem?.id, isFeedbackOpen]);
+  }, [selectedItem?.id, isFeedbackOpen, reviewId]);
 
   const handleAddComment = async (content: string) => {
-    if (selectedItem?.kind !== 'lesson') return;
+    if (selectedItem?.kind !== 'lesson' || !reviewId) return;
     try {
-      const added = await api.post<any>(
-        `/api/lessons/${selectedItem.id}/comments`,
-        { content }
-      );
-      setComments((prev) => [...prev, added]);
+      const added = await platformReviewApi.addComment(reviewId, {
+        targetType: "LESSON",
+        targetId: selectedItem.id,
+        body: content,
+      });
+      setComments((prev) => [
+        ...prev,
+        {
+          id: added.id,
+          lessonId: added.targetId,
+          authorId: added.authorId,
+          authorName: added.authorName,
+          content: added.body,
+          createdAt: added.createdAt,
+        },
+      ]);
     } catch (err) {
       alert("Failed to post feedback.");
     }
@@ -138,6 +189,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         toggleModule={toggleModule}
         quizStats={quizStats}
         canPublish={!!canPublish}
+        publishedCourse={publishedCourse}
         onPublish={handlePublish}
         onReject={handleReject}
         onAttemptGraded={handleAttemptGraded}
@@ -150,18 +202,19 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
         onAddComment={handleAddComment}
         currentUser={user ? { id: user.id, name: `${user.firstName} ${user.lastName}`, avatarUrl: user.avatarUrl ?? undefined } : undefined}
         onViewHistory={(lessonId) => {
-          setHistoryLessonId(lessonId);
+          setHistoryLessonId(lessonId || (selectedItem?.kind === "lesson" ? selectedItem.id : course?.modules[0]?.lessons[0]?.id) || "");
           setHistoryOpen(true);
         }}
       />
-      {historyLessonId && (
+      {historyOpen && (
         <VersionHistoryOrchestrator
-          lessonId={historyLessonId}
+          lessonId={historyLessonId || (selectedItem?.kind === "lesson" ? selectedItem.id : course?.modules[0]?.lessons[0]?.id) || ""}
+          courseId={courseId}
+          isSuView={!!canPublish}
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           refreshKey={0}
           onRestore={async () => {
-             // Admin doesn't restore versions in review mode. We can just no-op or close.
              setHistoryOpen(false);
           }}
           renderEditor={(previewDoc, selectedId) => (

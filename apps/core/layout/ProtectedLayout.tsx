@@ -16,13 +16,26 @@
  * ------------------------------------------------------------------
  */
 
-
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthService } from '@/infrastructure/auth/auth.service';
-import { UserService } from "@/domains/identity";
-import { Loader2 } from 'lucide-react';
+import { UserService } from '@/domains/identity';
+import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+
+function AuthTransition({ label }: { label: string }) {
+  return (
+    <div
+      className="flex h-screen w-full flex-col items-center justify-center gap-2"
+      style={{
+        background:
+          'linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 35%, #FFFFFF 70%, #EAF7EF 100%)',
+      }}
+    >
+      <PebbleLoader label={label} />
+    </div>
+  );
+}
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, status, setStatus, setAuth } = useAuthStore();
@@ -40,13 +53,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       if (status === 'loading') {
         try {
           let { accessToken, user } = await AuthService.refresh();
-          
-          // Set auth immediately so api can use the token
+
           setAuth(user || {}, accessToken);
 
           if (!user || Object.keys(user).length === 0) {
             try {
-              // Try to fetch user from backend if missing from AuthResponse
               user = await UserService.getMe();
               setAuth(user, accessToken);
             } catch (err) {
@@ -76,33 +87,21 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     }
   }, [mounted, status, user, pathname, router]);
 
-  // Avoid hydration mismatch
   if (!mounted) return null;
 
   if (status === 'loading') {
-    return <>{children}</>;
+    return <AuthTransition label="Getting things ready" />;
   }
 
-  // Prevent rendering the dashboard if the user needs to be redirected to onboarding (FOUC fix)
   if (status === 'authenticated' && user) {
     const isOnboarding = pathname.startsWith('/onboarding');
-    
+
     if (user.onboardingCompleted === false && !isOnboarding) {
-      return (
-        <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-          <p className="text-gray-500 font-medium">Preparing your setup...</p>
-        </div>
-      );
+      return <AuthTransition label="Preparing your setup" />;
     }
-    
+
     if (user.onboardingCompleted === true && isOnboarding) {
-      return (
-        <div className="flex h-screen w-full items-center justify-center flex-col gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-          <p className="text-gray-500 font-medium">Redirecting to dashboard...</p>
-        </div>
-      );
+      return <AuthTransition label="Taking you in" />;
     }
   }
 

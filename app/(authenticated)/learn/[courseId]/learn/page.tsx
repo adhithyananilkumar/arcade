@@ -1,12 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
 import type { CourseResponse, LessonResponse } from '@/shared/types/api.types';
-import { BookOpen, ChevronLeft, PlayCircle, FileText } from 'lucide-react';
-import { TiptapContentView } from "@/domains/learning";
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  CheckCircle2,
+} from 'lucide-react';
+import { TiptapContentView, courseProgressService, type CourseProgress } from '@/domains/learning';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function CourseLearnPage() {
   const params = useParams();
@@ -14,132 +21,356 @@ export default function CourseLearnPage() {
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState<LessonResponse | null>(null);
+  const [progress, setProgress] = useState<CourseProgress | null>(null);
+  const [marking, setMarking] = useState(false);
+
+  const courseId = params?.courseId as string | undefined;
 
   useEffect(() => {
-    if (params?.courseId) {
-      api.get<CourseResponse>(`/api/v1/public/courses/${params.courseId}`)
+    if (courseId) {
+      api
+        .get<CourseResponse>(`/api/v1/public/courses/${courseId}`)
         .then((data) => {
           setCourse(data);
-          // Auto-select first lesson if available
-          if (data.modules && data.modules.length > 0 && data.modules[0].lessons && data.modules[0].lessons.length > 0) {
+          if (
+            data.modules &&
+            data.modules.length > 0 &&
+            data.modules[0].lessons &&
+            data.modules[0].lessons.length > 0
+          ) {
             setSelectedLesson(data.modules[0].lessons[0]);
           }
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+
+      courseProgressService
+        .getCourseProgress(courseId)
+        .then(setProgress)
+        .catch(() => setProgress(null));
     } else {
       setLoading(false);
     }
-  }, [params?.courseId]);
+  }, [courseId]);
+
+  const orderedLessons = useMemo(
+    () => course?.modules.flatMap((mod) => mod.lessons) ?? [],
+    [course],
+  );
+
+  const lessonNumberById = useMemo(() => {
+    const map = new Map<string, number>();
+    let n = 0;
+    course?.modules.forEach((mod) => {
+      mod.lessons.forEach((lesson) => {
+        n += 1;
+        map.set(lesson.id, n);
+      });
+    });
+    return map;
+  }, [course]);
+
+  const currentLessonIndex = selectedLesson
+    ? orderedLessons.findIndex((lesson) => lesson.id === selectedLesson.id)
+    : -1;
+  const previousLesson = currentLessonIndex > 0 ? orderedLessons[currentLessonIndex - 1] : null;
+  const nextLesson =
+    currentLessonIndex >= 0 && currentLessonIndex < orderedLessons.length - 1
+      ? orderedLessons[currentLessonIndex + 1]
+      : null;
+  const isLastLesson =
+    currentLessonIndex >= 0 && currentLessonIndex === orderedLessons.length - 1;
+
+  const isLessonComplete = (lessonId: string) =>
+    progress?.completedLessonIds.includes(lessonId) ?? false;
+
+  const markComplete = async (): Promise<CourseProgress | null> => {
+    if (!courseId || !selectedLesson) return null;
+    if (isLessonComplete(selectedLesson.id)) return progress;
+    const previousStatus = progress?.enrollmentStatus;
+    const updated = await courseProgressService.markLessonComplete(courseId, selectedLesson.id);
+    setProgress(updated);
+    if (previousStatus !== 'COMPLETED' && updated.enrollmentStatus === 'COMPLETED') {
+      toast.success('Course completed!');
+    }
+    return updated;
+  };
+
+  const handleNext = async () => {
+    if (!selectedLesson) return;
+    setMarking(true);
+    try {
+      await markComplete();
+      if (nextLesson) {
+        setSelectedLesson(nextLesson);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (err) {
+      console.error('Failed to advance to next lesson:', err);
+      toast.error('Could not update progress.');
+    } finally {
+      setMarking(false);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (!previousLesson) return;
+    setSelectedLesson(previousLesson);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-black">
-        <div className="size-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent dark:border-indigo-400" />
+      <main
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        <div className="size-8 animate-spin rounded-full border-2 border-[#14142b] border-t-transparent" />
       </main>
     );
   }
 
   if (!course) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 dark:bg-black text-slate-800 dark:text-white">
+      <main
+        className="flex min-h-screen flex-col items-center justify-center px-4 text-[#14142b]"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
         <h2 className="mb-2 text-xl font-bold">Course not found</h2>
-        <p className="mb-6 text-slate-500 dark:text-slate-400">The course you are looking for does not exist or you do not have access.</p>
-        <button onClick={() => router.back()} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700">
-          Go Back
+        <p className="mb-6 text-sm font-medium text-slate-500">
+          This course does not exist or you do not have access.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#232735]"
+        >
+          Go back
         </button>
       </main>
     );
   }
 
-  return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-slate-50 dark:bg-neutral-950 md:flex-row">
-      {/* Sidebar Navigation */}
-      <aside className="w-full shrink-0 border-r border-slate-200 dark:border-neutral-800 bg-white dark:bg-black md:w-80 md:flex-col md:h-[calc(100vh-4rem)] md:sticky md:top-16 overflow-y-auto">
-        <div className="p-4 border-b border-slate-200 dark:border-neutral-800">
-          <Link href="/my-courses" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-white transition-colors">
-            <ChevronLeft size={16} /> Back to My Courses
-          </Link>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight line-clamp-2">{course.title}</h2>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-500/20">
-              <BookOpen size={12} /> Notes Mode
-            </span>
-          </div>
-        </div>
+  const lessonDone = selectedLesson ? isLessonComplete(selectedLesson.id) : false;
 
-        <div className="p-4 space-y-6">
-          {course.modules.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-neutral-500 italic">No modules available yet.</p>
-          ) : (
-            course.modules.map((mod, modIdx) => (
-              <div key={mod.id} className="space-y-2">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-500">
-                  Module {modIdx + 1}: {mod.title}
-                </h3>
-                <div className="flex flex-col gap-1">
-                  {mod.lessons.length === 0 ? (
-                    <p className="text-xs text-slate-400 dark:text-neutral-600 pl-2">No lessons</p>
-                  ) : (
-                    mod.lessons.map((lesson, lessonIdx) => {
-                      const isSelected = selectedLesson?.id === lesson.id;
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => setSelectedLesson(lesson)}
-                          className={`flex items-start gap-3 rounded-xl p-3 text-left transition-all ${
-                            isSelected
-                              ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20'
-                              : 'hover:bg-slate-100 dark:hover:bg-neutral-900 border border-transparent'
-                          }`}
-                        >
-                          <span className={`mt-0.5 shrink-0 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-neutral-500'}`}>
-                            {lesson.body ? <FileText size={16} /> : <PlayCircle size={16} />}
-                          </span>
-                          <div>
-                            <span className={`block text-sm font-medium ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-neutral-300'}`}>
-                              {lessonIdx + 1}. {lesson.title}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
+  return (
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+      }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[320px]"
+        style={{
+          backgroundImage:
+            'radial-gradient(ellipse 45% 40% at 8% 20%, rgba(255,107,74,0.1) 0%, transparent 55%), radial-gradient(ellipse 40% 35% at 92% 10%, rgba(20,20,43,0.06) 0%, transparent 50%)',
+        }}
+      />
+
+      {/* Clear floating navbar */}
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col pt-28 md:flex-row md:pt-32">
+        {/* Sidebar */}
+        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/70 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] md:border-b-0 md:border-r md:border-slate-200/70 lg:w-[300px]">
+          <div className="space-y-4 px-5 pb-4 md:px-6">
+            <Link
+              href="/my-learning"
+              className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+            >
+              <ChevronLeft size={14} />
+              My Learning
+            </Link>
+
+            <div>
+              <h2 className="text-[17px] font-bold leading-snug tracking-tight text-[#14142b] line-clamp-2">
+                {course.title}
+              </h2>
+              {progress?.enrollmentStatus === 'COMPLETED' && (
+                <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                  <CheckCircle2 size={12} />
+                  Course completed
+                </p>
+              )}
+            </div>
+
+            {progress && progress.totalLessons > 0 && (
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                  <span>
+                    {progress.completedLessons} of {progress.totalLessons}
+                  </span>
+                  <span className="tabular-nums text-[#14142b]">{progress.percent}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/80">
+                  <div
+                    className="h-full rounded-full bg-[#FF6B4A] transition-all duration-500"
+                    style={{ width: `${progress.percent}%` }}
+                  />
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </aside>
+            )}
+          </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 bg-slate-50 dark:bg-neutral-950 p-6 md:p-10">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-black p-6 shadow-sm md:p-12">
-          {selectedLesson ? (
-            <div className="space-y-8">
-              <header className="border-b border-slate-100 dark:border-neutral-800 pb-6">
-                <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{selectedLesson.title}</h1>
-              </header>
-              <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-indigo-600 hover:prose-a:text-indigo-500 dark:prose-a:text-indigo-400">
-                {selectedLesson.body ? (
-                  <TiptapContentView body={selectedLesson.body} />
-                ) : (
-                  <div className="rounded-xl border border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 p-8 text-center text-slate-500 dark:text-neutral-400">
-                    <p className="mb-2 text-lg font-medium">Empty Lesson</p>
-                    <p className="text-sm">This lesson does not have any content yet.</p>
+          <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-8 md:px-4">
+            {course.modules.length === 0 ? (
+              <p className="px-2 text-sm text-slate-400">No modules yet.</p>
+            ) : (
+              course.modules.map((mod, modIdx) => (
+                <div key={mod.id}>
+                  <p className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {mod.lessons.map((lesson) => {
+                      const num = lessonNumberById.get(lesson.id) ?? 0;
+                      const isSelected = selectedLesson?.id === lesson.id;
+                      const isComplete = isLessonComplete(lesson.id);
+                      return (
+                        <li key={lesson.id}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedLesson(lesson)}
+                            className={`group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
+                              isSelected
+                                ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
+                                : 'text-slate-600 hover:bg-white/80 hover:text-[#14142b]'
+                            }`}
+                          >
+                            <span
+                              className={`grid size-6 shrink-0 place-items-center rounded-md text-[11px] font-bold tabular-nums ${
+                                isSelected
+                                  ? 'bg-white/15 text-white'
+                                  : isComplete
+                                    ? 'bg-emerald-50 text-emerald-600'
+                                    : 'bg-slate-100 text-slate-400'
+                              }`}
+                            >
+                              {isComplete && !isSelected ? (
+                                <Check size={12} strokeWidth={2.5} />
+                              ) : (
+                                num
+                              )}
+                            </span>
+                            <span
+                              className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
+                                isComplete && !isSelected ? 'text-slate-400' : ''
+                              }`}
+                            >
+                              {lesson.title}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))
+            )}
+          </nav>
+        </aside>
+
+        {/* Lesson canvas — centered & wide */}
+        <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12">
+          <article className="flex w-full max-w-4xl flex-col">
+            {selectedLesson ? (
+              <>
+                <header className="mb-6 md:mb-8">
+                  <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Lesson {currentLessonIndex + 1}
+                    {orderedLessons.length > 0 ? ` · ${orderedLessons.length}` : ''}
+                  </p>
+                  <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight text-[#14142b] md:text-[2.15rem]">
+                    {selectedLesson.title}
+                  </h1>
+                  {lessonDone && (
+                    <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-emerald-600">
+                      <CheckCircle2 size={14} />
+                      Completed
+                    </p>
+                  )}
+                </header>
+
+                <div className="min-h-[42vh] flex-1 rounded-lg border border-slate-200/80 bg-white/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
+                  <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
+                    {selectedLesson.body ? (
+                      <TiptapContentView body={selectedLesson.body} />
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-6 py-14 text-center">
+                        <BookOpen size={36} className="mx-auto mb-3 text-slate-300" />
+                        <p className="text-[15px] font-semibold text-[#14142b]">No content yet</p>
+                        <p className="mt-1 text-sm text-slate-400">
+                          This lesson does not have material published.
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+
+                {/* Bottom actions only — hide absent prev/next */}
+                <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-5 pb-10">
+                  <div>
+                    {previousLesson && (
+                      <button
+                        type="button"
+                        onClick={handlePrevious}
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2.5 text-[13px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+                      >
+                        <ChevronLeft size={16} />
+                        Previous
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="ml-auto flex items-center gap-2">
+                    {nextLesson ? (
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={marking}
+                        className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+                      >
+                        {marking
+                          ? 'Saving…'
+                          : lessonDone
+                            ? 'Next lesson'
+                            : 'Complete & next'}
+                        <ChevronRight size={16} />
+                      </button>
+                    ) : isLastLesson ? (
+                      lessonDone ? (
+                        <Link
+                          href="/my-learning"
+                          className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(5,150,105,0.22)] transition-colors hover:bg-emerald-700"
+                        >
+                          <CheckCircle2 size={16} />
+                          Back to My Learning
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleNext}
+                          disabled={marking}
+                          className="inline-flex items-center gap-2 rounded-full bg-[#FF6B4A] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(255,107,74,0.28)] transition-colors hover:bg-[#E85A3C] disabled:opacity-60"
+                        >
+                          <Check size={16} />
+                          {marking ? 'Saving…' : 'Complete lesson'}
+                        </button>
+                      )
+                    ) : null}
+                  </div>
+                </footer>
+              </>
+            ) : (
+              <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-lg border border-slate-200/80 bg-white/90 px-6 py-16 text-center shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+                <BookOpen size={40} className="mb-3 text-slate-300" />
+                <p className="text-lg font-bold text-[#14142b]">Pick a lesson</p>
+                <p className="mt-1 text-sm text-slate-400">Choose one from the sidebar to start.</p>
               </div>
-            </div>
-          ) : (
-            <div className="flex h-64 flex-col items-center justify-center text-center text-slate-500 dark:text-neutral-400">
-              <BookOpen size={48} className="mb-4 opacity-20" />
-              <p className="text-lg font-medium">Select a lesson to begin</p>
-              <p className="text-sm">Choose a lesson from the sidebar to view its content.</p>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+          </article>
+        </main>
+      </div>
     </div>
   );
 }

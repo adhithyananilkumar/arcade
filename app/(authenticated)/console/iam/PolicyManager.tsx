@@ -126,7 +126,7 @@ export function PolicyManager() {
               setEditingRole(null);
               setIsModalOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg transition-colors"
           >
             <Plus size={16} /> Create Policy
           </button>
@@ -139,7 +139,7 @@ export function PolicyManager() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-indigo-600" />
+                  <ShieldCheck size={18} className="text-[#14142b]" />
                   {role.displayName}
                   {role.systemRole && (
                     <span className="px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">System</span>
@@ -151,7 +151,7 @@ export function PolicyManager() {
                 {canManagePolicies && !role.systemRole && (
                   <button
                     onClick={() => startEditRole(role)}
-                    className="p-1.5 text-gray-500 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors"
+                    className="p-1.5 text-gray-500 hover:text-[#14142b] rounded-lg hover:bg-slate-100 transition-colors"
                     title="Edit Policy"
                   >
                     <Edit3 size={16} />
@@ -173,7 +173,7 @@ export function PolicyManager() {
               <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
               <div className="flex flex-wrap gap-1.5">
                 {role.permissions?.map((p: any) => (
-                  <span key={p.id} className="inline-block px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded border border-indigo-100">
+                  <span key={p.id} className="inline-block px-2 py-1 bg-slate-100 text-[#14142b] text-xs rounded border border-slate-200">
                     {formatPermissionKey(p.code)}
                   </span>
                 ))}

@@ -4,7 +4,7 @@
 Arcade is a modern, modular frontend built with Next.js, React, and TypeScript. It uses a strict boundary-enforced architecture (Apps + Domains) to scale maintainably. 
 **The frontend architecture has reached Version 1.0 and is STABLE.**
 
-> **Exception (2026-07-21, human-approved):** `/content` was renamed to `/studio` and
+> **Exception (2026-07-21, human-approved):** `/content` was renamed to `/render-engine` and
 > `/roadmaps` was merged into it as another content type. This was an explicit, requested
 > structural change — not a violation to revert. See
 > `docs/architecture/platform-architecture.md` §14 "Unified Content Model".

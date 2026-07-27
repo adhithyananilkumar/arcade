@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { useWorkshopForm } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopForm';
 import { PublishingChecklist } from './PublishingChecklist';
 import { WorkshopPreview } from './WorkshopPreview';
-import { validateWorkshop, publishWorkshop, archiveWorkshop, duplicateWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
+import { validateWorkshop, submitWorkshop, archiveWorkshop, duplicateWorkshop, getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
+import { CourseSubmitDialog } from '@/apps/creator/components/CourseSubmitDialog';
 import { PublishValidationResponse, WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
 import { useRouter } from 'next/navigation';
 
@@ -22,6 +23,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
   const [isPublishing, setIsPublishing] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   // Cast to any to check if an ID exists (i.e. if the draft was saved to backend)
   const workshopId = (form.formData as any).id;
@@ -50,27 +52,30 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     loadData();
   }, [workshopId]);
 
-  const handlePublish = async () => {
+  const handleOpenSubmit = async () => {
+    let targetId = workshopId;
+    if (!targetId && onSaveDraft) {
+      targetId = await onSaveDraft(false);
+    }
+    if (!targetId) {
+      toast.error('Please fill in Title and Category first.');
+      return;
+    }
+    setSubmitDialogOpen(true);
+  };
+
+  const handleSubmit = async (data: { message?: string }) => {
     setIsPublishing(true);
     try {
-      let targetId = workshopId;
-      if (!targetId && onSaveDraft) {
-        targetId = await onSaveDraft(false);
-      }
-
-      if (!targetId) {
-        toast.error('Please fill in Title and Category first.');
-        return;
-      }
-
-      await publishWorkshop(targetId);
-      toast.success('Workshop published successfully!');
+      await submitWorkshop(workshopId, data);
+      toast.success('Workshop submitted for review successfully!');
       router.push('/studio');
     } catch (e: any) {
-      console.error('Publish error:', e);
-      toast.error(e?.message || 'Failed to publish workshop.');
+      console.error('Submit error:', e);
+      toast.error(e?.message || 'Failed to submit workshop.');
     } finally {
       setIsPublishing(false);
+      setSubmitDialogOpen(false);
     }
   };
 
@@ -149,14 +154,14 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
           </h3>
           <div className="space-y-3">
             <button
-              onClick={handlePublish}
+              onClick={handleOpenSubmit}
               disabled={isPublishing}
               className="w-full py-2.5 px-4 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors bg-violet-600 hover:bg-violet-700 text-white dark:ring-offset-gray-900 cursor-pointer disabled:opacity-50"
             >
-              {isPublishing ? 'Publishing...' : 'Publish Workshop'}
+              {isPublishing ? 'Submitting...' : 'Submit for Review'}
             </button>
             <button
-              onClick={onSaveDraft}
+              onClick={() => onSaveDraft?.(false)}
               disabled={isSaving}
               className="w-full py-2.5 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 shadow-sm transition-colors"
             >
@@ -179,6 +184,14 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
           </div>
         </div>
       </div>
+      {submitDialogOpen && (
+        <CourseSubmitDialog
+          contentType="workshop"
+          open={submitDialogOpen}
+          onClose={() => setSubmitDialogOpen(false)}
+          onSubmit={handleSubmit}
+        />
+      )}
     </div>
   );
 };

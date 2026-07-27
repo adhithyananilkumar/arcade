@@ -27,7 +27,17 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/dashboard/admin/settings',
-        destination: '/arc-console/settings',
+        destination: '/console/iam',
+        permanent: true,
+      },
+      {
+        source: '/console/settings',
+        destination: '/console/iam',
+        permanent: true,
+      },
+      {
+        source: '/arc-console/settings',
+        destination: '/console/iam',
         permanent: true,
       },
       {

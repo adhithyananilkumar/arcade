@@ -1653,9 +1653,16 @@ const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-export default function CategoryDetailedView() {
+type CategoryDetailedViewProps = {
+  /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
+  hubBasePath?: string;
+};
+
+export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const exploreHome = hubBasePath || "/explore";
+  const isEmbeddedHub = Boolean(hubBasePath);
 
   // Route selector
   const initialCategory = searchParams.get("category");
@@ -1701,11 +1708,16 @@ export default function CategoryDetailedView() {
     setCourseSearchQuery("");
     setSelectedDifficulty("All Levels");
     setSelectedTopic("All Topics");
-    
-    const newUrl = `${window.location.pathname}?category=${encodeURIComponent(category)}`;
+
+    const base = hubBasePath || window.location.pathname;
+    const newUrl = `${base}?category=${encodeURIComponent(category)}`;
     window.history.replaceState(null, "", newUrl);
 
     coursesSectionRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+  };
+
+  const goToExploreHome = () => {
+    router.push(exploreHome);
   };
 
   const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
@@ -1732,7 +1744,15 @@ export default function CategoryDetailedView() {
   });
 
   return (
-    <div className="landing-root" style={{ minHeight: "100vh", paddingBottom: "100px" }}>
+    <div
+      className="landing-root"
+      style={{
+        // Authenticated hub already clears the dock via LearnerShell pb-28.
+        // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
+        minHeight: isEmbeddedHub ? "auto" : "100vh",
+        paddingBottom: isEmbeddedHub ? "8px" : "100px",
+      }}
+    >
       <style>{`
         .course-card-premium {
           transition: all 0.18s ease !important;
@@ -1989,20 +2009,69 @@ export default function CategoryDetailedView() {
         }
       `}</style>
 
-      {/* Main Container */}
-      <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "100px 24px 0", position: "relative", zIndex: 1 }}>
+      {/* Main Container — embedded hub needs clearance under fixed learner navbar (top-6 + h-12) */}
+      <main
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: isEmbeddedHub ? "88px 24px 0" : "100px 24px 0",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+
+        {/* Breadcrumb back into explore hub (authenticated) or public explore */}
+        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "0.85rem",
+              fontWeight: "600",
+              color: "rgba(20, 20, 43, 0.55)",
+              background: "rgba(255, 255, 255, 0.65)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "1px solid rgba(20, 23, 31, 0.06)",
+              padding: "10px 18px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
+            }}
+          >
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
+            >
+              Explore
+            </span>
+            <span>/</span>
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
+            >
+              Departments
+            </span>
+            <span>/</span>
+            <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
+          </div>
+        </div>
 
         {/* Hero Section Container (No background card, border, or shadow) */}
         <div
           style={{
             position: "relative",
-            marginBottom: "56px",
+            marginBottom: isEmbeddedHub ? "20px" : "56px",
             display: "grid",
             gridTemplateColumns: "1.2fr 0.8fr",
-            alignItems: "center",
-            gap: "40px",
+            alignItems: isEmbeddedHub ? "start" : "center",
+            gap: isEmbeddedHub ? "24px" : "40px",
             zIndex: 10,
-            padding: "24px 0"
+            padding: isEmbeddedHub ? "0" : "24px 0",
           }}
         >
 
@@ -2042,7 +2111,7 @@ export default function CategoryDetailedView() {
             </p>
 
             {/* Banner Inner Search */}
-            <div style={{ position: "relative", maxWidth: "480px", marginBottom: "20px" }}>
+            <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
               <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
@@ -2081,13 +2150,25 @@ export default function CategoryDetailedView() {
           </div>
 
           {/* Banner Right Panel: Honeycomb Sketch Illustration */}
-          <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              minHeight: isEmbeddedHub ? "220px" : "300px",
+              maxHeight: isEmbeddedHub ? "260px" : undefined,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 2,
+            }}
+          >
             <HoneycombIllustration />
           </div>
         </div>
 
         {/* Section A: Popular / Available Courses */}
-        <section ref={coursesSectionRef} style={{ marginBottom: "56px" }}>
+        <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
@@ -2200,7 +2281,7 @@ export default function CategoryDetailedView() {
         </section>
 
         {/* Section B: Bootcamps ("Trending Now" Layout) */}
-        <section style={{ marginBottom: "56px" }}>
+        <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />

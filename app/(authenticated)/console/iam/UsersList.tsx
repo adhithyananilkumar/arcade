@@ -104,7 +104,7 @@ export function UsersList() {
         </div>
         <input
           type="text"
-          className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
+          className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-[#14142b]/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
           placeholder="Search users by name, username, or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -121,7 +121,7 @@ export function UsersList() {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 border border-slate-200">
               <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
-              <AvatarFallback className="bg-indigo-50 text-indigo-700 font-semibold text-sm">
+              <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
                 {user.firstName ? user.firstName.charAt(0) : 'U'}
                 {user.lastName ? user.lastName.charAt(0) : ''}
               </AvatarFallback>
@@ -132,7 +132,7 @@ export function UsersList() {
                   href={`/${user.username}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:text-indigo-600 hover:underline transition-colors"
+                  className="hover:text-[#14142b] hover:underline transition-colors"
                 >
                   {user.firstName} {user.lastName}
                 </Link>
@@ -140,7 +140,7 @@ export function UsersList() {
               <p className="text-sm text-gray-500">{user.email}</p>
               <div className="mt-2 flex gap-2 flex-wrap">
                 {(user as any).platformRoles?.map((role: any) => (
-                  <span key={role.id} className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                  <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-[#14142b] ring-1 ring-inset ring-slate-300">
                     {role.name}
                   </span>
                 ))}
@@ -149,7 +149,7 @@ export function UsersList() {
           </div>
           <button 
             onClick={() => openAssignModal(user)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
           >
             <Shield size={16} /> Assign Policy
           </button>
@@ -191,7 +191,7 @@ export function UsersList() {
                       checked={selectedRoles.includes(role.id)}
                       onChange={() => !disabled && toggleRoleSelection(role.id)}
                       disabled={disabled}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50"
+                      className="h-4 w-4 rounded border-gray-300 text-[#14142b] focus:ring-slate-300 disabled:opacity-50"
                     />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
@@ -214,7 +214,7 @@ export function UsersList() {
               </button>
               <button
                 onClick={handleAssignRoles}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg"
               >
                 Save Assignments
               </button>

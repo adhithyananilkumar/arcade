@@ -400,8 +400,9 @@ function CourseHero({
   isEnrolling = false,
   isEnrolled = false,
   pricingModel,
-  priceAmount
-}: { 
+  priceAmount,
+  courseId
+}: {
   title: string
   authorName?: string
   authorUsername?: string
@@ -412,6 +413,7 @@ function CourseHero({
   isEnrolled?: boolean
   pricingModel?: string
   priceAmount?: number
+  courseId?: string
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -497,9 +499,12 @@ function CourseHero({
               )}
             </div>
             {isEnrolled ? (
-              <button className="flex h-11 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-6 font-semibold text-green-500 transition-all">
-                <Check size={18} /> Enrolled
-              </button>
+              <Link
+                href={`/learn/${courseId}/learn`}
+                className="flex h-11 items-center gap-2 rounded-full bg-green-500 px-6 font-semibold text-white transition-all hover:bg-green-600"
+              >
+                <Check size={18} /> Go to course
+              </Link>
             ) : (
               <EnrollButton onClick={onEnroll}>
                 {isEnrolling ? "Enrolling..." : "Enroll now"}
@@ -775,22 +780,24 @@ function CourseTabs() {
         )}
 
         {tab === "Exam" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 text-center sm:items-center">
-            <div className="flex flex-col items-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/15 px-3 py-1.5 text-[12px] font-semibold text-indigo-500">
-                <BadgeCheck size={14} className="text-indigo-500" /> Final Assessment
-              </span>
-              <h3 className="mt-4 font-serif text-3xl font-light text-ink">Take the Final Exam</h3>
-              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                Test your knowledge with a 25-question, 60-minute exam covering all course modules. Complete this exam in a proctored fullscreen environment to earn your certificate!
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-slate-200/80 bg-white/95 p-8 text-center shadow-[0_8px_24px_rgba(20,20,43,0.05)] sm:p-10">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
+              <BadgeCheck size={14} /> Final assessment
+            </span>
+            <div>
+              <h3 className="text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+                Take the final exam
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-slate-500">
+                25 questions · 60 minutes · secure fullscreen session. Pass to earn your certificate.
               </p>
-              <Link 
-                href={`/learn/${params.courseId}/exam`}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-8 py-3.5 font-bold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-95"
-              >
-                Proceed to Exam <ChevronRight size={18} />
-              </Link>
             </div>
+            <Link
+              href={`/learn/${params.courseId}/exam`}
+              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+            >
+              Proceed to exam <ChevronRight size={16} />
+            </Link>
           </div>
         )}
       </div>
@@ -856,7 +863,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number }) {
+function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -873,9 +880,12 @@ function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingM
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {isEnrolled ? (
-          <button className="flex h-12 items-center gap-2 rounded-full border border-green-500 bg-green-500/10 px-8 font-semibold text-green-500 transition-all">
-            <Check size={18} /> Enrolled
-          </button>
+          <Link
+            href={`/learn/${courseId}/learn`}
+            className="flex h-12 items-center gap-2 rounded-full bg-white px-8 font-semibold text-ink transition-all hover:bg-white/90"
+          >
+            <Check size={18} /> Go to course
+          </Link>
         ) : (
           <EnrollButton onClick={onEnroll}>
             {isEnrolling ? "Enrolling..." : "Enroll now"}
@@ -898,7 +908,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store"
 export default function CoursePage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuthStore()
+  const { user, updateUser } = useAuthStore()
   const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -906,23 +916,20 @@ export default function CoursePage() {
   const [isEnrolled, setIsEnrolled] = useState(false)
 
   useEffect(() => {
-    if ((user as any)?.enrolledCourses && course?.title) {
-      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.title === course.title)
-      if (alreadyEnrolled) setIsEnrolled(true)
+    if ((user as any)?.enrolledCourses && params?.courseId) {
+      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.courseId === params.courseId)
+      setIsEnrolled(alreadyEnrolled)
     }
-  }, [user, course])
+  }, [user, params?.courseId])
 
   const handleEnroll = async () => {
     if (!params?.courseId) return;
     try {
       setIsEnrolling(true);
-      await UserService.enrollInCourse(params.courseId as string);
+      const updatedUser = await UserService.enrollInCourse(params.courseId as string);
+      updateUser(updatedUser);
       toast.success("Successfully enrolled!");
       setIsEnrolled(true);
-      
-      // Update local auth store so it shows up in profile immediately if we go there
-      // (The actual backend update will be reflected when the profile page refetches, 
-      // but if we want instant we could also just let the profile page fetch on mount).
     } catch (error) {
       toast.error("Failed to enroll. Please try again.");
     } finally {
@@ -959,7 +966,7 @@ export default function CoursePage() {
     <main className="min-h-screen bg-transparent text-ink">
       {/* Hero wash */}
       <div className="arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-8 sm:px-8 sm:pt-12">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
           <CourseHero 
             title={displayTitle} 
             authorName={authorName}
@@ -971,6 +978,7 @@ export default function CoursePage() {
             isEnrolled={isEnrolled}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
+            courseId={params?.courseId as string}
           />
         </div>
       </div>
@@ -982,7 +990,7 @@ export default function CoursePage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} />
+          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
         </div>
       </div>
     </main>

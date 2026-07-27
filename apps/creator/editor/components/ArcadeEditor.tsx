@@ -82,6 +82,8 @@ interface ArcadeEditorProps {
    * (Figma-style). The host owns padding + scrolling.
    */
   chromeless?: boolean;
+  /** Content type of the editor. */
+  contentType?: "course" | "workshop" | "roadmap";
 }
 
 // Memoized because the host is a large orchestrator: a keystroke in the course-title
@@ -90,7 +92,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -128,6 +130,7 @@ export const ArcadeEditor = memo(
     onSave: handleSave,
     ydoc,
     seedContent,
+    contentType,
   });
 
   useImperativeHandle(
@@ -151,28 +154,32 @@ export const ArcadeEditor = memo(
     );
   }
 
+  const isRoadmap = contentType === "roadmap";
+console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
+
+
   return (
     <div
       className={
         chromeless
-          ? `relative flex flex-col ${className}`
+          ? `relative flex flex-col ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && <RichTextToolbar />}
+        {!readOnly && !isRoadmap && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={
             chromeless
-              ? "flex-1 min-h-[300px] focus-within:outline-none"
+              ? `flex-1 min-h-[300px] focus-within:outline-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
               : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
           }
         />
-        {!readOnly && <RichTextBubbles editor={editor} />}
+        {!readOnly && !isRoadmap && <RichTextBubbles editor={editor} />}
       </RichTextProvider>
       {/* Autosave status — subtle footer (card mode only) */}
-      {!readOnly && !chromeless && (
+      {!readOnly && !chromeless && !isRoadmap && (
         <SaveStatusFooter store={statusStore} editor={editor} />
       )}
     </div>

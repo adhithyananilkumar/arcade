@@ -12,9 +12,9 @@ export interface CanvasAppearance {
 
 export const defaultAppearance: CanvasAppearance = {
   backgroundType: 'color',
-  backgroundColor: '#ffffff',
-  grid: { show: true, type: 'dots', size: 20, opacity: 1, color: '#94a3b8', snap: true },
-  advanced: { noise: false, shadows: false, theme: 'light' }
+  backgroundColor: '#0b0f17',
+  grid: { show: true, type: 'dots', size: 24, opacity: 1, color: '#334155', snap: true },
+  advanced: { noise: false, shadows: true, theme: 'dark' }
 };
 
 interface AppearancePanelProps {

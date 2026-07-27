@@ -57,13 +57,31 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
             id="workshopType"
             value={formData.workshopType}
             onChange={(e) => handleChange('workshopType', e.target.value as any)}
-            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
+            disabled={formData.workshopType === 'WEBINAR'}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white disabled:opacity-60"
           >
-            {WORKSHOP_TYPES.map(t => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
+            {formData.workshopType === 'WEBINAR' ? (
+              <option value="WEBINAR">Webinar</option>
+            ) : (
+              WORKSHOP_TYPES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))
+            )}
           </select>
         </InputWrapper>
+
+        {formData.workshopType === 'WEBINAR' && (
+          <InputWrapper label="Meeting URL" name="meetingUrl" error={errors.meetingUrl} required>
+            <input
+              type="url"
+              id="meetingUrl"
+              value={formData.meetingUrl || ''}
+              onChange={(e) => handleChange('meetingUrl', e.target.value)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white"
+              placeholder="e.g. Zoom, Google Meet link"
+            />
+          </InputWrapper>
+        )}
 
         <InputWrapper label="Delivery Mode" name="deliveryMode" error={errors.deliveryMode} required>
           <select

@@ -22,6 +22,7 @@ export interface ContentMeta {
   pricingModel?: string;
   createdAt: string | null;
   updatedAt: string | null;
+  raw?: any;
 }
 
 export interface Terminology {

@@ -58,6 +58,7 @@ export const useWorkshopForm = () => {
       if (savedDraft) {
         try {
           const parsed = JSON.parse(savedDraft);
+          delete parsed.id; // Do not restore stale workshop ID from localStorage
           return {
             ...initialData,
             ...parsed,

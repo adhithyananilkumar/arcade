@@ -1,32 +1,36 @@
 .animated-button {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 10px 24px;
-  border: 2px solid;
-  border-color: transparent;
+  min-height: 44px;
+  padding: 10px 28px;
+  border: none;
+  border-radius: 999px;
   font-size: 14px;
-  background-color: inherit;
-  border-radius: 100px;
   font-weight: 600;
-  color: #4c6fff;
-  box-shadow: 0 0 0 2px #4c6fff;
+  color: #ffffff;
+  background-color: #4c6fff;
+  box-shadow: 0 8px 20px rgba(76, 111, 255, 0.28);
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  transition:
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
 }
 
 .animated-button svg {
   position: absolute;
   width: 18px;
-  fill: #4c6fff;
+  fill: #ffffff;
   z-index: 9;
-  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: all 0.55s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .animated-button .arr-1 {
-  right: 12px;
+  right: 14px;
 }
 
 .animated-button .arr-2 {
@@ -40,23 +44,25 @@
   transform: translate(-50%, -50%);
   width: 16px;
   height: 16px;
-  background-color: #4c6fff;
+  background-color: #3a56d4;
   border-radius: 50%;
   opacity: 0;
-  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: all 0.55s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .animated-button .text {
   position: relative;
   z-index: 1;
-  transform: translateX(-12px);
-  transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: translateX(-10px);
+  transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .animated-button:hover {
-  box-shadow: 0 0 0 12px transparent;
+  background-color: #3a56d4;
+  box-shadow: 0 10px 28px rgba(76, 111, 255, 0.38);
   color: #ffffff;
-  border-radius: 12px;
+  /* Keep the pill — never morph to a rectangle */
+  border-radius: 999px;
 }
 
 .animated-button:hover .arr-1 {
@@ -68,7 +74,7 @@
 }
 
 .animated-button:hover .text {
-  transform: translateX(12px);
+  transform: translateX(10px);
 }
 
 .animated-button:hover svg {
@@ -76,12 +82,17 @@
 }
 
 .animated-button:active {
-  scale: 0.95;
-  box-shadow: 0 0 0 4px #4c6fff;
+  transform: scale(0.97);
+  box-shadow: 0 4px 14px rgba(76, 111, 255, 0.3);
 }
 
 .animated-button:hover .circle {
-  width: 220px;
-  height: 220px;
+  width: 260px;
+  height: 260px;
   opacity: 1;
+}
+
+.animated-button:focus-visible {
+  outline: 2px solid #4c6fff;
+  outline-offset: 3px;
 }

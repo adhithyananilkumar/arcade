@@ -1,6 +1,8 @@
 export enum WorkshopStatus {
   DRAFT = 'DRAFT',
-  READY_FOR_REVIEW = 'READY_FOR_REVIEW',
+  SUBMITTED = 'SUBMITTED',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
   PUBLISHED = 'PUBLISHED',
   UNPUBLISHED = 'UNPUBLISHED',
   ARCHIVED = 'ARCHIVED',
@@ -48,6 +50,7 @@ export interface Workshop {
   coverImageUrl?: string;
   promoVideoUrl?: string;
   workshopType: WorkshopType;
+  meetingUrl?: string;
   deliveryMode: DeliveryMode;
   difficulty: Difficulty;
   language: string;

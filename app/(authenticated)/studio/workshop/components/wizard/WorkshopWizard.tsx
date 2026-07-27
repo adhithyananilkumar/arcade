@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { WorkshopHeader } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopHeader';
-import { WorkshopStepper } from '@/app/(authenticated)/studio/workshop/components/wizard/WorkshopStepper';
+
 import { WorkshopFooter } from '@/app/(authenticated)/studio/workshop/components/layout/WorkshopFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/workshop/components/wizard/BasicInformationStep';
 import { ScheduleStep } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/ScheduleStep';
@@ -32,18 +32,21 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
   const startStep = urlStep ? Math.max(0, parseInt(urlStep, 10) - 1) : initialStep;
   
   const [currentStep, setCurrentStep] = useState(startStep);
+  const [workshopStatus, setWorkshopStatus] = useState<string>('DRAFT');
   const form = useWorkshopForm();
 
   // Load existing workshop data when editing
   useEffect(() => {
-    if (workshopId && !( form.formData as any).id) {
+    if (workshopId) {
       getWorkshop(workshopId).then((data: any) => {
         // Populate form with existing workshop data
         form.handleChange('id' as any, data.id);
+        setWorkshopStatus(data.status || 'DRAFT');
         form.handleChange('title', data.title || '');
         form.handleChange('description', data.description || '');
         form.handleChange('category', data.category || '');
         form.handleChange('workshopType', data.workshopType || 'WORKSHOP');
+        if (data.meetingUrl) form.handleChange('meetingUrl', data.meetingUrl);
         form.handleChange('deliveryMode', data.deliveryMode || 'ONLINE');
         form.handleChange('difficulty', data.difficulty || 'BEGINNER');
         form.handleChange('language', data.language || 'en');
@@ -51,7 +54,14 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         if (data.price !== undefined) form.handleChange('price', data.price);
         if (data.coverImageUrl) form.handleChange('coverImageUrl', data.coverImageUrl);
         if (data.tags) form.handleChange('tags', data.tags);
-      }).catch(console.error);
+      }).catch((err) => {
+        console.error('Failed to load existing workshop:', err);
+        // Clear stale ID if workshop does not exist on server
+        form.handleChange('id' as any, undefined);
+      });
+    } else {
+      // On new workshop wizard, reset ID so we don't accidentally update a non-existent workshop
+      form.handleChange('id' as any, undefined);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workshopId]);
@@ -79,13 +89,14 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
         thumbnailUrl: form.formData.thumbnailUrl,
         coverImageUrl: form.formData.coverImageUrl,
         promoVideoUrl: form.formData.promoVideoUrl,
+        meetingUrl: form.formData.meetingUrl,
         workshopType: form.formData.workshopType,
         deliveryMode: form.formData.deliveryMode,
         difficulty: form.formData.difficulty,
         language: form.formData.language || 'en',
         price: form.formData.price || 0,
         currency: form.formData.currency || 'USD',
-        capacity: form.formData.capacity === '' ? null : form.formData.capacity,
+        capacity: (form.formData.capacity as any) === '' ? null : form.formData.capacity,
         visibility: form.formData.visibility
       };
 
@@ -93,7 +104,18 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
       let savedId = existingId;
 
       if (existingId) {
-        await updateWorkshop(existingId, createPayload);
+        try {
+          await updateWorkshop(existingId, createPayload);
+        } catch (updateErr: any) {
+          // If the workshop was not found on server (e.g. stale ID), fallback to creating a new workshop
+          if (updateErr?.message?.includes('not found') || updateErr?.message?.includes('404')) {
+            const response = await createWorkshop(createPayload);
+            savedId = response.id;
+            form.handleChange('id' as any, response.id);
+          } else {
+            throw updateErr;
+          }
+        }
       } else {
         const response = await createWorkshop(createPayload);
         savedId = response.id;
@@ -133,12 +155,16 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
     }
   };
 
+  const isWebinar = form.formData.workshopType === 'WEBINAR';
+  const hasId = !!((form.formData as any).id || workshopId);
+  const headerTitle = hasId ? (isWebinar ? 'Edit Webinar' : 'Edit Workshop') : (isWebinar ? 'Create Webinar' : 'Create Workshop');
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <WorkshopHeader />
+      <WorkshopHeader title={form.formData.title || "Create Workshop"} status={workshopStatus} />
 
       <div className="flex flex-col md:flex-row gap-8">
-        <WorkshopStepper currentStep={currentStep} onSelectStep={setCurrentStep} />
+
 
         <div className="flex-1 min-w-0">
           {currentStep === 0 && <BasicInformationStep form={form} />}
