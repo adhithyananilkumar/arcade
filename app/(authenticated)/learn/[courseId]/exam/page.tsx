@@ -1,9 +1,49 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { ChevronRight, AlertTriangle, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ChevronRight,
+  AlertTriangle,
+  ShieldCheck,
+  Monitor,
+  Eye,
+  Clock,
+  ListOrdered,
+} from 'lucide-react';
+
+const pageBg = {
+  background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
+};
+
+const RULES = [
+  {
+    icon: Monitor,
+    title: 'Fullscreen required',
+    body: 'The exam runs in fullscreen. Starting will enter fullscreen mode automatically.',
+  },
+  {
+    icon: Eye,
+    title: 'Anti-cheat monitoring',
+    body: 'Window focus and fullscreen are monitored. Leaving fullscreen registers a strike.',
+  },
+  {
+    icon: AlertTriangle,
+    title: 'Three strikes',
+    body: 'Two warnings are allowed. A third violation terminates the exam and marks it failed.',
+  },
+  {
+    icon: Clock,
+    title: '60 minutes · 25 questions',
+    body: 'The timer starts when you begin. Progress auto-submits if time runs out.',
+  },
+  {
+    icon: ListOrdered,
+    title: 'Navigation',
+    body: 'Mark questions for review and jump via the progress panel. Answer everything before submit.',
+  },
+];
 
 export default function ExamAcknowledgementPage() {
   const router = useRouter();
@@ -25,97 +65,103 @@ export default function ExamAcknowledgementPage() {
         await document.documentElement.requestFullscreen();
       }
     } catch (err) {
-      console.warn("Failed to enter fullscreen", err);
+      console.warn('Failed to enter fullscreen', err);
     }
     router.push(`/learn/${params.courseId}/exam/start`);
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen pb-28" style={pageBg}>
+      <div className="mx-auto max-w-3xl px-4 pt-28 sm:px-6 md:pt-32">
         <div className="mb-8 text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700 mb-4">
-            <ShieldCheck size={16} /> Secure Exam Environment
+          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
+            <ShieldCheck size={13} />
+            Secure exam
           </span>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Exam Acknowledgement
+          <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] sm:text-[2rem]">
+            Before you begin
           </h1>
-          <p className="mt-4 text-lg text-slate-600">
-            Please read the rules carefully and verify your identity before proceeding.
+          <p className="mx-auto mt-2 max-w-lg text-[13px] font-medium text-slate-500">
+            Read the conditions carefully. Starting locks you into a monitored fullscreen session.
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Rules */}
-          <div className="flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <AlertTriangle className="text-amber-500" /> Exam Conditions
-              </h2>
-            </div>
-            
-            <div className="p-8 prose prose-slate max-w-none space-y-4">
-              <h3 className="text-lg font-semibold">1. Fullscreen Requirement</h3>
-              <p className="text-slate-600">This exam must be taken in a fullscreen environment. When you click start, your browser will automatically enter fullscreen mode.</p>
-              
-              <h3 className="text-lg font-semibold mt-6">2. Anti-Cheat Monitoring</h3>
-              <p className="text-slate-600">Our system strictly monitors window focus and fullscreen status. If you attempt to exit fullscreen (e.g., by pressing Escape), the system will register a strike.</p>
-              
-              <h3 className="text-lg font-semibold mt-6">3. Three Strikes Rule</h3>
-              <p className="text-slate-600">You are allowed a maximum of 2 warnings. If you violate the fullscreen policy for a 3rd time, your exam will be immediately terminated and marked as failed.</p>
-
-              <h3 className="text-lg font-semibold mt-6">4. Time Limit</h3>
-              <p className="text-slate-600">You have exactly 60 minutes to complete 25 questions. The timer begins immediately when you start the exam. If time runs out, your current progress will be auto-submitted.</p>
-
-              <h3 className="text-lg font-semibold mt-6">5. Question Navigation</h3>
-              <p className="text-slate-600">You may mark questions for review and navigate between them using the right-side panel. Ensure all questions are answered before final submission.</p>
-              
-            </div>
-
-            {isTerminated && (
-              <div className="mx-6 mt-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle size={20} className="shrink-0" />
-                  <span className="font-medium">You cannot take this exam because your previous session was terminated due to anti-cheat violations.</span>
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_8px_28px_rgba(20,20,43,0.06)]">
+          <div className="divide-y divide-slate-100">
+            {RULES.map((rule) => {
+              const Icon = rule.icon;
+              return (
+                <div key={rule.title} className="flex gap-4 px-5 py-4 sm:px-6">
+                  <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl bg-slate-50 text-[#14142b]">
+                    <Icon size={16} />
+                  </span>
+                  <div>
+                    <h2 className="text-[13px] font-bold text-[#14142b]">{rule.title}</h2>
+                    <p className="mt-0.5 text-[12px] leading-relaxed text-slate-500">{rule.body}</p>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => {
-                    sessionStorage.removeItem(`exam_terminated_${params.courseId}`);
-                    setIsTerminated(false);
-                  }}
-                  className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg text-sm font-semibold transition-colors shrink-0"
-                >
-                  Reset (Dev)
-                </button>
-              </div>
-            )}
+              );
+            })}
+          </div>
 
-            <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-6">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input 
-                  type="radio" 
-                  checked={agreed}
-                  onChange={() => setAgreed(true)}
-                  className="mt-1 h-5 w-5 text-indigo-600 border-slate-300 focus:ring-indigo-600"
-                />
-                <span className="text-sm font-medium text-slate-700 max-w-lg">
-                  I confirm that I have read and agree to the above conditions. I understand that violating these rules will result in immediate termination.
+          {isTerminated && (
+            <div className="mx-5 mb-4 flex flex-col gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 sm:mx-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5 text-rose-700">
+                <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+                <span className="text-[12px] font-medium leading-relaxed">
+                  You cannot take this exam — a previous session was terminated for anti-cheat
+                  violations.
                 </span>
-              </label>
-
+              </div>
               <button
-                disabled={!canStart}
-                onClick={handleStartExam}
-                className={`flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold transition-all whitespace-nowrap ${
-                  canStart 
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm active:scale-95' 
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                }`}
+                type="button"
+                onClick={() => {
+                  sessionStorage.removeItem(`exam_terminated_${params.courseId}`);
+                  setIsTerminated(false);
+                }}
+                className="shrink-0 rounded-full bg-rose-100 px-3 py-1.5 text-[11px] font-bold text-rose-800 hover:bg-rose-200"
               >
-                Start Exam <ChevronRight size={18} />
+                Reset (dev)
               </button>
             </div>
+          )}
+
+          <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/80 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 size-4 rounded border-slate-300 text-[#14142b] focus:ring-[#14142b]/30"
+              />
+              <span className="max-w-md text-[12px] font-medium leading-relaxed text-slate-600">
+                I have read and agree to these conditions. I understand that violations may terminate
+                the exam.
+              </span>
+            </label>
+
+            <button
+              type="button"
+              disabled={!canStart}
+              onClick={handleStartExam}
+              className={`inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-6 py-2.5 text-[13px] font-semibold transition-all ${
+                canStart
+                  ? 'bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] hover:bg-[#232735]'
+                  : 'cursor-not-allowed bg-slate-200 text-slate-400'
+              }`}
+            >
+              Start exam <ChevronRight size={16} />
+            </button>
           </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link
+            href="/exam"
+            className="text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+          >
+            ← Back to today&apos;s exams
+          </Link>
         </div>
       </div>
     </div>

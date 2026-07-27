@@ -11,9 +11,8 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const { status } = useAuthStore();
   const { setUnreadCount, incrementUnreadCount } = useForumStore();
-  const { subscribe, clientRef } = useWebSocket();
+  const { subscribe, connected } = useWebSocket();
 
-  // Fetch initial unread count
   useEffect(() => {
     if (status !== 'authenticated') return;
     ForumService.getUnreadCount()
@@ -21,25 +20,17 @@ export function useNotifications() {
       .catch(() => {});
   }, [status, setUnreadCount]);
 
-  // Subscribe to real-time notifications
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== 'authenticated' || !connected) return;
 
-    // Wait for connection then subscribe
-    const interval = setInterval(() => {
-      if (clientRef.current?.connected) {
-        clearInterval(interval);
-        const unsub = subscribe('/user/queue/notifications', (body) => {
-          const notif = body as NotificationResponse;
-          setNotifications((prev) => [notif, ...prev.slice(0, 49)]);
-          incrementUnreadCount();
-        });
-        return () => unsub();
-      }
-    }, 500);
+    const unsub = subscribe('/user/queue/notifications', (body) => {
+      const notif = body as NotificationResponse;
+      setNotifications((prev) => [notif, ...prev.slice(0, 49)]);
+      incrementUnreadCount();
+    });
 
-    return () => clearInterval(interval);
-  }, [status, subscribe, incrementUnreadCount, clientRef]);
+    return unsub;
+  }, [status, connected, subscribe, incrementUnreadCount]);
 
   const markAllRead = useCallback(async () => {
     try {

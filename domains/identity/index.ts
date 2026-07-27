@@ -17,6 +17,9 @@
 
 export { UserService } from './api/user.service';
 export { default as AuthForm } from './components/AuthForm';
+export type { AuthView, AuthFormProps } from './components/AuthForm';
+export { AuthPeriodGear } from './components/AuthPeriodGear';
+export { PebbleLoader } from './components/PebbleLoader';
 export { roleService } from './api/iam/role.service';
 export type { Role, RoleRequest } from './api/iam/role.service';
 export { permissionService } from './api/iam/permission.service';

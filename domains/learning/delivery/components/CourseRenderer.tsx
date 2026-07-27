@@ -1,17 +1,26 @@
 // features/learning/delivery/components/CourseRenderer.tsx
-// Coursera-style course view: module/lesson sidebar + a read-only content pane.
-// Enroll/preview gating is deliberately skipped for now (see AGENTS.md D4 publishing gap) —
-// this reads the live authoring tree directly, creator-only, as a stopgap.
+// Review / published course view: module sidebar + read-only content pane.
 "use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, FileQuestion, History } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  FileQuestion,
+  History,
+  MessageSquare,
+  X,
+} from "lucide-react";
 import { TiptapContentView } from "./TiptapContentView";
 import { QuizPlayer, type QuizStatsResponse } from "@/domains/assessments";
 import { LessonReviewFeedback } from "./LessonReviewFeedback";
 import { PublishCourseDialog } from "./PublishCourseDialog";
 import type { CourseRenderResponse, LessonRenderResponse } from "@/shared/types/api.types";
+import { toast } from "sonner";
 
 type TreeItem =
   | { kind: "lesson"; moduleId: string; item: LessonRenderResponse }
@@ -29,7 +38,7 @@ interface CourseRendererProps {
   toggleModule: (moduleId: string) => void;
   quizStats: Record<string, QuizStatsResponse>;
   canPublish: boolean;
-  onPublish: () => Promise<void>;
+  onPublish: (note: string) => Promise<void>;
   onReject?: (reason: string) => Promise<void>;
   onAttemptGraded: (attempt: any, quizId: string) => void;
   mode?: string;
@@ -42,6 +51,21 @@ interface CourseRendererProps {
   onViewHistory?: (lessonId: string) => void;
   currentUser?: { id: string; name: string; avatarUrl?: string };
   publishedCourse?: CourseRenderResponse | null;
+}
+
+function statusTone(status: string) {
+  switch (status) {
+    case "PUBLISHED":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    case "REJECTED":
+      return "bg-rose-50 text-rose-700 border-rose-200";
+    case "SUBMITTED":
+      return "bg-amber-50 text-amber-800 border-amber-200";
+    case "APPROVED":
+      return "bg-sky-50 text-sky-700 border-sky-200";
+    default:
+      return "bg-slate-100 text-slate-600 border-slate-200";
+  }
 }
 
 export function CourseRenderer({
@@ -57,7 +81,6 @@ export function CourseRenderer({
   onPublish,
   onReject,
   onAttemptGraded,
-  mode,
   isFeedbackOpen,
   setIsFeedbackOpen,
   comments,
@@ -82,6 +105,28 @@ export function CourseRenderer({
     return null;
   }, [course, selectedItem]);
 
+  const selectedModule = useMemo(() => {
+    if (!course || !selectedItem) return null;
+    for (const mod of course.modules) {
+      if (selectedItem.kind === "lesson" && mod.lessons.some((l) => l.id === selectedItem.id)) {
+        return mod;
+      }
+      if (selectedItem.kind === "quiz" && mod.quizzes.some((q) => q.id === selectedItem.id)) {
+        return mod;
+      }
+    }
+    return null;
+  }, [course, selectedItem]);
+
+  const selectedQuizTitle = useMemo(() => {
+    if (!course || selectedItem?.kind !== "quiz") return null;
+    for (const mod of course.modules) {
+      const q = mod.quizzes.find((x) => x.id === selectedItem.id);
+      if (q) return q.title;
+    }
+    return null;
+  }, [course, selectedItem]);
+
   const publishedLesson = useMemo(() => {
     if (!publishedCourse || !selectedLesson) return null;
     for (const mod of publishedCourse.modules) {
@@ -93,10 +138,15 @@ export function CourseRenderer({
   }, [publishedCourse, selectedLesson]);
 
   const selectedQuizId = selectedItem?.kind === "quiz" ? selectedItem.id : null;
+  const crumbLabel =
+    selectedLesson?.title ?? selectedQuizTitle ?? (canPublish ? "Review" : "Overview");
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-gray-400">
+      <div
+        className="flex h-screen items-center justify-center text-[13px] font-medium text-slate-400"
+        style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)" }}
+      >
         Loading course…
       </div>
     );
@@ -104,65 +154,50 @@ export function CourseRenderer({
 
   if (error || !course) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 text-center">
-        <p className="text-sm text-red-500">{error ?? "Course not found"}</p>
-        <Link href="/studio/published" className="text-sm text-indigo-600 hover:underline">
-          Back to Published Courses
+      <div
+        className="flex h-screen flex-col items-center justify-center gap-3 text-center"
+        style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)" }}
+      >
+        <p className="text-sm text-rose-600">{error ?? "Course not found"}</p>
+        <Link
+          href="/console/reviews"
+          className="text-[13px] font-semibold text-[#14142b] underline-offset-2 hover:underline"
+        >
+          Back to reviews
         </Link>
       </div>
     );
   }
+
   return (
-    <div className="flex h-screen bg-white">
-      {/* Sidebar */}
-      <aside className="flex w-80 flex-shrink-0 flex-col border-r border-gray-200 bg-gray-50">
-        <div className="border-b border-gray-200 px-5 py-4">
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 28%, #FFFFFF 72%)" }}
+    >
+      {/* Sidebar — navigation only */}
+      <aside className="flex w-[280px] shrink-0 flex-col border-r border-slate-200/80 bg-white/75 backdrop-blur-xl lg:w-[300px]">
+        <div className="border-b border-slate-100 px-4 pb-4 pt-5">
           <Link
-            href={canPublish ? "/studio/review" : "/studio/published"}
-            className="mb-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
+            href={canPublish ? "/console/reviews" : "/studio/published"}
+            className="mb-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
           >
             <ArrowLeft size={14} />
             Back
           </Link>
-          <h1 className="text-base font-bold leading-snug text-gray-900">{course.title}</h1>
-          {course.description && (
-            <p className="mt-1 text-xs leading-relaxed text-gray-500 line-clamp-3">
-              {course.description}
-            </p>
-          )}
-          {canPublish && (course.status === "SUBMITTED" || course.status === "APPROVED") && (
-            <div className="mt-4 flex flex-col gap-2">
-              <button
-                onClick={() => setIsPublishDialogOpen(true)}
-                className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
-              >
-                Approve & Publish
-              </button>
-              {onReject && (
-                <button
-                  onClick={() => setIsRejectDialogOpen(true)}
-                  className="w-full rounded-lg bg-red-50 text-red-600 px-3 py-2 text-sm font-semibold hover:bg-red-100 transition-colors border border-red-200"
-                >
-                  Reject Course
-                </button>
-              )}
-            </div>
-          )}
-          {course.status === "PUBLISHED" && (
-            <div className="mt-4 w-full rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 text-center border border-green-200">
-              Published
-            </div>
-          )}
-          {course.status === "REJECTED" && (
-            <div className="mt-4 w-full rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 text-center border border-red-200">
-              Rejected
-            </div>
-          )}
+
+          <p className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
+            {course.title}
+          </p>
+          <span
+            className={`mt-2 inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${statusTone(course.status)}`}
+          >
+            {course.status.replace(/_/g, " ")}
+          </span>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <nav className="flex-1 overflow-y-auto px-2.5 py-3">
           {course.modules.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-gray-400">
+            <p className="px-3 py-8 text-center text-[12px] text-slate-400">
               This course has no modules yet.
             </p>
           ) : (
@@ -177,7 +212,7 @@ export function CourseRenderer({
                     id: q.id,
                     title: q.title,
                     position: q.position,
-                  })
+                  }),
                 ),
               ].sort((a, b) => {
                 const posA = a.kind === "lesson" ? a.item.position : a.position;
@@ -186,33 +221,37 @@ export function CourseRenderer({
               });
 
               return (
-                <div key={mod.id} className="mb-2">
+                <div key={mod.id} className="mb-1.5">
                   <button
                     type="button"
                     onClick={() => toggleModule(mod.id)}
-                    className="flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-sm font-semibold text-gray-800 hover:bg-gray-100"
+                    className="flex w-full items-center gap-1.5 rounded-xl px-3 py-2 text-left text-[13px] font-semibold text-[#14142b] transition-colors hover:bg-slate-100/80"
                   >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-                    {mod.title}
+                    {collapsed ? (
+                      <ChevronRight size={14} className="shrink-0 text-slate-400" />
+                    ) : (
+                      <ChevronDown size={14} className="shrink-0 text-slate-400" />
+                    )}
+                    <span className="line-clamp-1">{mod.title}</span>
                   </button>
                   {!collapsed && (
-                    <div className="ml-3 border-l border-gray-200 pl-2">
+                    <div className="ml-2 space-y-0.5 border-l border-slate-200/80 pl-2">
                       {items.map((item) =>
                         item.kind === "lesson" ? (
                           <button
                             key={item.item.id}
                             type="button"
                             onClick={() => setSelectedItem({ kind: "lesson", id: item.item.id })}
-                            className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+                            className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                               selectedItem?.kind === "lesson" && selectedItem.id === item.item.id
-                                ? "bg-indigo-50 font-semibold text-indigo-700"
-                                : "text-gray-600 hover:bg-gray-100"
+                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
                             }`}
                           >
                             {selectedItem?.kind === "lesson" && selectedItem.id === item.item.id ? (
-                              <CheckCircle2 size={13} className="flex-shrink-0 text-indigo-500" />
+                              <CheckCircle2 size={13} className="shrink-0" />
                             ) : (
-                              <BookOpen size={13} className="flex-shrink-0 text-gray-400" />
+                              <BookOpen size={13} className="shrink-0 text-slate-400" />
                             )}
                             <span className="line-clamp-1">{item.item.title}</span>
                           </button>
@@ -221,28 +260,28 @@ export function CourseRenderer({
                             key={item.id}
                             type="button"
                             onClick={() => setSelectedItem({ kind: "quiz", id: item.id })}
-                            className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+                            className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
                               selectedItem?.kind === "quiz" && selectedItem.id === item.id
-                                ? "bg-indigo-50 font-semibold text-indigo-700"
-                                : "text-gray-600 hover:bg-gray-100"
+                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
                             }`}
                           >
                             <FileQuestion
                               size={13}
-                              className={`flex-shrink-0 ${
+                              className={`shrink-0 ${
                                 selectedItem?.kind === "quiz" && selectedItem.id === item.id
-                                  ? "text-indigo-500"
-                                  : "text-gray-400"
+                                  ? "text-white"
+                                  : "text-slate-400"
                               }`}
                             />
                             <span className="line-clamp-1 flex-1">{item.title}</span>
                             {quizStats[item.id]?.bestScore != null && (
-                              <span className="flex-shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+                              <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
                                 {quizStats[item.id].bestScore}/{quizStats[item.id].maxScore}
                               </span>
                             )}
                           </button>
-                        )
+                        ),
                       )}
                     </div>
                   )}
@@ -254,100 +293,172 @@ export function CourseRenderer({
       </aside>
 
       {/* Content pane */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-10 py-10">
-          {selectedLesson ? (
-            <>
-              <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
-                <h2 className="text-2xl font-bold text-gray-900">{selectedLesson.title}</h2>
-                <div className="flex items-center gap-2">
-                  {canPublish && publishedCourse && (
-                    <button
-                      onClick={() => setShowUpdatedContent(!showUpdatedContent)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors border shadow-sm ${
-                        showUpdatedContent
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
-                          : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                      }`}
-                    >
-                      <span>{showUpdatedContent ? "✨ Show Updated Content (Active)" : "📄 Show Published Content"}</span>
-                    </button>
-                  )}
-                  {canPublish && onViewHistory && (
-                    <button
-                      onClick={() => onViewHistory(selectedLesson.id)}
-                      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                    >
-                      <History size={14} />
-                      History
-                    </button>
-                  )}
-                </div>
-              </div>
-              <TiptapContentView
-                body={showUpdatedContent ? selectedLesson.body : (publishedLesson?.body || selectedLesson.body)}
-                publishedBody={showUpdatedContent && publishedCourse ? (publishedLesson?.body || null) : undefined}
-                emptyMessage="This lesson has no content yet."
-              />
-            </>
-          ) : selectedQuizId ? (
-            <QuizPlayer
-              key={selectedQuizId}
-              quizId={selectedQuizId}
-              onAttemptGraded={(attempt) => onAttemptGraded(attempt, selectedQuizId)}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center pt-10">
-              {course.coverImageUrl ? (
-                <div className="w-full max-w-lg aspect-video rounded-xl overflow-hidden shadow-lg mb-8 border border-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={course.coverImageUrl} alt={course.title} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="w-full max-w-lg aspect-video rounded-xl bg-gray-100 flex items-center justify-center mb-8 border border-gray-200">
-                  <span className="text-gray-400 font-medium">No cover image</span>
-                </div>
-              )}
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">{course.title}</h2>
-              <div className="flex items-center gap-4 text-sm font-medium text-gray-500 mb-8 bg-gray-50 px-6 py-3 rounded-full border border-gray-100">
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                  {course.pricingModel === 'PAID' ? `$${course.priceAmount?.toFixed(2)}` : 'Free Course'}
-                </span>
-                {course.examSchedule && (
-                   <>
-                    <span className="text-gray-300">•</span>
-                    <span>Exam scheduled</span>
-                  </>
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Top bar: breadcrumb + tools */}
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/60 px-6 py-3.5 backdrop-blur-xl">
+          <nav className="flex min-w-0 items-center gap-1.5 text-[12px]">
+            <span className="truncate font-semibold text-slate-400">{course.title}</span>
+            {selectedModule && (
+              <>
+                <span className="text-slate-300">/</span>
+                <span className="truncate font-semibold text-slate-400">{selectedModule.title}</span>
+              </>
+            )}
+            {(selectedLesson || selectedQuizTitle) && (
+              <>
+                <span className="text-slate-300">/</span>
+                <span className="truncate font-bold text-[#14142b]">{crumbLabel}</span>
+              </>
+            )}
+            {!selectedLesson && !selectedQuizTitle && (
+              <>
+                <span className="text-slate-300">/</span>
+                <span className="font-bold text-[#14142b]">{crumbLabel}</span>
+              </>
+            )}
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {canPublish && publishedCourse && selectedLesson && (
+              <button
+                type="button"
+                onClick={() => setShowUpdatedContent(!showUpdatedContent)}
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                  showUpdatedContent
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {showUpdatedContent ? "Updated" : "Published"}
+              </button>
+            )}
+            {canPublish && selectedLesson && onViewHistory && (
+              <button
+                type="button"
+                onClick={() => onViewHistory(selectedLesson.id)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-slate-50"
+              >
+                <History size={13} />
+                History
+              </button>
+            )}
+            {canPublish && (course.status === "SUBMITTED" || course.status === "APPROVED") && (
+              <>
+                {onReject && (
+                  <button
+                    type="button"
+                    onClick={() => setIsRejectDialogOpen(true)}
+                    className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-100"
+                  >
+                    Reject
+                  </button>
                 )}
-                {canPublish && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <span className="text-indigo-600">Review Mode</span>
-                  </>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setIsPublishDialogOpen(true)}
+                  className="rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+                >
+                  Approve & Publish
+                </button>
+              </>
+            )}
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-3xl px-8 py-8 lg:px-12">
+            {selectedLesson ? (
+              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+                <TiptapContentView
+                  body={
+                    showUpdatedContent
+                      ? selectedLesson.body
+                      : publishedLesson?.body || selectedLesson.body
+                  }
+                  publishedBody={
+                    showUpdatedContent && publishedCourse
+                      ? publishedLesson?.body || null
+                      : undefined
+                  }
+                  emptyMessage="This lesson has no content yet."
+                />
               </div>
-              <p className="text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">{course.description || "No description provided."}</p>
-              
-              <p className="text-sm text-gray-400 font-medium">Select a lesson from the sidebar to begin.</p>
-            </div>
-          )}
+            ) : selectedQuizId ? (
+              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
+                <QuizPlayer
+                  key={selectedQuizId}
+                  quizId={selectedQuizId}
+                  onAttemptGraded={(attempt) => onAttemptGraded(attempt, selectedQuizId)}
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center">
+                {course.coverImageUrl ? (
+                  <div className="mb-8 aspect-video w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200/80 shadow-[0_12px_32px_rgba(20,20,43,0.1)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={course.coverImageUrl}
+                      alt={course.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-8 flex aspect-video w-full max-w-lg items-center justify-center rounded-2xl border border-slate-200 bg-slate-50">
+                    <span className="text-[13px] font-medium text-slate-400">No cover image</span>
+                  </div>
+                )}
+                <h2 className="mb-3 text-2xl font-bold tracking-tight text-[#14142b]">
+                  {course.title}
+                </h2>
+                <div className="mb-6 flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-slate-500">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                    {course.pricingModel === "PAID"
+                      ? `$${course.priceAmount?.toFixed(2)}`
+                      : "Free"}
+                  </span>
+                  {course.examSchedule && (
+                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                      Exam scheduled
+                    </span>
+                  )}
+                  {canPublish && (
+                    <span className="rounded-full border border-[#14142b]/15 bg-[#14142b] px-3 py-1.5 text-white">
+                      Review mode
+                    </span>
+                  )}
+                </div>
+                <p className="mb-8 max-w-xl text-[14px] leading-relaxed text-slate-500">
+                  {course.description || "No description provided."}
+                </p>
+                <p className="text-[12px] font-medium text-slate-400">
+                  Select a lesson from the sidebar to begin review.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
-      {selectedLesson && (
+      {selectedLesson && canPublish && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
           {isFeedbackOpen && (
-            <div className="mb-4 w-[400px] h-[550px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-200">
-              <div className="bg-gray-900 px-4 py-3 flex items-center justify-between flex-shrink-0">
-                <div className="flex items-center gap-2 text-white">
-                  <span className="font-semibold text-sm">Reviewer Feedback</span>
+            <div className="mb-3 flex h-[560px] w-[400px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_20px_50px_rgba(20,20,43,0.18)] animate-in fade-in slide-in-from-bottom-4 duration-200">
+              <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="grid size-8 place-items-center rounded-xl bg-[#14142b] text-white">
+                    <MessageSquare size={14} />
+                  </span>
+                  <div>
+                    <p className="text-[13px] font-bold text-[#14142b]">Reviewer feedback</p>
+                    <p className="text-[10px] font-medium text-slate-400">Internal · this lesson</p>
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsFeedbackOpen(false)}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
                 >
-                  <span className="text-xl leading-none">&times;</span>
+                  <X size={16} />
                 </button>
               </div>
               <LessonReviewFeedback
@@ -358,17 +469,27 @@ export function CourseRenderer({
                   if (onAddComment) await onAddComment(selectedLesson.id, content);
                 }}
                 currentUser={currentUser}
-                className="flex-1 min-h-0"
+                hideHeader
+                className="min-h-0 flex-1"
               />
             </div>
           )}
           <button
+            type="button"
             onClick={() => setIsFeedbackOpen(!isFeedbackOpen)}
-            className={`flex items-center justify-center rounded-full p-4 shadow-lg transition-transform hover:scale-105 active:scale-95 font-semibold text-sm ${
-              isFeedbackOpen ? "bg-gray-900 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
+            className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-[13px] font-semibold shadow-[0_10px_24px_rgba(20,20,43,0.2)] transition-transform hover:scale-[1.02] active:scale-[0.98] ${
+              isFeedbackOpen
+                ? "bg-slate-800 text-white"
+                : "bg-[#14142b] text-white hover:bg-[#232735]"
             }`}
           >
-            {isFeedbackOpen ? "Close Feedback" : "Reviewer Feedback"}
+            <MessageSquare size={15} />
+            {isFeedbackOpen ? "Close feedback" : "Reviewer feedback"}
+            {!isFeedbackOpen && comments.length > 0 && (
+              <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] tabular-nums">
+                {comments.length}
+              </span>
+            )}
           </button>
         </div>
       )}
@@ -380,41 +501,52 @@ export function CourseRenderer({
       />
 
       {isRejectDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Reject Course</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Please provide a reason for rejecting this course. The author will see this comment.
-            </p>
-            <textarea
-              className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm resize-none mb-4"
-              placeholder="E.g., The audio quality in module 2 is poor..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-            />
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                onClick={() => setIsRejectDialogOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50"
-                disabled={!rejectReason.trim()}
-                onClick={() => {
-                  if (onReject) {
-                    onReject(rejectReason).then(() => {
-                      setIsRejectDialogOpen(false);
-                      setRejectReason("");
-                    });
-                  }
-                }}
-              >
-                Reject Course
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h2 className="text-[16px] font-bold tracking-tight text-[#14142b]">Reject course</h2>
+              <p className="mt-1 text-[12px] font-medium text-slate-500">
+                The author will see this reason on their submission.
+              </p>
+            </div>
+            <div className="px-6 py-5">
+              <textarea
+                className="h-32 w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none transition-shadow placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
+                placeholder="E.g. Audio quality in module 2 needs improvement…"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="rounded-full px-4 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:bg-slate-100"
+                  onClick={() => setIsRejectDialogOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full bg-rose-600 px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-40"
+                  disabled={!rejectReason.trim()}
+                  onClick={() => {
+                    if (onReject) {
+                      onReject(rejectReason)
+                        .then(() => {
+                          setIsRejectDialogOpen(false);
+                          setRejectReason("");
+                          toast.success("Changes requested");
+                        })
+                        .catch((err) => {
+                          toast.error(
+                            err instanceof Error ? err.message : "Failed to reject the course.",
+                          );
+                        });
+                    }
+                  }}
+                >
+                  Reject course
+                </button>
+              </div>
             </div>
           </div>
         </div>

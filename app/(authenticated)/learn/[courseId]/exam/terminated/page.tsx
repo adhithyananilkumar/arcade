@@ -1,46 +1,40 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { ShieldAlert, ChevronLeft } from 'lucide-react';
 
 export default function ExamTerminatedPage() {
-  const router = useRouter();
-  const params = useParams();
-
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4 font-sans selection:bg-red-500/30">
-      <div className="max-w-xl w-full bg-slate-800 rounded-3xl p-8 md:p-12 text-center border border-slate-700 shadow-2xl relative overflow-hidden">
-        
-        {/* Background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-red-600/20 blur-[80px] rounded-full pointer-events-none" />
-
-        <div className="relative z-10">
-          <div className="mx-auto w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-8 border border-red-500/20">
-            <ShieldAlert className="w-12 h-12 text-red-500" />
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+    >
+      <div className="w-full max-w-md overflow-hidden rounded-2xl border border-rose-200/80 bg-white text-center shadow-[0_20px_50px_rgba(20,20,43,0.12)]">
+        <div className="border-b border-rose-100 bg-rose-50 px-8 py-8">
+          <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-white text-rose-600 shadow-sm">
+            <ShieldAlert size={28} />
           </div>
-
-          <h1 className="text-4xl font-black text-white mb-4 tracking-tight">
-            Exam Terminated
+          <h1 className="mt-5 text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+            Exam terminated
           </h1>
-          
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 mb-8">
-            <p className="text-xl font-medium text-red-400">
-              You are not allowed anymore.
-            </p>
-          </div>
+          <p className="mt-2 text-[13px] font-semibold text-rose-700">
+            You are no longer allowed to continue this session.
+          </p>
+        </div>
 
-          <p className="text-slate-400 text-base leading-relaxed mb-10 max-w-md mx-auto">
-            Your exam session was forcefully terminated due to repeated violations of the fullscreen anti-cheat policy. All current progress has been voided.
+        <div className="px-8 py-7">
+          <p className="text-[13px] font-medium leading-relaxed text-slate-500">
+            The session ended after repeated fullscreen anti-cheat violations. Progress from this
+            attempt has been voided.
           </p>
 
-          <button 
-            onClick={() => {
-              window.location.href = '/';
-            }}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-slate-900 font-bold hover:bg-slate-100 transition-all active:scale-95 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+          <Link
+            href="/"
+            className="mt-7 inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-[#232735]"
           >
-            <ChevronLeft size={20} /> Back to Dashboard
-          </button>
+            <ChevronLeft size={16} />
+            Back to home
+          </Link>
         </div>
       </div>
     </div>

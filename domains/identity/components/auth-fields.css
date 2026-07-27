@@ -1,0 +1,43 @@
+/* Autofill + field polish for auth / onboarding inputs */
+
+.auth-field {
+  background-color: #ffffff !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.auth-field:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px rgba(76, 111, 255, 0.55),
+    0 0 0 4px rgba(76, 111, 255, 0.1);
+}
+
+.auth-field--error {
+  box-shadow:
+    inset 0 0 0 1.5px rgba(239, 68, 68, 0.55),
+    0 0 0 4px rgba(239, 68, 68, 0.08);
+}
+
+.auth-field input,
+.auth-field textarea {
+  background-color: transparent !important;
+  color: #0f172a !important;
+  caret-color: #0f172a;
+}
+
+/* Kill Chrome/Safari yellow/blue autofill paint that breaks rounded fields */
+.auth-field input:-webkit-autofill,
+.auth-field input:-webkit-autofill:hover,
+.auth-field input:-webkit-autofill:focus,
+.auth-field input:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  transition: background-color 99999s ease-in-out 0s;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  border-radius: inherit;
+}
+
+.auth-field input:-moz-autofill {
+  filter: none;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}

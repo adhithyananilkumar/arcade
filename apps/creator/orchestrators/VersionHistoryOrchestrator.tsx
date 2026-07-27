@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { api } from "@/infrastructure/http/api";
-import { VersionHistoryPanel, type CourseStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
+import { VersionHistoryPanel, type ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 
 interface VersionSummary {
@@ -47,7 +47,7 @@ export function VersionHistoryOrchestrator({
   const [selected, setSelected] = useState<VersionDetail | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  const [statusHistory, setStatusHistory] = useState<CourseStatusHistoryResponse[]>([]);
+  const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
   const [statusHistoryLoading, setStatusHistoryLoading] = useState(false);
 
   const loadVersions = useCallback(async () => {
@@ -74,7 +74,7 @@ export function VersionHistoryOrchestrator({
     if (!courseId) return;
     setStatusHistoryLoading(true);
     try {
-      const data = await api.get<CourseStatusHistoryResponse[]>(
+      const data = await api.get<ContentStatusHistoryResponse[]>(
         `/api/courses/${courseId}/status-history`
       );
       setStatusHistory(data ?? []);

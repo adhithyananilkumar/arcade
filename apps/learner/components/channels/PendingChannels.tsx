@@ -170,21 +170,21 @@ export function PendingChannels() {
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('PENDING')}
-            className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'PENDING' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'PENDING' ? 'text-[#14142b]' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Pending Requests
             {pendingChannels.length > 0 && (
-              <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-xs text-indigo-700">{pendingChannels.length}</span>
+              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-[#14142b]">{pendingChannels.length}</span>
             )}
-            {activeTab === 'PENDING' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
+            {activeTab === 'PENDING' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#14142b] rounded-t-full" />}
           </button>
           <button
             onClick={() => setActiveTab('ALL')}
-            className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'ALL' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'ALL' ? 'text-[#14142b]' : 'text-gray-500 hover:text-gray-700'}`}
           >
             All Channels
             <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{allChannels.length}</span>
-            {activeTab === 'ALL' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
+            {activeTab === 'ALL' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#14142b] rounded-t-full" />}
           </button>
         </div>
 
@@ -198,7 +198,7 @@ export function PendingChannels() {
               placeholder="Search channels..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-transparent transition-all"
             />
           </div>
         )}
@@ -211,7 +211,7 @@ export function PendingChannels() {
       {displayChannels.map((channel) => (
         <div key={channel.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100/80 transition-colors cursor-pointer" onClick={() => setSelectedChannel(channel)}>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 overflow-hidden shrink-0">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-[#14142b] overflow-hidden shrink-0">
               {channel.iconUrl ? (
                 <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
               ) : (
@@ -265,7 +265,7 @@ export function PendingChannels() {
                 href={`/channels/${channel.id}/manage`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                className="text-xs font-semibold text-[#14142b] bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 View
               </a>
@@ -303,7 +303,7 @@ export function PendingChannels() {
           {selectedChannel && (
             <div className="space-y-8 mt-6">
               <div className="flex items-center gap-6">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 overflow-hidden shrink-0 shadow-sm border border-indigo-50">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-100 text-[#14142b] overflow-hidden shrink-0 shadow-sm border border-slate-100">
                   {selectedChannel.iconUrl ? (
                     <img src={selectedChannel.iconUrl} alt={selectedChannel.name} className="h-full w-full object-cover" />
                   ) : (

@@ -1,202 +1,435 @@
 'use client';
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { motion, Variants } from 'framer-motion';
-import { Search, Star, Clock, BookOpen, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Search, BookOpen, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
 import type { CourseResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import DashboardLoading from '@/app/(authenticated)/loading';
+import { UserService } from '@/domains/identity';
+import { courseProgressService } from '@/domains/learning/progress/api/courseProgress';
+import GradientText from '@/apps/public/components/landing/GradientText';
+import { getPublishedWorkshops } from '@/app/(authenticated)/studio/workshop/api/discoveryApi';
+import type { Workshop } from '@/app/(authenticated)/studio/workshop/types';
+import { DeliveryMode } from '@/app/(authenticated)/studio/workshop/types';
+import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
+import { StreakCalendar } from './StreakCalendar';
+import {
+  FALLBACK_EVENTS,
+  pickDailyEvents,
+  ResumeAndEventsSection,
+  type EventCard,
+  type ResumeCourse,
+} from './ResumeAndEventsSection';
+import { HomeRoadmapPreview } from './HomeRoadmapPreview';
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08
-    }
+const NAME_GRADIENT = [
+  '#4C6FFF',
+  '#0EA5E9',
+  '#06B6D4',
+  '#1DB876',
+  '#F59E0B',
+  '#FF6B4A',
+  '#EC4899',
+  '#9B5DE5',
+  '#6366F1',
+  '#4C6FFF',
+];
+
+const RECOMMEND_HOVER_BORDERS = [
+  'hover:border-[#4C6FFF]',
+  'hover:border-[#FF6B4A]',
+  'hover:border-[#1DB876]',
+  'hover:border-[#9B5DE5]',
+  'hover:border-[#F59E0B]',
+  'hover:border-[#0EA5E9]',
+];
+
+const EVENT_TONES: EventCard['tone'][] = ['coral', 'blue', 'emerald', 'violet'];
+
+function computeStreak(activityByDate: Record<string, number>) {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const target = new Date(today);
+    target.setDate(today.getDate() - i);
+    const iso = target.toISOString().split('T')[0];
+    const minutes = Math.floor((activityByDate[iso] ?? 0) / 60);
+    if (minutes > 0) streak++;
+    else if (i === 0) continue;
+    else break;
   }
-};
+  return streak;
+}
+
+function deliveryLabel(mode?: DeliveryMode | string) {
+  switch (mode) {
+    case DeliveryMode.ONLINE:
+      return 'Online';
+    case DeliveryMode.OFFLINE:
+      return 'On campus';
+    case DeliveryMode.HYBRID:
+      return 'Hybrid';
+    case DeliveryMode.RECORDED:
+      return 'Recorded';
+    default:
+      return 'Open event';
+  }
+}
+
+function workshopToEvent(w: Workshop, index: number): EventCard {
+  const typeLabel = String(w.workshopType || 'Workshop')
+    .toLowerCase()
+    .replace(/_/g, ' ');
+  return {
+    id: w.id,
+    title: w.title,
+    tagline:
+      w.subtitle ||
+      w.description?.slice(0, 90) ||
+      `${typeLabel.charAt(0).toUpperCase()}${typeLabel.slice(1)} · ${w.category || 'General'}`,
+    when: new Date(w.updatedAt || w.createdAt).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    }),
+    where: deliveryLabel(w.deliveryMode),
+    seats:
+      typeof w.capacity === 'number' && w.capacity > 0
+        ? `${w.capacity} seats`
+        : 'Open registration',
+    tone: EVENT_TONES[index % EVENT_TONES.length],
+    href: `/workshop/${w.id}`,
+    statusLabel: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1),
+  };
+}
+
+/** Stable daily shuffle so recommendations change without jumping every refresh. */
+function pickDailyCourses(pool: CourseResponse[], count: number): CourseResponse[] {
+  if (pool.length <= count) return pool;
+  const day = Math.floor(Date.now() / 86_400_000);
+  const scored = pool.map((course, i) => {
+    const seed = (day * 31 + i * 17 + course.id.charCodeAt(0)) % 997;
+    return { course, seed };
+  });
+  scored.sort((a, b) => a.seed - b.seed);
+  return scored.slice(0, count).map((s) => s.course);
+}
 
 export default function LearnerHomePage() {
   const { user, status } = useAuthStore();
+  const router = useRouter();
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activityByDate, setActivityByDate] = useState<Record<string, number>>({});
+  const [query, setQuery] = useState('');
+  const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
+  const [resumeCourse, setResumeCourse] = useState<ResumeCourse | null>(null);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventCard[]>([]);
+
+  useEffect(() => {
+    const seen = typeof window !== 'undefined' && localStorage.getItem(HOME_SEEN_KEY);
+    setHasSeenHomeBefore(!!seen);
+    if (!seen) localStorage.setItem(HOME_SEEN_KEY, '1');
+  }, []);
 
   useEffect(() => {
     api
-      .get<CourseResponse[]>("/api/v1/public/courses")
-      .then((data) => {
-        // The backend ensures we only receive courses that have a published snapshot.
-        setCourses(data);
-      })
+      .get<CourseResponse[]>('/api/v1/public/courses')
+      .then(setCourses)
       .catch(() => setCourses([]))
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    getPublishedWorkshops({ size: 12 })
+      .then((page) => {
+        const list = page?.content ?? [];
+        if (list.length > 0) {
+          const mapped = list.map(workshopToEvent);
+          setUpcomingEvents(pickDailyEvents(mapped, 2));
+        } else {
+          setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 2));
+        }
+      })
+      .catch(() => {
+        setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 2));
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!user?.username) return;
+    UserService.getUserActivity(user.username)
+      .then((data) => {
+        const map: Record<string, number> = {};
+        data.forEach((item) => {
+          map[item.date] = item.secondsSpent;
+        });
+        setActivityByDate(map);
+      })
+      .catch(() => setActivityByDate({}));
+  }, [user?.username]);
+
+  // Pick most recent in-progress enrollment for Resume learning
+  useEffect(() => {
+    const enrolled = user?.enrolledCourses;
+    if (!enrolled?.length) {
+      setResumeCourse(null);
+      return;
+    }
+
+    const candidates = [...enrolled]
+      .filter((c: any) => {
+        const s = String(c.status || '').toLowerCase();
+        return s !== 'completed' && s !== 'dropped';
+      })
+      .sort((a: any, b: any) => {
+        const da = a.date ? new Date(a.date).getTime() : 0;
+        const db = b.date ? new Date(b.date).getTime() : 0;
+        return db - da;
+      });
+
+    const pick = candidates[0] || enrolled[0];
+    if (!pick?.courseId) {
+      setResumeCourse(null);
+      return;
+    }
+
+    const coverFromCatalog = courses.find((c) => c.id === pick.courseId)?.coverImageUrl;
+
+    setResumeCourse({
+      id: pick.courseId,
+      title: pick.title || 'Your course',
+      coverImageUrl: coverFromCatalog || pick.coverImageUrl,
+      progress: 0,
+      authorName: pick.authorName || pick.instructor,
+    });
+
+    courseProgressService
+      .getCourseProgress(pick.courseId)
+      .then((p) => {
+        setResumeCourse((prev) =>
+          prev && prev.id === pick.courseId
+            ? { ...prev, progress: p.percent ?? 0 }
+            : prev,
+        );
+      })
+      .catch(() => {});
+  }, [user?.enrolledCourses, courses]);
+
+  const streak = useMemo(() => computeStreak(activityByDate), [activityByDate]);
+  const enrolledCount = user?.enrolledCourses?.length ?? 0;
+
+  const recommendedCourses = useMemo(() => {
+    const enrolledIds = new Set(
+      (user?.enrolledCourses || []).map((c: any) => c.courseId).filter(Boolean),
+    );
+    const pool = courses.filter((c) => !enrolledIds.has(c.id));
+    const source = pool.length > 0 ? pool : courses;
+    return pickDailyCourses(source, 4);
+  }, [courses, user?.enrolledCourses]);
+
+  const greeting = useMemo(
+    () =>
+      getDynamicGreeting({
+        firstName: user?.firstName || user?.fullName,
+        userKey: user?.id || user?.username || user?.email || user?.firstName,
+        createdAt: user?.createdAt,
+        enrolledCount,
+        streak,
+        hasSeenHomeBefore,
+      }),
+    [user, enrolledCount, streak, hasSeenHomeBefore],
+  );
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
+  };
+
   if (status === 'loading' || !user) return <DashboardLoading />;
 
   return (
-    <motion.div 
-      className="mx-auto max-w-7xl w-full px-4 md:px-8 py-8 space-y-12 transition-colors"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+    <div
+      className="relative w-full"
+      style={{
+        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+      }}
     >
-      <div className="flex flex-col items-center justify-center pt-8 pb-12 text-center transition-colors">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-2xl"
-        >
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight transition-colors">
-            What do you want to learn today?
-          </h1>
-          <p className="text-slate-500 dark:text-neutral-400 mb-8 text-lg transition-colors">
-            Discover thousands of courses created by top instructors around the world.
-          </p>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px]"
+        style={{
+          backgroundImage: [
+            'radial-gradient(ellipse 50% 40% at 10% 20%, rgba(59,130,246,0.12) 0%, transparent 60%)',
+            'radial-gradient(ellipse 40% 35% at 90% 15%, rgba(255,107,74,0.09) 0%, transparent 55%)',
+          ].join(', '),
+        }}
+      />
 
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-slate-400 dark:text-neutral-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search for courses, skills, or mentors..." 
-              className="block w-full rounded-2xl border-2 border-slate-200 dark:border-neutral-800 bg-white dark:bg-black py-4 pl-14 pr-32 text-lg text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-0 outline-none transition-all shadow-sm hover:border-slate-300 dark:hover:border-neutral-700 focus:shadow-md"
-            />
-            <div className="absolute inset-y-2 right-2">
-              <button className="flex items-center justify-center h-full px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-colors shadow-sm active:scale-[0.98]">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-9 px-4 pb-8 pt-28 md:space-y-10 md:px-8 md:pt-32">
+        <section className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.85fr] lg:gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.15] tracking-tight text-[#14142b] md:text-[2.35rem]">
+              {greeting.before}
+              <GradientText
+                colors={NAME_GRADIENT}
+                animationSpeed={4.5}
+                className="!cursor-default !text-[1.05em] !font-extrabold"
+              >
+                {greeting.name}
+              </GradientText>
+              {greeting.after}
+            </h1>
+            <p className="mt-2 max-w-md text-[14px] font-medium leading-relaxed text-slate-500">
+              {greeting.subline}
+            </p>
+
+            <form onSubmit={handleSearch} className="relative mt-6 max-w-md">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <Search size={18} className="text-slate-400" />
+              </div>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search courses, skills, mentors…"
+                className="block w-full rounded-full border border-slate-200 bg-white/95 py-3 pl-11 pr-24 text-[14px] font-medium text-[#14142b] outline-none placeholder:text-slate-400 shadow-[0_6px_20px_rgba(20,20,43,0.05)] focus:border-[#4C6FFF]/45 focus:ring-4 focus:ring-[#4C6FFF]/10"
+              />
+              <button
+                type="submit"
+                className="absolute inset-y-1.5 right-1.5 rounded-full bg-[#12141C] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#232735]"
+              >
                 Search
               </button>
+            </form>
+
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+              {[
+                'Web Development',
+                'UI/UX',
+                'Data Science',
+                'AI',
+                'Machine Learning',
+                'Cloud Computing',
+                'Cybersecurity',
+                'Mobile Apps',
+                'DevOps',
+                'Product Design',
+              ].map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/search?q=${encodeURIComponent(tag)}`}
+                  className="rounded-full border border-slate-200/90 bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-[#14142b]"
+                >
+                  {tag}
+                </Link>
+              ))}
             </div>
+          </motion.div>
+
+          <StreakCalendar activityByDate={activityByDate} streak={streak} />
+        </section>
+
+        <HomeRoadmapPreview />
+
+        <ResumeAndEventsSection resumeCourse={resumeCourse} events={upcomingEvents} />
+
+        <section className="space-y-3.5">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+              Recommended for you
+            </h2>
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-1 text-sm font-semibold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6]"
+            >
+              View all <ChevronRight size={15} />
+            </Link>
           </div>
-          
-          <div className="mt-10 flex flex-col items-center gap-3">
-            <span className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 transition-colors">Popular Categories</span>
-            
-            {/* Row 1: 4 items */}
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-              {['Web Development', 'UI/UX Design', 'Data Science', 'Digital Marketing'].map((tag) => (
-                <button key={tag} className="px-4 py-2 rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm">
-                  {tag}
-                </button>
+
+          {loading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[96px] animate-pulse rounded-lg border border-slate-200 bg-white/70"
+                />
               ))}
             </div>
-            
-            {/* Row 2: 3 items */}
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-              {['Mobile Apps', 'Cybersecurity', 'Cloud Computing'].map((tag) => (
-                <button key={tag} className="px-4 py-2 rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm">
-                  {tag}
-                </button>
-              ))}
-            </div>
-
-            {/* Row 3: 2 items */}
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-              {['Machine Learning', 'Blockchain'].map((tag) => (
-                <button key={tag} className="px-4 py-2 rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm">
-                  {tag}
-                </button>
-              ))}
-            </div>
-
-            {/* Row 4: 1 item */}
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-              {['Game Development'].map((tag) => (
-                <button key={tag} className="px-4 py-2 rounded-full border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-slate-600 dark:text-neutral-300 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm">
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Recommended Courses Section */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white transition-colors">Recommended for you</h2>
-          <button className="flex items-center gap-1 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group">
-            View all 
-            <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden h-[340px] animate-pulse">
-                <div className="h-48 bg-slate-200 dark:bg-neutral-800 w-full" />
-                <div className="p-5">
-                  <div className="h-4 bg-slate-200 dark:bg-neutral-800 rounded w-3/4 mb-3" />
-                  <div className="h-3 bg-slate-200 dark:bg-neutral-800 rounded w-1/2" />
-                </div>
+          ) : recommendedCourses.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-200 bg-white/60 px-5 py-10 text-center">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-slate-100">
+                <BookOpen size={18} className="text-slate-400" />
               </div>
-            ))}
-          </div>
-        ) : courses.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-900 mb-4">
-              <BookOpen size={32} className="text-slate-400 dark:text-neutral-500" />
+              <h3 className="mb-0.5 text-base font-bold text-[#14142b]">No courses yet</h3>
+              <p className="text-sm font-medium text-slate-500">
+                Published courses will show up here.
+              </p>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No courses available</h3>
-            <p className="text-slate-500 dark:text-neutral-400">There are no courses published yet. Check back later!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <Link href={`/learn/${course.id}`} key={course.id} className="group bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-neutral-800 overflow-hidden hover:shadow-xl dark:hover:shadow-indigo-900/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
-                <div className="relative h-48 w-full overflow-hidden bg-slate-100 dark:bg-neutral-900">
-                  <img 
-                    src={course.coverImageUrl || "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80"} 
-                    alt={course.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {course.status === 'PUBLISHED' && (
-                    <div className="absolute top-3 left-3 bg-white/90 dark:bg-black/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-neutral-200 shadow-sm border border-transparent dark:border-neutral-800">
-                      Published
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {recommendedCourses.map((course, i) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.03 * i,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <Link
+                    href={`/learn/${course.id}`}
+                    className={`group flex overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
+                  >
+                    <div className="relative h-[88px] w-[96px] shrink-0 overflow-hidden bg-slate-100 sm:h-[96px] sm:w-[120px]">
+                      <img
+                        src={
+                          course.coverImageUrl ||
+                          'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80'
+                        }
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     </div>
-                  )}
-                </div>
-                
-                <div className="p-5 flex flex-col flex-1">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">{course.authorName || 'Unknown Instructor'}</p>
-                  
-                  <div className="flex items-center gap-1 mb-4">
-                    <span className="text-sm font-bold text-amber-500">4.8</span>
-                    <div className="flex items-center text-amber-500">
-                      {[1,2,3,4,5].map(star => (
-                        <Star key={star} size={14} className={star <= 4 ? "fill-current" : "text-slate-300 dark:text-neutral-700"} />
-                      ))}
+                    <div className="flex min-w-0 flex-1 flex-col justify-center px-3.5 py-2.5 sm:px-4">
+                      <div className="mb-0.5 flex items-center gap-2">
+                        <span className="rounded-md bg-[#4C6FFF]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#3A56D4]">
+                          Course
+                        </span>
+                        <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                          {course.authorName || 'Instructor'}
+                        </span>
+                      </div>
+                      <h3 className="truncate text-[15px] font-bold tracking-tight text-[#14142b]">
+                        {course.title}
+                      </h3>
+                      <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-slate-500">
+                        {course.description ||
+                          `${course.modules?.length ?? 0} modules · Self-paced`}
+                      </p>
                     </div>
-                    <span className="text-xs text-slate-400 dark:text-neutral-500 ml-1">(1,240)</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-neutral-400 mb-4 mt-auto">
-                    <div className="flex items-center gap-1.5">
-                      <Clock size={14} className="text-indigo-400 dark:text-indigo-500" />
-                      <span>{course.description ? "Detailed" : "Self-paced"}</span>
+                    <div className="hidden items-center pr-4 sm:flex">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-400 transition-colors group-hover:border-current group-hover:text-[#14142b]">
+                        <ArrowUpRight size={15} />
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <BookOpen size={14} className="text-indigo-400 dark:text-indigo-500" />
-                      <span>{course.modules ? course.modules.length : 0} modules</span>
-                    </div>
-                  </div>
-                  
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-    </motion.div>
+    </div>
   );
 }
-

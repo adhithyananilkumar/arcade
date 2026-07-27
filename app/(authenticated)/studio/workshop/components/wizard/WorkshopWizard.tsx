@@ -32,6 +32,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
   const startStep = urlStep ? Math.max(0, parseInt(urlStep, 10) - 1) : initialStep;
   
   const [currentStep, setCurrentStep] = useState(startStep);
+  const [workshopStatus, setWorkshopStatus] = useState<string>('DRAFT');
   const form = useWorkshopForm();
 
   // Load existing workshop data when editing
@@ -40,6 +41,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
       getWorkshop(workshopId).then((data: any) => {
         // Populate form with existing workshop data
         form.handleChange('id' as any, data.id);
+        setWorkshopStatus(data.status || 'DRAFT');
         form.handleChange('title', data.title || '');
         form.handleChange('description', data.description || '');
         form.handleChange('category', data.category || '');
@@ -159,7 +161,7 @@ export const WorkshopWizard: React.FC<WorkshopWizardProps> = ({ workshopId: prop
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <WorkshopHeader title={headerTitle} />
+      <WorkshopHeader title={form.formData.title || "Create Workshop"} status={workshopStatus} />
 
       <div className="flex flex-col md:flex-row gap-8">
 
