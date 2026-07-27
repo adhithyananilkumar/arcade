@@ -9,12 +9,16 @@ const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "About", href: "/about" },
   { label: "For creators", href: "/creators" },
+  { label: "Forum", href: "/forum" },
 ];
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { usePathname } from 'next/navigation';
 
 export default function HeroNav() {
   const { status } = useAuthStore();
+  const pathname = usePathname();
+  const signHref = pathname && pathname !== '/' ? `/sign?returnTo=${encodeURIComponent(pathname)}` : '/sign';
   const shouldReduceMotion = useReducedMotion();
   const [isHidden, setIsHidden] = useState(false);
 
@@ -115,7 +119,7 @@ export default function HeroNav() {
             Open Arcade
           </Link>
         ) : (
-          <Link href="/sign" className="l-nav__get-started">
+          <Link href={signHref} className="l-nav__get-started">
             Get Started
           </Link>
         )}

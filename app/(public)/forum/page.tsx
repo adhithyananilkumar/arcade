@@ -1,204 +1,115 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { PostCard } from "@/domains/community";
-import { LoadingSkeleton } from "@/domains/community";
-import { EmptyState } from "@/domains/community";
-import { useForumFeed } from "@/domains/community";
-import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { UserAvatar } from "@/domains/community";
-import { PostCreatorDialog } from "@/domains/community";
+import { useState, Suspense } from 'react';
+import { PostCreateCard, FeedPostCard, LoadingSkeleton, EmptyState, useForumFeed } from "@/domains/community";
+import { Sparkles, TrendingUp, Clock, Flame } from 'lucide-react';
 
 const FEED_TABS = [
-  { key: 'latest', label: 'Latest' },
-  { key: 'trending', label: 'Trending' },
-  { key: 'top', label: 'Top' },
+  { key: 'recent', label: 'Recent Discussions', icon: <Clock className="w-4 h-4" /> },
+  { key: 'trending', label: 'Trending & Top', icon: <TrendingUp className="w-4 h-4" /> },
 ];
 
 function ForumPageContent() {
-  const [feedType, setFeedType] = useState('latest');
+  const [sort, setSort] = useState('recent');
   const [page, setPage] = useState(0);
-  const [showCreator, setShowCreator] = useState(false);
-  const searchParams = useSearchParams();
-  const { data, isLoading } = useForumFeed(feedType, page);
-  const { user } = useAuthStore();
-
-  useEffect(() => {
-    if (searchParams.get('create') === 'true' && user) {
-      setShowCreator(true);
-    }
-  }, [searchParams, user]);
+  const { data, isLoading } = useForumFeed(sort, page);
 
   return (
-    <div>
-      {/* Post Creator Bar */}
-      {user && (
-        <div 
-          onClick={() => setShowCreator(true)}
-          style={{
-            backgroundColor: '#fff',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px 20px',
-            marginBottom: 24,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            cursor: 'pointer',
-            transition: 'border-color 0.15s, box-shadow 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)';
-            (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-xs)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)';
-            (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-          }}
-        >
-          <UserAvatar username={user.username || user.email} avatarUrl={user.avatarUrl} size="md" />
-          <div style={{ flex: 1, padding: '12px 16px', backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-full)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 14 }}>
-            Start a discussion...
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Banner / Header */}
+      <div className="mb-8 p-6 rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/10 relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-blue-200 text-xs font-semibold uppercase tracking-wider mb-2">
+            <Flame className="w-4 h-4 text-orange-400" />
+            Arcade Creator Community
           </div>
-          <button style={{ padding: '8px 24px', backgroundColor: 'var(--arcade-blue)', color: '#fff', border: 'none', borderRadius: 'var(--radius-full)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            Post
-          </button>
+          <h1 className="text-3xl font-black tracking-tight mb-2">
+            Community Forum & Social Feed
+          </h1>
+          <p className="text-blue-100 text-sm max-w-xl font-normal leading-relaxed">
+            Discover projects, ask questions, give reactions, and share knowledge with creators worldwide. Open for everyone to explore!
+          </p>
         </div>
-      )}
-
-      <PostCreatorDialog isOpen={showCreator} onClose={() => setShowCreator(false)} />
-
-      {/* Forum Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 16,
-      }}>
-        <h1 style={{
-          fontSize: 18,
-          fontWeight: 700,
-          color: 'var(--text-primary)',
-        }}>
-          Forum
-        </h1>
-        <button
-          onClick={() => setShowCreator(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            height: 36,
-            padding: '0 16px',
-            backgroundColor: 'var(--arcade-blue)',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 'var(--radius-full)',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          + Start a Discussion
-        </button>
+        {/* Decorative background circle */}
+        <div className="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
       </div>
 
-      {/* Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 4,
-          marginBottom: 20,
-          borderBottom: '1px solid var(--border)',
-          paddingBottom: 0,
-        }}
-      >
-        {FEED_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => { setFeedType(tab.key); setPage(0); }}
-            style={{
-              padding: '8px 16px',
-              fontSize: 13,
-              fontWeight: feedType === tab.key ? 700 : 500,
-              color: feedType === tab.key ? 'var(--arcade-blue)' : 'var(--text-secondary)',
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              borderBottom: feedType === tab.key ? '2px solid var(--arcade-blue)' : '2px solid transparent',
-              marginBottom: -1,
-              transition: 'all 0.15s',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Post Creator Card */}
+      <PostCreateCard />
+
+      {/* Feed Tabs Bar */}
+      <div className="flex items-center justify-between mb-6 border-b border-slate-200 dark:border-neutral-800 pb-3">
+        <div className="flex items-center gap-2">
+          {FEED_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => {
+                setSort(tab.key);
+                setPage(0);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                sort === tab.key
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'bg-slate-100 dark:bg-neutral-800/80 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className="text-xs font-medium text-slate-400 dark:text-neutral-500 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+          <span>Real-time community feed</span>
+        </div>
       </div>
 
-      {/* Posts */}
+      {/* Posts Stream */}
       {isLoading ? (
-        <LoadingSkeleton count={5} />
+        <LoadingSkeleton count={4} />
       ) : !data || data.content.length === 0 ? (
         <EmptyState
-          title="No posts yet"
-          description="Start the first discussion on Arcade Forum!"
-          cta={{ label: 'Create a post', href: '/forum/new' }}
+          title="No discussions yet"
+          description="Be the first creator to start a conversation in this feed!"
+          cta={{ label: 'Start a discussion above', href: '#' }}
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {data.content.map((post, i) => (
-            <PostCard key={post.id} post={post} index={i} />
+        <div className="space-y-4">
+          {data.content.map((post) => (
+            <FeedPostCard key={post.id} post={post} />
           ))}
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Pagination Controls */}
       {data && data.totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+        <div className="flex items-center justify-center gap-4 mt-8 pt-6 border-t border-slate-200 dark:border-neutral-800">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            style={{
-              height: 34,
-              padding: '0 16px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border)',
-              backgroundColor: '#fff',
-              fontSize: 13,
-              cursor: page === 0 ? 'not-allowed' : 'pointer',
-              opacity: page === 0 ? 0.4 : 1,
-            }}
+            className="px-5 py-2 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-xs font-semibold text-slate-700 dark:text-neutral-200 disabled:opacity-40 hover:bg-slate-50 transition-colors shadow-sm"
           >
-            Previous
+            Previous Page
           </button>
-          <span style={{ fontSize: 13, color: 'var(--text-muted)', padding: '0 8px', lineHeight: '34px' }}>
-            {page + 1} / {data.totalPages}
+          <span className="text-xs font-medium text-slate-500 dark:text-neutral-400">
+            Page {page + 1} of {data.totalPages}
           </span>
           <button
             onClick={() => setPage((p) => p + 1)}
             disabled={data.last}
-            style={{
-              height: 34,
-              padding: '0 16px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border)',
-              backgroundColor: '#fff',
-              fontSize: 13,
-              cursor: data.last ? 'not-allowed' : 'pointer',
-              opacity: data.last ? 0.4 : 1,
-            }}
+            className="px-5 py-2 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-xs font-semibold text-slate-700 dark:text-neutral-200 disabled:opacity-40 hover:bg-slate-50 transition-colors shadow-sm"
           >
-            Next
+            Next Page
           </button>
         </div>
       )}
     </div>
   );
 }
+
 export default function ForumPage() {
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
+    <Suspense fallback={<div className="p-8 text-center text-sm text-slate-400">Loading community forum...</div>}>
       <ForumPageContent />
     </Suspense>
   );

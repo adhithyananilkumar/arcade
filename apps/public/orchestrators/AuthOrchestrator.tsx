@@ -27,16 +27,13 @@ function parseMode(raw: string | null): AuthView {
   return 'login';
 }
 
-function urlForMode(mode: AuthView, token?: string | null) {
-  if (mode === 'signup') return '/sign?mode=signup';
-  if (mode === 'forgot') return '/sign?mode=forgot';
-  if (mode === 'reset') {
-    return token ? `/sign?mode=reset&token=${encodeURIComponent(token)}` : '/sign?mode=reset';
-  }
-  if (mode === 'verify') {
-    return token ? `/sign?mode=verify&token=${encodeURIComponent(token)}` : '/sign?mode=verify';
-  }
-  return '/sign';
+function urlForMode(mode: AuthView, token?: string | null, returnTo?: string | null) {
+  const params = new URLSearchParams();
+  if (mode !== 'login') params.set('mode', mode);
+  if (token) params.set('token', token);
+  if (returnTo) params.set('returnTo', returnTo);
+  const qs = params.toString();
+  return qs ? `/sign?${qs}` : '/sign';
 }
 
 export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
@@ -45,6 +42,14 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const token = searchParams.get('token');
+  const returnToParam = searchParams.get('returnTo') || searchParams.get('callbackUrl');
+
+  useEffect(() => {
+    if (returnToParam && returnToParam.startsWith('/')) {
+      try { sessionStorage.setItem('auth_return_to', returnToParam); } catch {}
+    }
+  }, [returnToParam]);
+
   const [mode, setMode] = useState<AuthView>(initialMode);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -98,7 +103,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
     setMode(newMode);
     setGlobalError(undefined);
     setShowSuccess(false);
-    window.history.replaceState(null, '', urlForMode(newMode, token));
+    window.history.replaceState(null, '', urlForMode(newMode, token, returnToParam));
   };
 
   const handleSubmit = async (data: {
@@ -119,8 +124,19 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
         });
         setAuth(user, accessToken);
 
-        const returnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl');
-        const safePath = returnTo?.startsWith('/') ? returnTo : '/';
+        let safePath = '/';
+        const currentReturnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl') || returnToParam;
+        if (currentReturnTo && currentReturnTo.startsWith('/')) {
+          safePath = currentReturnTo;
+        } else {
+          try {
+            const stored = sessionStorage.getItem('auth_return_to');
+            if (stored && stored.startsWith('/')) {
+              safePath = stored;
+            }
+          } catch {}
+        }
+        try { sessionStorage.removeItem('auth_return_to'); } catch {}
         router.push(safePath);
       } else if (mode === 'signup') {
         await AuthService.register({

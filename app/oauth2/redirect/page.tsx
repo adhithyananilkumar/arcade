@@ -33,7 +33,15 @@ function OAuthRedirectHandler() {
       UserService.getMe()
         .then((user) => {
           setAuth(user, token);
-          router.push('/');
+          let dest = '/';
+          try {
+            const stored = sessionStorage.getItem('auth_return_to');
+            if (stored && stored.startsWith('/')) {
+              dest = stored;
+              sessionStorage.removeItem('auth_return_to');
+            }
+          } catch {}
+          router.push(dest);
         })
         .catch((err) => {
           console.error('Failed to fetch user profile after OAuth:', err);
