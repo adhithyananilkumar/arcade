@@ -243,24 +243,35 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
     case "hardBreak":
       return <br key={key} />;
 
-    case "image": {
+    case "image":
+    case "imageBlock": {
+      // Studio persists uploads as `imageBlock` (reactjs-tiptap-editor); older docs may use `image`.
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
-      const align = typeof node.attrs?.align === "string" ? node.attrs.align : "left";
+      const align = typeof node.attrs?.align === "string" ? node.attrs.align : "center";
       const alignClass =
         align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "";
       const flipX = node.attrs?.flipX === true;
       const flipY = node.attrs?.flipY === true;
       const transform =
         flipX || flipY ? `scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})` : undefined;
+      const width =
+        typeof node.attrs?.width === "number"
+          ? node.attrs.width
+          : typeof node.attrs?.width === "string"
+            ? Number(node.attrs.width) || undefined
+            : undefined;
       // eslint-disable-next-line @next/next/no-img-element
       return (
         <img
           key={key}
           src={src}
           alt={alt}
-          style={transform ? { transform } : undefined}
+          style={{
+            ...(transform ? { transform } : {}),
+            ...(width ? { width, maxWidth: "100%" } : {}),
+          }}
           className={`mb-4 block max-w-full rounded-lg ${alignClass}`}
         />
       );
