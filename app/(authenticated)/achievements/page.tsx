@@ -782,6 +782,7 @@ export default function AchievementsVarietyPage() {
   const badgesCount = badgesData.length;
   const certsCount = certificatesData.length;
   const totalAchievements = badgesCount + certsCount;
+  const totalXp = badgesCount * 100 + certsCount * 250;
 
   const itemsPerPage = 4;
   const totalCertPages = Math.max(1, Math.ceil(filteredCerts.length / itemsPerPage));
@@ -806,47 +807,54 @@ export default function AchievementsVarietyPage() {
             </p>
           </div>
 
-          {/* Stat Pods Grid (Interactive Dynamic Cards) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          {/* Stat Pods Grid — 3 equal pods matching design spec */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+
             {/* Pod 1: Badges Collected */}
             <div
               onClick={() => toast.info(`${badgesCount} Badges Collected`)}
-              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-emerald-400/80 dark:hover:border-emerald-500/80 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer select-none"
+              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-emerald-400/60 dark:hover:border-emerald-500/60 rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer select-none"
             >
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <TrophyIcon className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/80 text-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200">
+                <Trophy className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-medium text-indigo-200 uppercase tracking-wider">Level 8 Contributor</div>
-                <div className="text-lg font-bold text-white">
-                  {user?.fullName || user?.username || 'Learner'}
-                </div>
-                <div className="text-xs text-amber-300 font-semibold flex items-center gap-1 mt-0.5">
-                  <Zap size={12} className="fill-amber-300" />
-                  {totalXp} Total XP Earned
-                </div>
+                <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{badgesCount}</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-zinc-300 mt-0.5">Badges</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-zinc-500">Collected</div>
+              </div>
+            </div>
+
+            {/* Pod 2: Achievements Earned */}
+            <div
+              onClick={() => toast.info(`${totalAchievements} Achievements Earned`)}
+              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-violet-400/60 dark:hover:border-violet-500/60 rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer select-none"
+            >
+              <div className="w-11 h-11 rounded-xl bg-violet-50 dark:bg-violet-950/50 border border-violet-200/80 dark:border-violet-800/80 text-violet-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200">
+                <Medal className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{totalAchievements}</div>
-                <div className="text-xs font-extrabold text-slate-700 dark:text-zinc-300 mt-1">Achievements</div>
-                <div className="text-[10px] font-bold text-slate-400">Earned</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-zinc-300 mt-0.5">Achievements</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-zinc-500">Earned</div>
               </div>
             </div>
 
             {/* Pod 3: Certificates Verified */}
             <div
               onClick={() => toast.info(`${certsCount} Certificates Verified`)}
-              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-amber-400/80 dark:hover:border-amber-500/80 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer select-none"
+              className="group bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 hover:border-amber-400/60 dark:hover:border-amber-500/60 rounded-2xl p-5 flex items-center gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md cursor-pointer select-none"
             >
-              <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <CertificateIcon className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/80 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200">
+                <Award className="w-5 h-5" />
               </div>
               <div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white leading-none">{certsCount}</div>
-                <div className="text-xs font-extrabold text-slate-700 dark:text-zinc-300 mt-1">Certificates</div>
-                <div className="text-[10px] font-bold text-slate-400">Verified</div>
+                <div className="text-sm font-bold text-slate-700 dark:text-zinc-300 mt-0.5">Certificates</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-zinc-500">Verified</div>
               </div>
             </div>
+
           </div>
         </div>
 

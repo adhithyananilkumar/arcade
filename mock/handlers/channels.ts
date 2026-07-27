@@ -12,6 +12,21 @@ export function listChannels(req: MockRequest): MockResult {
   }));
 }
 
+export function listMyChannels(_req: MockRequest): MockResult {
+  const myChannels = DATA.filter((c) => c.status === 'ACTIVE');
+  return { status: 200, body: myChannels };
+}
+
+export function listMyWorkspaces(_req: MockRequest): MockResult {
+  // Return the first channel as a workspace for mock purposes
+  return { status: 200, body: [DATA[0]] };
+}
+
+export function listPendingRequests(_req: MockRequest): MockResult {
+  const pending = DATA.filter((c) => c.status === 'PENDING');
+  return { status: 200, body: pending };
+}
+
 export function getChannel(req: MockRequest, id: string): MockResult {
   const err = maybeError(req);
   if (err) return err;

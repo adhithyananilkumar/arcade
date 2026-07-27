@@ -4,7 +4,7 @@
  * adding fixtures + a handler (see mock/README.md) and registering its
  * routes here.
  */
-import { getChannel, listChannels } from './handlers/channels';
+import { getChannel, listChannels, listMyChannels, listMyWorkspaces, listPendingRequests } from './handlers/channels';
 import { getRoadmap, listRoadmaps } from './handlers/roadmaps';
 import mockSession from './data/session.json';
 import { getMe, getUserActivity } from './handlers/users';
@@ -22,6 +22,9 @@ interface Route {
 
 const routes: Route[] = [
   { method: 'GET', pattern: ['api', 'v1', 'channels'], handler: (req) => listChannels(req) },
+  { method: 'GET', pattern: ['api', 'v1', 'channels', 'me'], handler: (req) => listMyChannels(req) },
+  { method: 'GET', pattern: ['api', 'v1', 'channels', 'workspaces'], handler: (req) => listMyWorkspaces(req) },
+  { method: 'GET', pattern: ['api', 'v1', 'channels', 'requests'], handler: (req) => listPendingRequests(req) },
   { method: 'GET', pattern: ['api', 'v1', 'channels', ':id'], handler: (req, p) => getChannel(req, p[0]) },
   { method: 'GET', pattern: ['api', 'roadmaps'], handler: (req) => listRoadmaps(req) },
   { method: 'GET', pattern: ['api', 'roadmaps', ':id'], handler: (req, p) => getRoadmap(req, p[0]) },
