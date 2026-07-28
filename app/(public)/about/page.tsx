@@ -192,6 +192,7 @@ export default function AboutPage() {
 function AJCESection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -326,6 +327,8 @@ function AJCESection() {
           className="absolute right-[-15%] top-[22%] z-10 h-[55vh] w-[80vw] sm:right-[-10%] sm:w-[70vw] lg:right-[1%] lg:top-[17%] lg:h-[70vh] lg:w-[60vw]"
         >
           <div className="absolute inset-0 bg-[#2563eb]/10 blur-[100px]" />
+          
+          {/* Base Layer: Static Building */}
           <Image
             src="/images/ajce-sketch2.png"
             alt="Amal Jyothi College of Engineering campus"
@@ -333,6 +336,52 @@ function AJCESection() {
             priority
             className="object-contain object-right"
           />
+
+          {/* Layer 2: Left Tree */}
+          <motion.div
+            className="absolute inset-0 z-10"
+            style={{ transformOrigin: "50% 100%" }}
+            animate={
+              shouldReduceMotion ? {} : { rotate: [-1, 1.5, -1] }
+            }
+            transition={{
+              duration: 5.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.2
+            }}
+          >
+            <Image
+              src="/images/left-tree.png"
+              alt=""
+              fill
+              priority
+              className="object-contain object-right pointer-events-none"
+            />
+          </motion.div>
+
+          {/* Layer 3: Right Tree */}
+          <motion.div
+            className="absolute inset-0 z-10"
+            style={{ transformOrigin: "50% 100%" }}
+            animate={
+              shouldReduceMotion ? {} : { rotate: [1, -1.2, 1] }
+            }
+            transition={{
+              duration: 6.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          >
+            <Image
+              src="/images/right-tree.png"
+              alt=""
+              fill
+              priority
+              className="object-contain object-right pointer-events-none"
+            />
+          </motion.div>
         </motion.div>
 
         {/* SVG Overlay for Connections */}

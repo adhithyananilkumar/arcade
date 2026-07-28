@@ -5,7 +5,8 @@ import "./Footer.css";
 
 export default function Footer() {
   return (
-    <footer className="arc-footer">
+    <>
+      <footer className="arc-footer">
       {/* Blueprint grid background overlay */}
       <div className="arc-footer__grid-overlay"></div>
 
@@ -107,5 +108,16 @@ export default function Footer() {
         />
       </div>
     </footer>
+
+    {/* ADDED PICTURE BELOW FOOTER */}
+    <div style={{ width: '100%', height: '250px', backgroundColor: '#ffffff', overflow: 'hidden', display: 'flex', justifyContent: 'center' }}>
+      <img 
+        src="/wall_fs.svg" 
+        alt="Bottom Wall Graphic" 
+        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', opacity: 0.65, mixBlendMode: 'multiply' }} 
+      />
+    </div>
+
+  </>
   );
 }
