@@ -438,6 +438,11 @@ function CreateWorkshopModal({
     }
   }
 
+  const typeLabel = workshopType === WorkshopType.WEBINAR ? "Webinar" : 
+                    workshopType === WorkshopType.BOOTCAMP ? "Bootcamp" :
+                    workshopType === WorkshopType.MASTERCLASS ? "Masterclass" :
+                    workshopType === WorkshopType.AMA ? "AMA" : "Workshop";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
@@ -454,7 +459,7 @@ function CreateWorkshopModal({
             <Wrench size={20} className="text-[#14142b]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Workshop</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
             <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
@@ -468,7 +473,7 @@ function CreateWorkshopModal({
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label htmlFor="workshop-type" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Workshop Type <span className="text-red-500">*</span>
+              Type <span className="text-red-500">*</span>
             </label>
             <select
               id="workshop-type"
@@ -486,7 +491,7 @@ function CreateWorkshopModal({
           </div>
           <div>
             <label htmlFor="workshop-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Workshop Title <span className="text-red-500">*</span>
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               id="workshop-title"
@@ -519,7 +524,7 @@ function CreateWorkshopModal({
           )}
           {!channelsLoading && channels.length === 0 && (
             <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a workshop.
+              You need a channel with content-authoring rights before you can create a {typeLabel.toLowerCase()}.
             </p>
           )}
           <div className="flex justify-end gap-2 pt-1">
@@ -535,7 +540,7 @@ function CreateWorkshopModal({
               disabled={!title.trim() || !channelId || creating}
               className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
-              {creating ? "Creating…" : "Create Workshop"}
+              {creating ? "Creating…" : `Create ${typeLabel}`}
             </button>
           </div>
         </form>

@@ -263,12 +263,7 @@ export function RoadmapNode({
           {/* Status / Difficulty / Duration badges */}
           {!isEditing && (
             <div className="flex items-center gap-1 flex-wrap justify-center mt-1 scale-90 origin-center max-w-full">
-              {status && shape !== 'circle' && shape !== 'diamond' && (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-extrabold uppercase tracking-wider bg-white/90 text-gray-900 shadow-sm">
-                  <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: STATUS_DOT[status] ?? '#94a3b8' }} />
-                  {status}
-                </span>
-              )}
+
               {difficulty && (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-black/10" style={{ color: textColor }}>
                   {difficulty}

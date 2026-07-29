@@ -4,6 +4,7 @@ export interface RoadmapNode {
   description?: string;
   type?: string; // 'lesson', 'project', etc.
   contentId?: string;
+  courseIds?: string[];
   difficulty?: string;
   durationMinutes?: number;
   duration?: string;

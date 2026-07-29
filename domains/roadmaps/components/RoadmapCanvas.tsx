@@ -32,10 +32,15 @@ import {
   Redo as RedoIcon,
   Trash2,
   CheckCircle,
+  Check,
+  ChevronsUpDown,
 } from 'lucide-react';
 import { RoadmapNode } from './RoadmapNode';
 import { ProgressEdge } from './ProgressEdge';
 import { RoadmapEditorProvider } from '../store/RoadmapStore';
+import { api } from '@/infrastructure/http/api';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/design-system/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/shared/design-system/ui/command';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface RoadmapCanvasProps {
@@ -389,6 +394,16 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [showMinimap, setShowMinimap] = useState(false);
   const [bgStyle, setBgStyle] = useState<{ bg: string; dotColor: string; dots: boolean; bgImage?: string }>(initial.background || { bg: '#0b0f17', dotColor: '#334155', dots: true });
+  const [publishedCourses, setPublishedCourses] = useState<{ id: string, title: string }[]>([]);
+  const [openCourseSelect, setOpenCourseSelect] = useState(false);
+
+  useEffect(() => {
+    if (!readOnly) {
+      api.get<any[]>('/api/v1/public/courses')
+        .then(courses => setPublishedCourses(courses.map(c => ({ id: c.id, title: c.title }))))
+        .catch(err => console.error("Failed to load published courses", err));
+    }
+  }, [readOnly]);
 
   // ── History (undo/redo) ──────────────────────────────────────────────────────
   const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
@@ -671,19 +686,69 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
                 </div>
               </div>
             </div>
+
             <div>
-              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
-              <select
-                value={(selectedNode.data.status as string) || 'draft'}
-                onChange={e => stableUpdateTopic(selectedNode.id, { status: e.target.value })}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-                <option value="review">Review</option>
-                <option value="archived">Archived</option>
-              </select>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Linked Courses</label>
+              <Popover open={openCourseSelect} onOpenChange={setOpenCourseSelect}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 mb-4 bg-white hover:bg-gray-50"
+                  >
+                    <span className="truncate text-left flex-1 text-gray-700">
+                      {((selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : [])).length > 0
+                        ? `${((selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : [])).length} selected`
+                        : "Select courses..."}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[260px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search courses..." />
+                    <CommandList>
+                      <CommandEmpty>No course found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="none"
+                          onSelect={() => {
+                            stableUpdateTopic(selectedNode.id, { courseIds: [], courseId: "" });
+                            setOpenCourseSelect(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${!((selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : [])).length ? "opacity-100" : "opacity-0"}`}
+                          />
+                          None
+                        </CommandItem>
+                        {publishedCourses.map((c) => {
+                          const selectedCourseIds = (selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : []);
+                          const isSelected = selectedCourseIds.includes(c.id);
+                          return (
+                            <CommandItem
+                              key={c.id}
+                              value={c.title}
+                              onSelect={() => {
+                                const newIds = isSelected 
+                                  ? selectedCourseIds.filter(id => id !== c.id)
+                                  : [...selectedCourseIds, c.id];
+                                stableUpdateTopic(selectedNode.id, { courseIds: newIds, courseId: undefined });
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                              />
+                              {c.title}
+                            </CommandItem>
+                          );
+                        })}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Shape</label>
               <select

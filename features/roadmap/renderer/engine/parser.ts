@@ -30,6 +30,7 @@ export function parseRoadmapGraph(graphJson: string): { nodes: RoadmapNode[], ed
       description: rn.data?.description || '',
       type: rn.data?.nodeType || 'lesson',
       contentId: rn.data?.contentId,
+      courseIds: rn.data?.courseIds || (rn.data?.courseId ? [rn.data.courseId] : []),
       difficulty: rn.data?.difficulty,
       durationMinutes: rn.data?.durationMinutes,
       duration: rn.data?.duration,
