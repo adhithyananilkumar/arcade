@@ -228,6 +228,7 @@ export default function MyLearningPage() {
   const [reviewComment, setReviewComment] = useState<string>('');
   const [reviewTags, setReviewTags] = useState<string[]>([]);
   const [userReviews, setUserReviews] = useState<Record<string, { rating: number; title: string; comment: string; tags: string[]; date: string }>>({});
+  const [skillsPage, setSkillsPage] = useState(0);
 
   const availableReviewTags = [
     'Well Explained',
@@ -954,29 +955,7 @@ export default function MyLearningPage() {
                         <BarChart3 size={18} className="text-[#2C83F5]" />
                         <span>Learning Time</span>
                       </h3>
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onMouseEnter={() => setShowLearningTimeInfo(true)}
-                          onMouseLeave={() => setShowLearningTimeInfo(false)}
-                          onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
-                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
-                        >
-                          <Info size={15} />
-                        </button>
-                        <AnimatePresence>
-                          {showLearningTimeInfo && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                              className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
-                            >
-                              Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+
                     </div>
 
                     {/* Date Search Controls & Average Display */}
@@ -1291,11 +1270,42 @@ export default function MyLearningPage() {
                   <Target size={17} className="text-[#2C83F5]" />
                   <span>Skills Progress</span>
                 </h3>
-                <span className="text-[10px] font-bold text-slate-400">{dynamicSkillsProgress.length} Active Skills</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400">{dynamicSkillsProgress.length} Active Skills</span>
+                  {dynamicSkillsProgress.length > 3 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setSkillsPage(p => Math.max(0, p - 1))}
+                        disabled={skillsPage === 0}
+                        className="p-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <ChevronLeft size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSkillsPage(p => Math.min(Math.ceil(dynamicSkillsProgress.length / 3) - 1, p + 1))}
+                        disabled={skillsPage >= Math.ceil(dynamicSkillsProgress.length / 3) - 1}
+                        className="p-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <ChevronRight size={12} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3.5">
-                {dynamicSkillsProgress.map((skill) => {
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={skillsPage}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3.5"
+                  >
+                    {dynamicSkillsProgress.slice(skillsPage * 3, skillsPage * 3 + 3).map((skill) => {
                   const SkillIcon = skill.icon;
                   return (
                     <div key={skill.name} className="flex items-center gap-3">
@@ -1317,9 +1327,11 @@ export default function MyLearningPage() {
                           />
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                      </div>
+                    );
+                  })}
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
 
@@ -1506,29 +1518,7 @@ export default function MyLearningPage() {
                     <BarChart3 size={18} className="text-[#2C83F5]" />
                     <span>Learning Time</span>
                   </h3>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onMouseEnter={() => setShowLearningTimeInfo(true)}
-                      onMouseLeave={() => setShowLearningTimeInfo(false)}
-                      onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
-                      className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
-                    >
-                      <Info size={15} />
-                    </button>
-                    <AnimatePresence>
-                      {showLearningTimeInfo && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                          className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
-                        >
-                          Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+
                 </div>
 
                 {/* Date Search Controls & Average Display */}
