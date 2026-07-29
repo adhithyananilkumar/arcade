@@ -168,7 +168,7 @@ export default function MyLearningPage() {
       let daysCount = 7;
       if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && end >= start) {
         const diffMs = Math.abs(end.getTime() - start.getTime());
-        daysCount = Math.min(Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1, 1), 31);
+        daysCount = Math.min(Math.max(Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1, 5), 31);
       }
 
       const daysList = [];
@@ -616,543 +616,589 @@ export default function MyLearningPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
 
           {/* LEFT SIDE COLUMN (3/4 WIDTH - lg:col-span-8): SEARCH BAR & COURSE CONTENT LIBRARY */}
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 relative group/library">
 
-            {/* SEARCH BAR & FILTERS (CONSTRAINED TO 3/4 LEFT COLUMN LENGTH) */}
-            <div id="learning-items-section" className="scroll-mt-24 relative z-50 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
-              {/* Content Type Filter Dropdown */}
-              {(() => {
-                const contentTypeOptions = [
-                  { id: 'all', label: 'All Content', icon: Grid, count: learningItems.length },
-                  { id: 'courses', label: 'Courses', icon: BookOpen, count: enrolledCount },
-                  { id: 'webinars', label: 'Webinars', icon: Video, count: attendedCount },
-                  { id: 'workshops', label: 'Workshops', icon: Wrench, count: learningItems.filter(i => i.type === 'Workshop').length },
-                  { id: 'articles', label: 'Articles', icon: FileText, count: readCount },
-                  { id: 'completed', label: 'Completed', icon: CheckCircle2, count: completedCount },
-                ];
-                const selectedOption = contentTypeOptions.find(o => o.id === activeTab) || contentTypeOptions[0];
-                const SelectedIcon = selectedOption.icon;
+            {/* Non-Common Card Background (Asymmetric Glassmorphism) */}
+            <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] border border-white dark:border-slate-700/50 -z-20 transition-all duration-500" />
 
-                return (
-                  <div ref={tabDropdownRef} className="relative z-50 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setIsTabDropdownOpen(!isTabDropdownOpen)}
-                      className="w-full sm:w-52 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between gap-2 shadow-xs hover:border-slate-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <SelectedIcon size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-                        <span className="truncate">{selectedOption.label}</span>
-                      </div>
-                      <ChevronRight size={14} className={`shrink-0 transition-transform duration-200 ${isTabDropdownOpen ? '-rotate-90 text-indigo-600' : 'rotate-90 text-slate-400'}`} />
-                    </button>
+            {/* Decorative Inner Glows & Floating Accents */}
+            <div className="absolute inset-0 overflow-hidden rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] -z-10 pointer-events-none">
+              <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-400/20 dark:bg-indigo-600/10 blur-[80px] group-hover/library:scale-150 transition-transform duration-1000 ease-out" />
+              <div className="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-sky-400/20 dark:bg-sky-600/10 blur-[80px] group-hover/library:scale-150 transition-transform duration-1000 ease-out" />
 
-                    <AnimatePresence>
-                      {isTabDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95, y: 6 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95, y: 6 }}
-                          transition={{ duration: 0.15 }}
-                          className="absolute left-0 top-full mt-2 w-56 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden"
-                        >
-                          {contentTypeOptions.map((opt) => {
-                            const OptIcon = opt.icon;
-                            const isSelected = activeTab === opt.id;
-                            return (
-                              <button
-                                key={opt.id}
-                                type="button"
-                                onClick={() => {
-                                  setActiveTab(opt.id as any);
-                                  setIsTabDropdownOpen(false);
-                                }}
-                                className={`w-full px-4 py-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-colors ${isSelected
-                                  ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300'
-                                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                  }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <OptIcon size={15} className={isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
-                                  <span>{opt.label}</span>
-                                </div>
-                                {isSelected && <span className="text-indigo-600 font-black">✓</span>}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })()}
-
-              {/* Search Input */}
-              <div className="relative flex-1 w-full">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search courses by title, instructor..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="p-1 text-slate-400 hover:text-slate-700 absolute right-2.5 top-1/2 -translate-y-1/2"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
+              {/* Left edge neon tab marker */}
+              <div className="absolute top-12 -left-px w-1.5 h-20 bg-gradient-to-b from-indigo-500 to-sky-400 rounded-r-md shadow-[0_0_15px_rgba(99,102,241,0.6)]" />
             </div>
 
-            {/* Learning Cards Grid */}
-            <AnimatePresence mode="popLayout">
-              <motion.div
-                key={`${activeTab}-${statusFilter}-${sortBy}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-              >
-                {paginatedItems.map((item, idx) => {
-                  const isBookmarked = bookmarkedIds.includes(item.id);
+            {/* Padded Content Container */}
+            <div className="p-6 sm:p-8 space-y-7 relative z-10">
+
+              {/* SEARCH BAR & FILTERS (CONSTRAINED TO 3/4 LEFT COLUMN LENGTH) */}
+              <div id="learning-items-section" className="scroll-mt-24 relative z-50 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+                {/* Content Type Filter Dropdown */}
+                {(() => {
+                  const contentTypeOptions = [
+                    { id: 'all', label: 'All Content', icon: Grid, count: learningItems.length },
+                    { id: 'courses', label: 'Courses', icon: BookOpen, count: enrolledCount },
+                    { id: 'webinars', label: 'Webinars', icon: Video, count: attendedCount },
+                    { id: 'workshops', label: 'Workshops', icon: Wrench, count: learningItems.filter(i => i.type === 'Workshop').length },
+                    { id: 'articles', label: 'Articles', icon: FileText, count: readCount },
+                    { id: 'completed', label: 'Completed', icon: CheckCircle2, count: completedCount },
+                  ];
+                  const selectedOption = contentTypeOptions.find(o => o.id === activeTab) || contentTypeOptions[0];
+                  const SelectedIcon = selectedOption.icon;
 
                   return (
-                    <motion.div
-                      key={item.id}
-                      layout="position"
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.1 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{
-                        duration: 0.35,
-                        ease: 'easeOut',
-                        delay: Math.min(idx * 0.04, 0.2)
-                      }}
-                      whileHover={{ y: -2, transition: { duration: 0.2, ease: "easeOut" } }}
-                      whileTap={{ scale: 0.98 }}
-                      className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs p-4 shadow-xs hover:shadow-lg transition-all duration-300"
-                    >
-                      {/* Image Header with Category Hover Badge */}
-                      <div className="relative h-36 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <img
-                          src={item.coverImage}
-                          alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-
-                        {/* Content Type Badge */}
-                        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-900/80 backdrop-blur-md text-white border border-white/20">
-                          {item.type === 'Course' && <BookOpen size={11} />}
-                          {item.type === 'Webinar' && <Video size={11} />}
-                          {item.type === 'Workshop' && <Wrench size={11} />}
-                          {item.type === 'Article' && <FileText size={11} />}
-                          <span>{item.type}</span>
-                        </div>
-
-                        {/* Category Badge */}
-                        <div className="absolute bottom-2.5 left-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out transform group-hover:translate-y-0 translate-y-2 pointer-events-none z-20">
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-slate-100 backdrop-blur-md shadow-md border border-white/20 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>{item.category}</span>
-                          </span>
-                        </div>
-
-                        {/* Bookmark Button */}
-                        <button
-                          type="button"
-                          onClick={() => toggleBookmark(item.id, item.title)}
-                          className={`absolute top-2.5 right-2.5 p-1.5 rounded-xl backdrop-blur-md transition-all ${isBookmarked
-                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                            : 'bg-slate-900/60 text-slate-200 hover:text-white'
-                            }`}
-                        >
-                          <Bookmark size={12} className={isBookmarked ? 'fill-current' : ''} />
-                        </button>
-                      </div>
-
-                      {/* Content Section */}
-                      <div className="mt-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 mt-0.5 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
-                            {item.title}
-                          </h4>
-                          <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1">
-                            By {item.instructor}
-                          </p>
-                        </div>
-
-                        {/* Footer & Actions */}
-                        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
-                          {item.status === 'Completed' ? (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenReview(item)}
-                                  className="flex flex-col items-start cursor-pointer group/ratingBtn"
-                                >
-                                  <div className="flex items-center gap-0.5">
-                                    {Array.from({ length: 5 }).map((_, i) => {
-                                      const itemRating = userReviews[item.id]?.rating || 0;
-                                      return (
-                                        <Exact3DGoldStar
-                                          key={i}
-                                          size={14}
-                                          isFilled={i < itemRating}
-                                        />
-                                      );
-                                    })}
-                                  </div>
-                                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 group-hover/ratingBtn:underline">
-                                    {userReviews[item.id] ? 'Edit Rating' : 'Leave Rating'}
-                                  </span>
-                                </button>
-
-                                <span className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 flex items-center gap-1">
-                                  <CheckCircle2 size={11} /> Completed
-                                </span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex-1 max-w-[60%] space-y-1">
-                                <div className="flex justify-between text-[10px] font-bold text-slate-400">
-                                  <span>Progress</span>
-                                  <span>{item.progress}%</span>
-                                </div>
-                                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                  <div
-                                    style={{ width: `${item.progress}%` }}
-                                    className="h-full bg-slate-900 dark:bg-slate-200 rounded-full"
-                                  />
-                                </div>
-                              </div>
-
-                              <Link
-                                href={`/learn/${item.id}`}
-                                className="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all shadow-xs"
-                              >
-                                Continue
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </AnimatePresence>
-
-            {sortedItems.length === 0 && (
-              <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
-                <Grid className="mx-auto text-slate-300 mb-2" size={32} />
-                <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No content items found matching your filters.</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('all');
-                    setSearchQuery('');
-                    setStatusFilter('all');
-                  }}
-                  className="mt-3 text-xs font-bold text-indigo-600 hover:underline"
-                >
-                  Reset all filters
-                </button>
-              </div>
-            )}
-
-            {/* PAGINATION CONTROLS */}
-            {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-2 border-t border-slate-200/60 dark:border-slate-800">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  Showing Page <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> of <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span>
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={currentPage === 1}
-                    onClick={() => {
-                      setCurrentPage(prev => Math.max(prev - 1, 1));
-                      document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-1 shadow-xs"
-                  >
-                    <ChevronLeft size={14} />
-                    <span>Previous</span>
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      type="button"
-                      onClick={() => {
-                        setCurrentPage(pageNum);
-                        document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className={`w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${currentPage === pageNum
-                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-xs'
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
-
-                  <button
-                    type="button"
-                    disabled={currentPage === totalPages}
-                    onClick={() => {
-                      setCurrentPage(prev => Math.min(prev + 1, totalPages));
-                      document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-1 shadow-xs"
-                  >
-                    <span>Next</span>
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* LEARNING TIME ANALYTICS (INLINE IF CONTENT COUNT <= 3) */}
-            {sortedItems.length <= 3 && (
-              <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 shadow-xs hover:shadow-md transition-all space-y-4">
-
-                {/* Header & Date Controls */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-                  <div className="flex items-center gap-2.5">
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                      <BarChart3 size={18} className="text-[#2C83F5]" />
-                      <span>Learning Time</span>
-                    </h3>
-                    <div className="relative">
+                    <div ref={tabDropdownRef} className="relative z-50 shrink-0">
                       <button
                         type="button"
-                        onMouseEnter={() => setShowLearningTimeInfo(true)}
-                        onMouseLeave={() => setShowLearningTimeInfo(false)}
-                        onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
-                        className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                        onClick={() => setIsTabDropdownOpen(!isTabDropdownOpen)}
+                        className="w-full sm:w-52 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between gap-2 shadow-xs hover:border-slate-300 transition-colors"
                       >
-                        <Info size={15} />
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <SelectedIcon size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                          <span className="truncate">{selectedOption.label}</span>
+                        </div>
+                        <ChevronRight size={14} className={`shrink-0 transition-transform duration-200 ${isTabDropdownOpen ? '-rotate-90 text-indigo-600' : 'rotate-90 text-slate-400'}`} />
                       </button>
-                      <AnimatePresence>
-                        {showLearningTimeInfo && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                            className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
-                          >
-                            Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-
-                  {/* Date Search Controls & Average Display */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div ref={datePickerRef} className="relative z-40">
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-xs">
-                        <button
-                          type="button"
-                          onClick={() => setWeekOffset(w => w - 1)}
-                          className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
-                        >
-                          <ChevronLeft size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                          className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
-                        >
-                          <Calendar size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-                          <span>{selectedStartDate} to {selectedEndDate}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setWeekOffset(w => w + 1)}
-                          className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
-                        >
-                          <ChevronRight size={13} />
-                        </button>
-                      </div>
 
                       <AnimatePresence>
-                        {isDatePickerOpen && (
+                        {isTabDropdownOpen && (
                           <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 6 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 6 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 space-y-3"
+                            className="absolute left-0 top-full mt-2 w-56 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden"
                           >
-                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                              <span className="text-xs font-black text-slate-900 dark:text-white">Search Learning Time by Date</span>
-                              <button
-                                type="button"
-                                onClick={() => setIsDatePickerOpen(false)}
-                                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
-                              >
-                                <X size={13} />
-                              </button>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedStartDate('2026-07-22');
-                                  setSelectedEndDate('2026-07-28');
-                                  setActiveDatePreset('7d');
-                                  setWeekOffset(0);
-                                }}
-                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '7d'
-                                  ? 'bg-indigo-600 text-white'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                  }`}
-                              >
-                                Last 7 Days
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedStartDate('2026-06-29');
-                                  setSelectedEndDate('2026-07-28');
-                                  setActiveDatePreset('30d');
-                                  setWeekOffset(0);
-                                }}
-                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '30d'
-                                  ? 'bg-indigo-600 text-white'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                                  }`}
-                              >
-                                Last 30 Days
-                              </button>
-                            </div>
-
-                            <div className="space-y-2 pt-1">
-                              <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                                  From Date
-                                </label>
-                                <input
-                                  type="date"
-                                  value={selectedStartDate}
-                                  onChange={(e) => {
-                                    setSelectedStartDate(e.target.value);
-                                    setActiveDatePreset('custom');
+                            {contentTypeOptions.map((opt) => {
+                              const OptIcon = opt.icon;
+                              const isSelected = activeTab === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveTab(opt.id as any);
+                                    setIsTabDropdownOpen(false);
                                   }}
-                                  className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                                  To Date
-                                </label>
-                                <input
-                                  type="date"
-                                  value={selectedEndDate}
-                                  onChange={(e) => {
-                                    setSelectedEndDate(e.target.value);
-                                    setActiveDatePreset('custom');
-                                  }}
-                                  className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                              </div>
-                            </div>
+                                  className={`w-full px-4 py-2.5 rounded-xl text-xs font-bold text-left flex items-center justify-between transition-colors ${isSelected
+                                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300'
+                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <OptIcon size={15} className={isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'} />
+                                    <span>{opt.label}</span>
+                                  </div>
+                                  {isSelected && <span className="text-indigo-600 font-black">✓</span>}
+                                </button>
+                              );
+                            })}
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
+                  );
+                })()}
 
-                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                      Average : <span className="font-extrabold text-[#2C83F5] dark:text-[#27C5D8]">{calculatedAverageHrs} Hours/Day</span>
-                    </span>
-                  </div>
+                {/* Search Input */}
+                <div className="relative flex-1 w-full">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search courses by title, instructor..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl text-xs font-semibold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="p-1 text-slate-400 hover:text-slate-700 absolute right-2.5 top-1/2 -translate-y-1/2"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
+              </div>
 
-                {/* Bar Chart Container */}
-                <div className="pt-2">
-                  <div className="relative h-48 w-full flex items-end">
-                    {/* Grid Lines & Y-Axis Scale (Hours) */}
-                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                      {[12, 9, 6, 3, 0].map((val) => (
-                        <div key={val} className="flex items-center gap-3 w-full">
-                          <span className="w-9 text-right shrink-0">{val} hrs</span>
-                          <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
-                        </div>
-                      ))}
-                    </div>
+              {/* Learning Cards Grid */}
+              <AnimatePresence mode="popLayout">
+                <motion.div
+                  key={`${activeTab}-${statusFilter}-${sortBy}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                >
+                  {paginatedItems.map((item, idx) => {
+                    const isBookmarked = bookmarkedIds.includes(item.id);
 
-                    {/* Bars Render */}
-                    <div className="w-full pl-12 h-full flex items-end justify-between gap-2 z-10 pt-4">
-                      {learningTimeWeekData.map((d, i) => {
-                        const hrs = (d.mins / 60).toFixed(1);
-                        const heightPercent = Math.min((d.mins / (12 * 60)) * 100, 100);
-                        const isHovered = hoveredBarIndex === i;
-                        const isManyBars = learningTimeWeekData.length > 14;
+                    return (
+                      <motion.div
+                        key={item.id}
+                        layout="position"
+                        initial={{ opacity: 0, y: 12 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.1 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{
+                          duration: 0.35,
+                          ease: 'easeOut',
+                          delay: Math.min(idx * 0.04, 0.2)
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        className="group relative flex flex-col justify-between overflow-hidden rounded-tl-none rounded-br-none rounded-tr-3xl rounded-bl-3xl bg-slate-200/80 dark:bg-slate-800 p-[1px] shadow-xs hover:shadow-lg transition-all duration-300"
+                      >
+                        {/* Animated Running Border Effect */}
+                        <div className="absolute inset-[-100%] opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_70%,#6366f1_100%)] dark:bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_70%,#818cf8_100%)]" />
 
-                        return (
-                          <div
-                            key={i}
-                            className="relative flex-1 flex flex-col items-center h-full justify-end group/bar cursor-pointer"
-                            onMouseEnter={() => setHoveredBarIndex(i)}
-                            onMouseLeave={() => setHoveredBarIndex(null)}
-                          >
-                            <AnimatePresence>
-                              {isHovered && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 4 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: 4 }}
-                                  className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold text-center shadow-md z-30 pointer-events-none whitespace-nowrap"
-                                >
-                                  {d.label} ({d.day}): {hrs} hrs
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                        <div className="relative z-10 flex flex-col justify-between h-full w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-tl-none rounded-br-none rounded-tr-[calc(1.5rem-1px)] rounded-bl-[calc(1.5rem-1px)] p-4 overflow-hidden">
+                          {/* Image Header with Category Hover Badge */}
+                          <div className="relative h-36 w-full rounded-tl-none rounded-tr-2xl rounded-br-2xl rounded-bl-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                            <img
+                              src={item.coverImage}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
-                            <div className="w-full max-w-[36px] h-[82%] flex items-end justify-center">
-                              <motion.div
-                                key={`bar-${i}-${weekOffset}-${d.mins}`}
-                                initial={{ height: 0 }}
-                                whileInView={{ height: `${Math.max(heightPercent, 2)}%` }}
-                                viewport={{ once: false, amount: 0.2 }}
-                                transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.5) }}
-                                className="w-full rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
-                              />
+                            {/* Content Type Badge */}
+                            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-900/80 backdrop-blur-md text-white border border-white/20">
+                              {item.type === 'Course' && <BookOpen size={11} />}
+                              {item.type === 'Webinar' && <Video size={11} />}
+                              {item.type === 'Workshop' && <Wrench size={11} />}
+                              {item.type === 'Article' && <FileText size={11} />}
+                              <span>{item.type}</span>
                             </div>
 
-                            <div className="mt-1.5 text-center">
-                              <p className={`font-semibold text-slate-700 dark:text-slate-300 ${isManyBars ? 'text-[8px] truncate max-w-[24px]' : 'text-[10px]'}`}>
-                                {isManyBars ? d.label.replace('Jul ', '7/').replace('Jun ', '6/') : d.label}
+                            {/* Category Badge */}
+                            <div className="absolute bottom-2.5 left-2.5 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out transform group-hover:translate-y-0 translate-y-2 pointer-events-none z-20">
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-slate-100 backdrop-blur-md shadow-md border border-white/20 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>{item.category}</span>
+                              </span>
+                            </div>
+
+                            {/* Bookmark Button */}
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark(item.id, item.title)}
+                              className={`absolute top-2.5 right-2.5 p-1.5 rounded-xl backdrop-blur-md transition-all ${isBookmarked
+                                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                                : 'bg-slate-900/60 text-slate-200 hover:text-white'
+                                }`}
+                            >
+                              <Bookmark size={12} className={isBookmarked ? 'fill-current' : ''} />
+                            </button>
+                          </div>
+
+                          {/* Content Section */}
+                          <div className="mt-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 mt-0.5 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                                {item.title}
+                              </h4>
+                              <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1">
+                                By {item.instructor}
                               </p>
-                              {!isManyBars && (
-                                <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
-                                  {d.day}
-                                </p>
+                            </div>
+
+                            {/* Footer & Actions */}
+                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
+                              {item.status === 'Completed' ? (
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenReview(item)}
+                                      className="flex flex-col items-start cursor-pointer group/ratingBtn"
+                                    >
+                                      <div className="flex items-center gap-0.5">
+                                        {Array.from({ length: 5 }).map((_, i) => {
+                                          const itemRating = userReviews[item.id]?.rating || 0;
+                                          return (
+                                            <Exact3DGoldStar
+                                              key={i}
+                                              size={14}
+                                              isFilled={i < itemRating}
+                                            />
+                                          );
+                                        })}
+                                      </div>
+                                      <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 group-hover/ratingBtn:underline">
+                                        {userReviews[item.id] ? 'Edit Rating' : 'Leave Rating'}
+                                      </span>
+                                    </button>
+
+                                    <span className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 flex items-center gap-1">
+                                      <CheckCircle2 size={11} /> Completed
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex-1 max-w-[60%] space-y-1">
+                                    <div className="flex justify-between text-[10px] font-bold text-slate-400">
+                                      <span>Progress</span>
+                                      <span>{item.progress}%</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                      <div
+                                        style={{ width: `${item.progress}%` }}
+                                        className="h-full bg-slate-900 dark:bg-slate-200 rounded-full"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <Link
+                                    href={`/learn/${item.id}`}
+                                    className="px-3.5 py-1.5 rounded-xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold transition-all shadow-xs"
+                                  >
+                                    Continue
+                                  </Link>
+                                </div>
                               )}
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              </AnimatePresence>
+
+              {sortedItems.length === 0 && (
+                <div className="p-12 text-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+                  <Grid className="mx-auto text-slate-300 mb-2" size={32} />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">No content items found matching your filters.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('all');
+                      setSearchQuery('');
+                      setStatusFilter('all');
+                    }}
+                    className="mt-3 text-xs font-bold text-indigo-600 hover:underline"
+                  >
+                    Reset all filters
+                  </button>
+                </div>
+              )}
+
+              {/* PAGINATION CONTROLS */}
+              {totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-2 border-t border-slate-200/60 dark:border-slate-800">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Showing Page <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> of <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span>
+                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => {
+                        setCurrentPage(prev => Math.max(prev - 1, 1));
+                        document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-1 shadow-xs"
+                    >
+                      <ChevronLeft size={14} />
+                      <span>Previous</span>
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`w-8 h-8 rounded-xl text-xs font-bold flex items-center justify-center transition-all ${currentPage === pageNum
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
+                          : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-xs'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => {
+                        setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                        document.getElementById('learning-items-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-1 shadow-xs"
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* LEARNING TIME ANALYTICS (INLINE IF CONTENT COUNT <= 3) */}
+              {sortedItems.length <= 3 && (
+                <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 shadow-xs hover:shadow-md transition-all space-y-4">
+
+                  {/* Header & Date Controls */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                    <div className="flex items-center gap-2.5">
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <BarChart3 size={18} className="text-[#2C83F5]" />
+                        <span>Learning Time</span>
+                      </h3>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onMouseEnter={() => setShowLearningTimeInfo(true)}
+                          onMouseLeave={() => setShowLearningTimeInfo(false)}
+                          onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
+                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                        >
+                          <Info size={15} />
+                        </button>
+                        <AnimatePresence>
+                          {showLearningTimeInfo && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                              className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
+                            >
+                              Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+
+                    {/* Date Search Controls & Average Display */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div ref={datePickerRef} className="relative z-40">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-xs">
+                          <button
+                            type="button"
+                            onClick={() => setWeekOffset(w => w - 1)}
+                            className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                          >
+                            <ChevronLeft size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                            className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
+                          >
+                            <Calendar size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            <span>{selectedStartDate} to {selectedEndDate}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setWeekOffset(w => w + 1)}
+                            className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                          >
+                            <ChevronRight size={13} />
+                          </button>
+                        </div>
+
+                        {/* Always-visible warning if < 5 days selected and picker is closed */}
+                        {(() => {
+                          const s = new Date(selectedStartDate);
+                          const e = new Date(selectedEndDate);
+                          const diffDays = Math.ceil(Math.abs(e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                          if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e >= s && diffDays < 5 && !isDatePickerOpen) {
+                            return (
+                              <div className="absolute -bottom-4 right-1 pointer-events-none">
+                                <span className="text-[9px] font-extrabold text-amber-500 flex items-center gap-1 opacity-90 shadow-sm bg-white/50 dark:bg-slate-900/50 backdrop-blur-md px-1.5 py-0.5 rounded-full">
+                                  <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                                  Select at least 5 days
+                                </span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+
+                        <AnimatePresence>
+                          {isDatePickerOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, y: 6 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, y: 6 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 space-y-3"
+                            >
+                              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                                <span className="text-xs font-black text-slate-900 dark:text-white">Search Learning Time by Date</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsDatePickerOpen(false)}
+                                  className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedStartDate('2026-07-22');
+                                    setSelectedEndDate('2026-07-28');
+                                    setActiveDatePreset('7d');
+                                    setWeekOffset(0);
+                                  }}
+                                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '7d'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                    }`}
+                                >
+                                  Last 7 Days
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedStartDate('2026-06-29');
+                                    setSelectedEndDate('2026-07-28');
+                                    setActiveDatePreset('30d');
+                                    setWeekOffset(0);
+                                  }}
+                                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '30d'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                    }`}
+                                >
+                                  Last 30 Days
+                                </button>
+                              </div>
+
+                              <div className="space-y-2 pt-1">
+                                <div>
+                                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                    From Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={selectedStartDate}
+                                    onChange={(e) => {
+                                      setSelectedStartDate(e.target.value);
+                                      setActiveDatePreset('custom');
+                                    }}
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                    To Date
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={selectedEndDate}
+                                    onChange={(e) => {
+                                      setSelectedEndDate(e.target.value);
+                                      setActiveDatePreset('custom');
+                                    }}
+                                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Permanent 5 days hint */}
+                              <div className="pt-1 pb-0.5">
+                                <p className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg py-1.5 border border-slate-100 dark:border-slate-800/80">
+                                  <Info size={12} className="text-indigo-500 dark:text-indigo-400" />
+                                  Please select at least 5 days
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                        Average : <span className="font-extrabold text-[#2C83F5] dark:text-[#27C5D8]">{calculatedAverageHrs} Hours/Day</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bar Chart Container */}
+                  <div className="pt-2">
+                    <div className="relative h-48 w-full flex items-end">
+                      {/* Grid Lines & Y-Axis Scale (Hours) */}
+                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                        {[12, 9, 6, 3, 0].map((val) => (
+                          <div key={val} className="flex items-center gap-3 w-full">
+                            <span className="w-9 text-right shrink-0">{val} hrs</span>
+                            <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Bars Render */}
+                      <div className="w-full pl-12 h-full flex items-end justify-between gap-2 z-10 pt-4">
+                        {learningTimeWeekData.map((d, i) => {
+                          const hrs = (d.mins / 60).toFixed(1);
+                          const heightPercent = Math.min((d.mins / (12 * 60)) * 100, 100);
+                          const isHovered = hoveredBarIndex === i;
+                          const isManyBars = learningTimeWeekData.length > 14;
+
+                          return (
+                            <div
+                              key={i}
+                              className="relative flex-1 flex flex-col items-center h-full justify-end group/bar cursor-pointer"
+                              onMouseEnter={() => setHoveredBarIndex(i)}
+                              onMouseLeave={() => setHoveredBarIndex(null)}
+                            >
+                              <AnimatePresence>
+                                {isHovered && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 4 }}
+                                    className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold text-center shadow-md z-30 pointer-events-none whitespace-nowrap"
+                                  >
+                                    {d.label} ({d.day}): {hrs} hrs
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+
+                              <div className="w-full max-w-[36px] h-[82%] flex items-end justify-center">
+                                <motion.div
+                                  key={`bar-${i}-${weekOffset}-${d.mins}`}
+                                  initial={{ height: 0 }}
+                                  whileInView={{ height: `${Math.max(heightPercent, 2)}%` }}
+                                  viewport={{ once: false, amount: 0.2 }}
+                                  transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.5) }}
+                                  className="w-full rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
+                                />
+                              </div>
+
+                              <div className="mt-1.5 text-center">
+                                <p className={`font-semibold text-slate-700 dark:text-slate-300 ${isManyBars ? 'text-[8px] truncate max-w-[24px]' : 'text-[10px]'}`}>
+                                  {isManyBars ? d.label.replace('Jul ', '7/').replace('Jun ', '6/') : d.label}
+                                </p>
+                                {!isManyBars && (
+                                  <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
+                                    {d.day}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* RIGHT SIDEBAR COLUMN (1/4 WIDTH - lg:col-span-4): OTHER DASHBOARD WIDGETS & SKILLS AT END */}
@@ -1160,73 +1206,78 @@ export default function MyLearningPage() {
 
             {/* 1. Continue Learning Focus Panel */}
             {continueLearningItem && (
-              <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 shadow-xs hover:shadow-md transition-all space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                      Active Course Focus
+              <div className="relative overflow-hidden rounded-tr-none rounded-bl-none rounded-tl-[3rem] rounded-br-[3rem] bg-slate-200/80 dark:bg-slate-800 p-[2px] shadow-xs hover:shadow-md transition-all">
+                {/* Always Animated Running Border Effect */}
+                <div className="absolute inset-[-100%] opacity-100 animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_70%,#6366f1_100%)] dark:bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_70%,#818cf8_100%)]" />
+
+                <div className="relative z-10 h-full w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-tr-none rounded-bl-none rounded-tl-[calc(3rem-2px)] rounded-br-[calc(3rem-2px)] p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                        Active Course Focus
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      {continueLearningItem.category}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    {continueLearningItem.category}
-                  </span>
-                </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <div className="relative group/img h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
-                    <img
-                      src={continueLearningItem.coverImage}
-                      alt={continueLearningItem.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover/img:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center group-hover/img:bg-slate-950/30 transition-colors">
-                      <div className="w-9 h-9 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg transform group-hover/img:scale-110 transition-transform">
-                        <Play size={14} className="fill-current ml-0.5" />
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative group/img h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
+                      <img
+                        src={continueLearningItem.coverImage}
+                        alt={continueLearningItem.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center group-hover/img:bg-slate-950/30 transition-colors">
+                        <div className="w-9 h-9 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg transform group-hover/img:scale-110 transition-transform">
+                          <Play size={14} className="fill-current ml-0.5" />
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-1 text-left">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 tracking-tight">
+                        {continueLearningItem.title}
+                      </h3>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                        Instructor: <span className="font-semibold text-slate-800 dark:text-slate-200">{continueLearningItem.instructor}</span>
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex-1 min-w-0 space-y-1 text-left">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-2 tracking-tight">
-                      {continueLearningItem.title}
-                    </h3>
-                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      Instructor: <span className="font-semibold text-slate-800 dark:text-slate-200">{continueLearningItem.instructor}</span>
-                    </p>
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
+                      <span>Course Progress</span>
+                      <span className="text-sky-500 dark:text-sky-400 font-extrabold">{continueLearningItem.progress}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${continueLearningItem.progress}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full rounded-full bg-gradient-to-r from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
-                    <span>Course Progress</span>
-                    <span className="text-sky-500 dark:text-sky-400 font-extrabold">{continueLearningItem.progress}%</span>
+                  <div className="pt-2 flex items-center gap-3">
+                    <Link
+                      href={`/learn/${continueLearningItem.id}/learn`}
+                      className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-blue-800 to-sky-400 hover:from-blue-700 hover:to-sky-300 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Play size={13} className="fill-current" />
+                      <span>Resume Learning</span>
+                    </Link>
+                    <Link
+                      href={`/learn/${continueLearningItem.id}`}
+                      className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <span>Details</span>
+                      <ChevronRight size={13} />
+                    </Link>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${continueLearningItem.progress}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full rounded-full bg-gradient-to-r from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center gap-3">
-                  <Link
-                    href={`/learn/${continueLearningItem.id}/learn`}
-                    className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-blue-800 to-sky-400 hover:from-blue-700 hover:to-sky-300 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
-                  >
-                    <Play size={13} className="fill-current" />
-                    <span>Resume Learning</span>
-                  </Link>
-                  <Link
-                    href={`/learn/${continueLearningItem.id}`}
-                    className="px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1"
-                  >
-                    <span>Details</span>
-                    <ChevronRight size={13} />
-                  </Link>
                 </div>
               </div>
             )}
@@ -1234,7 +1285,7 @@ export default function MyLearningPage() {
 
 
             {/* 4. SKILLS PROGRESS (MOVED ABOVE LEARNING JOURNEY) */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 shadow-xs space-y-4">
+            <div className="rounded-tr-none rounded-bl-none rounded-tl-[3rem] rounded-br-[3rem] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                   <Target size={17} className="text-[#2C83F5]" />
@@ -1273,17 +1324,17 @@ export default function MyLearningPage() {
             </div>
 
             {/* 5. Your Learning Journey (Ascending Growth Stepper & Level Describers) */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs relative overflow-hidden">
-              
+            <div className="rounded-tr-none rounded-bl-none rounded-tl-[3rem] rounded-br-[3rem] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs relative overflow-hidden">
+
               {/* Subtle Landscape Background */}
               <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none opacity-40 dark:opacity-20 flex items-end">
                 <svg viewBox="0 0 1000 100" className="w-full h-full preserve-3d" preserveAspectRatio="none">
                   <path d="M0,80 Q100,60 250,90 T500,70 T750,90 T1000,60 L1000,100 L0,100 Z" fill="#E9D5FF" />
                   <path d="M0,100 Q150,70 300,95 T600,80 T850,95 T1000,75 L1000,100 L0,100 Z" fill="#F3E8FF" />
                   <g fill="#D8B4FE">
-                    <path d="M750,90 L760,50 L770,90 Z M760,90 L760,100" stroke="#D8B4FE" strokeWidth="2"/>
-                    <path d="M820,80 L835,30 L850,80 Z M835,80 L835,100" stroke="#D8B4FE" strokeWidth="2"/>
-                    <path d="M880,85 L890,45 L900,85 Z M890,85 L890,100" stroke="#D8B4FE" strokeWidth="2"/>
+                    <path d="M750,90 L760,50 L770,90 Z M760,90 L760,100" stroke="#D8B4FE" strokeWidth="2" />
+                    <path d="M820,80 L835,30 L850,80 Z M835,80 L835,100" stroke="#D8B4FE" strokeWidth="2" />
+                    <path d="M880,85 L890,45 L900,85 Z M890,85 L890,100" stroke="#D8B4FE" strokeWidth="2" />
                   </g>
                 </svg>
               </div>
@@ -1297,112 +1348,113 @@ export default function MyLearningPage() {
               {/* Fully Responsive Container */}
               <div className="w-full pb-4 relative z-10 mt-4">
                 <div className="w-full h-[160px] relative mx-auto">
-                  
-                  {/* SVG Wavy Line */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 600 160" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#C4B5FD" />
-                        <stop offset="100%" stopColor="#C4B5FD" />
-                      </linearGradient>
-                      <linearGradient id="inactiveLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#EDE9FE" />
-                        <stop offset="100%" stopColor="#EDE9FE" />
-                      </linearGradient>
-                    </defs>
 
-                    {/* Full Inactive Line (Background) */}
-                    <path
-                      d="M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90 C 360 90, 360 100, 420 100 C 480 100, 480 80, 540 80 C 570 80, 600 80, 600 80"
-                      fill="none"
-                      stroke="url(#inactiveLineGrad)"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                    />
+                  {/* SVG Wavy Line & Nodes generated dynamically */}
+                  {(() => {
+                    const currentLevel = completedCount >= 30 ? 5 : completedCount >= 20 ? 4 : completedCount >= 10 ? 3 : completedCount >= 3 ? 2 : 1;
+                    const nodes = [
+                      { level: 1, title: 'Beginner', subtitle: 'Start your<br/>learning', req: 0, left: '10%', top: '100px', stemH: 'h-4', mt: 'mt-5', activeStem: 'h-12', Icon: Sprout },
+                      { level: 2, title: 'Explorer', subtitle: 'Complete<br/>3 courses', req: 3, left: '30%', top: '110px', stemH: 'h-6', mt: 'mt-8', activeStem: 'h-16', Icon: Target },
+                      { level: 3, title: 'Adventurer', subtitle: 'Complete<br/>10 courses', req: 10, left: '50%', top: '90px', stemH: 'h-6', mt: 'mt-8', activeStem: 'h-16', Icon: Flag },
+                      { level: 4, title: 'Scholar', subtitle: 'Complete<br/>20 courses', req: 20, left: '70%', top: '100px', stemH: 'h-6', mt: 'mt-8', activeStem: 'h-16', Icon: Award },
+                      { level: 5, title: 'Master', subtitle: 'Complete<br/>30 courses', req: 30, left: '90%', top: '80px', stemH: 'h-8', mt: 'mt-10', activeStem: 'h-20', Icon: Crown }
+                    ];
 
-                    {/* Active Line (Up to Adventurer) */}
-                    <path
-                      d="M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90"
-                      fill="none"
-                      stroke="url(#activeLineGrad)"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                    const getActiveLinePath = (lvl: number) => {
+                      if (lvl === 1) return "M 0 100 C 30 100, 30 100, 60 100";
+                      if (lvl === 2) return "M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110";
+                      if (lvl === 3) return "M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90";
+                      if (lvl === 4) return "M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90 C 360 90, 360 100, 420 100";
+                      return "M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90 C 360 90, 360 100, 420 100 C 480 100, 480 80, 540 80 C 570 80, 600 80, 600 80";
+                    };
 
-                  {/* NODE 1: Beginner */}
-                  <div className="group cursor-pointer absolute left-[10%] top-[100px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="w-0.5 h-4 bg-indigo-500 absolute bottom-1"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 relative z-10 mt-5"></div>
-                    <div className="absolute bottom-3 text-emerald-500 flex items-center justify-center scale-90 sm:scale-100 transition-transform group-hover:scale-110">
-                      <Sprout size={24} strokeWidth={2.5} />
-                    </div>
-                    <div className="absolute top-8 text-center w-[60px] sm:w-[80px] pointer-events-none">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Beginner</p>
-                      <p className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Start your<br/>learning</p>
-                    </div>
-                  </div>
+                    return (
+                      <>
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 600 160" preserveAspectRatio="none">
+                          <defs>
+                            <linearGradient id="activeLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#C4B5FD" />
+                              <stop offset="100%" stopColor="#C4B5FD" />
+                            </linearGradient>
+                            <linearGradient id="inactiveLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor="#EDE9FE" />
+                              <stop offset="100%" stopColor="#EDE9FE" />
+                            </linearGradient>
+                          </defs>
 
-                  {/* NODE 2: Explorer */}
-                  <div className="group cursor-pointer absolute left-[30%] top-[110px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="w-0.5 h-6 bg-[#C4B5FD] absolute bottom-1"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#C4B5FD] relative z-10 mt-8"></div>
-                    <div className="absolute bottom-3 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-50/80 border border-emerald-100 flex items-center justify-center transition-transform group-hover:scale-110">
-                      <Star size={16} className="text-emerald-500 sm:w-[18px] sm:h-[18px]" fill="currentColor" />
-                    </div>
-                    <div className="absolute top-9 text-center w-[60px] sm:w-[80px] pointer-events-none">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Explorer</p>
-                      <p className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Complete<br/>3 courses</p>
-                    </div>
-                  </div>
+                          {/* Full Inactive Line (Background) */}
+                          <path
+                            d="M 0 100 C 30 100, 30 100, 60 100 C 120 100, 120 110, 180 110 C 240 110, 240 90, 300 90 C 360 90, 360 100, 420 100 C 480 100, 480 80, 540 80 C 570 80, 600 80, 600 80"
+                            fill="none"
+                            stroke="url(#inactiveLineGrad)"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                          />
 
-                  {/* NODE 3: Adventurer (Active) */}
-                  <div className="group cursor-pointer absolute left-[50%] top-[90px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="w-0.5 h-16 bg-[#8B5CF6] absolute bottom-1"></div>
-                    <div className="w-3 h-3 rounded-full bg-[#8B5CF6] border-2 border-white relative z-10 mt-8 shadow-[0_0_10px_rgba(139,92,246,0.5)]"></div>
-                    
-                    <div className="absolute bottom-16 right-[-8px] text-[#8B5CF6] scale-90 sm:scale-100 transition-transform group-hover:scale-110 group-hover:translate-x-1">
-                      <Flag size={20} fill="currentColor" strokeWidth={1} />
-                    </div>
+                          {/* Dynamic Active Line */}
+                          <path
+                            d={getActiveLinePath(currentLevel)}
+                            fill="none"
+                            stroke="url(#activeLineGrad)"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
 
-                    <div className="absolute bottom-5 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-indigo-50 flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-indigo-500 shadow-lg shadow-indigo-500/40 flex items-center justify-center relative z-20">
-                          <Star size={20} className="text-white sm:w-[24px] sm:h-[24px]" fill="currentColor" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="absolute top-10 sm:top-12 text-center w-[70px] sm:w-[90px] pointer-events-none">
-                      <p className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">Adventurer</p>
-                      <p className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Complete<br/>10 courses</p>
-                    </div>
-                  </div>
+                        {/* Render All Journey Nodes */}
+                        {nodes.map(node => {
+                          const isCompleted = currentLevel > node.level;
+                          const isActive = currentLevel === node.level;
+                          const isLocked = currentLevel < node.level;
+                          const Icon = node.Icon;
 
-                  {/* NODE 4: Scholar */}
-                  <div className="group cursor-pointer absolute left-[70%] top-[100px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="w-0.5 h-6 bg-[#EDE9FE] absolute bottom-1"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#EDE9FE] relative z-10 mt-8"></div>
-                    <div className="absolute bottom-3 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center transition-transform group-hover:scale-110">
-                      <Lock size={14} className="text-slate-700 sm:w-[16px] sm:h-[16px]" fill="currentColor" />
-                    </div>
-                    <div className="absolute top-9 text-center w-[60px] sm:w-[80px] pointer-events-none">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Scholar</p>
-                      <p className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Complete<br/>20 courses</p>
-                    </div>
-                  </div>
+                          return (
+                            <div key={node.level} className="group cursor-pointer absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" style={{ left: node.left, top: node.top }}>
+                              {isCompleted && (
+                                <>
+                                  <div className={`w-0.5 ${node.stemH} bg-[#C4B5FD] absolute bottom-1`}></div>
+                                  <div className={`w-2.5 h-2.5 rounded-full bg-[#C4B5FD] relative z-10 ${node.mt}`}></div>
+                                  <div className="absolute bottom-3 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-50/80 border border-emerald-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                                    <Icon size={16} className="text-emerald-500 sm:w-[18px] sm:h-[18px]" strokeWidth={2.5} />
+                                  </div>
+                                </>
+                              )}
+                              
+                              {isActive && (
+                                <>
+                                  <div className={`w-0.5 ${node.activeStem} bg-[#8B5CF6] absolute bottom-1`}></div>
+                                  <div className={`w-3 h-3 rounded-full bg-[#8B5CF6] border-2 border-white relative z-10 ${node.mt} shadow-[0_0_10px_rgba(139,92,246,0.5)]`}></div>
+                                  
+                                  <div className="absolute bottom-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-indigo-50/80 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-500/50 flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-[0_0_20px_rgba(99,102,241,0.3)] backdrop-blur-sm">
+                                    {/* Pulsing ring effect */}
+                                    <div className="absolute inset-0 rounded-full bg-indigo-400/20 animate-ping opacity-75"></div>
+                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-500 shadow-lg shadow-indigo-500/50 flex items-center justify-center relative z-20">
+                                      <Icon size={14} className="text-white drop-shadow-sm sm:w-[16px] sm:h-[16px]" strokeWidth={2.5} />
+                                    </div>
+                                  </div>
+                                </>
+                              )}
 
-                  {/* NODE 5: Master */}
-                  <div className="group cursor-pointer absolute left-[90%] top-[80px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <div className="w-0.5 h-8 bg-[#EDE9FE] absolute bottom-1"></div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#EDE9FE] relative z-10 mt-10"></div>
-                    <div className="absolute bottom-3 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center transition-transform group-hover:scale-110">
-                      <Lock size={14} className="text-slate-700 sm:w-[16px] sm:h-[16px]" fill="currentColor" />
-                    </div>
-                    <div className="absolute top-9 sm:top-10 text-center w-[60px] sm:w-[80px] pointer-events-none">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Master</p>
-                      <p className="text-[8px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">Complete<br/>30 courses</p>
-                    </div>
-                  </div>
+                              {isLocked && (
+                                <>
+                                  <div className={`w-0.5 ${node.stemH} bg-[#EDE9FE] absolute bottom-1`}></div>
+                                  <div className={`w-2.5 h-2.5 rounded-full bg-[#EDE9FE] relative z-10 ${node.mt}`}></div>
+                                  <div className="absolute bottom-3 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center transition-transform group-hover:scale-110">
+                                    <Lock size={14} className="text-slate-700 sm:w-[16px] sm:h-[16px]" fill="currentColor" />
+                                  </div>
+                                </>
+                              )}
+
+                              <div className={`absolute ${isActive ? (node.level === 1 ? 'top-8' : node.level === 5 ? 'top-10' : 'top-10 sm:top-12') : (node.level === 1 ? 'top-8' : node.level === 5 ? 'top-9 sm:top-10' : 'top-9')} text-center w-[70px] sm:w-[90px] pointer-events-none`}>
+                                <p className={`text-[10px] sm:text-[11.5px] font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>{node.title}</p>
+                                <p className="text-[8.5px] sm:text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" dangerouslySetInnerHTML={{ __html: node.subtitle }}></p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        </>
+                      );
+                    })()}
 
                 </div>
               </div>
@@ -1419,258 +1471,258 @@ export default function MyLearningPage() {
             viewport={{ once: true, margin: "-50px" }}
             className="w-full mt-6"
           >
-            <motion.div 
+            <motion.div
               variants={{
-                hidden: { 
-                  x: -800, 
-                  rotate: -12, 
+                hidden: {
+                  x: -800,
+                  rotate: -12,
                   opacity: 0,
                   boxShadow: "0px 0px 0px rgba(0,0,0,0)"
                 },
-                visible: { 
-                  x: [-800, 4, 0], 
-                  rotate: [-12, 0.2, 0], 
+                visible: {
+                  x: [-800, 4, 0],
+                  rotate: [-12, 0.2, 0],
                   opacity: [0, 1, 1],
                   boxShadow: [
-                    "0px 0px 0px rgba(0,0,0,0)", 
-                    "0px 20px 25px -5px rgba(0,0,0,0.1)", 
+                    "0px 0px 0px rgba(0,0,0,0)",
+                    "0px 20px 25px -5px rgba(0,0,0,0.1)",
                     "0px 10px 15px -3px rgba(0,0,0,0.05)"
                   ],
-                  transition: { 
+                  transition: {
                     duration: 1.1,
                     times: [0, 0.85, 1],
                     ease: ["easeOut", "easeInOut"]
                   }
                 }
               }}
-              className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 space-y-4"
+              className="relative overflow-hidden rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 space-y-4"
             >
 
 
-            {/* Header & Date Controls */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-              <div className="flex items-center gap-2.5">
-                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#2C83F5]" />
-                  <span>Learning Time</span>
-                </h3>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onMouseEnter={() => setShowLearningTimeInfo(true)}
-                    onMouseLeave={() => setShowLearningTimeInfo(false)}
-                    onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
-                    className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
-                  >
-                    <Info size={15} />
-                  </button>
-                  <AnimatePresence>
-                    {showLearningTimeInfo && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                        className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
-                      >
-                        Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* Header & Date Controls */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center gap-2.5">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <BarChart3 size={18} className="text-[#2C83F5]" />
+                    <span>Learning Time</span>
+                  </h3>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onMouseEnter={() => setShowLearningTimeInfo(true)}
+                      onMouseLeave={() => setShowLearningTimeInfo(false)}
+                      onClick={() => setShowLearningTimeInfo(!showLearningTimeInfo)}
+                      className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                    >
+                      <Info size={15} />
+                    </button>
+                    <AnimatePresence>
+                      {showLearningTimeInfo && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                          className="absolute left-0 top-full mt-2 w-64 p-3 rounded-2xl bg-slate-900 text-white text-xs font-medium shadow-2xl z-50 pointer-events-none"
+                        >
+                          Tracks total time spent watching videos, taking quizzes, and completing hands-on course modules.
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
 
-              {/* Date Search Controls & Average Display */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div ref={datePickerRef} className="relative z-40">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-xs">
-                    <button
-                      type="button"
-                      onClick={() => setWeekOffset(w => w - 1)}
-                      className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
-                    >
-                      <ChevronLeft size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                      className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
-                    >
-                      <Calendar size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>{selectedStartDate} to {selectedEndDate}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWeekOffset(w => w + 1)}
-                      className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
-                    >
-                      <ChevronRight size={13} />
-                    </button>
+                {/* Date Search Controls & Average Display */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div ref={datePickerRef} className="relative z-40">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-xs">
+                      <button
+                        type="button"
+                        onClick={() => setWeekOffset(w => w - 1)}
+                        className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                      >
+                        <ChevronLeft size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                        className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors"
+                      >
+                        <Calendar size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span>{selectedStartDate} to {selectedEndDate}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setWeekOffset(w => w + 1)}
+                        className="p-0.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                      >
+                        <ChevronRight size={13} />
+                      </button>
+                    </div>
+
+                    <AnimatePresence>
+                      {isDatePickerOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: 6 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: 6 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 space-y-3"
+                        >
+                          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                            <span className="text-xs font-black text-slate-900 dark:text-white">Search Learning Time by Date</span>
+                            <button
+                              type="button"
+                              onClick={() => setIsDatePickerOpen(false)}
+                              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                            >
+                              <X size={13} />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedStartDate('2026-07-22');
+                                setSelectedEndDate('2026-07-28');
+                                setActiveDatePreset('7d');
+                                setWeekOffset(0);
+                              }}
+                              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '7d'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                }`}
+                            >
+                              Last 7 Days
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedStartDate('2026-06-29');
+                                setSelectedEndDate('2026-07-28');
+                                setActiveDatePreset('30d');
+                                setWeekOffset(0);
+                              }}
+                              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '30d'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                                }`}
+                            >
+                              Last 30 Days
+                            </button>
+                          </div>
+
+                          <div className="space-y-2 pt-1">
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                From Date
+                              </label>
+                              <input
+                                type="date"
+                                value={selectedStartDate}
+                                onChange={(e) => {
+                                  setSelectedStartDate(e.target.value);
+                                  setActiveDatePreset('custom');
+                                }}
+                                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                                To Date
+                              </label>
+                              <input
+                                type="date"
+                                value={selectedEndDate}
+                                onChange={(e) => {
+                                  setSelectedEndDate(e.target.value);
+                                  setActiveDatePreset('custom');
+                                }}
+                                className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              />
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
-                  <AnimatePresence>
-                    {isDatePickerOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 6 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 6 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-72 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 space-y-3"
-                      >
-                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                          <span className="text-xs font-black text-slate-900 dark:text-white">Search Learning Time by Date</span>
-                          <button
-                            type="button"
-                            onClick={() => setIsDatePickerOpen(false)}
-                            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white"
-                          >
-                            <X size={13} />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedStartDate('2026-07-22');
-                              setSelectedEndDate('2026-07-28');
-                              setActiveDatePreset('7d');
-                              setWeekOffset(0);
-                            }}
-                            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '7d'
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                              }`}
-                          >
-                            Last 7 Days
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedStartDate('2026-06-29');
-                              setSelectedEndDate('2026-07-28');
-                              setActiveDatePreset('30d');
-                              setWeekOffset(0);
-                            }}
-                            className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-center transition-colors ${activeDatePreset === '30d'
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
-                              }`}
-                          >
-                            Last 30 Days
-                          </button>
-                        </div>
-
-                        <div className="space-y-2 pt-1">
-                          <div>
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                              From Date
-                            </label>
-                            <input
-                              type="date"
-                              value={selectedStartDate}
-                              onChange={(e) => {
-                                setSelectedStartDate(e.target.value);
-                                setActiveDatePreset('custom');
-                              }}
-                              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                              To Date
-                            </label>
-                            <input
-                              type="date"
-                              value={selectedEndDate}
-                              onChange={(e) => {
-                                setSelectedEndDate(e.target.value);
-                                setActiveDatePreset('custom');
-                              }}
-                              className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                    Average : <span className="font-extrabold text-[#2C83F5] dark:text-[#27C5D8]">{calculatedAverageHrs} Hours/Day</span>
+                  </span>
                 </div>
-
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                  Average : <span className="font-extrabold text-[#2C83F5] dark:text-[#27C5D8]">{calculatedAverageHrs} Hours/Day</span>
-                </span>
               </div>
-            </div>
 
-            {/* Bar Chart Container */}
-            <div className="pt-2">
-              <div className="relative h-48 w-full flex items-end">
-                {/* Grid Lines & Y-Axis Scale (Hours) */}
-                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                  {[12, 9, 6, 3, 0].map((val) => (
-                    <div key={val} className="flex items-center gap-3 w-full">
-                      <span className="w-9 text-right shrink-0">{val} hrs</span>
-                      <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bars Render */}
-                <div className="w-full pl-12 h-full flex items-end justify-between gap-2 z-10 pt-4">
-                  {learningTimeWeekData.map((d, i) => {
-                    const hrs = (d.mins / 60).toFixed(1);
-                    const heightPercent = Math.min((d.mins / (12 * 60)) * 100, 100);
-                    const isHovered = hoveredBarIndex === i;
-                    const isManyBars = learningTimeWeekData.length > 14;
-
-                    return (
-                      <div
-                        key={i}
-                        className="relative flex-1 flex flex-col items-center h-full justify-end group/bar cursor-pointer"
-                        onMouseEnter={() => setHoveredBarIndex(i)}
-                        onMouseLeave={() => setHoveredBarIndex(null)}
-                      >
-                        <AnimatePresence>
-                          {isHovered && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 4 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 4 }}
-                              className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold text-center shadow-md z-30 pointer-events-none whitespace-nowrap"
-                            >
-                              {d.label} ({d.day}): {hrs} hrs
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        <div className="w-full max-w-[36px] h-[82%] flex items-end justify-center">
-                          <motion.div
-                            key={`bar-${i}-${weekOffset}-${d.mins}`}
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${Math.max(heightPercent, 5)}%` }}
-                            viewport={{ once: false, amount: 0.2 }}
-                            transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.5) }}
-                            className="w-full max-w-[24px] mx-auto rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
-                          />
-                        </div>
-
-                        <div className="mt-1.5 text-center">
-                          <p className={`font-semibold text-slate-700 dark:text-slate-300 ${isManyBars ? 'text-[8px] truncate max-w-[24px]' : 'text-[10px]'}`}>
-                            {isManyBars ? d.label.replace('Jul ', '7/').replace('Jun ', '6/') : d.label}
-                          </p>
-                          {!isManyBars && (
-                            <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
-                              {d.day}
-                            </p>
-                          )}
-                        </div>
+              {/* Bar Chart Container */}
+              <div className="pt-2">
+                <div className="relative h-48 w-full flex items-end">
+                  {/* Grid Lines & Y-Axis Scale (Hours) */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                    {[12, 9, 6, 3, 0].map((val) => (
+                      <div key={val} className="flex items-center gap-3 w-full">
+                        <span className="w-9 text-right shrink-0">{val} hrs</span>
+                        <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+
+                  {/* Bars Render */}
+                  <div className="w-full pl-12 h-full flex items-end justify-between gap-2 z-10 pt-4">
+                    {learningTimeWeekData.map((d, i) => {
+                      const hrs = (d.mins / 60).toFixed(1);
+                      const heightPercent = Math.min((d.mins / (12 * 60)) * 100, 100);
+                      const isHovered = hoveredBarIndex === i;
+                      const isManyBars = learningTimeWeekData.length > 14;
+
+                      return (
+                        <div
+                          key={i}
+                          className="relative flex-1 flex flex-col items-center h-full justify-end group/bar cursor-pointer"
+                          onMouseEnter={() => setHoveredBarIndex(i)}
+                          onMouseLeave={() => setHoveredBarIndex(null)}
+                        >
+                          <AnimatePresence>
+                            {isHovered && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 4 }}
+                                className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold text-center shadow-md z-30 pointer-events-none whitespace-nowrap"
+                              >
+                                {d.label} ({d.day}): {hrs} hrs
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <div className="w-full max-w-[36px] h-[82%] flex items-end justify-center">
+                            <motion.div
+                              key={`bar-${i}-${weekOffset}-${d.mins}`}
+                              initial={{ height: 0 }}
+                              whileInView={{ height: `${Math.max(heightPercent, 5)}%` }}
+                              viewport={{ once: false, amount: 0.2 }}
+                              transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.5) }}
+                              className="w-full max-w-[24px] mx-auto rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
+                            />
+                          </div>
+
+                          <div className="mt-1.5 text-center">
+                            <p className={`font-semibold text-slate-700 dark:text-slate-300 ${isManyBars ? 'text-[8px] truncate max-w-[24px]' : 'text-[10px]'}`}>
+                              {isManyBars ? d.label.replace('Jul ', '7/').replace('Jun ', '6/') : d.label}
+                            </p>
+                            {!isManyBars && (
+                              <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
+                                {d.day}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </div>
@@ -1683,7 +1735,7 @@ export default function MyLearningPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4"
+              className="bg-white dark:bg-slate-900 rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] p-6 w-full max-w-md shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4"
             >
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div>
