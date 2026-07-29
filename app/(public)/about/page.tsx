@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { motion, Variants, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
+import { motion, Variants, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion, useMotionValueEvent } from "framer-motion";
 import Image from "next/image";
 import {
   ArrowRight,
@@ -22,169 +22,173 @@ const fadeInUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-export default function AboutPage() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
+function ImageSequence({ progress }: { progress: any }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const frameCount = 300;
 
-  // Mouse Parallax values (X ±6px, Y ±4px)
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 120 };
-  const mouseXSpring = useSpring(mouseX, springConfig);
-  const mouseYSpring = useSpring(mouseY, springConfig);
+  useEffect(() => {
+    // Preload images
+    const images: HTMLImageElement[] = [];
+    for (let i = 1; i <= frameCount; i++) {
+      const img = new globalThis.Image();
+      const frameNum = i.toString().padStart(3, '0');
+      img.src = `/scroll animation/ezgif-frame-${frameNum}.jpg`;
+      images.push(img);
+    }
+    imagesRef.current = images;
 
-  const bgX = useTransform(mouseXSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-6, 6]);
-  const bgY = useTransform(mouseYSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-4, 4]);
+    // Draw first frame when loaded
+    images[0].onload = () => {
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) ctx.drawImage(images[0], 0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    if (shouldReduceMotion) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
+  useMotionValueEvent(progress, "change", (latest: number) => {
+    const frameIndex = Math.min(
+      frameCount - 1,
+      Math.max(0, Math.floor(latest * frameCount))
+    );
+    
+    if (imagesRef.current[frameIndex] && canvasRef.current) {
+      const img = imagesRef.current[frameIndex];
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx && img.complete) {
+        ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    }
+  });
 
   return (
-    <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-slate-50">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[100px]" />
-      </div>
+    <canvas 
+      ref={canvasRef}
+      width={1920}
+      height={1080}
+      className="w-full h-full object-cover"
+    />
+  );
+}
 
-      {/* --- HERO SECTION --- */}
-      <section
-        ref={headerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="relative w-full h-[100vh] min-h-[100vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white pt-24 md:pt-28"
+export default function AboutPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, { damping: 20, stiffness: 100, mass: 0.5 });
+
+  const navOpacity = useTransform(smoothProgress, [0, 0.05], [0, 1]);
+  const imageScale = useTransform(smoothProgress, [0, 0.4, 0.85, 1], [1, 1.4, 1.1, 1]);
+  const imageOpacity = useTransform(smoothProgress, [0, 0.15, 0.85, 1], [0.7, 1, 1, 0.7]);
+  const imageY = useTransform(smoothProgress, [0, 1], ["0%", "10%"]);
+
+  const p1Opacity = useTransform(smoothProgress, [0, 0.1, 0.15], [1, 1, 0]);
+  const p1Y = useTransform(smoothProgress, [0.1, 0.15], [0, -50]);
+
+  const p2Opacity = useTransform(smoothProgress, [0.15, 0.2, 0.35, 0.4], [0, 1, 1, 0]);
+  const p2Y = useTransform(smoothProgress, [0.15, 0.2, 0.35, 0.4], [50, 0, 0, -50]);
+
+  const p3Opacity = useTransform(smoothProgress, [0.4, 0.45, 0.6, 0.65], [0, 1, 1, 0]);
+  const p3Y = useTransform(smoothProgress, [0.4, 0.45, 0.6, 0.65], [50, 0, 0, -50]);
+
+  const p4Opacity = useTransform(smoothProgress, [0.65, 0.7, 0.8, 0.85], [0, 1, 1, 0]);
+  const p4Y = useTransform(smoothProgress, [0.65, 0.7, 0.8, 0.85], [50, 0, 0, -50]);
+
+  const p5Opacity = useTransform(smoothProgress, [0.85, 0.9, 1], [0, 1, 1]);
+  const p5Y = useTransform(smoothProgress, [0.85, 0.9, 1], [50, 0, 0]);
+
+  return (
+    <div className="bg-[#050505] text-white/90 font-sans selection:bg-[#0050FF]/30">
+      <motion.nav 
+        style={{ opacity: navOpacity }}
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-8 bg-[#0A0A0C]/70 backdrop-blur-md border-b border-white/5"
       >
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
+        <div className="text-xl font-bold tracking-tight text-white">WH-1000XM6</div>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
+          <Link href="#overview" className="hover:text-white transition-colors">Overview</Link>
+          <Link href="#tech" className="hover:text-white transition-colors">Technology</Link>
+          <Link href="#nc" className="hover:text-white transition-colors">Noise Cancelling</Link>
+          <Link href="#specs" className="hover:text-white transition-colors">Specs</Link>
+        </div>
+        <button className="px-5 py-2 rounded-full bg-gradient-to-r from-[#0050FF] to-[#00D6FF] text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+          Experience WH-1000XM6
+        </button>
+      </motion.nav>
 
-          @keyframes gradientShift15s {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          .animate-gradient-15s {
-            background-size: 200% 200%;
-            animation: gradientShift15s 15s ease-in-out infinite;
-          }
+      <div ref={containerRef} className="relative h-[400vh]">
+        <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(5,8,21,1)_0%,rgba(5,5,5,1)_100%)] -z-20" />
+          <div className="absolute inset-0 -z-10 opacity-80">
+            <ImageSequence progress={smoothProgress} />
+          </div>
 
-          @keyframes floatBirds {
-            0%, 100% { transform: translate(0px, 0px); }
-            50% { transform: translate(6px, -4px); }
-          }
-          .animate-birds-float {
-            animation: floatBirds 10s ease-in-out infinite;
-          }
-        `}</style>
-
-        {/* Parallax Background Layer (Sharpened pen-line contrast & 4K edge clarity) */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            x: bgX,
-            y: bgY,
-            backgroundImage: "url('/ink-dome-bg.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center 100px",
-            backgroundRepeat: "no-repeat",
-            imageRendering: "-webkit-optimize-contrast",
-            filter: "contrast(1.06) brightness(1.01)",
-            WebkitFilter: "contrast(1.06) brightness(1.01)",
-          }}
-        />
-
-        {/* Seamless Anti-Banding Smooth Radial Gradient Dome Layer */}
-        <div
-          className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[75vw] max-w-[1000px] h-[400px] pointer-events-none rounded-t-full opacity-50 mix-blend-multiply"
-          style={{
-            background: "radial-gradient(ellipse 100% 100% at 50% 100%, rgba(195, 218, 255, 0.4) 0%, rgba(215, 232, 255, 0.2) 50%, transparent 80%)",
-          }}
-        />
-
-        {/* Gentle floating motion for birds (infinite 10s float, Y ±4px, X ±6px) */}
-        <div className="absolute inset-0 pointer-events-none animate-birds-float opacity-30" />
-
-        <div className="relative z-10 max-w-[800px] mx-auto text-center space-y-8 my-auto py-12">
-          {/* HEADLINE */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
-            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif", fontWeight: 600 }}
+          <motion.div 
+            style={{ opacity: p1Opacity, y: p1Y }}
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none"
           >
-            <span className="block">
-              Where{" "}
-              <span className="relative inline-block">
-                Ideas
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-none origin-left"
-                />
-              </span>
-            </span>
-            <span className="block mt-1 sm:mt-2">
-              Become{" "}
-              <span
-                className="inline-block animate-gradient-15s"
-                style={{
-                  backgroundImage: "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Impact.
-              </span>
-            </span>
-          </motion.h1>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 text-white">Sony WH-1000XM6</h1>
+            <p className="text-2xl md:text-3xl text-white/80 font-medium tracking-tight mb-4">Silence, perfected.</p>
+            <p className="text-lg text-white/50 max-w-lg">Flagship wireless noise cancelling, re-engineered for a world that never stops.</p>
+          </motion.div>
 
-          {/* DESCRIPTION */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-            className="text-[18px] sm:text-[19px] leading-[1.75] text-[#475569] max-w-[560px] mx-auto font-sans font-normal drop-shadow-[0_2px_8px_rgba(11,19,43,0.02)]"
+          <motion.div 
+            style={{ opacity: p2Opacity, y: p2Y }}
+            className="absolute inset-0 flex flex-col items-start justify-center px-12 md:px-32 pointer-events-none"
           >
-            Arcade is AJCE's official platform for learning, innovation, and collaboration, offering certified webinars, hackathons, workshops, and engaging community experiences.
-          </motion.p>
+            <div className="max-w-md">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">Precision-engineered for silence.</h2>
+              <p className="text-lg text-white/60">Custom 40mm drivers and sealed acoustic chambers work in perfect harmony to deliver uncompromising audio fidelity while blocking the outside world. Designed for all-day comfort with memory foam ear cushions.</p>
+            </div>
+          </motion.div>
 
-          {/* BUTTON */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
-            className="pt-2 flex justify-center"
+          <motion.div 
+            style={{ opacity: p3Opacity, y: p3Y }}
+            className="absolute inset-0 flex flex-col items-end justify-center px-12 md:px-32 pointer-events-none text-right"
           >
-            <Link
-              href="/explore"
-              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#121E42] text-white font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[3px] active:translate-y-0 transition-all duration-250 ease-out group"
-            >
-              <span>Learn More</span>
-              <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-inner group-hover:translate-x-[4px] transition-transform duration-250 ease-out">
-                <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
-              </span>
-            </Link>
+            <div className="max-w-md ml-auto">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#0050FF] to-[#00D6FF]">Adaptive noise cancelling, redefined.</h2>
+              <ul className="text-lg text-white/60 space-y-3 text-right">
+                <li>Multi-microphone array listens in every direction.</li>
+                <li>Real-time noise analysis adapts to your environment.</li>
+                <li>Your music stays pure—planes, trains, and crowds fade away.</li>
+              </ul>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            style={{ opacity: p4Opacity, y: p4Y }}
+            className="absolute inset-0 flex flex-col items-center justify-end pb-32 px-6 pointer-events-none text-center"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">Immersive, lifelike sound.</h2>
+            <p className="text-lg text-white/60 max-w-xl mx-auto">High-performance drivers with premium magnetic coils deliver a breathtakingly detailed soundstage. Our next-gen AI upscaling restores clarity and presence to compressed audio formats instantly.</p>
+          </motion.div>
+
+          <motion.div 
+            style={{ opacity: p5Opacity, y: p5Y }}
+            className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pointer-events-none"
+          >
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 text-white">Hear everything.<br/>Feel nothing else.</h2>
+            <p className="text-xl text-white/60 mb-10">WH-1000XM6. Designed for focus, crafted for comfort.</p>
+            <div className="flex items-center gap-6 pointer-events-auto">
+              <button className="px-8 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-white/90 transition-colors">
+                Experience WH-1000XM6
+              </button>
+              <Link href="#specs" className="text-white/60 hover:text-white border-b border-transparent hover:border-white transition-all font-medium">
+                See full specs
+              </Link>
+            </div>
           </motion.div>
         </div>
-      </section>
+      </div>
 
-      {/* --- AJCE ANIMATION + WHY AJCE SECTION --- */}
-      <AJCESection />
-
-      {/* --- WHY GET CERTIFIED SECTION (from aboutt) --- */}
-      <WhyGetCertifiedSection />
+      <div className="bg-white text-slate-900 rounded-t-[40px] relative z-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+        <AJCESection />
+        <WhyGetCertifiedSection />
+      </div>
     </div>
   );
 }

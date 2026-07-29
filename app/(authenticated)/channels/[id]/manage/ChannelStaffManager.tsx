@@ -79,7 +79,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
   // from the platform layer. A platform admin's tool for a problem channel is suspending it
   // wholesale, not reaching in to manage its roster.
   const canManageStaff =
-    permissions.includes('ALL') || permissions.includes('channel.staff.manage');
+    permissions.includes('ALL') || permissions.includes('channel.settings.manage');
 
   const filteredStaff = staffSearch.trim()
     ? staff.filter((member) => {

@@ -40,7 +40,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [saving, setSaving] = useState(false);
-  const canManageStaff = userPermissions.includes('ALL') || userPermissions.includes('channel.staff.manage');
+  const canManageRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.settings.manage');
 
   useEffect(() => {
     fetchData();
@@ -130,7 +130,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
           </h3>
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
-        {canManageStaff && (
+        {canManageRoles && (
           <Button onClick={() => setIsModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
             <Plus size={16} /> Create Role
           </Button>
@@ -155,7 +155,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                   <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
                 </div>
 
-                {!role.systemRole && canManageStaff && (
+                {!role.systemRole && canManageRoles && (
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'}>
                       <Edit3 size={16} />
