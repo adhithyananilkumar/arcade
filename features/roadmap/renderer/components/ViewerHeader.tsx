@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/shared/design-system/ui/button';
-import { Search, Compass, BookOpen, Clock, Award, Star, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Search, Compass, BookOpen, Clock, Award, Star, ShieldCheck, CheckCircle2, ChevronRight, Flag } from 'lucide-react';
 
 interface ViewerHeaderProps {
   title: string;
@@ -22,6 +22,9 @@ interface ViewerHeaderProps {
   
   // Continue Learning Action
   onContinueLearning: () => void;
+
+  // Report Action
+  onReportClick?: () => void;
 }
 
 export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
@@ -39,6 +42,7 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
   selectedFilter,
   setSelectedFilter,
   onContinueLearning,
+  onReportClick,
 }) => {
   // Calculate remaining time based on 30m average if duration is missing
   const estimatedRemainingTime = React.useMemo(() => {
@@ -156,6 +160,20 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Report Button */}
+        {onReportClick && (
+          <div className="flex-grow flex justify-end">
+            <button
+              onClick={onReportClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors uppercase tracking-wide"
+              aria-label="Report Roadmap"
+            >
+              <Flag className="w-3.5 h-3.5" />
+              Report
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

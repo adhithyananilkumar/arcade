@@ -30,10 +30,12 @@ import {
   Clock,
   Send,
   ChevronRight,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
@@ -280,8 +282,16 @@ export default function ManageChannelPage() {
                 {channel.description}
               </p>
             )}
+
           </div>
         </motion.section>
+
+        {/* Social Links Editor Card */}
+        <ChannelSocialLinksCard 
+          channel={channel} 
+          canManageSettings={permissions.includes('ALL') || permissions.includes('channel.settings.manage') || isOwner} 
+          onUpdate={setChannel} 
+        />
 
         {/* Top KPI calls — YouTube Studio style */}
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">

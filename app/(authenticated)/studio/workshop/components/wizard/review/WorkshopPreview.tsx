@@ -26,10 +26,19 @@ import {
   Calendar,
   PlayCircle,
   CheckCircle,
+  Flag,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/workshop/types';
 import { getMyRegistrationStatus, registerForWorkshop } from '@/app/workshop/api/registration';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/design-system/ui/dialog';
 
 interface Props {
   preview: WorkshopPreviewDto;
@@ -260,11 +269,13 @@ function WorkshopHero({
   onRegister,
   registration,
   isRegistering,
+  onReportClick,
 }: {
   preview: WorkshopPreviewDto;
   onRegister: () => void;
   registration: any;
   isRegistering: boolean;
+  onReportClick: () => void;
 }) {
   const [saved, setSaved] = useState(false);
   const { basicInfo, pricing } = preview;
@@ -410,6 +421,13 @@ function WorkshopHero({
                 fill={saved ? 'var(--color-coral)' : 'none'}
                 color={saved ? 'var(--color-coral)' : 'currentColor'}
               />
+            </button>
+            <button
+              onClick={onReportClick}
+              aria-label="Report workshop"
+              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-red-500"
+            >
+              <Flag size={18} />
             </button>
           </div>
         </div>
@@ -847,6 +865,34 @@ export const WorkshopPreview: React.FC<Props> = ({ preview, onRegister }) => {
     loadRegistration();
   }, [loadRegistration]);
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportNote, setReportNote] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+
+  const handleReportSubmit = async () => {
+    if (!reportNote.trim()) {
+      toast.error('Please provide a note about the issue.');
+      return;
+    }
+    setIsReporting(true);
+    try {
+      const { api } = await import('@/infrastructure/http/api');
+      await api.post('/api/v1/reports', {
+        contentId: basicInfo.id,
+        contentType: 'WORKSHOP',
+        note: reportNote
+      });
+      toast.success('Workshop reported. Our moderation team will review it shortly.');
+      setReportModalOpen(false);
+      setReportNote('');
+    } catch (err: any) {
+      console.error('Failed to report workshop:', err);
+      toast.error(err.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
   const handleRegister = async () => {
     if (!onRegister && !basicInfo.id) {
       toast.success('This is a preview. Registration would happen here!');
@@ -896,6 +942,7 @@ export const WorkshopPreview: React.FC<Props> = ({ preview, onRegister }) => {
             onRegister={handleRegister}
             registration={registration}
             isRegistering={isRegistering}
+            onReportClick={() => setReportModalOpen(true)}
           />
         </div>
       </div>
@@ -915,6 +962,40 @@ export const WorkshopPreview: React.FC<Props> = ({ preview, onRegister }) => {
           />
         </div>
       </div>
+
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report Workshop</DialogTitle>
+            <DialogDescription>
+              Please provide details about what is wrong with this workshop.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <textarea
+              className="min-h-[100px] w-full rounded-md border border-ink/20 p-3 text-sm focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink"
+              placeholder="Tell us what's wrong..."
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setReportModalOpen(false)}
+              className="rounded-full px-4 py-2 text-sm font-semibold text-subtle hover:text-ink"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReportSubmit}
+              disabled={isReporting}
+              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };

@@ -690,7 +690,7 @@ function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSe
             <div>
               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Linked Courses</label>
               <Popover open={openCourseSelect} onOpenChange={setOpenCourseSelect}>
-                <PopoverTrigger asChild>
+                <PopoverTrigger>
                   <button
                     type="button"
                     className="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 mb-4 bg-white hover:bg-gray-50"

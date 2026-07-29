@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       console.log('[REFRESH] Failing because no refresh token was found in cookies');
       return NextResponse.json({ message: 'No refresh token' }, { status: 401 });
     }
-    
+
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: 'POST',
       headers: {
