@@ -9,7 +9,7 @@ import {
   User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3,
   ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit,
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
-  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Shield, Map, Wrench, Activity, BadgeCheck, Lock
+  Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Shield, Map, Wrench, Activity, BadgeCheck, Lock, Sparkles
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import Image from 'next/image';
@@ -708,20 +708,89 @@ export default function PublicProfilePage() {
                   {/* Verification Tick */}
                   {(() => {
                     const bioLower = (profileData.bio || '').toLowerCase();
-                    const isCreator = profileData.platformRoles?.some((r: any) => r.code === 'CREATOR') || bioLower.includes('creator');
-                    const isDeveloper = profileData.platformRoles?.some((r: any) => r.code === 'DEVELOPER') || bioLower.includes('developer');
-                    
-                    if (isCreator || isDeveloper) {
-                      return <BadgeCheck className="text-white fill-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 ml-1.5" size={26} strokeWidth={2.5} />;
+                    const isAdmin = 
+                      profileData.role === 'ADMIN' ||
+                      profileData.role === 'ROLE_ADMIN' ||
+                      profileData.role === 'PLATFORM_ADMIN' ||
+                      profileData.isAdmin === true ||
+                      profileData.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                      profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
+
+                    const isCreator = 
+                      profileData.role === 'CREATOR' ||
+                      profileData.role === 'ROLE_CREATOR' ||
+                      profileData.role === 'INSTRUCTOR' ||
+                      profileData.isCreator === true ||
+                      profileData.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
+                      profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
+                      bioLower.includes('creator');
+
+                    if (isAdmin) {
+                      return (
+                        <span title="Verified Admin" className="inline-flex items-center">
+                          <BadgeCheck className="text-white fill-[#8b5cf6] dark:fill-[#8b5cf6] drop-shadow-[0_2px_6px_rgba(139,92,246,0.4)] shrink-0 ml-1.5 align-middle" size={26} strokeWidth={2.2} />
+                        </span>
+                      );
+                    }
+
+                    if (isCreator) {
+                      return (
+                        <span title="Verified Creator" className="inline-flex items-center">
+                          <BadgeCheck className="text-white fill-[#1d9bf0] dark:fill-[#1d9bf0] drop-shadow-[0_2px_6px_rgba(29,155,240,0.4)] shrink-0 ml-1.5 align-middle" size={26} strokeWidth={2.2} />
+                        </span>
+                      );
                     }
                     return null;
                   })()}
                 </h1>
               </div>
               
-              <p className="text-[14px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-600 mt-2 transition-colors">
-                @{username}
-              </p>
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <p className="text-[14px] font-semibold text-purple-600 dark:text-purple-400 transition-colors">
+                  @{username}
+                </p>
+                {(() => {
+                  const bioLower = (profileData.bio || '').toLowerCase();
+                  const isAdmin = 
+                    profileData.role === 'ADMIN' ||
+                    profileData.role === 'ROLE_ADMIN' ||
+                    profileData.role === 'PLATFORM_ADMIN' ||
+                    profileData.isAdmin === true ||
+                    profileData.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
+
+                  const isCreator = 
+                    profileData.role === 'CREATOR' ||
+                    profileData.role === 'ROLE_CREATOR' ||
+                    profileData.role === 'INSTRUCTOR' ||
+                    profileData.isCreator === true ||
+                    profileData.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
+                    profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
+                    bioLower.includes('creator');
+
+                  if (isAdmin) {
+                    return (
+                      <span className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <Shield size={13} className="fill-rose-500/20 text-rose-600 dark:text-rose-400" /> Admin
+                      </span>
+                    );
+                  }
+
+                  if (isCreator) {
+                    return (
+                      <span className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                        <Sparkles size={13} className="fill-blue-500 text-blue-500" /> Creator
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <span className="text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <Star size={13} className="fill-amber-500 text-amber-500" /> Learner
+                    </span>
+                  );
+                })()}
+              </div>
 
               {/* Bio */}
               {profileData.bio && (
