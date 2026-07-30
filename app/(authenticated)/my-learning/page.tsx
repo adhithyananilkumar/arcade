@@ -634,6 +634,10 @@ export default function MyLearningPage() {
         >
           {/* Inject Global Styles & Animations */}
           <style jsx global>{`
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap');
+            .font-serif-heading {
+              font-family: 'Playfair Display', Georgia, Cambria, "Times New Roman", Times, serif;
+            }
             @keyframes gradientShift {
               0% { background-position: 0% 50%; }
               50% { background-position: 100% 50%; }
@@ -645,8 +649,11 @@ export default function MyLearningPage() {
             }
           `}</style>
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-              My <span className="bg-gradient-to-r from-[#4C6FFF] via-[#4C6FFF] to-[#0EA5E9] bg-clip-text text-transparent">Learning</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif-heading text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2.5">
+              <span>My</span>
+              <span className="bg-gradient-to-r from-blue-600 via-sky-500 via-indigo-600 to-teal-400 dark:from-blue-400 dark:via-sky-300 dark:to-teal-300 bg-clip-text text-transparent">
+                Learning
+              </span>
             </h1>
             <div className="mt-2 min-h-[20px] flex items-center justify-center">
               <TextType
