@@ -212,5 +212,10 @@ export const channelService = {
   getAuditLog: async (): Promise<ChannelAuditLogEntry[]> => {
     const response = await api.get<{ content: ChannelAuditLogEntry[] }>('/api/v1/channels/audit-log?size=100');
     return response.content;
+  },
+
+  getChannelAuditLog: async (id: string): Promise<ChannelAuditLogEntry[]> => {
+    const response = await api.get<{ content: ChannelAuditLogEntry[] }>(`/api/v1/channels/${id}/audit-log?size=100`);
+    return response.content;
   }
 };

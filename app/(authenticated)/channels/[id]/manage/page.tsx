@@ -31,15 +31,17 @@ import {
   Send,
   ChevronRight,
   Link as LinkIcon,
+  Bell,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelNotificationsManager } from './ChannelNotificationsManager';
 import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-type ManageTab = 'OVERVIEW' | 'CONTENT' | 'STAFF' | 'SETTINGS' | 'DANGER';
+type ManageTab = 'OVERVIEW' | 'CONTENT' | 'STAFF' | 'SETTINGS' | 'NOTIFICATIONS' | 'DANGER';
 type ContentFilter = 'ALL' | 'DRAFT' | 'SUBMITTED' | 'PUBLISHED';
 
 function TypeIcon({ type }: { type: string }) {
@@ -159,6 +161,7 @@ export default function ManageChannelPage() {
       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users }]
       : []),
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
+    { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: AlertTriangle, danger: true }] : []),
   ];
 
@@ -540,6 +543,10 @@ export default function ManageChannelPage() {
             permissions={permissions}
             locked={isLocked}
           />
+        </div>
+
+        <div className={activeTab === 'NOTIFICATIONS' ? 'block' : 'hidden'}>
+          <ChannelNotificationsManager channel={channel} />
         </div>
 
         {isOwner && (
