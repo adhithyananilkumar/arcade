@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Flame, Award, Medal } from 'lucide-react';
+import TextType from '@/shared/design-system/ui/TextType';
 
 interface AchievementsHeroProps {
   unlockedCount: number;
@@ -57,7 +58,7 @@ function ProfessionalPartyPopperCanvas() {
     const updateSize = () => {
       if (canvas) {
         canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-        canvas.height = 420;
+        canvas.height = 500;
       }
     };
     updateSize();
@@ -84,55 +85,57 @@ function ProfessionalPartyPopperCanvas() {
     const rightX = canvas.width * 0.88;
     const startY = 60;
 
-    for (let i = 0; i < 55; i++) {
+    // Cannon burst 1: Left & Right Flanks (Slower decay for 3.5-4s duration)
+    for (let i = 0; i < 70; i++) {
       particles.push({
         x: leftX,
         y: startY,
-        vx: 3 + Math.random() * 9,
-        vy: -9 - Math.random() * 10,
+        vx: 3 + Math.random() * 10,
+        vy: -10 - Math.random() * 12,
         size: 5 + Math.random() * 7,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.2,
+        vRot: (Math.random() - 0.5) * 0.18,
         opacity: 1,
-        decay: 0.008 + Math.random() * 0.006,
+        decay: 0.0032 + Math.random() * 0.0022, // 3.5 to 4 seconds lifespan
         shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any,
       });
 
       particles.push({
         x: rightX,
         y: startY,
-        vx: -3 - Math.random() * 9,
-        vy: -9 - Math.random() * 10,
+        vx: -3 - Math.random() * 10,
+        vy: -10 - Math.random() * 12,
         size: 5 + Math.random() * 7,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.2,
+        vRot: (Math.random() - 0.5) * 0.18,
         opacity: 1,
-        decay: 0.008 + Math.random() * 0.006,
+        decay: 0.0032 + Math.random() * 0.0022, // 3.5 to 4 seconds lifespan
         shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any,
       });
     }
 
-    for (let i = 0; i < 25; i++) {
+    // Top raining confetti cascade
+    for (let i = 0; i < 40; i++) {
       particles.push({
         x: Math.random() * canvas.width,
-        y: -20 - Math.random() * 60,
-        vx: (Math.random() - 0.5) * 2,
-        vy: 2 + Math.random() * 4,
+        y: -20 - Math.random() * 80,
+        vx: (Math.random() - 0.5) * 2.5,
+        vy: 1.5 + Math.random() * 3.5,
         size: 4 + Math.random() * 6,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.15,
         opacity: 1,
-        decay: 0.006 + Math.random() * 0.005,
+        decay: 0.0028 + Math.random() * 0.0020, // 3.5 to 4 seconds lifespan
         shape: ['circle', 'star', 'diamond'][Math.floor(Math.random() * 3)] as any,
       });
     }
 
     let animationId: number;
-    const gravity = 0.32;
-    const drag = 0.985;
+    const gravity = 0.18; // Soft fluttery gravity
+    const drag = 0.988; // Gentle drag for 3-4s motion
 
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -244,56 +247,80 @@ export default function AchievementsHero({
         className="absolute top-12 right-[12%] w-10 h-10 rounded-full border-2 border-blue-500 pointer-events-none hidden md:block"
       />
 
-      {/* ── 2. Ambient Background Soft Glow Halos ── */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[480px] h-[200px] bg-gradient-to-r from-blue-500/10 via-cyan-400/10 to-purple-500/10 blur-3xl rounded-full pointer-events-none" />
-
       {/* ── 3. Centered Main Hero Composition ── */}
       <div className="max-w-2xl mx-auto flex flex-col items-center text-center relative z-10 px-4 py-1">
 
-        {/* Refined Compact Heading: "My Achievements" */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-1">
+        {/* Cursive Handwritten Heading matching reference style: "My Achievements" */}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-none mb-3 flex items-baseline justify-center flex-wrap gap-2.5">
           {/* "My" in bold dark text */}
           <motion.span
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: cubicEase }}
-            className="inline-block mr-2.5 text-slate-900 dark:text-white"
+            className="inline-block text-slate-900 dark:text-white font-extrabold text-4xl sm:text-5xl lg:text-6xl"
           >
             My
           </motion.span>
 
-          {/* "Achievements" in Blue-to-Cyan Gradient text */}
-          <motion.span
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.22, ease: cubicEase }}
-            className="inline-block bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent py-0.5"
-          >
-            Achievements
-          </motion.span>
+          {/* "Achievements" in Dancing Script with Blue-to-Cyan Gradient & Curved Underline */}
+          <div className="relative inline-block pb-2">
+            <motion.span
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.22, ease: cubicEase }}
+              className="inline-block bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent px-1 text-5xl sm:text-6xl lg:text-7xl font-bold italic"
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Amira-Grace', cursive" }}
+            >
+              Achievements
+            </motion.span>
+
+            {/* Blue-to-Cyan Gradient Curved Underline Stroke */}
+            <motion.svg
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.7, delay: 0.35, ease: cubicEase }}
+              viewBox="0 0 300 20"
+              fill="none"
+              className="absolute -bottom-1 left-0 w-full h-4 pointer-events-none"
+            >
+              <path
+                d="M 8 13 C 90 4, 210 3, 292 11"
+                stroke="url(#titleBrushGradient)"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              <defs>
+                <linearGradient id="titleBrushGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#2962D6" />
+                  <stop offset="55%" stopColor="#2C83F5" />
+                  <stop offset="100%" stopColor="#27C5D8" />
+                </linearGradient>
+              </defs>
+            </motion.svg>
+          </div>
         </h1>
 
-        {/* Centered Line Accent with Center Diamond */}
+        {/* Centered Subtitle Description with React Bits TextType Component */}
         <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ duration: 0.7, delay: 0.32, ease: cubicEase }}
-          className="flex items-center justify-center gap-2.5 my-2 w-44 sm:w-60"
-        >
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#2962D6]/40 to-[#27C5D8]/80" />
-          <div className="w-1.5 h-1.5 rotate-45 bg-[#27C5D8]" />
-          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-[#2962D6]/40 to-[#27C5D8]/80" />
-        </motion.div>
-
-        {/* Centered Subtitle Description */}
-        <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4, ease: cubicEase }}
-          className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-semibold max-w-lg leading-relaxed my-2"
+          className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-semibold max-w-lg leading-relaxed my-2 min-h-[40px] flex items-center justify-center text-center"
         >
-          Track your learning milestones, earn badges, unlock certificates, and level up your skills as you complete interactive challenges.
-        </motion.p>
+          <TextType
+            text={[
+              "Track your learning milestones & level up your skills.",
+              "Earn certificates, unlock badges, & complete challenges."
+            ]}
+            typingSpeed={55}
+            deletingSpeed={30}
+            pauseDuration={2200}
+            showCursor={true}
+            cursorCharacter="|"
+            loop={true}
+            className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-semibold"
+          />
+        </motion.div>
 
         {/* ── Centered 3-Column Statistics Row (Exact 1:1 Match to Reference Image) ── */}
         <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full max-w-lg mx-auto mt-3 pt-1">
@@ -305,7 +332,6 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.5, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <DiamondBadgeGraphic type="blue-trophy" />
             <div className="text-xl sm:text-3xl font-black text-[#1877F2] dark:text-blue-400 tracking-tight mt-1">
               <SmoothCounter value={unlockedCount} delay={0.55} />
               <span className="text-base sm:text-xl font-bold text-slate-400 font-sans ml-1.5">/ {totalBadges}</span>
@@ -313,10 +339,6 @@ export default function AchievementsHero({
             <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
               Badges Unlocked
             </p>
-            {/* Bottom Horizontal Line with Centered Dot */}
-            <div className="relative w-18 sm:w-28 h-px bg-slate-200 dark:bg-neutral-800 mx-auto flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-[#1877F2]" />
-            </div>
           </motion.div>
 
           {/* Stat 2: Active Streak */}
@@ -326,7 +348,6 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.62, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <DiamondBadgeGraphic type="pink-flame" />
             <div className="text-xl sm:text-3xl font-black text-[#F43F5E] dark:text-rose-400 tracking-tight mt-1">
               <SmoothCounter value={streakDays} delay={0.67} />
               <span className="text-sm sm:text-base font-bold text-slate-500 dark:text-slate-400 font-sans ml-1.5">Days</span>
@@ -334,10 +355,6 @@ export default function AchievementsHero({
             <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
               Active Streak
             </p>
-            {/* Bottom Horizontal Line with Centered Dot */}
-            <div className="relative w-18 sm:w-28 h-px bg-slate-200 dark:bg-neutral-800 mx-auto flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-[#F43F5E]" />
-            </div>
           </motion.div>
 
           {/* Stat 3: Certificates */}
@@ -347,101 +364,18 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.74, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <DiamondBadgeGraphic type="green-medal" />
             <div className="text-xl sm:text-3xl font-black text-[#10B981] dark:text-emerald-400 tracking-tight mt-1">
               <SmoothCounter value={certificatesCount} delay={0.78} />
             </div>
             <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
               Certificates
             </p>
-            {/* Bottom Horizontal Line with Centered Dot */}
-            <div className="relative w-18 sm:w-28 h-px bg-slate-200 dark:bg-neutral-800 mx-auto flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-[#10B981]" />
-            </div>
           </motion.div>
 
         </div>
 
       </div>
 
-    </div>
-  );
-}
-
-// ─── Diamond Badge Container (Ultra-Clean Centered Diamond Emblem) ──────
-function DiamondBadgeGraphic({
-  type,
-}: {
-  type: 'blue-trophy' | 'pink-flame' | 'green-medal';
-}) {
-  const isBlue = type === 'blue-trophy';
-  const isPink = type === 'pink-flame';
-  const strokeColor = isBlue ? '#1877F2' : isPink ? '#F43F5E' : '#10B981';
-  const gradientId = `diamondBg_${type}`;
-
-  return (
-    <div className="relative w-18 h-18 sm:w-20 sm:h-20 flex items-center justify-center mx-auto my-1 group-hover:scale-105 transition-transform duration-300">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={strokeColor} stopOpacity="0.12" />
-            <stop offset="100%" stopColor={strokeColor} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-
-        {/* Outer Rotated Diamond Polygon */}
-        <polygon
-          points="50,14 86,50 50,86 14,50"
-          fill={`url(#${gradientId})`}
-          stroke={strokeColor}
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-
-        {/* Inner Faint Diamond Accent Ring */}
-        <polygon
-          points="50,21 79,50 50,79 21,50"
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth="1"
-          strokeOpacity="0.22"
-          strokeLinejoin="round"
-        />
-      </svg>
-
-      {/* Center Flat Icon Stage */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        {isBlue && (
-          <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-9 sm:h-9 filter drop-shadow-xs" fill="none">
-            {/* Shield Outer Body */}
-            <path d="M 50 18 L 74 26 C 74 54, 50 72, 50 72 C 50 72, 26 54, 26 26 Z" fill="#1877F2" />
-            {/* White Star in Center */}
-            <polygon points="50,32 52.2,38.5 59,38.5 53.5,42.5 55.5,49 50,44.5 44.5,49 46.5,42.5 41,38.5 47.8,38.5" fill="#FFFFFF" />
-          </svg>
-        )}
-
-        {isPink && (
-          <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-9 sm:h-9 filter drop-shadow-xs" fill="none">
-            {/* Dual Lightning Zap */}
-            <path d="M 54 16 L 24 50 L 48 50 L 42 78 L 76 44 L 52 44 Z" fill="#F43F5E" />
-            {/* Inner Core Glow */}
-            <path d="M 52 24 L 34 47 L 50 47 L 46 66 L 66 43 L 50 43 Z" fill="#FFE4E8" />
-          </svg>
-        )}
-
-        {!isBlue && !isPink && (
-          <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-9 sm:h-9 filter drop-shadow-xs" fill="none">
-            {/* Graduation Cap Diamond Top */}
-            <polygon points="50,20 84,36 50,52 16,36" fill="#10B981" />
-            {/* Cap Base Bowl */}
-            <path d="M 30 44 L 30 58 C 30 64, 70 64, 70 58 L 70 44 Z" fill="#10B981" opacity="0.9" />
-            {/* Right Tassel Ribbon & Ribbon Knob */}
-            <circle cx="50" cy="36" r="3" fill="#FFFFFF" />
-            <path d="M 50 36 L 76 44 L 76 60" stroke="#34D399" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <circle cx="76" cy="60" r="3.5" fill="#34D399" />
-          </svg>
-        )}
-      </div>
     </div>
   );
 }
