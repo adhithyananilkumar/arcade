@@ -39,6 +39,12 @@ export function ChannelDangerZone({ channel }: Props) {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [confirmChannelName, setConfirmChannelName] = useState('');
   const [confirmOwnerEmail, setConfirmOwnerEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [otpError, setOtpError] = useState('');
   const [confirmCheckbox, setConfirmCheckbox] = useState(false);
 
   const fetchTransferStatus = useCallback(async () => {
@@ -112,43 +118,99 @@ export function ChannelDangerZone({ channel }: Props) {
       toast.error('Please acknowledge the terms before requesting transfer');
       return;
     }
-    const selectedStaff = staffList.find((s) => s.userId === selectedStaffId);
-    setConfirmChannelName(channel.name);
-    setConfirmOwnerEmail(selectedStaff?.email || '');
+    setConfirmChannelName('');
+    setConfirmOwnerEmail('');
+    setOtp('');
+    setIsSendingOtp(false);
+    setIsOtpSent(false);
+    setIsVerifyingOtp(false);
+    setIsOtpVerified(false);
+    setOtpError('');
     setConfirmCheckbox(false);
     setIsTransferModalOpen(false);
     setIsConfirmModalOpen(true);
+  };
+
+  const handleSendOtp = async () => {
+    const trimmedEmail = confirmOwnerEmail.trim();
+    if (!trimmedEmail) {
+      toast.error('Current owner email is required');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    try {
+      setIsSendingOtp(true);
+      setOtpError('');
+      await channelService.sendOwnershipTransferOtp(channel.id, trimmedEmail);
+      setIsOtpSent(true);
+      setIsOtpVerified(false);
+      toast.success('OTP sent to current owner email');
+    } catch (error: any) {
+      toast.error(error.message || error.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const trimmedEmail = confirmOwnerEmail.trim();
+    const trimmedOtp = otp.trim();
+    if (!trimmedOtp) {
+      setOtpError('Invalid OTP. Please try again.');
+      toast.error('Please enter the OTP');
+      return;
+    }
+    try {
+      setIsVerifyingOtp(true);
+      setOtpError('');
+      await channelService.verifyOwnershipTransferOtp(channel.id, trimmedEmail, trimmedOtp);
+      setIsOtpVerified(true);
+      toast.success('Email verified successfully');
+    } catch (error: any) {
+      setIsOtpVerified(false);
+      setOtpError('Invalid OTP. Please try again.');
+      toast.error(error.message || error.response?.data?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
   };
 
   const handleSendTransferRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedName = confirmChannelName.trim();
     const trimmedEmail = confirmOwnerEmail.trim();
+    const trimmedOtp = otp.trim();
 
     if (!trimmedName) {
       toast.error('Channel Name is required.');
       return;
     }
     if (!trimmedEmail) {
-      toast.error('Recipient email is required.');
+      toast.error('Current owner email is required.');
+      return;
+    }
+    if (!isOtpVerified) {
+      toast.error('Please verify OTP before proceeding.');
       return;
     }
     if (!confirmCheckbox) {
-      toast.error('Please confirm that the channel name and recipient email are correct.');
-      return;
-    }
-
-    const targetStaff = eligibleStaff.find(
-      (s) => s.email.toLowerCase() === trimmedEmail.toLowerCase()
-    );
-    if (!targetStaff) {
-      toast.error(`No active staff member found with email "${trimmedEmail}".`);
+      toast.error('Please confirm that the entered information is correct.');
       return;
     }
 
     try {
       setActionLoading(true);
-      await channelService.requestOwnershipTransfer(channel.id, targetStaff.userId);
+      await channelService.requestOwnershipTransfer(
+        channel.id,
+        selectedStaffId,
+        trimmedName,
+        trimmedEmail,
+        trimmedOtp
+      );
       toast.success(
         'Ownership Transfer Requested: A request has been sent to the selected staff member. Ownership remains unchanged until accepted.'
       );
@@ -562,18 +624,77 @@ export function ChannelDangerZone({ channel }: Props) {
               />
             </div>
 
-            {/* New Owner Email Field */}
+            {/* Current Owner Email Field + Send OTP Button */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                New Owner Email
+                Current Owner Email
               </label>
               <Input
                 type="email"
                 value={confirmOwnerEmail}
-                onChange={(e) => setConfirmOwnerEmail(e.target.value)}
-                placeholder="New owner email"
+                onChange={(e) => {
+                  setConfirmOwnerEmail(e.target.value);
+                  setIsOtpVerified(false);
+                }}
+                placeholder="Current owner email"
                 className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100"
               />
+              <div className="flex justify-end mt-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSendOtp}
+                  disabled={isSendingOtp || !confirmOwnerEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmOwnerEmail.trim())}
+                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold"
+                >
+                  {isSendingOtp && <Loader2 size={12} className="animate-spin mr-1" />}
+                  Send OTP
+                </Button>
+              </div>
+            </div>
+
+            {/* OTP Field + Verify OTP Button */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                OTP
+              </label>
+              <Input
+                type="text"
+                value={otp}
+                onChange={(e) => {
+                  setOtp(e.target.value);
+                  setOtpError('');
+                }}
+                placeholder="6-digit OTP"
+                disabled={!isOtpSent}
+                maxLength={6}
+                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100 disabled:opacity-50"
+              />
+              <div className="flex justify-end mt-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleVerifyOtp}
+                  disabled={isVerifyingOtp || !isOtpSent || !otp.trim()}
+                  className="h-7 text-xs px-3 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 font-semibold"
+                >
+                  {isVerifyingOtp && <Loader2 size={12} className="animate-spin mr-1" />}
+                  Verify OTP
+                </Button>
+              </div>
+
+              {/* Verification Feedback */}
+              {isOtpVerified && (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <Check size={14} />
+                  <span>Email verified successfully</span>
+                </div>
+              )}
+              {otpError && !isOtpVerified && (
+                <p className="mt-1.5 text-xs text-red-600 dark:text-red-400 font-medium">
+                  {otpError}
+                </p>
+              )}
             </div>
 
             {/* Warning Message */}
@@ -591,10 +712,11 @@ export function ChannelDangerZone({ channel }: Props) {
                   type="checkbox"
                   checked={confirmCheckbox}
                   onChange={(e) => setConfirmCheckbox(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0"
+                  disabled={!isOtpVerified}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0 disabled:opacity-50"
                 />
                 <span className="text-xs text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium">
-                  I confirm that the channel name and recipient email are correct.
+                  I confirm that the entered information is correct.
                 </span>
               </label>
             </div>
@@ -612,7 +734,15 @@ export function ChannelDangerZone({ channel }: Props) {
               </Button>
               <Button
                 type="submit"
-                disabled={actionLoading || !confirmCheckbox}
+                disabled={
+                  !confirmChannelName.trim() ||
+                  !confirmOwnerEmail.trim() ||
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmOwnerEmail.trim()) ||
+                  !isOtpSent ||
+                  !isOtpVerified ||
+                  !confirmCheckbox ||
+                  actionLoading
+                }
                 className="h-8 px-4 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-sm disabled:opacity-50"
               >
                 {actionLoading && <Loader2 size={12} className="animate-spin mr-1.5" />}
