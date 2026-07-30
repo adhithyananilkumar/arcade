@@ -1097,7 +1097,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
           setEditing(null);
         }
       }}
-      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-white px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
+      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-transparent px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
     />
   );
 
