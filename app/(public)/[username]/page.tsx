@@ -1002,7 +1002,7 @@ export default function PublicProfilePage() {
       <div className="mt-12 mb-8 px-8">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            <Award size={18} className="text-amber-500" />
+            <Award size={18} className="text-slate-900 dark:text-white" />
             Pinned Certificates
           </h3>
           <span className="text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-neutral-800 px-2.5 py-1 rounded-md">
@@ -1015,11 +1015,11 @@ export default function PublicProfilePage() {
             profileData.certificates.slice(0, 10).map((cert: any, idx: number) => (
               <div key={idx} className="group flex items-center justify-between p-4 rounded-[20px] border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 text-amber-500 dark:text-amber-400 transition-colors group-hover:scale-105 duration-300">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-white transition-colors group-hover:scale-105 duration-300">
                     <Award size={20} />
                   </div>
                   <div>
-                    <h4 className="text-[14px] font-extrabold text-slate-800 dark:text-white tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{cert.name}</h4>
+                    <h4 className="text-[14px] font-extrabold text-slate-800 dark:text-white tracking-tight leading-snug group-hover:text-black dark:group-hover:text-slate-200 transition-colors">{cert.name}</h4>
                     <p className="text-[11px] text-slate-400 dark:text-neutral-500 font-bold mt-0.5">Issued by {cert.issuer}</p>
                   </div>
                 </div>
