@@ -93,7 +93,7 @@ export default function ManageChannelPage() {
       setPermissions(perms);
       setPendingDeletionRequest(
         myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') ||
-          null,
+        null,
       );
       setContent(channelContent);
     } catch {
@@ -355,15 +355,14 @@ export default function ManageChannelPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
-                  active
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${active
                     ? tab.danger
                       ? 'bg-rose-600 text-white shadow-sm'
                       : 'bg-[#14142b] text-white shadow-sm'
                     : tab.danger
                       ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
-                }`}
+                  }`}
               >
                 <tab.icon size={14} />
                 {tab.label}
@@ -375,142 +374,141 @@ export default function ManageChannelPage() {
         {/* Keep panels mounted — avoids flicker / form reset on tab switch */}
         <div className={activeTab === 'OVERVIEW' ? 'block' : 'hidden'}>
           <div className="space-y-6">
-              {/* Management tools — placed like YT Studio rail */}
-              <div>
-                <h2 className="mb-3 text-[13px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                  Tools
-                </h2>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                  {canCreateContent && (
-                    <ToolCard
-                      icon={Video}
-                      title="Content studio"
-                      desc="Create & edit courses, roadmaps, workshops"
-                      onClick={() => router.push('/studio')}
-                    />
-                  )}
+            {/* Management tools — placed like YT Studio rail */}
+            <div>
+              <h2 className="mb-3 text-[13px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                Tools
+              </h2>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {canCreateContent && (
                   <ToolCard
-                    icon={BarChart3}
-                    title="Performance"
-                    desc={`${stats.published} live · ${stats.drafts} drafts`}
-                    onClick={() => setActiveTab('CONTENT')}
-                  />
-                  {!channel.isPersonal && (
-                    <ToolCard
-                      icon={Users}
-                      title="Staff & access"
-                      desc="Invite collaborators and set roles"
-                      onClick={() => setActiveTab('STAFF')}
-                    />
-                  )}
-                  <ToolCard
-                    icon={Settings}
-                    title="Channel settings"
-                    desc="Branding, name, and description"
-                    onClick={() => setActiveTab('SETTINGS')}
-                    disabled={isLocked}
-                  />
-                </div>
-              </div>
-
-              {/* Recent content */}
-              <div>
-                <div className="mb-3 flex items-end justify-between gap-3">
-                  <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                    Recent content
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('CONTENT')}
-                    className="text-[12px] font-semibold text-[#FF6B4A] hover:underline"
-                  >
-                    See all
-                  </button>
-                </div>
-
-                {recentContent.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 px-6 py-14 text-center">
-                    <Video className="mx-auto mb-3 text-slate-300" size={28} />
-                    <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Publish your first course or roadmap from Content Studio.
-                    </p>
-                    {canCreateContent && !isLocked && (
-                      <button
-                        type="button"
-                        onClick={() => router.push('/studio')}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white"
-                      >
-                        <Upload size={14} />
-                        Create content
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
-                    {recentContent.map((item, i) => (
-                      <ContentRow key={item.id} item={item} last={i === recentContent.length - 1} />
-                    ))}
-                  </ul>
-                )}
-              </div>
-          </div>
-        </div>
-
-        <div className={activeTab === 'CONTENT' ? 'block' : 'hidden'}>
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {(
-                    [
-                      { id: 'ALL', label: 'All' },
-                      { id: 'PUBLISHED', label: 'Published' },
-                      { id: 'DRAFT', label: 'Drafts' },
-                      { id: 'SUBMITTED', label: 'In review' },
-                    ] as const
-                  ).map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => setContentFilter(f.id)}
-                      className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                        contentFilter === f.id
-                          ? 'border-[#14142b] bg-[#14142b] text-white'
-                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-                {canCreateContent && !isLocked && (
-                  <button
-                    type="button"
+                    icon={Video}
+                    title="Content studio"
+                    desc="Create & edit courses, roadmaps, workshops"
                     onClick={() => router.push('/studio')}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-2 text-[12px] font-semibold text-white"
-                  >
-                    <Upload size={13} />
-                    Open studio
-                  </button>
+                  />
                 )}
+                <ToolCard
+                  icon={BarChart3}
+                  title="Performance"
+                  desc={`${stats.published} live · ${stats.drafts} drafts`}
+                  onClick={() => setActiveTab('CONTENT')}
+                />
+                {!channel.isPersonal && (
+                  <ToolCard
+                    icon={Users}
+                    title="Staff & access"
+                    desc="Invite collaborators and set roles"
+                    onClick={() => setActiveTab('STAFF')}
+                  />
+                )}
+                <ToolCard
+                  icon={Settings}
+                  title="Channel settings"
+                  desc="Branding, name, and description"
+                  onClick={() => setActiveTab('SETTINGS')}
+                  disabled={isLocked}
+                />
+              </div>
+            </div>
+
+            {/* Recent content */}
+            <div>
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  Recent content
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('CONTENT')}
+                  className="text-[12px] font-semibold text-[#FF6B4A] hover:underline"
+                >
+                  See all
+                </button>
               </div>
 
-              {filteredContent.length === 0 ? (
-                <div className="rounded-xl border border-slate-200/80 bg-white/80 py-14 text-center text-sm text-slate-400">
-                  Nothing in this segment.
+              {recentContent.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 px-6 py-14 text-center">
+                  <Video className="mx-auto mb-3 text-slate-300" size={28} />
+                  <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Publish your first course or roadmap from Content Studio.
+                  </p>
+                  {canCreateContent && !isLocked && (
+                    <button
+                      type="button"
+                      onClick={() => router.push('/studio')}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white"
+                    >
+                      <Upload size={14} />
+                      Create content
+                    </button>
+                  )}
                 </div>
               ) : (
-                <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95">
-                  {filteredContent.map((item, i) => (
-                    <ContentRow
-                      key={item.id}
-                      item={item}
-                      last={i === filteredContent.length - 1}
-                    />
+                <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
+                  {recentContent.map((item, i) => (
+                    <ContentRow key={item.id} item={item} last={i === recentContent.length - 1} />
                   ))}
                 </ul>
               )}
             </div>
+          </div>
+        </div>
+
+        <div className={activeTab === 'CONTENT' ? 'block' : 'hidden'}>
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    { id: 'ALL', label: 'All' },
+                    { id: 'PUBLISHED', label: 'Published' },
+                    { id: 'DRAFT', label: 'Drafts' },
+                    { id: 'SUBMITTED', label: 'In review' },
+                  ] as const
+                ).map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setContentFilter(f.id)}
+                    className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${contentFilter === f.id
+                        ? 'border-[#14142b] bg-[#14142b] text-white'
+                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                      }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              {canCreateContent && !isLocked && (
+                <button
+                  type="button"
+                  onClick={() => router.push('/studio')}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-2 text-[12px] font-semibold text-white"
+                >
+                  <Upload size={13} />
+                  Open studio
+                </button>
+              )}
+            </div>
+
+            {filteredContent.length === 0 ? (
+              <div className="rounded-xl border border-slate-200/80 bg-white/80 py-14 text-center text-sm text-slate-400">
+                Nothing in this segment.
+              </div>
+            ) : (
+              <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95">
+                {filteredContent.map((item, i) => (
+                  <ContentRow
+                    key={item.id}
+                    item={item}
+                    last={i === filteredContent.length - 1}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
 
         {!channel.isPersonal && (
@@ -578,9 +576,8 @@ function ToolCard({
 function ContentRow({ item, last }: { item: ChannelContentItem; last?: boolean }) {
   return (
     <li
-      className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${
-        last ? '' : 'border-b border-slate-100'
-      }`}
+      className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${last ? '' : 'border-b border-slate-100'
+        }`}
     >
       <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-500">
         {item.coverImageUrl ? (

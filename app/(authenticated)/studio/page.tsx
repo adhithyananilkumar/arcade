@@ -98,6 +98,15 @@ const CONTENT_TYPES = [
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
+  {
+    id: "exam",
+    icon: ClipboardCheck,
+    label: "Exam",
+    desc: "Standalone exam or quiz",
+    href: "/studio/exam/new",
+    color: "text-orange-600",
+    bg: "bg-orange-50",
+  },
 ] as const;
 
 function StatusBadge({ status }: { status: string }) {
