@@ -18,7 +18,7 @@ export function ChannelNotificationsManager({ channel }: Props) {
   useEffect(() => {
     channelService.getChannelAuditLog(channel.id)
       .then(setLogs)
-      .catch(() => toast.error('Failed to load notifications'))
+      .catch((err: any) => toast.error(err.message || err.response?.data?.message || 'Failed to load notifications'))
       .finally(() => setLoading(false));
   }, [channel.id]);
 
