@@ -9,6 +9,7 @@ import {
   ChannelDeletionRequestDto,
   channelService,
 } from '@/domains/channels';
+import { platformReviewApi } from '@/domains/publishing';
 import { toast } from 'sonner';
 import {
   Tv,
@@ -75,6 +76,7 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
   const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
+  const [channelReviews, setChannelReviews] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (channelId) fetchChannel();
@@ -124,10 +126,29 @@ export default function ManageChannelPage() {
   const recentContent = useMemo(
     () =>
       [...content]
+        .filter((c) => c.status?.toUpperCase() === 'PUBLISHED')
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         .slice(0, 6),
     [content],
   );
+
+  const canReviewChannelContent =
+    permissions.includes('ALL') ||
+    permissions.includes('channel.content.review');
+
+  useEffect(() => {
+    if (activeTab === 'CONTENT' && canReviewChannelContent) {
+      platformReviewApi.list({ channelId }).then(items => {
+        const reviewMap: Record<string, string> = {};
+        items.forEach(i => {
+           if (i.status === 'OPEN') {
+             reviewMap[i.contentId] = i.id;
+           }
+        });
+        setChannelReviews(reviewMap);
+      }).catch(console.error);
+    }
+  }, [activeTab, contentFilter, channelId, canReviewChannelContent]);
 
   if (loading) {
     return (
@@ -245,7 +266,13 @@ export default function ManageChannelPage() {
                     {channel.name}
                   </h1>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium text-slate-500">
-                    <span>{channel.ownerName}</span>
+                    {channel.ownerUsername ? (
+                      <Link href={`/${channel.ownerUsername}`} className="hover:underline text-blue-600">
+                        @{channel.ownerUsername}
+                      </Link>
+                    ) : (
+                      <span>{channel.ownerName}</span>
+                    )}
                     <span className="text-slate-300">·</span>
                     <span>{channel.isPersonal ? 'Personal' : 'Organization'}</span>
                     <span className="text-slate-300">·</span>
@@ -449,7 +476,7 @@ export default function ManageChannelPage() {
                 ) : (
                   <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
                     {recentContent.map((item, i) => (
-                      <ContentRow key={item.id} item={item} last={i === recentContent.length - 1} />
+                      <ContentRow key={item.id} item={item} last={i === recentContent.length - 1} reviewHref={channelReviews[item.id] ? `/console/reviews/${channelReviews[item.id]}` : undefined} />
                     ))}
                   </ul>
                 )}
@@ -506,6 +533,8 @@ export default function ManageChannelPage() {
                       key={item.id}
                       item={item}
                       last={i === filteredContent.length - 1}
+                      reviewHref={channelReviews[item.id] ? `/console/reviews/${channelReviews[item.id]}` : undefined}
+                      canReview={canReviewChannelContent}
                     />
                   ))}
                 </ul>
@@ -575,7 +604,7 @@ function ToolCard({
   );
 }
 
-function ContentRow({ item, last }: { item: ChannelContentItem; last?: boolean }) {
+function ContentRow({ item, last, reviewHref, canReview }: { item: ChannelContentItem; last?: boolean; reviewHref?: string; canReview?: boolean }) {
   return (
     <li
       className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${
@@ -602,19 +631,47 @@ function ContentRow({ item, last }: { item: ChannelContentItem; last?: boolean }
           </span>
           <span>
             Edited{' '}
-            {new Date(item.updatedAt).toLocaleDateString(undefined, {
+            {new Date(item.updatedAt).toLocaleString(undefined, {
               month: 'short',
               day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
             })}
+            {item.authorUsername ? (
+              <>
+                {' by '}
+                <Link href={`/${item.authorUsername}`} className="hover:underline font-semibold hover:text-blue-600">
+                  @{item.authorUsername}
+                </Link>
+              </>
+            ) : item.authorName ? ` by ${item.authorName}` : ''}
           </span>
         </p>
       </div>
-      <Link
-        href={editHref(item)}
-        className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
-      >
-        Open
-      </Link>
+      {(() => {
+        if (item.status === 'SUBMITTED') {
+          if (canReview) {
+            return (
+              <Link
+                href={reviewHref || editHref(item)}
+                className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+              >
+                {reviewHref ? "Review" : "Open"}
+              </Link>
+            );
+          } else {
+            return null; // Don't show any button for non-reviewers when SUBMITTED
+          }
+        }
+        return (
+          <Link
+            href={editHref(item)}
+            className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+          >
+            Open
+          </Link>
+        );
+      })()}
     </li>
   );
 }
