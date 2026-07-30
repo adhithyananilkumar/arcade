@@ -6,6 +6,7 @@ export interface Channel {
   iconUrl?: string;
   bannerUrl?: string;
   description?: string;
+  socialLinks?: string[];
   isPersonal: boolean;
   status: string;
   suspensionReason?: string;
@@ -97,7 +98,10 @@ export const channelService = {
     channelId: string,
     description: string,
     iconFile?: File,
-    bannerFile?: File
+    bannerFile?: File,
+    removeIcon: boolean = false,
+    removeBanner: boolean = false,
+    socialLinks?: string[]
   ): Promise<Channel> => {
     const formData = new FormData();
     formData.append('description', description);
@@ -107,6 +111,15 @@ export const channelService = {
     }
     if (bannerFile) {
       formData.append('banner', bannerFile);
+    }
+    
+    formData.append('removeIcon', String(removeIcon));
+    formData.append('removeBanner', String(removeBanner));
+    
+    if (socialLinks) {
+      socialLinks.forEach((link) => {
+        formData.append('socialLinks', link);
+      });
     }
     
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);

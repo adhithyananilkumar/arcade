@@ -1,15 +1,28 @@
+'use client';
+
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { parseRoadmapGraph } from '../engine/parser';
-import { calculateLayout } from '../engine/layout';
+import { calculateJourneyLayout } from '../engine/journeyLayoutEngine';
 import { ViewerHeader } from './ViewerHeader';
-import { EdgeRenderer } from './EdgeRenderer';
-import { NodeCard } from './NodeCard';
+import { RoadSVG } from './RoadSVG';
+import { JourneyWaypoint } from './JourneyWaypoint';
+import { LessonCard } from './LessonCard';
+import { RoadControls } from './RoadControls';
 import { LearningDrawer } from './LearningDrawer';
 import { useRoadmapViewerStore } from '../store/useRoadmapViewerStore';
 import { useRouter } from 'next/navigation';
 import { RoadmapNode } from '../types';
 import { AnimatePresence } from 'framer-motion';
 import { HoverPreview } from './HoverPreview';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/shared/design-system/ui/dialog';
 
 interface RoadmapViewerProps {
   roadmapId: string;
@@ -18,14 +31,20 @@ interface RoadmapViewerProps {
   graphJson: string;
 }
 
-export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, description, graphJson }) => {
-  const { init, focusMode, activeNodeId, setActiveNode, progress } = useRoadmapViewerStore();
+export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
+  roadmapId,
+  title,
+  description,
+  graphJson,
+}) => {
+  const { init, activeNodeId, setActiveNode, progress } = useRoadmapViewerStore();
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   const [containerWidth, setContainerWidth] = useState(1200);
   const [containerHeight, setContainerHeight] = useState(800);
-  
+  const [zoomLevel, setZoomLevel] = useState(1);
+
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'completed' | 'current'>('all');
@@ -34,6 +53,37 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
   const [hoverAnchorRect, setHoverAnchorRect] = useState<DOMRect | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Report Modal State
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportNote, setReportNote] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+
+  const handleReportSubmit = async () => {
+    if (!reportNote.trim()) {
+      toast.error('Please provide a note about the issue.');
+      return;
+    }
+    setIsReporting(true);
+    try {
+      const { api } = await import('@/infrastructure/http/api');
+      await api.post('/api/v1/reports', {
+        contentId: roadmapId,
+        contentType: 'ROADMAP',
+        note: reportNote
+      });
+      toast.success('Roadmap reported. Our moderation team will review it shortly.');
+      setReportModalOpen(false);
+      setReportNote('');
+    } catch (err: any) {
+      console.error('Failed to report roadmap:', err);
+      toast.error(err.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
 
   const handleNodeMouseEnter = (nodeId: string, rect: DOMRect) => {
     if (closeTimeoutRef.current) {
@@ -80,9 +130,10 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
     }, 200);
   };
 
-  // Track scroll container width dynamically to reflow layouts
-  const containerRef = useCallback((node: HTMLDivElement | null) => {
+  // Track container dimensions dynamically
+  const containerRefCallback = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
+    scrollContainerRef.current = node;
     setContainerWidth(node.clientWidth || 1200);
     setContainerHeight(node.clientHeight || 800);
 
@@ -96,22 +147,22 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
     observer.observe(node);
   }, []);
 
-  // Compute layout positions dynamically based on current viewport width
-  const graph = useMemo(() => {
+  // Compute Journey Layout procedurally
+  const journeyResult = useMemo(() => {
     const { nodes, edges, canvasAppearance } = parseRoadmapGraph(graphJson);
-    return calculateLayout(nodes, edges, containerWidth, canvasAppearance);
-  }, [graphJson, containerWidth]);
+    return calculateJourneyLayout(nodes, edges, containerWidth, progress, canvasAppearance);
+  }, [graphJson, containerWidth, progress]);
 
-  const canvasAppearance = graph.canvasAppearance;
+  const canvasAppearance = journeyResult.canvasAppearance;
 
-  // Calculate which nodes are dimmed based on the search query and active filters
+  // Dimming logic based on search & filter
   const dimmedNodeIds = useMemo(() => {
     const dimmed = new Set<string>();
     const hasActiveFilter = selectedFilter !== 'all';
     const hasActiveSearch = searchQuery.trim().length > 0;
     if (!hasActiveFilter && !hasActiveSearch) return dimmed;
 
-    graph.nodes.forEach(node => {
+    journeyResult.nodes.forEach(node => {
       const nodeProgress = progress[node.id];
       const isCompleted = nodeProgress?.status === 'COMPLETED';
       let matches = true;
@@ -125,12 +176,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
       if (hasActiveFilter) {
         if (selectedFilter === 'completed') matches = matches && isCompleted;
         if (selectedFilter === 'current') {
-          // Identify the current step
-          const nextNode = graph.nodes.find(n => {
-            const p = progress[n.id];
-            return p?.status !== 'COMPLETED';
-          });
-          const isActiveStep = activeNodeId === node.id || (activeNodeId === null && nextNode?.id === node.id);
+          const nextAttachment = journeyResult.attachments.find(a => a.state === 'current');
+          const isActiveStep = activeNodeId === node.id || (activeNodeId === null && nextAttachment?.node.id === node.id);
           matches = matches && isActiveStep;
         }
       }
@@ -140,62 +187,100 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
       }
     });
     return dimmed;
-  }, [graph.nodes, progress, searchQuery, selectedFilter, activeNodeId]);
+  }, [journeyResult.nodes, journeyResult.attachments, progress, searchQuery, selectedFilter, activeNodeId]);
 
-  // Persistent Continue Learning Action - Scrolls viewport directly to the active lesson card
-  const handleContinueLearning = useCallback(() => {
-    const nextNode = graph.nodes.find(node => {
-      const nodeProgress = progress[node.id];
-      const isCompleted = nodeProgress?.status === 'COMPLETED';
-      return !isCompleted;
-    });
-    
-    const targetId = nextNode?.id || graph.nodes[0]?.id;
-    if (targetId) {
-      const el = document.getElementById(`node-card-${targetId}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setActiveNode(targetId);
-      }
+  // Smooth camera panning helper
+  const panToWaypointY = useCallback((targetY: number) => {
+    if (scrollContainerRef.current) {
+      const centeredY = targetY - containerHeight / 2 + 80;
+      scrollContainerRef.current.scrollTo({
+        top: Math.max(0, centeredY),
+        behavior: 'smooth',
+      });
     }
-  }, [graph.nodes, progress, setActiveNode]);
+  }, [containerHeight]);
 
-  // Initialize store once on mount
+  // Focus current incomplete lesson (scroll smoothly into viewport center)
+  const handleFocusCurrent = useCallback(() => {
+    const currentAttachment =
+      journeyResult.attachments.find(a => a.state === 'current') ||
+      journeyResult.attachments[0];
+
+    if (currentAttachment) {
+      panToWaypointY(currentAttachment.waypoint.y);
+      setActiveNode(currentAttachment.node.id);
+    }
+  }, [journeyResult.attachments, panToWaypointY, setActiveNode]);
+
+  // Primary Waypoint Action Handler (Triggered when user clicks a Waypoint)
+  const handleWaypointAction = useCallback((node: RoadmapNode, state: string) => {
+    if (state === 'locked') return;
+
+    const contentId = node.contentId;
+    if (contentId) {
+      if (contentId.startsWith('les-') || contentId.startsWith('quiz-')) {
+        router.push(`/learn/demo-course`);
+      } else {
+        router.push(`/learn/${contentId}`);
+      }
+    } else {
+      router.push(`/learn/demo-course`);
+    }
+  }, [router]);
+
+  // Zoom Camera handlers
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.15, 1.6));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.15, 0.65));
+  const handleResetView = () => {
+    setZoomLevel(1);
+    handleFocusCurrent();
+  };
+
+  // Store Initialization on mount
   useEffect(() => {
     setIsMounted(true);
     if (roadmapId) {
-      init(roadmapId, graph.nodes, graph.edges);
+      init(roadmapId, journeyResult.nodes, journeyResult.edges);
     }
-  }, [roadmapId, init]); // only run when roadmapId changes to prevent resetting selection on layout reflow
+  }, [roadmapId, init]);
 
-  // Synchronize dynamic coordinates with the store to ensure edge renderer & lock calculations stay in sync
+  // Synchronize dynamic coordinates with Zustand store
   useEffect(() => {
     if (isMounted) {
-      useRoadmapViewerStore.setState({ nodes: graph.nodes, edges: graph.edges });
+      useRoadmapViewerStore.setState({
+        nodes: journeyResult.nodes,
+        edges: journeyResult.edges,
+      });
     }
-  }, [graph.nodes, graph.edges, isMounted]);
+  }, [journeyResult.nodes, journeyResult.edges, isMounted]);
 
-  // Group nodes by Y coordinate to create logical rows for keyboard navigation
-  const levels = useMemo(() => {
-    const yGroups: Record<number, RoadmapNode[]> = {};
-    graph.nodes.forEach(node => {
-      const y = node.y;
-      if (!yGroups[y]) {
-        yGroups[y] = [];
-      }
-      yGroups[y].push(node);
-    });
+  // Auto-focus current lesson on initial load
+  useEffect(() => {
+    if (isMounted && journeyResult.attachments.length > 0) {
+      const timer = setTimeout(() => {
+        handleFocusCurrent();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted]);
 
-    return Object.keys(yGroups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .map(y => yGroups[y].sort((a, b) => a.x - b.x));
-  }, [graph.nodes]);
+  // Auto-pan camera when current lesson changes upon completion
+  const prevCurrentNodeIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentAtt = journeyResult.attachments.find(a => a.state === 'current');
+    if (currentAtt && prevCurrentNodeIdRef.current && prevCurrentNodeIdRef.current !== currentAtt.node.id) {
+      // Smoothly pan camera to newly unlocked lesson
+      panToWaypointY(currentAtt.waypoint.y);
+    }
+    if (currentAtt) {
+      prevCurrentNodeIdRef.current = currentAtt.node.id;
+    }
+  }, [journeyResult.attachments, panToWaypointY]);
 
-  // Keyboard navigation across responsive levels
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape', 'Enter'].includes(e.key)) {
+      if (['ArrowUp', 'ArrowDown', 'Escape', 'Enter'].includes(e.key)) {
         e.preventDefault();
       }
 
@@ -204,202 +289,185 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
         setActiveHoverNodeId(null);
         return;
       }
-      
-      if (levels.length === 0) return;
 
-      if (!activeNodeId) {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
-          setActiveNode(levels[0][0].id);
-        }
+      const attachments = journeyResult.attachments;
+      if (attachments.length === 0) return;
+
+      const currIdx = attachments.findIndex(a => a.node.id === activeNodeId);
+
+      if (e.key === 'Enter' && currIdx !== -1) {
+        const att = attachments[currIdx];
+        handleWaypointAction(att.node, att.state);
         return;
       }
 
-      let activeL = -1;
-      let activeN = -1;
-      for (let l = 0; l < levels.length; l++) {
-        const idx = levels[l].findIndex(n => n.id === activeNodeId);
-        if (idx !== -1) {
-          activeL = l;
-          activeN = idx;
-          break;
-        }
-      }
-
-      if (activeL === -1 || activeN === -1) return;
-
-      if (e.key === 'Enter') {
-        const activeNode = levels[activeL][activeN];
-        const contentId = activeNode.contentId;
-        if (contentId) {
-          if (contentId.startsWith('les-') || contentId.startsWith('quiz-')) {
-            router.push(`/learn/demo-course`);
-          } else {
-            router.push(`/learn/${contentId}`);
-          }
-        }
-        return;
-      }
-
-      let nextNodeId = null;
-      if (e.key === 'ArrowLeft') {
-        if (activeN > 0) {
-          nextNodeId = levels[activeL][activeN - 1].id;
-        }
-      } else if (e.key === 'ArrowRight') {
-        if (activeN < levels[activeL].length - 1) {
-          nextNodeId = levels[activeL][activeN + 1].id;
-        }
-      } else if (e.key === 'ArrowDown') {
-        if (activeL < levels.length - 1) {
-          const nextLNodes = levels[activeL + 1];
-          const targetIndex = Math.min(activeN, nextLNodes.length - 1);
-          nextNodeId = nextLNodes[targetIndex].id;
-        }
+      if (e.key === 'ArrowDown') {
+        const nextIdx = currIdx === -1 ? 0 : Math.min(currIdx + 1, attachments.length - 1);
+        const nextAtt = attachments[nextIdx];
+        setActiveNode(nextAtt.node.id);
+        panToWaypointY(nextAtt.waypoint.y);
       } else if (e.key === 'ArrowUp') {
-        if (activeL > 0) {
-          const prevLNodes = levels[activeL - 1];
-          const targetIndex = Math.min(activeN, prevLNodes.length - 1);
-          nextNodeId = prevLNodes[targetIndex].id;
-        }
-      }
-
-      if (nextNodeId) {
-        setActiveNode(nextNodeId);
+        const prevIdx = currIdx === -1 ? 0 : Math.max(currIdx - 1, 0);
+        const prevAtt = attachments[prevIdx];
+        setActiveNode(prevAtt.node.id);
+        panToWaypointY(prevAtt.waypoint.y);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeNodeId, levels, setActiveNode, router]);
+  }, [activeNodeId, journeyResult.attachments, setActiveNode, handleWaypointAction, panToWaypointY]);
 
+  // Metrics calculations
   const completionPercentage = useMemo(() => {
-    if (graph.nodes.length === 0) return 0;
-    const completedNodes = graph.nodes.filter(n => progress[n.id]?.status === 'COMPLETED').length;
-    return (completedNodes / graph.nodes.length) * 100;
-  }, [graph.nodes, progress]);
+    if (journeyResult.nodes.length === 0) return 0;
+    const completedNodes = journeyResult.nodes.filter(
+      n => progress[n.id]?.status === 'COMPLETED'
+    ).length;
+    return (completedNodes / journeyResult.nodes.length) * 100;
+  }, [journeyResult.nodes, progress]);
 
   const completedNodesCount = useMemo(() => {
-    return graph.nodes.filter(n => progress[n.id]?.status === 'COMPLETED').length;
-  }, [graph.nodes, progress]);
+    return journeyResult.nodes.filter(n => progress[n.id]?.status === 'COMPLETED').length;
+  }, [journeyResult.nodes, progress]);
 
   const currentNodeLabel = useMemo(() => {
     if (!activeNodeId) return null;
-    const node = graph.nodes.find(n => n.id === activeNodeId);
+    const node = journeyResult.nodes.find(n => n.id === activeNodeId);
     return node ? node.label : null;
-  }, [graph.nodes, activeNodeId]);
+  }, [journeyResult.nodes, activeNodeId]);
 
   const remainingNodesCount = useMemo(() => {
-    return graph.nodes.length - completedNodesCount;
-  }, [graph.nodes, completedNodesCount]);
+    return journeyResult.nodes.length - completedNodesCount;
+  }, [journeyResult.nodes, completedNodesCount]);
 
   const estimatedDuration = useMemo(() => {
-    const totalMinutes = graph.nodes.reduce((acc, node) => acc + (node.durationMinutes || 0), 0);
-    if (totalMinutes === 0) return "2h 30m";
+    const totalMinutes = journeyResult.nodes.reduce(
+      (acc, node) => acc + (node.durationMinutes || 15),
+      0
+    );
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
     return `${hours > 0 ? `${hours}h ` : ''}${mins > 0 ? `${mins}m` : ''}`.trim();
-  }, [graph.nodes]);
+  }, [journeyResult.nodes]);
 
   const difficulty = useMemo(() => {
-    const difficulties = graph.nodes.map(n => n.difficulty).filter(Boolean);
-    if (difficulties.length === 0) return "Intermediate";
-    const counts: Record<string, number> = {};
-    let maxCount = 0;
-    let mostFrequent = "Intermediate";
-    for (const d of difficulties) {
-      if (d) {
-        counts[d] = (counts[d] || 0) + 1;
-        if (counts[d] > maxCount) {
-          maxCount = counts[d];
-          mostFrequent = d;
-        }
-      }
-    }
-    return mostFrequent.charAt(0).toUpperCase() + mostFrequent.slice(1);
-  }, [graph.nodes]);
+    const difficulties = journeyResult.nodes.map(n => n.difficulty).filter(Boolean);
+    if (difficulties.length === 0) return 'Intermediate';
+    return difficulties[0]!;
+  }, [journeyResult.nodes]);
 
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 flex flex-col w-full h-screen relative overflow-hidden" style={{ backgroundColor: canvasAppearance?.backgroundColor || '#FAFAFA' }}>
-      <ViewerHeader 
+    <div
+      className="flex-1 flex flex-col w-full h-screen relative overflow-hidden select-none bg-[#090d16]"
+      style={{ backgroundColor: canvasAppearance?.backgroundColor || '#090d16' }}
+    >
+      {/* Header Bar */}
+      <ViewerHeader
         title={title}
         description={description}
         completionPercentage={completionPercentage}
-        totalNodes={graph.nodes.length}
+        totalNodes={journeyResult.nodes.length}
         difficulty={difficulty}
         estimatedDuration={estimatedDuration}
         completedNodesCount={completedNodesCount}
         currentNodeLabel={currentNodeLabel}
         remainingNodesCount={remainingNodesCount}
-        
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         selectedFilter={selectedFilter}
         setSelectedFilter={setSelectedFilter}
-        onContinueLearning={handleContinueLearning}
+        onContinueLearning={handleFocusCurrent}
+        onReportClick={() => setReportModalOpen(true)}
       />
-      
-      <div 
-        ref={containerRef}
+
+      {/* Main Journey Scroll Viewport */}
+      <div
+        ref={containerRefCallback}
         id="roadmap-scroll-container"
-        className="flex-1 overflow-auto relative w-full flex scrollbar-thin scrollbar-thumb-gray-200 scroll-smooth"
-        style={{ backgroundColor: canvasAppearance?.backgroundColor || '#FAFAFA' }}
+        className="flex-1 overflow-auto relative w-full flex scrollbar-thin scrollbar-thumb-indigo-950 scroll-smooth"
       >
-        <div 
-          className="absolute inset-0 z-0 pointer-events-none" 
+        {/* Subtle Ambient Background Grid & Stars */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: canvasAppearance?.grid?.show && (canvasAppearance.grid.type === 'lines' || canvasAppearance.grid.type === 'cross')
-              ? `linear-gradient(to right, ${canvasAppearance.grid.color || '#e2e8f0'} 1px, transparent 1px), linear-gradient(to bottom, ${canvasAppearance.grid.color || '#e2e8f0'} 1px, transparent 1px)`
-              : canvasAppearance?.grid?.show && canvasAppearance.grid.type === 'dots'
-              ? `radial-gradient(circle, ${canvasAppearance.grid.color || '#cbd5e1'} 1px, transparent 1px)`
-              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.url
-              ? `url(${canvasAppearance.image.url})`
-              : canvasAppearance?.backgroundType === 'gradient' && canvasAppearance.gradient
-              ? canvasAppearance.gradient
-              : undefined,
-            backgroundSize: canvasAppearance?.grid?.show
-              ? `${canvasAppearance.grid.size || 20}px ${canvasAppearance.grid.size || 20}px`
-              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fill'
-              ? 'cover'
-              : canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'fit'
-              ? 'contain'
-              : undefined,
-            backgroundRepeat: (canvasAppearance?.grid?.show || (canvasAppearance?.backgroundType === 'image' && canvasAppearance.image?.display === 'tile'))
-              ? 'repeat'
-              : 'no-repeat',
-            backgroundPosition: 'center',
-            opacity: canvasAppearance?.grid?.show ? (canvasAppearance.grid.opacity || 0.15) : 1
-          }} 
+            backgroundImage: `radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 80%), radial-gradient(circle, #334155 1px, transparent 1px)`,
+            backgroundSize: '100% 100%, 32px 32px',
+          }}
         />
-        {/* Dynamic Scale & Center Wrapper */}
-        <div 
+
+        {/* Scalable Journey Canvas Container */}
+        <div
           id="roadmap-content-wrapper"
-          className="relative transition-all duration-300 origin-top-left z-10"
-          style={{ 
-            width: `${graph.width}px`,
-            height: `${graph.height}px`,
-            transform: `translate(${Math.max(80, (containerWidth - graph.width * Math.min(1, (containerWidth - 160) / graph.width)) / 2)}px, ${Math.max(80, (containerHeight - graph.height * Math.min(1, (containerHeight - 160) / graph.height)) / 2)}px) scale(${Math.min(1, (containerWidth - 160) / graph.width, (containerHeight - 160) / graph.height)})`
+          className="relative transition-transform duration-300 origin-top center mx-auto z-10"
+          style={{
+            width: `${journeyResult.width}px`,
+            height: `${journeyResult.height}px`,
+            transform: `scale(${zoomLevel})`,
           }}
         >
-          {/* Synchronous connection lines */}
-          <EdgeRenderer edges={graph.edges} dimmedNodeIds={dimmedNodeIds} />
+          {/* Procedural SVG Winding Road Surface & Connectors */}
+          <RoadSVG
+            attachments={journeyResult.attachments}
+            chapters={journeyResult.chapters}
+            roadPath={journeyResult.roadPath}
+            width={journeyResult.width}
+            height={journeyResult.height}
+            activeNodeId={activeNodeId}
+            hoveredNodeId={activeHoverNodeId}
+          />
 
-          {/* Absolute positioning of card nodes */}
-          {graph.nodes.map(node => (
-            <NodeCard 
-              key={node.id} 
-              node={node} 
-              onMouseEnter={handleNodeMouseEnter}
-              onMouseLeave={handleNodeMouseLeave}
-              isDimmed={dimmedNodeIds.has(node.id)}
-            />
-          ))}
+          {/* Primary Interactive Waypoints directly attached to road */}
+          {journeyResult.attachments.map(att => {
+            const isWayActive = activeNodeId === att.node.id;
+            const isWayHovered = activeHoverNodeId === att.node.id;
+
+            return (
+              <React.Fragment key={`att-group-${att.node.id}`}>
+                {/* 1. Primary Interactive Circular Waypoint */}
+                <JourneyWaypoint
+                  node={att.node}
+                  attachment={att}
+                  isActive={isWayActive}
+                  isHovered={isWayHovered}
+                  onSelect={(id) => setActiveNode(id)}
+                  onAction={handleWaypointAction}
+                  onMouseEnter={handleNodeMouseEnter}
+                  onMouseLeave={handleNodeMouseLeave}
+                  isDimmed={dimmedNodeIds.has(att.node.id)}
+                />
+
+                {/* 2. Informational Lesson Card attached to waypoint (Always Visible) */}
+                <LessonCard
+                  node={att.node}
+                  attachment={att}
+                  isActive={isWayActive}
+                  isHovered={isWayHovered}
+                  isDimmed={dimmedNodeIds.has(att.node.id)}
+                />
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 
-      <LearningDrawer nodes={graph.nodes} />
+      {/* Camera & Progress Controls */}
+      <RoadControls
+        onFocusCurrent={handleFocusCurrent}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetView={handleResetView}
+        completionPercentage={completionPercentage}
+        completedNodesCount={completedNodesCount}
+        totalNodesCount={journeyResult.nodes.length}
+      />
 
+      {/* Slide-out Learning Drawer */}
+      <LearningDrawer nodes={journeyResult.nodes} />
+
+      {/* Hover Preview Popover */}
       <AnimatePresence>
         {activeHoverNodeId && hoverAnchorRect && (
           <HoverPreview
@@ -410,6 +478,40 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({ roadmapId, title, 
           />
         )}
       </AnimatePresence>
+
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report Roadmap</DialogTitle>
+            <DialogDescription>
+              Please provide details about what is wrong with this roadmap.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <textarea
+              className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Tell us what's wrong..."
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setReportModalOpen(false)}
+              className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReportSubmit}
+              disabled={isReporting}
+              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

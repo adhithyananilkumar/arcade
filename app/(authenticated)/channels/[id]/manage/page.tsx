@@ -30,14 +30,18 @@ import {
   Clock,
   Send,
   ChevronRight,
+  Link as LinkIcon,
+  Bell,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ChannelSettingsManager } from './ChannelSettingsManager';
 import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelNotificationsManager } from './ChannelNotificationsManager';
+import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
-type ManageTab = 'OVERVIEW' | 'CONTENT' | 'STAFF' | 'SETTINGS' | 'DANGER';
+type ManageTab = 'OVERVIEW' | 'CONTENT' | 'STAFF' | 'SETTINGS' | 'NOTIFICATIONS' | 'DANGER';
 type ContentFilter = 'ALL' | 'DRAFT' | 'SUBMITTED' | 'PUBLISHED';
 
 function TypeIcon({ type }: { type: string }) {
@@ -157,6 +161,7 @@ export default function ManageChannelPage() {
       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users }]
       : []),
     { id: 'SETTINGS', label: 'Settings', icon: Settings },
+    { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: AlertTriangle, danger: true }] : []),
   ];
 
@@ -280,8 +285,16 @@ export default function ManageChannelPage() {
                 {channel.description}
               </p>
             )}
+
           </div>
         </motion.section>
+
+        {/* Social Links Editor Card */}
+        <ChannelSocialLinksCard 
+          channel={channel} 
+          canManageSettings={permissions.includes('ALL') || permissions.includes('channel.settings.manage') || isOwner} 
+          onUpdate={setChannel} 
+        />
 
         {/* Top KPI calls — YouTube Studio style */}
         <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -530,6 +543,10 @@ export default function ManageChannelPage() {
             permissions={permissions}
             locked={isLocked}
           />
+        </div>
+
+        <div className={activeTab === 'NOTIFICATIONS' ? 'block' : 'hidden'}>
+          <ChannelNotificationsManager channel={channel} />
         </div>
 
         {isOwner && (

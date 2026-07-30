@@ -6,7 +6,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/ap
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     const response = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     const { accessToken, refreshToken, user } = data;
-    
+
     // Set refresh token in HttpOnly cookie using standard Next.js method
     if (refreshToken) {
       const cookieStore = await cookies();

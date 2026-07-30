@@ -71,6 +71,7 @@ interface RoadmapNodeProps {
   onCheckboxClick?: (e: React.MouseEvent) => void;
   isCurrent?: boolean;
   fontFamily?: string;
+  shape?: 'rectangle' | 'circle' | 'diamond' | 'hexagon' | string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -92,6 +93,9 @@ export function RoadmapNode({
   validationError,
   onRename,
   isDimmed = false,
+  isCompleted = false,
+  isCurrent = false,
+  shape = 'rectangle',
 }: RoadmapNodeProps) {
   const [isEditing, setIsEditing] = useState(initialIsEditing);
   const [label, setLabel] = useState(initialLabel);
@@ -125,8 +129,53 @@ export function RoadmapNode({
   const dark       = isDark(bgColor);
   const textColor  = fontColor ?? (dark ? '#ffffff' : '#111827');
   const cardBorder = borderColor ?? (selected
-    ? '#ffffff'
-    : dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)');
+    ? '#6366f1'
+    : dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)');
+
+  // ── Shape SVG outlines ───────────────────────────────────────────────────────
+  let shapeSvg = null;
+  let width = '200px';
+  let height = '100px';
+  let paddingClass = 'px-4 py-3';
+
+  if (shape === 'circle') {
+    width = '130px';
+    height = '130px';
+    paddingClass = 'px-4 py-4';
+    shapeSvg = (
+      <svg width="130" height="130" viewBox="0 0 130 130" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none drop-shadow-md">
+        <circle cx="65" cy="65" r="61" fill={bgColor} stroke={cardBorder} strokeWidth={selected ? 4 : 2.5} />
+      </svg>
+    );
+  } else if (shape === 'diamond') {
+    width = '150px';
+    height = '150px';
+    paddingClass = 'px-6 py-6';
+    shapeSvg = (
+      <svg width="150" height="150" viewBox="0 0 150 150" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none drop-shadow-md">
+        <polygon points="75,4 146,75 75,146 4,75" fill={bgColor} stroke={cardBorder} strokeWidth={selected ? 4 : 2.5} />
+      </svg>
+    );
+  } else if (shape === 'hexagon') {
+    width = '180px';
+    height = '110px';
+    paddingClass = 'px-6 py-3';
+    shapeSvg = (
+      <svg width="180" height="110" viewBox="0 0 180 110" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none drop-shadow-md">
+        <polygon points="45,4 135,4 176,55 135,106 45,106 4,55" fill={bgColor} stroke={cardBorder} strokeWidth={selected ? 4 : 2.5} />
+      </svg>
+    );
+  } else {
+    // default rectangle
+    width = '200px';
+    height = '100px';
+    paddingClass = 'px-4 py-3';
+    shapeSvg = (
+      <svg width="200" height="100" viewBox="0 0 200 100" className="absolute inset-0 w-full h-full overflow-visible pointer-events-none drop-shadow-md">
+        <rect x="2" y="2" width="196" height="96" rx="16" ry="16" fill={bgColor} stroke={cardBorder} strokeWidth={selected ? 4 : 2.5} />
+      </svg>
+    );
+  }
 
   return (
     <div style={{ opacity: isDimmed ? 0.35 : 1 }}>
@@ -141,28 +190,48 @@ export function RoadmapNode({
         </>
       )}
 
-      {/* ── Card ──────────────────────────────────────────────────────────── */}
+      {/* ── Shape Render Card ─────────────────────────────────────────────── */}
       <div
         className={`
-          relative select-none rounded-2xl border-2
-          min-w-[180px] max-w-[240px] min-h-[100px]
-          flex flex-col items-center justify-center text-center
-          transition-all duration-200 shadow-lg
-          ${selected ? 'ring-4 ring-white shadow-2xl scale-[1.02]' : 'hover:shadow-xl hover:scale-[1.01]'}
+          relative select-none flex flex-col items-center justify-center text-center
+          transition-all duration-200
+          ${selected ? 'scale-[1.03]' : 'hover:scale-[1.01]'}
           ${editable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}
         `}
-        style={{ backgroundColor: bgColor, borderColor: cardBorder, color: textColor }}
+        style={{
+          width,
+          height,
+          color: textColor,
+        }}
         onDoubleClick={() => { if (editable) setIsEditing(true); }}
       >
+        {/* Render background SVG shape */}
+        {shapeSvg}
+
         {/* Validation badge */}
         {editable && validationError && (
           <div
-            className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-500 border-2 border-white z-10"
+            className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-red-500 border-2 border-white z-10 animate-pulse shadow"
             title={validationError}
           />
         )}
 
-        <div className="w-full px-4 py-3 flex flex-col items-center gap-2">
+        {/* Completion badge */}
+        {isCompleted && (
+          <div className="absolute -top-1.5 -right-1.5 bg-emerald-500 text-white rounded-full border-2 border-white shadow-md z-10 w-5.5 h-5.5 flex items-center justify-center">
+            <span className="text-[10px] font-extrabold font-sans">✓</span>
+          </div>
+        )}
+
+        {/* Active progress badge */}
+        {!isCompleted && isCurrent && (
+          <div className="absolute -top-1.5 -right-1.5 bg-indigo-600 text-white rounded-full border-2 border-white shadow-md z-10 w-5.5 h-5.5 flex items-center justify-center animate-pulse">
+            <span className="w-1.5 h-1.5 bg-white rounded-full" />
+          </div>
+        )}
+
+        {/* Contents */}
+        <div className={`w-full h-full flex flex-col items-center justify-center z-10 ${paddingClass}`}>
           {/* Title / Edit input */}
           {isEditing ? (
             <input
@@ -172,41 +241,36 @@ export function RoadmapNode({
               onBlur={commitRename}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-full text-center text-sm font-bold bg-white/20 text-white placeholder-white/60 border border-white/30 rounded-lg px-2 py-1 outline-none ring-2 ring-white/50"
+              className="w-[85%] text-center text-xs font-bold bg-white/20 text-white placeholder-white/60 border border-white/30 rounded-lg px-2 py-0.5 outline-none ring-2 ring-white/50"
               placeholder="Topic title..."
             />
           ) : (
             <h3
-              className="text-[15px] font-extrabold leading-tight"
+              className="text-[13px] font-extrabold leading-tight text-center w-full break-words line-clamp-2"
               style={{ color: textColor }}
             >
               {label || <span className="italic opacity-40">Untitled</span>}
             </h3>
           )}
 
-          {/* Description */}
-          {!isEditing && description && (
-            <p className="text-[11px] opacity-70 leading-snug line-clamp-2" style={{ color: textColor }}>
+          {/* Description (hidden in circle/diamond to ensure fits) */}
+          {!isEditing && description && shape !== 'circle' && shape !== 'diamond' && (
+            <p className="text-[10px] opacity-70 leading-snug line-clamp-1 w-full mt-0.5" style={{ color: textColor }}>
               {description}
             </p>
           )}
 
           {/* Status / Difficulty / Duration badges */}
           {!isEditing && (
-            <div className="flex items-center gap-1.5 flex-wrap justify-center mt-0.5">
-              {status && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-widest bg-white/90 text-gray-900 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: STATUS_DOT[status] ?? '#94a3b8' }} />
-                  {status}
-                </span>
-              )}
+            <div className="flex items-center gap-1 flex-wrap justify-center mt-1 scale-90 origin-center max-w-full">
+
               {difficulty && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-black/10" style={{ color: textColor }}>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-black/10" style={{ color: textColor }}>
                   {difficulty}
                 </span>
               )}
               {duration && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-black/10" style={{ color: textColor }}>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-black/10" style={{ color: textColor }}>
                   {duration}
                 </span>
               )}
