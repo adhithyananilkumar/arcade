@@ -59,6 +59,20 @@ export interface ChannelDeletionRequestDto {
   isPersonal: boolean;
 }
 
+export interface OwnershipTransferResponse {
+  id: string;
+  channelId: string;
+  channelName: string;
+  currentOwnerId: string;
+  currentOwnerName: string;
+  proposedOwnerId: string;
+  proposedOwnerName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  respondedAt?: string | null;
+}
+
 export const channelService = {
   createChannelRequest: async (
     name: string,
@@ -199,5 +213,30 @@ export const channelService = {
   getAuditLog: async (): Promise<ChannelAuditLogEntry[]> => {
     const response = await api.get<{ content: ChannelAuditLogEntry[] }>('/api/v1/channels/audit-log?size=100');
     return response.content;
+  },
+
+  requestOwnershipTransfer: async (channelId: string, proposedOwnerId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/channels/${channelId}/ownership-transfer`, { proposedOwnerId });
+    return response;
+  },
+
+  getOwnershipTransferStatus: async (channelId: string): Promise<OwnershipTransferResponse | null> => {
+    const response = await api.get<OwnershipTransferResponse | null>(`/api/v1/channels/${channelId}/ownership-transfer`);
+    return response;
+  },
+
+  acceptOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/accept`);
+    return response;
+  },
+
+  declineOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/decline`);
+    return response;
+  },
+
+  cancelOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.delete<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}`);
+    return response;
   }
 };
