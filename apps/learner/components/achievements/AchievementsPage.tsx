@@ -722,9 +722,6 @@ export default function AchievementsPage() {
                       <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
                         Badge Spotlight
                       </h3>
-                      <p className="text-xs font-semibold text-slate-400">
-                        {selectedBadge.category || 'Frontend'}
-                      </p>
                     </div>
 
                     <button
