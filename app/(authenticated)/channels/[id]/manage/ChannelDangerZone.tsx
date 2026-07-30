@@ -35,6 +35,12 @@ export function ChannelDangerZone({ channel }: Props) {
   const [ack1, setAck1] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Final confirmation modal state
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmChannelName, setConfirmChannelName] = useState('');
+  const [confirmOwnerEmail, setConfirmOwnerEmail] = useState('');
+  const [confirmCheckbox, setConfirmCheckbox] = useState(false);
+
   const fetchTransferStatus = useCallback(async () => {
     try {
       setLoadingTransfer(true);
@@ -96,7 +102,7 @@ export function ChannelDangerZone({ channel }: Props) {
     }
   };
 
-  const handleRequestTransfer = async (e: React.FormEvent) => {
+  const handleRequestTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStaffId) {
       toast.error('Please select a staff member');
@@ -106,14 +112,50 @@ export function ChannelDangerZone({ channel }: Props) {
       toast.error('Please acknowledge the terms before requesting transfer');
       return;
     }
+    const selectedStaff = staffList.find((s) => s.userId === selectedStaffId);
+    setConfirmChannelName(channel.name);
+    setConfirmOwnerEmail(selectedStaff?.email || '');
+    setConfirmCheckbox(false);
+    setIsTransferModalOpen(false);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleSendTransferRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = confirmChannelName.trim();
+    const trimmedEmail = confirmOwnerEmail.trim();
+
+    if (!trimmedName) {
+      toast.error('Channel Name is required.');
+      return;
+    }
+    if (!trimmedEmail) {
+      toast.error('Recipient email is required.');
+      return;
+    }
+    if (!confirmCheckbox) {
+      toast.error('Please confirm that the channel name and recipient email are correct.');
+      return;
+    }
+
+    const targetStaff = eligibleStaff.find(
+      (s) => s.email.toLowerCase() === trimmedEmail.toLowerCase()
+    );
+    if (!targetStaff) {
+      toast.error(`No active staff member found with email "${trimmedEmail}".`);
+      return;
+    }
+
     try {
       setActionLoading(true);
-      await channelService.requestOwnershipTransfer(channel.id, selectedStaffId);
-      toast.success('Ownership Transfer Requested: A request has been sent to the selected staff member. Ownership remains unchanged until accepted.');
-      handleCloseTransferModal();
+      await channelService.requestOwnershipTransfer(channel.id, targetStaff.userId);
+      toast.success(
+        'Ownership Transfer Requested: A request has been sent to the selected staff member. Ownership remains unchanged until accepted.'
+      );
+      setIsConfirmModalOpen(false);
       await fetchTransferStatus();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to request ownership transfer');
+      toast.error(error.message || error.response?.data?.message || 'Failed to request ownership transfer');
     } finally {
       setActionLoading(false);
     }
@@ -487,6 +529,94 @@ export function ChannelDangerZone({ channel }: Props) {
               >
                 {actionLoading && <Loader2 size={12} className="animate-spin mr-1.5" />}
                 Request Transfer
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Final Confirmation Modal */}
+      <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+        <DialogContent className="max-w-md w-full p-6 overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl bg-white dark:bg-neutral-900">
+          <DialogHeader className="p-0 pb-3 border-b border-slate-100 dark:border-neutral-800">
+            <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Confirm Ownership Transfer
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              You are about to request ownership transfer of this channel. Please verify the details below before continuing.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSendTransferRequest} className="space-y-4 pt-3">
+            {/* Channel Name Field */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Channel Name
+              </label>
+              <Input
+                type="text"
+                value={confirmChannelName}
+                onChange={(e) => setConfirmChannelName(e.target.value)}
+                placeholder="Channel name"
+                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100"
+              />
+            </div>
+
+            {/* New Owner Email Field */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                New Owner Email
+              </label>
+              <Input
+                type="email"
+                value={confirmOwnerEmail}
+                onChange={(e) => setConfirmOwnerEmail(e.target.value)}
+                placeholder="New owner email"
+                className="h-9 bg-slate-50 dark:bg-neutral-950 border-slate-200 dark:border-neutral-800 text-xs focus:border-amber-500 focus:ring-amber-500 rounded-lg text-slate-900 dark:text-slate-100"
+              />
+            </div>
+
+            {/* Warning Message */}
+            <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/30 p-3 flex items-start gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+              <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <p className="leading-snug">
+                Ownership will change only after the selected staff member accepts this request. Until then, you remain the owner.
+              </p>
+            </div>
+
+            {/* Confirmation Checkbox */}
+            <div className="pt-1">
+              <label className="flex items-start gap-2.5 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={confirmCheckbox}
+                  onChange={(e) => setConfirmCheckbox(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0"
+                />
+                <span className="text-xs text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 font-medium">
+                  I confirm that the channel name and recipient email are correct.
+                </span>
+              </label>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-3 flex justify-end gap-2.5 border-t border-slate-100 dark:border-neutral-800">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsConfirmModalOpen(false)}
+                disabled={actionLoading}
+                className="h-8 px-3 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-800 font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={actionLoading || !confirmCheckbox}
+                className="h-8 px-4 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-sm disabled:opacity-50"
+              >
+                {actionLoading && <Loader2 size={12} className="animate-spin mr-1.5" />}
+                Send Transfer Request
               </Button>
             </div>
           </form>
