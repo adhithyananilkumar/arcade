@@ -202,7 +202,7 @@ function AnimatedGear({ shouldReduceMotion }: { shouldReduceMotion: boolean | nu
           // Rest (reset to 0 invisibly for next loop)
           try {
             controls.set({ rotate: 0 });
-          } catch (e) {}
+          } catch (e) { }
           playIdle();
         }, delay);
       };
@@ -266,7 +266,7 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
     if (shouldReduceMotion) {
       try {
         controls.set({ scaleX: 1, opacity: 1 });
-      } catch (e) {}
+      } catch (e) { }
       return;
     }
 
@@ -279,7 +279,7 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
         // Draw in from left
         try {
           controls.set({ transformOrigin: 'left' });
-        } catch (e) {}
+        } catch (e) { }
         await safeStart({
           scaleX: 1,
           transition: { duration: 1.0, ease: [0.16, 1, 0.3, 1] },
@@ -292,7 +292,7 @@ function AnimatedUnderline({ shouldReduceMotion }: { shouldReduceMotion: boolean
         // Erase out to the right (hides)
         try {
           controls.set({ transformOrigin: 'right' });
-        } catch (e) {}
+        } catch (e) { }
         await safeStart({
           scaleX: 0,
           transition: { duration: 0.8, ease: "easeInOut" },
@@ -485,36 +485,6 @@ export default function HeroSection() {
             />
           </span>
         </h1>
-
-
-        {/* ── CTAs ── */}
-        <div className="l-ctas">
-          <motion.div
-            variants={fadeRise(shouldReduceMotion ? 0.05 : 1.15)}
-            initial="hidden"
-            animate="visible"
-          >
-            {status === 'authenticated' ? (
-              <Link
-                href="/"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Continue Learning
-              </Link>
-            ) : (
-              <Link
-                href="/sign"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Get Started
-              </Link>
-            )}
-          </motion.div>
-
-
-        </div>
       </div>
     </section>
   );

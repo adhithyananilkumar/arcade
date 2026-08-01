@@ -459,9 +459,14 @@ function AJCESection() {
 
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
 
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
 
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb]">
+              <p className="mb-5 text-sm font-bold uppercase tracking-[0.3em] text-[#2563eb]">
                 Why AJCE
               </p>
 
@@ -475,9 +480,15 @@ function AJCESection() {
                 </span>
               </h3>
 
-            </div>
+            </motion.div>
 
-            <div className="flex items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+              className="flex items-center"
+            >
 
               <p className="max-w-2xl text-base md:text-lg leading-8 text-[#64748b]">
                 An institution shaped by academic excellence,
@@ -485,7 +496,7 @@ function AJCESection() {
                 meaningful industry engagement.
               </p>
 
-            </div>
+            </motion.div>
 
           </div>
 
@@ -537,19 +548,21 @@ function AJCESection() {
 
                   {/* Number */}
 
-                  <div className={`text-sm font-bold tracking-[0.2em] ${item.colorClasses.numberText}`}>
-                    {item.number}
+                  <div className="flex items-center h-full pl-8">
+                    <div className={`text-[45px] font-bold tracking-widest -rotate-90 transform origin-center whitespace-nowrap ${item.colorClasses.numberText}`}>
+                      {item.number}
+                    </div>
                   </div>
 
                   {/* Title */}
 
-                  <h4 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  <h4 className="text-2xl font-bold tracking-tight sm:text-3xl pl-6">
                     {item.title}
                   </h4>
 
                   {/* Description */}
 
-                  <p className="max-w-md text-sm leading-6 text-[#64748b]">
+                  <p className="max-w-md text-base leading-7 text-[#64748b]">
                     {item.description}
                   </p>
 

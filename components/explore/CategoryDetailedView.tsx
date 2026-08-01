@@ -3,7 +3,9 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
+import { CATEGORY_DATA, categoriesList, CategoryWatermark, WEBINARS_DATA } from "@/app/(public)/explore/page";
+import { BootcampCard } from "./BootcampCard";
+import { WebinarCard } from "./WebinarCard";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
@@ -1052,7 +1054,7 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
     <button
       ref={buttonRef}
       onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      className={`category-bento-card category-bento-card--border-glow`}
       style={{
         flexShrink: 0,
         display: "flex",
@@ -1299,7 +1301,7 @@ const FilterPillButton: React.FC<FilterPillButtonProps> = ({
     <button
       ref={buttonRef}
       onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      className={`category-bento-card category-bento-card--border-glow`}
       style={{
         flexShrink: 0,
         display: "flex",
@@ -1656,9 +1658,10 @@ const CourseCard: React.FC<CourseCardProps> = ({
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
+  viewType?: "courses" | "bootcamps" | "webinars" | "departments" | "community";
 };
 
-export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedViewProps = {}) {
+function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: CategoryDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const exploreHome = hubBasePath || "/explore";
@@ -1675,9 +1678,9 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
 
   useEffect(() => {
-    api.get<Record<string, { averageRating: number; reviewsCount: number }>>("/api/v1/reviews/stats")
-      .then(setCourseStats)
-      .catch((err) => console.error("Failed to fetch course stats", err));
+    // The endpoint is not implemented on the backend yet, so we just set empty stats
+    // to prevent Spring Boot from throwing NoResourceFoundException on the server.
+    setCourseStats({});
   }, []);
 
   const coursesSectionRef = useRef<HTMLDivElement>(null);
@@ -2167,273 +2170,270 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
           </div>
         </div>
 
-        {/* Section A: Popular / Available Courses */}
-        <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Popular Courses
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-              Showing {filteredCourses.length} of {activeData.courses.length} courses
-            </span>
-          </div>
-
-          {/* Professional Horizontal Filters Bar */}
-          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-          <div
-            ref={filtersGridRef}
-            style={{
-              display: "flex",
-              gap: "24px",
-              marginBottom: "32px",
-              background: "rgba(255, 255, 255, 0.65)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              borderRadius: "16px",
-              padding: "20px 24px",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-              flexWrap: "wrap",
-              alignItems: "flex-start"
-            }}
-          >
-            {/* Difficulty Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Level
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {difficultyLevels.map((level) => {
-                  const isActive = selectedDifficulty === level;
-                  return (
-                    <FilterPillButton
-                      key={level}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedDifficulty(level)}
-                    >
-                      {level}
-                    </FilterPillButton>
-                  );
-                })}
+        {/* Section A: Courses */}
+        {(viewType === "courses" || viewType === "departments" || viewType === "community") && (
+          <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                  Featured Courses
+                </h2>
               </div>
+              <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
+                Showing {filteredCourses.length} of {activeData.courses.length} courses
+              </span>
             </div>
 
-            {/* Vertical Divider */}
-            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
-
-            {/* Topic Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Type
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {topics.map((topic) => {
-                  const isActive = selectedTopic === topic;
-                  return (
-                    <FilterPillButton
-                      key={topic}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedTopic(topic)}
-                    >
-                      {topic}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {filteredCourses.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-              <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-              <button 
-                onClick={() => setCourseSearchQuery("")}
-                style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
-              >
-                Reset search
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-              {filteredCourses.map((course, index) => {
-                const slug = slugify(course.title);
-                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
-                return (
-                  <CourseCard
-                    key={course.title}
-                    course={course}
-                    index={index}
-                    activeCategoryName={activeCategoryName}
-                    activeData={activeData}
-                    router={router}
-                    realRating={stats.averageRating}
-                    realReviewsCount={stats.reviewsCount}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* Section B: Bootcamps ("Trending Now" Layout) */}
-        <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Practical Bootcamps
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer" }}>
-              View all
-            </span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.bootcamps.map((bootcamp) => (
-              <div
-                key={bootcamp.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-                  position: "relative",
-                  overflow: "hidden"
-                }}
-                className="hover-card-y"
-              >
-                {/* Accent Watermark */}
-                <div style={{ position: "absolute", right: "-10px", bottom: "-10px", opacity: 0.05, transform: "scale(1.5)", color: activeData.colors.primary }}>
-                  {CATEGORY_ICONS[activeCategoryName]}
+            {/* Professional Horizontal Filters Bar */}
+            <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
+            <div
+              ref={filtersGridRef}
+              style={{
+                display: "flex",
+                gap: "24px",
+                marginBottom: "32px",
+                background: "rgba(255, 255, 255, 0.65)",
+                border: "1px solid rgba(20, 23, 31, 0.06)",
+                borderRadius: "16px",
+                padding: "20px 24px",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
+                flexWrap: "wrap",
+                alignItems: "flex-start"
+              }}
+            >
+              {/* Difficulty Filter */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Course Level
+                </label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {difficultyLevels.map((level) => {
+                    const isActive = selectedDifficulty === level;
+                    return (
+                      <FilterPillButton
+                        key={level}
+                        isActive={isActive}
+                        activeData={activeData}
+                        onClick={() => setSelectedDifficulty(level)}
+                      >
+                        {level}
+                      </FilterPillButton>
+                    );
+                  })}
                 </div>
+              </div>
 
-                {/* Left Mini Icon Graphic */}
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "14px",
-                    background: `linear-gradient(135deg, ${activeData.colors.primary} 0%, #FFFFFF 200%)`,
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  }}
+              {/* Vertical Divider */}
+              <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
+
+              {/* Topic Filter */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
+                <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Course Type
+                </label>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {topics.map((topic) => {
+                    const isActive = selectedTopic === topic;
+                    return (
+                      <FilterPillButton
+                        key={topic}
+                        isActive={isActive}
+                        activeData={activeData}
+                        onClick={() => setSelectedTopic(topic)}
+                      >
+                        {topic}
+                      </FilterPillButton>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {filteredCourses.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
+                <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
+                <button 
+                  onClick={() => setCourseSearchQuery("")}
+                  style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
                 >
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Right Details */}
-                <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
-                  <h4 style={{ fontSize: "0.9rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 4px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {bootcamp.title}
-                  </h4>
-                  <div style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.5)", fontWeight: "600" }}>
-                    {bootcamp.type} • {bootcamp.duration}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, marginTop: "6px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ color: "#F59E0B" }}>
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    4.8 <span style={{ color: "rgba(20, 20, 43, 0.4)", fontWeight: "500" }}>(3.2k)</span>
-                  </div>
-                </div>
+                  Reset search
+                </button>
               </div>
-            ))}
-          </div>
-        </section>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+                {filteredCourses.map((course, index) => {
+                  const slug = slugify(course.title);
+                  const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
+                  return (
+                    <CourseCard
+                      key={course.title}
+                      course={course}
+                      index={index}
+                      activeCategoryName={activeCategoryName}
+                      activeData={activeData}
+                      router={router}
+                      realRating={stats.averageRating}
+                      realReviewsCount={stats.reviewsCount}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Section B: Bootcamps Layout */}
+        {viewType === "bootcamps" && (
+          <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                  Practical Bootcamps
+                </h2>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+              {activeData.bootcamps
+                .filter(b => b.title.toLowerCase().includes(courseSearchQuery.toLowerCase()))
+                .map((bootcamp, index) => (
+                  <BootcampCard 
+                    key={bootcamp.title}
+                    title={bootcamp.title}
+                    desc={bootcamp.desc}
+                    duration={bootcamp.duration}
+                    cat={activeCategoryName}
+                    index={index}
+                    colors={activeData.colors}
+                  />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section B: Webinars Layout */}
+        {viewType === "webinars" && (
+          <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                  Expert Webinars
+                </h2>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+              {WEBINARS_DATA
+                .filter(w => w.category === activeCategoryName && (w.title.toLowerCase().includes(courseSearchQuery.toLowerCase())))
+                .map((w, index) => (
+                  <WebinarCard 
+                    key={w.title}
+                    title={w.title}
+                    category={w.category}
+                    duration={w.duration}
+                    status={w.status}
+                    host={w.host}
+                    date={w.date}
+                    index={index}
+                  />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Section C: Resources */}
-        <section>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Resource Libraries
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.resources.map((doc) => (
-              <div
-                key={doc.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  minHeight: "140px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
-                }}
-                className="hover-card-y"
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      background: activeData.colors.secondary,
-                      padding: "3px 8px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.03em",
-                      display: "inline-block",
-                      marginBottom: "12px"
-                    }}
-                  >
-                    {doc.type}
-                  </span>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {doc.title}
-                  </h3>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
-                  <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
-                    Read Guide
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
-                </div>
+        {(viewType === "courses" || viewType === "departments" || viewType === "community") && (
+          <section>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                  Resource Libraries
+                </h2>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+              {activeData.resources.map((doc) => (
+                <div
+                  key={doc.title}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.65)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    border: "1px solid rgba(20, 23, 31, 0.06)",
+                    borderRadius: "16px",
+                    padding: "24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    minHeight: "140px",
+                    boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
+                  }}
+                  className="hover-card-y"
+                >
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "0.7rem",
+                        fontWeight: "800",
+                        color: activeData.colors.primary,
+                        background: activeData.colors.secondary,
+                        padding: "3px 8px",
+                        borderRadius: "8px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.03em",
+                        display: "inline-block",
+                        marginBottom: "12px"
+                      }}
+                    >
+                      {doc.type}
+                    </span>
+                    <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {doc.title}
+                    </h3>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
+                    <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
+                    <span
+                      style={{
+                        fontSize: "0.8rem",
+                        fontWeight: "800",
+                        color: activeData.colors.primary,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      Read Guide
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
       </main>
     </div>
+  );
+}
+
+export default function CategoryDetailedView(props: CategoryDetailedViewProps) {
+  return (
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "#6B7280" }}>Loading Explore Content...</div>}>
+      <CategoryDetailedViewContent {...props} />
+    </Suspense>
   );
 }
 

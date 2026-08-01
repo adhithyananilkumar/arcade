@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import GradientText from "@/components/landing/GradientText";
 import Link from "next/link";
+import { ArcCarousel } from "../../../apps/public/components/ui/ArcCarousel";
 import "@/apps/public/landing.css";
 
 export const CATEGORY_DATA: Record<string, {
@@ -169,13 +170,93 @@ export const CATEGORY_DATA: Record<string, {
       { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
       { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
     ]
+  },
+  "Art & Design": {
+    coursesCount: 8,
+    desc: "Unleash creativity with digital arts and design thinking.",
+    gradient: "linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%)",
+    colors: { primary: "#EC4899", secondary: "#BE185D" },
+    courses: [
+      { title: "UI/UX Design Fundamentals", duration: "6 Weeks", level: "Beginner", desc: "Learn user research, wireframing, and prototyping in Figma." },
+      { title: "Digital Illustration Mastery", duration: "4 Weeks", level: "Intermediate", desc: "Advanced techniques for digital painting and vector art." }
+    ],
+    bootcamps: [
+      { title: "Graphic Design Bootcamp", duration: "12 Weeks", type: "Intensive", date: "Starts Next Month", desc: "Master Adobe Creative Suite and build a professional portfolio." }
+    ],
+    resources: [
+      { title: "The Principles of Good Design", type: "Article", readTime: "5 min read" }
+    ]
+  },
+  "Data Science & AI": {
+    coursesCount: 15,
+    desc: "Master machine learning, data engineering, and analytics.",
+    gradient: "linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.05) 100%)",
+    colors: { primary: "#10B981", secondary: "#047857" },
+    courses: [
+      { title: "Introduction to Machine Learning", duration: "8 Weeks", level: "Intermediate", desc: "Build predictive models using Python, scikit-learn, and pandas." },
+      { title: "Data Visualization with D3.js", duration: "5 Weeks", level: "Advanced", desc: "Create interactive, data-driven web graphics." }
+    ],
+    bootcamps: [
+      { title: "AI Engineering Bootcamp", duration: "16 Weeks", type: "Full-time", date: "Starts in 2 Weeks", desc: "Train LLMs, build RAG pipelines, and deploy scalable AI models." }
+    ],
+    resources: [
+      { title: "A Guide to Neural Networks", type: "Guide", readTime: "12 min read" }
+    ]
+  },
+  "Medicine & Health": {
+    coursesCount: 6,
+    desc: "Advancing knowledge in healthcare and medical sciences.",
+    gradient: "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(185, 28, 28, 0.05) 100%)",
+    colors: { primary: "#EF4444", secondary: "#B91C1C" },
+    courses: [
+      { title: "Anatomy & Physiology 101", duration: "10 Weeks", level: "Beginner", desc: "Comprehensive overview of the human body systems." },
+      { title: "Healthcare Administration", duration: "6 Weeks", level: "Intermediate", desc: "Managing modern medical facilities and healthcare policies." }
+    ],
+    bootcamps: [
+      { title: "Medical Coding Bootcamp", duration: "8 Weeks", type: "Part-time", date: "Starts Monday", desc: "Learn ICD-10, CPT, and HCPCS coding systems." }
+    ],
+    resources: [
+      { title: "The Future of Telemedicine", type: "Report", readTime: "8 min read" }
+    ]
+  },
+  "Law & Ethics": {
+    coursesCount: 5,
+    desc: "Understanding legal systems and ethical frameworks.",
+    gradient: "linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(126, 34, 206, 0.05) 100%)",
+    colors: { primary: "#A855F7", secondary: "#7E22CE" },
+    courses: [
+      { title: "Corporate Law Basics", duration: "8 Weeks", level: "Beginner", desc: "Legal structures, contracts, and compliance for businesses." },
+      { title: "Tech Ethics & Privacy", duration: "4 Weeks", level: "Intermediate", desc: "Navigating GDPR, AI ethics, and user data privacy." }
+    ],
+    bootcamps: [
+      { title: "Paralegal Certification", duration: "14 Weeks", type: "Intensive", date: "Starts in 1 Month", desc: "Prepare for legal research, drafting, and case management." }
+    ],
+    resources: [
+      { title: "Intellectual Property Guide", type: "Guide", readTime: "15 min read" }
+    ]
+  },
+  "Agriculture & Ecology": {
+    coursesCount: 4,
+    desc: "Sustainable farming and environmental conservation.",
+    gradient: "linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(77, 124, 15, 0.05) 100%)",
+    colors: { primary: "#84CC16", secondary: "#4D7C0F" },
+    courses: [
+      { title: "Sustainable Agriculture", duration: "6 Weeks", level: "Beginner", desc: "Organic farming, crop rotation, and soil health." },
+      { title: "Climate Change Ecology", duration: "8 Weeks", level: "Intermediate", desc: "Understanding ecosystems and the impact of global warming." }
+    ],
+    bootcamps: [
+      { title: "Urban Farming Workshop", duration: "2 Weeks", type: "Workshop", date: "Starts Saturday", desc: "Build hydroponic systems and maximize urban growing spaces." }
+    ],
+    resources: [
+      { title: "Permaculture Design Principles", type: "Article", readTime: "10 min read" }
+    ]
   }
 };
 
 export const categoriesList = Object.keys(CATEGORY_DATA);
 
 // Static Webinar Content
-const WEBINARS_DATA = [
+export const WEBINARS_DATA = [
   { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
   { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
   { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
@@ -741,7 +822,7 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
   }
 }
 
-function WebinarCardHeader({ title, status, duration, category }: { title: string; status: string; duration: string; category: string }) {
+export function WebinarCardHeader({ title, status, duration, category }: { title: string; status: string; duration: string; category: string }) {
   return (
     <div style={{ position: "relative", width: "100%", height: "150px", overflow: "hidden", background: "#FAF8F5", borderBottom: "2px solid #1A1A1A" }}>
       {/* Blueprint grid background */}
@@ -888,6 +969,8 @@ function CoursesContent() {
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const categoriesPerPage = 9;
 
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -1044,20 +1127,23 @@ function CoursesContent() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px 100px" }}>
 
-        {/* Tab Selection Cards (Top 3 Choices) - Neobrutalist design */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "24px",
-            position: "relative",
-            zIndex: 2,
-            maxWidth: "1050px",
-            width: "100%",
-            margin: "32px auto 48px"
-          }}
-        >
-          {/* Card: Courses */}
+        {/* Tab Selection Cards - 3D Arc Coverflow */}
+        <div style={{ maxWidth: "1400px", margin: "32px auto 0", padding: "0 16px", overflow: "visible" }}>
+          <ArcCarousel 
+            cardWidth={320}
+            cardHeight={320}
+            xSpacing={220}
+            yFalloff={35}
+            scaleFalloff={0.12}
+            rotateZFactor={6}
+            opacityFalloff={0.2}
+            onActiveIndexChange={(idx: number) => {
+              const keys = ["courses", "bootcamps", "webinars", "departments", "community"] as const;
+              handleTabSwitch(keys[idx] as any);
+            }}
+            items={[
+              <React.Fragment key="courses">
+                {/* Card: Courses */}
           <motion.div
             onClick={() => handleTabSwitch("courses")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1135,8 +1221,9 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
-
-          {/* Card: Bootcamps */}
+              </React.Fragment>,
+              <React.Fragment key="bootcamps">
+                {/* Card: Bootcamps */}
           <motion.div
             onClick={() => handleTabSwitch("bootcamps")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1214,8 +1301,9 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
-
-          {/* Card: Webinars */}
+              </React.Fragment>,
+              <React.Fragment key="webinars">
+                {/* Card: Webinars */}
           <motion.div
             onClick={() => handleTabSwitch("webinars")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1298,6 +1386,149 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
+              </React.Fragment>,
+              <React.Fragment key="departments">
+                {/* Card: Departments */}
+          <motion.div
+            onClick={() => handleTabSwitch("departments" as any)}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === ("departments" as any) ? 1.03 : 0.97,
+              opacity: activeTab === ("departments" as any) ? 1 : 0.7,
+              rotate: activeTab === ("departments" as any) ? -0.5 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative", background: activeTab === ("departments" as any) ? "#ECFDF5" : "#FFFFFF",
+              border: activeTab === ("departments" as any) ? "3px solid #10B981" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === ("departments" as any) ? "8px 8px 0px #10B981" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === ("departments" as any) ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === ("departments" as any) ? "#047857" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                04 // DEPARTMENTS
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === ("departments" as any) ? "#064E3B" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Academic Departments
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Explore specialized knowledge curated by top university departments.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === ("departments" as any) ? 1.15 : 1,
+                y: activeTab === ("departments" as any) ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <path d="M 30,80 Q 80,40 130,80" fill="none" stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="80" cy="60" r="8" fill={activeTab === ("departments" as any) ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === ("departments" as any) ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.6 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 30,80 L 26,76 M 30,80 L 34,76 M 30,80 L 30,86" stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+              </React.Fragment>,
+              <React.Fragment key="community">
+                {/* Card: Community */}
+          <motion.div
+            onClick={() => handleTabSwitch("community" as any)}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === ("community" as any) ? 1.03 : 0.97,
+              opacity: activeTab === ("community" as any) ? 1 : 0.7,
+              rotate: activeTab === ("community" as any) ? 1 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative", background: activeTab === ("community" as any) ? "#FFF7ED" : "#FFFFFF",
+              border: activeTab === ("community" as any) ? "3px solid #F97316" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === ("community" as any) ? "8px 8px 0px #F97316" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === ("community" as any) ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === ("community" as any) ? "#C2410C" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                05 // COLLABORATE
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === ("community" as any) ? "#7C2D12" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Community Hub
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Connect with peers, share resources, and join study groups online.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === ("community" as any) ? 1.15 : 1,
+                y: activeTab === ("community" as any) ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <path d="M 40,60 L 80,20 L 120,60" fill="none" stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 40,60 L 40,100 L 120,100 L 120,60" fill="none" stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <rect x="70" y="70" width="20" height="30" fill={activeTab === ("community" as any) ? "rgba(249, 115, 22, 0.2)" : "none"} stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+              </React.Fragment>
+            ]}
+          />
         </div>
 
         {/* Full-Width Search and Filters Row */}
@@ -1393,6 +1624,7 @@ function CoursesContent() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
                 {categoriesList
                   .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .slice((currentPage - 1) * categoriesPerPage, currentPage * categoriesPerPage)
                   .map((cat) => {
                     const data = CATEGORY_DATA[cat];
                     return (
