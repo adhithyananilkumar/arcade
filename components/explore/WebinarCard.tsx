@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { WebinarCardHeader } from "@/app/(public)/explore/page";
+import { WebinarCardHeader } from "@/app/(public)/explore/data";
 
 interface WebinarCardProps {
   title: string;

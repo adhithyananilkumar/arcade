@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { CategoryWatermark } from "@/app/(public)/explore/page";
+import { CategoryWatermark } from "@/app/(public)/explore/data";
 
 interface BootcampCardProps {
   title: string;

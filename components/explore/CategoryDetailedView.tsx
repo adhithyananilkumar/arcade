@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CATEGORY_DATA, categoriesList, CategoryWatermark, WEBINARS_DATA } from "@/app/(public)/explore/page";
+import { CATEGORY_DATA, categoriesList, CategoryWatermark, WEBINARS_DATA } from "@/app/(public)/explore/data";
 import { BootcampCard } from "./BootcampCard";
 import { WebinarCard } from "./WebinarCard";
 import DotGrid from "@/components/landing/DotGrid";
