@@ -37,6 +37,7 @@ function CoursesContent() {
 
   const handleTabSwitch = (tab: "courses" | "bootcamps" | "webinars" | "departments" | "community") => {
     setActiveTab(tab);
+    setCurrentPage(1);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
     setTimeout(() => {
