@@ -165,22 +165,17 @@ interface LessonNode {
   position: number;
 }
 
-interface QuizNode {
-  id: string;
-  title: string;
-  position: number;
-}
+
 
 interface ModuleNode {
   id: string;
   title: string;
   position: number;
   lessons: LessonNode[];
-  quizzes: QuizNode[];
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson" | "quiz";
+type EditKind = "module" | "lesson";
 
 interface ConfirmOptions {
   title: string;
@@ -543,8 +538,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  const [activeQuizTitle, setActiveQuizTitle] = useState("Untitled Quiz");
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
     undefined
@@ -561,7 +554,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // transaction that didn't actually change the document is dropped before it costs
   // a CRDT encode and a network round-trip. Reset whenever the open lesson changes.
   const lastSavedBodyRef = useRef<string | null>(null);
-  const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
@@ -611,7 +604,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         if (m.id !== moduleId) return m;
 
         // Flatten items to get their current order
-        const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l })), ...m.quizzes.map(q => ({ id: q.id, type: 'quiz' as const, node: q }))]
+        const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
           .sort((a, b) => a.node.position - b.node.position);
         
         const oldIndex = items.findIndex((i) => i.id === active.id);
@@ -623,7 +616,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         
         // Update positions
         const nextLessons = [...m.lessons];
-        const nextQuizzes = [...m.quizzes];
         
         const itemIds: string[] = [];
 
@@ -632,9 +624,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           if (item.type === 'lesson') {
             const lIndex = nextLessons.findIndex(l => l.id === item.id);
             if (lIndex !== -1) nextLessons[lIndex] = { ...nextLessons[lIndex], position: index };
-          } else {
-            const qIndex = nextQuizzes.findIndex(q => q.id === item.id);
-            if (qIndex !== -1) nextQuizzes[qIndex] = { ...nextQuizzes[qIndex], position: index };
           }
         });
 
@@ -644,7 +633,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           toast.error("Failed to save new order");
         });
 
-        return { ...m, lessons: nextLessons, quizzes: nextQuizzes };
+        return { ...m, lessons: nextLessons };
       })
     );
   };
@@ -707,7 +696,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       lastSnapshotAtRef.current = 0; // snapshot early in a fresh editing session
       lastSavedBodyRef.current = null;
 
-      setActiveQuizId(null);
+
       setActiveYDoc(ydoc);
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
@@ -743,9 +732,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             id: m.id,
             title: m.title,
             position: m.position,
-            expanded: true,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
-            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
+            expanded: false,
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "lesson" || !l.type),
           }))
         );
         const firstLeaf = containers[0]?.leaves?.[0];
@@ -759,28 +747,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     bootstrap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── Open a quiz item (mutually exclusive with a lesson) ────────────────────
-  const openQuiz = useCallback(async (quiz: QuizNode) => {
-    setView("tree");
-    setHistoryOpen(false);
-
-    // Flush and tear down any open lesson editor before switching to the quiz.
-    if (editorRef.current) {
-      try {
-        await editorRef.current.flush();
-      } catch {
-        // best-effort
-      }
-    }
-    activeYDocRef.current = null;
-    setActiveYDoc(null);
-    setActiveSeedContent(undefined);
-    setActiveLessonId(null);
-
-    setActiveQuizTitle(quiz.title);
-    setActiveQuizId(quiz.id);
   }, []);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
@@ -893,7 +859,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           title: m.title,
           position: m.position,
           lessons: [],
-          quizzes: [],
           expanded: true,
         },
       ]);
@@ -921,7 +886,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             position: newContainer.position,
             expanded: true,
             lessons: [],
-            quizzes: [],
           },
         ]);
         // Auto-open Day Settings dialog so the creator can set schedule details.
@@ -964,34 +928,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     [contentId, modules, openLesson, adapter]
   );
 
-  // ── Tree mutation: Add Quiz (sibling of a lesson under a module) ────────────
 
-  const addQuiz = useCallback(
-    async (moduleId: string) => {
-      if (!contentId) return;
-      try {
-        const mod = modules.find((m) => m.id === moduleId);
-        const nextIndex = (mod?.quizzes.length ?? 0) + 1;
-        const newQuiz = await adapter.addLeaf(
-          moduleId,
-          `${adapter.terminology.leafQuiz} ${nextIndex}`,
-          "quiz"
-        );
-        setModules((prev) =>
-          prev.map((m) =>
-            m.id === moduleId
-              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz as any] }
-              : m
-          )
-        );
-        await openQuiz(newQuiz as any);
-        setHasDraftChanges(true);
-      } catch (e) {
-        console.error("Failed to add quiz", e);
-      }
-    },
-    [contentId, modules, openQuiz, adapter]
-  );
 
   // ── Inline rename ─────────────────────────────────────────────────────────
 
@@ -1015,20 +952,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       } catch (e) {
         console.warn("Module rename failed", e);
       }
-    } else if (kind === "quiz") {
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) => (q.id === id ? { ...q, title: value } : q)),
-        }))
-      );
-      if (activeQuizId === id) setActiveQuizTitle(value);
-      try {
-        await adapter.renameLeaf(id, value, "quiz");
-        setHasDraftChanges(true);
-      } catch (e) {
-        console.warn("Quiz rename failed", e);
-      }
+
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -1050,9 +974,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const deleteModuleNow = async (mod: ModuleNode) => {
     const hadActive = mod.lessons.some((l) => l.id === activeLessonId);
-    const hadActiveQuiz = mod.quizzes.some((q) => q.id === activeQuizId);
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
-    if (hadActiveQuiz) setActiveQuizId(null);
     if (hadActive) {
       setActiveLessonId(null);
       // The effect cleanup destroys the doc after the editor unmounts.
@@ -1107,54 +1029,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       onConfirm: () => deleteLessonNow(lesson.id),
     });
 
-  const deleteQuizNow = async (quizId: string) => {
-    setModules((prev) =>
-      prev.map((m) => ({ ...m, quizzes: m.quizzes.filter((q) => q.id !== quizId) }))
-    );
-    if (activeQuizId === quizId) {
-      setActiveQuizId(null);
-    }
-    try {
-      await adapter.deleteLeaf(quizId, "quiz");
-      setHasDraftChanges(true);
-    } catch (e) {
-      console.error("Failed to delete quiz", e);
-    }
-  };
 
-  const askDeleteQuiz = (quiz: QuizNode) =>
-    setConfirm({
-      title: `Delete ${adapter.terminology.leafQuiz}?`,
-      message: `"${quiz.title}" and all of its questions will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete",
-      danger: true,
-      onConfirm: () => deleteQuizNow(quiz.id),
-    });
-
-  // ── Quiz title save (from main panel input) ───────────────────────────────
-
-  const saveQuizTitle = useCallback(
-    async (newTitle: string) => {
-      if (!activeQuizId) return;
-      const value = newTitle.trim() || "Untitled Quiz";
-      setActiveQuizTitle(value);
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) =>
-            q.id === activeQuizId ? { ...q, title: value } : q
-          ),
-        }))
-      );
-      try {
-        await adapter.renameLeaf(activeQuizId, value, "quiz");
-        setHasDraftChanges(true);
-      } catch (e) {
-        console.warn("Quiz title save failed", e);
-      }
-    },
-    [activeQuizId]
-  );
 
   // ── Course metadata debounced save ────────────────────────────────────────
 
@@ -1421,9 +1296,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 ? `${adapter.terminology.root} Settings`
                 : activeLessonId
                   ? activeLessonTitle
-                  : activeQuizId
-                    ? activeQuizTitle
-                    : title || adapter.terminology.root}
+                  : title || adapter.terminology.root}
             </span>
           </div>
 
@@ -1600,10 +1473,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                     <FileText size={13} />
                                     Lesson
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                    <ListChecks size={13} />
-                                    Quiz
-                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                               <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
@@ -1625,22 +1494,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               onDragEnd={(event) => handleDragEnd(mod.id, event)}
                             >
                               <SortableContext
-                                items={[
-                                  ...mod.lessons.map((l) => l.id),
-                                  ...mod.quizzes.map((q) => q.id),
-                                ]}
+                                items={mod.lessons.map((l) => l.id)}
                                 strategy={verticalListSortingStrategy}
                               >
-                                {[
-                                  ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
-                                  ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
-                                ]
+                                {mod.lessons.map((l) => ({ kind: "lesson" as const, node: l }))
                                   .sort((a, b) => a.node.position - b.node.position)
                                   .map((item) => {
-                                    const isActive =
-                                      item.kind === "lesson"
-                                        ? activeLessonId === item.node.id
-                                        : activeQuizId === item.node.id;
+                                    const isActive = activeLessonId === item.node.id;
                                     return (
                                       <SortableRow
                                         key={item.node.id}
@@ -1659,23 +1519,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                             <button
                                               type="button"
                                               onClick={() => {
-                                                if (item.kind === "lesson") {
-                                                  setActiveModuleId(mod.id);
-                                                  openLesson(item.node);
-                                                } else {
-                                                  openQuiz(item.node);
-                                                }
+                                                setActiveModuleId(mod.id);
+                                                openLesson(item.node);
                                               }}
                                               className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
                                                 ? "font-semibold text-white"
                                                 : "text-slate-500"
                                                 }`}
                                             >
-                                              {item.kind === "lesson" ? (
-                                                <FileText size={11} className="flex-shrink-0" />
-                                              ) : (
-                                                <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
-                                              )}
+                                              <FileText size={11} className="flex-shrink-0" />
                                               {isEditing(item.kind, item.node.id) ? (
                                                 renameInput("text-xs")
                                               ) : (
@@ -1686,24 +1538,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                             </button>
                                             {status !== "SUBMITTED" && (
                                               <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                                {item.kind === "quiz" && (
-                                                  <IconBtn
-                                                    title="Copy quiz ID — paste into an inline Quiz block"
-                                                    onClick={() => {
-                                                      navigator.clipboard.writeText(item.node.id);
-                                                      setCopiedQuizId(item.node.id);
-                                                      setTimeout(() => setCopiedQuizId(null), 1500);
-                                                    }}
-                                                  >
-                                                    {copiedQuizId === item.node.id ? (
-                                                      <Check size={12} className="text-emerald-500" />
-                                                    ) : (
-                                                      <Copy size={12} />
-                                                    )}
-                                                  </IconBtn>
-                                                )}
                                                 <IconBtn
-                                                  title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
+                                                  title="Rename lesson"
                                                   onClick={() =>
                                                     startEdit(item.kind, item.node.id, item.node.title)
                                                   }
@@ -1711,13 +1547,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                                   <Pencil size={12} />
                                                 </IconBtn>
                                                 <IconBtn
-                                                  title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
+                                                  title="Delete lesson"
                                                   danger
-                                                  onClick={() =>
-                                                    item.kind === "lesson"
-                                                      ? askDeleteLesson(item.node)
-                                                      : askDeleteQuiz(item.node)
-                                                  }
+                                                  onClick={() => askDeleteLesson(item.node)}
                                                 >
                                                   <Trash2 size={12} />
                                                 </IconBtn>
@@ -1731,7 +1563,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               </SortableContext>
                             </DndContext>
 
-                            {/* Add lesson / quiz to this Day/module */}
+                            {/* Add lesson to this Day/module */}
                             {status !== "SUBMITTED" && (
                               <div className="mt-0.5 flex items-center gap-3 pl-2">
                                 <button
@@ -1742,16 +1574,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                   <Plus size={11} />
                                   Add {adapter.terminology.leafDocument}
                                 </button>
-                                {contentType !== "workshop" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => addQuiz(mod.id)}
-                                    className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
-                                  >
-                                    <Plus size={11} />
-                                    Add quiz
-                                  </button>
-                                )}
                               </div>
                             )}
                           </div>
@@ -1880,29 +1702,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     readOnly={status === "SUBMITTED"}
                   />
                 )}
-              </div>
-            </div>
-          ) : activeQuizId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12 relative">
-              {status === "SUBMITTED" && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
-                  <div className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 shadow-lg border border-gray-100 font-medium text-amber-600">
-                    <Lock size={16} /> Locked for Review
-                  </div>
-                </div>
-              )}
-              <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
-                <div className="mb-5 flex items-center gap-3">
-                  <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
-                  <DebouncedTitleInput
-                    value={activeQuizTitle}
-                    onCommit={saveQuizTitle}
-                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                    placeholder="Quiz title"
-                    disabled={status === "SUBMITTED"}
-                  />
-                </div>
-                <QuizEditor key={activeQuizId} quizId={activeQuizId} />
               </div>
             </div>
           ) : (

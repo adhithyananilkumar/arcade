@@ -194,7 +194,15 @@ To run the Arcade UI locally, follow these steps:
 ## Content Editor Engine Handoff Log
 
 ### 1. Current Status
-Editor engine performance pass complete — steady-state typing cost in the course editor is down **~7x** (1,529 ms → 215 ms of blocked main thread per 63 characters) and the worst single stall is down from **936 ms → 128 ms**, measured on a production build. All editor features verified intact.
+Quiz and Exam architectures have been fully decoupled from the core monolithic `Course` and `CourseEditorOrchestrator`. Quizzes are now a standalone independent entity and are verified to work using `tsc --noEmit`.
+
+### 2. What Was Implemented
+- **Quiz Decoupling:** Fully finalized the frontend and backend refactoring to completely decouple the `Quiz` entity from the `Course` architecture. Quizzes are now a top-level independent entity just like Courses, Articles, and Exams.
+- **Shared Orchestrator Refactoring:** Stripped all residual Quiz state, type definitions, inline rendering hooks, dropdown actions, and backend deletion functions from `CourseEditorOrchestrator.tsx` and `SharedContentEditorOrchestrator.tsx`. Drag-and-drop lists are now solely dedicated to `Lesson`s.
+- **Frontend Type Checking:** Iteratively ran TypeScript checks using `tsc --noEmit` and resolved every single error related to dead Quiz states and properties.
+- **Exam Routing Fix:** Fixed `ExamDto` rendering on the `app/(authenticated)/exam/page.tsx` portal page by mapping `key` correctly to the decoupled exam `id` instead of `courseId`.
+- **Backend Independence:** Established the Quiz table in PostgreSQL as an independent child of `content_items` through JOINED inheritance (completed in previous steps). The Tiptap editor references quizzes by their exact UUID.
+- Editor engine performance pass complete — steady-state typing cost in the course editor is down **~7x** (1,529 ms → 215 ms of blocked main thread per 63 characters) and the worst single stall is down from **936 ms → 128 ms**, measured on a production build. All editor features verified intact.
 
 ### 2. What Was Implemented
 - **Bubble-layer gating (2026-07-22, second pass)** — the first pass fixed re-render churn but the editor was still slow on *real* lessons. Cause: the original harness passed no `onSave` and used a 63-character document, so it never exercised the costs that scale with document size.

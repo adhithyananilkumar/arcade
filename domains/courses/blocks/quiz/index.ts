@@ -10,7 +10,7 @@ export const quizBlock: BlockDefinition = {
   command: {
     id: "quiz-block",
     title: "Quiz",
-    description: "Embed an existing module quiz inline in this lesson",
+    description: "Embed an existing Quiz inline in this content",
     icon: FileQuestion,
     keywords: ["quiz", "knowledge check", "question", "assessment", "test"],
     run: (editor, range) => {
