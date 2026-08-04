@@ -219,23 +219,29 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-bold text-gray-900">Staff Management</h3>
-          <p className="text-sm text-gray-500">Manage who has access to this channel and their permissions.</p>
+          <h3 className="text-xl font-bold text-[#14142b]">Staff Management</h3>
+          <p className="text-sm font-medium text-slate-500">Manage who has access to this channel and their permissions.</p>
         </div>
         {canManageStaff && (
-          <Button onClick={() => setIsInviteModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
+          <Button
+            onClick={() => setIsInviteModalOpen(true)}
+            disabled={isSuspended}
+            title={isSuspended ? 'Channel is suspended' : undefined}
+            className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4 py-2 text-xs font-bold shadow-xs"
+          >
             <Plus size={16} />
             Invite Staff
           </Button>
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-            <Users size={18} className="text-indigo-600" />
-            Active Staff
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-700">{staff.length}</span>
+      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
+        <div className="flex flex-col gap-3 border-b border-slate-100/80 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-purple-50/60 px-6 py-4.5 sm:flex-row sm:items-center justify-between">
+          <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
+            <span className="grid size-9 place-items-center rounded-2xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
+              <Users size={18} />
+            </span>
+            <span>Staff Roster</span>
           </h4>
           {staff.length > 0 && (
             <Input
@@ -243,20 +249,53 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
               value={staffSearch}
               onChange={(e) => setStaffSearch(e.target.value)}
               placeholder="Search by name or email..."
-              className="w-full sm:w-64"
+              className="w-full sm:w-64 border-slate-200 bg-white/90 focus:border-[#14142b] focus:ring-2 focus:ring-[#14142b]/10 text-xs rounded-xl"
             />
           )}
         </div>
         {staff.length === 0 ? (
-          <div className="p-6 text-center text-sm text-gray-500">No active staff members.</div>
+          <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center bg-gradient-to-b from-white via-slate-50/40 to-white">
+            {/* Hand-Drawn Doodle Background Accents */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
+              <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <circle cx="30" cy="20" r="10" strokeDasharray="3 2" />
+                <path d="M15 48 C 15 35, 45 35, 45 48" />
+              </svg>
+              <svg className="absolute right-12 top-1/2 -translate-y-1/2 size-22 text-slate-800" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <rect x="15" y="15" width="40" height="40" rx="8" strokeDasharray="4 2" />
+                <path d="M25 35 L45 35 M35 25 L35 45" />
+              </svg>
+            </div>
+
+            <div className="relative z-10">
+              <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 shadow-2xs">
+                <Users size={22} />
+              </div>
+              <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
+              <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
+                Invite team members or creators to help manage this channel and publish content.
+              </p>
+              {canManageStaff && !isSuspended && (
+                <Button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="mt-4.5 rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-xs transition-all hover:scale-[1.02]"
+                >
+                  <Plus size={15} />
+                  Invite Staff
+                </Button>
+              )}
+            </div>
+          </div>
         ) : filteredStaff.length === 0 ? (
-          <div className="p-6 text-center text-sm text-gray-500">No staff match "{staffSearch}".</div>
+          <div className="p-8 text-center text-sm font-medium text-slate-400">
+            No staff match &quot;{staffSearch}&quot;.
+          </div>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Policies</TableHead>
+              <TableRow className="border-slate-100 bg-slate-50/40">
+                <TableHead className="font-bold text-[#14142b] text-xs">Member</TableHead>
+                <TableHead className="font-bold text-[#14142b] text-xs">Policies</TableHead>
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
@@ -264,24 +303,24 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
               {filteredStaff.map(member => {
                 const isSelf = member.userId === user?.id;
                 return (
-                <TableRow key={member.id}>
+                <TableRow key={member.id} className="border-slate-100 transition-colors hover:bg-purple-50/30">
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <Avatar size="sm">
-                        <AvatarFallback>{member.userName.charAt(0)}</AvatarFallback>
+                      <Avatar size="sm" className="bg-gradient-to-tr from-[#14142b] to-purple-900 text-white shadow-2xs">
+                        <AvatarFallback className="font-bold">{member.userName.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-bold text-gray-900">
-                          {member.userName} {isSelf && <span className="text-gray-400 font-normal">(You)</span>}
+                        <p className="text-xs font-bold text-[#14142b]">
+                          {member.userName} {isSelf && <span className="text-purple-600 font-semibold">(You)</span>}
                         </p>
-                        <p className="text-xs text-gray-500">{member.email}</p>
+                        <p className="text-[11px] font-medium text-slate-400">{member.email}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1.5">
                       {member.roles.map((role) => (
-                        <Badge key={role.id} variant="outline" className="text-purple-700 border-purple-100 bg-purple-50">
+                        <Badge key={role.id} variant="outline" className="text-purple-700 border-purple-200/70 bg-purple-50/90 text-[10px] font-extrabold shadow-2xs">
                           {role.displayName}
                         </Badge>
                       ))}
@@ -294,7 +333,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => openEditRoles(member)}
-                          className="text-gray-400 hover:text-indigo-600"
+                          className="text-slate-400 hover:text-[#14142b] hover:bg-slate-100"
                           title="Edit policies"
                         >
                           <Pencil size={16} />
@@ -305,7 +344,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleRemoveStaff(member.userId, isSelf)}
-                          className="text-gray-400 hover:text-red-600"
+                          className="text-slate-400 hover:text-red-600 hover:bg-red-50"
                           title={isSelf ? 'Leave channel' : 'Remove staff member'}
                         >
                           {isSelf ? <LogOut size={16} /> : <Trash2 size={16} />}
@@ -322,28 +361,30 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       </div>
 
       {invitations.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Mail size={18} className="text-orange-500" />
-              Invitations
+        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-slate-50/80 px-6 py-4.5">
+            <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
+              <span className="grid size-9 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs">
+                <Mail size={18} />
+              </span>
+              <span>Pending Invitations</span>
             </h4>
           </div>
           <Table>
             <TableBody>
               {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map(inv => (
-                <TableRow key={inv.id}>
+                <TableRow key={inv.id} className="border-slate-100 hover:bg-amber-50/20 transition-colors">
                   <TableCell>
-                    <p className="text-sm font-bold text-gray-900">{inv.email}</p>
-                    <p className="text-xs text-gray-500">Invited by {inv.invitedByName} on {new Date(inv.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs font-bold text-[#14142b]">{inv.email}</p>
+                    <p className="text-[11px] font-medium text-slate-400">Invited by {inv.invitedByName} on {new Date(inv.createdAt).toLocaleDateString()}</p>
                   </TableCell>
                   <TableCell className="text-right">
                     <Badge
                       variant="outline"
                       className={
-                        inv.status === 'PENDING' ? 'text-orange-700 border-orange-200 bg-orange-50' :
-                        inv.status === 'REJECTED' ? 'text-red-700 border-red-100 bg-red-50' :
-                        'text-gray-600 border-gray-200 bg-gray-50'
+                        inv.status === 'PENDING' ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[10px] font-extrabold' :
+                        inv.status === 'REJECTED' ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[10px] font-extrabold' :
+                        'text-slate-600 border-slate-200 bg-slate-50 text-[10px] font-extrabold'
                       }
                     >
                       {inv.roleNames.join(', ')} - {inv.status}
@@ -354,15 +395,15 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
             </TableBody>
           </Table>
           {!isInvitationsExpanded && invitations.length > 3 && (
-            <div className="p-3 bg-gray-50/50 flex justify-center">
-              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(true)}>
+            <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
+              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(true)} className="text-xs font-bold text-[#14142b]">
                 See {invitations.length - 3} More
               </Button>
             </div>
           )}
           {isInvitationsExpanded && invitations.length > 3 && (
-            <div className="p-3 bg-gray-50/50 flex justify-center">
-              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(false)}>
+            <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
+              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(false)} className="text-xs font-bold text-[#14142b]">
                 Show Less
               </Button>
             </div>
