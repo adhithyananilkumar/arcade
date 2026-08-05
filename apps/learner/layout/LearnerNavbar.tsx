@@ -124,6 +124,7 @@ export default function LearnerNavbar() {
     if (pathname.startsWith('/console/channels')) return 'Channels';
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
     if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
+    if (pathname.startsWith('/console/coupons')) return 'Coupon';
     if (pathname.startsWith('/console/iam')) return 'IAM';
     return null;
   })();
