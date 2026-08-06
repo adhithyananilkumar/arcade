@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
@@ -394,30 +394,15 @@ function CourseHero({
       <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         {/* Left — editorial copy */}
         <div>
-          {/* Course name as the headline, keeping the word-marking */}
+          {/* Course name as the headline */}
           <h1
-            className="mt-6 text-[2.75rem] font-normal leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
-            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
+            className="mt-6 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
+            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif' }}
           >
             {firstPart}{" "}
-            <span className="relative whitespace-nowrap italic text-[#4c6fff]">
+            <span className="bg-gradient-to-r from-[#00c885] via-[#0284c7] to-[#4f46e5] bg-clip-text text-transparent">
               {lastWord}
-              <FlowerMark
-                size={26}
-                color="var(--color-ink)"
-                className="arcade-spin absolute -right-8 -top-2 hidden sm:block"
-              />
-              <svg
-                className="absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 200 12"
-                fill="none"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path d="M2 9C40 3 160 3 198 8" stroke="var(--color-amber)" strokeWidth="4" strokeLinecap="round" />
-              </svg>
             </span>
-            .
           </h1>
 
           {/* Instructor: name + channel (with org already shown on top) */}
@@ -851,12 +836,47 @@ function EnrollCta({
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
+function getTitleFromSlug(slug?: string): string {
+  if (!slug) return ''
+  const knownTitles: Record<string, string> = {
+    'intro-to-programming': 'Intro to Programming',
+    'data-structures-and-algorithms': 'Data Structures & Algorithms',
+    'data-structures-algorithms': 'Data Structures & Algorithms',
+    'database-management-systems': 'Database Management Systems',
+    'software-engineering': 'Software Engineering',
+    'programming-logic': 'Programming Logic',
+    'relational-databases': 'Relational Databases',
+    'ui-ux-product-design': 'UI / UX & Product Design',
+    'design-interfaces-people-actually-love': 'Design interfaces people actually love',
+  }
+
+  const normalized = slug.toLowerCase().trim()
+  if (knownTitles[normalized]) {
+    return knownTitles[normalized]
+  }
+
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLowerCase()
+      if (lower === 'and') return '&'
+      if (lower === 'ui') return 'UI'
+      if (lower === 'ux') return 'UX'
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
+
 export default function CoursePreviewPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const { user, updateUser } = useAuthStore()
+
+  const titleFromQuery = searchParams.get('title')
 
   const handleEnrollClick = async () => {
     if (!user) {
@@ -868,7 +888,8 @@ export default function CoursePreviewPage() {
       try {
         const updatedUser = await UserService.enrollInCourse(params.id)
         updateUser(updatedUser)
-        router.push(`/learn/${params.id}`)
+        const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
+        router.push(`/learn/${params.id}${queryStr}`)
       } catch (err: any) {
         console.error("Failed to enroll:", err)
         alert(err.message || "Failed to enroll")
@@ -895,7 +916,7 @@ export default function CoursePreviewPage() {
     )
   }
 
-  const displayTitle = course?.title || COURSE_TITLE;
+  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(params?.id) || COURSE_TITLE;
   const authorName = course?.authorName;
   const authorUsername = course?.authorUsername;
   const authorAvatarUrl = course?.authorAvatarUrl;
