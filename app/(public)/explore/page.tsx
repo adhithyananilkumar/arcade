@@ -26,7 +26,7 @@ function CoursesContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars" | "departments" | "community">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "live" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +35,7 @@ function CoursesContent() {
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "webinars" | "departments" | "community") => {
+  const handleTabSwitch = (tab: "courses" | "live" | "articles") => {
     setActiveTab(tab);
     setCurrentPage(1);
     setSearchQuery("");
@@ -57,9 +57,9 @@ function CoursesContent() {
     setActiveCategory(category);
     if (activeTab === "courses") {
       router.push(`/courses?category=${encodeURIComponent(category)}`);
-    } else if (activeTab === "bootcamps") {
-      router.push(`/bootcamps?category=${encodeURIComponent(category)}`);
-    } else if (activeTab === "webinars") {
+    } else if (activeTab === "live") {
+      router.push(`/livesession?category=${encodeURIComponent(category)}`);
+    } else if (activeTab === "articles") {
       router.push(`/webinars?category=${encodeURIComponent(category)}`);
     } else if (activeTab === "departments") {
       router.push(`/departments?category=${encodeURIComponent(category)}`);
@@ -200,19 +200,7 @@ function CoursesContent() {
 
         {/* Tab Selection Cards - 3D Arc Coverflow */}
         <div style={{ maxWidth: "1400px", margin: "32px auto 0", padding: "0 16px", overflow: "visible" }}>
-          <ArcCarousel 
-            cardWidth={320}
-            cardHeight={320}
-            xSpacing={220}
-            yFalloff={35}
-            scaleFalloff={0.12}
-            rotateZFactor={6}
-            opacityFalloff={0.2}
-            onActiveIndexChange={(idx: number) => {
-              const keys = ["courses", "bootcamps", "webinars", "departments", "community"] as const;
-              handleTabSwitch(keys[idx] as any);
-            }}
-            items={[
+          <div style={{ maxWidth: "1400px", margin: "32px auto 40px", padding: "0 16px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
               <React.Fragment key="courses">
                 {/* Card: Courses */}
           <motion.div
@@ -221,7 +209,7 @@ function CoursesContent() {
             animate={{
               scale: activeTab === "courses" ? 1.03 : 0.97,
               opacity: activeTab === "courses" ? 1 : 0.7,
-              rotate: activeTab === "courses" ? -1.5 : 0
+              rotate: 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
@@ -292,32 +280,32 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
-              </React.Fragment>,
-              <React.Fragment key="bootcamps">
+              </React.Fragment>
+              <React.Fragment key="live">
                 {/* Card: Bootcamps */}
           <motion.div
-            onClick={() => handleTabSwitch("bootcamps")}
+            onClick={() => handleTabSwitch("live")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
             animate={{
-              scale: activeTab === "bootcamps" ? 1.03 : 0.97,
-              opacity: activeTab === "bootcamps" ? 1 : 0.7,
-              rotate: activeTab === "bootcamps" ? 0.5 : 0
+              scale: activeTab === "live" ? 1.03 : 0.97,
+              opacity: activeTab === "live" ? 1 : 0.7,
+              rotate: 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "bootcamps" ? "#F5F3FF" : "#FFFFFF",
-              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
+              background: activeTab === "live" ? "#F5F3FF" : "#FFFFFF",
+              border: activeTab === "live" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "bootcamps" ? "8px 8px 0px #8B5CF6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              boxShadow: activeTab === "live" ? "8px 8px 0px #8B5CF6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              zIndex: activeTab === "bootcamps" ? 3 : 1,
+              zIndex: activeTab === "live" ? 3 : 1,
               transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
@@ -325,7 +313,7 @@ function CoursesContent() {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#7C3AED" : "#6B7280",
+                color: activeTab === "live" ? "#7C3AED" : "#6B7280",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
@@ -336,270 +324,129 @@ function CoursesContent() {
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#5B21B6" : "#1A1A1A",
+                color: activeTab === "live" ? "#5B21B6" : "#1A1A1A",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Workshops & Bootcamps
+                Live Sessions
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Join live, interactive, mentor-led programs designed for technical skill development.
+                Join live, interactive programs, bootcamps, and mentor-led webinars for technical skill development.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
             <motion.div
               animate={{
-                scale: activeTab === "bootcamps" ? 1.15 : 1,
-                y: activeTab === "bootcamps" ? -5 : 0
+                scale: activeTab === "live" ? 1.15 : 1,
+                y: activeTab === "live" ? -5 : 0
               }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "bootcamps" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
-                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-              </React.Fragment>,
-              <React.Fragment key="webinars">
-                {/* Card: Webinars */}
-          <motion.div
-            onClick={() => handleTabSwitch("webinars")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "webinars" ? 1.03 : 0.97,
-              opacity: activeTab === "webinars" ? 1 : 0.7,
-              rotate: activeTab === "webinars" ? 1.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "webinars" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "webinars" ? "3px solid #0A1931" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "webinars" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "webinars" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "webinars" ? "#1E3A8A" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                03 // EXPERT LED
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "webinars" ? "#0F172A" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Expert Webinars
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Watch recorded sessions or register for live-streamed presentations.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "webinars" ? 1.15 : 1,
-                y: activeTab === "webinars" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-              </React.Fragment>,
-              <React.Fragment key="departments">
-                {/* Card: Departments */}
-          <motion.div
-            onClick={() => handleTabSwitch("departments" as any)}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === ("departments" as any) ? 1.03 : 0.97,
-              opacity: activeTab === ("departments" as any) ? 1 : 0.7,
-              rotate: activeTab === ("departments" as any) ? -0.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative", background: activeTab === ("departments" as any) ? "#ECFDF5" : "#FFFFFF",
-              border: activeTab === ("departments" as any) ? "3px solid #10B981" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === ("departments" as any) ? "8px 8px 0px #10B981" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === ("departments" as any) ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === ("departments" as any) ? "#047857" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                04 // DEPARTMENTS
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === ("departments" as any) ? "#064E3B" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Academic Departments
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Explore specialized knowledge curated by top university departments.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === ("departments" as any) ? 1.15 : 1,
-                y: activeTab === ("departments" as any) ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <path d="M 30,80 Q 80,40 130,80" fill="none" stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" style={{ transition: "stroke 0.3s" }} />
-                <motion.circle cx="80" cy="60" r="8" fill={activeTab === ("departments" as any) ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === ("departments" as any) ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.6 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 30,80 L 26,76 M 30,80 L 34,76 M 30,80 L 30,86" stroke={activeTab === ("departments" as any) ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-              </React.Fragment>,
-              <React.Fragment key="community">
-                {/* Card: Community */}
-          <motion.div
-            onClick={() => handleTabSwitch("community" as any)}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === ("community" as any) ? 1.03 : 0.97,
-              opacity: activeTab === ("community" as any) ? 1 : 0.7,
-              rotate: activeTab === ("community" as any) ? 1 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative", background: activeTab === ("community" as any) ? "#FFF7ED" : "#FFFFFF",
-              border: activeTab === ("community" as any) ? "3px solid #F97316" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === ("community" as any) ? "8px 8px 0px #F97316" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === ("community" as any) ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === ("community" as any) ? "#C2410C" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                05 // COLLABORATE
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === ("community" as any) ? "#7C2D12" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Community Hub
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Connect with peers, share resources, and join study groups online.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === ("community" as any) ? 1.15 : 1,
-                y: activeTab === ("community" as any) ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <path d="M 40,60 L 80,20 L 120,60" fill="none" stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 40,60 L 40,100 L 120,100 L 120,60" fill="none" stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <rect x="70" y="70" width="20" height="30" fill={activeTab === ("community" as any) ? "rgba(249, 115, 22, 0.2)" : "none"} stroke={activeTab === ("community" as any) ? "#F97316" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "live" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "live" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "live" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "live" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "live" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "live" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "live" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "live" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
+                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 102,15 L 108,24" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 55,50 L 48,65" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 60,51 L 69,45" stroke={activeTab === "live" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
               </React.Fragment>
-            ]}
-          />
+              <React.Fragment key="articles">
+                {/* Card: Webinars */}
+          <motion.div
+            onClick={() => handleTabSwitch("articles")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "articles" ? 1.03 : 0.97,
+              opacity: activeTab === "articles" ? 1 : 0.7,
+              rotate: 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative",
+              background: activeTab === "articles" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "articles" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === "articles" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === "articles" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "articles" ? "#1E3A8A" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                03 // RESOURCES
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "articles" ? "#0F172A" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Articles
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Read guides, docs, and technical articles curated for your learning journey.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === "articles" ? 1.15 : 1,
+                y: activeTab === "articles" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+              </React.Fragment>
+              </div>
         </div>
 
         {/* Full-Width Search and Filters Row */}

@@ -1658,7 +1658,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
-  viewType?: "courses" | "bootcamps" | "webinars" | "departments" | "community";
+  viewType?: "courses" | "livesession" | "webinars" | "articles";
 };
 
 function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: CategoryDetailedViewProps = {}) {
@@ -2171,7 +2171,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         </div>
 
         {/* Section A: Courses */}
-        {(viewType === "courses" || viewType === "departments" || viewType === "community") && (
+        {(viewType === "courses" || viewType === "articles") && (
           <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -2286,7 +2286,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         )}
 
         {/* Section B: Bootcamps Layout */}
-        {viewType === "bootcamps" && (
+        {viewType === "livesession" && (
           <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -2316,7 +2316,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         )}
 
         {/* Section B: Webinars Layout */}
-        {viewType === "webinars" && (
+        {(viewType === "webinars" || viewType === "livesession") && (
           <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -2347,7 +2347,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         )}
 
         {/* Section C: Resources */}
-        {(viewType === "courses" || viewType === "departments" || viewType === "community") && (
+        {(viewType === "courses" || viewType === "articles") && (
           <section>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

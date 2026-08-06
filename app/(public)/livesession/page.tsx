@@ -1,5 +1,5 @@
 import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 
 export default function BootcampsPage() {
-  return <CategoryDetailedView viewType="bootcamps" />;
+  return <CategoryDetailedView viewType="livesession" />;
 }

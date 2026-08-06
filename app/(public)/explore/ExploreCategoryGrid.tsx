@@ -22,10 +22,8 @@ export function ExploreCategoryGrid({
 }) {
   const exploreText = 
     activeTab === "courses" ? "Explore Category" :
-    activeTab === "bootcamps" ? "Explore Bootcamps" :
-    activeTab === "webinars" ? "Explore Webinars" :
-    activeTab === "departments" ? "Explore Departments" :
-    activeTab === "community" ? "Explore Community" : "Explore";
+    activeTab === "live" ? "Explore Live Sessions" :
+    activeTab === "articles" ? "Explore Articles" : "Explore";
 
   const filtered = categoriesList.filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
   const totalPages = Math.ceil(filtered.length / categoriesPerPage);
