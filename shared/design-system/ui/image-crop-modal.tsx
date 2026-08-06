@@ -129,7 +129,7 @@ export function ImageCropModal({ open, file, aspectRatio, title, onCancel, onCro
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="max-w-lg p-6">
+      <DialogContent className="max-w-lg p-6 z-[100]">
         <DialogHeader>
           <DialogTitle>{title || 'Crop image'}</DialogTitle>
         </DialogHeader>
