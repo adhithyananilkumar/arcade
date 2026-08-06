@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
 import { WorkshopWizard } from '../components/wizard/WorkshopWizard';
 import RegisteredMembersPage from './participants/page';
+import { WorkshopCollaboratorsManager } from '../components/wizard/review/WorkshopCollaboratorsManager';
+
+import { api } from '@/infrastructure/http/api';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -13,13 +16,14 @@ const formatDate = (dateStr?: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish' | 'participants';
+type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish' | 'participants' | 'collaborators';
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview',  label: 'Overview' },
   { id: 'pricing',   label: 'Pricing' },
   { id: 'settings',  label: 'Settings' },
   { id: 'participants', label: 'Manage Members' },
+  { id: 'collaborators', label: 'Collaborators' },
 ];
 
 const TAB_STEPS: Record<Tab, number> = {
@@ -30,6 +34,7 @@ const TAB_STEPS: Record<Tab, number> = {
   settings: 3,
   publish: 4,
   participants: 6,
+  collaborators: -1,
 };
 
 export default function SingleWorkshopDashboard() {
@@ -38,16 +43,41 @@ export default function SingleWorkshopDashboard() {
   const [summary, setSummary] = useState<WorkshopSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [hasEditAccess, setHasEditAccess] = useState<boolean>(false);
+  const [hasManageAccess, setHasManageAccess] = useState<boolean>(false);
+  const [analytics, setAnalytics] = useState<{ totalRegistrations: number; totalRevenue: number } | null>(null);
 
   useEffect(() => {
-    if (id) loadSummary(id as string);
+    if (id) {
+      loadSummary(id as string);
+      api.get<boolean>(`/api/workshops/${id}/edit-access`)
+        .then(res => setHasEditAccess(res))
+        .catch(() => setHasEditAccess(false));
+      api.get<boolean>(`/api/workshops/${id}/manage-access`)
+        .then(res => setHasManageAccess(res))
+        .catch(() => setHasManageAccess(false));
+    }
   }, [id]);
+
+  const allowedTabs = React.useMemo(() => {
+    if (hasManageAccess) return TABS;
+    return TABS.filter(t => t.id === 'overview' || t.id === 'participants');
+  }, [hasManageAccess]);
 
   const loadSummary = async (workshopId: string) => {
     setLoading(true);
     try {
       const data = await getWorkshopSummary(workshopId);
       setSummary(data);
+      try {
+        const analyticsData = await api.get<any>(`/api/workshops/${workshopId}/participants/analytics`);
+        setAnalytics({
+          totalRegistrations: analyticsData.totalRegistrations || 0,
+          totalRevenue: analyticsData.totalRevenue || 0,
+        });
+      } catch (analyticsErr) {
+        console.error('Failed to load workshop analytics:', analyticsErr);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,15 +115,13 @@ export default function SingleWorkshopDashboard() {
       {/* Header */}
       <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div className="px-6 md:px-8 pt-6 pb-0">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push('/studio')}
-                className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 flex items-center gap-1"
-              >
-                ← Studio
-              </button>
-              <span className="text-zinc-300 dark:text-zinc-600">/</span>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6">
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <Link href="/studio" className="hover:text-zinc-700 dark:hover:text-zinc-300">Studio</Link>
+                <span>/</span>
+                <span className="truncate max-w-[200px]">{summary.title || 'Workshop'}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${
                   summary.status === 'PUBLISHED'
@@ -109,12 +137,22 @@ export default function SingleWorkshopDashboard() {
             </div>
 
             <div className="flex gap-2 flex-shrink-0">
-              <Link
-                href={`/studio/workshop/${summary.id}/edit`}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
-              >
-                ✏️ Edit Content
-              </Link>
+              {hasEditAccess && (
+                <>
+                  <Link
+                    href={`/studio/workshop/${summary.id}/edit`}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    ✏️ Edit Content
+                  </Link>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
               <Link
                 href={`/workshops/preview/${summary.id}`}
                 target="_blank"
@@ -122,18 +160,12 @@ export default function SingleWorkshopDashboard() {
               >
                 Preview
               </Link>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
-              >
-                Delete
-              </button>
             </div>
           </div>
 
           {/* Tab bar */}
           <div className="flex gap-0 overflow-x-auto">
-            {TABS.map(tab => (
+            {allowedTabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -195,13 +227,15 @@ export default function SingleWorkshopDashboard() {
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Resources</div>
                     <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{summary.resourcesCount}</div>
                   </div>
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg opacity-50">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Registrations</div>
-                    <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">-</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{analytics ? analytics.totalRegistrations : 0}</div>
                   </div>
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg opacity-50">
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Revenue</div>
-                    <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">-</div>
+                    <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                      ${analytics ? analytics.totalRevenue.toFixed(2) : '0.00'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -274,6 +308,10 @@ export default function SingleWorkshopDashboard() {
         ) : activeTab === 'participants' ? (
           <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-250px)]">
             <RegisteredMembersPage />
+          </div>
+        ) : activeTab === 'collaborators' ? (
+          <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-250px)]">
+            <WorkshopCollaboratorsManager workshopId={id as string} />
           </div>
         ) : (
           /* Wizard steps embedded inline */

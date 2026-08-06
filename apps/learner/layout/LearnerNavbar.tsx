@@ -12,6 +12,7 @@ import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { channelService, useStudioAccess } from "@/domains/channels";
 import { platformReviewApi } from "@/domains/publishing";
+import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
@@ -28,6 +29,8 @@ export default function LearnerNavbar() {
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
+  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
   
   // Pending tasks for platform admins
   const [pendingAdminTasks, setPendingAdminTasks] = useState<{ id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[]>([]);
@@ -178,6 +181,28 @@ export default function LearnerNavbar() {
   // the Console instead. Being a platform admin isn't a reason to see this button.
   const { hasAccess: hasStudioAccess } = useStudioAccess();
   const showStudio = hasStudioAccess;
+
+  useEffect(() => {
+    if (!showStudio) {
+      api.get<any[]>('/api/workshops/my-collaborations')
+        .then(res => {
+          if (res && res.length > 0) {
+            setCollaboratedWorkshopId(res[0].id);
+            setHasMultipleCollabs(res.length > 1);
+          } else {
+            setCollaboratedWorkshopId(null);
+            setHasMultipleCollabs(false);
+          }
+        })
+        .catch(() => {
+          setCollaboratedWorkshopId(null);
+          setHasMultipleCollabs(false);
+        });
+    } else {
+      setCollaboratedWorkshopId(null);
+      setHasMultipleCollabs(false);
+    }
+  }, [showStudio]);
 
   const isConsole = pathname.startsWith('/console');
   const consoleCrumb = (() => {
@@ -382,6 +407,14 @@ export default function LearnerNavbar() {
                 onClick={() => router.push('/studio')}
               >
                 Content Studio
+              </MenuItem>
+            )}
+            {!showStudio && collaboratedWorkshopId && (
+              <MenuItem 
+                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                onClick={() => router.push(hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`)}
+              >
+                {hasMultipleCollabs ? 'Manage Workshops' : 'Manage Workshop'}
               </MenuItem>
             )}
             {showArcConsole && (
