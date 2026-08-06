@@ -60,80 +60,118 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
   }
 ]
 
-{/* SVG Paper Cutout Top-Right Double Closing Quote Badge */}
-function TopRightQuoteSvg() {
+{/* Exact Reference Quote Card Component: Card container stays stationary, ONLY text inside animates */}
+function ExactReferenceQuoteCard({ review }: { review: ReviewItem }) {
   return (
-    <svg width="52" height="46" viewBox="0 0 52 46" fill="none" className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.22)]">
-      <path
-        d="M9.5 38C4.5 38 0 32.5 0 23C0 9.5 10.5 1.5 22 0V9.5C14.5 11 11 16.5 11 22.5H22V38H9.5Z"
-        fill="#EFEFEF"
-      />
-      <path
-        d="M39.5 38C34.5 38 30 32.5 30 23C30 9.5 40.5 1.5 52 0V9.5C44.5 11 41 16.5 41 22.5H52V38H39.5Z"
-        fill="#EFEFEF"
-      />
-    </svg>
-  )
-}
+    <div className="relative w-full max-w-[360px] mx-auto select-none aspect-square group">
+      <svg
+        viewBox="0 0 400 400"
+        className="w-full h-auto overflow-visible"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Main Card Drop Shadow */}
+          <filter id="exactCardShadow" x="-20%" y="-20%" width="150%" height="150%">
+            <feDropShadow dx="-10" dy="18" stdDeviation="15" floodColor="#2A1B24" floodOpacity="0.18" />
+            <feDropShadow dx="12" dy="24" stdDeviation="20" floodColor="#1A0D15" floodOpacity="0.12" />
+          </filter>
 
-{/* SVG Paper Cutout Bottom-Left Double Opening Quote Badge */}
-function BottomLeftQuoteSvg() {
-  return (
-    <svg width="52" height="46" viewBox="0 0 52 46" fill="none" className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.22)]">
-      <path
-        d="M12.5 8C17.5 8 22 13.5 22 23C22 36.5 11.5 44.5 0 46V36.5C7.5 35 11 29.5 11 23.5H0V8H12.5Z"
-        fill="#EFEFEF"
-      />
-      <path
-        d="M42.5 8C47.5 8 52 13.5 52 23C52 36.5 41.5 44.5 30 46V36.5C37.5 35 41 29.5 41 23.5H30V8H42.5Z"
-        fill="#EFEFEF"
-      />
-    </svg>
-  )
-}
+          {/* Long Cast Shadow for Top-Right Quote Badge */}
+          <filter id="topRightQuoteShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="8" dy="10" stdDeviation="6" floodColor="#2A1B24" floodOpacity="0.25" />
+          </filter>
 
-{/* Individual Quote Card with Exact Reference Shape */}
-function ReferenceQuoteCard({ review }: { review: ReviewItem }) {
-  return (
-    <div className="relative w-full max-w-sm mx-auto my-4 select-none group">
-      {/* Card Base Container with Asymmetric Rounded Corners */}
-      <div className="relative min-h-[310px] w-full rounded-tl-[42px] rounded-br-[42px] rounded-tr-xl rounded-bl-xl bg-gradient-to-b from-[#F7F7F8] to-[#EDEDEF] p-8 sm:p-9 text-center border border-white/80 shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition-all duration-300 group-hover:shadow-[0_28px_60px_rgba(15,23,42,0.24)] group-hover:-translate-y-1 flex flex-col justify-between">
-        
-        {/* Top-Right Overlapping Vector Quote Badge */}
-        <div className="absolute -top-4 -right-4 z-20 pointer-events-none">
-          <TopRightQuoteSvg />
-        </div>
+          {/* Long Cast Shadow for Bottom-Left Quote Badge */}
+          <filter id="bottomLeftQuoteShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="-8" dy="10" stdDeviation="6" floodColor="#2A1B24" floodOpacity="0.25" />
+          </filter>
 
-        {/* Bottom-Left Overlapping Vector Quote Badge */}
-        <div className="absolute -bottom-4 -left-4 z-20 pointer-events-none">
-          <BottomLeftQuoteSvg />
-        </div>
+          <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#F8F8F9" />
+            <stop offset="100%" stopColor="#E9E9EB" />
+          </linearGradient>
+        </defs>
 
-        {/* Card Content Header */}
-        <div>
-          {/* HEADLINE */}
-          <h3 className="text-lg sm:text-xl font-black uppercase tracking-widest text-[#334155] mb-1">
-            {review.name}
-          </h3>
+        {/* Outer Card Body — STATIONARY (NEVER FADES OR MOVES) */}
+        <path
+          d="
+            M 60 10
+            L 320 10
+            L 320 75
+            L 390 75
+            L 390 340
+            A 50 50 0 0 1 340 390
+            L 80 390
+            L 80 325
+            L 10 325
+            L 10 60
+            A 50 50 0 0 1 60 10
+            Z
+          "
+          fill="url(#cardGrad)"
+          filter="url(#exactCardShadow)"
+        />
 
-          {/* Role & Star Rating */}
-          <div className="flex items-center justify-center gap-1.5 mb-5 text-[11.5px] font-semibold text-slate-500">
-            <span className="truncate">{review.role}</span>
-            <span className="text-slate-300">&bull;</span>
-            <div className="flex items-center gap-0.5">
-              {[...Array(review.rating || 5)].map((_, s) => (
-                <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
-              ))}
-            </div>
-          </div>
+        {/* Top-Right Quote Badge — STATIONARY */}
+        <g filter="url(#topRightQuoteShadow)">
+          <path
+            d="M 322 15 C 322 2, 332 -4, 345 -4 C 358 -4, 365 5, 365 18 C 365 30, 355 42, 342 54 L 332 46 C 342 38, 346 30, 346 22 L 322 22 Z"
+            fill="#EBEBEB"
+          />
+          <path
+            d="M 358 15 C 358 2, 368 -4, 381 -4 C 394 -4, 401 5, 401 18 C 401 30, 391 42, 378 54 L 368 46 C 378 38, 382 30, 382 22 L 358 22 Z"
+            fill="#EBEBEB"
+          />
+        </g>
 
-          {/* Quote Body */}
-          <p className="text-xs sm:text-sm font-normal leading-relaxed text-[#475569] px-1">
-            {review.quote}
-          </p>
-        </div>
+        {/* Bottom-Left Quote Badge — STATIONARY */}
+        <g filter="url(#bottomLeftQuoteShadow)">
+          <path
+            d="M -1 370 C -1 383, 9 389, 22 389 C 35 389, 42 380, 42 367 C 42 355, 32 343, 19 331 L 9 339 C 19 347, 23 355, 23 363 L -1 363 Z"
+            fill="#EBEBEB"
+          />
+          <path
+            d="M 35 370 C 35 383, 45 389, 58 389 C 71 389, 78 380, 78 367 C 78 355, 68 343, 55 331 L 45 339 C 55 347, 59 355, 59 363 L 35 363 Z"
+            fill="#EBEBEB"
+          />
+        </g>
 
-      </div>
+        {/* Text Content Overlay inside ForeignObject — ONLY THE TEXT ANIMATES EVERY 2 SECONDS */}
+        <foreignObject x="35" y="70" width="330" height="260">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={review.id || `${review.name}-${review.quote}`}
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -12, scale: 0.98 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
+              className="flex size-full flex-col items-center justify-center text-center px-4 py-2"
+            >
+              {/* HEADLINE */}
+              <h3 className="text-lg sm:text-xl font-black uppercase tracking-widest text-[#334155] mb-1.5 truncate w-full">
+                {review.name}
+              </h3>
+
+              {/* Sub-headline / Role & Rating */}
+              <div className="flex items-center justify-center gap-1.5 mb-3 text-[11px] font-bold text-slate-500 max-w-full">
+                <span className="truncate max-w-[170px]">{review.role}</span>
+                <span className="text-slate-400">&bull;</span>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  {[...Array(review.rating || 5)].map((_, s) => (
+                    <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+              </div>
+
+              {/* Paragraph Quote Body */}
+              <p className="text-xs sm:text-[13px] font-normal leading-relaxed text-[#475569] px-2 line-clamp-4">
+                &ldquo;{review.quote}&rdquo;
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </foreignObject>
+      </svg>
     </div>
   )
 }
@@ -141,14 +179,15 @@ function ReferenceQuoteCard({ review }: { review: ReviewItem }) {
 export default function CourseReviewsSection({ courseId = "intro-to-programming" }: { courseId?: string }) {
   const { user } = useAuthStore()
   const [reviews, setReviews] = useState<ReviewItem[]>(DEFAULT_REVIEWS)
-  const [pageIndex, setPageIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState("")
   const [newRole, setNewRole] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
 
-  // Fetch reviews from API
+  // Fetch reviews from API (including real-time user-submitted reviews)
   useEffect(() => {
     if (!courseId) return
 
@@ -171,14 +210,23 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       })
   }, [courseId])
 
-  const totalPages = Math.ceil(reviews.length / 3)
+  // Automatically cycle reviews every 2 seconds to show all reviews continuously
+  useEffect(() => {
+    if (reviews.length <= 1) return
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % reviews.length)
+    }, 2000)
+
+    return () => clearInterval(timer)
+  }, [reviews.length])
 
   const handlePrev = () => {
-    setPageIndex((prev) => (prev <= 0 ? totalPages - 1 : prev - 1))
+    setCurrentIndex((prev) => (prev <= 0 ? reviews.length - 1 : prev - 1))
   }
 
   const handleNext = () => {
-    setPageIndex((prev) => (prev + 1) % totalPages)
+    setCurrentIndex((prev) => (prev + 1) % reviews.length)
   }
 
   const handleSubmitReview = async (e: React.FormEvent) => {
@@ -210,7 +258,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       toast.success("Review posted live!")
     } finally {
       setReviews((prev) => [newReviewItem, ...prev])
-      setPageIndex(0)
+      setCurrentIndex(0)
       setSubmitting(false)
       setIsModalOpen(false)
       setNewComment("")
@@ -219,18 +267,15 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
     }
   }
 
-  // Get current 3 reviews to display
-  const startIndex = (pageIndex * 3) % reviews.length
-  const visibleReviews = [
-    reviews[startIndex % reviews.length],
-    reviews[(startIndex + 1) % reviews.length],
-    reviews[(startIndex + 2) % reviews.length]
-  ].filter(Boolean)
+  // Get current 3 reviews to display inside the 3 stationary cards
+  const review0 = reviews[currentIndex % reviews.length] || DEFAULT_REVIEWS[0]
+  const review1 = reviews[(currentIndex + 1) % reviews.length] || DEFAULT_REVIEWS[1]
+  const review2 = reviews[(currentIndex + 2) % reviews.length] || DEFAULT_REVIEWS[2]
 
   return (
-    <section className="relative w-full py-12 px-4 bg-transparent select-none">
+    <section className="relative w-full py-12 px-4 bg-transparent select-none my-4">
       {/* Top Controls Header */}
-      <div className="relative mx-auto max-w-6xl mb-8 flex items-center justify-between px-2">
+      <div className="relative mx-auto max-w-6xl mb-10 flex items-center justify-between px-2 text-slate-900">
         <div className="flex flex-col items-start gap-0.5">
           <span className="text-xs font-extrabold uppercase tracking-widest text-[#00C4B4]">
             Student Feedback
@@ -249,7 +294,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
             <Plus size={14} className="text-[#00C4B4]" /> Add Review
           </button>
 
-          {totalPages > 1 && (
+          {reviews.length > 3 && (
             <div className="flex items-center gap-1.5">
               <button
                 onClick={handlePrev}
@@ -272,38 +317,13 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
         </div>
       </div>
 
-      {/* Grid of 3 Identical Reference Quote Cards */}
+      {/* 3 STATIONARY QUOTE CARDS — ONLY THE TEXT INSIDE ANIMATES EVERY 2 SECONDS */}
       <div className="mx-auto max-w-6xl">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pageIndex}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"
-          >
-            {visibleReviews.map((rev, idx) => (
-              <ReferenceQuoteCard key={rev.id || `${rev.name}-${idx}`} review={rev} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Page Dots Navigation */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-2">
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setPageIndex(i)}
-                className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                  i === pageIndex ? "w-8 bg-[#00C4B4]" : "w-2.5 bg-slate-300 hover:bg-slate-400"
-                }`}
-                aria-label={`Go to page ${i + 1}`}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <ExactReferenceQuoteCard review={review0} />
+          <ExactReferenceQuoteCard review={review1} />
+          <ExactReferenceQuoteCard review={review2} />
+        </div>
       </div>
 
       {/* Real-time Review Submission Modal */}
@@ -391,6 +411,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
     </section>
   )
 }
+
 
 
 
