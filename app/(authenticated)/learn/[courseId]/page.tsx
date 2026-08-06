@@ -27,6 +27,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
+import InteractiveBookSpread from "@/components/course/InteractiveBookSpread"
 import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
@@ -543,31 +544,7 @@ function CourseTabs() {
       </div>
 
       <div key={tab} className="arcade-fade mt-10">
-        {tab === "Overview" && (
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-3xl border border-line bg-paper p-7">
-              <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
-                just a certificate.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-line bg-paper p-7">
-              <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
-              <ul className="mt-4 flex flex-col gap-3">
-                {HIGHLIGHTS.map((h) => (
-                  <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
-                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                      <Check size={13} className="text-teal" />
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
+        {tab === "Overview" && <InteractiveBookSpread highlights={HIGHLIGHTS} />}
 
         {tab === "Syllabus" && (
           <div className="mx-auto max-w-3xl">
