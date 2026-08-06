@@ -257,17 +257,9 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
   const rContent = 200
 
   return (
-    <section className="relative w-full py-12 px-4 bg-[#FAFAF9] overflow-hidden">
-      {/* Header Bar */}
-      <div className="relative mx-auto max-w-6xl mb-4 flex items-center justify-between px-4">
-        <div className="flex flex-col items-start gap-1">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#00C4B4]">
-            Student Feedback
-          </span>
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            Reviews
-          </h2>
-        </div>
+    <section className="relative w-full py-12 px-4 bg-transparent overflow-hidden">
+      {/* Header Bar Controls */}
+      <div className="relative mx-auto max-w-5xl mb-4 flex items-center justify-end px-4">
 
         <div className="flex items-center gap-3">
           <button
@@ -468,19 +460,19 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
             {/* Inner accent ring */}
             <circle cx={cx} cy={cy} r={rIn - 5} fill="none" stroke="url(#centerRingGrad)" strokeWidth="4" />
 
-            {/* Central INFOGRAPHICS Text */}
+            {/* Central REVIEWS Text */}
             <text
               x={cx}
               y={cy - 6}
               textAnchor="middle"
               dominantBaseline="central"
               fill="#0F172A"
-              fontSize="16"
+              fontSize="17"
               fontWeight="900"
               fontFamily="sans-serif"
-              letterSpacing="0.18em"
+              letterSpacing="0.22em"
             >
-              INFOGRAPHICS
+              REVIEWS
             </text>
 
             {/* 5 Accent Colored Squares below Center Title */}

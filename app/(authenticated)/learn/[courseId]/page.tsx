@@ -30,6 +30,7 @@ import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
+import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -369,19 +370,19 @@ function Breadcrumb({ title }: { title: string }) {
   ]
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
-      <ol className="flex flex-wrap items-center gap-1.5 text-[13px]">
+      <ol className="flex flex-wrap items-center gap-2 text-[13.5px]">
         {crumbs.map((c) => (
-          <li key={c.label} className="flex items-center gap-1.5">
+          <li key={c.label} className="flex items-center gap-2">
             <Link
               href={c.href}
-              className="rounded-full px-2.5 py-1 font-medium text-subtle transition-colors hover:bg-mist hover:text-ink"
+              className="font-bold text-slate-700 hover:text-ink transition-colors"
             >
               {c.label}
             </Link>
-            <ChevronRight size={13} className="text-subtle/40" />
+            <ChevronRight size={13} className="text-subtle/50" />
           </li>
         ))}
-        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{title}</li>
+        <li className="font-bold text-ink">{title}</li>
       </ol>
     </nav>
   )
@@ -450,13 +451,13 @@ function CourseHero({
             </span>
           </h1>
 
-          {/* Instructor: name + channel (with org already shown on top) */}
-          <div className="mt-7 flex items-center gap-3">
-            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={46} />
+          {/* Instructor: name + channel */}
+          <div className="mt-5 flex items-center gap-2.5">
+            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={34} />
             <div>
-              <p className="text-[15px] font-semibold text-ink">{displayAuthor}</p>
-              <p className="flex items-center gap-1.5 text-[13px] text-subtle">
-                <Radio size={13} className="text-blue" /> @{displayUsername}
+              <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
+              <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
+                <Radio size={12} className="text-blue" /> @{displayUsername}
               </p>
             </div>
           </div>
@@ -496,75 +497,18 @@ function CourseHero({
                 {isEnrolling ? "Enrolling..." : "Enroll now"}
               </EnrollButton>
             )}
-            <button
-              onClick={() => setSaved((s) => !s)}
-              aria-pressed={saved}
-              aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
-              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-coral"
-            >
-              <Heart
-                size={18}
-                fill={saved ? "var(--color-coral)" : "none"}
-                color={saved ? "var(--color-coral)" : "currentColor"}
-              />
-            </button>
           </div>
         </div>
 
-        {/* Right — dark video preview card */}
-        <div className="relative">
-          <div
-            className="absolute -right-4 -top-5 hidden size-24 rounded-full opacity-70 blur-2xl lg:block"
-            style={{ background: "#1db876" }}
-            aria-hidden="true"
-          />
-          <div className="relative rounded-3xl bg-[#14142b] p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
-            <div className="mb-3 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2.5">
-                <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-[#4c6fff] text-xs font-bold text-white">
-                  {authorAvatarUrl ? (
-                    <img src={authorAvatarUrl} alt={displayAuthor} className="size-full object-cover" />
-                  ) : (
-                    authorInitials
-                  )}
-                </span>
-                <div>
-                  <p className="text-[13px] font-semibold text-white">Course preview</p>
-                  <p className="text-[11px] text-white/50">@{displayUsername}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-white/45">
-                <Volume2 size={15} />
-                <Settings size={15} />
-              </div>
-            </div>
-
-            <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1d2130] to-[#262a38]">
-              <div
-                className="absolute -left-6 -top-6 size-24 rounded-full opacity-40 blur-2xl"
-                style={{ background: "#9b5de5" }}
-                aria-hidden="true"
-              />
-              <button
-                aria-label="Play course preview"
-                className="grid size-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/20 backdrop-blur-sm transition-transform hover:scale-105"
-              >
-                <Play size={22} className="translate-x-0.5 text-white" fill="currentColor" />
-              </button>
-            </div>
-
-            <div className="mt-3.5 h-1 rounded-full bg-white/12">
-              <div className="h-full w-[35%] rounded-full bg-[#ff6b4a]" />
-            </div>
-            <div className="mt-2.5 flex items-center justify-between px-0.5 text-[11px] text-white/50">
-              <span>0:42 / 2:00</span>
-              <span className="flex items-center gap-3">
-                <Share2 size={13} />
-                <Clock size={13} />
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Right — Futuristic glassmorphic video preview card */}
+        <CourseVideoPreviewCard
+          authorAvatarUrl={authorAvatarUrl}
+          displayAuthor={displayAuthor}
+          displayUsername={displayUsername}
+          authorInitials={authorInitials}
+          videoSrc="/boradingui.mp4"
+          posterUrl="/ink-dome-bg.jpg"
+        />
       </div>
     </section>
   )
@@ -985,24 +929,22 @@ export default function CoursePage() {
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
 
   return (
-    <main className="min-h-screen bg-transparent text-ink">
-      {/* Hero wash */}
-      <div className="arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
-          <CourseHero 
-            title={displayTitle} 
-            authorName={authorName}
-            authorUsername={authorUsername}
-            authorAvatarUrl={authorAvatarUrl}
-            lessonCount={lessonCount}
-            onEnroll={handleEnroll}
-            isEnrolling={isEnrolling}
-            isEnrolled={isEnrolled}
-            pricingModel={course?.pricingModel}
-            priceAmount={course?.priceAmount}
-            courseId={params?.courseId as string}
-          />
-        </div>
+    <main className="min-h-screen arcade-wash text-ink">
+      {/* Hero section */}
+      <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
+        <CourseHero 
+          title={displayTitle} 
+          authorName={authorName}
+          authorUsername={authorUsername}
+          authorAvatarUrl={authorAvatarUrl}
+          lessonCount={lessonCount}
+          onEnroll={handleEnroll}
+          isEnrolling={isEnrolling}
+          isEnrolled={isEnrolled}
+          pricingModel={course?.pricingModel}
+          priceAmount={course?.priceAmount}
+          courseId={params?.courseId as string}
+        />
       </div>
 
       {/* Body */}
