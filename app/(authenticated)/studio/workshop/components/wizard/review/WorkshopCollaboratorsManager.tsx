@@ -29,9 +29,17 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
   const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
+  const isOwner = collaborators.find(c => c.userId === user?.id)?.role === 'OWNER';
+
   useEffect(() => {
     loadCollaborators();
   }, [workshopId]);
+
+  useEffect(() => {
+    if (collaborators.length > 0 && !isOwner) {
+      setInviteRole('VIEWER');
+    }
+  }, [collaborators, isOwner]);
 
   const loadCollaborators = async () => {
     try {
@@ -122,9 +130,10 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
           </div>
           <div className="w-full sm:w-48">
             <select
-              className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as any)}
+              disabled={!isOwner}
             >
               <option value="OWNER">Owner (Full Admin)</option>
               <option value="MANAGER">Manager (Can manage workshop)</option>
@@ -189,7 +198,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
                         className="h-8 px-2 rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         value={c.role}
                         onChange={(e) => handleRoleChange(c.userId, e.target.value as any)}
-                        disabled={c.userId === user?.id}
+                        disabled={c.userId === user?.id || !isOwner}
                       >
                         <option value="OWNER">Owner</option>
                         <option value="MANAGER">Manager</option>

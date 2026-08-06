@@ -9,6 +9,7 @@ import RegisteredMembersPage from './participants/page';
 import { WorkshopCollaboratorsManager } from '../components/wizard/review/WorkshopCollaboratorsManager';
 
 import { api } from '@/infrastructure/http/api';
+import { LayoutGrid, Tag, Settings, Users, UserCog } from 'lucide-react';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -16,14 +17,24 @@ const formatDate = (dateStr?: string) => {
   return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
+const formatLanguage = (lang?: string) => {
+  if (!lang) return 'EN';
+  const l = lang.trim().toLowerCase();
+  if (l === 'english') return 'EN';
+  if (l === 'spanish') return 'ES';
+  if (l === 'french') return 'FR';
+  if (l === 'german') return 'DE';
+  return l.substring(0, 2).toUpperCase();
+};
+
 type Tab = 'overview' | 'schedule' | 'pricing' | 'resources' | 'settings' | 'publish' | 'participants' | 'collaborators';
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'overview',  label: 'Overview' },
-  { id: 'pricing',   label: 'Pricing' },
-  { id: 'settings',  label: 'Settings' },
-  { id: 'participants', label: 'Manage Members' },
-  { id: 'collaborators', label: 'Collaborators' },
+const TABS: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
+  { id: 'overview',  label: 'Overview', icon: LayoutGrid },
+  { id: 'pricing',   label: 'Pricing', icon: Tag },
+  { id: 'settings',  label: 'Settings', icon: Settings },
+  { id: 'participants', label: 'Manage Members', icon: Users },
+  { id: 'collaborators', label: 'Collaborators', icon: UserCog },
 ];
 
 const TAB_STEPS: Record<Tab, number> = {
@@ -164,20 +175,27 @@ export default function SingleWorkshopDashboard() {
           </div>
 
           {/* Tab bar */}
-          <div className="flex gap-0 overflow-x-auto">
-            {allowedTabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex gap-0 overflow-x-auto pb-4 mt-2">
+            <div className="inline-flex items-center gap-1 rounded-full border border-zinc-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 p-1 shadow-[0_4px_14px_rgba(0,0,0,0.02)]">
+              {allowedTabs.map(tab => {
+                const active = activeTab === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all whitespace-nowrap ${
+                      active
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <Icon size={16} className={active ? 'text-white' : 'text-zinc-400 dark:text-zinc-500'} />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -198,20 +216,36 @@ export default function SingleWorkshopDashboard() {
                 <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Details</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Visibility</div>
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{summary.visibility || 'N/A'}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Visibility</div>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-950/40 px-3 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                        {(summary.visibility || 'N/A').toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Delivery Mode</div>
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{summary.deliveryMode || 'N/A'}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Delivery Mode</div>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-950/40 px-3 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                        {(summary.deliveryMode || 'N/A').toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Language</div>
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{summary.language || 'English'}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Language</div>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-950/40 px-3 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                        {formatLanguage(summary.language)}
+                      </span>
+                    </div>
                   </div>
                   <div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Type</div>
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">{summary.workshopType || 'N/A'}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Type</div>
+                    <div className="mt-1">
+                      <span className="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-950/40 px-3 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
+                        {(summary.workshopType || 'N/A').toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
