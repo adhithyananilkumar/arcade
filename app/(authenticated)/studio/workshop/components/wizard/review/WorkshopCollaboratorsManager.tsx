@@ -26,7 +26,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'OWNER' | 'EDITOR' | 'VIEWER'>('EDITOR');
+  const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: 'OWNER' | 'EDITOR' | 'VIEWER') => {
+  const handleRoleChange = async (userId: string, newRole: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER') => {
     try {
       await updateCollaboratorRole(workshopId, userId, newRole);
       toast.success('Collaborator role updated!');

@@ -60,6 +60,15 @@ const dockItems = [
   }
 ] as const;
 
+interface DockNavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: any;
+  activeColor: string;
+  exact: boolean;
+}
+
 // ─── Component ─────────── //
 export default function LearnerDock() {
   const pathname = usePathname();
@@ -70,54 +79,45 @@ export default function LearnerDock() {
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!hasStudioAccess) {
-      api.get<any[]>('/api/workshops/my-collaborations')
-        .then(res => {
-          if (res && res.length > 0) {
-            setCollaboratedWorkshopId(res[0].id);
-            setHasMultipleCollabs(res.length > 1);
-          } else {
-            setCollaboratedWorkshopId(null);
-            setHasMultipleCollabs(false);
-          }
-        })
-        .catch(() => {
+    api.get<any[]>('/api/workshops/my-collaborations')
+      .then(res => {
+        if (res && res.length > 0) {
+          setCollaboratedWorkshopId(res[0].id);
+          setHasMultipleCollabs(res.length > 1);
+        } else {
           setCollaboratedWorkshopId(null);
           setHasMultipleCollabs(false);
-        });
-    } else {
-      setCollaboratedWorkshopId(null);
-      setHasMultipleCollabs(false);
-    }
-  }, [hasStudioAccess]);
+        }
+      })
+      .catch(() => {
+        setCollaboratedWorkshopId(null);
+        setHasMultipleCollabs(false);
+      });
+  }, []);
 
   const items = useMemo(() => {
+    const list: DockNavItem[] = [...dockItems];
     if (hasStudioAccess) {
-      return [
-        ...dockItems,
-        {
-          id: 'studio',
-          label: 'Studio',
-          href: '/studio',
-          icon: LayoutDashboard,
-          activeColor: 'text-indigo-600 dark:text-indigo-400',
-          exact: false,
-        }
-      ];
-    } else if (collaboratedWorkshopId) {
-      return [
-        ...dockItems,
-        {
-          id: 'studio',
-          label: 'Manage',
-          href: hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`,
-          icon: LayoutDashboard,
-          activeColor: 'text-indigo-600 dark:text-indigo-400',
-          exact: false,
-        }
-      ];
+      list.push({
+        id: 'studio',
+        label: 'Studio',
+        href: '/studio',
+        icon: LayoutDashboard,
+        activeColor: 'text-indigo-600 dark:text-indigo-400',
+        exact: false,
+      });
     }
-    return dockItems;
+    if (collaboratedWorkshopId) {
+      list.push({
+        id: 'manage-workshops',
+        label: 'Manage',
+        href: hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`,
+        icon: LayoutDashboard,
+        activeColor: 'text-indigo-600 dark:text-indigo-400',
+        exact: false,
+      });
+    }
+    return list;
   }, [hasStudioAccess, collaboratedWorkshopId, hasMultipleCollabs]);
   
   // If we are viewing a specific course, point the exam button to that course's exam.

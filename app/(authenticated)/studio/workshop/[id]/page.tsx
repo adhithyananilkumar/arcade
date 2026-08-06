@@ -61,7 +61,7 @@ export default function SingleWorkshopDashboard() {
 
   const allowedTabs = React.useMemo(() => {
     if (hasManageAccess) return TABS;
-    return TABS.filter(t => t.id === 'overview' || t.id === 'participants');
+    return TABS.filter(t => t.id === 'overview');
   }, [hasManageAccess]);
 
   const loadSummary = async (workshopId: string) => {

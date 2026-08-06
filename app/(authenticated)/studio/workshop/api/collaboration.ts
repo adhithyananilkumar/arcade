@@ -8,7 +8,7 @@ export interface Collaborator {
   email: string;
   name: string;
   avatarUrl: string | null;
-  role: 'OWNER' | 'EDITOR' | 'VIEWER';
+  role: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER';
   status: 'PENDING' | 'ACCEPTED';
   joinedAt: string;
 }
@@ -20,7 +20,7 @@ export const getCollaborators = async (workshopId: string): Promise<Collaborator
 export const inviteCollaborator = async (
   workshopId: string,
   email: string,
-  role: 'OWNER' | 'EDITOR' | 'VIEWER'
+  role: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'
 ): Promise<Collaborator> => {
   return await api.post<Collaborator>(`${API_BASE_PATH}/${workshopId}/collaborators`, {
     email,
@@ -31,7 +31,7 @@ export const inviteCollaborator = async (
 export const updateCollaboratorRole = async (
   workshopId: string,
   userId: string,
-  role: 'OWNER' | 'EDITOR' | 'VIEWER'
+  role: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'
 ): Promise<Collaborator> => {
   return await api.patch<Collaborator>(`${API_BASE_PATH}/${workshopId}/collaborators/${userId}`, {
     role,

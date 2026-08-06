@@ -183,26 +183,21 @@ export default function LearnerNavbar() {
   const showStudio = hasStudioAccess;
 
   useEffect(() => {
-    if (!showStudio) {
-      api.get<any[]>('/api/workshops/my-collaborations')
-        .then(res => {
-          if (res && res.length > 0) {
-            setCollaboratedWorkshopId(res[0].id);
-            setHasMultipleCollabs(res.length > 1);
-          } else {
-            setCollaboratedWorkshopId(null);
-            setHasMultipleCollabs(false);
-          }
-        })
-        .catch(() => {
+    api.get<any[]>('/api/workshops/my-collaborations')
+      .then(res => {
+        if (res && res.length > 0) {
+          setCollaboratedWorkshopId(res[0].id);
+          setHasMultipleCollabs(res.length > 1);
+        } else {
           setCollaboratedWorkshopId(null);
           setHasMultipleCollabs(false);
-        });
-    } else {
-      setCollaboratedWorkshopId(null);
-      setHasMultipleCollabs(false);
-    }
-  }, [showStudio]);
+        }
+      })
+      .catch(() => {
+        setCollaboratedWorkshopId(null);
+        setHasMultipleCollabs(false);
+      });
+  }, []);
 
   const isConsole = pathname.startsWith('/console');
   const consoleCrumb = (() => {
@@ -416,7 +411,7 @@ export default function LearnerNavbar() {
                 Content Studio
               </MenuItem>
             )}
-            {!showStudio && collaboratedWorkshopId && (
+            {collaboratedWorkshopId && (
               <MenuItem 
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push(hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`)}
