@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle, Lock, Tv, Sparkles, FileText } from 'lucide-react';
+import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle, Lock, Tv, FileText } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { ChannelDoodleBanner } from './ChannelDoodleBanner';
