@@ -250,11 +250,11 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
   }
 
   const cx = 500
-  const cy = 430
-  const rIn = 118
-  const rOut = 295
-  const rTab = 348
-  const rContent = 205
+  const cy = 410
+  const rIn = 115
+  const rOut = 285
+  const rTab = 338
+  const rContent = 200
 
   return (
     <section className="relative w-full py-12 px-4 bg-[#FAFAF9] overflow-hidden">
@@ -302,7 +302,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       {/* Main Infographics Wheel matching Reference Image */}
       <div className="relative mx-auto max-w-5xl select-none">
         <svg
-          viewBox="0 0 1000 860"
+          viewBox="0 0 1000 820"
           className="w-full h-auto drop-shadow-sm"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -324,7 +324,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
 
           {/* Clean background behind hexagonal sectors */}
 
-          {/* 6 Hexagonal Wedge Sector Cards */}
+          {/* 6 Hexagonal Wedge Sector Cards with Synchronized Backward/Forward Animation */}
           {SECTORS_CONFIG.map((sector, idx) => {
             const review = getReviewForSlot(idx)
             const IconComp = sector.icon
@@ -332,20 +332,41 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
             const aEnd = sector.angle + 27
             const sectorD = createSectorPath(cx, cy, rIn, rOut, aStart, aEnd)
             const tabD = createTabPath(cx, cy, rOut, rTab, sector.angle, 22)
-            const tabLabelPos = polarToCartesian(cx, cy, (rOut + rTab) / 2 + 3, sector.angle)
+            const tabLabelPos = polarToCartesian(cx, cy, rOut + 26, sector.angle)
             const contentPos = polarToCartesian(cx, cy, rContent, sector.angle)
             const isHovered = hoveredIndex === idx
 
+            // Compute synchronized backward (outward) vector and forward (center) return
+            const rad = (sector.angle * Math.PI) / 180
+            const moveDistance = 25
+            const moveX = Math.cos(rad) * moveDistance
+            const moveY = Math.sin(rad) * moveDistance
+
             return (
-              <g
+              <motion.g
                 key={sector.num}
                 onMouseEnter={() => setHoveredIndex(idx)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                className="transition-transform duration-300 cursor-pointer"
-                style={{
-                  transformOrigin: `${cx}px ${cy}px`,
-                  transform: isHovered ? "scale(1.02)" : "scale(1)"
-                }}
+                animate={
+                  isHovered
+                    ? { x: moveX * 1.3, y: moveY * 1.3, scale: 1.04 }
+                    : {
+                        x: [0, moveX, moveX, 0],
+                        y: [0, moveY, moveY, 0]
+                      }
+                }
+                transition={
+                  isHovered
+                    ? { duration: 0.3, ease: "easeOut" }
+                    : {
+                        duration: 3.5,
+                        times: [0, 0.2, 0.77, 1.0],
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }
+                }
+                className="cursor-pointer"
+                style={{ transformOrigin: `${cx}px ${cy}px` }}
               >
                 {/* White Sector Body */}
                 <path
@@ -436,7 +457,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
                     </motion.div>
                   </div>
                 </foreignObject>
-              </g>
+              </motion.g>
             )
           })}
 
