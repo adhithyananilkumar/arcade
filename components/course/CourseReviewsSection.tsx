@@ -2,20 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  X,
-  Send,
-  Star,
-  Lightbulb,
-  Search,
-  Settings,
-  Target,
-  BarChart3,
-  DollarSign
-} from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, X, Send, Star } from "lucide-react"
 import { api } from "@/infrastructure/http/api"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { toast } from "sonner"
@@ -73,91 +60,88 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
   }
 ]
 
-// Geometry math helpers for exact SVG rendering
-function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: number) {
-  const rad = (angleInDegrees * Math.PI) / 180.0
-  return {
-    x: cx + r * Math.cos(rad),
-    y: cy + r * Math.sin(rad)
-  }
+{/* SVG Paper Cutout Top-Right Double Closing Quote Badge */}
+function TopRightQuoteSvg() {
+  return (
+    <svg width="52" height="46" viewBox="0 0 52 46" fill="none" className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.22)]">
+      <path
+        d="M9.5 38C4.5 38 0 32.5 0 23C0 9.5 10.5 1.5 22 0V9.5C14.5 11 11 16.5 11 22.5H22V38H9.5Z"
+        fill="#EFEFEF"
+      />
+      <path
+        d="M39.5 38C34.5 38 30 32.5 30 23C30 9.5 40.5 1.5 52 0V9.5C44.5 11 41 16.5 41 22.5H52V38H39.5Z"
+        fill="#EFEFEF"
+      />
+    </svg>
+  )
 }
 
-function createSectorPath(cx: number, cy: number, rIn: number, rOut: number, aStart: number, aEnd: number): string {
-  const p1 = polarToCartesian(cx, cy, rIn, aStart)
-  const p2 = polarToCartesian(cx, cy, rIn, aEnd)
-  const p3 = polarToCartesian(cx, cy, rOut, aEnd)
-  const p4 = polarToCartesian(cx, cy, rOut, aStart)
-
-  return [
-    `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
-    `A ${rIn} ${rIn} 0 0 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
-    `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
-    `A ${rOut} ${rOut} 0 0 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`,
-    `Z`
-  ].join(" ")
+{/* SVG Paper Cutout Bottom-Left Double Opening Quote Badge */}
+function BottomLeftQuoteSvg() {
+  return (
+    <svg width="52" height="46" viewBox="0 0 52 46" fill="none" className="drop-shadow-[0_8px_16px_rgba(0,0,0,0.22)]">
+      <path
+        d="M12.5 8C17.5 8 22 13.5 22 23C22 36.5 11.5 44.5 0 46V36.5C7.5 35 11 29.5 11 23.5H0V8H12.5Z"
+        fill="#EFEFEF"
+      />
+      <path
+        d="M42.5 8C47.5 8 52 13.5 52 23C52 36.5 41.5 44.5 30 46V36.5C37.5 35 41 29.5 41 23.5H30V8H42.5Z"
+        fill="#EFEFEF"
+      />
+    </svg>
+  )
 }
 
-function createTabPath(cx: number, cy: number, rOut: number, rTab: number, aCenter: number, spreadDeg: number = 22): string {
-  const aStart = aCenter - spreadDeg
-  const aEnd = aCenter + spreadDeg
-  const p1 = polarToCartesian(cx, cy, rOut - 4, aStart)
-  const pTip = polarToCartesian(cx, cy, rTab, aCenter)
-  const p2 = polarToCartesian(cx, cy, rOut - 4, aEnd)
-  const pCenter = polarToCartesian(cx, cy, rOut - 12, aCenter)
+{/* Individual Quote Card with Exact Reference Shape */}
+function ReferenceQuoteCard({ review }: { review: ReviewItem }) {
+  return (
+    <div className="relative w-full max-w-sm mx-auto my-4 select-none group">
+      {/* Card Base Container with Asymmetric Rounded Corners */}
+      <div className="relative min-h-[310px] w-full rounded-tl-[42px] rounded-br-[42px] rounded-tr-xl rounded-bl-xl bg-gradient-to-b from-[#F7F7F8] to-[#EDEDEF] p-8 sm:p-9 text-center border border-white/80 shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition-all duration-300 group-hover:shadow-[0_28px_60px_rgba(15,23,42,0.24)] group-hover:-translate-y-1 flex flex-col justify-between">
+        
+        {/* Top-Right Overlapping Vector Quote Badge */}
+        <div className="absolute -top-4 -right-4 z-20 pointer-events-none">
+          <TopRightQuoteSvg />
+        </div>
 
-  return [
-    `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
-    `L ${pTip.x.toFixed(2)} ${pTip.y.toFixed(2)}`,
-    `L ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
-    `Q ${pCenter.x.toFixed(2)} ${pCenter.y.toFixed(2)} ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
-    `Z`
-  ].join(" ")
+        {/* Bottom-Left Overlapping Vector Quote Badge */}
+        <div className="absolute -bottom-4 -left-4 z-20 pointer-events-none">
+          <BottomLeftQuoteSvg />
+        </div>
+
+        {/* Card Content Header */}
+        <div>
+          {/* HEADLINE */}
+          <h3 className="text-lg sm:text-xl font-black uppercase tracking-widest text-[#334155] mb-1">
+            {review.name}
+          </h3>
+
+          {/* Role & Star Rating */}
+          <div className="flex items-center justify-center gap-1.5 mb-5 text-[11.5px] font-semibold text-slate-500">
+            <span className="truncate">{review.role}</span>
+            <span className="text-slate-300">&bull;</span>
+            <div className="flex items-center gap-0.5">
+              {[...Array(review.rating || 5)].map((_, s) => (
+                <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+          </div>
+
+          {/* Quote Body */}
+          <p className="text-xs sm:text-sm font-normal leading-relaxed text-[#475569] px-1">
+            {review.quote}
+          </p>
+        </div>
+
+      </div>
+    </div>
+  )
 }
-
-const SECTORS_CONFIG = [
-  {
-    num: "01",
-    angle: -120, // Top-Left
-    color: "#00C4B4",
-    icon: Lightbulb
-  },
-  {
-    num: "02",
-    angle: 180, // Middle-Left
-    color: "#00A896",
-    icon: Search
-  },
-  {
-    num: "03",
-    angle: 120, // Bottom-Left
-    color: "#05668D",
-    icon: Settings
-  },
-  {
-    num: "04",
-    angle: 60, // Bottom-Right
-    color: "#1B4965",
-    icon: Target
-  },
-  {
-    num: "05",
-    angle: 0, // Middle-Right
-    color: "#0F4C5C",
-    icon: BarChart3
-  },
-  {
-    num: "06",
-    angle: -60, // Top-Right
-    color: "#0080A7",
-    icon: DollarSign
-  }
-]
 
 export default function CourseReviewsSection({ courseId = "intro-to-programming" }: { courseId?: string }) {
   const { user } = useAuthStore()
   const [reviews, setReviews] = useState<ReviewItem[]>(DEFAULT_REVIEWS)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [pageIndex, setPageIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newRating, setNewRating] = useState(5)
   const [newComment, setNewComment] = useState("")
@@ -187,23 +171,14 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       })
   }, [courseId])
 
-  // Auto cycle reviews
-  useEffect(() => {
-    if (reviews.length <= 1 || hoveredIndex !== null) return
-
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % reviews.length)
-    }, 4000)
-
-    return () => clearInterval(timer)
-  }, [reviews.length, hoveredIndex])
+  const totalPages = Math.ceil(reviews.length / 3)
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? reviews.length - 1 : prev - 1))
+    setPageIndex((prev) => (prev <= 0 ? totalPages - 1 : prev - 1))
   }
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % reviews.length)
+    setPageIndex((prev) => (prev + 1) % totalPages)
   }
 
   const handleSubmitReview = async (e: React.FormEvent) => {
@@ -235,7 +210,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
       toast.success("Review posted live!")
     } finally {
       setReviews((prev) => [newReviewItem, ...prev])
-      setCurrentIndex(0)
+      setPageIndex(0)
       setSubmitting(false)
       setIsModalOpen(false)
       setNewComment("")
@@ -244,247 +219,91 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
     }
   }
 
-  const getReviewForSlot = (slotIdx: number): ReviewItem => {
-    if (reviews.length === 0) return DEFAULT_REVIEWS[slotIdx % DEFAULT_REVIEWS.length]
-    return reviews[(currentIndex + slotIdx) % reviews.length]
-  }
-
-  const cx = 500
-  const cy = 410
-  const rIn = 115
-  const rOut = 285
-  const rTab = 338
-  const rContent = 200
+  // Get current 3 reviews to display
+  const startIndex = (pageIndex * 3) % reviews.length
+  const visibleReviews = [
+    reviews[startIndex % reviews.length],
+    reviews[(startIndex + 1) % reviews.length],
+    reviews[(startIndex + 2) % reviews.length]
+  ].filter(Boolean)
 
   return (
-    <section className="relative w-full py-12 px-4 bg-transparent overflow-hidden">
-      {/* Header Bar Controls */}
-      <div className="relative mx-auto max-w-5xl mb-4 flex items-center justify-end px-4">
+    <section className="relative w-full py-12 px-4 bg-transparent select-none">
+      {/* Top Controls Header */}
+      <div className="relative mx-auto max-w-6xl mb-8 flex items-center justify-between px-2">
+        <div className="flex flex-col items-start gap-0.5">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-[#00C4B4]">
+            Student Feedback
+          </span>
+          <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+            What Students Say
+          </h2>
+        </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-95 cursor-pointer"
             title="Write a Real-time Review"
           >
             <Plus size={14} className="text-[#00C4B4]" /> Add Review
           </button>
 
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handlePrev}
-              title="Previous reviews"
-              className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 active:scale-95 cursor-pointer"
-              aria-label="Previous reviews"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              onClick={handleNext}
-              title="Next reviews"
-              className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 active:scale-95 cursor-pointer"
-              aria-label="Next reviews"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handlePrev}
+                title="Previous reviews"
+                className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 active:scale-95 cursor-pointer"
+                aria-label="Previous reviews"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                onClick={handleNext}
+                title="Next reviews"
+                className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition-all hover:bg-slate-100 active:scale-95 cursor-pointer"
+                aria-label="Next reviews"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Infographics Wheel matching Reference Image */}
-      <div className="relative mx-auto max-w-5xl select-none">
-        <svg
-          viewBox="0 0 1000 820"
-          className="w-full h-auto drop-shadow-sm"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="6" stdDeviation="10" floodColor="#0F172A" floodOpacity="0.08" />
-            </filter>
-            <filter id="hubShadow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="8" stdDeviation="14" floodColor="#0F172A" floodOpacity="0.12" />
-            </filter>
+      {/* Grid of 3 Identical Reference Quote Cards */}
+      <div className="mx-auto max-w-6xl">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pageIndex}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"
+          >
+            {visibleReviews.map((rev, idx) => (
+              <ReferenceQuoteCard key={rev.id || `${rev.name}-${idx}`} review={rev} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
-            <linearGradient id="centerRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00C4B4" />
-              <stop offset="50%" stopColor="#0080A7" />
-              <stop offset="100%" stopColor="#0B2545" />
-            </linearGradient>
-          </defs>
-
-          {/* Clean background behind hexagonal sectors */}
-
-          {/* 6 Hexagonal Wedge Sector Cards with Synchronized Backward/Forward Animation */}
-          {SECTORS_CONFIG.map((sector, idx) => {
-            const review = getReviewForSlot(idx)
-            const IconComp = sector.icon
-            const aStart = sector.angle - 27
-            const aEnd = sector.angle + 27
-            const sectorD = createSectorPath(cx, cy, rIn, rOut, aStart, aEnd)
-            const tabD = createTabPath(cx, cy, rOut, rTab, sector.angle, 22)
-            const tabLabelPos = polarToCartesian(cx, cy, rOut + 26, sector.angle)
-            const contentPos = polarToCartesian(cx, cy, rContent, sector.angle)
-            const isHovered = hoveredIndex === idx
-
-            // Compute synchronized backward (outward) vector and forward (center) return
-            const rad = (sector.angle * Math.PI) / 180
-            const moveDistance = 25
-            const moveX = Math.cos(rad) * moveDistance
-            const moveY = Math.sin(rad) * moveDistance
-
-            return (
-              <motion.g
-                key={sector.num}
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                animate={
-                  isHovered
-                    ? { x: moveX * 1.3, y: moveY * 1.3, scale: 1.04 }
-                    : {
-                        x: [0, moveX, moveX, 0],
-                        y: [0, moveY, moveY, 0]
-                      }
-                }
-                transition={
-                  isHovered
-                    ? { duration: 0.3, ease: "easeOut" }
-                    : {
-                        duration: 3.5,
-                        times: [0, 0.2, 0.77, 1.0],
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }
-                }
-                className="cursor-pointer"
-                style={{ transformOrigin: `${cx}px ${cy}px` }}
-              >
-                {/* White Sector Body */}
-                <path
-                  d={sectorD}
-                  fill="#FFFFFF"
-                  stroke="#E2E8F0"
-                  strokeWidth="1.5"
-                  filter="url(#cardShadow)"
-                />
-
-                {/* Colored Outer Chevron Tab */}
-                <path
-                  d={tabD}
-                  fill={sector.color}
-                  filter="url(#cardShadow)"
-                />
-
-                {/* Number Badge Text on Outer Tab */}
-                <text
-                  x={tabLabelPos.x}
-                  y={tabLabelPos.y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill="#FFFFFF"
-                  fontSize="17"
-                  fontWeight="900"
-                  fontFamily="sans-serif"
-                  letterSpacing="0.02em"
-                >
-                  {sector.num}
-                </text>
-
-                {/* Content Inside ForeignObject */}
-                <foreignObject
-                  x={contentPos.x - 85}
-                  y={contentPos.y - 72}
-                  width={170}
-                  height={144}
-                  className="overflow-visible"
-                >
-                  <div className="flex h-full w-full flex-col items-center justify-center text-center px-2 py-1">
-                    {/* Icon */}
-                    <div
-                      className="mb-1.5 flex size-7 items-center justify-center rounded-full bg-slate-50 shadow-xs"
-                      style={{ color: sector.color }}
-                    >
-                      <IconComp size={18} strokeWidth={2.2} />
-                    </div>
-
-                    {/* Reviewer Name */}
-                    <motion.div
-                      key={review.id || review.name}
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex flex-col items-center w-full"
-                    >
-                      <h4
-                        className="w-full truncate text-[12px] font-extrabold uppercase tracking-wider text-slate-800"
-                        style={{ color: sector.color }}
-                      >
-                        {review.name}
-                      </h4>
-
-                      <span className="w-full truncate text-[10px] font-medium text-slate-500 mb-1">
-                        {review.role}
-                      </span>
-
-                      {/* Quote snippet */}
-                      <p
-                        className="text-[10.5px] font-normal leading-tight text-slate-600 px-1"
-                        style={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden"
-                        }}
-                      >
-                        &ldquo;{review.quote}&rdquo;
-                      </p>
-
-                      {/* Rating Stars */}
-                      <div className="mt-1 flex items-center justify-center gap-0.5">
-                        {[...Array(review.rating || 5)].map((_, s) => (
-                          <Star key={s} size={10} className="fill-amber-400 text-amber-400" />
-                        ))}
-                      </div>
-                    </motion.div>
-                  </div>
-                </foreignObject>
-              </motion.g>
-            )
-          })}
-
-          {/* Central Circular Hub matching Reference Image */}
-          <g filter="url(#hubShadow)">
-            {/* Outer connecting circle */}
-            <circle cx={cx} cy={cy} r={rIn} fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="6" />
-            {/* Inner accent ring */}
-            <circle cx={cx} cy={cy} r={rIn - 5} fill="none" stroke="url(#centerRingGrad)" strokeWidth="4" />
-
-            {/* Central REVIEWS Text */}
-            <text
-              x={cx}
-              y={cy - 6}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fill="#0F172A"
-              fontSize="17"
-              fontWeight="900"
-              fontFamily="sans-serif"
-              letterSpacing="0.22em"
-            >
-              REVIEWS
-            </text>
-
-            {/* 5 Accent Colored Squares below Center Title */}
-            <g transform={`translate(${cx - 24}, ${cy + 14})`}>
-              <rect x="0" y="0" width="7" height="7" rx="1.5" fill="#00C4B4" />
-              <rect x="10" y="0" width="7" height="7" rx="1.5" fill="#00A896" />
-              <rect x="20" y="0" width="7" height="7" rx="1.5" fill="#05668D" />
-              <rect x="30" y="0" width="7" height="7" rx="1.5" fill="#1B4965" />
-              <rect x="40" y="0" width="7" height="7" rx="1.5" fill="#0080A7" />
-            </g>
-          </g>
-        </svg>
+        {/* Page Dots Navigation */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-2">
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPageIndex(i)}
+                className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                  i === pageIndex ? "w-8 bg-[#00C4B4]" : "w-2.5 bg-slate-300 hover:bg-slate-400"
+                }`}
+                aria-label={`Go to page ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Real-time Review Submission Modal */}
@@ -572,4 +391,6 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
     </section>
   )
 }
+
+
 
