@@ -29,6 +29,7 @@ import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
+import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
