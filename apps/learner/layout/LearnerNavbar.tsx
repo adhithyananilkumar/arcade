@@ -10,7 +10,7 @@ import { ChannelStaffService, ChannelInvitation } from "@/domains/channels";
 import { useNotifications, NotificationList } from "@/domains/notifications";
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-import { channelService, useStudioAccess } from "@/domains/channels";
+import { channelService, useStudioAccess, Channel } from "@/domains/channels";
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
@@ -27,6 +27,7 @@ export default function LearnerNavbar() {
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
+  const [myChannels, setMyChannels] = useState<Channel[]>([]);
   
   // Intelligent header scroll behavior
   const { scrollY } = useScroll();
@@ -51,9 +52,17 @@ export default function LearnerNavbar() {
       channelService.getMyWorkspaces()
     ])
       .then(([channels, workspaces]) => {
-        setHasChannels(channels.length > 0 || workspaces.length > 0);
+        const map = new Map<string, Channel>();
+        (channels || []).forEach(c => map.set(c.id, c));
+        (workspaces || []).forEach(w => map.set(w.id, w));
+        const unique = Array.from(map.values());
+        setMyChannels(unique);
+        setHasChannels(unique.length > 0);
       })
-      .catch(() => setHasChannels(false));
+      .catch(() => {
+        setMyChannels([]);
+        setHasChannels(false);
+      });
   }, []);
 
   const fetchInvitations = async () => {
@@ -283,7 +292,13 @@ export default function LearnerNavbar() {
             {hasChannels && (
               <MenuItem 
                 icon={<Tv className="text-[#FF6B4A]" strokeWidth={2} />} 
-                onClick={() => router.push('/manage-channels')} 
+                onClick={() => {
+                  if (myChannels.length === 1) {
+                    router.push(`/channels/${myChannels[0].id}/manage`);
+                  } else {
+                    router.push('/manage-channels');
+                  }
+                }} 
               >
                 My Channel
               </MenuItem>

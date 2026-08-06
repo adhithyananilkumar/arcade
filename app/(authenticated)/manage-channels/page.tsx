@@ -1,9 +1,44 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { MyChannels } from '@/apps/learner/components/channels/MyChannels';
+import { channelService, Channel } from '@/domains/channels';
 
 export default function ManageChannelsPage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      channelService.getMyChannels(),
+      channelService.getMyWorkspaces(),
+    ])
+      .then(([owned, workspaces]) => {
+        const map = new Map<string, Channel>();
+        (owned || []).forEach((c) => map.set(c.id, c));
+        (workspaces || []).forEach((w) => map.set(w.id, w));
+        const unique = Array.from(map.values());
+        if (unique.length === 1) {
+          router.replace(`/channels/${unique[0].id}/manage`);
+        } else {
+          setChecking(false);
+        }
+      })
+      .catch(() => {
+        setChecking(false);
+      });
+  }, [router]);
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 text-xs font-semibold text-slate-400">
+        Loading channels…
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative min-h-screen w-full"

@@ -9,7 +9,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { useState, useEffect } from 'react';
-import { channelService, useStudioAccess } from "@/domains/channels";
+import { channelService, useStudioAccess, Channel } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
@@ -22,6 +22,7 @@ export default function LearnerSidebar() {
   const { user } = useAuthStore();
   const { hasPermission } = usePermissions();
   const [hasChannels, setHasChannels] = useState(false);
+  const [myChannels, setMyChannels] = useState<Channel[]>([]);
   const { hasAccess: hasStudioAccess } = useStudioAccess();
 
   useEffect(() => {
@@ -30,9 +31,17 @@ export default function LearnerSidebar() {
       channelService.getMyWorkspaces()
     ])
       .then(([channels, workspaces]) => {
-        setHasChannels(channels.length > 0 || workspaces.length > 0);
+        const map = new Map<string, Channel>();
+        (channels || []).forEach(c => map.set(c.id, c));
+        (workspaces || []).forEach(w => map.set(w.id, w));
+        const unique = Array.from(map.values());
+        setMyChannels(unique);
+        setHasChannels(unique.length > 0);
       })
-      .catch(() => setHasChannels(false));
+      .catch(() => {
+        setMyChannels([]);
+        setHasChannels(false);
+      });
   }, []);
 
   const showAdminChannels = AuthorizationService.canManageChannels(user);
@@ -49,7 +58,11 @@ export default function LearnerSidebar() {
       { name: 'Content Studio', href: '/studio', icon: BookOpen },
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
-    ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),
+    ...(hasChannels ? [{
+      name: 'Manage Channels',
+      href: myChannels.length === 1 ? `/channels/${myChannels[0].id}/manage` : '/manage-channels',
+      icon: Tv
+    }] : []),
     { name: 'Settings', href: '/settings', icon: Settings },
     ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])
   ];
