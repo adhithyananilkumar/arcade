@@ -324,13 +324,13 @@ export default function SingleWorkshopDashboard() {
 
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
                 <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Recent Activity</h2>
-                <div className="relative border-l border-zinc-200 dark:border-zinc-700 ml-3 space-y-4 pb-2">
+                <div className="relative border-l-2 border-violet-100 dark:border-violet-950/60 ml-3.5 space-y-6 pb-2">
                   {summary.recentActivity.map((log, idx) => (
                     <div key={idx} className="relative pl-6">
-                      <div className="absolute -left-1.5 mt-1.5 w-3 h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full border-2 border-white dark:border-zinc-900" />
-                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{log.action}</div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{log.description}</div>
-                      <div className="text-xs text-zinc-400 dark:text-zinc-500">
+                      <div className="absolute -left-[5px] mt-1 w-2.5 h-2.5 bg-violet-600 rounded-full" />
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">{log.action}</div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{log.description}</div>
+                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
                         {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(log.timestamp))}
                       </div>
                     </div>
