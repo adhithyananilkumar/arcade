@@ -19,9 +19,8 @@ export default function ReviewDetailPage() {
   const reviewId = params?.id as string;
   const { user } = useAuthStore();
 
-  if (!AuthorizationService.canReviewContent(user)) {
-    notFound();
-  }
+  // We removed the early notFound() check because channel-level permissions
+  // aren't in the global user token. The backend will enforce access via 403.
 
   const [review, setReview] = useState<ReviewResponse | null>(null);
   const [timeline, setTimeline] = useState<ReviewEventResponse[]>([]);
@@ -39,7 +38,8 @@ export default function ReviewDetailPage() {
         setReview(r);
         setTimeline(t);
         if (r.contentType === "COURSE") {
-          router.replace(`/studio/published/${r.contentId}`);
+          // Do not redirect so the user can see the review page and buttons.
+          // They can preview the course using a 'Preview' link instead.
         }
       })
       .catch(() => setError("Could not load review"))
@@ -55,7 +55,14 @@ export default function ReviewDetailPage() {
 
   const submitDecision = async () => {
     if (!review || !dialog) return;
-    if (dialog === "changes" && !reason.trim()) return;
+    if (dialog === "changes" && !reason.trim()) {
+      toast.error("Please provide a reason for requesting changes.");
+      return;
+    }
+    if (dialog === "approve" && !note.trim()) {
+      toast.error("Please provide an approval note.");
+      return;
+    }
 
     setBusy(true);
     try {
@@ -87,9 +94,7 @@ export default function ReviewDetailPage() {
     return <p className="text-rose-600">{error ?? "Not found"}</p>;
   }
 
-  if (review.contentType === "COURSE") {
-    return null;
-  }
+  // Removed check that returned null for COURSE so we render the review page
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -104,37 +109,75 @@ export default function ReviewDetailPage() {
         <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           {review.contentType}
         </div>
-        <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
-          Review · Round {review.currentRound}
-        </h1>
-        <p className="mt-1 text-[13px] font-medium text-slate-500">Status: {review.status}</p>
+        {(() => {
+          const role = review.tier === 'GLOBAL' ? 'Superuser' : 'Org Head';
+          let text = review.status;
+          let colorClass = 'bg-slate-100 text-slate-800';
+          if (review.status === 'OPEN') {
+            text = `Pending by ${role}`;
+            colorClass = 'bg-amber-100 text-amber-800';
+          } else if (review.status === 'APPROVED') {
+            text = `Approved by ${role}`;
+            colorClass = 'bg-emerald-100 text-emerald-800';
+          } else if (review.status === 'CHANGES_REQUESTED') {
+            text = `Rejected by ${role}`;
+            colorClass = 'bg-rose-100 text-rose-800';
+          }
+
+          return (
+            <div className="flex items-center justify-between">
+              <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
+                Review · Round {review.currentRound}
+              </h1>
+              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${colorClass}`}>
+                {text}
+              </span>
+            </div>
+          );
+        })()}
         <p className="mt-1 font-mono text-[11px] text-slate-400">{review.contentId}</p>
 
+        <div className="mt-4">
+          <Link
+            href={`/studio/published/${review.contentId}`}
+            target="_blank"
+            className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            Preview {review.contentType.toLowerCase()} content ↗
+          </Link>
+        </div>
+
         {review.status === "OPEN" && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setNote("");
-                setDialog("approve");
-              }}
-              className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-[#232735] disabled:opacity-50"
-            >
-              Approve & Publish
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                setReason("");
-                setDialog("changes");
-              }}
-              className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
-            >
-              Request Changes
-            </button>
-          </div>
+          review.tier === 'GLOBAL' && (!user || !AuthorizationService.hasPermission(user, 'platform.review.manage')) ? (
+            <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
+              Course approved at Org level and sent for Superuser review.
+            </div>
+          ) : (
+            <div className="mt-6 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setNote("");
+                  setDialog("approve");
+                }}
+                className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-[#232735] disabled:opacity-50"
+              >
+                {review.tier === 'ORG' ? 'Approve' : 'Approve & Publish'}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setReason("");
+                  setDialog("changes");
+                }}
+                className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
+              >
+                {review.tier === 'ORG' ? 'Reject' : 'Request Changes'}
+              </button>
+            </div>
+          )
         )}
       </header>
 
@@ -143,7 +186,7 @@ export default function ReviewDetailPage() {
           Timeline
         </h2>
         <ol className="space-y-3">
-          {timeline.map((e) => (
+          {[...timeline].reverse().map((e) => (
             <li key={e.id} className="flex gap-3 text-[13px]">
               <span className="w-8 shrink-0 font-mono text-[11px] text-slate-400">
                 #{e.sequenceNumber}
@@ -170,7 +213,7 @@ export default function ReviewDetailPage() {
                 </h2>
                 <p className="mt-0.5 text-[12px] font-medium text-slate-500">
                   {dialog === "approve"
-                    ? "Optional note for the audit log."
+                    ? "Required note for the audit log."
                     : "Tell the author what needs to change."}
                 </p>
               </div>
@@ -190,7 +233,7 @@ export default function ReviewDetailPage() {
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={4}
-                  placeholder="Approval notes (optional)…"
+                  placeholder="Approval notes (required)…"
                   className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:bg-white focus:ring-4 focus:ring-slate-200/70"
                 />
               ) : (

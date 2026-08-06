@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Channel,
   ChannelContentItem,
   ChannelDeletionRequestDto,
   channelService,
 } from '@/domains/channels';
+import { platformReviewApi } from '@/domains/publishing';
 import { toast } from 'sonner';
 import {
   Home,
@@ -23,12 +25,13 @@ import {
   Activity,
   ShieldAlert,
   Loader2,
+  Video,
+  Upload,
 } from 'lucide-react';
 
 import { OrganizationHeader } from './components/OrganizationHeader';
 import { SmallCourseOverview } from './components/SmallCourseOverview';
 import { CourseManagementSection } from './components/CourseManagementSection';
-import { StaffManagementSection } from './components/StaffManagementSection';
 import { ArticlesManagementSection } from './components/ArticlesManagementSection';
 import { EventsManagementSection } from './components/EventsManagementSection';
 import { ReviewsFeedbackSection } from './components/ReviewsFeedbackSection';
@@ -36,6 +39,7 @@ import { OrganizationAnalyticsSection } from './components/OrganizationAnalytics
 import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 
+import { ChannelStaffManager } from './ChannelStaffManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
@@ -49,6 +53,8 @@ type ManageTab =
   | 'ANALYTICS'
   | 'ACTIVITY'
   | 'DANGER';
+
+type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
 
 export default function ManageChannelPage() {
   const params = useParams();
@@ -64,6 +70,8 @@ export default function ManageChannelPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
+  const [channelReviews, setChannelReviews] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (channelId) fetchChannel();
@@ -101,6 +109,50 @@ export default function ManageChannelPage() {
       setLoading(false);
     }
   };
+
+  const stats = useMemo(() => {
+    const published = content.filter((c) => c.status?.toUpperCase() === 'PUBLISHED').length;
+    const drafts = content.filter((c) => c.status?.toUpperCase() === 'DRAFT').length;
+    const inReview = content.filter((c) => c.status?.toUpperCase() === 'SUBMITTED').length;
+    return {
+      total: content.length,
+      published,
+      drafts,
+      inReview,
+    };
+  }, [content]);
+
+  const filteredContent = useMemo(() => {
+    if (contentFilter === 'ALL') return content;
+    return content.filter((c) => c.status?.toUpperCase() === contentFilter);
+  }, [content, contentFilter]);
+
+  const recentContent = useMemo(
+    () =>
+      [...content]
+        .filter((c) => c.status?.toUpperCase() === 'PUBLISHED')
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 6),
+    [content],
+  );
+
+  const canReviewChannelContent =
+    permissions.includes('ALL') ||
+    permissions.includes('channel.content.review');
+
+  useEffect(() => {
+    if (canReviewChannelContent) {
+      platformReviewApi.list({ channelId }).then(items => {
+        const reviewMap: Record<string, string> = {};
+        items.forEach(i => {
+           if (i.status === 'OPEN') {
+             reviewMap[i.contentId] = i.id;
+           }
+        });
+        setChannelReviews(reviewMap);
+      }).catch(console.error);
+    }
+  }, [channelId, canReviewChannelContent]);
 
   if (loading) {
     return (
@@ -142,12 +194,12 @@ export default function ManageChannelPage() {
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
       }}
     >
-      {/* Floating Horizontal Bottom Dock Navigation Bar (Matching Screenshot 2) */}
+      {/* Floating Horizontal Bottom Dock Navigation Bar */}
       <nav
         aria-label="Floating Organization Navigation Dock"
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
       >
-        {/* 1. Home Icon Button (Redirects to Home) */}
+        {/* 1. Home Icon Button */}
         <div className="relative group shrink-0">
           <button
             type="button"
@@ -203,7 +255,6 @@ export default function ManageChannelPage() {
                     {tab.badge}
                   </span>
                 )}
-                {/* Downward Pointer Triangle */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-6 border-t-[#14142b]" />
               </div>
             </div>
@@ -267,23 +318,36 @@ export default function ManageChannelPage() {
             />
           )}
 
-          {/* INDIVIDUAL MODULE TABS */}
+          {/* TAB 2: COURSES */}
           {activeTab === 'COURSES' && (
             <CourseManagementSection onAddCourse={() => router.push('/studio')} />
           )}
 
-          {activeTab === 'STAFF' && <StaffManagementSection />}
+          {/* TAB 3: STAFF */}
+          {activeTab === 'STAFF' && (
+            <ChannelStaffManager
+              channelId={channelId}
+              permissions={permissions}
+              isSuspended={isSuspended}
+            />
+          )}
 
+          {/* TAB 4: ARTICLES */}
           {activeTab === 'ARTICLES' && <ArticlesManagementSection />}
 
+          {/* TAB 5: EVENTS */}
           {activeTab === 'EVENTS' && <EventsManagementSection />}
 
+          {/* TAB 6: REVIEWS */}
           {activeTab === 'REVIEWS' && <ReviewsFeedbackSection />}
 
+          {/* TAB 7: ANALYTICS */}
           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
 
+          {/* TAB 8: ACTIVITY */}
           {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
 
+          {/* TAB 9: DANGER ZONE */}
           {activeTab === 'DANGER' && isOwner && (
             <ChannelDangerZone channel={channel} />
           )}
@@ -298,5 +362,119 @@ export default function ManageChannelPage() {
         onUpdate={(updated) => setChannel(updated)}
       />
     </div>
+  );
+}
+
+function editHref(item: ChannelContentItem) {
+  if (item.type === 'COURSE') return `/studio/courses/${item.id}`;
+  if (item.type === 'ROADMAP') return `/studio/roadmaps/${item.id}`;
+  return `/studio`;
+}
+
+function statusTone(status: string) {
+  switch (status?.toUpperCase()) {
+    case 'PUBLISHED':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    case 'DRAFT':
+      return 'border-amber-200 bg-amber-50 text-amber-700';
+    case 'SUBMITTED':
+      return 'border-sky-200 bg-sky-50 text-sky-700';
+    default:
+      return 'border-slate-200 bg-slate-50 text-slate-700';
+  }
+}
+
+function TypeIcon({ type }: { type: string }) {
+  if (type === 'COURSE') return <BookOpen size={18} />;
+  if (type === 'ROADMAP') return <FileText size={18} />;
+  return <Video size={18} />;
+}
+
+function ContentRow({
+  item,
+  last,
+  reviewHref,
+  canReview,
+}: {
+  item: ChannelContentItem;
+  last?: boolean;
+  reviewHref?: string;
+  canReview?: boolean;
+}) {
+  return (
+    <li
+      className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${
+        last ? '' : 'border-b border-slate-100'
+      }`}
+    >
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-500">
+        {item.coverImageUrl ? (
+          <img src={item.coverImageUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <TypeIcon type={item.type} />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-bold text-[#14142b]">{item.title}</p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-400">
+          <span className="uppercase tracking-wide">{item.type}</span>
+          <span
+            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${statusTone(
+              item.status,
+            )}`}
+          >
+            {item.status}
+          </span>
+          <span>
+            Edited{' '}
+            {new Date(item.updatedAt).toLocaleString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+            {item.authorUsername ? (
+              <>
+                {' by '}
+                <Link
+                  href={`/${item.authorUsername}`}
+                  className="hover:underline font-semibold hover:text-blue-600"
+                >
+                  @{item.authorUsername}
+                </Link>
+              </>
+            ) : item.authorName ? (
+              ` by ${item.authorName}`
+            ) : (
+              ''
+            )}
+          </span>
+        </p>
+      </div>
+      {(() => {
+        if (item.status === 'SUBMITTED') {
+          if (canReview) {
+            return (
+              <Link
+                href={reviewHref || editHref(item)}
+                className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+              >
+                {reviewHref ? 'Review' : 'Open'}
+              </Link>
+            );
+          } else {
+            return null;
+          }
+        }
+        return (
+          <Link
+            href={editHref(item)}
+            className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+          >
+            Open
+          </Link>
+        );
+      })()}
+    </li>
   );
 }

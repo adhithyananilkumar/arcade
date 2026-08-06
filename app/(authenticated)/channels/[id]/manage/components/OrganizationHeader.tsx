@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   CheckCircle2,
   Calendar,
@@ -50,6 +51,7 @@ interface OrganizationHeaderProps {
     createdAt: string;
     ownerName: string;
     ownerEmail?: string;
+    ownerUsername?: string;
   };
   onEditClick: () => void;
   onViewPublicClick: () => void;
@@ -139,8 +141,16 @@ export function OrganizationHeader({
               <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
                 <span className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/90 px-3 py-1.5 text-xs font-extrabold text-indigo-700 shadow-2xs">
                   <Building2 size={13} className="text-indigo-600" />
-                  <span>Organizational Channel</span>
+                  <span>{channel.isPersonal ? 'Personal Channel' : 'Organizational Channel'}</span>
                 </span>
+
+                {channel.ownerUsername ? (
+                  <Link href={`/${channel.ownerUsername}`} className="hover:underline font-bold text-indigo-600">
+                    @{channel.ownerUsername}
+                  </Link>
+                ) : channel.ownerName ? (
+                  <span className="font-semibold text-slate-600">{channel.ownerName}</span>
+                ) : null}
 
                 <span className="inline-flex items-center gap-1.5 text-slate-500">
                   <Calendar size={13} />
