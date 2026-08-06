@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/channels";
 import { UserService } from "@/domains/identity";
 import { Role, roleService } from "@/domains/identity";
@@ -274,7 +275,15 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
                         <p className="text-sm font-bold text-gray-900">
                           {member.userName} {isSelf && <span className="text-gray-400 font-normal">(You)</span>}
                         </p>
-                        <p className="text-xs text-gray-500">{member.email}</p>
+                        <p className="text-xs text-gray-500">
+                          {member.username ? (
+                            <Link href={`/${member.username}`} className="hover:underline text-indigo-600">
+                              @{member.username}
+                            </Link>
+                          ) : (
+                            member.email
+                          )}
+                        </p>
                       </div>
                     </div>
                   </TableCell>

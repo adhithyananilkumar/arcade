@@ -1376,16 +1376,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={askSubmit}
-                disabled={
-                  contentType !== "workshop" &&
-                  !hasDraftChanges &&
-                  (status === "PUBLISHED" || status === "APPROVED" || status === "DRAFT")
-                }
-                title={
-                  contentType !== "workshop" && !hasDraftChanges && status !== "REJECTED"
-                    ? "No new changes to submit"
-                    : ""
-                }
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={14} />

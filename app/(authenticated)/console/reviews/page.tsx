@@ -213,7 +213,16 @@ export default function PlatformReviewsPage() {
                 </div>
                 <p className="mt-1 truncate text-[14px] font-bold text-[#14142b]">{item.title}</p>
                 <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400">
-                  {item.channelName || "—"} · {item.ownerName || "—"} · R{item.reviewRound} ·{" "}
+                  {item.channelId && item.channelName ? (
+                    <Link href={`/channels/${item.channelId}`} className="hover:underline font-semibold hover:text-blue-600">
+                      {item.channelName}
+                    </Link>
+                  ) : "—"} ·{" "}
+                  {item.ownerUsername ? (
+                    <Link href={`/${item.ownerUsername}`} className="hover:underline font-semibold hover:text-blue-600">
+                      @{item.ownerUsername}
+                    </Link>
+                  ) : item.ownerName || "—"} · R{item.reviewRound} ·{" "}
                   {new Date(item.submittedAt).toLocaleDateString()}
                 </p>
               </div>

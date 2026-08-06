@@ -40,13 +40,18 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [saving, setSaving] = useState(false);
-  const canManageStaff = userPermissions.includes('ALL') || userPermissions.includes('channel.staff.manage');
+  const canManageRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.roles.manage');
+  const canViewRoles = canManageRoles || userPermissions.includes('channel.staff.manage');
 
   useEffect(() => {
     fetchData();
   }, [channelId]);
 
   const fetchData = async () => {
+    if (!canViewRoles) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const rolesData = await roleService.getChannelRoles(channelId);
@@ -110,6 +115,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
     setEditingRole(null);
   };
 
+
   if (loading) {
     return (
       <div className="space-y-3 mt-8 pt-8 border-t border-gray-200">
@@ -122,7 +128,32 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
   return (
     <div className="space-y-6 mt-8 pt-8 border-t border-gray-200">
-      <div className="flex justify-between items-center">
+      {!canManageRoles && (
+        <Card className="border-indigo-100 shadow-sm bg-indigo-50/10 mb-8">
+          <CardHeader>
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="text-indigo-600" size={20} />
+              Your Permissions
+            </h3>
+            <p className="text-sm text-gray-500">Here are the permissions you have been granted in this channel.</p>
+          </CardHeader>
+          <CardContent>
+            {userPermissions.length > 0 ? (
+              <ul className="list-disc pl-5 space-y-1.5 text-sm text-gray-700">
+                {userPermissions.map((perm) => (
+                  <li key={perm} className="capitalize">{formatPermissionKey(perm)}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 italic">No specific permissions assigned.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {canViewRoles && (
+        <>
+          <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <Shield className="text-indigo-600" size={20} />
@@ -130,7 +161,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
           </h3>
           <p className="text-sm text-gray-500">Create custom roles with specific permissions for your channel staff.</p>
         </div>
-        {canManageStaff && (
+        {canManageRoles && (
           <Button onClick={() => setIsModalOpen(true)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : undefined}>
             <Plus size={16} /> Create Role
           </Button>
@@ -155,7 +186,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                   <p className="text-sm text-gray-500 mt-1">{role.description || 'No description provided.'}</p>
                 </div>
 
-                {!role.systemRole && canManageStaff && (
+                {!role.systemRole && canManageRoles && (
                   <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'}>
                       <Edit3 size={16} />
@@ -183,7 +214,9 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
             </CardContent>
           </Card>
         ))}
-      </div>
+          </div>
+        </>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
