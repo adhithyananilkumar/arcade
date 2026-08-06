@@ -44,15 +44,24 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
   useEffect(() => {
     fetchData();
-  }, [channelId]);
+  }, [channelId, canManageStaff]);
 
   const fetchData = async () => {
+    if (!canManageStaff) {
+      setLoading(false);
+      setRoles([]);
+      return;
+    }
     try {
       setLoading(true);
       const rolesData = await roleService.getChannelRoles(channelId);
-      setRoles(rolesData);
-    } catch (error) {
-      toast.error('Failed to load roles');
+      setRoles(rolesData || []);
+    } catch (error: any) {
+      if (error?.status === 403 || error?.message?.includes('403')) {
+        setRoles([]);
+      } else {
+        toast.error('Failed to load roles');
+      }
     } finally {
       setLoading(false);
     }

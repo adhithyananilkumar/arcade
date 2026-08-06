@@ -27,7 +27,7 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
   const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
@@ -265,7 +265,13 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">
             <button 
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={() => {
+                const next = !isNotificationsOpen;
+                setIsNotificationsOpen(next);
+                if (next) {
+                  refresh();
+                }
+              }}
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
               title="Notifications"
             >
@@ -358,7 +364,8 @@ export default function LearnerNavbar() {
                     <NotificationList
                       notifications={notifications}
                       onItemClick={() => setIsNotificationsOpen(false)}
-                      emptyMessage={(invitations.length > 0 || pendingAdminTasks.length > 0) ? undefined : 'No new notifications'}
+                      onNotificationAction={refresh}
+                      emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
                   </div>
                 </div>
