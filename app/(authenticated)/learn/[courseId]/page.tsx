@@ -32,6 +32,7 @@ import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
+import { AnimatedList } from "@/components/ui/AnimatedList"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -544,7 +545,36 @@ function CourseTabs() {
       </div>
 
       <div key={tab} className="arcade-fade mt-10">
-        {tab === "Overview" && <InteractiveBookSpread highlights={HIGHLIGHTS} />}
+        {tab === "Overview" && (
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+            <div>
+              <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
+                This course treats design as a craft you build in public — every module ends with a real
+                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
+                just a certificate.
+              </p>
+            </div>
+            <div className="md:pl-8 lg:pl-12">
+              <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
+              <div className="mt-4">
+                <AnimatedList
+                  items={HIGHLIGHTS}
+                  showGradients={false}
+                  displayScrollbar={false}
+                  renderItem={(h) => (
+                    <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
+                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                        <Check size={13} className="text-teal" />
+                      </span>
+                      <span>{h}</span>
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {tab === "Syllabus" && (
           <div className="mx-auto max-w-3xl">
@@ -766,45 +796,6 @@ function ReviewsBlock() {
   )
 }
 
-/* ------------------------------------------------------------------ */
-/*  Enroll CTA                                                         */
-/* ------------------------------------------------------------------ */
-
-function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
-  return (
-    <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
-      <FlowerMark
-        size={120}
-        color="rgba(255,255,255,0.06)"
-        className="arcade-spin pointer-events-none absolute -right-8 -top-8"
-      />
-      <h2 className="mx-auto max-w-2xl font-serif text-3xl font-light leading-tight text-paper text-balance sm:text-4xl">
-        Light the path to your next <span className="italic text-amber">design role.</span>
-      </h2>
-      <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
-        Join 12,480 builders learning to design interfaces people actually love — with feedback from working
-        designers.
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        {isEnrolled ? (
-          <Link
-            href={`/learn/${courseId}/learn`}
-            className="flex h-12 items-center gap-2 rounded-full bg-white px-8 font-semibold text-ink transition-all hover:bg-white/90"
-          >
-            <Check size={18} /> Go to course
-          </Link>
-        ) : (
-          <EnrollButton onClick={onEnroll}>
-            {isEnrolling ? "Enrolling..." : "Enroll now"}
-          </EnrollButton>
-        )}
-        <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
-          See how it works →
-        </button>
-      </div>
-    </section>
-  )
-}
 
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
@@ -929,9 +920,6 @@ export default function CoursePage() {
         <CourseTabs />
         <div className="mt-20">
           <ReviewsBlock />
-        </div>
-        <div className="mt-16">
-          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
         </div>
       </div>
     </main>
