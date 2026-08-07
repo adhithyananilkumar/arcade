@@ -590,8 +590,8 @@ function CourseTabs() {
                       className="flex w-full items-center gap-4 px-5 py-4 text-left"
                     >
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper shadow-xs"
-                        style={{ background: m.accent }}
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
+                        style={{ color: m.accent, borderColor: borderColor }}
                       >
                         {idx + 1}
                       </span>
