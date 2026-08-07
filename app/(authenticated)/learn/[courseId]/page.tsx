@@ -34,6 +34,7 @@ import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
 import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
 import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
+import FoldText from "@/components/ui/FoldText"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -719,7 +720,19 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
             <CourseBadge type={badgeInfo.type} />
             <div>
-              <h3 className="font-serif text-2xl font-light text-ink">Earn the {badgeInfo.title}</h3>
+              <h3 className="font-serif text-2xl font-light text-ink">
+                <FoldText
+                  text={`Earn the ${badgeInfo.title}`}
+                  splitBy="char"
+                  hinge="top"
+                  trigger="mount"
+                  duration={0.65}
+                  stagger={0.03}
+                  fontSize="inherit"
+                  fontWeight="inherit"
+                  color="currentColor"
+                />
+              </h3>
               <p className="mt-3 text-[15px] leading-relaxed text-subtle">
                 Master the core principles and practical skills of this curriculum with real feedback from working product designers. Finish all four core modules and your final case study to unlock the exclusive <span className="font-semibold text-ink">{badgeInfo.badgeName}</span> badge on your profile alongside an official verifiable certificate of completion.
               </p>
