@@ -264,317 +264,348 @@ export function OrganizationAnalyticsSection() {
             </div>
           </div>
 
-        <div className="flex items-center gap-1.5 rounded-2xl bg-slate-100/90 p-1.5 text-xs font-bold">
-          {(['7D', '30D', '90D', '1Y'] as const).map((tf) => (
-            <button
-              key={tf}
-              type="button"
-              onClick={() => {
-                setTimeframe(tf);
-                setHoverIdx(null);
-              }}
-              className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${
-                timeframe === tf
-                  ? 'bg-white text-indigo-600 shadow-2xs font-extrabold scale-[1.02]'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              {tf}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-slate-50/80 px-5 py-3.5 border border-slate-200/60">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-black">
-            <TrendingUp size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-extrabold text-[#14142b]">
-              {activeData.summaryHeadline}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={timeframe}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.2 }}
-          className="grid grid-cols-2 gap-6 sm:grid-cols-4 py-2 border-b border-slate-100"
-        >
-          <div className="space-y-1">
-            <p className="text-xs font-bold text-slate-400">Enrollments</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-[#14142b]">{activeData.enrollments}</span>
-            </div>
-          </div>
-
-          <div className="space-y-1 border-l border-slate-100 sm:pl-6">
-            <p className="text-xs font-bold text-slate-400">Average Rating</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-[#14142b]">{activeData.rating}</span>
-              <span className="text-xs font-semibold text-slate-400">{activeData.reviewsCount}</span>
-            </div>
-          </div>
-
-          <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
-            <p className="text-xs font-bold text-slate-400">Completion Rate</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-[#14142b]">{activeData.completionRate}</span>
-              <span className="text-xs font-extrabold text-indigo-600">Top Tier</span>
-            </div>
-          </div>
-
-          <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
-            <p className="text-xs font-bold text-slate-400">Estimated Revenue</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-[#14142b]">{activeData.revenue}</span>
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 pt-1">
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-[#14142b]">
-              Enrollments • {activeData.timeframeLabel}
-            </h3>
-          </div>
-
-          <div className="relative h-52 w-full pt-3">
-            <svg
-              className="h-full w-full overflow-visible"
-              viewBox="0 0 540 150"
-              onMouseLeave={() => setHoverIdx(null)}
-            >
-              <defs>
-                <linearGradient id="ytStudioGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              <line x1="0" y1="35" x2="540" y2="35" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
-              <line x1="0" y1="75" x2="540" y2="75" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
-              <line x1="0" y1="115" x2="540" y2="115" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
-              <path
-                fill="url(#ytStudioGrad)"
-                d={svgChart.smoothArea}
-                className="transition-all duration-300 ease-out"
-              />
-              <path
-                fill="none"
-                stroke="#2563eb"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d={svgChart.smoothLine}
-                className="transition-all duration-300 ease-out"
-              />
-              {svgChart.coords.map((c, i) => (
-                <g key={i} className="cursor-pointer" onMouseEnter={() => setHoverIdx(i)}>
-                  <circle
-                    cx={c.x}
-                    cy={c.y}
-                    r={hoverIdx === i ? '6' : '4'}
-                    fill={hoverIdx === i ? '#2563eb' : '#3b82f6'}
-                    stroke="#FFFFFF"
-                    strokeWidth="2"
-                    className="transition-all duration-200"
-                  />
-                  {hoverIdx === i && (
-                    <line
-                      x1={c.x}
-                      y1="0"
-                      x2={c.x}
-                      y2="150"
-                      stroke="#2563eb"
-                      strokeDasharray="3 3"
-                      strokeWidth="1.5"
-                    />
-                  )}
-                </g>
-              ))}
-            </svg>
-
-            {hoverIdx !== null && svgChart.coords[hoverIdx] && (
-              <div
-                className="absolute z-30 pointer-events-none bg-[#14142b]/95 border border-slate-700/60 text-white px-3 py-2 rounded-xl text-xs shadow-xl backdrop-blur-md whitespace-nowrap transition-all duration-150"
-                style={{
-                  left: `${(svgChart.coords[hoverIdx].x / 540) * 100}%`,
-                  top: `${(svgChart.coords[hoverIdx].y / 150) * 100}%`,
-                  transform:
-                    hoverIdx === 0
-                      ? 'translate(0%, -125%)'
-                      : hoverIdx === svgChart.coords.length - 1
-                      ? 'translate(-100%, -125%)'
-                      : 'translate(-50%, -125%)',
+          <div className="flex items-center gap-1.5 rounded-2xl bg-slate-100/90 p-1.5 text-xs font-bold">
+            {(['7D', '30D', '90D', '1Y'] as const).map((tf) => (
+              <button
+                key={tf}
+                type="button"
+                onClick={() => {
+                  setTimeframe(tf);
+                  setHoverIdx(null);
                 }}
+                className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${timeframe === tf
+                    ? 'bg-white text-indigo-600 shadow-2xs font-extrabold scale-[1.02]'
+                    : 'text-slate-500 hover:text-slate-900'
+                  }`}
               >
-                <span className="font-extrabold text-indigo-300 block">
-                  {svgChart.coords[hoverIdx].pt.toLocaleString()} enrollments
-                </span>
-                <span className="text-[10px] text-slate-300 font-semibold block mt-0.5">
-                  {activeData.labels[hoverIdx]}
-                </span>
-              </div>
-            )}
-
-            <div className="mt-3 flex justify-between text-xs font-bold text-slate-400">
-              {activeData.labels.map((lbl) => (
-                <span key={lbl}>{lbl}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-[#14142b]">Category Distribution</h3>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-slate-400 mr-1">
-                {categoryPage + 1}/{totalCategoryPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setCategoryPage((p) => Math.max(0, p - 1))}
-                disabled={categoryPage === 0}
-                className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
-                title="Previous Category Page"
-              >
-                <ChevronLeft size={13} />
+                {tf}
               </button>
-              <button
-                type="button"
-                onClick={() => setCategoryPage((p) => Math.min(totalCategoryPages - 1, p + 1))}
-                disabled={categoryPage === totalCategoryPages - 1}
-                className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
-                title="Next Category Page"
-              >
-                <ChevronRight size={13} />
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-3 min-h-[160px]">
-            {currentCategories.map((cat) => (
-              <div key={cat.name} className="space-y-1">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-slate-700">{cat.name}</span>
-                  <span className="text-slate-900 font-extrabold">{cat.percentage}%</span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className={`h-full rounded-full ${cat.color} transition-all duration-300`}
-                    style={{ width: `${cat.percentage}%` }}
-                  />
-                </div>
-              </div>
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="pt-5 border-t border-slate-100 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-extrabold text-[#14142b]">Recent Student Feedback</h3>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-slate-400 mr-1">
-              Page {feedbackPage + 1} of {totalFeedbackPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setFeedbackPage((p) => Math.max(0, p - 1))}
-              disabled={feedbackPage === 0}
-              className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
-              title="Previous Feedback Page"
-            >
-              <ChevronLeft size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setFeedbackPage((p) => Math.min(totalFeedbackPages - 1, p + 1))}
-              disabled={feedbackPage === totalFeedbackPages - 1}
-              className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
-              title="Next Feedback Page"
-            >
-              <ChevronRight size={14} />
-            </button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-slate-50/80 px-5 py-3.5 border border-slate-200/60">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-black">
+              <TrendingUp size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-[#14142b]">
+                {activeData.summaryHeadline}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {currentReviews.map((rev) => (
-            <div key={rev.id} className="py-3.5 first:pt-0 last:pb-0 space-y-2">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src={rev.learnerAvatar}
-                    alt={rev.learnerName}
-                    className="h-7 w-7 rounded-full object-cover shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <span className="text-xs font-extrabold text-[#14142b] truncate">{rev.learnerName}</span>
-                    <span className="text-[11px] text-slate-400 ml-2 font-medium truncate">• {rev.courseName}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1 text-amber-400 shrink-0">
-                  {[...Array(rev.rating)].map((_, i) => (
-                    <Star key={i} size={11} className="fill-amber-400" />
-                  ))}
-                  <span className="text-[11px] font-bold text-slate-400 ml-1">{rev.date}</span>
-                </div>
-              </div>
-
-              <p className="text-xs font-medium text-slate-700 leading-snug pl-9">
-                "{rev.reviewText}"
-              </p>
-
-              <div className="pl-9 pt-0.5">
-                {rev.instructorResponse ? (
-                  <div className="flex items-start gap-2 text-[11px] text-indigo-700 font-semibold bg-indigo-50/60 px-3 py-1.5 rounded-xl border border-indigo-100/60">
-                    <CornerDownRight size={13} className="shrink-0 mt-0.5" />
-                    <span>Response: {rev.instructorResponse}</span>
-                  </div>
-                ) : activeReplyId === rev.id ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Write response..."
-                      value={replyText[rev.id] || ''}
-                      onChange={(e) => setReplyText({ ...replyText, [rev.id]: e.target.value })}
-                      className="flex-1 rounded-xl border border-slate-200 px-3 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleSendResponse(rev.id)}
-                      className="rounded-xl bg-indigo-600 px-3 py-1 text-xs font-extrabold text-white hover:bg-indigo-700"
-                    >
-                      Post
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setActiveReplyId(rev.id)}
-                    className="text-[11px] font-extrabold text-indigo-600 hover:underline flex items-center gap-1"
-                  >
-                    <MessageSquare size={12} /> Respond
-                  </button>
-                )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={timeframe}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="grid grid-cols-2 gap-6 sm:grid-cols-4 py-2 border-b border-slate-100"
+          >
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-slate-400">Enrollments</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-[#14142b]">{activeData.enrollments}</span>
               </div>
             </div>
-          ))}
+
+            <div className="space-y-1 border-l border-slate-100 sm:pl-6">
+              <p className="text-xs font-bold text-slate-400">Average Rating</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-[#14142b]">{activeData.rating}</span>
+                <span className="text-xs font-semibold text-slate-400">{activeData.reviewsCount}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
+              <p className="text-xs font-bold text-slate-400">Completion Rate</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-[#14142b]">{activeData.completionRate}</span>
+                <span className="text-xs font-extrabold text-indigo-600">Top Tier</span>
+              </div>
+            </div>
+
+            <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
+              <p className="text-xs font-bold text-slate-400">Estimated Revenue</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-black text-[#14142b]">{activeData.revenue}</span>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 pt-1">
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#14142b]">
+                Enrollments • {activeData.timeframeLabel}
+              </h3>
+            </div>
+
+            <div className="relative h-52 w-full pt-3">
+              <svg
+                className="h-full w-full overflow-visible"
+                viewBox="0 0 540 150"
+                onMouseLeave={() => setHoverIdx(null)}
+              >
+                <defs>
+                  <linearGradient id="ytStudioGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="35" x2="540" y2="35" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                <line x1="0" y1="75" x2="540" y2="75" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                <line x1="0" y1="115" x2="540" y2="115" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                <path
+                  fill="url(#ytStudioGrad)"
+                  d={svgChart.smoothArea}
+                  className="transition-all duration-300 ease-out"
+                />
+                <path
+                  fill="none"
+                  stroke="#10b981"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d={svgChart.smoothLine}
+                  className="transition-all duration-300 ease-out"
+                />
+                {svgChart.coords.map((c, i) => (
+                  <g key={i} className="cursor-pointer" onMouseEnter={() => setHoverIdx(i)}>
+                    <circle
+                      cx={c.x}
+                      cy={c.y}
+                      r={hoverIdx === i ? '6' : '4'}
+                      fill={hoverIdx === i ? '#059669' : '#10b981'}
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
+                      className="transition-all duration-200"
+                    />
+                    {hoverIdx === i && (
+                      <line
+                        x1={c.x}
+                        y1="0"
+                        x2={c.x}
+                        y2="150"
+                        stroke="#10b981"
+                        strokeDasharray="3 3"
+                        strokeWidth="1.5"
+                      />
+                    )}
+                  </g>
+                ))}
+              </svg>
+
+              {hoverIdx !== null && svgChart.coords[hoverIdx] && (
+                <div
+                  className="absolute z-30 pointer-events-none bg-[#14142b]/95 border border-slate-700/60 text-white px-3 py-2 rounded-xl text-xs shadow-xl backdrop-blur-md whitespace-nowrap transition-all duration-150"
+                  style={{
+                    left: `${(svgChart.coords[hoverIdx].x / 540) * 100}%`,
+                    top: `${(svgChart.coords[hoverIdx].y / 150) * 100}%`,
+                    transform:
+                      hoverIdx === 0
+                        ? 'translate(0%, -125%)'
+                        : hoverIdx === svgChart.coords.length - 1
+                          ? 'translate(-100%, -125%)'
+                          : 'translate(-50%, -125%)',
+                  }}
+                >
+                  <span className="font-extrabold text-emerald-400 block">
+                    {svgChart.coords[hoverIdx].pt.toLocaleString()} enrollments
+                  </span>
+                  <span className="text-[10px] text-slate-300 font-semibold block mt-0.5">
+                    {activeData.labels[hoverIdx]}
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-3 flex justify-between text-xs font-bold text-slate-400">
+                {activeData.labels.map((lbl) => (
+                  <span key={lbl}>{lbl}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-[#14142b]">Category Distribution</h3>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-slate-400 mr-1">
+                  {categoryPage + 1}/{totalCategoryPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCategoryPage((p) => Math.max(0, p - 1))}
+                  disabled={categoryPage === 0}
+                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                  title="Previous Category Page"
+                >
+                  <ChevronLeft size={13} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryPage((p) => Math.min(totalCategoryPages - 1, p + 1))}
+                  disabled={categoryPage === totalCategoryPages - 1}
+                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                  title="Next Category Page"
+                >
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3.5 min-h-[160px]">
+              {currentCategories.map((cat) => (
+                <div key={cat.name} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold">
+                    <span className="text-slate-700">{cat.name}</span>
+                    <span className="text-slate-900 font-extrabold">{cat.percentage}%</span>
+                  </div>
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${cat.color} transition-all duration-300`}
+                      style={{ width: `${cat.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+
+        <div className="pt-5 border-t border-slate-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-extrabold text-[#14142b]">Recent Student Feedback</h3>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-400 mr-1">
+                Page {feedbackPage + 1} of {totalFeedbackPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setFeedbackPage((p) => Math.max(0, p - 1))}
+                disabled={feedbackPage === 0}
+                className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                title="Previous Feedback Page"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeedbackPage((p) => Math.min(totalFeedbackPages - 1, p + 1))}
+                disabled={feedbackPage === totalFeedbackPages - 1}
+                className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                title="Next Feedback Page"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+            {currentReviews.map((rev) => {
+              const isWide = rev.cardSize === 'wide';
+              return (
+                <div
+                  key={rev.id}
+                  className={`rounded-3xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between p-4.5 ${
+                    isWide
+                      ? 'md:col-span-2 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 border-indigo-100/90 shadow-2xs'
+                      : 'bg-white border-slate-200/80 shadow-2xs'
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    {/* Top Row: Learner Info & Rating Pill */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src={rev.learnerAvatar}
+                          alt={rev.learnerName}
+                          className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white shadow-2xs"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-black text-[#14142b] truncate">{rev.learnerName}</span>
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.2 text-[9px] font-extrabold text-emerald-700 border border-emerald-200/60 shrink-0">
+                              <CheckCircle2 size={9} /> Verified
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-semibold block truncate">{rev.courseName}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full text-amber-600 border border-amber-100 shrink-0">
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(rev.rating)].map((_, i) => (
+                            <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-500 ml-1">{rev.date}</span>
+                      </div>
+                    </div>
+
+                    {/* Review Quote Body */}
+                    <p className="text-xs font-semibold text-slate-700 leading-relaxed">
+                      "{rev.reviewText}"
+                    </p>
+                  </div>
+
+                  {/* Instructor Reply or Response Trigger */}
+                  <div className="mt-3 pt-2.5 border-t border-slate-100">
+                    {rev.instructorResponse ? (
+                      <div className="flex items-start gap-2 text-xs text-slate-800 bg-indigo-50/70 p-2.5 rounded-2xl border border-indigo-100/80">
+                        <img
+                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"
+                          alt="Dr. Sarah Chen"
+                          className="h-4.5 w-4.5 rounded-full object-cover shrink-0 mt-0.5"
+                        />
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-900">
+                            <span>Dr. Sarah Chen</span>
+                            <span className="rounded-md bg-indigo-200/60 px-1 py-0.2 text-[8px] font-extrabold text-indigo-700">Instructor</span>
+                          </div>
+                          <p className="text-[11px] font-semibold text-slate-700 leading-snug">{rev.instructorResponse}</p>
+                        </div>
+                      </div>
+                    ) : activeReplyId === rev.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Write a response..."
+                          value={replyText[rev.id] || ''}
+                          onChange={(e) => setReplyText({ ...replyText, [rev.id]: e.target.value })}
+                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSendResponse(rev.id)}
+                          className="rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white hover:bg-indigo-700 transition-colors"
+                        >
+                          Post
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setActiveReplyId(rev.id)}
+                        className="text-[11px] font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                      >
+                        <MessageSquare size={12} /> Reply as Instructor
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
