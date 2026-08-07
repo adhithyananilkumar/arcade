@@ -539,8 +539,11 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-subtle">
                 This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
-                just a certificate.
+                assignment, reviewed by working product designers. You&apos;ll leave with a portfolio-ready piece,
+                not just a certificate.
+              </p>
+              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
+                Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
               </p>
             </AnimatedItem>
             <div className="md:pl-8 lg:pl-12">
