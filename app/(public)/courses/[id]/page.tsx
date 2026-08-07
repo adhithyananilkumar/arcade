@@ -32,7 +32,7 @@ import InteractiveBookSpread from "@/components/course/InteractiveBookSpread"
 import { UserService } from "@/domains/identity"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
-import { AnimatedList } from "@/components/ui/AnimatedList"
+import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -509,14 +509,14 @@ function CourseTabs() {
       <div key={tab} className="arcade-fade mt-10">
         {tab === "Overview" && (
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-            <div>
+            <AnimatedItem index={0} style={{ cursor: "default" }}>
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-subtle">
                 This course treats design as a craft you build in public — every module ends with a real
                 assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
                 just a certificate.
               </p>
-            </div>
+            </AnimatedItem>
             <div className="md:pl-8 lg:pl-12">
               <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
               <div className="mt-4">
