@@ -133,6 +133,20 @@ const MODULES: Module[] = [
   },
 ]
 
+const MODULE_LIGHT_GRADIENTS = [
+  "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(251, 146, 60, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
+]
+
+const MODULE_BORDER_COLORS = [
+  "rgba(59, 130, 246, 0.28)",
+  "rgba(245, 158, 11, 0.28)",
+  "rgba(139, 92, 246, 0.28)",
+  "rgba(16, 185, 129, 0.28)",
+]
+
 const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
 
 const REVIEWS: Review[] = [
@@ -597,10 +611,16 @@ function CourseTabs() {
             <div className="flex flex-col gap-3">
               {MODULES.map((m, idx) => {
                 const open = openMod === idx
+                const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
+                const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
                 return (
                   <div
                     key={m.title}
-                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-colors hover:border-ink/15"
+                    className="overflow-hidden rounded-2xl border transition-all duration-200 hover:shadow-sm"
+                    style={{
+                      background: bgGradient,
+                      borderColor: borderColor,
+                    }}
                   >
                     <button
                       onClick={() => setOpenMod(open ? -1 : idx)}
@@ -608,7 +628,7 @@ function CourseTabs() {
                       className="flex w-full items-center gap-4 px-5 py-4 text-left"
                     >
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper"
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper shadow-xs"
                         style={{ background: m.accent }}
                       >
                         {idx + 1}
@@ -629,11 +649,14 @@ function CourseTabs() {
                       />
                     </button>
                     {open && (
-                      <ul className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2">
+                      <ul
+                        className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
+                        style={{ borderColor: borderColor }}
+                      >
                         {m.lessons.map((lesson, li) => (
                           <li
                             key={lesson.title}
-                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-mist"
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
                             <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
