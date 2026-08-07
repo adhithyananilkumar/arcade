@@ -591,7 +591,7 @@ function CourseTabs() {
         )}
 
         {tab === "Syllabus" && (
-          <div className="mx-auto max-w-3xl">
+          <div className="w-full">
             {/* Structured summary of the course layout */}
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
               {[
@@ -674,7 +674,13 @@ function CourseTabs() {
         )}
 
         {tab === "Instructor" && (
-          <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
+          <div
+            className="w-full rounded-3xl border p-8 transition-all"
+            style={{
+              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+              borderColor: "rgba(139, 92, 246, 0.28)",
+            }}
+          >
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
               <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
               <div className="flex-1">
@@ -703,14 +709,17 @@ function CourseTabs() {
               {INSTRUCTOR.expertise.map((e) => (
                 <span
                   key={e}
-                  className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
+                  className="rounded-full border border-purple/20 bg-white/70 dark:bg-black/20 px-3 py-1.5 text-[12px] font-medium text-ink"
                 >
                   {e}
                 </span>
               ))}
             </div>
 
-            <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
+            <div
+              className="mt-7 grid grid-cols-2 gap-3 border-t pt-6 sm:grid-cols-4"
+              style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
+            >
               {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
                 <div key={label}>
                   <Icon size={16} style={{ color: c }} />
@@ -723,7 +732,13 @@ function CourseTabs() {
         )}
 
         {tab === "Certificate" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
+          <div
+            className="flex w-full flex-col items-center gap-10 rounded-3xl border p-8 sm:flex-row sm:items-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+              borderColor: "rgba(59, 130, 246, 0.28)",
+            }}
+          >
             <CourseBadge label="UI / UX" accent="var(--color-blue)" />
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
@@ -740,21 +755,27 @@ function CourseTabs() {
         )}
 
         {tab === "Exam" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-slate-200/80 bg-white/95 p-8 text-center shadow-[0_8px_24px_rgba(20,20,43,0.05)] sm:p-10">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
-              <BadgeCheck size={14} /> Final assessment
+          <div
+            className="flex w-full flex-col items-center gap-6 rounded-3xl border p-8 text-center sm:p-10"
+            style={{
+              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
+              borderColor: "rgba(16, 185, 129, 0.28)",
+            }}
+          >
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-white/70 dark:bg-black/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
+              <BadgeCheck size={14} className="text-teal" /> Final assessment
             </span>
             <div>
-              <h3 className="text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+              <h3 className="text-[1.5rem] font-bold tracking-tight text-ink">
                 Take the final exam
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-slate-500">
+              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-subtle">
                 25 questions · 60 minutes · secure fullscreen session. Pass to earn your certificate.
               </p>
             </div>
             <Link
               href={`/learn/${params.courseId}/exam`}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5"
             >
               Proceed to exam <ChevronRight size={16} />
             </Link>
