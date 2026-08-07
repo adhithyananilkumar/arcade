@@ -679,12 +679,12 @@ function CourseTabs() {
             </div>
 
             <div
-              className="mt-7 grid grid-cols-2 gap-3 border-t pt-6 sm:grid-cols-4"
+              className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center sm:grid-cols-4"
               style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
             >
               {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                <div key={label}>
-                  <Icon size={16} style={{ color: c }} />
+                <div key={label} className="flex flex-col items-center justify-center">
+                  <Icon size={18} style={{ color: c }} />
                   <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
                   <p className="text-[12px] text-subtle">{label}</p>
                 </div>
