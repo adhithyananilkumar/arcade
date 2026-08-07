@@ -22,11 +22,12 @@ import {
   Volume2,
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import InteractiveBookSpread from "@/components/course/InteractiveBookSpread"
 import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
@@ -35,6 +36,8 @@ import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
 import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
 import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
 import FoldText from "@/components/ui/FoldText"
+import { motion } from "framer-motion"
+import PartyPopper, { PartyPopperRef } from "@/components/ui/PartyPopper"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -299,14 +302,42 @@ function Avatar({
   )
 }
 
-/* A hex badge matching the platform's gamified badge system */
+/* A hex badge matching the platform's gamified badge system with 3-second rotation & party popper burst */
 function CourseBadge({ type = "crystal" }: { type?: string }) {
+  const popperRef = useRef<PartyPopperRef>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (popperRef.current) {
+        popperRef.current.burst(20, 70)
+        popperRef.current.burst(140, 70)
+      }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div className="relative flex shrink-0 items-center justify-center transition-transform duration-300 hover:scale-105">
-      <div className="h-36 w-28 drop-shadow-xl">
-        <BadgeGraphic type={type} />
-      </div>
-    </div>
+    <PartyPopper ref={popperRef} className="relative flex shrink-0 items-center justify-center p-4">
+      <motion.div
+        initial={{ rotateY: 1080, rotateZ: -20, scale: 0.3, opacity: 0 }}
+        animate={{ rotateY: 0, rotateZ: 0, scale: 1, opacity: 1 }}
+        transition={{
+          duration: 3,
+          ease: [0.25, 1, 0.5, 1],
+        }}
+        whileHover={{ scale: 1.08, rotate: 6 }}
+        onClick={() => {
+          popperRef.current?.burst(20, 70)
+          popperRef.current?.burst(140, 70)
+        }}
+        className="relative flex items-center justify-center cursor-pointer"
+        style={{ perspective: 1000 }}
+      >
+        <div className="h-36 w-28 drop-shadow-xl">
+          <BadgeGraphic type={type} />
+        </div>
+      </motion.div>
+    </PartyPopper>
   )
 }
 
