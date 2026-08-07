@@ -173,14 +173,15 @@ export default function ManageChannelPage() {
 
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
+  const isPersonalChannel = channel.type?.toUpperCase() === 'PERSONAL' || channel.isPersonal;
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
-    { id: 'STAFF', label: 'Staff', icon: Users, badge: '34' },
+    ...(!isPersonalChannel ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }] : []),
     { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
-    ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert }] : []),
+    ...(isOwner && !isPersonalChannel ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert }] : []),
   ];
 
   return (
@@ -331,7 +332,7 @@ export default function ManageChannelPage() {
           )}
 
           {/* TAB 3: STAFF */}
-          {activeTab === 'STAFF' && (
+          {activeTab === 'STAFF' && !isPersonalChannel && (
             <ChannelStaffManager
               channelId={channelId}
               permissions={permissions}
@@ -348,7 +349,7 @@ export default function ManageChannelPage() {
           {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
 
           {/* TAB 9: DANGER ZONE */}
-          {activeTab === 'DANGER' && isOwner && (
+          {activeTab === 'DANGER' && isOwner && !isPersonalChannel && (
             <ChannelDangerZone channel={channel} />
           )}
         </div>

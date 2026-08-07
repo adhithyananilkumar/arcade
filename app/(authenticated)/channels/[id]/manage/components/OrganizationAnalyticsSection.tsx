@@ -510,20 +510,26 @@ export function OrganizationAnalyticsSection() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
-            {currentReviews.map((rev) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2 pb-3">
+            {currentReviews.map((rev, idx) => {
               const isWide = rev.cardSize === 'wide';
+              const themes = [
+                'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',
+                'border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 shadow-[-5px_5px_0px_rgba(139,92,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(124,58,237,0.35)]',
+                'border border-blue-200/90 bg-gradient-to-br from-blue-50/50 via-white to-sky-50/30 shadow-[-5px_5px_0px_rgba(59,130,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(37,99,235,0.35)]',
+                'border border-emerald-200/90 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 shadow-[-5px_5px_0px_rgba(16,185,129,0.25)] hover:shadow-[-7px_7px_0px_rgba(5,150,105,0.35)]',
+              ];
+              const cardStyle = themes[idx % themes.length];
+
               return (
                 <div
                   key={rev.id}
-                  className={`rounded-3xl border transition-all duration-200 hover:shadow-md flex flex-col justify-between p-4.5 ${
-                    isWide
-                      ? 'md:col-span-2 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 border-indigo-100/90 shadow-2xs'
-                      : 'bg-white border-slate-200/80 shadow-2xs'
+                  className={`rounded-[2.25rem] rounded-tl-xs rounded-br-xs transition-all duration-200 flex flex-col justify-between p-5 cursor-pointer ${cardStyle} ${
+                    isWide ? 'md:col-span-2' : ''
                   }`}
                 >
                   <div className="space-y-2.5">
-                    {/* Top Row: Learner Info & Rating Pill */}
+                    {/* Top Row: Learner Info & Date */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <img
@@ -532,24 +538,12 @@ export function OrganizationAnalyticsSection() {
                           className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white shadow-2xs"
                         />
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-black text-[#14142b] truncate">{rev.learnerName}</span>
-                            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.2 text-[9px] font-extrabold text-emerald-700 border border-emerald-200/60 shrink-0">
-                              <CheckCircle2 size={9} /> Verified
-                            </span>
-                          </div>
+                          <span className="text-xs font-black text-[#14142b] truncate block">{rev.learnerName}</span>
                           <span className="text-[10px] text-slate-400 font-semibold block truncate">{rev.courseName}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full text-amber-600 border border-amber-100 shrink-0">
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(rev.rating)].map((_, i) => (
-                            <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                        <span className="text-[10px] font-extrabold text-slate-500 ml-1">{rev.date}</span>
-                      </div>
+                      <span className="text-[10px] font-extrabold text-slate-400 shrink-0">{rev.date}</span>
                     </div>
 
                     {/* Review Quote Body */}
@@ -558,7 +552,7 @@ export function OrganizationAnalyticsSection() {
                     </p>
                   </div>
 
-                  {/* Instructor Reply or Response Trigger */}
+                  {/* Reply or Response Trigger */}
                   <div className="mt-3 pt-2.5 border-t border-slate-100">
                     {rev.instructorResponse ? (
                       <div className="flex items-start gap-2 text-xs text-slate-800 bg-indigo-50/70 p-2.5 rounded-2xl border border-indigo-100/80">
@@ -568,10 +562,7 @@ export function OrganizationAnalyticsSection() {
                           className="h-4.5 w-4.5 rounded-full object-cover shrink-0 mt-0.5"
                         />
                         <div className="space-y-0.5 min-w-0">
-                          <div className="flex items-center gap-1.5 text-[10px] font-black text-indigo-900">
-                            <span>Dr. Sarah Chen</span>
-                            <span className="rounded-md bg-indigo-200/60 px-1 py-0.2 text-[8px] font-extrabold text-indigo-700">Instructor</span>
-                          </div>
+                          <span className="text-[10px] font-black text-indigo-900 block">Dr. Sarah Chen</span>
                           <p className="text-[11px] font-semibold text-slate-700 leading-snug">{rev.instructorResponse}</p>
                         </div>
                       </div>
@@ -598,7 +589,7 @@ export function OrganizationAnalyticsSection() {
                         onClick={() => setActiveReplyId(rev.id)}
                         className="text-[11px] font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
                       >
-                        <MessageSquare size={12} /> Reply as Instructor
+                        <MessageSquare size={12} /> Reply
                       </button>
                     )}
                   </div>

@@ -189,39 +189,51 @@ export function RecentActivityTimeline() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 p-1 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
           <button
             type="button"
+            onMouseEnter={() => setFilterType('ALL')}
             onClick={() => setFilterType('ALL')}
-            className={`rounded-xl px-3 py-1.5 transition-all cursor-pointer ${
-              filterType === 'ALL' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'ALL'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             All Activity
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('COURSE')}
             onClick={() => setFilterType('COURSE')}
-            className={`rounded-xl px-3 py-1.5 transition-all cursor-pointer ${
-              filterType === 'COURSE' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'COURSE'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Courses
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('STAFF')}
             onClick={() => setFilterType('STAFF')}
-            className={`rounded-xl px-3 py-1.5 transition-all cursor-pointer ${
-              filterType === 'STAFF' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'STAFF'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Staff
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('WEBINAR')}
             onClick={() => setFilterType('WEBINAR')}
-            className={`rounded-xl px-3 py-1.5 transition-all cursor-pointer ${
-              filterType === 'WEBINAR' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'WEBINAR'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Webinars

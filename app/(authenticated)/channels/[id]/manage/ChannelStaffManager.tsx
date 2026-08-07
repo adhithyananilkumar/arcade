@@ -361,49 +361,76 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       </div>
 
       {invitations.length > 0 && (
-        <div className="overflow-hidden rounded-[2.5rem] rounded-tr-[3.5rem] rounded-bl-[3.5rem] border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
-          <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-slate-50/80 px-6 py-4.5">
+        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
+          <div className="flex items-center justify-between border-b border-slate-100 bg-amber-50/50 px-6 py-4">
             <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
-              <span className="grid size-9 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs">
-                <Mail size={18} />
+              <span className="grid size-8 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs">
+                <Mail size={16} />
               </span>
               <span>Pending Invitations</span>
             </h4>
+            <span className="rounded-full bg-amber-100/80 px-2.5 py-0.5 text-xs font-black text-amber-800 border border-amber-200/60">
+              {invitations.length} Pending
+            </span>
           </div>
-          <Table>
-            <TableBody>
-              {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map(inv => (
-                <TableRow key={inv.id} className="border-slate-100 hover:bg-amber-50/20 transition-colors">
-                  <TableCell>
-                    <p className="text-xs font-bold text-[#14142b]">{inv.email}</p>
-                    <p className="text-[11px] font-medium text-slate-400">Invited by {inv.invitedByName} on {new Date(inv.createdAt).toLocaleDateString()}</p>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant="outline"
-                      className={
-                        inv.status === 'PENDING' ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[10px] font-extrabold' :
-                        inv.status === 'REJECTED' ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[10px] font-extrabold' :
-                        'text-slate-600 border-slate-200 bg-slate-50 text-[10px] font-extrabold'
-                      }
-                    >
-                      {inv.roleNames.join(', ')} - {inv.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+
+          <div className="divide-y divide-slate-100">
+            {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map((inv) => (
+              <div
+                key={inv.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 hover:bg-amber-50/20 transition-colors"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs border border-amber-200/60">
+                    {inv.email[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-[#14142b] truncate">{inv.email}</p>
+                    <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
+                      Invited by <span className="text-slate-700 font-bold">{inv.invitedByName}</span> on{' '}
+                      {new Date(inv.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                  <Badge
+                    variant="outline"
+                    className={
+                      inv.status === 'PENDING'
+                        ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                        : inv.status === 'REJECTED'
+                        ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                        : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
+                    }
+                  >
+                    {inv.roleNames.join(', ')} • {inv.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {!isInvitationsExpanded && invitations.length > 3 && (
             <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
-              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(true)} className="text-xs font-bold text-[#14142b]">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsInvitationsExpanded(true)}
+                className="text-xs font-bold text-[#14142b]"
+              >
                 See {invitations.length - 3} More
               </Button>
             </div>
           )}
           {isInvitationsExpanded && invitations.length > 3 && (
             <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
-              <Button variant="ghost" size="sm" onClick={() => setIsInvitationsExpanded(false)} className="text-xs font-bold text-[#14142b]">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsInvitationsExpanded(false)}
+                className="text-xs font-bold text-[#14142b]"
+              >
                 Show Less
               </Button>
             </div>
