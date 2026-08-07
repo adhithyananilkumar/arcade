@@ -33,6 +33,7 @@ import { UserService } from "@/domains/identity"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
 import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
+import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -297,44 +298,12 @@ function Avatar({
   )
 }
 
-/* A medallion badge, unique per course via label + accent */
-function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { label?: string; accent?: string }) {
-  const scallops = Array.from({ length: 12 })
+/* A hex badge matching the platform's gamified badge system */
+function CourseBadge({ type = "crystal" }: { type?: string }) {
   return (
-    <div className="relative shrink-0">
-      <svg width="164" height="188" viewBox="0 0 164 188" aria-hidden="true">
-        <defs>
-          <linearGradient id="badgeGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor={accent} />
-            <stop offset="1" stopColor="var(--color-purple)" />
-          </linearGradient>
-        </defs>
-        {/* ribbon tails */}
-        <path d="M60 118 L44 180 L70 162 L80 128 Z" fill="var(--color-coral)" />
-        <path d="M104 118 L120 180 L94 162 L84 128 Z" fill="var(--color-teal)" />
-        {/* scalloped ring */}
-        {scallops.map((_, i) => {
-          const a = (i / 12) * Math.PI * 2
-          const cx = 82 + Math.cos(a) * 52
-          const cy = 74 + Math.sin(a) * 52
-          return <circle key={i} cx={cx} cy={cy} r="12" fill="url(#badgeGrad)" />
-        })}
-        <circle cx="82" cy="74" r="56" fill="url(#badgeGrad)" />
-        <circle cx="82" cy="74" r="45" fill="var(--color-ink)" />
-        <circle
-          cx="82"
-          cy="74"
-          r="45"
-          fill="none"
-          stroke="rgba(255,255,255,0.28)"
-          strokeWidth="1.5"
-          strokeDasharray="3 5"
-        />
-      </svg>
-      <div className="absolute inset-x-0 top-[44px] flex flex-col items-center text-paper">
-        <Award size={30} className="text-amber" />
-        <span className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-white/80">{label}</span>
-        <span className="text-[10px] text-white/45">Certified</span>
+    <div className="relative flex shrink-0 items-center justify-center transition-transform duration-300 hover:scale-105">
+      <div className="h-36 w-28 drop-shadow-xl">
+        <BadgeGraphic type={type} />
       </div>
     </div>
   )
@@ -505,9 +474,13 @@ function CourseHero({
 /*  Tabs                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseTabs() {
+function CourseTabs({ courseTitle }: { courseTitle?: string }) {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
+  const params = useParams<{ id?: string }>()
+  const searchParams = useSearchParams()
+  const titleFromQuery = searchParams?.get('title')
+  const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.id)
 
   return (
     <div>
@@ -662,10 +635,6 @@ function CourseTabs() {
                   <span className="inline-flex items-center gap-1.5">
                     <Briefcase size={13} /> {INSTRUCTOR.role}
                   </span>
-                  <span className="text-subtle/40">·</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
-                  </span>
                 </p>
               </div>
               <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
@@ -710,23 +679,12 @@ function CourseTabs() {
         )}
 
         {tab === "Certificate" && (
-          <div
-            className="flex w-full flex-col items-center gap-10 rounded-3xl border p-8 sm:flex-row sm:items-center"
-            style={{
-              background: "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-              borderColor: "rgba(59, 130, 246, 0.28)",
-            }}
-          >
-            <CourseBadge label="UI / UX" accent="var(--color-blue)" />
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
+            <CourseBadge type={badgeInfo.type} />
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
-                <Sparkles size={13} className="text-amber" /> Course badge
-              </span>
-              <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
-              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
-                course carries it. Finish all four modules and your final case study to unlock it on your profile.
-                You&apos;ll also receive a verified certificate of completion to share.
+              <h3 className="font-serif text-2xl font-light text-ink">Earn the {badgeInfo.title}</h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
+                Master the core principles and practical skills of this curriculum with real feedback from working product designers. Finish all four core modules and your final case study to unlock the exclusive <span className="font-semibold text-ink">{badgeInfo.badgeName}</span> badge on your profile alongside an official verifiable certificate of completion.
               </p>
             </div>
           </div>
@@ -856,7 +814,7 @@ export default function CoursePreviewPage() {
 
       {/* Body */}
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-        <CourseTabs />
+        <CourseTabs courseTitle={displayTitle} />
         <div className="mt-20">
           <ReviewsBlock courseId={params?.id} />
         </div>
