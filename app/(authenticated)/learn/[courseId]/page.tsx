@@ -555,22 +555,35 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
     <div>
       {/* Segmented tab control */}
       <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5">
-          {TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              aria-pressed={tab === t}
-              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors sm:px-5 ${tab === t ? "bg-ink text-paper" : "text-subtle hover:text-ink"
+        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5 shadow-sm">
+          {TABS.map((t) => {
+            const isActive = tab === t
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                onMouseEnter={() => setTab(t)}
+                onFocus={() => setTab(t)}
+                aria-pressed={isActive}
+                className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-5 ${
+                  isActive ? "text-paper" : "text-subtle hover:text-ink"
                 }`}
-            >
-              {t}
-            </button>
-          ))}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeLearnTabPill"
+                    className="absolute inset-0 rounded-full bg-ink"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{t}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      <div key={tab} className="arcade-fade mt-10">
+      <div key={tab} className="arcade-fade mt-16 sm:mt-20">
         {tab === "Overview" && (
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             <AnimatedItem index={0} style={{ cursor: "default" }}>
@@ -584,7 +597,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                 Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
               </p>
             </AnimatedItem>
-            <div className="md:pl-8 lg:pl-12">
+            <div className="md:pl-16 lg:pl-28">
               <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
               <div className="mt-4">
                 <AnimatedList
