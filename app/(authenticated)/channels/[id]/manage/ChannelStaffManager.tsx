@@ -236,7 +236,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
         )}
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
+      <div className="overflow-hidden rounded-[2.5rem] rounded-tr-[3.5rem] rounded-bl-[3.5rem] border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
         <div className="flex flex-col gap-3 border-b border-slate-100/80 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-purple-50/60 px-6 py-4.5 sm:flex-row sm:items-center justify-between">
           <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
             <span className="grid size-9 place-items-center rounded-2xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
@@ -276,15 +276,6 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
               <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
                 Invite team members or creators to help manage this channel and publish content.
               </p>
-              {canManageStaff && !isSuspended && (
-                <Button
-                  onClick={() => setIsInviteModalOpen(true)}
-                  className="mt-4.5 rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-xs transition-all hover:scale-[1.02]"
-                >
-                  <Plus size={15} />
-                  Invite Staff
-                </Button>
-              )}
             </div>
           </div>
         ) : filteredStaff.length === 0 ? (
@@ -370,7 +361,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       </div>
 
       {invitations.length > 0 && (
-        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
+        <div className="overflow-hidden rounded-[2.5rem] rounded-tr-[3.5rem] rounded-bl-[3.5rem] border border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(20,20,43,0.04)]">
           <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-amber-50/80 via-orange-50/50 to-slate-50/80 px-6 py-4.5">
             <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
               <span className="grid size-9 place-items-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200/60 shadow-2xs">
@@ -421,69 +412,69 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       )}
 
       <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-        <DialogContent className="max-w-md p-6">
+        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-white shadow-2xl z-[100]">
           <DialogHeader>
-            <DialogTitle>Invite Staff</DialogTitle>
+            <DialogTitle className="text-base font-extrabold text-[#14142b]">Invite Staff Member</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address / Username</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">Email Address / Username</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                  <Mail size={16} className="text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                  <Mail size={16} className="text-slate-400" />
                 </div>
                 <Input
                   type="text"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="user@example.com or username"
-                  className="pl-10 pr-10"
+                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-indigo-500 focus:bg-white"
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-gray-400" />}
-                  {emailStatus === 'FOUND' && <Check size={16} className="text-green-500" />}
-                  {emailStatus === 'NOT_FOUND' && inviteEmail && <X size={16} className="text-red-500" />}
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                  {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-slate-400" />}
+                  {emailStatus === 'FOUND' && <Check size={16} className="text-emerald-500" />}
+                  {emailStatus === 'NOT_FOUND' && inviteEmail && <X size={16} className="text-rose-500" />}
                 </div>
               </div>
 
               {emailStatus === 'FOUND' && foundUser && (
-                <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                <p className="mt-2 text-xs font-bold text-emerald-600 flex items-center gap-1">
                   <Check size={12} /> Found user: {foundUser.firstName} {foundUser.lastName}
                 </p>
               )}
               {emailStatus === 'NOT_FOUND' && inviteEmail && (
-                <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+                <p className="mt-2 text-xs font-bold text-rose-600 flex items-center gap-1">
                   <X size={12} /> User not found. Must be a registered user.
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Organization Policies <span className="text-gray-400 font-normal">(select one or more)</span>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                Organization Policies <span className="text-slate-400 font-medium">(select one or more)</span>
               </label>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-gray-200 p-2">
+              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input
                       type="checkbox"
                       checked={selectedRoleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id, selectedRoleIds, setSelectedRoleIds)}
-                      className="h-4 w-4 accent-indigo-600"
+                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
                     />
-                    <span className="text-sm text-gray-800">{role.displayName || role.code}</span>
+                    <span>{role.displayName || role.code}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div className="pt-4 flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setIsInviteModalOpen(false)}>
+              <Button variant="secondary" className="flex-1 rounded-2xl font-bold text-xs" onClick={() => setIsInviteModalOpen(false)}>
                 Cancel
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
                 onClick={handleInvite}
                 disabled={emailStatus !== 'FOUND' || selectedRoleIds.length === 0}
               >
@@ -495,39 +486,39 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended }: Cha
       </Dialog>
 
       <Dialog open={!!editRolesTarget} onOpenChange={(open) => !open && setEditRolesTarget(null)}>
-        <DialogContent className="max-w-md p-6">
+        <DialogContent className="max-w-md p-6 rounded-3xl border border-slate-200 bg-white shadow-2xl z-[100]">
           <DialogHeader>
-            <DialogTitle>Edit Policies</DialogTitle>
+            <DialogTitle className="text-base font-extrabold text-[#14142b]">Edit Policies</DialogTitle>
           </DialogHeader>
 
           {editRolesTarget && (
             <div className="space-y-4 mt-4">
-              <p className="text-sm text-gray-600">
-                Update policies for <span className="font-bold">{editRolesTarget.userName}</span>.
+              <p className="text-xs font-semibold text-slate-600">
+                Update policies for <span className="font-extrabold text-slate-900">{editRolesTarget.userName}</span>.
               </p>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-lg border border-gray-200 p-2">
+              <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input
                       type="checkbox"
                       checked={editRoleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id, editRoleIds, setEditRoleIds)}
-                      className="h-4 w-4 accent-indigo-600"
+                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
                     />
-                    <span className="text-sm text-gray-800">{role.displayName || role.code}</span>
+                    <span>{role.displayName || role.code}</span>
                   </label>
                 ))}
               </div>
               <div className="pt-2 flex gap-3">
-                <Button variant="secondary" className="flex-1" onClick={() => setEditRolesTarget(null)}>
+                <Button variant="secondary" className="flex-1 rounded-2xl font-bold text-xs" onClick={() => setEditRolesTarget(null)}>
                   Cancel
                 </Button>
                 <Button
-                  className="flex-1"
+                  className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
                   onClick={handleUpdateRoles}
                   disabled={editRolesSubmitting || editRoleIds.length === 0}
                 >
-                  {editRolesSubmitting ? 'Saving...' : 'Save'}
+                  {editRolesSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
             </div>
