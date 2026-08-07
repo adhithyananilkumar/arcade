@@ -29,7 +29,6 @@ function ShellInner({ children }: { children: React.ReactNode }) {
     <>
       {!introActive && <HeroNav />}
       {children}
-      {!introActive && !isProfile && <Footer />}
     </>
   );
 }

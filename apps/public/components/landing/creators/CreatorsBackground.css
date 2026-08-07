@@ -1,0 +1,95 @@
+/* ────────────────────────────────────────────────────────────
+   Creators Page Global Continuous Canvas Background
+   ──────────────────────────────────────────────────────────── */
+.creators-bg-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.creators-bg-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    /* Top Hero & Statbar: Lavender & Sky Blue lighting */
+    radial-gradient(ellipse 70% 35% at 15% 5%, rgba(232, 236, 251, 0.90) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 40% at 85% 12%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    
+    /* Journey & Workflow: Mint & Soft Lavender lighting */
+    radial-gradient(ellipse 70% 45% at 20% 28%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 40% at 80% 38%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    
+    /* Everything in One Place & Publishing: Cyan & Soft White */
+    radial-gradient(ellipse 75% 45% at 50% 52%, rgba(232, 236, 251, 0.75) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 15% 64%, rgba(227, 249, 245, 0.80) 0%, transparent 65%),
+    
+    /* Formats, Educators, FAQ & CTA: Lavender & Mint tint */
+    radial-gradient(ellipse 70% 40% at 85% 78%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 35% at 20% 90%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 40% at 50% 98%, rgba(232, 236, 251, 0.70) 0%, transparent 65%),
+    #ffffff;
+}
+
+.creators-bg-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.creators-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.blob-1 {
+  top: 4%;
+  left: 8%;
+  width: 580px;
+  height: 580px;
+  background: radial-gradient(circle, rgba(232, 236, 251, 0.85) 0%, transparent 70%);
+}
+
+.blob-2 {
+  top: 26%;
+  right: 6%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(227, 249, 245, 0.80) 0%, transparent 70%);
+}
+
+.blob-3 {
+  top: 52%;
+  left: 10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(232, 236, 251, 0.75) 0%, transparent 70%);
+}
+
+.blob-4 {
+  top: 76%;
+  right: 10%;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(227, 249, 245, 0.85) 0%, transparent 70%);
+}
+
+.creators-bg-noise {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
