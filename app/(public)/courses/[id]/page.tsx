@@ -147,6 +147,14 @@ const MODULE_BORDER_COLORS = [
   "rgba(16, 185, 129, 0.28)",
 ]
 
+const EXPERTISE_TAG_STYLES = [
+  { bg: "rgba(59, 130, 246, 0.14)", border: "rgba(59, 130, 246, 0.3)", text: "#1d4ed8" },
+  { bg: "rgba(245, 158, 11, 0.14)", border: "rgba(245, 158, 11, 0.3)", text: "#b45309" },
+  { bg: "rgba(139, 92, 246, 0.14)", border: "rgba(139, 92, 246, 0.3)", text: "#6d28d9" },
+  { bg: "rgba(16, 185, 129, 0.14)", border: "rgba(16, 185, 129, 0.3)", text: "#047857" },
+  { bg: "rgba(236, 72, 153, 0.14)", border: "rgba(236, 72, 153, 0.3)", text: "#be185d" },
+]
+
 const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
 
 const REVIEWS: Review[] = [
@@ -668,14 +676,22 @@ function CourseTabs() {
             <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {INSTRUCTOR.expertise.map((e) => (
-                <span
-                  key={e}
-                  className="rounded-full border border-purple/20 bg-white/70 dark:bg-black/20 px-3 py-1.5 text-[12px] font-medium text-ink"
-                >
-                  {e}
-                </span>
-              ))}
+              {INSTRUCTOR.expertise.map((e, idx) => {
+                const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
+                return (
+                  <span
+                    key={e}
+                    className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
+                    style={{
+                      background: style.bg,
+                      borderColor: style.border,
+                      color: style.text,
+                    }}
+                  >
+                    {e}
+                  </span>
+                )
+              })}
             </div>
 
             <div
