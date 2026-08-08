@@ -125,7 +125,7 @@ const CARDS: CertCard[] = [
 // Values per spec: active scale 1.05, side scale 0.9, rotateY ±12°, opacity 0.5
 
 const CARD_W = 300;
-const STEP   = 252; // px between card centres
+const STEP = 252; // px between card centres
 
 // Circular Gallery arc:
 //   - Centre card: flat, full scale, full opacity
@@ -133,16 +133,16 @@ const STEP   = 252; // px between card centres
 //   - ±2 cards: deeper on the arc, dimmer
 // y>0 means down — cards curve away from viewer as they leave centre.
 function cardTransform(offset: number) {
-  const abs  = Math.abs(offset);
+  const abs = Math.abs(offset);
   const sign = offset < 0 ? -1 : 1;
   return {
-    x:       offset * STEP,
-    y:       abs === 0 ? 0  : abs === 1 ? 28  : 52,   // arc drop, never negative
-    z:       abs === 0 ? 0  : abs === 1 ? -55 : -110,
-    rotateY: abs === 0 ? 0  : sign * -15,              // 15° per spec
-    scale:   abs === 0 ? 1.05 : abs === 1 ? 0.90 : 0.76,
-    opacity: abs === 0 ? 1.0  : abs === 1 ? 0.52 : 0.28,
-    blur:    abs === 0 ? 0    : abs === 1 ? 1.5  : 3,
+    x: offset * STEP,
+    y: abs === 0 ? 0 : abs === 1 ? 28 : 52,   // arc drop, never negative
+    z: abs === 0 ? 0 : abs === 1 ? -55 : -110,
+    rotateY: abs === 0 ? 0 : sign * -15,              // 15° per spec
+    scale: abs === 0 ? 1.05 : abs === 1 ? 0.90 : 0.76,
+    opacity: abs === 0 ? 1.0 : abs === 1 ? 0.52 : 0.28,
+    blur: abs === 0 ? 0 : abs === 1 ? 1.5 : 3,
   };
 }
 
@@ -150,7 +150,7 @@ function cardTransform(offset: number) {
 const COVER_SPRING = { type: "spring" as const, stiffness: 240, damping: 24, mass: 0.8 };
 
 // Pulse keyframe injected once — CSS animation so it never competes with Framer Motion
-const PULSE_KF_ID  = "wgc-pulse-kf";
+const PULSE_KF_ID = "wgc-pulse-kf";
 const PULSE_KF_CSS = `
 @keyframes wgc-pulse {
   0%,100% { opacity: 0.55; transform: translate(-50%,-50%) scale(1.00); }
@@ -160,12 +160,12 @@ const PULSE_KF_CSS = `
 // ─── CoverFlow component ──────────────────────────────────────────────────────
 
 function CoverFlow({ cards }: { cards: CertCard[] }) {
-  const n         = cards.length;
+  const n = cards.length;
   const [active, setActive] = useState(0);
   const pausedRef = useRef(false);
-  const nRef      = useRef(n);
+  const nRef = useRef(n);
   const dragStart = useRef<number>(0);
-  const dragging  = useRef(false);
+  const dragging = useRef(false);
 
   nRef.current = n;
 
@@ -187,9 +187,9 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
     return () => clearInterval(id);
   }, []);
 
-  const handleMouseEnter = () => { pausedRef.current = true;  };
+  const handleMouseEnter = () => { pausedRef.current = true; };
   const handleMouseLeave = () => { pausedRef.current = false; };
-  const manualNavigate   = (next: number) => setActive(next);
+  const manualNavigate = (next: number) => setActive(next);
 
   // ── Pointer drag / touch swipe ────────────────────────────────────────
   function handlePointerDown(e: React.PointerEvent) {
@@ -206,13 +206,13 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
   // ── Keyboard ──────────────────────────────────────────────────────────
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "ArrowRight") manualNavigate((active + 1) % n);
-    if (e.key === "ArrowLeft")  manualNavigate((active - 1 + n) % n);
+    if (e.key === "ArrowLeft") manualNavigate((active - 1 + n) % n);
   }
 
   // Shortest signed distance around the ring (for smooth wrap)
   function wrappedOffset(idx: number) {
     let off = idx - active;
-    if (off >  n / 2) off -= n;
+    if (off > n / 2) off -= n;
     if (off < -n / 2) off += n;
     return off;
   }
@@ -239,27 +239,27 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
         <div
           aria-hidden="true"
           style={{
-            position:      "absolute",
-            left:          "50%",
-            top:           "50%",
-            width:         380,
-            height:        480,
-            borderRadius:  40,
-            background:    `radial-gradient(ellipse, ${cards[active].glowColor} 0%, transparent 68%)`,
-            filter:        "blur(52px)",
-            animation:     "wgc-pulse 7s ease-in-out infinite",
-            zIndex:        0,
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 380,
+            height: 480,
+            borderRadius: 40,
+            background: `radial-gradient(ellipse, ${cards[active].glowColor} 0%, transparent 68%)`,
+            filter: "blur(52px)",
+            animation: "wgc-pulse 7s ease-in-out infinite",
+            zIndex: 0,
             pointerEvents: "none",
             // transition on background so glow colour fades when active card changes
-            transition:    "background 0.8s ease",
+            transition: "background 0.8s ease",
           }}
         />
 
         {/* Cards */}
         {cards.map((card, idx) => {
-          const offset   = wrappedOffset(idx);
-          const abs      = Math.abs(offset);
-          const tf       = cardTransform(offset);
+          const offset = wrappedOffset(idx);
+          const abs = Math.abs(offset);
+          const tf = cardTransform(offset);
           const isCenter = offset === 0;
 
           if (abs > 2) return null;
@@ -271,11 +271,11 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
               key={card.id}
               /* Position / depth / perspective transforms only — no y here */
               animate={{
-                x:       tf.x,
-                y:       tf.y,       // arc drop — replaces the old float motion.div
-                z:       tf.z,
+                x: tf.x,
+                y: tf.y,       // arc drop — replaces the old float motion.div
+                z: tf.z,
                 rotateY: tf.rotateY,
-                scale:   tf.scale,
+                scale: tf.scale,
                 opacity: tf.opacity,
               }}
               transition={COVER_SPRING}
@@ -290,26 +290,26 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
               aria-label={isCenter ? card.title : `Go to ${card.title}`}
               className="absolute top-0 left-1/2"
               style={{
-                width:          CARD_W,
-                marginLeft:     -(CARD_W / 2),
+                width: CARD_W,
+                marginLeft: -(CARD_W / 2),
                 transformStyle: "preserve-3d",
-                zIndex:         10 - abs,
-                cursor:         isCenter ? "default" : "pointer",
+                zIndex: 10 - abs,
+                cursor: isCenter ? "default" : "pointer",
               }}
             >
               {/* Card surface */}
               <div
                 className="w-full rounded-[24px] overflow-hidden flex flex-col"
                 style={{
-                  height:  480,
+                  height: 480,
                   background: `linear-gradient(150deg, ${card.gradFrom} 0%, ${card.gradTo} 100%)`,
-                  border:  `1.5px solid ${card.borderColor}`,
+                  border: `1.5px solid ${card.borderColor}`,
                   boxShadow: isCenter
                     ? `0 8px 48px -6px ${card.glowColor}, 0 4px 20px rgba(30,58,95,0.12)`
                     : "0 4px 20px rgba(30,58,95,0.06)",
-                  filter:           isCenter ? "none" : `blur(${tf.blur}px) brightness(0.96)`,
-                  transition:       "filter 0.5s ease, box-shadow 0.5s ease",
-                  backdropFilter:   "blur(4px)",
+                  filter: isCenter ? "none" : `blur(${tf.blur}px) brightness(0.96)`,
+                  transition: "filter 0.5s ease, box-shadow 0.5s ease",
+                  backdropFilter: "blur(4px)",
                   WebkitBackdropFilter: "blur(4px)",
                 }}
               >
@@ -391,9 +391,9 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
           className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           style={{
             background: "rgba(255,255,255,0.70)",
-            border:     "1.5px solid rgba(139,198,255,0.45)",
-            color:      "#2E6FB4",
-            boxShadow:  "0 2px 8px rgba(30,58,95,0.07)",
+            border: "1.5px solid rgba(139,198,255,0.45)",
+            color: "#2E6FB4",
+            boxShadow: "0 2px 8px rgba(30,58,95,0.07)",
           }}
           aria-label="Previous card"
         >
@@ -410,8 +410,8 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
               onClick={() => manualNavigate(i)}
               className="transition-all duration-300 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
               style={{
-                width:      i === active ? 20 : 7,
-                height:     7,
+                width: i === active ? 20 : 7,
+                height: 7,
                 background: i === active ? cards[active].iconColor : "rgba(139,198,255,0.45)",
               }}
             />
@@ -423,9 +423,9 @@ function CoverFlow({ cards }: { cards: CertCard[] }) {
           className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           style={{
             background: "rgba(255,255,255,0.70)",
-            border:     "1.5px solid rgba(139,198,255,0.45)",
-            color:      "#2E6FB4",
-            boxShadow:  "0 2px 8px rgba(30,58,95,0.07)",
+            border: "1.5px solid rgba(139,198,255,0.45)",
+            color: "#2E6FB4",
+            boxShadow: "0 2px 8px rgba(30,58,95,0.07)",
           }}
           aria-label="Next card"
         >
@@ -484,7 +484,7 @@ function MedalIllustration() {
 
 export default function WhyGetCertifiedSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView   = useInView(sectionRef, { once: true, margin: "0px" });
+  const isInView = useInView(sectionRef, { once: true, margin: "0px" });
 
   return (
     <section

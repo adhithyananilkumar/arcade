@@ -66,22 +66,22 @@
 
     /* arcade brand palette */
     --ink: #14161c;
-    --paper: #ffffff;
-    --mist: #f6f7fb;
+    --paper: #eef5fc;
+    --mist: #e2eefc;
     --blue: #3457e8;
     --teal: #0fa676;
     --purple: #6d5ef0;
     --amber: #f2b23c;
     --coral: #f5654f;
-    --line: #ecedf3;
+    --line: #d8e6f7;
     --subtle: #6a6d7c;
 
     --background: var(--paper);
     --foreground: var(--ink);
-    --card: #ffffff;
+    --card: #f4f8fe;
     --card-foreground: var(--ink);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
+    --popover: oklch(0.99 0.01 245);
+    --popover-foreground: oklch(0.145 0.02 245);
     --primary: var(--ink);
     --primary-foreground: #ffffff;
     --secondary: oklch(0.97 0 0);
