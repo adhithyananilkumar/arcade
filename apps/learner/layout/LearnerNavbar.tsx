@@ -414,9 +414,9 @@ export default function LearnerNavbar() {
             {collaboratedWorkshopId && (
               <MenuItem 
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
-                onClick={() => router.push(hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`)}
+                onClick={() => router.push('/studio/collaborator-dashboard')}
               >
-                {hasMultipleCollabs ? 'Manage Workshops' : 'Manage Workshop'}
+                Manage Workshops
               </MenuItem>
             )}
             {showArcConsole && (

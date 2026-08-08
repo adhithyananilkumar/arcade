@@ -97,28 +97,20 @@ export default function LearnerDock() {
 
   const items = useMemo(() => {
     const list: DockNavItem[] = [...dockItems];
-    if (hasStudioAccess) {
+    const isCollaborator = !!collaboratedWorkshopId;
+    
+    if (hasStudioAccess || isCollaborator) {
       list.push({
         id: 'studio',
         label: 'Studio',
-        href: '/studio',
-        icon: LayoutDashboard,
-        activeColor: 'text-indigo-600 dark:text-indigo-400',
-        exact: false,
-      });
-    }
-    if (collaboratedWorkshopId) {
-      list.push({
-        id: 'manage-workshops',
-        label: 'Manage',
-        href: hasMultipleCollabs ? '/studio/my-collaborations' : `/studio/workshop/${collaboratedWorkshopId}`,
+        href: isCollaborator ? '/studio/collaborator-dashboard' : '/studio',
         icon: LayoutDashboard,
         activeColor: 'text-indigo-600 dark:text-indigo-400',
         exact: false,
       });
     }
     return list;
-  }, [hasStudioAccess, collaboratedWorkshopId, hasMultipleCollabs]);
+  }, [hasStudioAccess, collaboratedWorkshopId]);
   
   // If we are viewing a specific course, point the exam button to that course's exam.
   // Otherwise, point to a default test course for demonstration.
