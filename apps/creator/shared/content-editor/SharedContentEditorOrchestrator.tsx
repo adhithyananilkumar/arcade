@@ -72,7 +72,7 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor, QuestionBankPanel, QuizSelectorModal } from "@/domains/assessments";
+import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
@@ -583,18 +583,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
-
-  // Quiz Selector state
-  const [quizSelectorCallback, setQuizSelectorCallback] = useState<((quizId: string) => void) | null>(null);
-
-  useEffect(() => {
-    const handleOpenQuizSelector = (e: Event) => {
-      const customEvent = e as CustomEvent<{ onSelect: (id: string) => void }>;
-      setQuizSelectorCallback(() => customEvent.detail.onSelect);
-    };
-    window.addEventListener("arcade-open-quiz-selector", handleOpenQuizSelector);
-    return () => window.removeEventListener("arcade-open-quiz-selector", handleOpenQuizSelector);
-  }, []);
 
   // ── Drag and Drop Handlers ────────────────────────────────────────────────
   const sensors = useSensors(
@@ -1739,16 +1727,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
-      {quizSelectorCallback && (
-        <QuizSelectorModal
-          channelId={contentChannelId || undefined}
-          onClose={() => setQuizSelectorCallback(null)}
-          onSelect={(id) => {
-            quizSelectorCallback(id);
-            setQuizSelectorCallback(null);
-          }}
-        />
-      )}
       <ContentStatusHistoryModal
         contentId={contentId!}
         contentType={

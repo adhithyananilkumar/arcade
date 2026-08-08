@@ -1,30 +1,33 @@
 import { FileQuestion } from "lucide-react";
 import type { BlockDefinition } from "../types";
-import { QuizBlockNode } from "./extension";
-import { QuizBlockRender } from "./QuizBlockRender";
+import { QuizExtension } from "./extension";
 
 export const quizBlock: BlockDefinition = {
-  type: "quiz-block",
-  extension: QuizBlockNode,
-  renderComponent: QuizBlockRender,
+  type: "quizBlock", // Important: must match the outer block name
+  extension: QuizExtension,
   command: {
     id: "quiz-block",
     title: "Quiz",
-    description: "Embed an existing Quiz inline in this content",
+    description: "Create an interactive quiz inline",
     icon: FileQuestion,
     keywords: ["quiz", "knowledge check", "question", "assessment", "test"],
     run: (editor, range) => {
-      const event = new CustomEvent("arcade-open-quiz-selector", {
-        detail: {
-          onSelect: (quizId: string) => {
-            const chain = editor.chain().focus();
-            (range ? chain.deleteRange(range) : chain)
-              .insertContent({ type: "quiz-block", attrs: { quizId } })
-              .run();
-          }
-        }
-      });
-      window.dispatchEvent(event);
+      const chain = editor.chain().focus();
+      (range ? chain.deleteRange(range) : chain)
+        .insertContent({
+          type: "quizBlock",
+          content: [
+            {
+              type: "quizQuestion",
+              content: [
+                { type: "quizPrompt", content: [] },
+                { type: "quizOption", attrs: { isCorrect: true }, content: [] },
+                { type: "quizOption", attrs: { isCorrect: false }, content: [] },
+              ],
+            },
+          ],
+        })
+        .run();
     },
   },
 };

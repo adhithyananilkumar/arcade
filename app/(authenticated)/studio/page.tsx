@@ -28,6 +28,7 @@ import {
   Copy,
   Lock,
   User,
+  FileQuestion,
   HelpCircle,
 } from "lucide-react";
 
@@ -149,6 +150,13 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#FFF1E8] text-[#C45E28] border-[#FFD4BC]">
         <Wrench size={10} /> Workshop
+      </span>
+    );
+  }
+  if (type === "QUIZ") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+        <FileQuestion size={10} /> Quiz
       </span>
     );
   }
@@ -860,11 +868,14 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
   const isWorkshop = item.type === "WORKSHOP";
+  const isQuiz = item.type === "QUIZ";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
     : isWorkshop
       ? `/studio/workshop/${item.id}`
-      : `/studio/course/${item.id}/edit`;
+      : isQuiz
+        ? `/studio/quiz/${item.id}`
+        : `/studio/course/${item.id}/edit`;
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt

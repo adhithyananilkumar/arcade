@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { api } from "@/infrastructure/http/api";
-import { QuizEditor } from "@/domains/assessments/components/QuizEditor";
+import { StandaloneQuizEditor } from "@/domains/assessments";
 import { toast } from "sonner";
 import { use } from "react";
 
@@ -151,7 +151,7 @@ export default function StandaloneQuizEditorPage({
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <QuizEditor quizId={id} />
+          <StandaloneQuizEditor quizId={id} />
         </div>
       </main>
     </div>

@@ -217,6 +217,16 @@
   font-style: normal;
 }
 
+.ProseMirror [data-placeholder]:empty::before,
+.ProseMirror [data-placeholder]:has(br:only-child)::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+  font-style: normal;
+}
+
 /* ── Selection ── */
 .ProseMirror ::selection {
   background: rgba(99, 102, 241, 0.15);

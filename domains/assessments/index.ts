@@ -18,9 +18,9 @@
 // features/assessment/index.ts
 // Public surface of the assessment domain.
 export { QuizEditor } from "./components/QuizEditor";
+export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionBankPanel } from "./components/QuestionBankPanel";
-export { QuizSelectorModal } from "./components/QuizSelectorModal";
 export { getQuizStats } from "./api";
 export type {
   QuestionType,
