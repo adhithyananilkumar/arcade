@@ -294,7 +294,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
   const handleDuplicate = (id: string) => {
     const target = courses.find((c) => c.id === id);
     if (!target) return;
-    const duplicated: ExtendedCourse = {
+    const duplicated: ExtendedContent = {
       ...target,
       id: `course-${Date.now()}`,
       title: `${target.title} (Copy)`,
@@ -343,7 +343,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
         {/* Middle & Right Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Type Filter */}
-          <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
+          <Select value={selectedType} onValueChange={(val) => setSelectedType(val || 'ALL')}>
             <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
               <SelectValue placeholder="All Types">
                 {selectedType === 'ALL' ? 'All Types' : selectedType === 'Course' ? 'Courses' : selectedType === 'Article' ? 'Articles' : 'Events'}
@@ -358,7 +358,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
           </Select>
 
           {/* Category Filter */}
-          <Select value={selectedCategory} onValueChange={(val) => setSelectedCategory(val)}>
+          <Select value={selectedCategory} onValueChange={(val) => setSelectedCategory(val || 'ALL')}>
             <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
               <SelectValue placeholder="All Categories">
                 {selectedCategory === 'ALL' ? 'All Categories' : selectedCategory}
@@ -375,7 +375,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
           </Select>
 
           {/* Status Filter */}
-          <Select value={selectedStatus} onValueChange={(val) => setSelectedStatus(val)}>
+          <Select value={selectedStatus} onValueChange={(val) => setSelectedStatus(val || 'ALL')}>
             <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
               <SelectValue placeholder="All Statuses">
                 {selectedStatus === 'ALL' ? 'All Statuses' : selectedStatus === 'PUBLISHED' ? 'Published' : selectedStatus === 'DRAFT' ? 'Draft' : 'Archived'}

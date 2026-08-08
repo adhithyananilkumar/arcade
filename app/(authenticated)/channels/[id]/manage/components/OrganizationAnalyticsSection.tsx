@@ -24,6 +24,7 @@ export interface ReviewItem {
   date: string;
   reviewText: string;
   instructorResponse?: string;
+  cardSize?: 'wide' | 'normal';
 }
 
 const mockReviews: ReviewItem[] = [

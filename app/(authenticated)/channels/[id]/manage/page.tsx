@@ -187,7 +187,7 @@ export default function ManageChannelPage() {
 
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
-  const isPersonalChannel = channel.type?.toUpperCase() === 'PERSONAL' || channel.isPersonal;
+  const isPersonalChannel = channel.isPersonal;
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
@@ -220,7 +220,6 @@ export default function ManageChannelPage() {
           aria-label="Floating Organization Navigation Dock"
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
         >
-        {/* 1. Home Icon Button */}
         <motion.div 
           layout 
           className={`relative group shrink-0 ${hoveredTab === 'HOME' ? 'mx-2 sm:mx-3' : 'mx-0'}`}
@@ -228,16 +227,18 @@ export default function ManageChannelPage() {
           onHoverEnd={() => setHoveredTab(null)}
         >
           <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => router.push('/')}
-                className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b] transition-all duration-300 cursor-pointer"
-                title="Go to Home"
-              >
-                <Home size={19} className="group-hover:scale-110 transition-transform" />
-              </button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={() => router.push('/')}
+                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b] transition-all duration-300 cursor-pointer"
+                  title="Go to Home"
+                >
+                  <Home size={19} className="group-hover:scale-110 transition-transform" />
+                </button>
+              }
+            />
             <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
               Home
             </TooltipContent>
@@ -260,23 +261,25 @@ export default function ManageChannelPage() {
               onHoverEnd={() => setHoveredTab(null)}
             >
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
-                      active
-                        ? tab.id === 'DANGER'
-                          ? 'text-rose-600'
-                          : 'text-indigo-600'
-                        : tab.id === 'DANGER'
-                        ? 'text-rose-600 hover:bg-rose-50'
-                        : 'text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]'
-                    }`}
-                  >
-                    <Icon size={19} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
-                  </button>
-                </TooltipTrigger>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
+                        active
+                          ? tab.id === 'DANGER'
+                            ? 'text-rose-600'
+                            : 'text-indigo-600'
+                          : tab.id === 'DANGER'
+                          ? 'text-rose-600 hover:bg-rose-50'
+                          : 'text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]'
+                      }`}
+                    >
+                      <Icon size={19} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
+                    </button>
+                  }
+                />
                 <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
                   {tab.label}
                 </TooltipContent>
