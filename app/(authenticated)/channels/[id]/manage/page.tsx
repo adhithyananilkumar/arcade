@@ -173,7 +173,7 @@ export default function ManageChannelPage() {
 
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
-  const isPersonalChannel = channel.type?.toUpperCase() === 'PERSONAL' || channel.isPersonal;
+  const isPersonalChannel = (channel as any).type?.toUpperCase() === 'PERSONAL' || channel.isPersonal;
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
@@ -208,7 +208,7 @@ export default function ManageChannelPage() {
           onHoverEnd={() => setHoveredTab(null)}
         >
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <button
                 type="button"
                 onClick={() => router.push('/')}
@@ -240,7 +240,7 @@ export default function ManageChannelPage() {
               onHoverEnd={() => setHoveredTab(null)}
             >
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <button
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
