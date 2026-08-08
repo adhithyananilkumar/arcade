@@ -134,7 +134,7 @@ export default function CollegesPageClient() {
               className="flex flex-wrap gap-4 items-center w-full sm:w-auto"
             >
               <Link
-                href="/register?role=creator"
+                href="/sign?mode=signup"
                 className="w-full sm:w-auto text-center bg-zinc-900 hover:bg-zinc-800 text-white font-medium px-7 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm"
               >
                 <span>Become a Creator</span>

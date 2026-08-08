@@ -1,4 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Satisfy&family=Alex+Brush&family=Great+Vibes&family=Marck+Script&family=Caveat:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Outfit:wght@600;700&family=Space+Grotesk:wght@600;700&family=Dancing+Script:wght@600;700&family=Satisfy&family=Alex+Brush&family=Great+Vibes&family=Marck+Script&family=Caveat:wght@600;700&display=swap');
+
+.font-display-leaderboard {
+  font-family: 'Plus Jakarta Sans', 'Outfit', 'Space Grotesk', var(--font-bricolage), system-ui, -apple-system, sans-serif;
+}
+
 
 @font-face {
   font-family: "Voyage";

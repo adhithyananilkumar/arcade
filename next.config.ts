@@ -22,6 +22,21 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/login',
+        destination: '/sign?mode=login',
+        permanent: false,
+      },
+      {
+        source: '/signup',
+        destination: '/sign?mode=signup',
+        permanent: false,
+      },
+      {
+        source: '/register',
+        destination: '/sign?mode=signup',
+        permanent: false,
+      },
+      {
         source: '/dashboard/admin/channels',
         destination: '/arc-console/channels',
         permanent: true,

@@ -150,7 +150,7 @@ export default function CreatorHero() {
           className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto pt-2"
         >
           <Link
-            href="/register?mode=signup"
+            href="/sign?mode=signup"
             className="w-full sm:w-auto text-center bg-zinc-950 hover:bg-zinc-800 text-white font-bold px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer"
           >
             <span>Become a Creator</span>

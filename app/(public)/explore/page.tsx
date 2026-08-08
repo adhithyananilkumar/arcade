@@ -1536,7 +1536,7 @@ function CoursesContent() {
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", paddingTop: "14px", position: "relative", zIndex: 1 }}>
                           <Link
-                            href="/login"
+                            href="/sign?mode=login"
                             className="explore-register-btn"
                             style={{
                               "--btn-primary": cardColors.primary,

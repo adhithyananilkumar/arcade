@@ -13,7 +13,7 @@ export default function CreatorCTA() {
         </h2>
         <p className="cta-desc">Join Arcade as a creator and start building learning experiences that educate, inspire, and create lasting impact.</p>
         <div className="cta-actions">
-          <Link href="/register?role=creator" className="btn btn-cta-primary">
+          <Link href="/sign?mode=signup" className="btn btn-cta-primary">
             Become a Creator →
           </Link>
           <a href="#tools" className="btn btn-cta-secondary">
