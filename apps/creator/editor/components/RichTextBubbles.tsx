@@ -16,7 +16,6 @@ import "easydrawer/styles.css";
 import "katex/dist/katex.min.css";
 import {
   RichTextBubbleColumns,
-  RichTextBubbleDrawer,
   RichTextBubbleExcalidraw,
   RichTextBubbleIframe,
   RichTextBubbleKatex,
@@ -27,7 +26,6 @@ import {
   RichTextBubbleMermaid,
   RichTextBubbleTable,
   RichTextBubbleText,
-  RichTextBubbleTwitter,
   RichTextBubbleCallout,
   RichTextBubbleCodeBlock,
   RichTextBubbleMenuDragHandle,
@@ -110,7 +108,15 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
   });
 
   const commandList = useMemo(() => {
-    const defaults = renderCommandListDefault({ t });
+    let defaults = renderCommandListDefault({ t });
+    // Filter out commands for removed extensions
+    defaults = defaults
+      .map((group) => ({
+        ...group,
+        commands: group.commands.filter((cmd) => !["twitter", "drawer"].includes(cmd.name)),
+      }))
+      .filter((group) => group.commands.length > 0);
+
     const customCommands = getBlockDefinitions()
       .map((b) => b.command)
       .filter((c): c is NonNullable<typeof c> => Boolean(c))
@@ -140,7 +146,6 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
       {!plainText && (
         <>
           <RichTextBubbleColumns />
-          <RichTextBubbleDrawer />
           <RichTextBubbleExcalidraw />
           <RichTextBubbleIframe />
           <RichTextBubbleKatex />
@@ -151,7 +156,6 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
 
           <RichTextBubbleMermaid />
           <RichTextBubbleTable />
-          <RichTextBubbleTwitter />
           <RichTextBubbleCallout />
           <RichTextBubbleCodeBlock />
         </>

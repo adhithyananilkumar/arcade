@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Channel, channelService } from '@/domains/channels';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { Tv, Clock, CheckCircle, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -9,10 +10,42 @@ import Link from 'next/link';
 export function MyChannels() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchMyChannels();
   }, []);
+
+  const isStaffUser = useMemo(() => {
+    if (!user) return false;
+    const hasStaffPlatformRole = user.platformRoles?.some(
+      (r) => r.code?.toUpperCase() === 'STAFF' || r.name?.toUpperCase() === 'STAFF'
+    );
+    const hasStaffLegacyRole = user.roles?.some((r) =>
+      typeof r === 'string'
+        ? r.toUpperCase() === 'STAFF'
+        : r.code?.toUpperCase() === 'STAFF' || r.name?.toUpperCase() === 'STAFF'
+    );
+    const hasStaffMembership = user.channelMemberships?.some((m) =>
+      m.roles?.some(
+        (r) =>
+          r.code?.toUpperCase() === 'STAFF' ||
+          r.name?.toUpperCase() === 'STAFF' ||
+          r.name?.toLowerCase().includes('staff')
+      )
+    );
+    return Boolean(hasStaffPlatformRole || hasStaffLegacyRole || hasStaffMembership);
+  }, [user]);
+
+  const displayedChannels = useMemo(() => {
+    if (isStaffUser) {
+      // Staff members only see personal channels and not organizational channels
+      return channels.filter(
+        (c) => c.isPersonal || c.type?.toUpperCase() === 'PERSONAL'
+      );
+    }
+    return channels;
+  }, [channels, isStaffUser]);
 
   const fetchMyChannels = async () => {
     try {
@@ -42,15 +75,17 @@ export function MyChannels() {
     );
   }
 
-  if (channels.length === 0) {
+  if (displayedChannels.length === 0) {
     return (
       <div className="py-12 text-center">
         <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100">
           <Tv size={22} className="text-slate-400" />
         </div>
-        <h3 className="text-sm font-bold text-[#14142b]">No channels yet</h3>
+        <h3 className="text-sm font-bold text-[#14142b]">No channels available</h3>
         <p className="mt-1 text-sm text-slate-400">
-          Create your first channel from Settings to start publishing.
+          {isStaffUser
+            ? 'Personal channels associated with your account will appear here.'
+            : 'Create your first channel from Settings to start publishing.'}
         </p>
       </div>
     );
@@ -58,7 +93,7 @@ export function MyChannels() {
 
   return (
     <div className="divide-y divide-slate-100">
-      {channels.map((channel) => (
+      {displayedChannels.map((channel) => (
         <div
           key={channel.id}
           className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"

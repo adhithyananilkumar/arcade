@@ -27,15 +27,13 @@ import { RichTextIframe } from "reactjs-tiptap-editor/iframe";
 import { RichTextImportWord } from "reactjs-tiptap-editor/importword";
 import { RichTextAttachment } from "reactjs-tiptap-editor/attachment";
 import { RichTextExcalidraw } from "reactjs-tiptap-editor/excalidraw";
-import { RichTextDrawer } from "reactjs-tiptap-editor/drawer";
-import { RichTextTwitter } from "reactjs-tiptap-editor/twitter";
 import { RichTextHorizontalRule } from "reactjs-tiptap-editor/horizontalrule";
 import { RichTextCodeBlock } from "reactjs-tiptap-editor/codeblock";
 
 import { Separator } from "@/shared/design-system/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/design-system/ui/popover";
 import { Button } from "@/shared/design-system/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Subscript, Superscript } from "lucide-react";
 import { VideoUploadButton } from "./VideoUploadButton";
 import { ImageUploadButton } from "./ImageUploadButton";
 import { UploadQueuePanel } from "./UploadQueuePanel";
@@ -120,6 +118,24 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
               Insert Elements
             </div>
             <div className="flex flex-wrap gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                onClick={() => editor?.chain().focus().toggleSubscript().run()}
+                title="Subscript"
+              >
+                <Subscript size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                onClick={() => editor?.chain().focus().toggleSuperscript().run()}
+                title="Superscript"
+              >
+                <Superscript size={16} />
+              </Button>
               <RichTextEmoji />
               <ImageUploadButton editor={editor} />
               <VideoUploadButton editor={editor} />
@@ -130,8 +146,6 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
               <RichTextImportWord />
               <RichTextAttachment />
               <RichTextExcalidraw />
-              <RichTextDrawer />
-              <RichTextTwitter />
               <RichTextHorizontalRule />
               <RichTextCodeBlock />
             </div>

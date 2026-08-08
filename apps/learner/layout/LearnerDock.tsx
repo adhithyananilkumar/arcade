@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useParams } from 'next/navigation';
-import { Home, Compass, BookOpen, Crown, Trophy, ClipboardList } from 'lucide-react';
+import { Home, Compass, BookOpen, Crown, Trophy, Waypoints, ClipboardList } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 
@@ -42,9 +42,17 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/profile',
+    href: '/achievements',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
+    exact: false,
+  },
+  {
+    id: 'roadmap',
+    label: 'Roadmap',
+    href: '/roadmaps',
+    icon: Waypoints,
+    activeColor: 'text-cyan-600 dark:text-cyan-400',
     exact: false,
   },
   {
@@ -67,10 +75,9 @@ export default function LearnerDock() {
   // Otherwise, point to a default test course for demonstration.
   const currentCourseId = params?.courseId || 'default';
 
-  // Hide the dock on content studio, roadmaps, settings, and active proctored exams
+  // Hide the dock on content studio, settings, and active proctored exams
   if (
     pathname.startsWith('/content') ||
-    pathname.startsWith('/roadmaps') ||
     pathname.startsWith('/settings') ||
     /\/exam\/(start|terminated)/.test(pathname)
   ) {

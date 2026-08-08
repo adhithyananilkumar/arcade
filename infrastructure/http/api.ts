@@ -110,7 +110,7 @@ async function request<T>(
 // ── Exports ────────────────────────────────────────────────────────────────────
 
 export const api = {
-  get: <T>(path: string) => request<T>(path, { method: "GET" }),
+  get: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, { method: "POST", body: body instanceof FormData ? body : JSON.stringify(body), ...options }),
   patch: <T>(path: string, body?: unknown, options?: RequestInit) =>

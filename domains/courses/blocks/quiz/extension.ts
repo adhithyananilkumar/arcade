@@ -1,27 +1,18 @@
-import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { QuizBlockEditView } from "./QuizBlockEditView";
+import { Extension } from "@tiptap/core";
+import { QuizBlockNode } from "./native/QuizBlock";
+import { QuizQuestionNode } from "./native/QuizQuestion";
+import { QuizPromptNode } from "./native/QuizPrompt";
+import { QuizOptionNode } from "./native/QuizOption";
 
-export const QuizBlockNode = Node.create({
-  name: "quiz-block",
-  group: "block",
-  atom: true,
-
-  addAttributes() {
-    return {
-      quizId: { default: null },
-    };
-  },
-
-  parseHTML() {
-    return [{ tag: 'div[data-type="quiz-block"]' }];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "quiz-block" })];
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(QuizBlockEditView);
+export const QuizExtension = Extension.create({
+  name: "quizExtension",
+  
+  addExtensions() {
+    return [
+      QuizBlockNode,
+      QuizQuestionNode,
+      QuizPromptNode,
+      QuizOptionNode,
+    ];
   },
 });

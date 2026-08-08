@@ -35,10 +35,9 @@ export default function ArcConsoleLayout({
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield }] : []),
   ];
 
-  if (navItems.length === 0) {
-    notFound();
-  }
-
+  // Removed notFound() when navItems is empty. This allows Org staff to access 
+  // specific console routes (like reviews/[id]) even if they don't have global
+  // console sidebar links.
   return (
     <div
       className="relative min-h-screen w-full"

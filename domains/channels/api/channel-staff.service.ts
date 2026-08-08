@@ -9,6 +9,7 @@ export interface ChannelStaff {
   id: string;
   userId: string;
   userName: string;
+  username: string;
   email: string;
   roles: ChannelRoleSummary[];
   joinedAt: string;
