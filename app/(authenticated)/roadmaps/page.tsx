@@ -175,11 +175,11 @@ export default function SerpentineRoadmapPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* ── Top Header Navigation Section (Stacked Vertical Layout) ────────────── */}
-        <div className="flex flex-col items-start gap-6 pb-8 border-b border-slate-200/80">
+        {/* ── Top Header Navigation Section (Side-by-Side: Heading on Left, Category Selector Icons on Right) ── */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-8 border-b border-slate-200/80 w-full">
 
-          {/* Handwritten Reference Match Header */}
-          <div className="relative space-y-2 max-w-3xl">
+          {/* Left Side: Main Heading Text */}
+          <div className="relative space-y-2 max-w-xl text-left shrink-0">
             {/* Soft Watercolor Teal Brushstroke Background Wash */}
             <div className="absolute -inset-4 bg-gradient-to-r from-[#27C5D8]/20 via-[#2C83F5]/10 to-transparent blur-2xl pointer-events-none -z-10 rounded-full" />
 
@@ -223,13 +223,13 @@ export default function SerpentineRoadmapPage() {
               </div>
             </div>
 
-            <p className="text-sm font-semibold text-slate-500 leading-relaxed pt-1">
-              Select a category below to explore single-topic roadmaps and specialized career learning tracks.
+            <p className="text-sm font-semibold text-slate-500 leading-relaxed pt-1 text-left">
+              Select a category to explore specialized career learning tracks.
             </p>
           </div>
 
-          {/* Category Selector Pills Positioned Directly UNDER the Heading */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
+          {/* Right Side: Category Selector Icons (Positioned on the Right Side of Heading) */}
+          <div className="flex flex-wrap items-center justify-start lg:justify-end gap-6 sm:gap-8 pt-2">
             {MAIN_CATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.id;
               const Icon = cat.icon;
@@ -239,14 +239,41 @@ export default function SerpentineRoadmapPage() {
                   key={cat.id}
                   type="button"
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`flex items-center gap-2.5 px-5 py-3 rounded-full text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-lg shadow-blue-500/25 scale-105'
-                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                  }`}
+                  className="flex flex-col items-center gap-2.5 group cursor-pointer relative"
                 >
-                  <Icon size={16} className={isActive ? 'text-white' : 'text-[#2962D6]'} />
-                  <span>{cat.label}</span>
+                  {/* Top Circle Badge */}
+                  <div
+                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-tr from-[#1D4ED8] via-[#2563EB] to-[#38BDF8] text-white shadow-lg shadow-blue-500/30 scale-105'
+                        : 'bg-[#F0F4FF] text-slate-700 hover:bg-slate-200/80'
+                    }`}
+                  >
+                    <Icon size={24} className={isActive ? 'text-white' : 'text-[#1E293B]'} />
+                  </div>
+
+                  {/* Centered Label Underneath */}
+                  <div className="flex flex-col items-center text-center max-w-[100px]">
+                    <span
+                      className={`text-xs sm:text-sm font-extrabold leading-tight text-center ${
+                        isActive ? 'text-[#2563EB]' : 'text-slate-800 group-hover:text-slate-900'
+                      }`}
+                    >
+                      {cat.label}
+                    </span>
+
+                    {/* Active State Small Indicator Underline directly underneath text */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeCategoryIndicator"
+                        className="mt-1"
+                      >
+                        <svg className="w-8 h-2 text-[#2563EB]" viewBox="0 0 32 8" fill="none">
+                          <path d="M 4,2 C 12,7 20,7 28,2" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                      </motion.div>
+                    )}
+                  </div>
                 </button>
               );
             })}
