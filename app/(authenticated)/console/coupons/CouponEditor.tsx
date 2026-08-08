@@ -106,7 +106,6 @@ export function CouponEditor() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
-    code: '',
     name: '',
     description: '',
     discountType: 'PERCENT' as 'PERCENT' | 'FIXED',
@@ -114,10 +113,12 @@ export function CouponEditor() {
     currency: 'USD',
     templateId: '',
     expiresAt: '',
+    quantity: '1',
   });
   const [templateName, setTemplateName] = useState('');
   const [templateFile, setTemplateFile] = useState<File | null>(null);
   const [recipientId, setRecipientId] = useState('');
+  const [issueQuantity, setIssueQuantity] = useState('1');
 
   const fetchCoupons = useCallback(async () => {
     try {
@@ -230,10 +231,10 @@ export function CouponEditor() {
       toast.error('Set an expiry date');
       return;
     }
+    const quantity = Math.min(100, Math.max(1, Number(form.quantity) || 1));
     try {
       setSaving(true);
       const created = await CouponService.create({
-        code: form.code.trim(),
         name: form.name.trim(),
         description: form.description.trim() || undefined,
         discountType: form.discountType,
@@ -241,11 +242,15 @@ export function CouponEditor() {
         currency: form.currency.trim() || 'USD',
         templateId: form.templateId,
         expiresAt: toIsoEndOfDay(form.expiresAt),
+        quantity,
       });
-      toast.success('Coupon created');
+      toast.success(
+        quantity === 1
+          ? `Coupon created with QR (${created[0]?.couponCode})`
+          : `Created ${created.length} coupons with unique codes and QR`,
+      );
       setCreateOpen(false);
       setForm({
-        code: '',
         name: '',
         description: '',
         discountType: 'PERCENT',
@@ -253,9 +258,13 @@ export function CouponEditor() {
         currency: 'USD',
         templateId: form.templateId,
         expiresAt: '',
+        quantity: '1',
       });
       await fetchCoupons();
-      setSelectedId(created.id);
+      setSelectedId(created[0]?.couponId ?? null);
+      if (created.length === 1) {
+        router.push(`/console/coupons/issued/${created[0].id}`);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to create coupon');
     } finally {
@@ -266,13 +275,22 @@ export function CouponEditor() {
   const handleIssue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedId || !recipientId) return;
+    const quantity = Math.min(100, Math.max(1, Number(issueQuantity) || 1));
     try {
       setSaving(true);
-      const issuedUc = await CouponService.issue(selectedId, recipientId);
-      await CouponService.generateQr(issuedUc.id);
-      toast.success('Coupon generated — you can download the PNG');
+      const issuedList = await CouponService.issue(selectedId, recipientId, quantity);
+      toast.success(
+        quantity === 1
+          ? 'Coupon generated with QR — you can download the PNG'
+          : `Generated ${issuedList.length} coupons with QR codes`,
+      );
       setIssueOpen(false);
-      router.push(`/console/coupons/issued/${issuedUc.id}`);
+      setIssueQuantity('1');
+      await fetchCoupons();
+      if (selectedId) await fetchIssued(selectedId);
+      if (issuedList.length === 1) {
+        router.push(`/console/coupons/issued/${issuedList[0].id}`);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Failed to issue coupon');
     } finally {
@@ -578,15 +596,6 @@ export function CouponEditor() {
                 Upload a template first with <strong>Add template</strong>.
               </p>
             ) : null}
-            <Field label="Code">
-              <input
-                required
-                value={form.code}
-                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
-                className={inputCls}
-                placeholder="SUMMER20"
-              />
-            </Field>
             <Field label="Name">
               <input
                 required
@@ -654,6 +663,20 @@ export function CouponEditor() {
                 />
               </Field>
             </div>
+            <Field label="Quantity">
+              <input
+                required
+                type="number"
+                min={1}
+                max={100}
+                value={form.quantity}
+                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                className={inputCls}
+              />
+              <p className="mt-1 text-[11px] text-slate-400">
+                Each coupon gets a unique code automatically (e.g. ARC-K7M2P9QX).
+              </p>
+            </Field>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
@@ -668,7 +691,9 @@ export function CouponEditor() {
                 className="inline-flex items-center gap-2 rounded-lg bg-[#14142b] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={14} /> : null}
-                Create coupon
+                {Number(form.quantity) > 1
+                  ? `Create ${form.quantity} coupons`
+                  : 'Create coupon'}
               </button>
             </div>
           </form>
@@ -693,8 +718,22 @@ export function CouponEditor() {
                 ))}
               </select>
             </Field>
+            <Field label="Quantity">
+              <input
+                required
+                type="number"
+                min={1}
+                max={100}
+                value={issueQuantity}
+                onChange={(e) => setIssueQuantity(e.target.value)}
+                className={inputCls}
+              />
+              <p className="mt-1 text-[11px] text-slate-400">
+                Issues this many coupons — each gets a unique code and QR.
+              </p>
+            </Field>
             <p className="text-xs text-slate-500">
-              Generates a QR. You can then download the coupon as PNG.
+              You can download each coupon as PNG from the generated list.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -710,7 +749,9 @@ export function CouponEditor() {
                 className="inline-flex items-center gap-2 rounded-lg bg-[#00BAF2] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 {saving ? <Loader2 className="animate-spin" size={14} /> : null}
-                Generate coupon
+                {Number(issueQuantity) > 1
+                  ? `Generate ${issueQuantity} coupons`
+                  : 'Generate coupon'}
               </button>
             </div>
           </form>

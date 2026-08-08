@@ -82,7 +82,7 @@ export interface CouponDto {
 }
 
 export interface CreateCouponPayload {
-  code: string;
+  code?: string;
   name: string;
   description?: string;
   discountType: 'PERCENT' | 'FIXED';
@@ -91,6 +91,7 @@ export interface CreateCouponPayload {
   workshopId?: string | null;
   templateId: string;
   expiresAt: string;
+  quantity?: number;
 }
 
 export interface GenerateQrResponse {
@@ -140,16 +141,24 @@ export class CouponService {
     return res.json();
   }
 
-  static async create(payload: CreateCouponPayload): Promise<CouponDto> {
-    return api.post<CouponDto>('/api/coupons', payload);
+  static async create(payload: CreateCouponPayload): Promise<UserCouponDto[]> {
+    return api.post<UserCouponDto[]>('/api/coupons', payload);
   }
 
   static async listIssued(couponId: string): Promise<UserCouponDto[]> {
     return api.get<UserCouponDto[]>(`/api/coupons/${couponId}/issued`);
   }
 
-  static async issue(couponId: string, recipientUserId: string): Promise<UserCouponDto> {
-    return api.post<UserCouponDto>('/api/coupons/issue', { couponId, recipientUserId });
+  static async issue(
+    couponId: string,
+    recipientUserId: string,
+    quantity = 1,
+  ): Promise<UserCouponDto[]> {
+    return api.post<UserCouponDto[]>('/api/coupons/issue', {
+      couponId,
+      recipientUserId,
+      quantity,
+    });
   }
 
   static async generateQr(userCouponId: string): Promise<GenerateQrResponse> {
