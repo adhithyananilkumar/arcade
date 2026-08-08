@@ -16,6 +16,7 @@ export interface Channel {
   contentUnlistDate?: string;
   ownerId: string;
   ownerName: string;
+  ownerUsername?: string;
   ownerEmail?: string;
   ownerPhone?: string;
   createdAt: string;
@@ -32,6 +33,7 @@ export interface ChannelContentItem {
   updatedAt: string;
   authorId?: string | null;
   authorName?: string | null;
+  authorUsername?: string | null;
 }
 
 export interface ChannelAuditLogEntry {

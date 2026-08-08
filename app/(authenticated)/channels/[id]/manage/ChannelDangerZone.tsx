@@ -276,6 +276,26 @@ export function ChannelDangerZone({ channel }: Props) {
   });
 
   return (
+  const isProposedOwner = !!(transferRequest && transferRequest.status === 'PENDING' && user?.id === transferRequest.proposedOwnerId);
+
+  if (!isOwner) {
+    if (loadingTransfer) {
+      return (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+        </div>
+      );
+    }
+    if (!isProposedOwner) {
+      return (
+        <div className="p-6 text-center text-sm font-medium text-slate-400">
+          Only the channel owner can access destructive actions.
+        </div>
+      );
+    }
+  }
+
+  return (
     <div className="max-w-3xl space-y-6">
       <div>
         <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">

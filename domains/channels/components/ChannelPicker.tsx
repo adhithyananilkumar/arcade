@@ -29,12 +29,21 @@ export function ChannelPicker({ channels, value, onChange, label = 'Channel' }: 
       </label>
       <Select value={value} onValueChange={(v) => onChange(v ?? '')}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a channel..." />
+          {value ? (
+            <span className="flex flex-1 text-left line-clamp-1">
+              {(() => {
+                const c = channels.find(ch => ch.id === value);
+                return c ? (c.isPersonal ? 'Personal' : c.name) : value;
+              })()}
+            </span>
+          ) : (
+            <SelectValue placeholder="Select a channel..." />
+          )}
         </SelectTrigger>
         <SelectContent>
           {channels.map((channel) => (
             <SelectItem key={channel.id} value={channel.id}>
-              {channel.name} {channel.isPersonal ? '(Personal)' : ''}
+              {channel.isPersonal ? 'Personal' : channel.name}
             </SelectItem>
           ))}
         </SelectContent>

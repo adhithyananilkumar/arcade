@@ -89,6 +89,10 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
       toast.error("Please enter a valid price for a paid course.");
       return;
     }
+    if (!message.trim()) {
+      toast.error("Please provide a submission message.");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
