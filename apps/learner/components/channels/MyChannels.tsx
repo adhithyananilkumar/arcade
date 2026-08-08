@@ -41,7 +41,7 @@ export function MyChannels() {
     if (isStaffUser) {
       // Staff members only see personal channels and not organizational channels
       return channels.filter(
-        (c) => c.isPersonal || (c as any).type?.toUpperCase() === 'PERSONAL'
+        (c) => c.isPersonal
       );
     }
     return channels;

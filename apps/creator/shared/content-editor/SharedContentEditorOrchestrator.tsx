@@ -1668,8 +1668,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                  roadmap={roadmapData}
                  readOnly={status === "SUBMITTED"}
                  onGraphChange={async (graphJson) => {
-                   await roadmapService.updateRoadmap(contentId!, { graphJson });
-                   setHasDraftChanges(true);
+                   try {
+                     await roadmapService.updateRoadmap(contentId!, { graphJson });
+                     setHasDraftChanges(true);
+                   } catch (err: any) {
+                     // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
+                     // as a subsequent save will likely catch up if it's rapid typing.
+                     if (err?.status === 409 || err?.response?.status === 409) {
+                       console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
+                     } else {
+                       console.error("Failed to save roadmap graph", err);
+                     }
+                   }
                  }}
                />
             </div>

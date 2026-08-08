@@ -1,42 +1,47 @@
 "use client"
 
 import {
-  Award,
   BadgeCheck,
   BookOpen,
   Briefcase,
   Check,
   ChevronDown,
-  ChevronRight,
   Clock,
   GraduationCap,
-  Heart,
-  Play,
   PlayCircle,
   Radio,
-  Settings,
-  Share2,
   Sparkles,
   Star,
   Users,
-  Volume2,
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
-import InteractiveBookSpread from "@/components/course/InteractiveBookSpread"
 import { UserService } from "@/domains/identity"
-import CourseReviewsSection from "@/components/course/CourseReviewsSection"
-import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
-import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
-import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
-import FoldText from "@/components/ui/FoldText"
-import { motion } from "framer-motion"
-import PartyPopper, { PartyPopperRef } from "@/components/ui/PartyPopper"
+import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/design-system/ui/dialog"
+
+// --- Import Shared Learning UI ---
+import {
+  LearningLayout,
+  LearningHero,
+  LearningTabs,
+  LearningReviews,
+  LearningCta,
+  LearningBadge,
+  Avatar
+} from "@/shared/design-system/ui/learning"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -49,21 +54,8 @@ type Module = {
   lessons: { title: string; length: string }[]
 }
 
-type Review = {
-  name: string
-  role: string
-  quote: string
-  dark: boolean
-  accent: string
-}
-
 const COURSE_TITLE = "Design interfaces people actually love"
 const CATEGORY = "UI / UX & Product Design"
-
-const TABS = ["Overview", "Syllabus", "Instructor", "Certificate"] as const
-type Tab = (typeof TABS)[number]
-
-const NAV_LINKS = ["Explore", "Forums", "For Colleges", "Docs"]
 
 const INSTRUCTOR = {
   name: "Maya Okafor",
@@ -137,31 +129,9 @@ const MODULES: Module[] = [
   },
 ]
 
-const MODULE_LIGHT_GRADIENTS = [
-  "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-  "linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(251, 146, 60, 0.04) 100%)",
-  "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-  "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
-]
-
-const MODULE_BORDER_COLORS = [
-  "rgba(59, 130, 246, 0.28)",
-  "rgba(245, 158, 11, 0.28)",
-  "rgba(139, 92, 246, 0.28)",
-  "rgba(16, 185, 129, 0.28)",
-]
-
-const EXPERTISE_TAG_STYLES = [
-  { bg: "rgba(59, 130, 246, 0.14)", border: "rgba(59, 130, 246, 0.3)", text: "#1d4ed8" },
-  { bg: "rgba(245, 158, 11, 0.14)", border: "rgba(245, 158, 11, 0.3)", text: "#b45309" },
-  { bg: "rgba(139, 92, 246, 0.14)", border: "rgba(139, 92, 246, 0.3)", text: "#6d28d9" },
-  { bg: "rgba(16, 185, 129, 0.14)", border: "rgba(16, 185, 129, 0.3)", text: "#047857" },
-  { bg: "rgba(236, 72, 153, 0.14)", border: "rgba(236, 72, 153, 0.3)", text: "#be185d" },
-]
-
 const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
 
-const REVIEWS: Review[] = [
+const REVIEWS = [
   {
     name: "Adam Wathan",
     role: "Founder, Tailwind",
@@ -214,558 +184,6 @@ const HIGHLIGHTS = [
   "A shareable, verified certificate",
 ]
 
-/* ------------------------------------------------------------------ */
-/*  Decorative marks                                                   */
-/* ------------------------------------------------------------------ */
-
-function FlowerMark({
-  size = 24,
-  className,
-  color = "currentColor",
-}: {
-  size?: number
-  className?: string
-  color?: string
-}) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true" className={className}>
-      <path
-        fill={color}
-        d="M16 3.2c1.7 0 3.1 1.2 3.4 2.8a3.5 3.5 0 0 1 4.8 1.4 3.5 3.5 0 0 1 1.4 4.8 3.5 3.5 0 0 1 0 5.6 3.5 3.5 0 0 1-1.4 4.8 3.5 3.5 0 0 1-4.8 1.4 3.5 3.5 0 0 1-6.8 0 3.5 3.5 0 0 1-4.8-1.4 3.5 3.5 0 0 1-1.4-4.8 3.5 3.5 0 0 1 0-5.6 3.5 3.5 0 0 1 1.4-4.8 3.5 3.5 0 0 1 4.8-1.4A3.5 3.5 0 0 1 16 3.2Z"
-      />
-      <circle cx="16" cy="16" r="4.2" fill="#ffffff" />
-    </svg>
-  )
-}
-
-function BurstMark({ size = 22, className }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
-      <circle cx="9" cy="9" r="5" fill="var(--color-blue)" />
-      <circle cx="15" cy="9" r="5" fill="var(--color-teal)" fillOpacity="0.85" />
-      <circle cx="9" cy="15" r="5" fill="var(--color-amber)" fillOpacity="0.9" />
-      <circle cx="15" cy="15" r="5" fill="var(--color-purple)" fillOpacity="0.85" />
-    </svg>
-  )
-}
-
-function Avatar({
-  name,
-  imageUrl,
-  accent = "var(--color-blue)",
-  size = 36,
-  onDark = false,
-}: {
-  name: string
-  imageUrl?: string | null
-  accent?: string
-  size?: number
-  onDark?: boolean
-}) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase()
-
-  const commonStyle = {
-    width: size,
-    height: size,
-    boxShadow: onDark ? "0 0 0 3px rgba(255,255,255,0.08)" : "0 0 0 3px rgba(20,22,28,0.04)",
-  }
-
-  if (imageUrl) {
-    return (
-      <img
-        src={imageUrl}
-        alt={name}
-        className="shrink-0 rounded-full object-cover"
-        style={commonStyle}
-      />
-    )
-  }
-
-  return (
-    <span
-      aria-hidden="true"
-      className="grid shrink-0 place-items-center rounded-full font-semibold text-paper"
-      style={{
-        ...commonStyle,
-        fontSize: size * 0.38,
-        background: accent,
-      }}
-    >
-      {initials}
-    </span>
-  )
-}
-
-/* A hex badge matching the platform's gamified badge system with 3-second rotation & party popper burst */
-function CourseBadge({ type = "crystal" }: { type?: string }) {
-  const popperRef = useRef<PartyPopperRef>(null)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (popperRef.current) {
-        popperRef.current.burst(20, 70)
-        popperRef.current.burst(140, 70)
-      }
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [])
-
-  return (
-    <PartyPopper ref={popperRef} className="relative flex shrink-0 items-center justify-center p-4">
-      <motion.div
-        initial={{ rotateY: 1080, rotateZ: -20, scale: 0.3, opacity: 0 }}
-        animate={{ rotateY: 0, rotateZ: 0, scale: 1, opacity: 1 }}
-        transition={{
-          duration: 3,
-          ease: [0.25, 1, 0.5, 1],
-        }}
-        whileHover={{ scale: 1.08, rotate: 6 }}
-        onClick={() => {
-          popperRef.current?.burst(20, 70)
-          popperRef.current?.burst(140, 70)
-        }}
-        className="relative flex items-center justify-center cursor-pointer"
-        style={{ perspective: 1000 }}
-      >
-        <div className="h-36 w-28 drop-shadow-xl">
-          <BadgeGraphic type={type} />
-        </div>
-      </motion.div>
-    </PartyPopper>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Breadcrumb (modern replacement for the back button)               */
-/* ------------------------------------------------------------------ */
-
-function Breadcrumb({ title }: { title: string }) {
-  const crumbs = [
-    { label: "Explore", href: "/explore" },
-    { label: CATEGORY, href: "/explore" }
-  ]
-  return (
-    <nav aria-label="Breadcrumb" className="mb-8">
-      <ol className="flex flex-wrap items-center gap-2 text-[13.5px]">
-        {crumbs.map((c) => (
-          <li key={c.label} className="flex items-center gap-2">
-            <Link
-              href={c.href}
-              className="font-bold text-slate-700 hover:text-ink transition-colors"
-            >
-              {c.label}
-            </Link>
-            <ChevronRight size={13} className="text-subtle/50" />
-          </li>
-        ))}
-        <li className="font-bold text-ink">{title}</li>
-      </ol>
-    </nav>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Hero                                                               */
-/* ------------------------------------------------------------------ */
-
-function CourseHero({
-  title,
-  authorName,
-  authorUsername,
-  authorAvatarUrl,
-  lessonCount = 0,
-  onEnroll,
-  pricingModel,
-  priceAmount,
-  isEnrolled,
-  courseId
-}: {
-  title: string
-  authorName?: string
-  authorUsername?: string
-  authorAvatarUrl?: string | null
-  lessonCount?: number
-  onEnroll?: () => void
-  pricingModel?: string
-  priceAmount?: number | null
-  isEnrolled?: boolean
-  courseId?: string
-}) {
-  const [saved, setSaved] = useState(false)
-  const [enrolling, setEnrolling] = useState(false)
-
-  const words = title.split(' ')
-  const lastWord = words.pop() || ''
-  const firstPart = words.join(' ')
-  
-  const displayAuthor = authorName || INSTRUCTOR.name;
-  const displayUsername = authorUsername || displayAuthor.toLowerCase().replace(/\s+/g, '');
-  const authorInitials = displayAuthor.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-
-  const metaData = [
-    { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
-    { icon: BookOpen, label: `${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}`, dot: "var(--color-amber)" },
-    { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
-  ]
-
-  return (
-    <section className="arcade-fade">
-      <Breadcrumb title={title} />
-
-      <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-        {/* Left — editorial copy */}
-        <div>
-          {/* Course name as the headline */}
-          <h1
-            className="mt-6 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
-            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif' }}
-          >
-            {firstPart}{" "}
-            <span className="bg-gradient-to-r from-[#00c885] via-[#0284c7] to-[#4f46e5] bg-clip-text text-transparent">
-              {lastWord}
-            </span>
-          </h1>
-
-          {/* Instructor: name + channel */}
-          <div className="mt-5 flex items-center gap-2.5">
-            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={34} />
-            <div>
-              <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
-              <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
-                <Radio size={12} className="opacity-70" />
-                @{displayUsername}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-7 flex flex-wrap gap-2.5">
-            {metaData.map(({ icon: Icon, label }) => (
-              <span
-                key={label}
-                className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
-              >
-                <Icon size={14} className="text-subtle shrink-0" />
-                <span>{label}</span>
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <div className="flex items-baseline gap-2 pr-1">
-              {pricingModel === "PAID" ? (
-                <>
-                  <span className="font-serif text-3xl font-medium text-ink">${priceAmount}</span>
-                </>
-              ) : (
-                <span className="font-serif text-3xl font-medium text-ink">Free</span>
-              )}
-            </div>
-            {isEnrolled ? (
-              <Link
-                href={`/learn/${courseId}/learn`}
-                className="animated-button"
-              >
-                <span className="text">Go to course →</span>
-              </Link>
-            ) : (
-              <EnrollButton onClick={() => {
-                setEnrolling(true);
-                try {
-                  if (onEnroll) onEnroll();
-                } finally {
-                  setEnrolling(false);
-                }
-              }}>
-                {enrolling ? "Enrolling..." : "Enroll now"}
-              </EnrollButton>
-            )}
-          </div>
-        </div>
-
-        {/* Right — Futuristic glassmorphic video preview card */}
-        <CourseVideoPreviewCard
-          authorAvatarUrl={authorAvatarUrl}
-          displayAuthor={displayAuthor}
-          displayUsername={displayUsername}
-          authorInitials={authorInitials}
-          videoSrc="/boradingui.mp4"
-          posterUrl="/ink-dome-bg.jpg"
-        />
-      </div>
-    </section>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Tabs                                                               */
-/* ------------------------------------------------------------------ */
-
-function CourseTabs({ courseTitle }: { courseTitle?: string }) {
-  const [tab, setTab] = useState<Tab>("Overview")
-  const [openMod, setOpenMod] = useState(0)
-  const params = useParams<{ id?: string }>()
-  const searchParams = useSearchParams()
-  const titleFromQuery = searchParams?.get('title')
-  const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.id)
-
-  return (
-    <div>
-      {/* Segmented tab control */}
-      <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5 shadow-sm">
-          {TABS.map((t) => {
-            const isActive = tab === t
-            return (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                onMouseEnter={() => setTab(t)}
-                onFocus={() => setTab(t)}
-                aria-pressed={isActive}
-                className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-5 ${
-                  isActive ? "text-paper" : "text-subtle hover:text-ink"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activePublicTabPill"
-                    className="absolute inset-0 rounded-full bg-ink"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10">{t}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div key={tab} className="arcade-fade mt-16 sm:mt-20">
-        {tab === "Overview" && (
-          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-            <AnimatedItem index={0} style={{ cursor: "default" }}>
-              <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by working product designers. You&apos;ll leave with a portfolio-ready piece,
-                not just a certificate.
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
-                Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
-              </p>
-            </AnimatedItem>
-            <div className="md:pl-16 lg:pl-28">
-              <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
-              <div className="mt-4">
-                <AnimatedList
-                  items={HIGHLIGHTS}
-                  showGradients={false}
-                  displayScrollbar={false}
-                  renderItem={(h) => (
-                    <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                        <Check size={13} className="text-teal" />
-                      </span>
-                      <span>{h}</span>
-                    </div>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === "Syllabus" && (
-          <div className="w-full">
-            {/* Structured summary of the course layout */}
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
-              {[
-                { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
-                { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
-                { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
-              ].map(({ icon: Icon, label, c }) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink"
-                >
-                  <Icon size={14} style={{ color: c }} /> {label}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {MODULES.map((m, idx) => {
-                const open = openMod === idx
-                const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
-                const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
-                return (
-                  <div
-                    key={m.title}
-                    className="overflow-hidden rounded-2xl border transition-all duration-200 hover:shadow-sm"
-                    style={{
-                      background: bgGradient,
-                      borderColor: borderColor,
-                    }}
-                  >
-                    <button
-                      onClick={() => setOpenMod(open ? -1 : idx)}
-                      aria-expanded={open}
-                      className="flex w-full items-center gap-4 px-5 py-4 text-left"
-                    >
-                      <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
-                        style={{ color: m.accent, borderColor: borderColor }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <span className="flex-1">
-                        <span className="block text-[11px] font-semibold uppercase tracking-wide text-subtle">
-                          Module {idx + 1}
-                        </span>
-                        <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
-                      </span>
-                      <span className="hidden text-xs text-subtle sm:block">
-                        {m.lessons.length} lessons · {m.duration}
-                      </span>
-                      <ChevronDown
-                        size={17}
-                        className="text-subtle transition-transform"
-                        style={{ transform: open ? "rotate(180deg)" : "none" }}
-                      />
-                    </button>
-                    {open && (
-                      <ul
-                        className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
-                        style={{ borderColor: borderColor }}
-                      >
-                        {m.lessons.map((lesson, li) => (
-                          <li
-                            key={lesson.title}
-                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
-                          >
-                            <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
-                            <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
-                            <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
-                            <span className="text-[12px] text-subtle">{lesson.length}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {tab === "Instructor" && (
-          <div
-            className="w-full rounded-3xl border p-8 transition-all"
-            style={{
-              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-              borderColor: "rgba(139, 92, 246, 0.28)",
-            }}
-          >
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
-              <div className="flex-1">
-                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                  <BadgeCheck size={13} /> {INSTRUCTOR.org}
-                </div>
-                <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
-                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Briefcase size={13} /> {INSTRUCTOR.role}
-                  </span>
-                </p>
-              </div>
-              <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
-                Follow channel
-              </button>
-            </div>
-
-            <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {INSTRUCTOR.expertise.map((e, idx) => {
-                const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
-                return (
-                  <span
-                    key={e}
-                    className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
-                    style={{
-                      background: style.bg,
-                      borderColor: style.border,
-                      color: style.text,
-                    }}
-                  >
-                    {e}
-                  </span>
-                )
-              })}
-            </div>
-
-            <div
-              className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center sm:grid-cols-4"
-              style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
-            >
-              {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                <div key={label} className="flex flex-col items-center justify-center">
-                  <Icon size={18} style={{ color: c }} />
-                  <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
-                  <p className="text-[12px] text-subtle">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tab === "Certificate" && (
-          <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
-            <CourseBadge type={badgeInfo.type} />
-            <div>
-              <h3 className="font-serif text-2xl font-light text-ink">
-                <FoldText
-                  text={`Earn the ${badgeInfo.title}`}
-                  splitBy="char"
-                  hinge="top"
-                  trigger="mount"
-                  duration={0.65}
-                  stagger={0.03}
-                  fontSize="inherit"
-                  fontWeight="inherit"
-                  color="currentColor"
-                />
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
-                Master the core principles and practical skills of this curriculum with real feedback from working product designers. Finish all four core modules and your final case study to unlock the exclusive <span className="font-semibold text-ink">{badgeInfo.badgeName}</span> badge on your profile alongside an official verifiable certificate of completion.
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/*  Reviews (now its own block, out of the tab panel)                  */
-/* ------------------------------------------------------------------ */
-
-function ReviewsBlock({ courseId }: { courseId?: string }) {
-  return <CourseReviewsSection courseId={courseId} />
-}
-
-
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
-
 function getTitleFromSlug(slug?: string): string {
   if (!slug) return ''
   const knownTitles: Record<string, string> = {
@@ -798,23 +216,56 @@ function getTitleFromSlug(slug?: string): string {
     .join(' ')
 }
 
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+
 export default function CoursePreviewPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const titleFromQuery = searchParams?.get('title')
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const { user, updateUser } = useAuthStore()
 
-  const titleFromQuery = searchParams.get('title')
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportNote, setReportNote] = useState("")
+  const [isReporting, setIsReporting] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
+  const [openMod, setOpenMod] = useState(0)
+  const [isWishlisted, setIsWishlisted] = useState(false)
+
+  const handleReportSubmit = async () => {
+    if (!reportNote.trim()) {
+      toast.error("Please provide a note about the issue.")
+      return
+    }
+    setIsReporting(true)
+    try {
+      await api.post("/api/v1/reports", {
+        contentId: params?.id,
+        contentType: "COURSE",
+        note: reportNote
+      })
+      toast.success("Course reported. Our moderation team will review it shortly.")
+      setReportModalOpen(false)
+      setReportNote("")
+    } catch (err: any) {
+      console.error("Failed to report course:", err)
+      toast.error(err.message || "Failed to submit report. Please try again.")
+    } finally {
+      setIsReporting(false)
+    }
+  }
 
   const handleEnrollClick = async () => {
     if (!user) {
-      router.push('/sign?mode=login')
+      router.push("/sign?mode=login")
       return
     }
-
     if (params?.id) {
+      setEnrolling(true)
       try {
         const updatedUser = await UserService.enrollInCourse(params.id)
         updateUser(updatedUser)
@@ -822,8 +273,9 @@ export default function CoursePreviewPage() {
         router.push(`/learn/${params.id}${queryStr}`)
       } catch (err: any) {
         console.error("Failed to enroll:", err)
-        const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-        router.push(`/learn/${params.id}${queryStr}`)
+        alert(err.message || "Failed to enroll")
+      } finally {
+        setEnrolling(false)
       }
     }
   }
@@ -847,42 +299,302 @@ export default function CoursePreviewPage() {
     )
   }
 
-  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(params?.id) || COURSE_TITLE;
-  const authorName = course?.authorName;
-  const authorUsername = course?.authorUsername;
-  const authorAvatarUrl = course?.authorAvatarUrl;
-  const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(params?.id) || COURSE_TITLE
+  const authorName = course?.authorName || INSTRUCTOR.name
+  const authorUsername = course?.authorUsername || INSTRUCTOR.channel
+  const authorAvatarUrl = course?.authorAvatarUrl
+  const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0
   const isEnrolled = Boolean(
     params?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === params.id)
-  );
+  )
 
-  return (
-    <main className="min-h-screen bg-white text-ink">
-      {/* Hero section with gradient background */}
-      <div className="w-full arcade-wash">
-        <div className="mx-auto max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
-          <CourseHero
-            title={displayTitle}
-            authorName={authorName}
-            authorUsername={authorUsername}
-            authorAvatarUrl={authorAvatarUrl}
-            lessonCount={lessonCount}
-            onEnroll={handleEnrollClick}
-            isEnrolled={isEnrolled}
-            courseId={params?.id}
+  const heroContent = (
+    <LearningHero
+      breadcrumbs={[
+        { label: "Explore", href: "/explore" },
+        { label: CATEGORY, href: "/explore" }
+      ]}
+      category={CATEGORY}
+      title={displayTitle}
+      authorName={authorName}
+      authorUsername={authorUsername}
+      authorAvatarUrl={authorAvatarUrl}
+      authorAccent={INSTRUCTOR.accent}
+      metaChips={[
+        { icon: Clock, label: "4h 30m", dotColor: "var(--color-blue)" },
+        { icon: BookOpen, label: `${lessonCount || 19} lessons`, dotColor: "var(--color-amber)" },
+        { icon: Users, label: "12,480 enrolled", dotColor: "var(--color-teal)" },
+      ]}
+      pricingModel="PAID"
+      priceAmount={course?.priceAmount || 20}
+      isWishlisted={isWishlisted}
+      onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
+      onReportClick={() => setReportModalOpen(true)}
+      accentColor="#1db876"
+      actionButton={
+        isEnrolled ? (
+          <Link href={`/learn/${params?.id}/learn`} className="animated-button">
+            <span className="text">Go to course →</span>
+          </Link>
+        ) : (
+          <EnrollButton onClick={handleEnrollClick}>
+            {enrolling ? "Enrolling..." : "Enroll now"}
+          </EnrollButton>
+        )
+      }
+    />
+  )
+
+  const tabsContent = (
+    <LearningTabs
+      tabs={[
+        {
+          id: "Overview",
+          label: "Overview",
+          content: (
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="rounded-3xl border border-line bg-paper p-7">
+                <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
+                <p className="mt-4 text-[15px] leading-relaxed text-subtle">
+                  This course treats design as a craft you build in public — every module ends with a real
+                  assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
+                  just a certificate.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-line bg-paper p-7">
+                <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
+                <ul className="mt-4 flex flex-col gap-3">
+                  {HIGHLIGHTS.map((h) => (
+                    <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
+                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                        <Check size={13} className="text-teal" />
+                      </span>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )
+        },
+        {
+          id: "Syllabus",
+          label: "Syllabus",
+          content: (
+            <div className="mx-auto max-w-3xl">
+              <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
+                {[
+                  { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
+                  { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
+                  { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
+                ].map(({ icon: Icon, label, c }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13px] font-medium text-ink"
+                  >
+                    <Icon size={14} style={{ color: c }} /> {label}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {MODULES.map((m, idx) => {
+                  const open = openMod === idx
+                  return (
+                    <div
+                      key={m.title}
+                      className="overflow-hidden rounded-2xl border border-line bg-paper transition-colors hover:border-ink/15"
+                    >
+                      <button
+                        onClick={() => setOpenMod(open ? -1 : idx)}
+                        aria-expanded={open}
+                        className="flex w-full items-center gap-4 px-5 py-4 text-left"
+                      >
+                        <span
+                          className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper"
+                          style={{ background: m.accent }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span className="flex-1">
+                          <span className="block text-[11px] font-semibold uppercase tracking-wide text-subtle">
+                            Module {idx + 1}
+                          </span>
+                          <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
+                        </span>
+                        <span className="hidden text-xs text-subtle sm:block">
+                          {m.lessons.length} lessons · {m.duration}
+                        </span>
+                        <ChevronDown
+                          size={17}
+                          className="text-subtle transition-transform"
+                          style={{ transform: open ? "rotate(180deg)" : "none" }}
+                        />
+                      </button>
+                      {open && (
+                        <ul className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2">
+                          {m.lessons.map((lesson, li) => (
+                            <li
+                              key={lesson.title}
+                              className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-mist"
+                            >
+                              <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
+                              <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
+                              <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
+                              <span className="text-[12px] text-subtle">{lesson.length}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        },
+        {
+          id: "Instructor",
+          label: "Instructor",
+          content: (
+            <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
+                <div className="flex-1">
+                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
+                    <BadgeCheck size={13} /> {INSTRUCTOR.org}
+                  </div>
+                  <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Briefcase size={13} /> {INSTRUCTOR.role}
+                    </span>
+                    <span className="text-subtle/40">·</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
+                    </span>
+                  </p>
+                </div>
+                <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
+                  Follow channel
+                </button>
+              </div>
+
+              <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {INSTRUCTOR.expertise.map((e) => (
+                  <span
+                    key={e}
+                    className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
+                  >
+                    {e}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
+                {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
+                  <div key={label}>
+                    <Icon size={16} style={{ color: c }} />
+                    <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
+                    <p className="text-[12px] text-subtle">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        },
+        {
+          id: "Certificate",
+          label: "Certificate",
+          content: (
+            <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
+              <LearningBadge label="UI / UX" accent="var(--color-blue)" />
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
+                  <Sparkles size={13} className="text-amber" /> Course badge
+                </span>
+                <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
+                <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
+                  This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
+                  course carries it. Finish all four modules and your final case study to unlock it on your profile.
+                  You&apos;ll also receive a verified certificate of completion to share.
+                </p>
+              </div>
+            </div>
+          )
+        }
+      ]}
+    />
+  )
+
+  const reviewsContent = <LearningReviews reviews={REVIEWS} />
+
+  const ctaContent = (
+    <LearningCta
+      title={<>Light the path to your next <span className="italic text-amber">design role.</span></>}
+      description="Join 12,480 builders learning to design interfaces people actually love — with feedback from working designers."
+      primaryAction={
+        isEnrolled ? (
+          <Link
+            href={`/learn/${params?.id}/learn`}
+            className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
+          >
+            Go to course →
+          </Link>
+        ) : (
+          <EnrollButton onClick={handleEnrollClick}>
+            Enroll for ${course?.priceAmount || 20}
+          </EnrollButton>
+        )
+      }
+    />
+  )
+
+  const modals = (
+    <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Report Course</DialogTitle>
+          <DialogDescription>
+            Please provide details about what is wrong with this course.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <textarea
+            className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            placeholder="Tell us what's wrong..."
+            value={reportNote}
+            onChange={(e) => setReportNote(e.target.value)}
           />
         </div>
-      </div>
+        <DialogFooter>
+          <button
+            onClick={() => setReportModalOpen(false)}
+            className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleReportSubmit}
+            disabled={isReporting}
+            className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
+          >
+            {isReporting ? "Submitting..." : "Submit Report"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 
-      {/* Body below hero with pure white background */}
-      <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-          <CourseTabs courseTitle={displayTitle} />
-          <div className="mt-20">
-            <ReviewsBlock courseId={params?.id} />
-          </div>
-        </div>
-      </div>
-    </main>
+  return (
+    <LearningLayout
+      hero={heroContent}
+      tabs={tabsContent}
+      reviews={reviewsContent}
+      cta={ctaContent}
+      modals={modals}
+    />
   )
 }

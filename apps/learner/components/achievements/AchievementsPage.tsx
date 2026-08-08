@@ -348,6 +348,7 @@ export default function AchievementsPage() {
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates' | 'quests'>('badges');
 
+
   // Load fresh profile details from DB if available
   useEffect(() => {
     const loadUserData = async () => {

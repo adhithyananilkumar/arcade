@@ -11,6 +11,8 @@ import { useNotifications, NotificationList } from "@/domains/notifications";
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { channelService, useStudioAccess } from "@/domains/channels";
+import { platformReviewApi } from "@/domains/publishing";
+import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
@@ -25,8 +27,13 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
+  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
+  
+  // Pending tasks for platform admins
+  const [pendingAdminTasks, setPendingAdminTasks] = useState<{ id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[]>([]);
   
   // Intelligent header scroll behavior
   const { scrollY } = useScroll();
@@ -45,6 +52,7 @@ export default function LearnerNavbar() {
 
   useEffect(() => {
     fetchInvitations();
+    fetchAdminTasks();
     
     Promise.all([
       channelService.getMyChannels(),
@@ -62,6 +70,62 @@ export default function LearnerNavbar() {
       setInvitations(data);
     } catch {
       // silently fail for notifications
+    }
+  };
+
+  const fetchAdminTasks = async () => {
+    if (!AuthorizationService.canAccessConsole(user)) return;
+    
+    try {
+      const tasks: { id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[] = [];
+      
+      if (AuthorizationService.canManageChannels(user)) {
+        const [channels, deletions] = await Promise.all([
+          channelService.getPendingRequests().catch(() => []),
+          channelService.getPendingDeletionRequests().catch(() => [])
+        ]);
+        
+        channels.forEach(ch => {
+          tasks.push({
+            id: `ch-${ch.id}`,
+            title: `New Channel Request: ${ch.name}`,
+            subtitle: `Requested by ${ch.ownerName}`,
+            href: `/console/channels`,
+            type: 'channel_approval',
+            timestamp: ch.createdAt
+          });
+        });
+        
+        deletions.filter(d => d.status === 'PENDING').forEach(d => {
+          tasks.push({
+            id: `del-${d.id}`,
+            title: `Channel Deletion: ${d.channelName}`,
+            subtitle: `Requested by ${d.requestedByName}`,
+            href: `/console/channels`,
+            type: 'channel_deletion',
+            timestamp: d.createdAt
+          });
+        });
+      }
+      
+      if (AuthorizationService.canReviewContent(user)) {
+        const reviews = await platformReviewApi.list().catch(() => []);
+        reviews.filter(r => r.status === 'OPEN').forEach(r => {
+          tasks.push({
+            id: `rev-${r.id}`,
+            title: `Content Review: ${r.title}`,
+            subtitle: `Submitted by ${r.ownerName} (${r.channelName})`,
+            href: `/console/reviews/${r.id}`,
+            type: 'content_review',
+            timestamp: r.submittedAt || new Date().toISOString()
+          });
+        });
+      }
+      
+      tasks.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setPendingAdminTasks(tasks);
+    } catch {
+      // silently fail
     }
   };
 
@@ -117,6 +181,23 @@ export default function LearnerNavbar() {
   // the Console instead. Being a platform admin isn't a reason to see this button.
   const { hasAccess: hasStudioAccess } = useStudioAccess();
   const showStudio = hasStudioAccess;
+
+  useEffect(() => {
+    api.get<any[]>('/api/workshops/my-collaborations')
+      .then(res => {
+        if (res && res.length > 0) {
+          setCollaboratedWorkshopId(res[0].id);
+          setHasMultipleCollabs(res.length > 1);
+        } else {
+          setCollaboratedWorkshopId(null);
+          setHasMultipleCollabs(false);
+        }
+      })
+      .catch(() => {
+        setCollaboratedWorkshopId(null);
+        setHasMultipleCollabs(false);
+      });
+  }, []);
 
   const isConsole = pathname.startsWith('/console');
   const consoleCrumb = (() => {
@@ -179,13 +260,21 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">
             <button 
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={() => {
+                const next = !isNotificationsOpen;
+                setIsNotificationsOpen(next);
+                if (next) {
+                  refresh();
+                }
+              }}
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
               title="Notifications"
             >
               <Bell size={20} strokeWidth={2} />
-              {(invitations.length > 0 || unreadCount > 0) && (
-                <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white dark:border-neutral-900 shadow-sm"></span>
+              {(invitations.length + unreadCount + pendingAdminTasks.length) > 0 && (
+                <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-white dark:border-neutral-900 shadow-sm">
+                  {invitations.length + unreadCount + pendingAdminTasks.length > 99 ? '99+' : invitations.length + unreadCount + pendingAdminTasks.length}
+                </span>
               )}
             </button>
 
@@ -242,11 +331,46 @@ export default function LearnerNavbar() {
                         </div>
                       </div>
                     )}
+                    {pendingAdminTasks.length > 0 && (
+                      <div className="border-b border-black/5 dark:border-white/5">
+                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Admin Tasks</p>
+                        <div className="divide-y divide-black/5 dark:divide-white/5">
+                          {pendingAdminTasks.map(task => (
+                            <Link 
+                              href={task.href} 
+                              key={task.id} 
+                              onClick={() => setIsNotificationsOpen(false)} 
+                              className="block p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                            >
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
+                                {task.title}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                {task.subtitle}
+                              </p>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                                {new Date(task.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <NotificationList
                       notifications={notifications}
                       onItemClick={() => setIsNotificationsOpen(false)}
+                      onNotificationAction={refresh}
                       emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
+                  </div>
+                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
+                    <Link 
+                      href="/notifications" 
+                      onClick={() => setIsNotificationsOpen(false)}
+                      className="text-xs font-extrabold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                      See more
+                    </Link>
                   </div>
                 </div>
               </>
@@ -294,6 +418,14 @@ export default function LearnerNavbar() {
                 onClick={() => router.push('/studio')}
               >
                 Content Studio
+              </MenuItem>
+            )}
+            {collaboratedWorkshopId && (
+              <MenuItem 
+                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                onClick={() => router.push('/studio/manage')}
+              >
+                Manage Workshops
               </MenuItem>
             )}
             {showArcConsole && (

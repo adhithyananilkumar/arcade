@@ -19,6 +19,7 @@ const IMMERSIVE_ROUTES = [
   /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+  /^\/roadmap\/[^/]+\/?$/,
 ];
 
 /** Full-focus surfaces — hide the bottom dock so content can breathe. */
@@ -43,7 +44,8 @@ export default function LearnerShell({
 
   const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
   const hideDock =
-    immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
+    immersive || 
+    (HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? '')) && pathname !== '/studio/manage');
 
   // Prevent hydration mismatch
   useEffect(() => {

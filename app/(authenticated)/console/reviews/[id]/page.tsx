@@ -116,7 +116,7 @@ export default function ReviewDetailPage() {
           if ((review.status as string) === 'OPEN') {
             text = `Pending by ${role}`;
             colorClass = 'bg-amber-100 text-amber-800';
-          } else if ((review.status as string) === 'APPROVED') {
+          } else if (review.status === 'COMPLETED') {
             text = `Approved by ${role}`;
             colorClass = 'bg-emerald-100 text-emerald-800';
           } else if ((review.status as string) === 'CHANGES_REQUESTED') {
@@ -260,11 +260,10 @@ export default function ReviewDetailPage() {
                 type="button"
                 onClick={submitDecision}
                 disabled={busy || (dialog === "changes" && !reason.trim())}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${
-                  dialog === "approve"
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${dialog === "approve"
                     ? "bg-[#14142b] hover:bg-[#232735]"
                     : "bg-rose-600 hover:bg-rose-700"
-                }`}
+                  }`}
               >
                 {busy && <Loader2 size={14} className="animate-spin" />}
                 {dialog === "approve" ? "Publish" : "Request changes"}

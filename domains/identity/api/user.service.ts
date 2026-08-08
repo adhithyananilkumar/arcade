@@ -64,6 +64,11 @@ export class UserService {
     return data;
   }
 
+  static async removeAvatar(): Promise<User> {
+    const data = await api.delete<User>('/api/v1/users/me/avatar');
+    return data;
+  }
+
   static async enrollInCourse(courseId: string): Promise<User> {
     try {
       await api.post(`/api/v1/learning/enrollments/${courseId}`);

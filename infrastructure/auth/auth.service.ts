@@ -65,9 +65,18 @@ export class AuthService {
     return data;
   }
 
-  static async verifyEmail(token: string) {
+  static async verifyEmail(token: string, email?: string) {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    const { data } = await axios.post(`${backendUrl}/auth/verify-email?token=${token}`);
+    const url = email
+      ? `${backendUrl}/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
+      : `${backendUrl}/auth/verify-email?token=${encodeURIComponent(token)}`;
+    const { data } = await axios.post(url);
+    return data;
+  }
+
+  static async resendVerificationCode(email: string) {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    const { data } = await axios.post(`${backendUrl}/auth/resend-verification?email=${encodeURIComponent(email)}`);
     return data;
   }
 }

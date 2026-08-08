@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle, Lock, Tv, FileText } from 'lucide-react';
+import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle, Trash2, Lock, Tv, FileText } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import { ChannelDoodleBanner } from './ChannelDoodleBanner';
@@ -22,9 +22,21 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
 
   const [iconPreview, setIconPreview] = useState<string>(channel.iconUrl || '');
   const [bannerPreview, setBannerPreview] = useState<string>(channel.bannerUrl || '');
+  const [removeIcon, setRemoveIcon] = useState(false);
+  const [removeBanner, setRemoveBanner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
   const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
+
+  // Sync previews with channel prop if it changes externally
+  useEffect(() => {
+    if (!removeIcon && !iconFile) {
+      setIconPreview(channel.iconUrl || '');
+    }
+    if (!removeBanner && !bannerFile) {
+      setBannerPreview(channel.bannerUrl || '');
+    }
+  }, [channel.iconUrl, channel.bannerUrl, removeIcon, iconFile, removeBanner, bannerFile]);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
   const isSuspended = channel.status === 'SUSPENDED' || !!locked;
@@ -58,12 +70,30 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
     if (cropTarget === 'icon') {
       setIconFile(croppedFile);
       setIconPreview(previewUrl);
+      setRemoveIcon(false);
     } else if (cropTarget === 'banner') {
       setBannerFile(croppedFile);
       setBannerPreview(previewUrl);
+      setRemoveBanner(false);
     }
     setCropTarget(null);
     setCropSourceFile(null);
+  };
+
+  const handleRemoveIconClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIconFile(null);
+    setIconPreview('');
+    setRemoveIcon(true);
+  };
+
+  const handleRemoveBannerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBannerFile(null);
+    setBannerPreview('');
+    setRemoveBanner(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,10 +104,17 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
         channel.id,
         description,
         iconFile || undefined,
-        bannerFile || undefined
+        bannerFile || undefined,
+        removeIcon,
+        removeBanner,
+        channel.socialLinks // Preserve existing links
       );
       toast.success('Channel settings updated successfully');
       onUpdate(updatedChannel);
+      setRemoveIcon(false);
+      setRemoveBanner(false);
+      setIconFile(null);
+      setBannerFile(null);
     } catch {
       toast.error('Failed to update channel settings');
     } finally {
@@ -133,6 +170,17 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
               {/* Banner Area */}
               <div className="group relative rounded-2xl overflow-hidden shadow-xs">
                 <ChannelDoodleBanner bannerUrl={bannerPreview} className="h-40 w-full rounded-2xl" />
+
+                {canManageSettings && bannerPreview && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveBannerClick}
+                    className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-red-500 opacity-0 transition-opacity group-hover:opacity-100 shadow-md hover:bg-red-50 hover:text-red-600 backdrop-blur-xs"
+                    title="Remove Banner"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
 
                 {canManageSettings && (
                   <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-xs cursor-pointer">
@@ -191,7 +239,7 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
 
                 {/* Quick File Action Buttons */}
                 {canManageSettings && (
-                  <div className="flex items-center gap-2 pb-1">
+                  <div className="flex flex-wrap items-center gap-2 pb-1">
                     <label className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200/80 bg-purple-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-purple-700 cursor-pointer shadow-2xs hover:bg-purple-100/80 transition-all">
                       <ImageIcon size={13} className="text-purple-600" />
                       <span>Upload Banner</span>
@@ -203,6 +251,17 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
                       />
                     </label>
 
+                    {bannerPreview && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveBannerClick}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200/80 bg-red-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-red-700 hover:bg-red-100/80 transition-all shadow-2xs"
+                      >
+                        <Trash2 size={13} className="text-red-600" />
+                        <span>Remove Banner</span>
+                      </button>
+                    )}
+
                     <label className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-indigo-700 cursor-pointer shadow-2xs hover:bg-indigo-100/80 transition-all">
                       <Upload size={13} className="text-indigo-600" />
                       <span>Upload Logo</span>
@@ -213,6 +272,17 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions, locked 
                         className="hidden"
                       />
                     </label>
+
+                    {iconPreview && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveIconClick}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200/80 bg-red-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-red-700 hover:bg-red-100/80 transition-all shadow-2xs"
+                      >
+                        <Trash2 size={13} className="text-red-600" />
+                        <span>Remove Logo</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

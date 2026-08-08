@@ -27,8 +27,13 @@ export const LearningDrawer: React.FC<LearningDrawerProps> = ({ nodes }) => {
     const label = activeNode.label;
     const type = activeNode.type || 'lesson';
     const contentId = activeNode.contentId;
+    const courseIds = activeNode.courseIds || ((activeNode as any).courseId ? [(activeNode as any).courseId] : []);
 
-    if (contentId) {
+    if (courseIds && courseIds.length > 0) {
+      courseIds.forEach((id, index) => {
+        list.push({ title: courseIds.length > 1 ? `Course ${index + 1}: ${label}` : `Course: ${label}`, type: 'lesson', url: `/learn/${id}` });
+      });
+    } else if (contentId) {
       if (contentId.startsWith('les-')) {
         list.push({ title: `Introduction to ${label}`, type: 'lesson', url: `/learn/demo-course` });
       } else if (contentId.startsWith('quiz-')) {

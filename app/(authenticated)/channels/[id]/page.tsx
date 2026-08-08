@@ -14,6 +14,7 @@ import {
   Map,
   Wrench,
   User,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { ChannelDoodleBanner } from './manage/ChannelDoodleBanner';
@@ -254,6 +255,31 @@ export default function ChannelHomePage() {
               <p className="max-w-3xl whitespace-pre-wrap text-[13px] leading-relaxed text-slate-600">
                 {channel.description}
               </p>
+            )}
+
+            {channel.socialLinks && channel.socialLinks.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2.5">
+                {channel.socialLinks.map((link, idx) => {
+                  try {
+                    const url = new URL(link);
+                    const hostname = url.hostname.replace(/^www\./, '');
+                    return (
+                      <a
+                        key={idx}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/80 px-3 py-1.5 text-[12px] font-medium text-slate-600 transition-colors hover:bg-[#14142b] hover:text-white"
+                      >
+                        <LinkIcon size={12} />
+                        {hostname}
+                      </a>
+                    );
+                  } catch (e) {
+                    return null;
+                  }
+                })}
+              </div>
             )}
           </div>
         </section>

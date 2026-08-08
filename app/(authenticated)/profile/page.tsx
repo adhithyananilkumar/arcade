@@ -13,9 +13,10 @@ import {
   ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit, 
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
   Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Activity,
-  BadgeCheck, Lock, Pin, ExternalLink, Search, Filter, Sparkles, Zap, Shield
+  BadgeCheck, Lock, Trash2, Pin, ExternalLink, Search, Filter, Sparkles, Zap, Shield
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
 import MagicBento, { ParticleCard, GlobalSpotlight, useMobileDetection } from '@/components/ui/MagicBento';
 import Masonry from '@/components/ui/Masonry';
 import PartyPopper from '@/components/ui/PartyPopper';
@@ -605,6 +606,8 @@ function ProfilePageContent() {
   // Avatar upload states
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+  const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
 
   // Settings dropdown state for contribution activity
   const [showSettings, setShowSettings] = useState(false);
@@ -758,9 +761,15 @@ function ProfilePageContent() {
       return;
     }
 
+    setCropSourceFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleAvatarCropped = async (croppedFile: File) => {
+    setCropSourceFile(null);
     setIsUploadingAvatar(true);
     try {
-      const updatedUser = await UserService.uploadAvatar(file);
+      const updatedUser = await UserService.uploadAvatar(croppedFile);
       updateUser(updatedUser);
       setProfileData(updatedUser);
       toast.success('Avatar uploaded successfully!');
@@ -769,7 +778,21 @@ function ProfilePageContent() {
       toast.error(err.response?.data?.message || 'Failed to upload image');
     } finally {
       setIsUploadingAvatar(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true);
+    try {
+      const updatedUser = await UserService.removeAvatar();
+      updateUser(updatedUser);
+      setProfileData(updatedUser);
+      toast.success('Avatar removed successfully!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to remove image');
+    } finally {
+      setIsRemovingAvatar(false);
     }
   };
 
@@ -955,31 +978,48 @@ function ProfilePageContent() {
           {/* ── LEFT SIDEBAR (GitHub Profile Column) ── */}
           <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-5">
 
-            {/* Avatar Container */}
-            <div className="relative group mx-auto md:mx-0 w-48 h-48 sm:w-64 sm:h-64 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center transition-transform hover:scale-[1.02]">
-              {currentUser.avatarUrl ? (
-                <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-              ) : (
-                <UserIcon size={110} className="text-purple-400 dark:text-purple-300" />
-              )}
-
-              {/* Camera Hover Overlay */}
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploadingAvatar}
-                className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50"
-                title="Upload Avatar"
-              >
-                {isUploadingAvatar ? (
-                  <Loader2 className="animate-spin text-white mb-1" size={28} />
+            <div className="relative flex w-48 h-48 sm:w-64 sm:h-64 shrink-0 group/avatar mx-auto md:mx-0">
+              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900 transition-transform hover:scale-[1.02]">
+                {currentUser.avatarUrl ? (
+                  <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <>
-                    <Camera size={28} className="mb-1" />
-                    <span className="text-xs font-semibold">Change avatar</span>
-                  </>
+                  <UserIcon size={110} className="text-purple-400 dark:text-purple-300" />
                 )}
-              </button>
 
+                {/* Camera Hover Overlay */}
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar || isRemovingAvatar}
+                  className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Upload Avatar"
+                >
+                  {isUploadingAvatar ? (
+                    <Loader2 className="animate-spin text-white mb-1" size={28} />
+                  ) : (
+                    <>
+                      <Camera size={28} className="mb-1" />
+                      <span className="text-xs font-semibold">Change avatar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Remove Avatar Button */}
+              {currentUser.avatarUrl && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  disabled={isRemovingAvatar || isUploadingAvatar}
+                  className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-red-500 shadow-md opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Remove Avatar"
+                >
+                  {isRemovingAvatar ? (
+                    <Loader2 className="animate-spin" size={14} />
+                  ) : (
+                    <Trash2 size={14} />
+                  )}
+                </button>
+              )}
+            </div>
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -987,7 +1027,6 @@ function ProfilePageContent() {
                 accept="image/jpeg, image/png, image/webp" 
                 onChange={handleAvatarSelect}
               />
-            </div>
 
             {/* User Full Name & Role */}
             <div className="text-center md:text-left">
@@ -1896,6 +1935,14 @@ function ProfilePageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+      <ImageCropModal
+        open={cropSourceFile !== null}
+        file={cropSourceFile}
+        aspectRatio={1}
+        title="Crop Profile Avatar"
+        onCancel={() => setCropSourceFile(null)}
+        onCropped={handleAvatarCropped}
+      />
     </>
   );
 }

@@ -46,9 +46,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
   const [editRoleIds, setEditRoleIds] = useState<string[]>([]);
   const [editRolesSubmitting, setEditRolesSubmitting] = useState(false);
 
+  const canManageStaff =
+    permissions.includes('ALL') || permissions.includes('channel.staff.manage');
+
   useEffect(() => {
     fetchData();
-  }, [channelId]);
+  }, [channelId, canManageStaff]);
 
   const fetchData = async () => {
     try {
@@ -61,12 +64,17 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       const staffData = await ChannelStaffService.getStaff(channelId);
       setStaff(staffData);
 
-      const [invitesData, rolesData] = await Promise.all([
-        ChannelStaffService.getInvitations(channelId).catch(() => []),
-        roleService.getChannelRoles(channelId).catch(() => [])
-      ]);
-      setInvitations(invitesData);
-      setRoles(rolesData);
+      if (canManageStaff) {
+        const [invitesData, rolesData] = await Promise.all([
+          ChannelStaffService.getInvitations(channelId).catch(() => []),
+          roleService.getChannelRoles(channelId).catch(() => [])
+        ]);
+        setInvitations(invitesData);
+        setRoles(rolesData);
+      } else {
+        setInvitations([]);
+        setRoles([]);
+      }
     } catch (error) {
       // Not a member of this channel (e.g. viewed via a platform-admin link, or after leaving).
       setAccessDenied(true);
@@ -76,13 +84,6 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
   };
 
   const { user } = useAuthStore();
-  // We can't access channel.ownerId directly here since channel is fetched in page,
-  // but we can rely on permissions array containing 'ALL' if they are owner. Deliberately no
-  // platform-admin bypass — a channel's staff/roles are its own internal governance, isolated
-  // from the platform layer. A platform admin's tool for a problem channel is suspending it
-  // wholesale, not reaching in to manage its roster.
-  const canManageStaff =
-    permissions.includes('ALL') || permissions.includes('channel.staff.manage');
 
   const filteredStaff = staffSearch.trim()
     ? staff.filter((member) => {

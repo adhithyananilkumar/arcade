@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const authHeader = request.headers.get('authorization');
-    
+
     // Call backend to revoke tokens (best effort)
     if (authHeader) {
       await fetch(`${BACKEND_URL}/auth/logout`, {

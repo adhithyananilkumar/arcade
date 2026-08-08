@@ -20,6 +20,7 @@ import {
   Star,
   Users,
   Volume2,
+  Flag,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
@@ -31,6 +32,14 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import InteractiveBookSpread from "@/components/course/InteractiveBookSpread"
 import { UserService } from "@/domains/identity"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/design-system/ui/dialog"
 import CourseReviewsSection from "@/components/course/CourseReviewsSection"
 import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
 import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
@@ -428,7 +437,8 @@ function CourseHero({
   isEnrolled = false,
   pricingModel,
   priceAmount,
-  courseId
+  courseId,
+  onReportClick
 }: {
   title: string
   authorName?: string
@@ -441,6 +451,7 @@ function CourseHero({
   pricingModel?: string
   priceAmount?: number
   courseId?: string
+  onReportClick?: () => void
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -522,6 +533,25 @@ function CourseHero({
                 {isEnrolling ? "Enrolling..." : "Enroll now"}
               </EnrollButton>
             )}
+            <button
+              onClick={() => setSaved((s) => !s)}
+              aria-pressed={saved}
+              aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-coral"
+            >
+              <Heart
+                size={18}
+                fill={saved ? "var(--color-coral)" : "none"}
+                color={saved ? "var(--color-coral)" : "currentColor"}
+              />
+            </button>
+            <button
+              onClick={onReportClick}
+              aria-label="Report course"
+              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-red-500"
+            >
+              <Flag size={18} />
+            </button>
           </div>
         </div>
 
@@ -921,6 +951,33 @@ export default function CoursePage() {
   const [isEnrolling, setIsEnrolling] = useState(false)
   const [isEnrolled, setIsEnrolled] = useState(false)
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportNote, setReportNote] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+
+  const handleReportSubmit = async () => {
+    if (!reportNote.trim()) {
+      toast.error('Please provide a note about the issue.');
+      return;
+    }
+    setIsReporting(true);
+    try {
+      await api.post('/api/v1/reports', {
+        contentId: params?.courseId,
+        contentType: 'COURSE',
+        note: reportNote
+      });
+      toast.success('Course reported. Our moderation team will review it shortly.');
+      setReportModalOpen(false);
+      setReportNote('');
+    } catch (err: any) {
+      console.error('Failed to report course:', err);
+      toast.error(err.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
   const titleFromQuery = searchParams.get('title')
   const courseIdParam = (params?.courseId as string) || ''
 
@@ -988,6 +1045,7 @@ export default function CoursePage() {
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
             courseId={params?.courseId as string}
+            onReportClick={() => setReportModalOpen(true)}
           />
         </div>
       </div>
@@ -1001,6 +1059,40 @@ export default function CoursePage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report Course</DialogTitle>
+            <DialogDescription>
+              Please provide details about what is wrong with this course.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <textarea
+              className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Tell us what's wrong..."
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setReportModalOpen(false)}
+              className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReportSubmit}
+              disabled={isReporting}
+              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
