@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
+import { getDashboardWorkshops } from '@/app/(authenticated)/studio/workshop/api/dashboardApi';
 import { 
   Wrench, 
   ArrowRight, 
@@ -16,41 +17,66 @@ import {
   SlidersHorizontal,
   ChevronRight,
   ShieldCheck,
-  LayoutDashboard
+  LayoutDashboard,
+  User,
+  Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface WorkshopCollaboratorDto {
+interface UnifiedWorkshopDto {
   id: string;
   title: string;
   category: string;
   status: string;
-  workshopType: 'WORKSHOP' | 'WEBINAR' | string;
+  workshopType: string;
   coverImageUrl?: string | null;
   sessionsCount: number;
   resourcesCount: number;
   createdAt: string;
   updatedAt: string;
+  isOwner: boolean;
 }
 
-export default function CollaboratorDashboardPage() {
+export default function UnifiedManagePage() {
   const router = useRouter();
-  const [workshops, setWorkshops] = useState<WorkshopCollaboratorDto[]>([]);
+  const [items, setItems] = useState<UnifiedWorkshopDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'WORKSHOP' | 'WEBINAR'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'OWNED' | 'COLLAB'>('ALL');
+  const [activeType, setActiveType] = useState<'ALL' | 'WORKSHOP' | 'WEBINAR'>('ALL');
 
   useEffect(() => {
-    api.get<WorkshopCollaboratorDto[]>('/api/workshops/my-collaborations')
-      .then(res => {
-        setWorkshops(res || []);
+    const loadAllWorkspaces = async () => {
+      try {
+        // Fetch created/owned workshops
+        const ownedRes = await getDashboardWorkshops({ size: 100 }).catch(() => ({ content: [] }));
+        const ownedMapped: UnifiedWorkshopDto[] = (ownedRes.content || []).map(w => ({
+          ...w,
+          isOwner: true
+        }));
+
+        // Fetch collaborated workshops
+        const collabRes = await api.get<any[]>('/api/workshops/my-collaborations').catch(() => []);
+        const collabMapped: UnifiedWorkshopDto[] = collabRes.map(w => ({
+          ...w,
+          isOwner: false
+        }));
+
+        // Combine and sort by updatedAt descending
+        const combined = [...ownedMapped, ...collabMapped].sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+
+        setItems(combined);
+      } catch (err) {
+        toast.error('Failed to load workspaces');
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        toast.error('Failed to load collaborated workshops and webinars');
-        setLoading(false);
-      });
+      }
+    };
+
+    loadAllWorkspaces();
   }, []);
 
   const formatDate = (dateStr?: string) => {
@@ -61,24 +87,29 @@ export default function CollaboratorDashboardPage() {
       : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const filteredItems = workshops.filter(item => {
+  const filteredItems = items.filter(item => {
     const title = item.title?.toLowerCase() || '';
     const category = item.category?.toLowerCase() || '';
     const query = searchQuery.toLowerCase().trim();
     
     const matchesSearch = title.includes(query) || category.includes(query);
-    const matchesType = activeFilter === 'ALL' || item.workshopType === activeFilter;
+    const matchesOwnership = 
+      activeFilter === 'ALL' ||
+      (activeFilter === 'OWNED' && item.isOwner) ||
+      (activeFilter === 'COLLAB' && !item.isOwner);
+
+    const matchesType = activeType === 'ALL' || item.workshopType === activeType;
     
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesOwnership && matchesType;
   });
 
   // Calculate statistics
   const stats = {
-    total: workshops.length,
-    workshops: workshops.filter(w => w.workshopType === 'WORKSHOP').length,
-    webinars: workshops.filter(w => w.workshopType === 'WEBINAR').length,
-    sessions: workshops.reduce((sum, w) => sum + (w.sessionsCount || 0), 0),
-    resources: workshops.reduce((sum, w) => sum + (w.resourcesCount || 0), 0)
+    total: items.length,
+    owned: items.filter(w => w.isOwner).length,
+    collab: items.filter(w => !w.isOwner).length,
+    sessions: items.reduce((sum, w) => sum + (w.sessionsCount || 0), 0),
+    resources: items.reduce((sum, w) => sum + (w.resourcesCount || 0), 0)
   };
 
   if (loading) {
@@ -90,8 +121,8 @@ export default function CollaboratorDashboardPage() {
         </div>
         
         {/* KPI Cards skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
           ))}
         </div>
@@ -114,41 +145,49 @@ export default function CollaboratorDashboardPage() {
       }}
     >
       {/* Visual Header Panel */}
-      <div className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-10 text-white shadow-xl md:px-12 md:py-12">
+      <div className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-10 text-white shadow-xl md:px-12 md:py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="absolute right-0 top-0 h-full w-1/3 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400 via-purple-600 to-slate-900" />
-        <div className="relative z-10 space-y-4 max-w-2xl">
+        <div className="relative z-10 space-y-3 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-[11px] font-semibold tracking-wider text-indigo-300 uppercase">
-            <ShieldCheck size={12} className="text-indigo-400" /> Co-Producer Workspace
+            <ShieldCheck size={12} className="text-indigo-400" /> Management Dashboard
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-100 bg-clip-text text-transparent">
-            Workshop & Webinar Studio
+            Manage Workspaces
           </h1>
           <p className="text-[13px] md:text-sm text-slate-300 leading-relaxed max-w-lg">
-            Manage live webinars, customize hands-on bootcamps, publish course curriculum, and review learner resources in one central hub.
+            Create and edit workshops or webinars you own, or coordinate on projects you have been invited to co-manage.
           </p>
         </div>
+
+        {/* Create Button */}
+        <button
+          onClick={() => router.push('/studio/workshop/new')}
+          className="relative z-10 inline-flex items-center gap-2 rounded-xl bg-white hover:bg-slate-50 px-5 py-3 text-sm font-bold text-slate-900 shadow-lg active:scale-95 transition-all"
+        >
+          <Plus size={16} /> New Workspace
+        </button>
       </div>
 
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {[
           {
-            label: 'Total Assigned',
+            label: 'Total Workspaces',
             value: stats.total,
             icon: Layers,
             tone: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400',
           },
           {
-            label: 'Workshops',
-            value: stats.workshops,
-            icon: Wrench,
-            tone: 'bg-orange-50 text-orange-700 dark:bg-orange-950/20 dark:text-orange-400',
+            label: 'Created By Me',
+            value: stats.owned,
+            icon: User,
+            tone: 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400',
           },
           {
-            label: 'Webinars',
-            value: stats.webinars,
-            icon: Video,
-            tone: 'bg-blue-50 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400',
+            label: 'Collaborations',
+            value: stats.collab,
+            icon: Wrench,
+            tone: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400',
           },
           {
             label: 'Active Sessions',
@@ -185,35 +224,60 @@ export default function CollaboratorDashboardPage() {
       </div>
 
       {/* Control Bar: Filter and Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/90 border border-slate-200/80 p-3.5 rounded-2xl shadow-sm">
-        {/* Type Filter Buttons */}
-        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-          {[
-            { id: 'ALL', label: 'All Content' },
-            { id: 'WORKSHOP', label: 'Workshops' },
-            { id: 'WEBINAR', label: 'Webinars' },
-          ].map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setActiveFilter(f.id as any)}
-              className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                activeFilter === f.id
-                  ? 'bg-white text-slate-800 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-white/90 border border-slate-200/80 p-3.5 rounded-2xl shadow-sm">
+        {/* Left Filters Group */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {/* Ownership Filter */}
+          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+            {[
+              { id: 'ALL', label: 'All' },
+              { id: 'OWNED', label: 'Owned' },
+              { id: 'COLLAB', label: 'Collaborated' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setActiveFilter(f.id as any)}
+                className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeFilter === f.id
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Type Filter */}
+          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+            {[
+              { id: 'ALL', label: 'All Types' },
+              { id: 'WORKSHOP', label: 'Workshops' },
+              { id: 'WEBINAR', label: 'Webinars' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setActiveType(f.id as any)}
+                className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                  activeType === f.id
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Search Field */}
-        <div className="relative w-full sm:max-w-xs">
+        <div className="relative w-full lg:max-w-xs">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
           <input
             type="text"
-            placeholder="Search by title, tag..."
+            placeholder="Search workspaces..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs font-medium rounded-xl border border-slate-200 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
@@ -233,11 +297,11 @@ export default function CollaboratorDashboardPage() {
             <div className="grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-400 mb-4">
               <LayoutDashboard size={22} />
             </div>
-            <p className="text-sm text-slate-700 font-bold">No matching workspaces</p>
+            <p className="text-sm text-slate-700 font-bold">No workspaces found</p>
             <p className="text-xs text-slate-400 max-w-sm mt-1">
-              {searchQuery || activeFilter !== 'ALL' 
-                ? 'Try adjusting your search criteria or type filter.' 
-                : 'You will see workspaces here once you are assigned as a workshop or webinar collaborator.'}
+              {searchQuery || activeFilter !== 'ALL' || activeType !== 'ALL'
+                ? 'Try adjusting your filters or search criteria.' 
+                : 'Create your first workshop or webinar using the "New Workspace" button above.'}
             </p>
           </motion.div>
         ) : (
@@ -275,9 +339,20 @@ export default function CollaboratorDashboardPage() {
                     )}
 
                     {/* Status Badge */}
-                    <div className="absolute top-3.5 right-3.5">
+                    <div className="absolute top-3.5 right-3.5 flex gap-1.5">
                       <span className="inline-flex items-center text-[10px] font-extrabold px-3 py-1 rounded-full border bg-white/95 text-slate-800 shadow-sm uppercase border-slate-100">
                         {item.status || 'Active'}
+                      </span>
+                    </div>
+
+                    {/* Role Badge */}
+                    <div className="absolute bottom-3.5 left-3.5">
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-3 py-1 rounded-full border shadow-sm uppercase ${
+                        item.isOwner
+                          ? 'bg-amber-500 text-white border-amber-400'
+                          : 'bg-indigo-600 text-white border-indigo-500'
+                      }`}>
+                        {item.isOwner ? 'Owner' : 'Collaborator'}
                       </span>
                     </div>
                   </div>

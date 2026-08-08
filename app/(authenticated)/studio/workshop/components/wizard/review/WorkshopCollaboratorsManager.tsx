@@ -12,7 +12,7 @@ import {
 } from '@/app/(authenticated)/studio/workshop/api/collaboration';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/shared/design-system/ui/table';
 import { Badge } from '@/shared/design-system/ui/badge';
-import { Avatar, AvatarFallback } from '@/shared/design-system/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -177,7 +177,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
                 <TableRow key={c.userId}>
                   <TableCell className="flex items-center gap-3">
                     <Avatar className="w-9 h-9">
-                      {c.avatarUrl && <img src={c.avatarUrl} alt={c.name} className="object-cover w-full h-full" />}
+                      {c.avatarUrl && <AvatarImage src={c.avatarUrl} alt={c.name} />}
                       <AvatarFallback className="bg-indigo-100 text-indigo-700 font-bold">
                         {c.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                       </AvatarFallback>

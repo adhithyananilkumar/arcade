@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
+import { updateWorkshop } from '../api/workshop';
+import { toast } from 'sonner';
 import { WorkshopWizard } from '../components/wizard/WorkshopWizard';
 import RegisteredMembersPage from './participants/page';
 import { WorkshopCollaboratorsManager } from '../components/wizard/review/WorkshopCollaboratorsManager';
@@ -57,6 +59,52 @@ export default function SingleWorkshopDashboard() {
   const [hasEditAccess, setHasEditAccess] = useState<boolean>(false);
   const [hasManageAccess, setHasManageAccess] = useState<boolean>(false);
   const [analytics, setAnalytics] = useState<{ totalRegistrations: number; totalRevenue: number } | null>(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingCover(true);
+    try {
+      // 1. Get presigned URL
+      const { key, uploadUrl, publicUrl } = await api.post<any>('/api/media/presign', {
+        fileName: file.name,
+        contentType: file.type
+      });
+
+      // 2. Upload file via proxy
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('uploadUrl', uploadUrl);
+
+      const uploadRes = await fetch('/api/internal/media/upload', {
+        method: 'POST',
+        body: formData
+      });
+      if (!uploadRes.ok) throw new Error("Failed to upload file to storage");
+
+      // 3. Register metadata
+      await api.post('/api/media/metadata', {
+        key,
+        fileName: file.name,
+        contentType: file.type,
+        sizeBytes: file.size
+      });
+
+      // 4. Update workshop
+      await updateWorkshop(id as string, { coverImageUrl: publicUrl });
+      
+      // Update local state summary
+      setSummary(prev => prev ? { ...prev, coverImageUrl: publicUrl } : null);
+      toast.success("Cover image updated successfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -206,11 +254,46 @@ export default function SingleWorkshopDashboard() {
           <div className="p-6 md:p-8 max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Overview info */}
             <div className="lg:col-span-2 space-y-6">
-              {summary.coverImageUrl && (
-                <div className="rounded-xl overflow-hidden h-48 bg-zinc-200">
+              {/* Cover Image / Thumbnail Section */}
+              <div className="relative rounded-xl overflow-hidden h-48 bg-zinc-200 group border border-zinc-200 dark:border-zinc-800">
+                {summary.coverImageUrl ? (
                   <img src={summary.coverImageUrl} alt={summary.title} className="w-full h-full object-cover" />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 text-zinc-400">
+                    <svg className="mx-auto h-12 w-12 text-zinc-300 dark:text-zinc-700 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-xs font-semibold">No cover image uploaded</span>
+                  </div>
+                )}
+
+                {/* Edit overlay */}
+                {hasEditAccess && (
+                  <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                    {isUploadingCover ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="size-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span className="text-xs font-semibold">Uploading to R2...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <svg className="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs font-bold uppercase tracking-wider">{summary.coverImageUrl ? 'Change Cover' : 'Upload Cover'}</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverUpload}
+                      disabled={isUploadingCover}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
 
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
                 <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Details</h2>

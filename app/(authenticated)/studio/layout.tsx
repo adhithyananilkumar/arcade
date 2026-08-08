@@ -22,7 +22,7 @@ export default function ContentStudioLayout({
   const [hasWorkshopAccess, setHasWorkshopAccess] = useState<boolean | null>(null);
   const [checkingWorkshop, setCheckingWorkshop] = useState(false);
 
-  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard');
+  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/manage');
   const [hasCollabs, setHasCollabs] = useState<boolean | null>(null);
 
   useEffect(() => {
