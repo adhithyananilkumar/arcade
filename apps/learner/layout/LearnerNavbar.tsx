@@ -12,6 +12,7 @@ import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { channelService, useStudioAccess } from "@/domains/channels";
 import { platformReviewApi } from "@/domains/publishing";
+import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
@@ -26,8 +27,10 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
+  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
   
   // Pending tasks for platform admins
   const [pendingAdminTasks, setPendingAdminTasks] = useState<{ id: string; title: string; subtitle: string; href: string; type: string; timestamp: string }[]>([]);
@@ -179,6 +182,23 @@ export default function LearnerNavbar() {
   const { hasAccess: hasStudioAccess } = useStudioAccess();
   const showStudio = hasStudioAccess;
 
+  useEffect(() => {
+    api.get<any[]>('/api/workshops/my-collaborations')
+      .then(res => {
+        if (res && res.length > 0) {
+          setCollaboratedWorkshopId(res[0].id);
+          setHasMultipleCollabs(res.length > 1);
+        } else {
+          setCollaboratedWorkshopId(null);
+          setHasMultipleCollabs(false);
+        }
+      })
+      .catch(() => {
+        setCollaboratedWorkshopId(null);
+        setHasMultipleCollabs(false);
+      });
+  }, []);
+
   const isConsole = pathname.startsWith('/console');
   const consoleCrumb = (() => {
     if (!isConsole) return null;
@@ -204,7 +224,7 @@ export default function LearnerNavbar() {
       className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
     >
       {/* Left Island: Branding */}
-      <div className="pointer-events-auto flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock">
+      <div className="pointer-events-auto flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
         <Link href="/" className="group flex cursor-pointer items-center">
           <Image
             src="/arcade.svg"
@@ -240,7 +260,13 @@ export default function LearnerNavbar() {
         <div className="pointer-events-auto flex items-center justify-center h-12 w-12 rounded-full apple-glass-dock relative z-50">
           <div className="relative flex items-center justify-center">
             <button 
-              onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+              onClick={() => {
+                const next = !isNotificationsOpen;
+                setIsNotificationsOpen(next);
+                if (next) {
+                  refresh();
+                }
+              }}
               className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
               title="Notifications"
             >
@@ -333,7 +359,8 @@ export default function LearnerNavbar() {
                     <NotificationList
                       notifications={notifications}
                       onItemClick={() => setIsNotificationsOpen(false)}
-                      emptyMessage={(invitations.length > 0 || pendingAdminTasks.length > 0) ? undefined : 'No new notifications'}
+                      onNotificationAction={refresh}
+                      emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
                   </div>
                   <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
@@ -391,6 +418,14 @@ export default function LearnerNavbar() {
                 onClick={() => router.push('/studio')}
               >
                 Content Studio
+              </MenuItem>
+            )}
+            {collaboratedWorkshopId && (
+              <MenuItem 
+                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                onClick={() => router.push('/studio/manage')}
+              >
+                Manage Workshops
               </MenuItem>
             )}
             {showArcConsole && (

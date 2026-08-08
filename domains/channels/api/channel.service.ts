@@ -16,6 +16,7 @@ export interface Channel {
   contentUnlistDate?: string;
   ownerId: string;
   ownerName: string;
+  ownerUsername?: string;
   ownerEmail?: string;
   ownerPhone?: string;
   createdAt: string;
@@ -32,6 +33,7 @@ export interface ChannelContentItem {
   updatedAt: string;
   authorId?: string | null;
   authorName?: string | null;
+  authorUsername?: string | null;
 }
 
 export interface ChannelAuditLogEntry {
@@ -58,6 +60,20 @@ export interface ChannelDeletionRequestDto {
   status: string;
   createdAt: string;
   isPersonal: boolean;
+}
+
+export interface OwnershipTransferResponse {
+  id: string;
+  channelId: string;
+  channelName: string;
+  currentOwnerId: string;
+  currentOwnerName: string;
+  proposedOwnerId: string;
+  proposedOwnerName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  respondedAt?: string | null;
 }
 
 export const channelService = {
@@ -214,8 +230,52 @@ export const channelService = {
     return response.content;
   },
 
-  getChannelAuditLog: async (id: string): Promise<ChannelAuditLogEntry[]> => {
-    const response = await api.get<{ content: ChannelAuditLogEntry[] }>(`/api/v1/channels/${id}/audit-log?size=100`);
+  getChannelAuditLog: async (channelId: string): Promise<ChannelAuditLogEntry[]> => {
+    const response = await api.get<{ content: ChannelAuditLogEntry[] }>(`/api/v1/channels/${channelId}/audit-log?size=100`);
     return response.content;
+  },
+
+  sendOwnershipTransferOtp: async (channelId: string, email: string): Promise<void> => {
+    await api.post(`/api/v1/channels/${channelId}/ownership-transfer/send-otp`, { email });
+  },
+
+  verifyOwnershipTransferOtp: async (channelId: string, email: string, otp: string): Promise<void> => {
+    await api.post(`/api/v1/channels/${channelId}/ownership-transfer/verify-otp`, { email, otp });
+  },
+
+  requestOwnershipTransfer: async (
+    channelId: string,
+    proposedOwnerId: string,
+    channelName?: string,
+    currentOwnerEmail?: string,
+    otp?: string
+  ): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/channels/${channelId}/ownership-transfer`, {
+      proposedOwnerId,
+      channelName,
+      currentOwnerEmail,
+      otp
+    });
+    return response;
+  },
+
+  getOwnershipTransferStatus: async (channelId: string): Promise<OwnershipTransferResponse | null> => {
+    const response = await api.get<OwnershipTransferResponse | null>(`/api/v1/channels/${channelId}/ownership-transfer`);
+    return response;
+  },
+
+  acceptOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/accept`);
+    return response;
+  },
+
+  declineOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/decline`);
+    return response;
+  },
+
+  cancelOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.delete<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}`);
+    return response;
   }
 };

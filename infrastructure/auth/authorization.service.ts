@@ -21,6 +21,10 @@ export const AuthorizationService = {
     AuthorizationService.hasPermission(user, 'platform.content.review') ||
     AuthorizationService.hasPermission(user, 'platform.courses.review'),
 
+  /** Checks if the user is a channel reviewer */
+  canReviewChannelContent: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'channel.content.review'),
+
   /** @deprecated Use canReviewContent */
   canReviewCourses: (user: User | null | undefined) => AuthorizationService.canReviewContent(user),
 

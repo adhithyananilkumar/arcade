@@ -1,9 +1,12 @@
 'use client';
 
 import { usePathname, useRouter, useParams } from 'next/navigation';
-import { Home, Compass, BookOpen, Crown, Trophy, ClipboardList } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { Home, Compass, BookOpen, Crown, Trophy, ClipboardList, LayoutDashboard } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
+import { useStudioAccess } from '@/domains/channels';
+import { api } from '@/infrastructure/http/api';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 const dockItems = [
@@ -42,7 +45,7 @@ const dockItems = [
   {
     id: 'achievements',
     label: 'Achievements',
-    href: '/profile',
+    href: '/achievements',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
     exact: false,
@@ -57,11 +60,57 @@ const dockItems = [
   }
 ] as const;
 
+interface DockNavItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: any;
+  activeColor: string;
+  exact: boolean;
+}
+
 // ─── Component ─────────── //
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams();
+  const { hasAccess: hasStudioAccess } = useStudioAccess();
+  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
+
+  useEffect(() => {
+    api.get<any[]>('/api/workshops/my-collaborations')
+      .then(res => {
+        if (res && res.length > 0) {
+          setCollaboratedWorkshopId(res[0].id);
+          setHasMultipleCollabs(res.length > 1);
+        } else {
+          setCollaboratedWorkshopId(null);
+          setHasMultipleCollabs(false);
+        }
+      })
+      .catch(() => {
+        setCollaboratedWorkshopId(null);
+        setHasMultipleCollabs(false);
+      });
+  }, []);
+
+  const items = useMemo(() => {
+    const list: DockNavItem[] = [...dockItems];
+    const isCollaborator = !!collaboratedWorkshopId;
+    
+    if (hasStudioAccess || isCollaborator) {
+      list.push({
+        id: 'studio',
+        label: 'Manage',
+        href: '/studio/manage',
+        icon: LayoutDashboard,
+        activeColor: 'text-indigo-600 dark:text-indigo-400',
+        exact: false,
+      });
+    }
+    return list;
+  }, [hasStudioAccess, collaboratedWorkshopId]);
   
   // If we are viewing a specific course, point the exam button to that course's exam.
   // Otherwise, point to a default test course for demonstration.
@@ -92,7 +141,7 @@ export default function LearnerDock() {
           distance={90}
           panelHeight={60}
         >
-          {dockItems.map((item) => {
+          {items.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
             return (

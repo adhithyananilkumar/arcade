@@ -61,24 +61,5 @@ export default function WorkshopDetailPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0d14]">
-      {/* Top Header */}
-      <header className="bg-[#121624] border-b border-gray-800 text-white py-3.5 px-6 flex justify-between items-center sticky top-0 z-50 shadow-md">
-        <Link href="/workshops" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Discovery
-        </Link>
-        <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
-          Arcade Workshops
-        </span>
-      </header>
-      
-      <main>
-        <WorkshopPreview preview={previewData} />
-      </main>
-    </div>
-  );
+  return <WorkshopPreview preview={previewData} />;
 }

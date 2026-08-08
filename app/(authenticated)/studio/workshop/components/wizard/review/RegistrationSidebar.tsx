@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-react';
 import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/workshop/types';
-import { getMyRegistrationStatus, registerForWorkshop } from '@/app/workshop/api/registration';
+import { getMyRegistrationStatus, registerForWorkshop } from '@/app/(public)/workshop/api/registration';
 import { toast } from 'sonner';
 
 interface Props {

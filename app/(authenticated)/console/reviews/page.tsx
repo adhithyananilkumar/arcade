@@ -116,23 +116,20 @@ export default function PlatformReviewsPage() {
               key={kpi.id}
               type="button"
               onClick={() => setStatusFilter(kpi.id)}
-              className={`rounded-xl border p-3.5 text-left transition-all sm:p-4 ${
-                active
+              className={`rounded-xl border p-3.5 text-left transition-all sm:p-4 ${active
                   ? "border-[#14142b] bg-[#14142b] text-white shadow-[0_8px_18px_rgba(20,20,43,0.16)]"
                   : "border-slate-200/80 bg-white/95 hover:border-slate-300"
-              }`}
+                }`}
             >
               <span
-                className={`text-[10px] font-bold uppercase tracking-[0.1em] ${
-                  active ? "text-white/60" : "text-slate-400"
-                }`}
+                className={`text-[10px] font-bold uppercase tracking-[0.1em] ${active ? "text-white/60" : "text-slate-400"
+                  }`}
               >
                 {kpi.label}
               </span>
               <span
-                className={`mt-1 block text-2xl font-bold tabular-nums tracking-tight ${
-                  active ? "text-white" : "text-[#14142b]"
-                }`}
+                className={`mt-1 block text-2xl font-bold tabular-nums tracking-tight ${active ? "text-white" : "text-[#14142b]"
+                  }`}
               >
                 {kpi.value}
               </span>
@@ -164,11 +161,10 @@ export default function PlatformReviewsPage() {
               key={f.id}
               type="button"
               onClick={() => setStatusFilter(f.id)}
-              className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                statusFilter === f.id
+              className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${statusFilter === f.id
                   ? "border-[#14142b] bg-[#14142b] text-white"
                   : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-              }`}
+                }`}
             >
               {f.label}
             </button>
@@ -197,9 +193,8 @@ export default function PlatformReviewsPage() {
           {filtered.map((item, i) => (
             <li
               key={item.id}
-              className={`flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4 ${
-                i < filtered.length - 1 ? "border-b border-slate-100" : ""
-              }`}
+              className={`flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4 ${i < filtered.length - 1 ? "border-b border-slate-100" : ""
+                }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -213,7 +208,16 @@ export default function PlatformReviewsPage() {
                 </div>
                 <p className="mt-1 truncate text-[14px] font-bold text-[#14142b]">{item.title}</p>
                 <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400">
-                  {item.channelName || "—"} · {item.ownerName || "—"} · R{item.reviewRound} ·{" "}
+                  {item.channelId && item.channelName ? (
+                    <Link href={`/channels/${item.channelId}`} className="hover:underline font-semibold hover:text-blue-600">
+                      {item.channelName}
+                    </Link>
+                  ) : "—"} ·{" "}
+                  {item.ownerUsername ? (
+                    <Link href={`/${item.ownerUsername}`} className="hover:underline font-semibold hover:text-blue-600">
+                      @{item.ownerUsername}
+                    </Link>
+                  ) : item.ownerName || "—"} · R{item.reviewRound} ·{" "}
                   {new Date(item.submittedAt).toLocaleDateString()}
                 </p>
               </div>

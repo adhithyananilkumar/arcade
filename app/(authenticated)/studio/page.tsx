@@ -482,11 +482,11 @@ function CreateWorkshopModal({
               onChange={(e) => setWorkshopType(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60 bg-white"
             >
-              <option value={WorkshopType.WORKSHOP}>Workshop</option>
-              <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
-              <option value={WorkshopType.MASTERCLASS}>Masterclass</option>
-              <option value={WorkshopType.WEBINAR}>Webinar</option>
-              <option value={WorkshopType.AMA}>AMA</option>
+              {defaultType === WorkshopType.WEBINAR ? (
+                <option value={WorkshopType.WEBINAR}>Webinar</option>
+              ) : (
+                <option value={WorkshopType.WORKSHOP}>Workshop</option>
+              )}
             </select>
           </div>
           <div>
@@ -868,6 +868,9 @@ export default function DashboardPage() {
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "WORKSHOP">("ALL");
+  const [channelFilter, setChannelFilter] = useState<string>("ALL");
+  
+  const { channels } = useEligibleChannels();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -923,9 +926,20 @@ export default function DashboardPage() {
         typeFilter === "ALL" ||
         item.type?.toUpperCase() === typeFilter ||
         (typeFilter === "WORKSHOP" && item.type?.toUpperCase() === "WEBINAR");
-      return statusOk && typeOk;
+      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
+      return statusOk && typeOk && channelOk;
     });
-  }, [items, statusFilter, typeFilter]);
+  }, [items, statusFilter, typeFilter, channelFilter]);
+
+  const CHANNEL_CHIPS = useMemo(() => {
+    const base = [{ id: "ALL", label: "All channels" }];
+    return base.concat(
+      channels.map(c => ({
+        id: c.id,
+        label: c.isPersonal ? "Personal" : c.name
+      }))
+    );
+  }, [channels]);
 
   const STATUS_TABS = [
     { id: "ALL" as const, label: "All" },
@@ -987,6 +1001,24 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {channels.length > 0 && (
+              <div className="relative">
+                <select
+                  value={channelFilter}
+                  onChange={(e) => setChannelFilter(e.target.value)}
+                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-3.5 pr-8 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b] outline-none cursor-pointer focus:ring-2 focus:ring-slate-200"
+                >
+                  {CHANNEL_CHIPS.map((chip) => (
+                    <option key={chip.id} value={chip.id}>
+                      {chip.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown size={14} className="text-slate-400" />
+                </div>
+              </div>
+            )}
             <Link
               href="/studio/review"
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
@@ -1159,12 +1191,13 @@ export default function DashboardPage() {
           <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200/80 bg-white/80 py-16 text-center">
             <GraduationCap size={28} className="text-slate-300" />
             <p className="text-sm font-semibold text-[#14142b]">Nothing in this segment</p>
-            <p className="text-xs text-slate-400">Try another status or type filter.</p>
+            <p className="text-xs text-slate-400">Try another filter.</p>
             <button
               type="button"
               onClick={() => {
                 setStatusFilter("ALL");
                 setTypeFilter("ALL");
+                setChannelFilter("ALL");
               }}
               className="mt-1 text-[12px] font-semibold text-[#FF6B4A] hover:underline"
             >

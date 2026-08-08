@@ -36,7 +36,13 @@ export function NotificationPanel() {
     <div ref={panelRef} style={{ position: 'relative' }}>
       {/* Bell button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          if (next) {
+            wsNotifications;
+          }
+        }}
         style={{
           position: 'relative',
           display: 'flex',
