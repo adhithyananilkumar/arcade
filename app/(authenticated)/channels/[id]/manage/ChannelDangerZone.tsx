@@ -275,7 +275,6 @@ export function ChannelDangerZone({ channel }: Props) {
     return name.toLowerCase().includes(query) || email.toLowerCase().includes(query);
   });
 
-  return (
   const isProposedOwner = !!(transferRequest && transferRequest.status === 'PENDING' && user?.id === transferRequest.proposedOwnerId);
 
   if (!isOwner) {
