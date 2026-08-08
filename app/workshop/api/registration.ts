@@ -3,7 +3,10 @@ import { api } from '@/infrastructure/http/api';
 const API_BASE_PATH = '/api/v1/workshops';
 
 export const registerForWorkshop = async (workshopId: string): Promise<any> => {
-  return await api.post<any>(`${API_BASE_PATH}/${workshopId}/participants/register`, {});
+  return await api.post<any>(`/api/v1/enrollments`, {
+    resourceType: 'WORKSHOP',
+    resourceId: workshopId
+  });
 };
 
 export const getMyRegistrationStatus = async (workshopId: string): Promise<any> => {
