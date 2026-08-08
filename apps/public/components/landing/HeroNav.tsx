@@ -9,6 +9,7 @@ const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "About", href: "/about" },
   { label: "For creators", href: "/creators" },
+  { label: "Reach Us", href: "/reach-us" },
 ];
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';

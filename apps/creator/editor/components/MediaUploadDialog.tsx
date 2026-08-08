@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from "@/shared/design-system/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/design-system/ui/tooltip";
+import { UploadCloud } from "lucide-react";
 import { cn } from "@/shared/utils/utils";
 import { useUploadQueueStore, type UploadKind } from "../lib/uploadQueueStore";
 
@@ -71,6 +72,7 @@ export function MediaUploadDialog({
   const enqueue = useUploadQueueStore((s) => s.enqueue);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("upload");
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Link-tab state
@@ -79,6 +81,7 @@ export function MediaUploadDialog({
 
   const reset = useCallback(() => {
     setMode("upload");
+    setIsDragging(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setUrlValue("");
     setUrlError("");
@@ -100,6 +103,36 @@ export function MediaUploadDialog({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
       if (!files || files.length === 0 || !editor || editor.isDestroyed) return;
+      for (const file of Array.from(files)) {
+        enqueue({ file, kind, editor, upload, onInsert });
+      }
+      setOpen(false);
+      reset();
+    },
+    [editor, kind, upload, onInsert, enqueue, reset]
+  );
+
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsDragging(false);
+
+      const files = event.dataTransfer.files;
+      if (!files || files.length === 0 || !editor || editor.isDestroyed) return;
+      
       for (const file of Array.from(files)) {
         enqueue({ file, kind, editor, upload, onInsert });
       }
@@ -166,7 +199,17 @@ export function MediaUploadDialog({
         </div>
 
         {mode === "upload" && (
-          <>
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors",
+              isDragging
+                ? "border-primary bg-primary/10"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50 hover:bg-muted/50"
+            )}
+          >
             <input
               ref={fileInputRef}
               type="file"
@@ -175,10 +218,15 @@ export function MediaUploadDialog({
               style={{ display: "none" }}
               onChange={handleFileChange}
             />
-            <Button className="w-full" size="sm" onClick={handleChooseFile}>
+            <UploadCloud className="h-8 w-8 text-muted-foreground" />
+            <div className="text-center">
+              <p className="text-sm font-medium">Drag & drop files here</p>
+              <p className="text-xs text-muted-foreground mt-1">or</p>
+            </div>
+            <Button size="sm" onClick={handleChooseFile} className="mt-2 w-full">
               {chooseFileLabel}
             </Button>
-          </>
+          </div>
         )}
 
         {mode === "link" && (

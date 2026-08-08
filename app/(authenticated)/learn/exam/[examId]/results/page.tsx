@@ -23,9 +23,9 @@ export default function ExamResultsPage() {
       setScore(parseInt(s, 10));
       setTotal(parseInt(t, 10));
     } else {
-      router.push(`/learn/${params.courseId}`);
+      router.push(`/exam`);
     }
-  }, [router, params.courseId]);
+  }, [router]);
 
   if (score === null || total === null) {
     return (
@@ -82,10 +82,10 @@ export default function ExamResultsPage() {
               Today&apos;s exams
             </Link>
             <Link
-              href={`/learn/${params.courseId}`}
+              href={`/exam`}
               className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-2.5 text-[13px] font-semibold text-slate-600 hover:border-slate-300"
             >
-              Back to course
+              Back to exams
             </Link>
           </div>
         </div>

@@ -27,16 +27,26 @@ import {
   CheckCircle2,
   Calendar,
   User,
+  Video,
+  FileText,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/design-system/ui/select';
 
-export interface ExtendedCourse {
+export interface ExtendedContent {
   id: string;
   title: string;
   thumbnail: string;
   instructor: string;
   category: string;
+  contentType: 'Course' | 'Article' | 'Event';
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
   duration: string;
   price: string;
@@ -55,13 +65,14 @@ export interface ExtendedCourse {
   };
 }
 
-const mockCourses: ExtendedCourse[] = [
+export const mockContent: ExtendedContent[] = [
   {
     id: 'course-1',
-    title: 'AI Agent Architecture & Tool Use Masterclass',
+    title: 'Full-Stack Web Development Bootcamp',
     thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
     instructor: 'Dr. Sarah Chen',
-    category: 'AI Engineering',
+    category: 'Web Development',
+    contentType: 'Course',
     difficulty: 'Advanced',
     duration: '18h 45m',
     price: '$129.99',
@@ -75,16 +86,17 @@ const mockCourses: ExtendedCourse[] = [
     addedByStaff: {
       name: 'Dr. Sarah Chen',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-      role: 'Lead AI Scientist',
+      role: 'Senior Software Architect',
       dateAdded: 'Aug 2, 2026',
     },
   },
   {
     id: 'course-2',
-    title: 'Prompt Engineering & Context Window Optimization',
+    title: 'Cloud Infrastructure & System Design',
     thumbnail: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=80',
     instructor: 'Alex Rivera',
-    category: 'GenAI & LLMs',
+    category: 'Cloud Computing',
+    contentType: 'Course',
     difficulty: 'Beginner',
     duration: '12h 10m',
     price: '$89.99',
@@ -98,7 +110,7 @@ const mockCourses: ExtendedCourse[] = [
     addedByStaff: {
       name: 'Alex Rivera',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-      role: 'Senior Prompt Engineer',
+      role: 'Lead Cloud Engineer',
       dateAdded: 'Jul 28, 2026',
     },
   },
@@ -108,6 +120,7 @@ const mockCourses: ExtendedCourse[] = [
     thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
     instructor: 'Prof. Michael Vance',
     category: 'Deep Learning',
+    contentType: 'Course',
     difficulty: 'Intermediate',
     duration: '24h 30m',
     price: '$149.99',
@@ -131,6 +144,7 @@ const mockCourses: ExtendedCourse[] = [
     thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80',
     instructor: 'Elena Rostova',
     category: 'AI Engineering',
+    contentType: 'Course',
     difficulty: 'Advanced',
     duration: '16h 00m',
     price: '$199.99',
@@ -154,6 +168,7 @@ const mockCourses: ExtendedCourse[] = [
     thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
     instructor: 'David Kim',
     category: 'Software Architecture',
+    contentType: 'Course',
     difficulty: 'Intermediate',
     duration: '8h 20m',
     price: '$49.99',
@@ -171,6 +186,42 @@ const mockCourses: ExtendedCourse[] = [
       dateAdded: 'May 10, 2026',
     },
   },
+  {
+    id: 'article-1',
+    title: 'Scalable Microservices Architecture Patterns',
+    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Alex Rivera',
+    category: 'Software Architecture',
+    contentType: 'Article',
+    difficulty: 'Intermediate',
+    duration: '10m read',
+    price: 'Free',
+    enrollments: 45000,
+    completionRate: 95.0,
+    rating: 4.99,
+    reviewsCount: 300,
+    wishlistCount: 500,
+    lastUpdated: '1 day ago',
+    status: 'PUBLISHED',
+  },
+  {
+    id: 'event-1',
+    title: 'Live Workshop: Building High-Performance Web Apps',
+    thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Dr. Sarah Chen',
+    category: 'Web Development',
+    contentType: 'Event',
+    difficulty: 'Beginner',
+    duration: '2h',
+    price: 'Free',
+    enrollments: 1200,
+    completionRate: 100,
+    rating: 4.95,
+    reviewsCount: 150,
+    wishlistCount: 200,
+    lastUpdated: 'Just now',
+    status: 'PUBLISHED',
+  },
 ];
 
 interface CourseManagementSectionProps {
@@ -178,8 +229,9 @@ interface CourseManagementSectionProps {
 }
 
 export function CourseManagementSection({ onAddCourse }: CourseManagementSectionProps) {
-  const [courses, setCourses] = useState<ExtendedCourse[]>(mockCourses);
+  const [courses, setCourses] = useState<ExtendedContent[]>(mockContent);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [selectedInstructor, setSelectedInstructor] = useState('ALL');
@@ -242,7 +294,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
   const handleDuplicate = (id: string) => {
     const target = courses.find((c) => c.id === id);
     if (!target) return;
-    const duplicated: ExtendedCourse = {
+    const duplicated: ExtendedContent = {
       ...target,
       id: `course-${Date.now()}`,
       title: `${target.title} (Copy)`,
@@ -274,138 +326,14 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
 
   return (
     <div className="space-y-6">
-      {/* YouTube Studio Style: Top Performing Courses Widget */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60 shadow-2xs">
-              <TrendingUp size={18} />
-            </div>
-            <div>
-              <h2 className="text-base font-black tracking-tight text-[#14142b]">
-                Top Performing Courses
-              </h2>
-              <p className="text-xs font-semibold text-slate-500">
-                YouTube Studio style ranking and performance analytics
-              </p>
-            </div>
-          </div>
-
-          {/* Performance Filter Selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">Order by:</span>
-            <select
-              value={topPerformanceFilter}
-              onChange={(e) => setTopPerformanceFilter(e.target.value as any)}
-              className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-extrabold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
-            >
-              <option value="TOP_COMPLETION">Top Completion Rate</option>
-              <option value="MOST_ENROLLED">Most Enrolled Students</option>
-              <option value="HIGHEST_RATED">Highest Learner Rating</option>
-              <option value="NEEDS_ATTENTION">Needs Attention (Lowest)</option>
-              <option value="RECENTLY_UPDATED">Recently Updated</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Youtube Studio Style Ranked List */}
-        <div className="space-y-2.5">
-          {rankedTopCourses.slice(0, 5).map((course, idx) => {
-            const isTop = idx === 0;
-            const rankBadgeColor =
-              idx === 0
-                ? 'bg-amber-400 text-slate-900 shadow-xs'
-                : idx === 1
-                ? 'bg-slate-200 text-slate-800'
-                : idx === 2
-                ? 'bg-amber-700/20 text-amber-800'
-                : 'bg-slate-100 text-slate-500';
-
-            return (
-              <div
-                key={course.id}
-                className={`flex flex-col gap-3 rounded-2xl p-3.5 sm:flex-row sm:items-center sm:justify-between transition-colors ${
-                  isTop ? 'bg-indigo-50/50 border border-indigo-100' : 'hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  {/* Rank Badge */}
-                  <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-xl text-xs font-black ${rankBadgeColor}`}
-                  >
-                    #{idx + 1}
-                  </span>
-
-                  {/* Thumbnail */}
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="h-12 w-20 shrink-0 rounded-xl object-cover border border-slate-200"
-                  />
-
-                  {/* Title & Metadata */}
-                  <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-extrabold text-[#14142b] truncate">
-                      {course.title}
-                    </h3>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-500">
-                      <span className="text-indigo-600 font-bold">{course.category}</span>
-                      <span>·</span>
-                      {course.addedByStaff && (
-                        <span className="inline-flex items-center gap-1 text-slate-700 font-bold">
-                          <img
-                            src={course.addedByStaff.avatar}
-                            alt=""
-                            className="h-3.5 w-3.5 rounded-full object-cover"
-                          />
-                          Added by {course.addedByStaff.name}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Performance Metric Pill & Quick Analytics Button */}
-                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                  <div className="text-right">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black ${
-                        topPerformanceFilter === 'NEEDS_ATTENTION'
-                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      }`}
-                    >
-                      {topPerformanceFilter === 'MOST_ENROLLED'
-                        ? `${course.enrollments.toLocaleString()} students`
-                        : topPerformanceFilter === 'HIGHEST_RATED'
-                        ? `${course.rating} ★ (${course.reviewsCount})`
-                        : `${course.completionRate}% completion`}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => toast.info(`Opening analytics for "${course.title}"`)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-indigo-600 transition-colors"
-                  >
-                    <BarChart3 size={13} />
-                    <span>Analytics</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Control Bar: Search, Filters, Sort, Layout Toggle & Add Button */}
-      <div className="flex flex-col gap-4 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs lg:flex-row lg:items-center lg:justify-between">
+      {/* Control Bar: Search, Filters, Sort, Layout Toggle */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         {/* Left: Search Bar */}
         <div className="relative flex-1 max-w-md">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search courses by title, category, or instructor..."
+            placeholder="Search content by title, category, or instructor..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 py-2.5 pl-10 pr-4 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
@@ -414,113 +342,145 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
 
         {/* Middle & Right Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Type Filter */}
+          <Select value={selectedType} onValueChange={(val) => setSelectedType(val || 'ALL')}>
+            <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
+              <SelectValue placeholder="All Types">
+                {selectedType === 'ALL' ? 'All Types' : selectedType === 'Course' ? 'Courses' : selectedType === 'Article' ? 'Articles' : 'Events'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/60 bg-white/95 backdrop-blur-xl">
+              <SelectItem value="ALL" className="rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">All Types</SelectItem>
+              <SelectItem value="Course" className="rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Courses</SelectItem>
+              <SelectItem value="Article" className="rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Articles</SelectItem>
+              <SelectItem value="Event" className="rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Events</SelectItem>
+            </SelectContent>
+          </Select>
+
           {/* Category Filter */}
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
-          >
-            <option value="ALL">All Categories</option>
-            {categories.filter((c) => c !== 'ALL').map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedCategory} onValueChange={(val) => setSelectedCategory(val || 'ALL')}>
+            <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
+              <SelectValue placeholder="All Categories">
+                {selectedCategory === 'ALL' ? 'All Categories' : selectedCategory}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/60 bg-white/95 backdrop-blur-xl">
+              <SelectItem value="ALL" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">All Categories</SelectItem>
+              {categories.filter((c) => c !== 'ALL').map((cat) => (
+                <SelectItem key={cat} value={cat} className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
-          >
-            <option value="ALL">All Statuses</option>
-            <option value="PUBLISHED">Published</option>
-            <option value="DRAFT">Draft</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+          <Select value={selectedStatus} onValueChange={(val) => setSelectedStatus(val || 'ALL')}>
+            <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
+              <SelectValue placeholder="All Statuses">
+                {selectedStatus === 'ALL' ? 'All Statuses' : selectedStatus === 'PUBLISHED' ? 'Published' : selectedStatus === 'DRAFT' ? 'Draft' : 'Archived'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/60 bg-white/95 backdrop-blur-xl">
+              <SelectItem value="ALL" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">All Statuses</SelectItem>
+              <SelectItem value="PUBLISHED" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Published</SelectItem>
+              <SelectItem value="DRAFT" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Draft</SelectItem>
+              <SelectItem value="ARCHIVED" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Archived</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Sorting */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer"
-          >
-            <option value="POPULAR">Most Enrolled</option>
-            <option value="RATING">Highest Rated</option>
-            <option value="COMPLETION">Completion Rate</option>
-          </select>
+          <Select value={sortBy} onValueChange={(val) => setSortBy(val as any)}>
+            <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
+              <SelectValue placeholder="Sort By">
+                {sortBy === 'POPULAR' ? 'Most Enrolled' : sortBy === 'RATING' ? 'Highest Rated' : 'Completion Rate'}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="rounded-3xl p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/60 bg-white/95 backdrop-blur-xl">
+              <SelectItem value="POPULAR" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Most Enrolled</SelectItem>
+              <SelectItem value="RATING" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Highest Rated</SelectItem>
+              <SelectItem value="COMPLETION" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Completion Rate</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Grid/List Toggle */}
           <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50/80 p-1">
             <button
               type="button"
               onClick={() => setViewMode('GRID')}
-              className={`rounded-xl p-1.5 transition-all ${
-                viewMode === 'GRID' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
-              }`}
+              className={`rounded-xl p-1.5 transition-all ${viewMode === 'GRID' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
+                }`}
             >
               <LayoutGrid size={15} />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('LIST')}
-              className={`rounded-xl p-1.5 transition-all ${
-                viewMode === 'LIST' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
-              }`}
+              className={`rounded-xl p-1.5 transition-all ${viewMode === 'LIST' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-400 hover:text-slate-700'
+                }`}
             >
               <List size={15} />
             </button>
           </div>
-
-          {/* Add Course Button */}
-          <button
-            type="button"
-            onClick={onAddCourse || (() => toast.info('Navigating to Studio Course Creator...'))}
-            className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-xs font-extrabold text-white shadow-md hover:bg-indigo-700 transition-all active:scale-[0.98]"
-          >
-            <Plus size={15} />
-            <span>Add Course</span>
-          </button>
         </div>
       </div>
 
-      {/* Courses Display Grid / List */}
+      {/* Content Display Grid / List */}
       {filteredCourses.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center">
           <BookOpen size={36} className="mx-auto text-slate-300 mb-3" />
-          <h3 className="text-base font-extrabold text-slate-800">No courses match your filter criteria</h3>
+          <h3 className="text-base font-extrabold text-slate-800">No content matches your filter criteria</h3>
           <p className="mt-1 text-xs text-slate-500">Try adjusting your search keywords or active filters.</p>
         </div>
       ) : viewMode === 'GRID' ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-14">
           {filteredCourses.map((course) => (
             <motion.div
               key={course.id}
               layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="group relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_4px_20px_rgba(20,20,43,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="group relative overflow-hidden rounded-2xl rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgba(20,20,43,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
+              {/* Small Traveling Multicolor Border Beam Line Segment */}
+              <div
+                className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-30 overflow-hidden"
+                style={{
+                  padding: '2px',
+                  WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
+                  className="absolute -inset-[150%] origin-center"
+                  style={{
+                    background:
+                      'conic-gradient(from 0deg, transparent 0%, transparent 80%, #6366f1 86%, #a855f7 91%, #ec4899 96%, #06b6d4 100%)',
+                  }}
+                />
+              </div>
+
               {/* Thumbnail Header */}
-              <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+              <div className="relative h-28 w-full overflow-hidden bg-slate-100">
                 <img
                   src={course.thumbnail}
                   alt={course.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
                 {/* Status Badge */}
                 <div className="absolute top-3 left-3 flex items-center gap-1.5">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold shadow-sm ${
-                      course.status === 'PUBLISHED'
-                        ? 'bg-emerald-500 text-white'
-                        : course.status === 'DRAFT'
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold shadow-sm ${course.status === 'PUBLISHED'
+                      ? 'bg-emerald-500 text-white'
+                      : course.status === 'DRAFT'
                         ? 'bg-amber-500 text-white'
                         : 'bg-slate-700 text-white'
-                    }`}
+                      }`}
                   >
                     {course.status}
                   </span>
@@ -548,7 +508,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
               </div>
 
               {/* Card Body */}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+              <div className="p-3 flex-1 flex flex-col justify-between space-y-2">
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-extrabold text-indigo-600 mb-1">
                     <span>{course.category}</span>
@@ -581,7 +541,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                 </div>
 
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-2 border-t border-b border-slate-100 py-3 text-center text-xs font-semibold">
+                <div className="grid grid-cols-3 gap-1.5 border-t border-b border-slate-100 py-2 text-center text-xs font-semibold">
                   <div>
                     <p className="text-[10px] uppercase text-slate-400">Students</p>
                     <p className="font-extrabold text-slate-800">{course.enrollments.toLocaleString()}</p>

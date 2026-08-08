@@ -131,14 +131,20 @@ export function QuizPlayer({ quizId, className = "", onAttemptGraded }: QuizPlay
 
       {result && (
         <div
-          className={`mb-4 flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold ${
-            result.score === result.maxScore
+          className={`mb-4 flex items-center justify-between gap-4 rounded-xl border px-4 py-3 text-sm font-semibold ${
+            result.passed
               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-indigo-200 bg-indigo-50 text-indigo-700"
+              : "border-red-200 bg-red-50 text-red-700"
           }`}
         >
-          <CircleCheck size={18} />
-          Score: {result.score} / {result.maxScore}
+          <div className="flex items-center gap-2">
+            {result.passed ? <CircleCheck size={18} /> : <X size={18} />}
+            {result.passed ? "Passed!" : "Failed"}
+          </div>
+          <div className="flex items-center gap-4">
+            <span>Score: {result.score} / {result.maxScore}</span>
+            <span className="opacity-75">Passing Marks: {result.passingScore}</span>
+          </div>
         </div>
       )}
 

@@ -811,7 +811,7 @@ function CourseTabs() {
               </p>
             </div>
             <Link
-              href={`/learn/${params.courseId}/exam`}
+              href={`/learn/exam/${params.courseId}`}
               className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
             >
               Proceed to exam <ChevronRight size={16} />
