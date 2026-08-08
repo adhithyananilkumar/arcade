@@ -16,6 +16,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { ChannelDoodleBanner } from './manage/ChannelDoodleBanner';
 
 // Public channel page — YouTube/Instagram-style published grid.
 
@@ -199,47 +200,38 @@ export default function ChannelHomePage() {
         </button>
 
         {/* Hero */}
-        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_8px_28px_rgba(20,20,43,0.06)]">
-          {channel.bannerUrl ? (
-            <div className="h-40 w-full sm:h-52">
-              <img
-                src={channel.bannerUrl}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            </div>
-          ) : (
-            <div
-              className="h-40 w-full sm:h-52"
-              style={{
-                background: 'linear-gradient(135deg, #14142b 0%, #2A2F45 55%, #FF6B4A 140%)',
-              }}
-            />
-          )}
+        <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)]">
+          <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-44 w-full sm:h-56" />
 
           <div className="px-5 pb-6 sm:px-7">
-            <div className="-mt-10 mb-4 flex flex-col gap-4 sm:-mt-12 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-md sm:h-24 sm:w-24">
-                  {channel.iconUrl ? (
-                    <img
-                      src={channel.iconUrl}
-                      alt={channel.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Tv size={36} className="text-slate-400" />
-                  )}
+                {/* Avatar floating over banner */}
+                <div className="-mt-12 sm:-mt-14 shrink-0 relative z-10">
+                  <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center overflow-hidden rounded-2xl border-[4px] border-white bg-[#F5F0E6] text-black shadow-md ring-1 ring-black/5">
+                    {channel.iconUrl ? (
+                      <img
+                        src={channel.iconUrl}
+                        alt={channel.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#F5F0E6] flex items-center justify-center text-[#14142b]">
+                        <Tv size={36} />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="min-w-0 space-y-1 pb-0.5">
-                  <h1 className="truncate text-2xl font-bold tracking-tight text-[#14142b] sm:text-[1.75rem]">
+
+                <div className="min-w-0 space-y-1.5 pt-1 sm:pt-3 pb-0.5">
+                  <h1 className="truncate text-2xl font-extrabold tracking-tight bg-gradient-to-r from-[#14142b] via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-[1.75rem]">
                     {channel.name}
                   </h1>
                   <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-medium text-slate-500">
                     <span>{channel.ownerName}</span>
                     <span className="text-slate-300">·</span>
                     <span>
-                      {items.length} {items.length === 1 ? 'published' : 'published'}
+                      {items.length} {items.length === 1 ? 'published item' : 'published items'}
                     </span>
                     <span className="text-slate-300">·</span>
                     <span>{channel.isPersonal ? 'Personal' : 'Organization'}</span>

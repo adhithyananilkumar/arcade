@@ -47,7 +47,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
   if (!isOwner) {
     return (
-      <div className="p-6 text-center text-sm text-gray-500">
+      <div className="p-6 text-center text-sm font-medium text-slate-400">
         Only the channel owner can access destructive actions.
       </div>
     );
@@ -56,33 +56,37 @@ export function ChannelDangerZone({ channel }: Props) {
   const isSuspended = channel.status === 'SUSPENDED';
 
   return (
-    <div className="max-w-3xl">
-      <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
-        <AlertTriangle size={20} />
-        Danger Zone
-      </h3>
-      <p className="text-sm text-gray-500 mb-4">Irreversible actions for your channel.</p>
+    <div className="max-w-3xl mx-auto overflow-hidden rounded-2xl border border-rose-200/80 bg-white/95 p-6 sm:p-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
+          <AlertTriangle size={20} />
+        </div>
+        <div>
+          <h3 className="text-base font-bold text-rose-600 tracking-tight">
+            Danger Zone
+          </h3>
+          <p className="text-xs font-medium text-slate-500">Irreversible actions for your channel.</p>
+        </div>
+      </div>
 
-      <Card className="border-red-200 bg-red-50">
-        <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h4 className="font-semibold text-gray-900">Delete this channel</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              {isSuspended
-                ? 'This channel is already suspended — there is nothing further to request.'
-                : 'Once approved, your channel will be suspended. Its content stays owned by the channel and remains publicly visible for up to 6 months before being unlisted, giving you time to appeal or reactivate.'}
-            </p>
-          </div>
-          <Button
-            variant="destructive"
-            onClick={() => setIsDeleteModalOpen(true)}
-            className="shrink-0"
-            disabled={isSuspended}
-          >
-            Request Deletion
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-rose-200/80 bg-rose-50/70 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h4 className="font-bold text-[#14142b] text-sm">Delete Channel Request</h4>
+          <p className="text-xs font-medium text-slate-600 mt-1 leading-relaxed max-w-xl">
+            {isSuspended
+              ? 'This channel is already suspended — there is nothing further to request.'
+              : 'Once approved, your channel will be suspended. Content stays owned by the channel and remains publicly visible for up to 6 months before being unlisted.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsDeleteModalOpen(true)}
+          className="shrink-0 rounded-full px-5 py-2.5 text-xs font-extrabold text-white bg-rose-600 hover:bg-rose-700 shadow-sm active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isSuspended}
+        >
+          Request Deletion
+        </button>
+      </div>
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent className="max-w-md p-6">
