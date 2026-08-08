@@ -482,11 +482,11 @@ function CreateWorkshopModal({
               onChange={(e) => setWorkshopType(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60 bg-white"
             >
-              <option value={WorkshopType.WORKSHOP}>Workshop</option>
-              <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
-              <option value={WorkshopType.MASTERCLASS}>Masterclass</option>
-              <option value={WorkshopType.WEBINAR}>Webinar</option>
-              <option value={WorkshopType.AMA}>AMA</option>
+              {defaultType === WorkshopType.WEBINAR ? (
+                <option value={WorkshopType.WEBINAR}>Webinar</option>
+              ) : (
+                <option value={WorkshopType.WORKSHOP}>Workshop</option>
+              )}
             </select>
           </div>
           <div>
