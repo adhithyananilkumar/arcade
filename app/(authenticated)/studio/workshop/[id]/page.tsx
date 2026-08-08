@@ -337,7 +337,7 @@ export default function SingleWorkshopDashboard() {
 
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
                 <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Statistics</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className={`grid gap-4 ${hasManageAccess ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-3'}`}>
                   <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Sessions</div>
                     <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{summary.sessionsCount}</div>
@@ -350,12 +350,14 @@ export default function SingleWorkshopDashboard() {
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Registrations</div>
                     <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{analytics ? analytics.totalRegistrations : 0}</div>
                   </div>
-                  <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Revenue</div>
-                    <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-                      ${analytics ? analytics.totalRevenue.toFixed(2) : '0.00'}
+                  {hasManageAccess && (
+                    <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Revenue</div>
+                      <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                        ${analytics ? analytics.totalRevenue.toFixed(2) : '0.00'}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
