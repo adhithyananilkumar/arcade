@@ -66,7 +66,7 @@ export default function Footer() {
             <ul className="arc-footer__mono-list">
               <li><Link href="/explore">Explore Courses</Link></li>
               <li><Link href="/forum">Community Forum</Link></li>
-              <li><Link href="/content-creator">Reach Us</Link></li>
+              <li><Link href="/reach-us">Reach Us</Link></li>
               <li><Link href="/docs">Developer API</Link></li>
               <li><Link href="/status">Network Status</Link></li>
             </ul>

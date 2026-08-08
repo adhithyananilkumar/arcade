@@ -6,7 +6,7 @@ import { api } from "@/infrastructure/http/api";
 import { Calendar, Play, ClipboardList } from "lucide-react";
 
 interface ExamDto {
-  courseId: string;
+  id: string;
   title: string;
   coverImageUrl?: string;
   examSchedule?: string;
@@ -94,7 +94,7 @@ export default function ExamDashboard() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {exams.map((exam) => (
               <article
-                key={exam.courseId}
+                key={exam.id}
                 className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_6px_20px_rgba(20,20,43,0.05)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,20,43,0.08)]"
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
@@ -130,7 +130,7 @@ export default function ExamDashboard() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => router.push(`/learn/${exam.courseId}/exam`)}
+                    onClick={() => router.push(`/learn/exam/${exam.id}`)}
                     className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#14142b] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
                   >
                     <Play size={14} />

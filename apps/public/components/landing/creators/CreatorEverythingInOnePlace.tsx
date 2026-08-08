@@ -48,7 +48,7 @@ export default function CreatorEverythingInOnePlace() {
   ];
 
   return (
-    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-0 pb-16 space-y-10 relative z-10">
+    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-12 md:pt-16 pb-16 space-y-10 relative z-10">
 
       {/* Section Header */}
       <div ref={section2HeaderRef} className="text-center space-y-4 max-w-xl mx-auto" style={{ position: 'relative' }}>

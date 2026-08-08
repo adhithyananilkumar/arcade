@@ -52,10 +52,10 @@ export default function ExamAcknowledgementPage() {
   const [isTerminated, setIsTerminated] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${params.courseId}`)) {
+    if (sessionStorage.getItem(`exam_terminated_${params.examId}`)) {
       setIsTerminated(true);
     }
-  }, [params.courseId]);
+  }, [params.examId]);
 
   const canStart = agreed && !isTerminated;
 
@@ -67,7 +67,7 @@ export default function ExamAcknowledgementPage() {
     } catch (err) {
       console.warn('Failed to enter fullscreen', err);
     }
-    router.push(`/learn/${params.courseId}/exam/start`);
+    router.push(`/learn/${params.examId}/exam/start`);
   };
 
   return (
@@ -116,7 +116,7 @@ export default function ExamAcknowledgementPage() {
               <button
                 type="button"
                 onClick={() => {
-                  sessionStorage.removeItem(`exam_terminated_${params.courseId}`);
+                  sessionStorage.removeItem(`exam_terminated_${params.examId}`);
                   setIsTerminated(false);
                 }}
                 className="shrink-0 rounded-full bg-rose-100 px-3 py-1.5 text-[11px] font-bold text-rose-800 hover:bg-rose-200"

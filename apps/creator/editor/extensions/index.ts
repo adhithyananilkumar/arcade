@@ -29,7 +29,6 @@ import { CodeBlock } from "reactjs-tiptap-editor/codeblock";
 import { CodeView } from "reactjs-tiptap-editor/codeview";
 import { Color } from "reactjs-tiptap-editor/color";
 import { Column, ColumnNode, MultipleColumnNode } from "reactjs-tiptap-editor/column";
-import { Drawer } from "reactjs-tiptap-editor/drawer";
 import { Emoji } from "reactjs-tiptap-editor/emoji";
 import { Excalidraw } from "reactjs-tiptap-editor/excalidraw";
 import { ExportWord } from "reactjs-tiptap-editor/exportword";
@@ -60,7 +59,6 @@ import { TaskList } from "reactjs-tiptap-editor/tasklist";
 import { TextAlign } from "reactjs-tiptap-editor/textalign";
 import { TextDirection } from "reactjs-tiptap-editor/textdirection";
 import { TextUnderline } from "reactjs-tiptap-editor/textunderline";
-import { Twitter } from "reactjs-tiptap-editor/twitter";
 import { Video } from "reactjs-tiptap-editor/video";
 
 import { getBlockExtensions } from "@/domains/courses";
@@ -204,8 +202,6 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
     Katex,
     Excalidraw,
     Mermaid.configure({ upload: uploadMediaFile }),
-    Drawer.configure({ upload: uploadMediaFile }),
-    Twitter,
     Mention.configure({
       suggestion: {
         char: "@",
