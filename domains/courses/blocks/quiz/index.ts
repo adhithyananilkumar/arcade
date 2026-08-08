@@ -14,11 +14,17 @@ export const quizBlock: BlockDefinition = {
     icon: FileQuestion,
     keywords: ["quiz", "knowledge check", "question", "assessment", "test"],
     run: (editor, range) => {
-      const quizId = window.prompt("Enter the quiz ID to embed:") || "";
-      const chain = editor.chain().focus();
-      (range ? chain.deleteRange(range) : chain)
-        .insertContent({ type: "quiz-block", attrs: { quizId } })
-        .run();
+      const event = new CustomEvent("arcade-open-quiz-selector", {
+        detail: {
+          onSelect: (quizId: string) => {
+            const chain = editor.chain().focus();
+            (range ? chain.deleteRange(range) : chain)
+              .insertContent({ type: "quiz-block", attrs: { quizId } })
+              .run();
+          }
+        }
+      });
+      window.dispatchEvent(event);
     },
   },
 };

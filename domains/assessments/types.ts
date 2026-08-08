@@ -90,6 +90,13 @@ export interface QuestionBankRequest {
 
 // ── Quiz taking (learner-facing, no answer key) ──────────────────────────────
 
+export interface QuizResponse {
+  id: string;
+  title: string;
+  position: number;
+  passingScore: number;
+}
+
 export interface QuizTakeOptionResponse {
   id: string;
   text: string;
@@ -125,6 +132,8 @@ export interface QuizAttemptResponse {
   attemptId: string;
   score: number;
   maxScore: number;
+  passingScore: number;
+  passed: boolean;
   submittedAt: string;
   results: QuestionResultResponse[];
 }

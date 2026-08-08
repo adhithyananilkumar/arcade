@@ -12,6 +12,7 @@ import { use } from "react";
 interface QuizMetadata {
   id: string;
   title: string;
+  passingScore: number;
 }
 
 export default function StandaloneQuizEditorPage({
@@ -61,6 +62,24 @@ export default function StandaloneQuizEditorPage({
     }
   };
 
+  const handlePassingScoreBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+    const newScore = parseInt(e.target.value, 10);
+    if (isNaN(newScore) || !quiz || newScore === quiz.passingScore) return;
+
+    setSavingTitle(true);
+    try {
+      const updated = await api.patch<QuizMetadata>(`/api/quizzes/${id}`, {
+        passingScore: newScore,
+      });
+      setQuiz(updated);
+      toast.success("Passing score updated");
+    } catch {
+      toast.error("Failed to update passing score");
+    } finally {
+      setSavingTitle(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F7F9FC]">
@@ -91,15 +110,25 @@ export default function StandaloneQuizEditorPage({
               Back
             </Link>
             <div className="h-6 w-px bg-slate-200" />
-            <div className="relative flex items-center">
+            <div className="relative flex items-center gap-4">
               <input
                 type="text"
                 defaultValue={quiz.title}
                 onBlur={handleTitleBlur}
                 className="w-80 border-none bg-transparent px-2 text-lg font-bold text-[#14142b] outline-none placeholder:text-slate-300 focus:ring-2 focus:ring-[#14142b]/20 rounded-md"
               />
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <span>Passing Marks:</span>
+                <input
+                  type="number"
+                  min="0"
+                  defaultValue={quiz.passingScore ?? 0}
+                  onBlur={handlePassingScoreBlur}
+                  className="w-16 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm text-[#14142b] outline-none focus:ring-2 focus:ring-[#14142b]/20"
+                />
+              </div>
               {savingTitle && (
-                <Loader2 className="absolute right-2 animate-spin text-slate-400" size={14} />
+                <Loader2 className="animate-spin text-slate-400" size={14} />
               )}
             </div>
           </div>

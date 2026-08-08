@@ -20,6 +20,7 @@
 export { QuizEditor } from "./components/QuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionBankPanel } from "./components/QuestionBankPanel";
+export { QuizSelectorModal } from "./components/QuizSelectorModal";
 export { getQuizStats } from "./api";
 export type {
   QuestionType,
