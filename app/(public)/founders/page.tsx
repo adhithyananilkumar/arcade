@@ -147,7 +147,7 @@ export default function FoundersPage() {
         ref={headerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full min-h-[90vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white/80 backdrop-blur-md pt-28 pb-16 border-b border-slate-200/60"
+        className="relative w-full min-h-[90vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white/80 backdrop-blur-md pt-28 pb-16"
       >
         {/* Decorative Light Radial Rings (No recycled ink-dome trees) */}
         <motion.div
@@ -235,85 +235,10 @@ export default function FoundersPage() {
         </div>
       </section>
 
-      {/* --- ABOUT ARCADE SECTION --- */}
-      <section className="py-24 px-6 relative z-10 bg-slate-50 border-t border-slate-200/60">
-        <div className="max-w-6xl mx-auto space-y-16">
-          {/* SECTION HEADER */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200/60">
-              About Arcade
-            </span>
-            <h2
-              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              What Drives Our Digital Ecosystem
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-              Arcade was conceptualized at Amal Jyothi College of Engineering as a unified digital platform combining academic rigor, skill certifications, and student-driven creation.
-            </p>
-          </div>
 
-          {/* HIGHLIGHT CARDS GRID */}
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            {ABOUT_ARCADE_HIGHLIGHTS.map((item, idx) => (
-              <motion.div
-                key={idx}
-                variants={fadeInUp}
-                className="relative group p-8 rounded-3xl bg-white border border-slate-200/80 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between"
-              >
-                <div
-                  className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${item.gradient}`}
-                />
-                <div className="space-y-4 pt-2">
-                  <span className="inline-block text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-slate-100 text-slate-700">
-                    {item.stat}
-                  </span>
-                  <h3 className="text-2xl font-bold text-slate-900 font-serif">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate-600 leading-relaxed text-sm">
-                    {item.description}
-                  </p>
-                </div>
-                <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-blue-600 group-hover:translate-x-1 transition-transform">
-                  <span>Learn more about AJCE platform</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* QUICK STATS BAR */}
-          <div className="p-8 rounded-3xl bg-[#0B132B] text-white shadow-xl grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-white/10">
-            <div className="space-y-1">
-              <p className="text-3xl sm:text-4xl font-bold text-teal-400 font-serif">Rank #4</p>
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">KIRF Engineering</p>
-            </div>
-            <div className="space-y-1 pt-4 md:pt-0">
-              <p className="text-3xl sm:text-4xl font-bold text-blue-400 font-serif">NAAC A+</p>
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Accreditation</p>
-            </div>
-            <div className="space-y-1 pt-4 md:pt-0">
-              <p className="text-3xl sm:text-4xl font-bold text-amber-400 font-serif">100%</p>
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Verifiable Credentials</p>
-            </div>
-            <div className="space-y-1 pt-4 md:pt-0">
-              <p className="text-3xl sm:text-4xl font-bold text-purple-400 font-serif">Unified</p>
-              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Campus Platform</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* --- HOW IT STARTED: UNIQUE INTERACTIVE ERA CANVAS (LIGHT THEME) --- */}
-      <section id="story-canvas" className="py-24 px-6 bg-white relative z-10 border-t border-b border-slate-200/80">
+      <section id="story-canvas" className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-6xl mx-auto space-y-16">
           {/* SECTION HEADER */}
           <div className="text-center space-y-4 max-w-2xl mx-auto">
@@ -572,7 +497,7 @@ export default function FoundersPage() {
       </section>
 
       {/* --- FOUNDERS' PHILOSOPHY BENTO SECTION --- */}
-      <section className="py-24 px-6 bg-white relative z-10 border-t border-slate-100">
+      <section className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center space-y-4 max-w-2xl mx-auto">
             <span className="text-xs font-bold uppercase tracking-widest text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
