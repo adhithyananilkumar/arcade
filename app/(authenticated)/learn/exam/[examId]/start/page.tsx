@@ -30,21 +30,21 @@ export default function ExamEnginePage() {
 
   useEffect(() => {
     api
-      .get<Question[]>(`/api/courses/${params.courseId}/exam/questions`)
+      .get<Question[]>(`/api/exams/${params.examId}/questions`)
       .then((data) => setQuestions(data))
       .catch((err) => console.error('Failed to load questions', err));
-  }, [params.courseId]);
+  }, [params.examId]);
 
   useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${params.courseId}`)) {
-      router.replace(`/learn/${params.courseId}/exam/terminated`);
+    if (sessionStorage.getItem(`exam_terminated_${params.examId}`)) {
+      router.replace(`/learn/exam/${params.examId}/terminated`);
     }
-  }, [params.courseId, router]);
+  }, [params.examId, router]);
 
   useEffect(() => {
     if (strikes >= 3) {
-      sessionStorage.setItem(`exam_terminated_${params.courseId}`, 'true');
-      router.replace(`/learn/${params.courseId}/exam/terminated`);
+      sessionStorage.setItem(`exam_terminated_${params.examId}`, 'true');
+      router.replace(`/learn/exam/${params.examId}/terminated`);
     } else if (strikes > 0) {
       setShowWarning(true);
     }
@@ -185,7 +185,7 @@ export default function ExamEnginePage() {
     sessionStorage.setItem('examScore', score.toString());
     sessionStorage.setItem('examTotal', questions.length.toString());
 
-    const go = () => router.push(`/learn/${params.courseId}/exam/results`);
+    const go = () => router.push(`/learn/exam/${params.examId}/results`);
     if (document.fullscreenElement) {
       document.exitFullscreen().then(go).catch(go);
     } else {
