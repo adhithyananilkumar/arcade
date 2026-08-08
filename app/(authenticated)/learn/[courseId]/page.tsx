@@ -878,8 +878,6 @@ function ReviewsBlock() {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-import { useAuthStore } from "@/infrastructure/auth/auth.store"
-
 function getTitleFromSlug(slug?: string): string {
   if (!slug) return ''
   const knownTitles: Record<string, string> = {
