@@ -902,7 +902,7 @@ export default function CoursePreviewPage() {
   const authorAvatarUrl = course?.authorAvatarUrl;
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
   const isEnrolled = Boolean(
-    params?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === params.id)
+    params?.id && user?.enrolledCourses?.some((e) => e.courseId === params.id)
   );
 
   return (

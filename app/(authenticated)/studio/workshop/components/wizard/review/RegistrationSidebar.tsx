@@ -81,14 +81,13 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
         <div className={`-mx-6 -mt-6 p-4 mb-6 text-white text-center font-medium shadow-sm flex items-center justify-center gap-2 ${
           status === 'APPROVED' || status === 'COMPLETED' ? 'bg-emerald-500' : 
           status === 'WAITLISTED' ? 'bg-amber-500' :
-          status === 'REJECTED' || status === 'CANCELLED' ? 'bg-red-500' :
+          status === 'CANCELLED' ? 'bg-red-500' :
           'bg-blue-500' // PENDING
         }`}>
           {status === 'APPROVED' || status === 'COMPLETED' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
           <span>{status === 'APPROVED' ? 'Registration Approved' : 
                  status === 'WAITLISTED' ? 'You are on the Waitlist' :
                  status === 'PENDING' ? 'Registration Pending' :
-                 status === 'REJECTED' ? 'Registration Rejected' :
                  status === 'CANCELLED' ? 'Registration Cancelled' :
                  status === 'COMPLETED' ? 'Workshop Completed' : status}</span>
         </div>
@@ -98,12 +97,6 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
             <span className="text-gray-500 dark:text-gray-400">Date Registered</span>
             <span className="font-medium text-gray-900 dark:text-white">
               {new Date(registration.registrationDate).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-gray-700 pb-3">
-            <span className="text-gray-500 dark:text-gray-400">Payment Status</span>
-            <span className="font-medium text-gray-900 dark:text-white capitalize">
-              {registration.paymentStatus.toLowerCase()}
             </span>
           </div>
         </div>
