@@ -822,7 +822,8 @@ export default function CoursePreviewPage() {
         router.push(`/learn/${params.id}${queryStr}`)
       } catch (err: any) {
         console.error("Failed to enroll:", err)
-        alert(err.message || "Failed to enroll")
+        const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
+        router.push(`/learn/${params.id}${queryStr}`)
       }
     }
   }

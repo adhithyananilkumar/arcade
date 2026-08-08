@@ -24,7 +24,7 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     name: "Adam Wathan",
     role: "Founder, Tailwind",
     quote: "I've been using this course as a refresher for nearly a semester and keep coming back to the systems module.",
-    dark: true,
+    dark: false,
     initials: "AW",
     accentBg: "bg-[#2563eb]"
   },
@@ -42,7 +42,7 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     name: "Fathom Analytics",
     role: "Team account",
     quote: "This course has been integral to how we onboard new hires into design.",
-    dark: true,
+    dark: false,
     initials: "FA",
     accentBg: "bg-[#f97316]"
   },
@@ -83,6 +83,63 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
+const PASTEL_THEMES = [
+  {
+    // Module 1 style: Soft Blue
+    cardBg: "bg-[#edf5ff]",
+    borderColor: "border-[#bfdbfe]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#2563eb]",
+    borderTopColor: "border-[#dbeabe]",
+    badgeBg: "bg-[#2563eb]"
+  },
+  {
+    // Module 2 style: Warm Amber/Yellow
+    cardBg: "bg-[#fffbeb]",
+    borderColor: "border-[#fde68a]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#d97706]",
+    borderTopColor: "border-[#fef08a]",
+    badgeBg: "bg-[#eab308]"
+  },
+  {
+    // Module 3 style: Soft Lavender/Purple
+    cardBg: "bg-[#f3e8ff]/80",
+    borderColor: "border-[#ddd6fe]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#7c3aed]",
+    borderTopColor: "border-[#e9d5ff]",
+    badgeBg: "bg-[#8b5cf6]"
+  },
+  {
+    // Module 4 style: Soft Mint/Teal
+    cardBg: "bg-[#e6fffa]",
+    borderColor: "border-[#99f6e4]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#059669]",
+    borderTopColor: "border-[#ccfbf1]",
+    badgeBg: "bg-[#10b981]"
+  },
+  {
+    // Soft Rose/Coral
+    cardBg: "bg-[#fff1f2]",
+    borderColor: "border-[#fecdd3]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#e11d48]",
+    borderTopColor: "border-[#ffe4e6]",
+    badgeBg: "bg-[#f43f5e]"
+  },
+  {
+    // Soft Periwinkle/Indigo
+    cardBg: "bg-[#e0e7ff]/60",
+    borderColor: "border-[#c7d2fe]",
+    textColor: "text-[#0f172a]",
+    roleColor: "text-[#4f46e5]",
+    borderTopColor: "border-[#e0e7ff]",
+    badgeBg: "bg-[#6366f1]"
+  }
+]
+
 const BADGE_COLORS = [
   "bg-[#2563eb]",
   "bg-[#6366f1]",
@@ -113,7 +170,7 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
             role: r.userRole || r.authorRole || "Student",
             quote: r.comment || r.content || "Great course!",
             rating: r.rating || 5,
-            dark: i % 5 === 0,
+            dark: false,
             initials: getInitials(r.userName || r.authorName || "VS"),
             accentBg: BADGE_COLORS[i % BADGE_COLORS.length]
           }))
@@ -185,10 +242,10 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          {reviews.slice(0, 6).map((r) => {
-            const isDark = r.dark ?? false
+          {reviews.slice(0, 6).map((r, idx) => {
             const initials = r.initials || getInitials(r.name)
-            const badgeBg = r.accentBg || "bg-[#2563eb]"
+            const theme = PASTEL_THEMES[idx % PASTEL_THEMES.length]
+            const badgeBg = r.accentBg || theme.badgeBg
 
             return (
               <motion.div
@@ -197,20 +254,16 @@ export default function CourseReviewsSection({ courseId = "intro-to-programming"
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4 }}
-                className={`flex flex-col justify-between rounded-3xl p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 ${
-                  isDark
-                    ? "bg-[#13141c] text-white shadow-xl border border-slate-800"
-                    : "bg-white border border-slate-200/90 text-slate-900 shadow-xs"
-                }`}
+                className={`flex flex-col justify-between rounded-3xl p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 ${theme.cardBg} border ${theme.borderColor} ${theme.textColor} shadow-xs`}
               >
-                <p className={`text-[14.5px] sm:text-[15px] font-normal leading-relaxed ${isDark ? "text-white/90" : "text-slate-800"}`}>
+                <p className="text-[14.5px] sm:text-[15px] font-normal leading-relaxed text-slate-800">
                   &ldquo;{r.quote}&rdquo;
                 </p>
 
-                <div className={`mt-6 flex items-center justify-between border-t pt-4 ${isDark ? "border-white/10" : "border-slate-100"}`}>
+                <div className={`mt-6 flex items-center justify-between border-t pt-4 ${theme.borderTopColor}`}>
                   <div>
-                    <h4 className={`text-[14px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{r.name}</h4>
-                    <p className={`text-[12px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>{r.role}</p>
+                    <h4 className="text-[14px] font-bold text-slate-900">{r.name}</h4>
+                    <p className={`text-[12px] font-medium ${theme.roleColor}`}>{r.role}</p>
                   </div>
                   <div className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-xs ${badgeBg}`}>
                     {initials}
