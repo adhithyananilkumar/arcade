@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion } from 'framer-motion';
-import { Search, BookOpen, ChevronRight, ArrowUpRight, Code, PenTool, Database, Cpu, Cloud, Shield, Smartphone, Server, Palette, Star, Clock, Trophy, Medal, Bookmark, ChevronLeft } from 'lucide-react';
+import { Search, BookOpen, ChevronRight, ArrowUpRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/infrastructure/http/api';
 import type { CourseResponse } from '@/shared/types/api.types';
@@ -37,19 +37,6 @@ const NAME_GRADIENT = [
   '#9B5DE5',
   '#6366F1',
   '#4C6FFF',
-];
-
-const HOME_TAGS = [
-  { label: 'Web Development', icon: Code },
-  { label: 'UI/UX', icon: PenTool },
-  { label: 'Data Science', icon: Database },
-  { label: 'AI', icon: Cpu },
-  { label: 'Machine Learning', icon: Cpu },
-  { label: 'Cloud Computing', icon: Cloud },
-  { label: 'Cybersecurity', icon: Shield },
-  { label: 'Mobile Apps', icon: Smartphone },
-  { label: 'DevOps', icon: Server },
-  { label: 'Product Design', icon: Palette },
 ];
 
 const RECOMMEND_HOVER_BORDERS = [
@@ -284,25 +271,25 @@ export default function LearnerHomePage() {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl space-y-9 px-4 pb-8 pt-28 md:space-y-10 md:px-8 md:pt-32">
-        <section className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.85fr] lg:gap-8 pb-16">
+        <section className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.85fr] lg:gap-8">
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-
-            <h1 className="max-w-2xl text-[1.85rem] font-bold leading-[1.15] tracking-tight text-[#14142b] md:text-[2.35rem]">
-              <span className="block">Start small. Finish loud,</span>
+            <h1 className="max-w-xl text-[1.85rem] font-bold leading-[1.15] tracking-tight text-[#14142b] md:text-[2.35rem]">
+              {greeting.before}
               <GradientText
                 colors={NAME_GRADIENT}
                 animationSpeed={4.5}
-                className="!cursor-default !text-[1.05em] !font-extrabold inline-block mt-1"
+                className="!cursor-default !text-[1.05em] !font-extrabold"
               >
-                {greeting.name}.
+                {greeting.name}
               </GradientText>
+              {greeting.after}
             </h1>
             <p className="mt-2 max-w-md text-[14px] font-medium leading-relaxed text-slate-500">
-              Browse tags that match your mood — then enroll.
+              {greeting.subline}
             </p>
 
             <form onSubmit={handleSearch} className="relative mt-6 max-w-md">
@@ -314,25 +301,35 @@ export default function LearnerHomePage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search courses, skills, mentors…"
-                className="block w-full rounded-full border border-slate-200 bg-white/95 py-3 pl-11 pr-24 text-[14px] font-medium text-[#14142b] outline-none placeholder:text-slate-400 shadow-[0_6px_20px_rgba(20,20,43,0.05)] focus:border-[#5C4FFF]/45 focus:ring-4 focus:ring-[#5C4FFF]/10"
+                className="block w-full rounded-full border border-slate-200 bg-white/95 py-3 pl-11 pr-24 text-[14px] font-medium text-[#14142b] outline-none placeholder:text-slate-400 shadow-[0_6px_20px_rgba(20,20,43,0.05)] focus:border-[#4C6FFF]/45 focus:ring-4 focus:ring-[#4C6FFF]/10"
               />
               <button
                 type="submit"
-                className="absolute inset-y-1.5 right-1.5 rounded-full bg-[#5C4FFF] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#4a3ecc]"
+                className="absolute inset-y-1.5 right-1.5 rounded-full bg-[#12141C] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#232735]"
               >
                 Search
               </button>
             </form>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {HOME_TAGS.map((tag) => (
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+              {[
+                'Web Development',
+                'UI/UX',
+                'Data Science',
+                'AI',
+                'Machine Learning',
+                'Cloud Computing',
+                'Cybersecurity',
+                'Mobile Apps',
+                'DevOps',
+                'Product Design',
+              ].map((tag) => (
                 <Link
-                  key={tag.label}
-                  href={`/search?q=${encodeURIComponent(tag.label)}`}
-                  className="group flex items-center gap-2 rounded-full border border-slate-100 bg-white shadow-[0_2px_10px_rgba(20,20,43,0.03)] px-3.5 py-2 text-[12.5px] font-bold text-slate-600 transition-all hover:-translate-y-0.5 hover:border-[#5C4FFF]/30 hover:shadow-[0_6px_16px_rgba(92,79,255,0.08)]"
+                  key={tag}
+                  href={`/search?q=${encodeURIComponent(tag)}`}
+                  className="rounded-full border border-slate-200/90 bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-[#14142b]"
                 >
-                  <tag.icon size={14} strokeWidth={2.5} className="text-slate-500 transition-colors group-hover:text-[#5C4FFF]" />
-                  {tag.label}
+                  {tag}
                 </Link>
               ))}
             </div>
@@ -341,12 +338,11 @@ export default function LearnerHomePage() {
           <StreakCalendar activityByDate={activityByDate} streak={streak} />
         </section>
 
-
         <HomeRoadmapPreview />
 
         <ResumeAndEventsSection resumeCourse={resumeCourse} events={upcomingEvents} />
 
-        <section className="relative space-y-3.5">
+        <section className="space-y-3.5">
           <div className="flex items-end justify-between gap-4">
             <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
               Recommended for you
@@ -379,69 +375,57 @@ export default function LearnerHomePage() {
               </p>
             </div>
           ) : (
-            <div className="relative group/carousel">
-              <div className="flex overflow-x-auto gap-5 pb-4 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {recommendedCourses.map((course, i) => (
-                  <motion.div
-                    key={course.id}
-                    className="snap-start shrink-0 w-[280px]"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: 0.05 * i,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
+            <div className="flex flex-col gap-2.5">
+              {recommendedCourses.map((course, i) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    delay: 0.03 * i,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <Link
+                    href={`/learn/${course.id}`}
+                    className={`group flex overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 shadow-[0_4px_18px_rgba(20,20,43,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(20,20,43,0.07)] ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
                   >
-                    <Link
-                      href={`/learn/${course.id}`}
-                      className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] transition-all hover:-translate-y-1 hover:shadow-xl ${RECOMMEND_HOVER_BORDERS[i % RECOMMEND_HOVER_BORDERS.length]}`}
-                    >
-                      <div className="relative h-[140px] w-full overflow-hidden bg-slate-100">
-                        <img
-                          src={
-                            course.coverImageUrl ||
-                            'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80'
-                          }
-                          alt=""
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="flex flex-col p-5">
-                        <div className="mb-2 flex items-center gap-2">
-                          <span className="rounded-md bg-[#4C6FFF]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#3A56D4]">
-                            Course
-                          </span>
-                        </div>
-                        <h3 className="truncate text-base font-bold tracking-tight text-[#14142b]">
-                          {course.title}
-                        </h3>
-                        <span className="mt-1 truncate text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    <div className="relative h-[88px] w-[96px] shrink-0 overflow-hidden bg-slate-100 sm:h-[96px] sm:w-[120px]">
+                      <img
+                        src={
+                          course.coverImageUrl ||
+                          'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80'
+                        }
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col justify-center px-3.5 py-2.5 sm:px-4">
+                      <div className="mb-0.5 flex items-center gap-2">
+                        <span className="rounded-md bg-[#4C6FFF]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#3A56D4]">
+                          Course
+                        </span>
+                        <span className="truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                           {course.authorName || 'Instructor'}
                         </span>
-                        <p className="mt-1.5 text-[12px] font-medium text-[#4C6FFF]">
-                          {course.modules?.length ?? 1} modules · Self-paced
-                        </p>
-                        
-                        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 text-[12px] font-semibold text-slate-600">
-                              <Star size={12} className="text-amber-400 fill-amber-400" />
-                              {4.5 + (i % 5)*0.1} ({(320 - i * 15)})
-                            </div>
-                            <span className="text-[12px] font-medium text-slate-400">Beginner</span>
-                          </div>
-                          <button className="text-slate-300 transition-colors hover:text-[#14142b]">
-                            <Bookmark size={16} />
-                          </button>
-                        </div>
                       </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-              
-
+                      <h3 className="truncate text-[15px] font-bold tracking-tight text-[#14142b]">
+                        {course.title}
+                      </h3>
+                      <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-slate-500">
+                        {course.description ||
+                          `${course.modules?.length ?? 0} modules · Self-paced`}
+                      </p>
+                    </div>
+                    <div className="hidden items-center pr-4 sm:flex">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-400 transition-colors group-hover:border-current group-hover:text-[#14142b]">
+                        <ArrowUpRight size={15} />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
           )}
         </section>

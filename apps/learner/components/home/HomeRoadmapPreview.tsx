@@ -48,7 +48,7 @@ const STATIONS: Station[] = [
     hint: 'Join a channel',
     status: 'locked',
     x: '68%',
-    y: '22%',
+    y: '24%',
     tone: '#9B5DE5',
   },
   {
@@ -56,7 +56,7 @@ const STATIONS: Station[] = [
     label: 'Orbit',
     hint: 'Mentor others',
     status: 'locked',
-    x: '88%',
+    x: '90%',
     y: '50%',
     tone: '#F59E0B',
   },
@@ -112,9 +112,10 @@ export function HomeRoadmapPreview() {
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.04 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
       className="relative w-full"
     >
       <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -124,14 +125,14 @@ export function HomeRoadmapPreview() {
         </p>
       </div>
 
-      <div className="relative h-[210px] w-full sm:h-[230px]">
+      <div className="relative w-full mt-6 h-[200px] sm:mt-12 sm:h-[260px] max-w-5xl mx-auto">
         {/* Soft canvas glow only — no box */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 45% 40% at 22% 65%, rgba(76,111,255,0.10) 0%, transparent 60%), radial-gradient(ellipse 40% 35% at 72% 30%, rgba(255,107,74,0.09) 0%, transparent 55%), radial-gradient(ellipse 35% 35% at 50% 80%, rgba(155,93,229,0.07) 0%, transparent 55%)',
+              'radial-gradient(ellipse 35% 45% at 20% 50%, rgba(76,111,255,0.08) 0%, transparent 60%), radial-gradient(ellipse 35% 40% at 50% 50%, rgba(255,107,74,0.07) 0%, transparent 55%), radial-gradient(ellipse 35% 45% at 80% 50%, rgba(155,93,229,0.05) 0%, transparent 55%)',
           }}
         />
 
@@ -141,20 +142,28 @@ export function HomeRoadmapPreview() {
           preserveAspectRatio="none"
           aria-hidden
         >
-          <path
-            d="M8 58 C 16 58, 20 30, 28 26 S 40 52, 48 56 S 60 22, 68 24 S 80 52, 90 50"
+          <motion.path
+            d="M 8 58 C 16 58, 20 30, 28 26 S 40 52, 48 56 S 60 22, 68 24 S 80 52, 90 50"
             fill="none"
             stroke="rgba(20,20,43,0.12)"
             strokeWidth="0.55"
             strokeDasharray="1.1 1.5"
             strokeLinecap="round"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           />
-          <path
-            d="M8 58 C 16 58, 20 30, 28 26 S 40 52, 48 56"
+          <motion.path
+            d="M 8 58 C 16 58, 20 30, 28 26 S 40 52, 48 56"
             fill="none"
             stroke="url(#roadGlowHome)"
             strokeWidth="0.95"
             strokeLinecap="round"
+            initial={{ pathLength: 0, opacity: 0 }}
+            whileInView={{ pathLength: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
           />
           <defs>
             <linearGradient id="roadGlowHome" x1="0" y1="0" x2="1" y2="0">
@@ -168,15 +177,16 @@ export function HomeRoadmapPreview() {
         {STATIONS.map((s, i) => (
           <motion.div
             key={s.id}
-            initial={{ opacity: 0, scale: 0.75 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 + i * 0.06, type: 'spring', stiffness: 260, damping: 18 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 + i * 0.15, type: 'spring', stiffness: 260, damping: 20 }}
             className="absolute -translate-x-1/2 -translate-y-1/2"
             style={{ left: s.x, top: s.y }}
           >
-            <div className="flex flex-col items-center">
+            <div className="relative flex items-center justify-center">
               <div
-                className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border-2 bg-white ${
+                className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-2xl border-2 bg-white ${
                   s.status === 'locked'
                     ? 'border-slate-200 text-slate-300'
                     : 'border-white text-[#14142b]'
@@ -199,31 +209,37 @@ export function HomeRoadmapPreview() {
                 {s.status === 'locked' && <Lock size={14} />}
               </div>
 
-              <p
-                className="mt-1.5 text-[13px] font-bold tracking-tight"
-                style={{ color: s.status === 'locked' ? '#94A3B8' : s.tone }}
+              <div 
+                className={`absolute w-[140px] top-1/2 -translate-y-1/2 ${
+                  parseInt(s.x) > 40 ? 'right-[50px] text-right' : 'left-[50px] text-left'
+                }`}
               >
-                {s.label}
-              </p>
-              <p className="text-[10px] font-medium text-slate-400">{s.hint}</p>
+                <p
+                  className="text-[13px] font-bold tracking-tight"
+                  style={{ color: s.status === 'locked' ? '#94A3B8' : s.tone }}
+                >
+                  {s.label}
+                </p>
+                <p className="text-[10px] font-medium text-slate-400">{s.hint}</p>
 
-              {(s.status === 'done' || s.status === 'current') && (
-                <div className="mt-1 flex gap-0.5">
-                  {[0, 1, 2].map((star) => {
-                    const filled =
-                      s.status === 'done' ? star < 2 : star < 1;
-                    return (
-                      <span
-                        key={star}
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{
-                          background: filled ? '#FBBF24' : 'rgba(148,163,184,0.45)',
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+                {(s.status === 'done' || s.status === 'current') && (
+                  <div className={`mt-1 flex gap-0.5 ${parseInt(s.x) > 40 ? 'justify-end' : 'justify-start'}`}>
+                    {[0, 1, 2].map((star) => {
+                      const filled =
+                        s.status === 'done' ? star < 2 : star < 1;
+                      return (
+                        <span
+                          key={star}
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{
+                            background: filled ? '#FBBF24' : 'rgba(148,163,184,0.45)',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         ))}

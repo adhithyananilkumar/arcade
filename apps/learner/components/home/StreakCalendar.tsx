@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame, Calendar as CalendarIcon } from 'lucide-react';
 
 type Props = {
   /** ISO date keys (YYYY-MM-DD) with activity seconds */
@@ -181,6 +181,22 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
             </div>
           );
         })}
+      </div>
+
+      {/* Footer / Schedule Block */}
+      <div className="mt-5 flex items-center justify-between rounded-2xl bg-slate-50/80 p-3.5 border border-slate-100/80">
+        <div className="flex flex-col">
+          <p className="text-[12px] font-bold text-[#14142b]">
+            8 Aug <span className="text-slate-400 font-medium px-1">·</span> <span className="text-slate-500 font-medium">2 events</span>
+          </p>
+          <p className="mt-0.5 text-[11px] font-semibold text-slate-500">
+            Next: Frontend Performance Clinic
+          </p>
+        </div>
+        <button className="flex items-center gap-1.5 rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[11.5px] font-bold text-[#14142b] shadow-sm transition-all hover:bg-slate-50 hover:shadow-md">
+          <CalendarIcon size={14} strokeWidth={2.5} className="text-slate-500" />
+          View schedule
+        </button>
       </div>
     </motion.div>
   );
