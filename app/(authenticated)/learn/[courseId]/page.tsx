@@ -488,13 +488,13 @@ function CourseHero({
           </div>
 
           <div className="mt-7 flex flex-wrap gap-2.5">
-            {metaData.map(({ icon: Icon, label, dot }) => (
+            {metaData.map(({ icon: Icon, label }) => (
               <span
                 key={label}
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
               >
-                <span className="size-1.5 rounded-full" style={{ background: dot }} />
-                <Icon size={14} className="text-subtle" /> {label}
+                <Icon size={14} className="text-subtle shrink-0" />
+                <span>{label}</span>
               </span>
             ))}
           </div>
