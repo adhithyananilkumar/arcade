@@ -8,6 +8,7 @@ import "@/apps/public/landing.css";
 const navLinks = [
   { label: "Explore", href: "/explore" },
   { label: "About", href: "/about" },
+  { label: "Founders", href: "/founders" },
   { label: "For creators", href: "/creators" },
   { label: "Reach Us", href: "/reach-us" },
 ];

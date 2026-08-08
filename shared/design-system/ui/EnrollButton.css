@@ -3,96 +3,66 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 44px;
-  padding: 10px 28px;
+  gap: 8px;
+  min-height: auto;
+  padding: 8px 4px;
   border: none;
-  border-radius: 999px;
-  font-size: 14px;
+  border-radius: 0;
+  font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
-  background-color: #4c6fff;
-  box-shadow: 0 8px 20px rgba(76, 111, 255, 0.28);
+  color: #12141c;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
   cursor: pointer;
-  overflow: hidden;
-  transition:
-    background-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.2s ease;
+  overflow: visible;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+:is(.dark, [data-theme='dark']) .animated-button {
+  color: #ffffff;
 }
 
 .animated-button svg {
-  position: absolute;
+  position: relative;
   width: 18px;
-  fill: #ffffff;
-  z-index: 9;
-  transition: all 0.55s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.animated-button .arr-1 {
-  right: 14px;
-}
-
-.animated-button .arr-2 {
-  left: -25%;
-}
-
-.animated-button .circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
-  background-color: #3a56d4;
-  border-radius: 50%;
-  opacity: 0;
-  transition: all 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+  height: 18px;
+  left: auto;
+  right: auto;
+  fill: currentColor;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .animated-button .text {
   position: relative;
   z-index: 1;
-  transform: translateX(-10px);
-  transition: transform 0.55s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: none;
+  transition: none;
 }
 
 .animated-button:hover {
-  background-color: #3a56d4;
-  box-shadow: 0 10px 28px rgba(76, 111, 255, 0.38);
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  opacity: 0.8;
+  color: #12141c;
+}
+
+:is(.dark, [data-theme='dark']) .animated-button:hover {
   color: #ffffff;
-  /* Keep the pill — never morph to a rectangle */
-  border-radius: 999px;
-}
-
-.animated-button:hover .arr-1 {
-  right: -25%;
-}
-
-.animated-button:hover .arr-2 {
-  left: 16px;
-}
-
-.animated-button:hover .text {
-  transform: translateX(10px);
 }
 
 .animated-button:hover svg {
-  fill: #ffffff;
+  transform: translateX(4px);
+  fill: currentColor;
 }
 
 .animated-button:active {
-  transform: scale(0.97);
-  box-shadow: 0 4px 14px rgba(76, 111, 255, 0.3);
-}
-
-.animated-button:hover .circle {
-  width: 260px;
-  height: 260px;
-  opacity: 1;
+  transform: scale(0.98);
 }
 
 .animated-button:focus-visible {
-  outline: 2px solid #4c6fff;
-  outline-offset: 3px;
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
 }

@@ -361,6 +361,10 @@ export default function AchievementsPage() {
     loadUserData();
   }, []);
 
+  const handleDownloadCert = (certTitle: string) => {
+    toast.success(`Downloading certificate PDF for "${certTitle}"...`);
+  };
+
   // User display helpers
   const displayName = user?.fullName || (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Arcade Learner');
   const displayBio = user?.bio || user?.workingAt || 'Arcade Learner & Content Explorer';

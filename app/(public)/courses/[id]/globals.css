@@ -193,12 +193,14 @@
     }
 }
 
-/* Soft arcade gradient wash used behind the hero */
+/* Soft arcade gradient wash applied across the entire page */
 .arcade-wash {
     background:
-        radial-gradient(60% 55% at 15% 0%, color-mix(in oklab, var(--blue) 16%, transparent) 0%, transparent 60%),
-        radial-gradient(55% 50% at 95% 8%, color-mix(in oklab, var(--teal) 15%, transparent) 0%, transparent 55%),
-        linear-gradient(180deg, #eef1fb 0%, #f4f7f6 42%, var(--paper) 100%);
+        radial-gradient(70% 45% at 15% 0%, color-mix(in oklab, var(--blue) 18%, transparent) 0%, transparent 65%),
+        radial-gradient(65% 45% at 95% 5%, color-mix(in oklab, var(--teal) 18%, transparent) 0%, transparent 60%),
+        radial-gradient(60% 50% at 5% 40%, color-mix(in oklab, var(--teal) 14%, transparent) 0%, transparent 55%),
+        radial-gradient(65% 50% at 95% 75%, color-mix(in oklab, var(--blue) 15%, transparent) 0%, transparent 60%),
+        linear-gradient(180deg, #eef1fb 0%, #f4f7f6 30%, #f1f5f7 65%, #f4f7f6 100%);
 }
 
 .arcade-cta-wash {
