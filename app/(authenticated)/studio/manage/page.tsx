@@ -36,6 +36,7 @@ interface UnifiedWorkshopDto {
   createdAt: string;
   updatedAt: string;
   isOwner: boolean;
+  role?: string;
 }
 
 export default function UnifiedManagePage() {
@@ -53,14 +54,16 @@ export default function UnifiedManagePage() {
         const ownedRes = await getDashboardWorkshops({ size: 100 }).catch(() => ({ content: [] }));
         const ownedMapped: UnifiedWorkshopDto[] = (ownedRes.content || []).map(w => ({
           ...w,
-          isOwner: true
+          isOwner: true,
+          role: 'OWNER'
         }));
 
         // Fetch collaborated workshops
         const collabRes = await api.get<any[]>('/api/workshops/my-collaborations').catch(() => []);
         const collabMapped: UnifiedWorkshopDto[] = collabRes.map(w => ({
           ...w,
-          isOwner: false
+          isOwner: false,
+          role: w.collaboratorRole
         }));
 
         // Combine and sort by updatedAt descending, filtering out any duplicate IDs in collaborated workshops
@@ -351,11 +354,15 @@ export default function UnifiedManagePage() {
                     {/* Role Badge */}
                     <div className="absolute bottom-3.5 left-3.5">
                       <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-3 py-1 rounded-full border shadow-sm uppercase ${
-                        item.isOwner
+                        item.role === 'OWNER'
                           ? 'bg-amber-500 text-white border-amber-400'
-                          : 'bg-indigo-600 text-white border-indigo-500'
+                          : item.role === 'MANAGER'
+                          ? 'bg-emerald-600 text-white border-emerald-500'
+                          : item.role === 'EDITOR'
+                          ? 'bg-indigo-600 text-white border-indigo-500'
+                          : 'bg-slate-500 text-white border-slate-400'
                       }`}>
-                        {item.isOwner ? 'Owner' : 'Collaborator'}
+                        {item.role || 'Collaborator'}
                       </span>
                     </div>
                   </div>

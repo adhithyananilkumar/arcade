@@ -360,35 +360,37 @@ export default function SingleWorkshopDashboard() {
               </div>
 
               {/* Quick navigation to other tabs */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
-                <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Complete Your Setup</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    { tab: 'schedule' as Tab, name: 'Schedule & Sessions', complete: summary.scheduleComplete },
-                    { tab: 'pricing' as Tab, name: 'Pricing', complete: summary.pricingComplete },
-                    { tab: 'resources' as Tab, name: 'Resources', complete: summary.resourcesComplete },
-                    { tab: 'settings' as Tab, name: 'Settings', complete: summary.settingsComplete },
-                    { tab: 'publish' as Tab, name: 'Review & Publish', complete: summary.status === 'PUBLISHED' },
-                  ].map(item => (
-                    <button
-                      key={item.tab}
-                      onClick={() => setActiveTab(item.tab)}
-                      className="flex items-center justify-between p-3 border border-zinc-100 dark:border-zinc-800 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors group text-left"
-                    >
-                      <span className="font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-sm">{item.name}</span>
-                      {item.complete ? (
-                        <svg className="h-5 w-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <svg className="h-5 w-5 text-zinc-300 dark:text-zinc-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
+              {hasManageAccess && (
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm">
+                  <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Complete Your Setup</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { tab: 'schedule' as Tab, name: 'Schedule & Sessions', complete: summary.scheduleComplete },
+                      { tab: 'pricing' as Tab, name: 'Pricing', complete: summary.pricingComplete },
+                      { tab: 'resources' as Tab, name: 'Resources', complete: summary.resourcesComplete },
+                      { tab: 'settings' as Tab, name: 'Settings', complete: summary.settingsComplete },
+                      { tab: 'publish' as Tab, name: 'Review & Publish', complete: summary.status === 'PUBLISHED' },
+                    ].map(item => (
+                      <button
+                        key={item.tab}
+                        onClick={() => setActiveTab(item.tab)}
+                        className="flex items-center justify-between p-3 border border-zinc-100 dark:border-zinc-800 rounded-lg hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors group text-left"
+                      >
+                        <span className="font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-sm">{item.name}</span>
+                        {item.complete ? (
+                          <svg className="h-5 w-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="h-5 w-5 text-zinc-300 dark:text-zinc-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Sidebar */}
