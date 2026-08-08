@@ -1646,7 +1646,7 @@ function CoursesContent() {
                               </div>
 
                               <Link
-                                href="/login"
+                                href="/sign"
                                 className="lp-webinar-btn"
                                 style={{
                                   "--cta-bg": ctaBg,

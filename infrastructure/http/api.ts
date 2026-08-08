@@ -92,12 +92,14 @@ async function request<T>(
 
   if (!res.ok) {
     let message = `API error ${res.status}`;
-    try {
-      console.error("API ERROR RAW TEXT:", text);
-      const err = JSON.parse(text);
-      message = (err.message ?? message) + " RAW: " + text;
-    } catch {
-      message = message + " RAW: " + text;
+    if (text) {
+      try {
+        const err = JSON.parse(text);
+        message = err.message ?? message;
+      } catch {
+        // If it's not JSON, we might want to log it, but let's keep the generic message
+        console.error("Failed to parse API error:", text);
+      }
     }
     throw new Error(message);
   }
@@ -108,7 +110,7 @@ async function request<T>(
 // ── Exports ────────────────────────────────────────────────────────────────────
 
 export const api = {
-  get: <T>(path: string) => request<T>(path, { method: "GET" }),
+  get: <T>(path: string, options?: RequestInit) => request<T>(path, { method: "GET", cache: "no-store", ...options }),
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, { method: "POST", body: body instanceof FormData ? body : JSON.stringify(body), ...options }),
   patch: <T>(path: string, body?: unknown, options?: RequestInit) =>

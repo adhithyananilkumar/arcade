@@ -22,6 +22,10 @@ export class WorkshopAdapter implements ContentDataAdapter {
       api.get<WorkshopSession[]>(`/api/workshops/${id}/sessions`).catch(() => []),
     ]);
 
+    if (workshop.workshopType === "WEBINAR") {
+      this.terminology.root = "Webinar";
+    }
+
     return {
       meta: {
         id: workshop.id,

@@ -1,709 +1,726 @@
-import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import { 
-  ReactFlow, 
-  Background, 
-  Node, 
-  Edge, 
-  useNodesState, 
-  useEdgesState, 
-  addEdge,
+"use client";
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  MiniMap,
+  Node,
+  Edge,
   Connection,
   ConnectionMode,
   ReactFlowProvider,
+  addEdge,
+  useNodesState,
+  useEdgesState,
   useReactFlow,
-  useOnSelectionChange,
-  OnSelectionChangeParams,
-  BackgroundVariant,
-  MiniMap,
-  SelectionMode
+  useViewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { RoadmapData } from '../types';
-import { Plus } from 'lucide-react';
-import { LearningNode } from './LearningNode';
+import {
+  MousePointer,
+  Hand,
+  Plus,
+  Link as LinkIcon,
+  LayoutGrid,
+  Maximize2,
+  Map,
+  Palette,
+  Undo as UndoIcon,
+  Redo as RedoIcon,
+  Trash2,
+  CheckCircle,
+} from 'lucide-react';
+import { RoadmapNode } from './RoadmapNode';
 import { ProgressEdge } from './ProgressEdge';
-import { PropertiesPanel } from './PropertiesPanel';
-import { CanvasContextMenu } from './CanvasContextMenu';
-import { RoadmapToolbar, ToolbarMode } from './RoadmapToolbar';
-import { AppearancePanel, CanvasAppearance, defaultAppearance } from './AppearancePanel';
+import { RoadmapEditorProvider } from '../store/RoadmapStore';
 
+// ─── Props ────────────────────────────────────────────────────────────────────
 interface RoadmapCanvasProps {
-  roadmap: RoadmapData;
-  saveState: 'saved' | 'saving' | 'unsaved' | 'error' | 'conflict';
-  onGraphChange: (graphJson: string) => void;
-  onManualSave: () => void;
+  roadmap?: Partial<RoadmapData> | null;
+  mode?: 'edit' | 'view';
+  saveState?: 'saved' | 'saving' | 'unsaved' | 'error' | 'conflict';
+  onGraphChange?: (graphJson: string) => void;
+  onManualSave?: () => void;
   readOnly?: boolean;
   onNodeSelect?: (node: Node) => void;
+  contentType?: 'course' | 'workshop' | 'roadmap';
 }
 
-const nodeTypes = {
-  default: LearningNode,
-};
+// ─── Toolbar props ────────────────────────────────────────────────────────────
+interface ToolbarProps {
+  readOnly: boolean;
+  activeTool: string;
+  setActiveTool: (t: string) => void;
+  addTopic: () => void;
+  deleteSelected: () => void;
+  selectedNodeId: string | null;
+  showMinimap: boolean;
+  setShowMinimap: (v: boolean) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  updateSelectedColor: (color: string) => void;
+  currentNodeColor: string;
+  autoLayout: () => void;
+  bgStyle: { bg: string; dotColor: string; dots: boolean; bgImage?: string };
+  setBgStyle: (style: { bg: string; dotColor: string; dots: boolean; bgImage?: string }) => void;
+}
 
-const edgeTypes = {
-  progress: ProgressEdge,
-};
+const BG_PRESETS = [
+  { label: 'Dark Canvas', bg: '#0b0f17', dotColor: '#334155', dots: true },
+  { label: 'Slate', bg: '#0f172a', dotColor: '#1e293b', dots: true },
+  { label: 'White', bg: '#ffffff', dotColor: '#e2e8f0', dots: true },
+  { label: 'Gray', bg: '#f8fafc', dotColor: '#cbd5e1', dots: true },
+];
 
-function RoadmapCanvasInner({ roadmap, saveState, onGraphChange, onManualSave, readOnly, onNodeSelect }: RoadmapCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const { screenToFlowPosition, fitView, setNodes: setNodesFlow, getViewport, setViewport } = useReactFlow();
+const NODE_COLORS = [
+  '#f59e0b', '#4f46e5', '#f43f5e', '#10b981', '#0ea5e9', '#8b5cf6', '#1e293b', '#ffffff',
+];
 
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, nodeId: string } | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [appearance, setAppearance] = useState<CanvasAppearance>(defaultAppearance);
-  const [activeTool, setActiveTool] = useState<ToolbarMode>('pointer');
-  const [showMinimap, setShowMinimap] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
+// ─── Floating Toolbar ─────────────────────────────────────────────────────────
+// Renders inside ReactFlowProvider so useViewport() + useReactFlow() are valid.
+function FloatingRoadmapToolbar({
+  readOnly,
+  activeTool,
+  setActiveTool,
+  addTopic,
+  deleteSelected,
+  selectedNodeId,
+  showMinimap,
+  setShowMinimap,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  updateSelectedColor,
+  currentNodeColor,
+  autoLayout,
+  bgStyle,
+  setBgStyle,
+}: ToolbarProps) {
+  const { zoom } = useViewport();
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const [showColorPop, setShowColorPop] = useState(false);
+  const [showBgPop, setShowBgPop] = useState(false);
+  const [customImageUrl, setCustomImageUrl] = useState("");
 
-  // Load initial state
-  const isInitializedRef = useRef(false);
-
-  useEffect(() => {
-    if (isInitializedRef.current) return;
-    let parsedNodes: Node[] = [];
-    let parsedEdges: Edge[] = [];
-    let parsedViewport = { x: 0, y: 0, zoom: 1 };
-
-    if (roadmap.graphJson) {
-      try {
-        const parsed = JSON.parse(roadmap.graphJson);
-        parsedNodes = parsed.nodes || [];
-        parsedEdges = (parsed.edges || []).map((e: any) => {
-          let sHandle = e.sourceHandle || 'bottom';
-          let tHandle = e.targetHandle || 'top';
-          sHandle = sHandle.replace('-s', '').replace('-t', '');
-          tHandle = tHandle.replace('-s', '').replace('-t', '');
-          return {
-            ...e,
-            sourceHandle: sHandle,
-            targetHandle: tHandle,
-          };
-        });
-        if (parsed.viewport) {
-          parsedViewport = parsed.viewport;
-        }
-        if (parsed.appearance) {
-          setAppearance({ ...defaultAppearance, ...parsed.appearance });
-        }
-      } catch (e) {
-        console.error("Failed to parse graphJson", e);
-      }
-    }
-
-    setNodes(parsedNodes.map(n => ({ ...n, type: 'default' })));
-    setEdges(parsedEdges);
-    setViewport(parsedViewport);
-    isInitializedRef.current = true;
-  }, [roadmap.graphJson, setNodes, setEdges, setViewport]);
-
-  // Handle Search Filtering & Highlighting
-  useEffect(() => {
-    if (!searchQuery) {
-      setNodes((nds) => nds.map(n => ({ ...n, style: { ...n.style, opacity: 1 } })));
-      return;
-    }
-    
-    const query = searchQuery.toLowerCase();
-    let hasMatch = false;
-    
-    setNodes((nds) => nds.map(n => {
-      const label = (n.data.label as string || '').toLowerCase();
-      const nodeType = (n.data.nodeType as string || 'lesson').toLowerCase();
-      
-      const isMatch = label.includes(query) || nodeType.includes(query);
-      if (isMatch) hasMatch = true;
-      return {
-        ...n,
-        style: { ...n.style, opacity: isMatch ? 1 : 0.2 },
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width, height = img.height;
+        const MAX_DIM = 1920;
+        if (width > height && width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+        else if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+        setBgStyle({ ...bgStyle, bgImage: canvas.toDataURL('image/webp', 0.6) });
       };
-    }));
-
-    if (hasMatch) {
-      setTimeout(() => {
-        const matchingNodeIds = nodes.filter(n => {
-          const label = (n.data.label as string || '').toLowerCase();
-          const nodeType = (n.data.nodeType as string || 'lesson').toLowerCase();
-          return label.includes(query) || nodeType.includes(query);
-        }).map(n => n.id);
-        if (matchingNodeIds.length > 0) {
-          fitView({ nodes: nodes.filter(n => matchingNodeIds.includes(n.id)), duration: 500, padding: 0.5 });
-        }
-      }, 50);
-    }
-  }, [searchQuery, setNodes, fitView, nodes.length]);
-
-  const nodesRef = useRef<Node[]>([]);
-  useEffect(() => {
-    nodesRef.current = nodes;
-  }, [nodes]);
-
-
-
-  const processCompletedNodes = useCallback((nodeIdsToProcess: Set<string>) => {
-    if (nodeIdsToProcess.size === 0) return;
-
-    setEdges(currentEdges => {
-      let edgesChanged = false;
-      const nextEdges = currentEdges.map(edge => {
-        if (nodeIdsToProcess.has(edge.source) && (!edge.data || (edge.data.status !== 'completed' && edge.data.status !== 'animating'))) {
-          edgesChanged = true;
-          return { ...edge, data: { ...edge.data, status: 'animating' } };
-        }
-        return edge;
-      });
-      return edgesChanged ? nextEdges : currentEdges;
-    });
-
-    setTimeout(() => {
-      const nextBatchIds = new Set<string>();
-      
-      setEdges(currentEdges => {
-        let edgesChanged = false;
-        const nextEdges = currentEdges.map(edge => {
-          if (nodeIdsToProcess.has(edge.source) && edge.data?.status === 'animating') {
-            edgesChanged = true;
-            const targetNode = nodesRef.current.find(n => n.id === edge.target);
-            if (targetNode?.data.completed) {
-              nextBatchIds.add(targetNode.id);
-            }
-            return { ...edge, data: { ...edge.data, status: 'completed' } };
-          }
-          return edge;
-        });
-        return edgesChanged ? nextEdges : currentEdges;
-      });
-      
-      if (nextBatchIds.size > 0) {
-        processCompletedNodes(nextBatchIds);
-      }
-    }, 700);
-  }, [setEdges]);
-
-  // Handle edge states (e.g. newly drawn edges, loaded from save, or stuck in gray)
-  useEffect(() => {
-    const edgesToUpdate = new Set<string>();
-    
-    edges.forEach(e => {
-      if (e.data?.status === 'completed' || e.data?.status === 'animating') return;
-      
-      const sourceNode = nodesRef.current.find(n => n.id === e.source);
-      if (sourceNode?.data.completed) {
-        edgesToUpdate.add(e.source);
-      }
-    });
-
-    if (edgesToUpdate.size > 0) {
-      setTimeout(() => {
-        processCompletedNodes(edgesToUpdate);
-      }, 100);
-    }
-  }, [edges, processCompletedNodes]);
-
-  const previousNodesRef = useRef<Node[]>([]);
-  
-  useEffect(() => {
-    const prevNodes = previousNodesRef.current;
-    if (prevNodes.length === 0) {
-      previousNodesRef.current = nodes;
-      return;
-    }
-    
-    const newlyCompletedNodes = nodes.filter(n => {
-      const prev = prevNodes.find(p => p.id === n.id);
-      return n.data.completed && (!prev || !prev.data.completed);
-    });
-
-    previousNodesRef.current = nodes;
-
-    if (newlyCompletedNodes.length > 0) {
-      const newlyCompletedIds = new Set(newlyCompletedNodes.map(n => n.id));
-      processCompletedNodes(newlyCompletedIds);
-    }
-  }, [nodes, processCompletedNodes]);
-
-  useOnSelectionChange({
-    onChange: ({ nodes: selectedNodes }: OnSelectionChangeParams) => {
-      if (selectedNodes.length === 1) {
-        setSelectedNodeId(selectedNodes[0].id);
-        if (readOnly && onNodeSelect) {
-          onNodeSelect(selectedNodes[0]);
-        }
-      } else {
-        setSelectedNodeId(null);
-        if (readOnly && onNodeSelect) {
-          // Pass null to clear selection, wait onNodeSelect expects Node.
-        }
-      }
-    },
-  });
-
-  const selectedNode = useMemo(() => nodes.find(n => n.id === selectedNodeId) || null, [nodes, selectedNodeId]);
-
-  const onConnect = useCallback(
-    (params: Connection) => {
-      console.log('onConnect fired:', params);
-      setEdges((eds) => addEdge(params, eds));
-    },
-    [setEdges],
-  );
-
-  const addTopic = useCallback(() => {
-    const id = `node-${Date.now()}`;
-    const domNode = document.querySelector('.react-flow__pane');
-    let x = 200;
-    let y = 200;
-    
-    if (domNode) {
-      const rect = domNode.getBoundingClientRect();
-      const center = screenToFlowPosition({
-        x: rect.x + rect.width / 2,
-        y: rect.y + rect.height / 2,
-      });
-      x = center.x;
-      y = center.y;
-    }
-
-    const newNode: Node = {
-      id,
-      type: 'default',
-      position: { x, y },
-      data: { label: 'New Topic', color: 'bg-white' },
+      img.src = event.target?.result as string;
     };
-    
-    setNodes((nds) => nds.concat(newNode));
-  }, [screenToFlowPosition, setNodes, readOnly]);
+    reader.readAsDataURL(file);
+  };
 
-  const deleteSelected = useCallback(() => {
-    const selectedNodeIds = new Set(nodes.filter(n => n.selected).map(n => n.id));
-    setNodes((nds) => nds.filter((n) => !n.selected));
-    setEdges((eds) => eds.filter((e) => !e.selected && !selectedNodeIds.has(e.source) && !selectedNodeIds.has(e.target)));
-  }, [nodes, setNodes, setEdges, readOnly]);
+  const zoomPct = Math.round(zoom * 100);
 
-  const addChild = useCallback(() => {
-    if (!selectedNodeId) return;
-    const parentNode = nodes.find(n => n.id === selectedNodeId);
-    if (!parentNode) return;
-
-    const id = `node-${Date.now()}`;
-    const newNode: Node = {
-      id,
-      type: 'default',
-      position: { x: parentNode.position.x, y: parentNode.position.y + 150 },
-      data: { label: 'New Topic', color: parentNode.data.color || 'bg-white' },
-    };
-    
-    setNodes((nds) => nds.concat(newNode));
-    setEdges((eds) => eds.concat({
-      id: `e-${parentNode.id}-${id}`,
-      source: parentNode.id,
-      target: id,
-      type: 'progress'
-    }));
-  }, [nodes, selectedNodeId, setNodes, setEdges, readOnly]);
-
-  const centerSelection = useCallback(() => {
-    if (!selectedNodeId) return;
-    const selectedNode = nodes.find(n => n.id === selectedNodeId);
-    if (selectedNode) {
-      fitView({
-        nodes: [selectedNode],
-        duration: 500,
-        padding: 2,
-        minZoom: 1,
-        maxZoom: 1.5,
-      });
-    }
-  }, [nodes, selectedNodeId, fitView]);
-
-  // Keyboard Shortcuts
-  useEffect(() => {
-    if (readOnly) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts if we are typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
-
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        deleteSelected();
-      } else if (e.key.toLowerCase() === 'v' && !ctrlOrCmd) {
-        setActiveTool('pointer');
-      } else if (e.key.toLowerCase() === 'h' && !ctrlOrCmd) {
-        setActiveTool('hand');
-      } else if (e.key.toLowerCase() === 'c' && !ctrlOrCmd) {
-        setActiveTool('connect');
-      } else if (e.key.toLowerCase() === 'a' && !ctrlOrCmd) {
-        if (e.shiftKey) {
-          addChild();
-        } else {
-          addTopic();
-        }
-      } else if (e.key.toLowerCase() === 'f' && !ctrlOrCmd) {
-        if (e.shiftKey) {
-          centerSelection();
-        } else {
-          fitView({ duration: 500, padding: 0.2 });
-        }
-      } else if (e.key.toLowerCase() === 'g' && !ctrlOrCmd) {
-        setShowGrid(prev => !prev);
-      } else if (e.key.toLowerCase() === 'm' && !ctrlOrCmd) {
-        setShowMinimap(prev => !prev);
-      } else if (e.key.toLowerCase() === 's' && ctrlOrCmd) {
-        e.preventDefault();
-        onManualSave();
-      } else if (e.key.toLowerCase() === 'k' && ctrlOrCmd) {
-        e.preventDefault();
-        setIsSearchOpen(prev => !prev);
-      } else if (e.key === 'Escape') {
-        setActiveTool('pointer');
-        setIsSearchOpen(false);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [deleteSelected, addTopic, addChild, centerSelection, fitView, onManualSave, readOnly]);
-
-  const onNodeContextMenu = useCallback(
-    (event: React.MouseEvent, node: Node) => {
-      if (readOnly) return;
-      event.preventDefault();
-      setContextMenu({
-        x: event.clientX,
-        y: event.clientY,
-        nodeId: node.id,
-      });
-    },
-    [readOnly]
-  );
-
-  const updateNodeData = useCallback((id: string, newData: any) => {
-    setNodes((nds) =>
-      nds.map((n) => {
-        if (n.id === id) {
-          return { ...n, data: { ...n.data, ...newData } };
-        }
-        return n;
-      })
-    );
-  }, [setNodes]);
-
-  const handleDuplicate = useCallback((id: string) => {
-    if (readOnly) return;
-    const nodeToDuplicate = nodes.find(n => n.id === id);
-    if (!nodeToDuplicate) return;
-    
-    const newNode: Node = {
-      ...nodeToDuplicate,
-      id: `node-${Date.now()}`,
-      position: { x: nodeToDuplicate.position.x + 50, y: nodeToDuplicate.position.y + 50 },
-      selected: false,
-    };
-    setNodes((nds) => nds.concat(newNode));
-  }, [nodes, setNodes, readOnly]);
-
-  const handleDeleteNode = useCallback((id: string) => {
-    if (readOnly) return;
-    setNodes((nds) => nds.filter((n) => n.id !== id));
-    setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
-  }, [setNodes, setEdges, readOnly]);
-
-  // Trigger graph change when elements or viewport change
-  const handleGraphChange = useCallback(() => {
-    if (!isInitializedRef.current || readOnly) return;
-    
-    // Clean up nodes for saving (remove selected state, etc)
-    const cleanNodes = nodes.map(n => ({
-      id: n.id,
-      type: n.type,
-      position: n.position,
-      data: n.data,
-    }));
-    
-    const cleanEdges = edges.map(e => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-    }));
-    
-    const viewport = getViewport();
-    
-    const newGraphJson = JSON.stringify({
-      nodes: cleanNodes,
-      edges: cleanEdges,
-      viewport
-    });
-    
-    onGraphChange(newGraphJson);
-  }, [nodes, edges, getViewport, onGraphChange, readOnly]);
-
-
-
-  const lastSavedJsonRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!isInitializedRef.current) return;
-    
-    const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
-    const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target, data: e.data }));
-    const newGraphJson = JSON.stringify({ nodes: cleanNodes, edges: cleanEdges, viewport: getViewport(), appearance });
-    
-    if (lastSavedJsonRef.current !== newGraphJson && lastSavedJsonRef.current !== null) {
-      lastSavedJsonRef.current = newGraphJson;
-      onGraphChange(newGraphJson);
-    } else if (lastSavedJsonRef.current === null) {
-      lastSavedJsonRef.current = newGraphJson;
-    }
-  }, [nodes, edges, appearance, onGraphChange, getViewport]);
-
-  const onMoveEnd = useCallback(() => {
-    // When panning/zooming stops, trigger a change check
-    const cleanNodes = nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data }));
-    const cleanEdges = edges.map(e => ({ id: e.id, source: e.source, target: e.target }));
-    const newGraphJson = JSON.stringify({ nodes: cleanNodes, edges: cleanEdges, viewport: getViewport(), appearance });
-    
-    if (lastSavedJsonRef.current !== newGraphJson) {
-      lastSavedJsonRef.current = newGraphJson;
-      onGraphChange(newGraphJson);
-    }
-  }, [nodes, edges, getViewport, onGraphChange, readOnly]);
-
-  const validatedNodes = useMemo(() => {
-    const contentIds = new Set<string>();
-    const duplicates = new Set<string>();
-    
-    nodes.forEach(n => {
-      const cid = n.data.contentId as string;
-      if (cid) {
-        if (contentIds.has(cid)) duplicates.add(cid);
-        contentIds.add(cid);
-      }
-    });
-
-    return nodes.map(n => {
-      let validationError = undefined;
-      const label = n.data.label as string;
-      const cid = n.data.contentId as string;
-      
-      if (!label || label.trim() === '') {
-        validationError = 'Missing required title.';
-      } else if (cid && duplicates.has(cid)) {
-        validationError = 'Duplicate content linked across multiple nodes.';
-      }
-      
-      // Override properties if read-only
-      const nodeData: Record<string, unknown> = { 
-        ...n.data, 
-        validationError,
-        onUpdate: updateNodeData
-      };
-      if (readOnly) {
-        nodeData.readOnly = true;
-      }
-      
-      return { ...n, data: nodeData };
-    });
-  }, [nodes, readOnly]);
-
-
-
-  const hasSelection = nodes.some(n => n.selected) || edges.some(e => e.selected);
+  const toolBtn = (active: boolean, extra = '') =>
+    `p-2 rounded-lg transition-all duration-150 ${
+      active
+        ? 'bg-indigo-600 text-white shadow-md'
+        : `text-gray-400 hover:text-white hover:bg-white/10 ${extra}`
+    }`;
 
   return (
-    <div className="flex w-full h-[600px] rounded-lg border border-gray-200 bg-white overflow-hidden relative">
-      <div className="flex-1 relative" onWheel={(e) => e.stopPropagation()}>
-        {nodes.length === 0 && (
-          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
-            <div className="text-center bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-gray-100 pointer-events-auto">
-              <p className="text-sm font-medium text-gray-500 mb-4">No topics yet.</p>
-              <p className="text-xs text-gray-400 mb-6">Create your first topic to start building the roadmap.</p>
-              {!readOnly && (
-                <button
-                  onClick={addTopic}
-                  className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors shadow-sm"
-                >
-                  <Plus size={16} />
-                  Create Topic
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-        <RoadmapToolbar
-          activeTool={activeTool}
-          onChangeActiveTool={setActiveTool}
-          onAddTopic={addTopic}
-          onAddChild={addChild}
-          onDeleteSelected={deleteSelected}
-          onFitView={() => fitView({ duration: 500, padding: 0.2 })}
-          onCenterSelection={centerSelection}
-          onToggleMinimap={() => setShowMinimap(!showMinimap)}
-          onToggleGrid={() => setShowGrid(!showGrid)}
-          onOpenSearch={() => setIsSearchOpen(!isSearchOpen)}
-          onOpenBackgroundSettings={() => setIsSettingsOpen(!isSettingsOpen)}
-          hasSelection={hasSelection}
-          saveState={saveState}
-          onSave={onManualSave}
-          readOnly={readOnly}
-        />
-        
-        <style>{`
-          .react-flow__nodesselection-rect {
-            display: none !important;
-          }
-          .react-flow__pane {
-            cursor: grab;
-          }
-          .react-flow__pane:active {
-            cursor: grabbing;
-          }
-          /* Remove default wrapper styles so only our custom node is visible */
-          .react-flow__node-default {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            width: auto !important;
-          }
-          .react-flow__node.selected {
-            /* We handle selection state inside our own LearningNode component */
-            box-shadow: none !important;
-          }
-        `}</style>
-        <ReactFlow
-          nodes={validatedNodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          defaultEdgeOptions={{
-            type: 'progress',
-            style: { strokeWidth: 2, stroke: '#94a3b8', transition: 'stroke-width 0.2s, stroke 0.2s' }
-          }}
-          panOnDrag={activeTool === 'hand' || activeTool === 'pointer'}
-          selectionOnDrag={activeTool === 'pointer'}
-          panOnScroll={true}
-          selectionMode={SelectionMode.Partial}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeContextMenu={onNodeContextMenu}
-          onPaneContextMenu={(e) => e.preventDefault()}
-          onPaneClick={() => setContextMenu(null)}
-          onMoveEnd={onMoveEnd}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          minZoom={0.1}
-          maxZoom={2}
-          proOptions={{ hideAttribution: true }}
-          snapToGrid={true}
-          snapGrid={[20, 20]}
-          nodesDraggable={true}
-          nodesConnectable={true}
-          elementsSelectable={true}
-          connectionRadius={40}
-          connectionMode={ConnectionMode.Loose}
-          isValidConnection={() => true}
-          style={{
-            backgroundColor: appearance.backgroundType === 'color' ? appearance.backgroundColor : 'transparent',
-            backgroundImage: appearance.backgroundType === 'gradient' && appearance.gradient ? appearance.gradient : appearance.backgroundType === 'image' && appearance.image?.url ? `url(${appearance.image.url})` : 'none',
-            backgroundSize: appearance.backgroundType === 'image' && appearance.image?.display === 'fill' ? 'cover' : appearance.backgroundType === 'image' && appearance.image?.display === 'fit' ? 'contain' : 'auto',
-            backgroundRepeat: appearance.backgroundType === 'image' && appearance.image?.display === 'tile' ? 'repeat' : 'no-repeat',
-            backgroundPosition: 'center',
-            filter: appearance.backgroundType === 'image' && (appearance.image?.blur ?? 0) > 0 ? `blur(${appearance.image?.blur}px)` : 'none',
-          }}
-        >
-          {appearance.advanced.noise && (
-            <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
-          )}
-          {appearance.grid.show && (
-            <Background 
-              variant={appearance.grid.type === 'dots' ? BackgroundVariant.Dots : appearance.grid.type === 'lines' ? BackgroundVariant.Lines : BackgroundVariant.Cross} 
-              gap={appearance.grid.size} 
-              size={appearance.grid.type === 'dots' ? 2 : 1} 
-              color={appearance.grid.color} 
-              style={{ opacity: appearance.grid.opacity }}
-            />
-          )}
-          {/* Note: Minimap state is separate since it's a view toggle not saved with appearance */}
-          {showMinimap && <MiniMap />}
-        </ReactFlow>
-
-        {/* Command Search Popover */}
-        {isSearchOpen && (
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 bg-[#1E1E1E]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-2 z-50 animate-in zoom-in-95 duration-200">
-            <input 
-              autoFocus
-              type="text" 
-              placeholder="Search topics (Ctrl+K)..." 
-              className="w-full bg-transparent text-white text-lg outline-none px-4 py-3 placeholder-gray-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') setIsSearchOpen(false);
-              }}
-            />
-            {searchQuery && (
-              <div className="px-4 pb-2 text-xs text-gray-400">
-                Found matching topics. Hit Enter or Esc to close.
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Canvas Settings Popover */}
-        {isSettingsOpen && (
-          <AppearancePanel
-            appearance={appearance}
-            onChange={(newAppearance) => {
-              setAppearance(newAppearance);
-              if (!readOnly) onManualSave();
-            }}
-            onClose={() => setIsSettingsOpen(false)}
-          />
-        )}
-
-
-        {contextMenu && !readOnly && (
-          <CanvasContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            node={nodes.find(n => n.id === contextMenu.nodeId) || null}
-            onClose={() => setContextMenu(null)}
-            onRename={() => {
-              // Focus properties panel or update node directly.
-              setSelectedNodeId(contextMenu.nodeId);
-            }}
-            onDuplicate={() => handleDuplicate(contextMenu.nodeId)}
-            onDelete={() => handleDeleteNode(contextMenu.nodeId)}
-            onChangeColor={() => setSelectedNodeId(contextMenu.nodeId)}
-          />
+    <div
+      className="absolute bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 bg-[#1a1a2e]/95 text-white border border-white/10 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] select-none"
+      onMouseDown={e => e.stopPropagation()}
+    >
+      {/* ── Mode buttons ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-0.5 bg-white/5 p-1 rounded-xl border border-white/5">
+        <button type="button" title="Pointer (V)" onClick={() => setActiveTool('pointer')} className={toolBtn(activeTool === 'pointer')}>
+          <MousePointer size={14} />
+        </button>
+        <button type="button" title="Hand / Pan (H)" onClick={() => setActiveTool('hand')} className={toolBtn(activeTool === 'hand')}>
+          <Hand size={14} />
+        </button>
+        {!readOnly && (
+          <button type="button" title="Connect Nodes (C)" onClick={() => setActiveTool('connect')} className={toolBtn(activeTool === 'connect')}>
+            <LinkIcon size={14} />
+          </button>
         )}
       </div>
 
-      {selectedNode && (
-        <PropertiesPanel
-          selectedNode={selectedNode}
-          onClose={() => setSelectedNodeId(null)}
-          onUpdate={updateNodeData}
-          roadmapId={roadmap.id}
+      <div className="w-px h-5 bg-white/10 mx-0.5 shrink-0" />
+
+      {/* ── Add Topic ────────────────────────────────────────────────────── */}
+      {!readOnly && (
+        <button
+          type="button"
+          title="Add Topic (A)"
+          onClick={addTopic}
+          className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
+        >
+          <Plus size={15} />
+        </button>
+      )}
+
+      {/* ── Quick color (only when node selected) ────────────────────────── */}
+      {!readOnly && selectedNodeId && (
+        <div className="relative">
+          <button
+            type="button"
+            title="Node Color"
+            onClick={() => { setShowColorPop(p => !p); setShowBgPop(false); }}
+            className={toolBtn(showColorPop)}
+          >
+            <span className="w-3.5 h-3.5 rounded-full border border-white/30 block" style={{ backgroundColor: currentNodeColor }} />
+          </button>
+          {showColorPop && (
+            <div className="absolute bottom-11 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2 py-2 bg-[#252526] border border-white/10 rounded-xl shadow-2xl z-50 animate-in zoom-in-95 duration-150">
+              {NODE_COLORS.map(c => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { updateSelectedColor(c); setShowColorPop(false); }}
+                  className="w-5 h-5 rounded-full border-2 transition-transform hover:scale-125 shrink-0"
+                  style={{ backgroundColor: c, borderColor: c === currentNodeColor ? '#818cf8' : 'rgba(255,255,255,0.2)' }}
+                />
+              ))}
+              <div className="w-px h-4 bg-white/10 mx-0.5" />
+              <div className="relative w-5 h-5 rounded-full overflow-hidden border border-white/20">
+                <input
+                  type="color"
+                  value={currentNodeColor.startsWith('#') ? currentNodeColor : '#ffffff'}
+                  onChange={e => updateSelectedColor(e.target.value)}
+                  className="absolute inset-[-8px] w-9 h-9 cursor-pointer border-0"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Auto Layout ──────────────────────────────────────────────────── */}
+      <button type="button" title="Auto Layout (L)" onClick={autoLayout} className={toolBtn(false)}>
+        <LayoutGrid size={14} />
+      </button>
+
+      {/* ── Fit View ─────────────────────────────────────────────────────── */}
+      <button type="button" title="Fit View (F)" onClick={() => fitView({ padding: 0.2, duration: 400 })} className={toolBtn(false)}>
+        <Maximize2 size={14} />
+      </button>
+
+      {/* ── MiniMap ──────────────────────────────────────────────────────── */}
+      <button type="button" title="Toggle Minimap (M)" onClick={() => setShowMinimap(!showMinimap)} className={toolBtn(showMinimap)}>
+        <Map size={14} />
+      </button>
+
+      {/* ── Canvas Background ────────────────────────────────────────────── */}
+      <div className="relative">
+        <button type="button" title="Canvas Theme" onClick={() => { setShowBgPop(p => !p); setShowColorPop(false); }} className={toolBtn(showBgPop)}>
+          <Palette size={14} />
+        </button>
+        {showBgPop && (
+          <div className="absolute bottom-11 left-1/2 -translate-x-1/2 w-44 bg-[#252526] border border-white/10 rounded-xl shadow-2xl p-1.5 z-50 space-y-0.5 animate-in zoom-in-95 duration-150">
+            <p className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-gray-400">Canvas Theme</p>
+            {BG_PRESETS.map(p => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => { setBgStyle(p); setShowBgPop(false); }}
+                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-gray-300 hover:bg-indigo-600 hover:text-white transition-colors text-left"
+              >
+                <span className="w-4 h-4 rounded-full border border-white/20 shrink-0" style={{ backgroundColor: p.bg }} />
+                {p.label}
+              </button>
+            ))}
+            <div className="w-full h-px bg-white/10 my-1"></div>
+            <div className="px-2 py-1 text-xs">
+              <label className="text-gray-400 font-medium mb-1 block">Custom Color</label>
+              <div className="flex items-center gap-2">
+                <div className="relative w-6 h-6 rounded overflow-hidden border border-white/20 shrink-0">
+                  <input
+                    type="color"
+                    value={bgStyle.bg.startsWith('#') ? bgStyle.bg.substring(0, 7) : '#0b0f17'}
+                    onChange={(e) => setBgStyle({ ...bgStyle, bg: e.target.value, bgImage: undefined })}
+                    className="absolute inset-[-8px] w-10 h-10 cursor-pointer border-0 p-0"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="#000000"
+                  value={bgStyle.bg}
+                  onChange={(e) => setBgStyle({ ...bgStyle, bg: e.target.value, bgImage: undefined })}
+                  className="w-full bg-[#1e1e1e] border border-white/10 rounded px-2 py-1 text-white outline-none font-mono"
+                />
+              </div>
+            </div>
+            <div className="px-2 py-1 text-xs">
+              <label className="text-gray-400 font-medium mb-1 block">Background Image URL</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                value={customImageUrl || bgStyle.bgImage || ""}
+                onChange={(e) => setCustomImageUrl(e.target.value)}
+                onBlur={(e) => {
+                  if (e.target.value) {
+                    setBgStyle({ ...bgStyle, bgImage: e.target.value });
+                  } else {
+                    setBgStyle({ ...bgStyle, bgImage: undefined });
+                  }
+                }}
+                className="w-full bg-[#1e1e1e] border border-white/10 rounded px-2 py-1 text-white outline-none"
+              />
+            </div>
+            <div className="px-2 pb-1 pt-2">
+              <label className="flex items-center justify-center w-full bg-[#1e1e1e] hover:bg-white/10 border border-white/10 rounded px-2 py-1.5 text-xs text-gray-300 cursor-pointer transition-colors">
+                <span className="font-medium text-[11px]">Upload from Gallery</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="w-px h-5 bg-white/10 mx-0.5 shrink-0" />
+
+      {/* ── Undo / Redo ──────────────────────────────────────────────────── */}
+      {!readOnly && (
+        <>
+          <button type="button" title="Undo (Ctrl+Z)" onClick={undo} disabled={!canUndo} className={`p-2 rounded-lg transition-all ${canUndo ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-600 cursor-not-allowed'}`}>
+            <UndoIcon size={14} />
+          </button>
+          <button type="button" title="Redo (Ctrl+Y)" onClick={redo} disabled={!canRedo} className={`p-2 rounded-lg transition-all ${canRedo ? 'text-gray-300 hover:text-white hover:bg-white/10' : 'text-gray-600 cursor-not-allowed'}`}>
+            <RedoIcon size={14} />
+          </button>
+        </>
+      )}
+
+      {/* ── Delete selected ──────────────────────────────────────────────── */}
+      {!readOnly && selectedNodeId && (
+        <button type="button" title="Delete Selected (Del)" onClick={deleteSelected} className="p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 transition-all">
+          <Trash2 size={14} />
+        </button>
+      )}
+
+      <div className="w-px h-5 bg-white/10 mx-0.5 shrink-0" />
+
+      {/* ── Zoom display ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-1.5 px-1">
+        <button type="button" title="Zoom Out" onClick={() => zoomOut({ duration: 200 })} className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors text-xs font-bold">−</button>
+        <span className="text-[10px] font-bold text-gray-400 font-mono w-8 text-center">{zoomPct}%</span>
+        <button type="button" title="Zoom In" onClick={() => zoomIn({ duration: 200 })} className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors text-xs font-bold">+</button>
+        <span title="Saved"><CheckCircle size={12} className="text-emerald-400 ml-1" /></span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Node renderer (MUST NOT call any hook that needs provider outside ReactFlow) ─
+function TopicNodeRenderer(props: any) {
+  const { id, data, selected } = props;
+  return (
+    <RoadmapNode
+      id={id}
+      selected={selected}
+      label={data?.label || 'New Topic'}
+      description={data?.description}
+      nodeType={data?.nodeType || 'lesson'}
+      status={data?.status || 'draft'}
+      difficulty={data?.difficulty}
+      duration={data?.duration}
+      color={data?.color || '#f59e0b'}
+      fontColor={data?.fontColor}
+      borderColor={data?.borderColor}
+      icon={data?.icon}
+      isCompleted={data?.completed}
+      editable={!data?.readOnly}
+      isEditing={data?.isEditing}
+      showHandles={true}
+      validationError={data?.validationError}
+      onRename={(nodeId, newLabel) => {
+        data?.onUpdate?.(nodeId, { label: newLabel, isEditing: false });
+      }}
+    />
+  );
+}
+
+const NODE_TYPES = { topic: TopicNodeRenderer, default: TopicNodeRenderer };
+const EDGE_TYPES = { default: ProgressEdge, smoothstep: ProgressEdge };
+
+const DEFAULT_NODES: Node[] = [
+  { id: 'node-default-1', type: 'topic', position: { x: 200, y: 200 }, data: { label: 'Topic 1', color: '#f59e0b', status: 'draft', nodeType: 'lesson' } },
+];
+
+// ─── Main inner canvas ────────────────────────────────────────────────────────
+function RoadmapCanvasInner({ roadmap, onGraphChange, readOnly = false, onNodeSelect }: RoadmapCanvasProps) {
+  // ── Parse initial graph ──────────────────────────────────────────────────────
+  const parseGraph = useCallback((graphJson?: string | null) => {
+    if (!graphJson) return { nodes: DEFAULT_NODES, edges: [] as Edge[], background: undefined };
+    try {
+      const parsed = JSON.parse(graphJson);
+      const nodes: Node[] = (parsed.nodes || []).map((n: any) => ({ ...n, type: 'topic' }));
+      const edges: Edge[] = parsed.edges || [];
+      return { nodes: nodes.length > 0 ? nodes : DEFAULT_NODES, edges, background: parsed.background };
+    } catch {
+      return { nodes: DEFAULT_NODES, edges: [] as Edge[], background: undefined };
+    }
+  }, []);
+
+  const initial = parseGraph(roadmap?.graphJson);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initial.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initial.edges);
+
+  // ── UI state ─────────────────────────────────────────────────────────────────
+  const [activeTool, setActiveTool] = useState<string>('pointer');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [showMinimap, setShowMinimap] = useState(false);
+  const [bgStyle, setBgStyle] = useState<{ bg: string; dotColor: string; dots: boolean; bgImage?: string }>(initial.background || { bg: '#0b0f17', dotColor: '#334155', dots: true });
+
+  // ── History (undo/redo) ──────────────────────────────────────────────────────
+  const historyRef = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const futureRef  = useRef<{ nodes: Node[]; edges: Edge[] }[]>([]);
+
+  const pushHistory = useCallback((ns: Node[], es: Edge[]) => {
+    historyRef.current.push({ nodes: ns, edges: es });
+    if (historyRef.current.length > 50) historyRef.current.shift();
+    futureRef.current = [];
+  }, []);
+
+  const undo = useCallback(() => {
+    if (!historyRef.current.length) return;
+    const prev = historyRef.current.pop()!;
+    futureRef.current.push({ nodes, edges });
+    setNodes(prev.nodes);
+    setEdges(prev.edges);
+  }, [nodes, edges, setNodes, setEdges]);
+
+  const redo = useCallback(() => {
+    if (!futureRef.current.length) return;
+    const next = futureRef.current.pop()!;
+    historyRef.current.push({ nodes, edges });
+    setNodes(next.nodes);
+    setEdges(next.edges);
+  }, [nodes, edges, setNodes, setEdges]);
+
+  // ── ReactFlow hooks ──────────────────────────────────────────────────────────
+  const { screenToFlowPosition } = useReactFlow();
+
+  // ── Stable updateTopic ───────────────────────────────────────────────────────
+  const updateTopicImpl = useCallback((id: string, data: any) => {
+    if (readOnly) return;
+    setNodes(nds => nds.map(n => n.id === id ? { ...n, data: { ...n.data, ...data } } : n));
+  }, [readOnly, setNodes]);
+  const updateTopicRef = useRef(updateTopicImpl);
+  updateTopicRef.current = updateTopicImpl;
+  const stableUpdateTopic = useCallback((id: string, data: any) => updateTopicRef.current(id, data), []);
+
+  // ── Add Topic ────────────────────────────────────────────────────────────────
+  const addTopic = useCallback(() => {
+    if (readOnly) return;
+    const id = `node-${Date.now()}`;
+    let x = 300, y = 200;
+    const pane = document.querySelector('.react-flow__pane');
+    if (pane) {
+      const rect = pane.getBoundingClientRect();
+      try {
+        const c = screenToFlowPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        x = c.x - 90; y = c.y - 50;
+      } catch { /* use defaults */ }
+    }
+    const newNode: Node = {
+      id, type: 'topic',
+      position: { x, y },
+      data: { label: 'New Topic', color: '#f59e0b', status: 'draft', nodeType: 'lesson' },
+    };
+    pushHistory(nodes, edges);
+    setNodes(nds => [...nds, newNode]);
+  }, [readOnly, screenToFlowPosition, nodes, edges, pushHistory, setNodes]);
+
+  // ── Delete selected ──────────────────────────────────────────────────────────
+  const deleteSelected = useCallback(() => {
+    if (readOnly) return;
+    pushHistory(nodes, edges);
+    setNodes(nds => nds.filter(n => !n.selected));
+    setEdges(eds => eds.filter(e => !e.selected));
+    setSelectedNodeId(null);
+  }, [readOnly, nodes, edges, pushHistory, setNodes, setEdges]);
+
+  // ── Auto layout (simple top→bottom dagre-style) ──────────────────────────────
+  const autoLayout = useCallback(() => {
+    const COLS = 3, X_GAP = 280, Y_GAP = 160, START_X = 100, START_Y = 100;
+    setNodes(nds => nds.map((n, i) => ({
+      ...n,
+      position: { x: START_X + (i % COLS) * X_GAP, y: START_Y + Math.floor(i / COLS) * Y_GAP },
+    })));
+  }, [setNodes]);
+
+  // ── Connections ──────────────────────────────────────────────────────────────
+  const onConnect = useCallback((connection: Connection) => {
+    pushHistory(nodes, edges);
+    setEdges(eds => addEdge({ ...connection, type: 'smoothstep' }, eds));
+  }, [nodes, edges, pushHistory, setEdges]);
+
+  // ── Selection tracking ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const sel = nodes.filter(n => n.selected);
+    if (sel.length === 1) {
+      setSelectedNodeId(sel[0].id);
+      if (readOnly && onNodeSelect) onNodeSelect(sel[0]);
+    } else {
+      setSelectedNodeId(null);
+    }
+  }, [nodes, readOnly, onNodeSelect]);
+
+  // ── Sync to TipTap ───────────────────────────────────────────────────────────
+  const lastSyncRef = useRef('');
+  useEffect(() => {
+    if (readOnly || !onGraphChange) return;
+    const json = JSON.stringify({
+      nodes: nodes.map(n => ({ id: n.id, type: n.type, position: n.position, data: n.data })),
+      edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target })),
+      background: bgStyle,
+    });
+    if (json !== lastSyncRef.current) { lastSyncRef.current = json; onGraphChange(json); }
+  }, [nodes, edges, bgStyle, readOnly, onGraphChange]);
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (readOnly) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const mod = e.ctrlKey || e.metaKey;
+      if (e.key.toLowerCase() === 'a' && !mod) addTopic();
+      if (e.key.toLowerCase() === 'z' && mod && !e.shiftKey) { e.preventDefault(); undo(); }
+      if ((e.key.toLowerCase() === 'z' && mod && e.shiftKey) || (e.key.toLowerCase() === 'y' && mod)) { e.preventDefault(); redo(); }
+      if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+      if (e.key.toLowerCase() === 'v' && !mod) setActiveTool('pointer');
+      if (e.key.toLowerCase() === 'h' && !mod) setActiveTool('hand');
+      if (e.key.toLowerCase() === 'c' && !mod) setActiveTool('connect');
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [readOnly, addTopic, undo, redo, deleteSelected]);
+
+  // ── Build nodes array for ReactFlow ─────────────────────────────────────────
+  const nodesWithCallbacks = nodes.map(n => ({
+    ...n,
+    data: { ...n.data, readOnly, onUpdate: stableUpdateTopic },
+  }));
+
+  const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  const currentNodeColor = (selectedNode?.data?.color as string) || '#f59e0b';
+
+  return (
+    <div 
+      className="w-full h-full relative overflow-hidden" 
+      style={{ 
+        backgroundColor: bgStyle.bg,
+        backgroundImage: bgStyle.bgImage 
+          ? `url(${bgStyle.bgImage})` 
+          : bgStyle.dots 
+            ? `radial-gradient(circle, ${bgStyle.dotColor} 1px, transparent 1px)` 
+            : 'none',
+        backgroundSize: bgStyle.bgImage ? 'auto' : (bgStyle.dots ? '24px 24px' : undefined),
+        backgroundPosition: 'top left',
+        backgroundRepeat: bgStyle.bgImage ? 'repeat' : 'no-repeat'
+      }}>
+
+      {/* ── CSS: strip ReactFlow default node styling ─────────────────────── */}
+      <style>{`
+        .react-flow__node-topic,
+        .react-flow__node-default {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          width: auto !important;
+        }
+        .react-flow__handle { opacity: 0; transition: opacity 0.15s; }
+        .react-flow__node:hover .react-flow__handle,
+        .react-flow__node.selected .react-flow__handle { opacity: 1; }
+        .react-flow__pane { cursor: ${activeTool === 'hand' ? 'grab' : 'default'}; }
+      `}</style>
+
+      {/* ── React Flow Canvas ────────────────────────────────────────────── */}
+      <ReactFlow
+        className="w-full h-full"
+        nodes={nodesWithCallbacks}
+        edges={edges}
+        nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onPaneClick={() => setSelectedNodeId(null)}
+        onDoubleClick={e => {
+          if (readOnly) return;
+          const target = e.target as HTMLElement;
+          if (target.classList.contains('react-flow__pane')) addTopic();
+        }}
+        nodesDraggable={!readOnly}
+        nodesConnectable={!readOnly && activeTool === 'connect'}
+        elementsSelectable={true}
+        fitView
+        fitViewOptions={{ padding: 0.3 }}
+        minZoom={0.1}
+        maxZoom={2.5}
+        connectionMode={ConnectionMode.Loose}
+        panOnScroll={true}
+        panOnDrag={activeTool === 'hand' ? true : [1]}
+        zoomOnScroll={false}
+        zoomActivationKeyCode="Control"
+        deleteKeyCode={readOnly ? null : ['Backspace', 'Delete']}
+        proOptions={{ hideAttribution: true }}
+        snapToGrid={true}
+        snapGrid={[20, 20]}
+        defaultEdgeOptions={{ type: 'smoothstep', style: { stroke: '#94a3b8', strokeWidth: 2 } }}
+      >
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
+          size={1.5}
+          color={bgStyle.dotColor}
+          style={{ backgroundColor: 'transparent' }}
         />
+        {showMinimap && (
+          <MiniMap
+            position="bottom-right"
+            nodeColor={() => '#818cf8'}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12,
+              marginBottom: 80,
+            }}
+            maskColor="rgba(0,0,0,0.3)"
+          />
+        )}
+      </ReactFlow>
+
+      {/* ── Floating Toolbox (always visible, never conditional) ─────────── */}
+      <FloatingRoadmapToolbar
+        readOnly={readOnly}
+        activeTool={activeTool}
+        setActiveTool={setActiveTool}
+        addTopic={addTopic}
+        deleteSelected={deleteSelected}
+        selectedNodeId={selectedNodeId}
+        showMinimap={showMinimap}
+        setShowMinimap={setShowMinimap}
+        undo={undo}
+        redo={redo}
+        canUndo={historyRef.current.length > 0}
+        canRedo={futureRef.current.length > 0}
+        updateSelectedColor={color => stableUpdateTopic(selectedNodeId!, { color })}
+        currentNodeColor={currentNodeColor}
+        autoLayout={autoLayout}
+        bgStyle={bgStyle}
+        setBgStyle={setBgStyle}
+      />
+
+      {/* ── Properties Panel (slides in when node selected) ──────────────── */}
+      {selectedNode && !readOnly && (
+        <div className="absolute top-0 right-0 h-full w-72 bg-white/95 backdrop-blur-sm border-l border-gray-100 shadow-2xl z-30 overflow-y-auto">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-gray-900">Node Properties</h3>
+            <button onClick={() => setSelectedNodeId(null)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+          </div>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Title</label>
+              <input
+                type="text"
+                value={(selectedNode.data.label as string) || ''}
+                onChange={e => stableUpdateTopic(selectedNode.id, { label: e.target.value })}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Color</label>
+              <div className="flex gap-2 flex-wrap items-center">
+                {NODE_COLORS.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => stableUpdateTopic(selectedNode.id, { color: c })}
+                    className="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110"
+                    style={{ backgroundColor: c, borderColor: selectedNode.data.color === c ? '#6366f1' : '#e5e7eb' }}
+                  />
+                ))}
+                <div className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-dashed border-gray-300">
+                  <input
+                    type="color"
+                    value={((selectedNode.data.color as string) || '#f59e0b').startsWith('#') ? (selectedNode.data.color as string).substring(0, 7) : '#f59e0b'}
+                    onChange={e => stableUpdateTopic(selectedNode.id, { color: e.target.value })}
+                    className="absolute inset-[-8px] w-12 h-12 cursor-pointer border-0 p-0"
+                    title="Custom Color"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Status</label>
+              <select
+                value={(selectedNode.data.status as string) || 'draft'}
+                onChange={e => stableUpdateTopic(selectedNode.id, { status: e.target.value })}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+                <option value="review">Review</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Node Type</label>
+              <select
+                value={(selectedNode.data.nodeType as string) || 'lesson'}
+                onChange={e => stableUpdateTopic(selectedNode.id, { nodeType: e.target.value })}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="lesson">Lesson / Article</option>
+                <option value="section">Section</option>
+                <option value="quiz">Quiz</option>
+                <option value="exercise">Exercise</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Description</label>
+              <textarea
+                value={(selectedNode.data.description as string) || ''}
+                onChange={e => stableUpdateTopic(selectedNode.id, { description: e.target.value })}
+                rows={3}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                placeholder="Describe this topic..."
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
+// ─── Public export ────────────────────────────────────────────────────────────
 export function RoadmapCanvas(props: RoadmapCanvasProps) {
   return (
     <ReactFlowProvider>
-      <RoadmapCanvasInner {...props} />
+      <RoadmapEditorProvider {...props}>
+        <RoadmapCanvasInner {...props} />
+      </RoadmapEditorProvider>
     </ReactFlowProvider>
   );
 }

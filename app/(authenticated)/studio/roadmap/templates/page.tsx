@@ -8,13 +8,15 @@ import { roadmapTemplateService } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps";
 import type { RoadmapTemplateData } from "@/domains/roadmaps";
 import { CATEGORIES, DIFFICULTIES } from "@/domains/roadmaps";
+import { useEligibleChannels } from "@/domains/channels";
 
 export default function TemplatesPage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<RoadmapTemplateData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const { channels } = useEligibleChannels();
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -50,8 +52,22 @@ export default function TemplatesPage() {
   };
 
   const handleCreateFromTemplate = async (id: string) => {
+    if (channels.length === 0) {
+      alert("You need a channel with content-authoring rights before you can create a roadmap.");
+      return;
+    }
+    let channelId = channels[0].id;
+    if (channels.length > 1) {
+      const choice = window.prompt(
+        `Which channel should this roadmap belong to?\n${channels.map((c, i) => `${i + 1}. ${c.name}`).join('\n')}`,
+        "1"
+      );
+      const index = choice ? parseInt(choice, 10) - 1 : -1;
+      if (index < 0 || index >= channels.length) return; // cancelled or invalid
+      channelId = channels[index].id;
+    }
     try {
-      const roadmap = await roadmapService.createFromTemplate(id);
+      const roadmap = await roadmapService.createFromTemplate(id, channelId);
       router.push(`/studio/roadmap/${roadmap.id}/edit`);
     } catch (e) {
       alert("Failed to create roadmap from template");

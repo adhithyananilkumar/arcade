@@ -40,8 +40,8 @@ export function ProgressEdge({
   }, [sourceX, sourceY, targetX, targetY]);
 
   // Base style (gray, thin)
-  const baseStroke = selected ? '#6366f1' : (isHovered && status !== 'completed' ? '#94a3b8' : '#cbd5e1');
-  const baseStrokeWidth = selected ? 4 : (isHovered && status !== 'completed' ? 3 : 2);
+  const baseStroke = selected ? '#6366f1' : (isHovered && status !== 'completed' ? '#cbd5e1' : '#ffffff');
+  const baseStrokeWidth = selected ? 4 : (isHovered && status !== 'completed' ? 4 : 3);
   const baseFilter = selected && status !== 'completed' && status !== 'animating' ? 'drop-shadow(0 0 6px rgba(99, 102, 241, 0.5))' : 'none';
 
   // Active style (green, glowing, or indigo if selected)

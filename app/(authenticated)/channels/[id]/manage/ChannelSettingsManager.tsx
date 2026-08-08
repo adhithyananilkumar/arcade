@@ -3,51 +3,67 @@
 import { useState } from 'react';
 import { Channel, channelService } from "@/domains/channels";
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Loader2, AlertTriangle, Info, X, Shield } from 'lucide-react';
+import { Upload, Image as ImageIcon, Loader2, Shield, AlertTriangle, Lock, Tv, FileText } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
-import { ChannelStaffManager } from './ChannelStaffManager';
+import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import { ChannelDoodleBanner } from './ChannelDoodleBanner';
 
 interface Props {
   channel: Channel;
   onUpdate: (updatedChannel: Channel) => void;
   permissions: string[];
+  locked?: boolean;
 }
 
-export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props) {
+export function ChannelSettingsManager({ channel, onUpdate, permissions, locked }: Props) {
   const [description, setDescription] = useState(channel.description || '');
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
-  
+
   const [iconPreview, setIconPreview] = useState<string>(channel.iconUrl || '');
   const [bannerPreview, setBannerPreview] = useState<string>(channel.bannerUrl || '');
   const [loading, setLoading] = useState(false);
+  const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
+  const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
   const { user } = useAuthStore();
   const isOwner = user?.id === channel.ownerId;
-  const canManageSettings = isOwner || permissions.includes('channel.settings.manage');
-
-  // Deletion state
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteReason, setDeleteReason] = useState('');
-  const [deletePhone, setDeletePhone] = useState(user?.mobileNumber || channel.ownerPhone || '');
-  const [deleteEmail, setDeleteEmail] = useState(user?.email || channel.ownerEmail || '');
-  const [deleteDeclaration, setDeleteDeclaration] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const isSuspended = channel.status === 'SUSPENDED' || !!locked;
+  const canManageSettings = (isOwner || permissions.includes('channel.settings.manage')) && !isSuspended;
 
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (file) {
-      setIconFile(file);
-      setIconPreview(URL.createObjectURL(file));
+      setCropSourceFile(file);
+      setCropTarget('icon');
     }
   };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (file) {
-      setBannerFile(file);
-      setBannerPreview(URL.createObjectURL(file));
+      setCropSourceFile(file);
+      setCropTarget('banner');
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropTarget(null);
+    setCropSourceFile(null);
+  };
+
+  const handleCropped = (croppedFile: File) => {
+    const previewUrl = URL.createObjectURL(croppedFile);
+    if (cropTarget === 'icon') {
+      setIconFile(croppedFile);
+      setIconPreview(previewUrl);
+    } else if (cropTarget === 'banner') {
+      setBannerFile(croppedFile);
+      setBannerPreview(previewUrl);
+    }
+    setCropTarget(null);
+    setCropSourceFile(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,268 +78,208 @@ export function ChannelSettingsManager({ channel, onUpdate, permissions }: Props
       );
       toast.success('Channel settings updated successfully');
       onUpdate(updatedChannel);
-    } catch (error) {
+    } catch {
       toast.error('Failed to update channel settings');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!deleteDeclaration) {
-      toast.error('You must accept the declaration to proceed.');
-      return;
-    }
-    try {
-      setDeleteLoading(true);
-      await channelService.submitDeletionRequest(channel.id, deleteReason, deletePhone, deleteEmail);
-      toast.success('Channel deletion request submitted successfully');
-      setIsDeleteModalOpen(false);
-      // Optional: Redirect or refresh
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to submit deletion request');
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
   return (
-    <div className="pb-16">
-    <form onSubmit={handleSubmit} className="border border-gray-200 rounded-2xl overflow-hidden max-w-3xl">
-      <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Branding & Profile</h2>
-          <p className="text-sm text-gray-500">Update your channel's public appearance.</p>
-        </div>
-        {!canManageSettings && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-            <Shield size={12} /> Read Only
-          </span>
-        )}
-      </div>  
-      <div className="p-6 space-y-8">
-        <div className="space-y-6">
-          {/* Channel Banner */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700">Channel Banner</label>
-            <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors group">
-              {bannerPreview ? (
-                <div className="aspect-[4/1] w-full">
-                  <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
-                  {canManageSettings && (
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="text-white font-medium flex items-center gap-2">
-                        <Upload size={18} /> Change Banner
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="aspect-[4/1] w-full flex flex-col items-center justify-center text-gray-500">
-                  <ImageIcon size={32} className="mb-2 text-gray-400" />
-                  <span className="text-sm font-medium">Click to upload banner</span>
-                </div>
-              )}
-              {canManageSettings && (
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleBannerChange} 
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Channel Logo */}
-          <div className="space-y-3">
-            <label className="block text-sm font-semibold text-gray-700">Channel Logo</label>
-            <div className="space-y-4">
-                {canManageSettings ? (
-                  <>
-                    <label className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-xl appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none">
-                      <span className="flex items-center space-x-2">
-                        <Upload className="w-6 h-6 text-gray-400" />
-                        <span className="font-medium text-gray-600">
-                          Drop files to Attach, or <span className="text-indigo-600 underline">browse</span>
-                        </span>
-                      </span>
-                      <input type="file" name="icon" className="hidden" accept="image/*" onChange={handleIconChange} />
-                    </label>
-                    <p className="text-xs text-gray-500 text-center">
-                      Recommended size: 512x512px. PNG or JPG. Max 2MB.
-                    </p>
-                  </>
-                ) : (
-                  <div className="flex items-center justify-center w-full h-32 px-4 bg-gray-50 border-2 border-gray-200 border-dashed rounded-xl">
-                    <span className="text-sm text-gray-400">Cannot modify icon</span>
-                  </div>
-                )}
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-gray-100 pt-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Channel Details</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Channel Name</label>
-              <input 
-                type="text" 
-                value={channel.name} 
-                disabled 
-                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-gray-500 cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
-              <textarea
-                id="description"
-                rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                disabled={!canManageSettings}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none disabled:bg-gray-50 disabled:text-gray-500"
-                placeholder="What is your channel about?"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {canManageSettings && (
-        <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : 'Save Changes'}
-          </button>
-        </div>
-      )}
-    </form>
-
-    {!channel.isPersonal && (
-      <div className="mt-12 border-t border-gray-100 pt-8">
-        <ChannelStaffManager channelId={channel.id} permissions={permissions} />
-      </div>
-    )}
-
-    {isOwner && (
-      <div className="mt-12 border-t border-red-100 pt-8 max-w-3xl">
-        <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
-          <AlertTriangle size={20} />
-          Danger Zone
-        </h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Irreversible actions for your channel.
-        </p>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <>
+      <ImageCropModal
+        open={cropTarget !== null}
+        file={cropSourceFile}
+        aspectRatio={cropTarget === 'banner' ? 4 : 1}
+        title={cropTarget === 'banner' ? 'Crop channel banner' : 'Crop channel logo'}
+        onCancel={handleCropCancel}
+        onCropped={handleCropped}
+      />
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_8px_28px_rgba(20,20,43,0.05)] space-y-6"
+      >
+        {/* Form Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-slate-50/80 px-6 py-4.5 sm:px-8">
           <div>
-            <h4 className="font-semibold text-gray-900">Delete this channel</h4>
-            <p className="text-sm text-gray-600 mt-1">Once deleted, your channel will be suspended and content ownership will be transferred.</p>
-          </div>
-          <button
-            onClick={() => setIsDeleteModalOpen(true)}
-            className="shrink-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
-          >
-            Request Deletion
-          </button>
-        </div>
-      </div>
-    )}
-
-    <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-      <DialogContent className="max-w-md p-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl text-red-600 flex items-center gap-2">
-            <AlertTriangle size={20} />
-            Request Channel Deletion
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleDeleteSubmit} className="space-y-5 mt-4">
-          <div className="rounded-xl bg-blue-50 p-4 border border-blue-100 flex gap-3">
-            <Info className="text-blue-600 shrink-0 mt-0.5" size={18} />
-            <p className="text-sm text-blue-800">
-              Your content ownership will be transferred to arcade management and you won't be able to manage your uploaded contents.
+            <h2 className="text-base font-extrabold tracking-tight text-[#14142b]">
+              Branding & Profile
+            </h2>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
+              Customize your channel&apos;s public appearance, logo, and banner.
             </p>
           </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Reason for Deletion</label>
-            <textarea 
-              required
-              value={deleteReason}
-              onChange={e => setDeleteReason(e.target.value)}
-              rows={3}
-              placeholder="Why are you deleting this channel?"
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
-            <input 
-              required
-              type="tel"
-              value={deletePhone}
-              onChange={e => setDeletePhone(e.target.value)}
-              placeholder="+1 234 567 8900"
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-            <input 
-              required
-              type="email"
-              value={deleteEmail}
-              onChange={e => setDeleteEmail(e.target.value)}
-              placeholder="owner@example.com"
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
-
-          <label className="flex items-start gap-3 cursor-pointer mt-2 group">
-            <div className="flex h-5 items-center">
-              <input 
-                type="checkbox" 
-                checked={deleteDeclaration}
-                onChange={e => setDeleteDeclaration(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600 cursor-pointer"
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-              I understand that this action can't be undone.
+          {isSuspended ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-600 border border-rose-200/60">
+              <AlertTriangle size={13} /> Read Only
             </span>
-          </label>
+          ) : (
+            !canManageSettings && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-1.5 text-xs font-bold text-slate-600 border border-slate-200/60">
+                <Shield size={13} /> Read Only
+              </span>
+            )
+          )}
+        </div>
 
-          <div className="pt-2 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Cancel
-            </button>
+        <div className="space-y-6 px-6 sm:px-8">
+          {/* Live Visual Branding Preview Card */}
+          <div className="space-y-2">
+            <label className="block text-xs font-extrabold text-[#14142b] uppercase tracking-wider">
+              Live Preview & Media
+            </label>
+            <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-slate-50/90 via-blue-50/40 to-slate-50/90 p-3.5 sm:p-5 shadow-2xs">
+              
+              {/* Banner Area */}
+              <div className="group relative rounded-2xl overflow-hidden shadow-xs">
+                <ChannelDoodleBanner bannerUrl={bannerPreview} className="h-40 w-full rounded-2xl" />
+
+                {canManageSettings && (
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-xs cursor-pointer">
+                    <span className="flex items-center gap-2 text-xs font-bold text-white bg-black/60 px-4 py-2 rounded-full border border-white/30 shadow-md">
+                      <Upload size={14} /> Change Banner
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+
+              {/* Logo Area & Quick Info Row */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-3 pb-2 relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-3.5">
+                  {/* Avatar floating over banner */}
+                  <div className="-mt-10 sm:-mt-12 group relative h-20 w-20 sm:h-24 sm:w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-[#F5F0E6] text-black shadow-md ring-1 ring-black/5">
+                    {iconPreview ? (
+                      <img
+                        src={iconPreview}
+                        alt="Logo Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#F5F0E6] flex items-center justify-center text-black">
+                        <Tv size={32} />
+                      </div>
+                    )}
+
+                    {canManageSettings && (
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer backdrop-blur-xs">
+                        <Upload size={16} className="text-white" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleIconChange}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <div className="pb-1 pt-1 sm:pt-3 min-w-0">
+                    <h3 className="text-base font-extrabold text-[#14142b] truncate">
+                      {channel.name}
+                    </h3>
+                    <p className="text-[11px] font-semibold text-slate-400">
+                      Hover image or banner to change
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick File Action Buttons */}
+                {canManageSettings && (
+                  <div className="flex items-center gap-2 pb-1">
+                    <label className="inline-flex items-center gap-1.5 rounded-xl border border-purple-200/80 bg-purple-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-purple-700 cursor-pointer shadow-2xs hover:bg-purple-100/80 transition-all">
+                      <ImageIcon size={13} className="text-purple-600" />
+                      <span>Upload Banner</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerChange}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <label className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/70 px-3.5 py-1.5 text-[11px] font-extrabold text-indigo-700 cursor-pointer shadow-2xs hover:bg-indigo-100/80 transition-all">
+                      <Upload size={13} className="text-indigo-600" />
+                      <span>Upload Logo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Form Fields Section */}
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <h3 className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#14142b]">
+              <span className="grid size-6 place-items-center rounded-lg bg-indigo-100/80 text-indigo-700 border border-indigo-200/60">
+                <FileText size={13} />
+              </span>
+              <span>Channel Details</span>
+            </h3>
+
+            <div className="grid grid-cols-1 gap-5">
+              <div>
+                <label className="mb-2 flex items-center justify-between text-xs font-extrabold text-slate-700">
+                  <span>Channel Name</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500 border border-slate-200/60">
+                    <Lock size={10} className="text-slate-400" />
+                    <span>System Managed</span>
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={channel.name}
+                  disabled
+                  className="w-full cursor-not-allowed rounded-2xl border border-slate-200/80 bg-slate-100/70 px-4.5 py-3 text-xs font-extrabold text-[#14142b] shadow-2xs"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 flex items-center justify-between text-xs font-extrabold text-slate-700">
+                  <span>Description</span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-600 border border-slate-200/60">
+                    {description.length} / 500
+                  </span>
+                </label>
+                <textarea
+                  id="description"
+                  rows={4}
+                  maxLength={500}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={!canManageSettings}
+                  className="w-full resize-none rounded-2xl border border-slate-200/90 bg-white px-4.5 py-3.5 text-xs font-medium text-[#14142b] outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 shadow-2xs"
+                  placeholder="Describe what your channel is about, its mission, and target audience..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Action Bar */}
+        {canManageSettings && (
+          <div className="flex justify-end border-t border-slate-100 bg-gradient-to-r from-slate-50/60 via-indigo-50/20 to-slate-50/60 px-6 py-4.5 sm:px-8">
             <button
               type="submit"
-              disabled={deleteLoading || !deleteDeclaration}
-              className="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#14142b] via-indigo-950 to-[#14142b] px-7 py-2.5 text-xs font-extrabold text-white shadow-md hover:shadow-lg transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {deleteLoading && <Loader2 size={16} className="animate-spin" />}
-              Submit Request
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Save Changes'}
             </button>
           </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-    </div>
+        )}
+      </form>
+    </>
   );
 }

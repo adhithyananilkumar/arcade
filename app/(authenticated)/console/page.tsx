@@ -11,9 +11,9 @@ export default function ArcConsoleIndex() {
   
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviewCourses = AuthorizationService.canReviewCourses(user);
-  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showIam = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
 
-  if (!showAdminChannels && !showReviewCourses && !showAdminSettings) {
+  if (!showAdminChannels && !showReviewCourses && !showIam) {
     notFound();
   }
 
@@ -21,11 +21,11 @@ export default function ArcConsoleIndex() {
     if (showAdminChannels) {
       router.replace('/console/channels');
     } else if (showReviewCourses) {
-      router.replace('/console/courses');
-    } else if (showAdminSettings) {
-      router.replace('/console/settings');
+      router.replace('/console/reviews');
+    } else if (showIam) {
+      router.replace('/console/iam');
     }
-  }, [router, showAdminChannels, showReviewCourses, showAdminSettings]);
+  }, [router, showAdminChannels, showReviewCourses, showIam]);
 
   return (
     <div className="flex h-full items-center justify-center">

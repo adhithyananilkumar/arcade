@@ -20,3 +20,5 @@ export { CourseRenderer } from './delivery/components/CourseRenderer';
 export { TiptapContentView } from './delivery/components/TiptapContentView';
 export { LessonReviewFeedback } from './delivery/components/LessonReviewFeedback';
 export { courseDeliveryService } from './delivery/api/courses';
+export { courseProgressService } from './progress/api/courseProgress';
+export type { CourseProgress, EnrollmentStatus } from './progress/api/courseProgress';

@@ -2,10 +2,8 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Settings, Tv, BookOpen, Shield, Calendar } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
-import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
@@ -17,90 +15,86 @@ export default function ArcConsoleLayout({
   const pathname = usePathname();
   const { user } = useAuthStore();
   const showAdminChannels = AuthorizationService.canManageChannels(user);
-  const showReviewCourses = AuthorizationService.canReviewCourses(user);
-  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showReviews = AuthorizationService.canReviewContent(user);
+  const showIam =
+    AuthorizationService.canManageSettings(user) ||
+    AuthorizationService.canManageUsers(user) ||
+    AuthorizationService.canManageRoles(user) ||
+    AuthorizationService.canManagePermissions(user);
 
   const navItems = [
-    ...(showAdminChannels ? [{
-      name: 'Channel Management',
-      href: '/console/channels',
-      icon: Tv,
-    }] : []),
-    ...(showReviewCourses ? [{
-      name: 'Course Management',
-      href: '/console/courses',
-      icon: BookOpen,
-    }, {
-      name: 'Exam Schedules',
-      href: '/console/exam-schedules',
-      icon: Calendar,
-    }] : []),
-    ...(showAdminSettings ? [{
-      name: 'Admin Settings',
-      href: '/console/settings',
-      icon: Settings,
-    }] : []),
+    ...(showAdminChannels
+      ? [{ name: 'Channels', href: '/console/channels', icon: Tv }]
+      : []),
+    ...(showReviews
+      ? [
+          { name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck },
+          { name: 'Exams', href: '/console/exam-schedules', icon: Calendar },
+        ]
+      : []),
+    ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield }] : []),
   ];
 
-  if (navItems.length === 0) {
-    notFound();
-  }
-
+  // Removed notFound() when navItems is empty. This allows Org staff to access 
+  // specific console routes (like reviews/[id]) even if they don't have global
+  // console sidebar links.
   return (
-    <div className="flex w-full gap-8 max-w-7xl mx-auto px-4 md:px-8 py-8">
-      {/* Left Navigation - Floating Pill */}
-      <div className="hidden md:flex flex-col w-72 shrink-0">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="sticky top-24 flex flex-col gap-2 pt-4"
-        >
-          <nav className="flex flex-col gap-1.5 px-2">
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
+      }}
+    >
+      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 pb-12 pt-28 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-32">
+        {/* Mobile tabs */}
+        <nav className="flex gap-1.5 overflow-x-auto pb-1 md:hidden">
+          {navItems.map((item) => {
+            const active = pathname.startsWith(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-colors',
+                  active
+                    ? 'bg-[#14142b] text-white'
+                    : 'border border-slate-200 bg-white/90 text-slate-500 hover:text-[#14142b]',
+                )}
+              >
+                <Icon size={14} />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Desktop sidebar — nav only, no Platform/Console heading */}
+        <aside className="hidden w-[180px] shrink-0 md:block lg:w-[200px]">
+          <nav className="sticky top-28 flex flex-col gap-1">
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const active = pathname.startsWith(item.href);
               const Icon = item.icon;
-              
               return (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-5 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 relative group",
-                    isActive 
-                      ? "text-indigo-700 dark:text-indigo-300" 
-                      : "text-slate-600 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+                    'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-colors',
+                    active
+                      ? 'bg-[#14142b] text-white shadow-[0_8px_18px_rgba(20,20,43,0.16)]'
+                      : 'text-slate-500 hover:bg-white/80 hover:text-[#14142b]',
                   )}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activePill"
-                      className="absolute inset-0 bg-indigo-50 dark:bg-indigo-900/20 rounded-full"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <div className="relative z-10 flex items-center gap-3">
-                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} className={cn(
-                      "transition-transform duration-300",
-                      isActive ? "scale-110" : "group-hover:scale-110"
-                    )} />
-                    {item.name}
-                  </div>
+                  <Icon size={16} strokeWidth={active ? 2.4 : 2} />
+                  {item.name}
                 </Link>
               );
             })}
           </nav>
-        </motion.div>
-      </div>
+        </aside>
 
-      {/* Content Area */}
-      <div className="flex-1 w-full min-w-0 pb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full h-full"
-        >
-          {children}
-        </motion.div>
+        <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
   );

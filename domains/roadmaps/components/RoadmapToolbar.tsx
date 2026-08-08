@@ -87,19 +87,10 @@ export function RoadmapToolbar({
 }: RoadmapToolbarProps) {
   
   if (readOnly) {
-    return (
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 p-2 bg-[#1E1E1E]/80 backdrop-blur-xl border border-white/10 rounded-[20px] shadow-[0_12px_40px_rgba(0,0,0,0.25)] pointer-events-auto">
-        <ToolButton icon={MousePointer2} label="Pointer Tool" shortcut="V" active={activeTool === 'pointer'} onClick={() => onChangeActiveTool('pointer')} />
-        <ToolButton icon={Hand} label="Hand Tool" shortcut="H" active={activeTool === 'hand'} onClick={() => onChangeActiveTool('hand')} />
-        <Divider />
-        <ToolButton icon={Plus} label="Add Topic" shortcut="A" onClick={onAddTopic} />
-        <Divider />
-        <ToolButton icon={Maximize} label="Fit View" shortcut="F" onClick={onFitView} />
-        <ToolButton icon={Map} label="Toggle Minimap" shortcut="M" onClick={onToggleMinimap} />
-        <ToolButton icon={Palette} label="Canvas Settings" shortcut="B" onClick={onOpenBackgroundSettings} />
-      </div>
-    );
+    return null;
   }
+
+  const disabledLabel = (label: string) => readOnly ? `${label} (Disabled in Published)` : label;
 
   return (
     <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center p-2 bg-[#1E1E1E]/85 backdrop-blur-xl border border-white/10 rounded-[20px] shadow-[0_16px_40px_rgba(0,0,0,0.3)] pointer-events-auto animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -114,16 +105,16 @@ export function RoadmapToolbar({
 
       {/* Creation Group */}
       <div className="flex items-center gap-0.5">
-        <ToolButton icon={Plus} label="Add Topic" shortcut="A" onClick={onAddTopic} />
-        <ToolButton icon={GitFork} label="Add Child" shortcut="Shift + A" onClick={onAddChild} disabled={!hasSelection} />
-        <ToolButton icon={LinkIcon} label="Connect Topics" shortcut="C" active={activeTool === 'connect'} onClick={() => onChangeActiveTool('connect')} />
+        <ToolButton icon={Plus} label={disabledLabel("Add Topic")} shortcut="A" onClick={onAddTopic} disabled={readOnly} />
+        <ToolButton icon={GitFork} label={disabledLabel("Add Child")} shortcut="Shift + A" onClick={onAddChild} disabled={readOnly || !hasSelection} />
+        <ToolButton icon={LinkIcon} label={disabledLabel("Connect Topics")} shortcut="C" active={activeTool === 'connect' && !readOnly} onClick={() => onChangeActiveTool('connect')} disabled={readOnly} />
       </div>
 
       <Divider />
 
       {/* Layout Group */}
       <div className="flex items-center gap-0.5">
-        <ToolButton icon={LayoutGrid} label="Auto Layout" shortcut="L" onClick={onAutoLayout} />
+        <ToolButton icon={LayoutGrid} label={disabledLabel("Auto Layout")} shortcut="L" onClick={onAutoLayout} disabled={readOnly} />
         <ToolButton icon={Maximize} label="Fit View" shortcut="F" onClick={onFitView} />
         <ToolButton icon={Target} label="Center Selection" shortcut="Shift + F" onClick={onCenterSelection} disabled={!hasSelection} />
       </div>
@@ -134,7 +125,7 @@ export function RoadmapToolbar({
       <div className="flex items-center gap-0.5">
         <ToolButton icon={Map} label="Toggle Minimap" shortcut="M" onClick={onToggleMinimap} />
         <ToolButton icon={Grid} label="Toggle Grid" shortcut="G" onClick={onToggleGrid} />
-        <ToolButton icon={Palette} label="Canvas Settings" shortcut="B" onClick={onOpenBackgroundSettings} />
+        <ToolButton icon={Palette} label={disabledLabel("Canvas Settings")} shortcut="B" onClick={onOpenBackgroundSettings} disabled={readOnly} />
       </div>
 
       <Divider />
@@ -142,10 +133,10 @@ export function RoadmapToolbar({
       {/* Utilities Group */}
       <div className="flex items-center gap-0.5">
         <ToolButton icon={Search} label="Search Topics" shortcut="Ctrl + K" onClick={onOpenSearch} />
-        <ToolButton icon={Undo} label="Undo" shortcut="Ctrl + Z" />
-        <ToolButton icon={Redo} label="Redo" shortcut="Ctrl + Shift + Z" />
+        <ToolButton icon={Undo} label={disabledLabel("Undo")} shortcut="Ctrl + Z" disabled={readOnly} />
+        <ToolButton icon={Redo} label={disabledLabel("Redo")} shortcut="Ctrl + Shift + Z" disabled={readOnly} />
         {hasSelection && (
-          <ToolButton icon={Trash2} label="Delete Selected" shortcut="Backspace" onClick={onDeleteSelected} className="hover:!bg-red-500/20 hover:!text-red-400" />
+          <ToolButton icon={Trash2} label={disabledLabel("Delete Selected")} shortcut="Backspace" onClick={onDeleteSelected} disabled={readOnly} className="hover:!bg-red-500/20 hover:!text-red-400" />
         )}
       </div>
 

@@ -15,7 +15,19 @@ const THEMES = [
   { border: '#14B8A6', bg: '#F0FDFA', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4' }, // Teal - DB/Layers
 ];
 
-export default function WorkshopDiscoveryPage() {
+export default function WorkshopDiscoveryPage({
+  typesFilter = [],
+  placeholder = "Search by title, description...",
+  emptyStateTitle = "No bootcamps found",
+  emptyStateMessage = "There are currently no published bootcamps in the system.",
+  hideTypeFilter = false
+}: {
+  typesFilter?: string[];
+  placeholder?: string;
+  emptyStateTitle?: string;
+  emptyStateMessage?: string;
+  hideTypeFilter?: boolean;
+}) {
   const {
     workshops,
     isLoading,
@@ -27,7 +39,7 @@ export default function WorkshopDiscoveryPage() {
     selectedType,
     setSelectedType,
     refetch
-  } = useWorkshopDiscovery();
+  } = useWorkshopDiscovery({ types: typesFilter });
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -56,7 +68,7 @@ export default function WorkshopDiscoveryPage() {
           <div className="flex-1 relative">
             <input
               type="text"
-              placeholder="Search by title, description..."
+              placeholder={placeholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-transparent rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all"
@@ -84,17 +96,19 @@ export default function WorkshopDiscoveryPage() {
               </option>
             ))}
           </select>
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="w-full md:w-40 py-2.5 px-3 bg-gray-50 border border-transparent rounded-xl text-gray-700 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
-          >
-            {types.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+          {!hideTypeFilter && (
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full md:w-40 py-2.5 px-3 bg-gray-50 border border-transparent rounded-xl text-gray-700 text-sm focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+            >
+              {types.filter(t => t.value === 'all' || typesFilter.length === 0 || typesFilter.includes(t.value)).map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Content Section */}
@@ -130,11 +144,11 @@ export default function WorkshopDiscoveryPage() {
           </div>
         ) : workshops.length === 0 ? (
           <div className="bg-white border border-gray-100 shadow-sm p-12 rounded-2xl text-center space-y-3 max-w-lg mx-auto">
-            <h3 className="text-lg font-semibold text-gray-900">No bootcamps found</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{emptyStateTitle}</h3>
             <p className="text-gray-500 text-sm">
               {searchQuery || selectedCategory !== 'all' || selectedType !== 'all'
                 ? 'Try adjusting your filters or search query.'
-                : 'There are currently no published bootcamps in the system.'}
+                : emptyStateMessage}
             </p>
           </div>
         ) : (

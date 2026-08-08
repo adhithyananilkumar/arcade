@@ -243,24 +243,35 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
     case "hardBreak":
       return <br key={key} />;
 
-    case "image": {
+    case "image":
+    case "imageBlock": {
+      // Studio persists uploads as `imageBlock` (reactjs-tiptap-editor); older docs may use `image`.
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       const alt = typeof node.attrs?.alt === "string" ? node.attrs.alt : "";
-      const align = typeof node.attrs?.align === "string" ? node.attrs.align : "left";
+      const align = typeof node.attrs?.align === "string" ? node.attrs.align : "center";
       const alignClass =
         align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "";
       const flipX = node.attrs?.flipX === true;
       const flipY = node.attrs?.flipY === true;
       const transform =
         flipX || flipY ? `scale(${flipX ? -1 : 1}, ${flipY ? -1 : 1})` : undefined;
+      const width =
+        typeof node.attrs?.width === "number"
+          ? node.attrs.width
+          : typeof node.attrs?.width === "string"
+            ? Number(node.attrs.width) || undefined
+            : undefined;
       // eslint-disable-next-line @next/next/no-img-element
       return (
         <img
           key={key}
           src={src}
           alt={alt}
-          style={transform ? { transform } : undefined}
+          style={{
+            ...(transform ? { transform } : {}),
+            ...(width ? { width, maxWidth: "100%" } : {}),
+          }}
           className={`mb-4 block max-w-full rounded-lg ${alignClass}`}
         />
       );
@@ -439,10 +450,12 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
 
 export function TiptapContentView({
   body,
+  publishedBody,
   emptyMessage = "There's no content here yet.",
   lessonId,
 }: {
   body?: string | null;
+  publishedBody?: string | null;
   emptyMessage?: string;
   /** Enables persisted per-learner interaction state (Toggle, future blocks) for this lesson. */
   lessonId?: string;
@@ -460,9 +473,41 @@ export function TiptapContentView({
 
   if (!doc?.content) return null;
 
+  let publishedNodesSet: Set<string> | undefined;
+  if (publishedBody !== undefined) {
+    try {
+      if (publishedBody) {
+        const pubDoc = JSON.parse(publishedBody) as TiptapDocument;
+        publishedNodesSet = new Set(pubDoc?.content?.map((n) => JSON.stringify(n)) || []);
+      } else {
+        publishedNodesSet = new Set();
+      }
+    } catch {
+      publishedNodesSet = undefined;
+    }
+  }
+
   return (
     <InteractionProvider lessonId={lessonId}>
-      <div className="prose-sm max-w-none">{doc.content.map((node, i) => renderNode(node, i))}</div>
+      <div className="prose-sm max-w-none">
+        {doc.content.map((node, i) => {
+          const rendered = renderNode(node, i);
+          if (publishedNodesSet && !publishedNodesSet.has(JSON.stringify(node))) {
+            return (
+              <div
+                key={i}
+                className="my-3 rounded-xl border-2 border-emerald-400 bg-emerald-50/50 p-3.5 shadow-sm relative transition-all animate-in fade-in"
+              >
+                <div className="absolute -top-2.5 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+                  <span>✨ Updated Portion</span>
+                </div>
+                <div className="pt-1">{rendered}</div>
+              </div>
+            );
+          }
+          return rendered;
+        })}
+      </div>
     </InteractionProvider>
   );
 }

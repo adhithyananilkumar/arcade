@@ -40,11 +40,30 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
+import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -53,8 +72,9 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor } from "@/domains/assessments";
+import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
+import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -91,7 +111,30 @@ import {
   History,
   MessageSquare,
   Lock,
+  Eye,
+  GripVertical,
 } from "lucide-react";
+
+function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={className}
+    >
+      {children({ ...attributes, ...listeners })}
+    </div>
+  );
+}
 
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
@@ -106,9 +149,12 @@ function scheduleIdle(fn: () => void) {
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
+import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
+import { RoadmapCanvas } from "@/domains/roadmaps";
+import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop";
+  contentType: "course" | "workshop" | "roadmap";
   contentId?: string;
 }
 
@@ -119,22 +165,17 @@ interface LessonNode {
   position: number;
 }
 
-interface QuizNode {
-  id: string;
-  title: string;
-  position: number;
-}
+
 
 interface ModuleNode {
   id: string;
   title: string;
   position: number;
   lessons: LessonNode[];
-  quizzes: QuizNode[];
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson" | "quiz";
+type EditKind = "module" | "lesson";
 
 interface ConfirmOptions {
   title: string;
@@ -164,31 +205,31 @@ function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md"
         onClick={() => !busy && onClose()}
       />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <div className="flex gap-3">
           <div
-            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${danger ? "bg-red-50" : "bg-indigo-50"
+            className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50" : "bg-slate-100"
               }`}
           >
             <AlertTriangle
               size={20}
-              className={danger ? "text-red-500" : "text-indigo-500"}
+              className={danger ? "text-rose-500" : "text-[#14142b]"}
             />
           </div>
           <div className="flex-1 pt-0.5">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-gray-500">{message}</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">{title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{message}</p>
           </div>
         </div>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="mt-6 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-50"
           >
             Cancel
           </button>
@@ -204,9 +245,9 @@ function ConfirmDialog({
                 setBusy(false);
               }
             }}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-indigo-600 hover:bg-indigo-700"
+            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger
+              ? "bg-rose-600 hover:bg-rose-700"
+              : "bg-[#14142b] hover:bg-[#232735]"
               }`}
           >
             {busy ? "Working…" : confirmLabel}
@@ -477,22 +518,27 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const adapter = useMemo(() => {
     return contentType === "course"
       ? new CourseAdapter()
+      : contentType === "roadmap"
+      ? new RoadmapAdapter()
       : new WorkshopAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
-  const [status, setStatus] = useState("DRAFT");
+  const [status, setStatus] = useState<string>("DRAFT");
+  const [hasDraftChanges, setHasDraftChanges] = useState<boolean>(false);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<any>(null);
+  const [roadmapData, setRoadmapData] = useState<any>(null);
+  const [contentChannelId, setContentChannelId] = useState<string | null>(null);
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  const [activeQuizTitle, setActiveQuizTitle] = useState("Untitled Quiz");
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
     undefined
@@ -509,9 +555,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // transaction that didn't actually change the document is dropped before it costs
   // a CRDT encode and a network round-trip. Reset whenever the open lesson changes.
   const lastSavedBodyRef = useRef<string | null>(null);
-  const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [qbOpen, setQbOpen] = useState(false);
@@ -537,42 +584,60 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [editingValue, setEditingValue] = useState("");
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
 
-  // ── Bootstrap: create or load course on mount ─────────────────────────────
+  // ── Drag and Drop Handlers ────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  useEffect(() => {
-    // Courses are created via the dashboard modal; the editor only ever loads an
-    // existing course. A missing id means we arrived here without one — go home.
-    if (!initialContentId) {
-      router.replace("/");
-      return;
-    }
-    async function bootstrap() {
-      try {
-        const { meta, containers } = await adapter.loadContent(initialContentId!);
-        setTitle(meta.title);
-        setDescription(meta.description ?? "");
-        setPricingModel(meta.pricingModel as "FREE" | "PAID");
-        setStatus(meta.status);
-        setCreatedAt(meta.createdAt);
-        setUpdatedAt(meta.updatedAt);
-        setModules(
-          containers.map((m) => ({
-            id: m.id,
-            title: m.title,
-            position: m.position,
-            expanded: true,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document"),
-            quizzes: ((m as any).leaves || []).filter((l: any) => l.type === "quiz"),
-          }))
-        );
-      } catch (e) {
-        console.error("Failed to load course", e);
-      }
-      setIsInitializing(false);
-    }
-    bootstrap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleDragEnd = async (moduleId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.id !== moduleId) return m;
+
+        // Flatten items to get their current order
+        const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
+          .sort((a, b) => a.node.position - b.node.position);
+        
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) return m;
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Update positions
+        const nextLessons = [...m.lessons];
+        
+        const itemIds: string[] = [];
+
+        newItems.forEach((item, index) => {
+          itemIds.push(item.id);
+          if (item.type === 'lesson') {
+            const lIndex = nextLessons.findIndex(l => l.id === item.id);
+            if (lIndex !== -1) nextLessons[lIndex] = { ...nextLessons[lIndex], position: index };
+          }
+        });
+
+        // Fire API call in background
+        api.patch(`/api/modules/${moduleId}/reorder`, { itemIds }).catch((e) => {
+          console.error("Failed to reorder items", e);
+          toast.error("Failed to save new order");
+        });
+
+        return { ...m, lessons: nextLessons };
+      })
+    );
+  };
 
   // ── Draft-aware lesson selection ──────────────────────────────────────────
 
@@ -602,13 +667,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setView("tree");
       setHistoryOpen(false);
 
-      // Flush pending edits in the currently-open lesson before switching away.
-      // Unmounting the editor cancels its debounced auto-save, so without this the
-      // last few seconds of typing would be lost on a lesson switch.
-      //
-      // The flush and the incoming document fetch are independent — they target
-      // different lessons — so they run concurrently instead of head-to-tail. On a
-      // slow link this halves the delay between clicking a lesson and seeing it.
       const flushPending = editorRef.current
         ? Promise.resolve(editorRef.current.flush()).catch(() => {
           // best-effort — proceed with the switch regardless
@@ -619,12 +677,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         .getLeafDocument(lesson.id)
         .catch(() => null);
 
-      // The previous lesson's Y.Doc is torn down by the activeYDoc effect cleanup
-      // below, which runs only after its editor has unmounted (safe unbind).
-
-      // Build a fresh Y.Doc and hydrate it BEFORE the editor mounts. The editor is
-      // keyed on activeLessonId; Collaboration reads the Y.Doc at mount, so the
-      // CRDT state must be in place at the moment the key changes.
       const ydoc = createYDoc();
       let seed: TiptapDocument | undefined;
 
@@ -643,42 +695,60 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       activeYDocRef.current = ydoc;
       lastSnapshotAtRef.current = 0; // snapshot early in a fresh editing session
-      // The no-op-save fingerprint belongs to the lesson we just left. Carrying it
-      // across would let an edit in the new lesson be skipped if its serialized body
-      // happened to match the previous lesson's last save.
       lastSavedBodyRef.current = null;
 
-      // Commit together: React batches these so the editor remounts once, bound to
-      // the hydrated Y.Doc with any legacy seed ready.
-      setActiveQuizId(null);
+
       setActiveYDoc(ydoc);
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
     },
-    [resolveLegacyContent]
+    [adapter, resolveLegacyContent]
   );
 
-  // ── Open a quiz item (mutually exclusive with a lesson) ────────────────────
-  const openQuiz = useCallback(async (quiz: QuizNode) => {
-    setView("tree");
-    setHistoryOpen(false);
+  // ── Bootstrap: create or load content on mount ───────────────────────────
 
-    // Flush and tear down any open lesson editor before switching to the quiz.
-    if (editorRef.current) {
-      try {
-        await editorRef.current.flush();
-      } catch {
-        // best-effort
-      }
+  useEffect(() => {
+    if (!initialContentId) {
+      router.replace("/");
+      return;
     }
-    activeYDocRef.current = null;
-    setActiveYDoc(null);
-    setActiveSeedContent(undefined);
-    setActiveLessonId(null);
-
-    setActiveQuizTitle(quiz.title);
-    setActiveQuizId(quiz.id);
+    async function bootstrap() {
+      try {
+        const { meta, containers } = await adapter.loadContent(initialContentId!);
+        setTitle(meta.title);
+        setDescription(meta.description ?? "");
+        setPricingModel(meta.pricingModel as "FREE" | "PAID");
+        setStatus(meta.status);
+        setHasDraftChanges(meta.raw?.hasDraftChanges === true);
+        setCreatedAt(meta.createdAt);
+        setUpdatedAt(meta.updatedAt);
+        setContentChannelId(meta.raw?.channelId || null);
+        if (contentType === "course") {
+          setCourseData(meta.raw);
+        } else if (contentType === "roadmap") {
+          setRoadmapData(meta.raw);
+        }
+        setModules(
+          containers.map((m) => ({
+            id: m.id,
+            title: m.title,
+            position: m.position,
+            expanded: false,
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "lesson" || !l.type),
+          }))
+        );
+        const firstLeaf = containers[0]?.leaves?.[0];
+        if (firstLeaf && firstLeaf.type === "document" && contentType !== "roadmap") {
+          await openLesson(firstLeaf as any);
+        }
+      } catch (e) {
+        console.error("Failed to load content", e);
+      }
+      setIsInitializing(false);
+    }
+    bootstrap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
@@ -709,6 +779,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           body: jsonStr,
         });
         lastSavedBodyRef.current = jsonStr;
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Document save failed, localStorage preserved.", e);
         return; // don't snapshot if the head save didn't land
@@ -790,7 +861,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           title: m.title,
           position: m.position,
           lessons: [],
-          quizzes: [],
           expanded: true,
         },
       ]);
@@ -818,11 +888,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             position: newContainer.position,
             expanded: true,
             lessons: [],
-            quizzes: [],
           },
         ]);
         // Auto-open Day Settings dialog so the creator can set schedule details.
         setSessionSettingsSessionId(newContainer.id);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add day", e);
       }
@@ -852,6 +922,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         );
         setActiveModuleId(moduleId);
         await openLesson(newLesson as any);
+        setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add lesson", e);
       }
@@ -859,33 +930,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     [contentId, modules, openLesson, adapter]
   );
 
-  // ── Tree mutation: Add Quiz (sibling of a lesson under a module) ────────────
 
-  const addQuiz = useCallback(
-    async (moduleId: string) => {
-      if (!contentId) return;
-      try {
-        const mod = modules.find((m) => m.id === moduleId);
-        const nextIndex = (mod?.quizzes.length ?? 0) + 1;
-        const newQuiz = await adapter.addLeaf(
-          moduleId,
-          `${adapter.terminology.leafQuiz} ${nextIndex}`,
-          "quiz"
-        );
-        setModules((prev) =>
-          prev.map((m) =>
-            m.id === moduleId
-              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz as any] }
-              : m
-          )
-        );
-        await openQuiz(newQuiz as any);
-      } catch (e) {
-        console.error("Failed to add quiz", e);
-      }
-    },
-    [contentId, modules, openQuiz, adapter]
-  );
 
   // ── Inline rename ─────────────────────────────────────────────────────────
 
@@ -905,22 +950,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setModules((prev) => prev.map((m) => (m.id === id ? { ...m, title: value } : m)));
       try {
         await adapter.renameContainer(id, value);
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Module rename failed", e);
       }
-    } else if (kind === "quiz") {
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) => (q.id === id ? { ...q, title: value } : q)),
-        }))
-      );
-      if (activeQuizId === id) setActiveQuizTitle(value);
-      try {
-        await adapter.renameLeaf(id, value, "quiz");
-      } catch (e) {
-        console.warn("Quiz rename failed", e);
-      }
+
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -931,6 +965,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       if (activeLessonId === id) setActiveLessonTitle(value);
       try {
         await adapter.renameLeaf(id, value, "document");
+        setHasDraftChanges(true);
       } catch (e) {
         console.warn("Lesson rename failed", e);
       }
@@ -941,9 +976,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const deleteModuleNow = async (mod: ModuleNode) => {
     const hadActive = mod.lessons.some((l) => l.id === activeLessonId);
-    const hadActiveQuiz = mod.quizzes.some((q) => q.id === activeQuizId);
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
-    if (hadActiveQuiz) setActiveQuizId(null);
     if (hadActive) {
       setActiveLessonId(null);
       // The effect cleanup destroys the doc after the editor unmounts.
@@ -954,6 +987,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteContainer(mod.id);
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete module", e);
     }
@@ -973,6 +1007,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     try {
       await adapter.deleteLeaf(lessonId, "document");
+      setHasDraftChanges(true);
     } catch (e) {
       console.error("Failed to delete lesson", e);
     }
@@ -996,52 +1031,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       onConfirm: () => deleteLessonNow(lesson.id),
     });
 
-  const deleteQuizNow = async (quizId: string) => {
-    setModules((prev) =>
-      prev.map((m) => ({ ...m, quizzes: m.quizzes.filter((q) => q.id !== quizId) }))
-    );
-    if (activeQuizId === quizId) {
-      setActiveQuizId(null);
-    }
-    try {
-      await adapter.deleteLeaf(quizId, "quiz");
-    } catch (e) {
-      console.error("Failed to delete quiz", e);
-    }
-  };
 
-  const askDeleteQuiz = (quiz: QuizNode) =>
-    setConfirm({
-      title: `Delete ${adapter.terminology.leafQuiz}?`,
-      message: `"${quiz.title}" and all of its questions will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete",
-      danger: true,
-      onConfirm: () => deleteQuizNow(quiz.id),
-    });
-
-  // ── Quiz title save (from main panel input) ───────────────────────────────
-
-  const saveQuizTitle = useCallback(
-    async (newTitle: string) => {
-      if (!activeQuizId) return;
-      const value = newTitle.trim() || "Untitled Quiz";
-      setActiveQuizTitle(value);
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) =>
-            q.id === activeQuizId ? { ...q, title: value } : q
-          ),
-        }))
-      );
-      try {
-        await adapter.renameLeaf(activeQuizId, value, "quiz");
-      } catch (e) {
-        console.warn("Quiz title save failed", e);
-      }
-    },
-    [activeQuizId]
-  );
 
   // ── Course metadata debounced save ────────────────────────────────────────
 
@@ -1054,6 +1044,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       metaSaveTimeout.current = setTimeout(async () => {
         try {
           await adapter.updateMeta(contentId, patch);
+          setHasDraftChanges(true);
         } catch (e) {
           console.warn("Course metadata save failed", e);
         }
@@ -1078,9 +1069,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
     if (contentId) {
       tasks.push(
-        api
-          .patch(`/api/courses/${contentId}`, { title, description, pricingModel })
-          .catch((e) => console.warn("Course metadata flush failed", e))
+        adapter.updateMeta(contentId, { title, description, pricingModel: pricingModel as any })
+          .catch((e) => console.warn("Content metadata flush failed", e))
       );
     }
 
@@ -1122,7 +1112,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    router.push("/");
+    router.push("/studio");
   }, [
     navigatingBack,
     contentId,
@@ -1132,47 +1122,64 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     activeLessonId,
     activeLessonTitle,
     router,
+    adapter,
   ]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
-  const askSubmit = () =>
+  const askSubmit = () => {
+    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
+      setSubmitDialogOpen(true);
+      return;
+    }
     setConfirm({
-      title: contentType === "workshop" ? "Proceed to next steps?" : "Ready for review?",
-      message:
-        contentType === "workshop"
-          ? "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published."
-          : "Once submitted, reviewers will be notified and your content will be locked for editing until approved.",
-      confirmLabel: contentType === "workshop" ? "Proceed.." : "Submit for Review",
+      title: "Proceed to next steps?",
+      message: "You will now need to complete the remaining necessary details for your workshop such as pricing, venue, and registration before it can be published.",
+      confirmLabel: "Proceed..",
       onConfirm: async () => {
-        if (contentType === "workshop") {
-          router.push(`/studio/workshop/${contentId}`);
-          return;
-        }
-
-        if (!contentId) return;
-        // Flush the open lesson first so its latest edits are persisted before the
-        // backend snapshots the whole course into WORKFLOW versions.
-        if (editorRef.current) {
-          try {
-            await editorRef.current.flush();
-          } catch {
-            // best-effort — proceed with submit regardless
-          }
-        }
-        try {
-          const updated = await api.post<CourseResponse>(
-            `/api/courses/${contentId}/submit`,
-            {}
-          );
-          setStatus(updated.status);
-          // Surface the new "Submitted for review" checkpoint if the panel is open.
-          setHistoryRefreshKey((k) => k + 1);
-        } catch (e) {
-          console.error("Failed to submit course", e);
-        }
+        router.push(`/studio/workshop/${contentId}`);
       },
     });
+  };
+
+  const handleSubmit = async (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => {
+    if (!contentId) return;
+    if (editorRef.current) {
+      try {
+        await editorRef.current.flush();
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      if (contentType === "course") {
+        if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
+           await api.patch(`/api/courses/${contentId}`, data);
+        }
+        const updated = await api.post<any>(`/api/courses/${contentId}/submit`, { message: data.message });
+        setStatus(updated.status);
+        setUpdatedAt(updated.updatedAt);
+        setPricingModel(updated.pricingModel as "FREE" | "PAID");
+      } else if (contentType === "roadmap") {
+        const updated = await api.post<any>(`/api/roadmaps/${contentId}/submit`, { message: data.message });
+        setStatus(updated.status);
+        setUpdatedAt(updated.updatedAt);
+      } else if (contentType === "workshop") {
+        const { submitWorkshop } = await import(
+          "@/app/(authenticated)/studio/workshop/api/publish"
+        );
+        const updated = await submitWorkshop(contentId, { message: data.message });
+        setStatus(updated.status);
+        if (updated.updatedAt) setUpdatedAt(updated.updatedAt);
+      }
+      setHistoryRefreshKey((k) => k + 1);
+      setSubmitDialogOpen(false);
+      setHasDraftChanges(false);
+    } catch (e) {
+      console.error("Failed to submit content", e);
+      throw e;
+    }
+  };
 
   // ── Inline rename input (shared) ──────────────────────────────────────────
 
@@ -1191,7 +1198,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           setEditing(null);
         }
       }}
-      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-white px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
+      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-transparent px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
     />
   );
 
@@ -1213,7 +1220,21 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   return (
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      {contentType === "course" && contentId ? (
+        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
+      ) : (
+        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
+      )}
+      {submitDialogOpen && (
+        <CourseSubmitDialog
+          course={courseData}
+          roadmap={roadmapData}
+          contentType={contentType}
+          open={submitDialogOpen}
+          onClose={() => setSubmitDialogOpen(false)}
+          onSubmit={handleSubmit}
+        />
+      )}
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       <SessionSettingsDialog
         open={!!sessionSettingsSessionId}
@@ -1229,6 +1250,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 m.id === sessionSettingsSessionId ? { ...m, title: newTitle } : m
               )
             );
+            setHasDraftChanges(true);
           }
           // Dialog closes itself via its own onClose prop after calling onSaved.
         }}
@@ -1252,74 +1274,91 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         />
       )}
 
-      {/* ── Minimal flush top bar: 3-col grid keeps the title centered on the
-          row regardless of how wide the left/right action groups are ────── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-1.5 sm:px-6">
-          {/* Left: Back, flush to the page margin */}
+      {/* ── Editor top bar — uniform across course / workshop / roadmap ───── */}
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 sm:px-6">
+          {/* Left: Back → Content Studio */}
           <div className="justify-self-start">
             <button
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
-              title="Save and return to dashboard"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-60"
+              title="Save and return to Content Studio"
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Back"}</span>
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
           </div>
 
-          {/* Center: name of whatever is open. Read-only — renaming happens on the
-              canvas title field (lesson/quiz) or in {terminology.root} Settings. */}
+          {/* Center title */}
           <div className="min-w-0 justify-self-center">
-            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-semibold text-gray-900 sm:max-w-md">
+            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-bold tracking-tight text-[#14142b] sm:max-w-md">
               {view === "settings"
-                ? "{terminology.root} Settings"
+                ? `${adapter.terminology.root} Settings`
                 : activeLessonId
                   ? activeLessonTitle
-                  : activeQuizId
-                    ? activeQuizTitle
-                    : ""}
+                  : title || adapter.terminology.root}
             </span>
           </div>
 
-          {/* Right: status + secondary actions, flush to the page margin */}
+          {/* Right actions */}
           <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
             <StatusPill status={status} />
 
-            {activeLessonId && (
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                title="Version history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                <History size={15} />
-                <span className="hidden md:inline">History</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (activeLessonId) setHistoryOpen(true);
+                else setStatusHistoryOpen(true);
+              }}
+              title={activeLessonId ? "Version history" : "Status history"}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            >
+              <History size={15} />
+              <span className="hidden md:inline">History</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+              title={`${adapter.terminology.root} Settings`}
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${
+                view === "settings"
+                  ? "bg-[#14142b] text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
+              }`}
+            >
+              <Settings size={15} />
+              <span className="hidden md:inline">Settings</span>
+            </button>
 
             {activeLessonId && contentType === "workshop" && activeModuleId && (
               <button
                 type="button"
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
               >
                 <Settings size={15} />
-                <span className="hidden md:inline">Day Settings</span>
+                <span className="hidden lg:inline">Day</span>
               </button>
             )}
 
-            {status === "DRAFT" && contentType !== "workshop" && (
+            {status !== "SUBMITTED" && (
               <button
                 type="button"
                 onClick={askSubmit}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={14} />
-                <span className="hidden sm:inline">Submit for Review</span>
+                <span className="hidden sm:inline">
+                  {status === "PUBLISHED" || status === "APPROVED"
+                    ? "Submit Updates"
+                    : status === "REJECTED"
+                      ? "Resubmit"
+                      : "Submit"}
+                </span>
               </button>
             )}
 
@@ -1327,10 +1366,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={() => router.push(`/studio/workshop/${contentId}`)}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
               >
-                <Settings size={14} />
-                <span className="hidden sm:inline">Manage Workshop</span>
+                <span className="hidden sm:inline">Manage</span>
               </button>
             )}
           </div>
@@ -1339,304 +1377,301 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1">
-        {/* ── Floating collapsible sidebar: course tree ─────────────── */}
-        <aside className="absolute left-3 top-14 z-20 flex">
-          {!sidebarOpen ? (
-            <button
-              type="button"
-              title="Expand sidebar"
-              onClick={() => setSidebarOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-            >
-              <PanelLeftOpen size={18} />
-            </button>
-          ) : (
-            <div className="flex max-h-[calc(100vh-6rem)] w-60 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
-              {/* ── Sidebar header ───────────────── */}
-              <div className="flex flex-shrink-0 items-center px-2.5 py-2">
-                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                  Course Structure
-                </span>
-                <button
-                  type="button"
-                  title="Collapse sidebar"
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                >
-                  <PanelLeftClose size={16} />
-                </button>
-              </div>
-
-              {/* ── Body ──────────────────────────────── */}
-              <div className="flex min-h-0 flex-1 flex-col">
-                {/* Tree scroll area */}
-                <div className="flex-1 overflow-y-auto p-2">
-                  {modules.length === 0 && (
-                    <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                      <Layers size={28} className="text-gray-300" />
-                      <p className="text-xs text-gray-400">
-                        {contentType === "workshop"
-                          ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
-                          : "No modules yet. Add a module to get started."}
-                      </p>
-                    </div>
-                  )}
-
-                  {modules.map((mod) => (
-                    <div key={mod.id} className="mb-0.5">
-                      {/* Module row */}
-                      <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setModules((prev) =>
-                              prev.map((m) =>
-                                m.id === mod.id ? { ...m, expanded: !m.expanded } : m
-                              )
-                            )
-                          }
-                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                        >
-                          {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        </button>
-
-                        {isEditing("module", mod.id) ? (
-                          renameInput("text-xs font-semibold text-gray-700")
-                        ) : (
-                          <span
-                            onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                            className="flex-1 truncate text-xs font-semibold text-gray-700"
-                            title={mod.title}
-                          >
-                            {mod.title}
-                          </span>
-                        )}
-
-                        <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              title="Add lesson or quiz"
-                              className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                            >
-                              <Plus size={12} />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={4}>
-                              <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                <FileText size={13} />
-                                Lesson
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                <ListChecks size={13} />
-                                Quiz
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                            <Pencil size={12} />
-                          </IconBtn>
-                          <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                            <Trash2 size={12} />
-                          </IconBtn>
-                        </div>
-                      </div>
-
-                      {/* Lessons and quizzes, interleaved by position */}
-                      {mod.expanded && (
-                        <div className="ml-3 border-l border-gray-200 pl-1.5">
-                          {[
-                            ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
-                            ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
-                          ]
-                            .sort((a, b) => a.node.position - b.node.position)
-                            .map((item) => {
-                              const isActive =
-                                item.kind === "lesson"
-                                  ? activeLessonId === item.node.id
-                                  : activeQuizId === item.node.id;
-                              return (
-                                <div
-                                  key={item.node.id}
-                                  className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
-                                    }`}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (item.kind === "lesson") {
-                                        setActiveModuleId(mod.id);
-                                        openLesson(item.node);
-                                      } else {
-                                        openQuiz(item.node);
-                                      }
-                                    }}
-                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                      ? "font-medium text-indigo-700"
-                                      : "text-gray-500"
-                                      }`}
-                                  >
-                                    {item.kind === "lesson" ? (
-                                      <FileText size={11} className="flex-shrink-0" />
-                                    ) : (
-                                      <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
-                                    )}
-                                    {isEditing(item.kind, item.node.id) ? (
-                                      renameInput("text-xs")
-                                    ) : (
-                                      <span className="truncate" title={item.node.title}>
-                                        {item.node.title}
-                                      </span>
-                                    )}
-                                  </button>
-                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {item.kind === "quiz" && (
-                                      <IconBtn
-                                        title="Copy quiz ID — paste into an inline Quiz block"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(item.node.id);
-                                          setCopiedQuizId(item.node.id);
-                                          setTimeout(() => setCopiedQuizId(null), 1500);
-                                        }}
-                                      >
-                                        {copiedQuizId === item.node.id ? (
-                                          <Check size={12} className="text-emerald-500" />
-                                        ) : (
-                                          <Copy size={12} />
-                                        )}
-                                      </IconBtn>
-                                    )}
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                      onClick={() =>
-                                        startEdit(item.kind, item.node.id, item.node.title)
-                                      }
-                                    >
-                                      <Pencil size={12} />
-                                    </IconBtn>
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                      danger
-                                      onClick={() =>
-                                        item.kind === "lesson"
-                                          ? askDeleteLesson(item.node)
-                                          : askDeleteQuiz(item.node)
-                                      }
-                                    >
-                                      <Trash2 size={12} />
-                                    </IconBtn>
-                                  </div>
-                                </div>
-                              );
-                            })}
-
-                          {/* Add lesson / quiz to this Day/module */}
-                          <div className="mt-0.5 flex items-center gap-3 pl-2">
-                            <button
-                              type="button"
-                              onClick={() => addLesson(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add {adapter.terminology.leafDocument}
-                            </button>
-                            {contentType !== "workshop" && (
-                              <button
-                                type="button"
-                                onClick={() => addQuiz(mod.id)}
-                                className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                              >
-                                <Plus size={11} />
-                                Add quiz
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Sidebar footer */}
-                <div className="space-y-0.5 border-t border-gray-100 p-1.5 mt-2">
-                  {contentType === "workshop" && (
-                    <button
-                      type="button"
-                      onClick={addWorkshopDay}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50 mb-2"
-                    >
-                      <Plus size={14} />
-                      Add Day
-                    </button>
-                  )}
-                  {contentType === "workshop" && (
-                    <div className="border-t border-gray-100 my-1"></div>
-                  )}
-                  {contentType !== "workshop" && (
-                    <button
-                      type="button"
-                      onClick={addModule}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-50"
-                    >
-                      <Plus size={14} />
-                      Add Module
-                    </button>
-                  )}
-                  {contentType !== "workshop" && (
-                    <button
-                      type="button"
-                      onClick={() => setQbOpen(true)}
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-                    >
-                      <FileText size={13} />
-                      Create Question Bank
-                    </button>
-                  )}
-                  {contentType === "workshop" && (
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 opacity-50 cursor-not-allowed"
-                      title="Resources (Coming soon)"
-                    >
-                      <FileText size={13} />
-                      Resources
-                    </button>
-                  )}
+        {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
+        {contentType !== "roadmap" && (
+          <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
+            {!sidebarOpen ? (
+              <button
+                type="button"
+                title="Expand sidebar"
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-400 shadow-[0_6px_18px_rgba(20,20,43,0.08)] transition-colors hover:text-[#14142b]"
+              >
+                <PanelLeftOpen size={18} />
+              </button>
+            ) : (
+              <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
+                {/* ── Sidebar header ───────────────── */}
+                <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
+                  <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    {adapter.terminology.root} structure
+                  </span>
                   <button
                     type="button"
-                    onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                    className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${view === "settings"
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                      }`}
+                    title="Collapse sidebar"
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex flex-shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
                   >
-                    <Settings size={13} />
-                    {adapter.terminology.root} Settings
+                    <PanelLeftClose size={16} />
                   </button>
                 </div>
+
+                {/* ── Body ──────────────────────────────── */}
+                <div className="flex min-h-0 flex-1 flex-col">
+                  {/* Tree scroll area */}
+                  <div className="flex-1 overflow-y-auto p-2">
+                    {modules.length === 0 && (
+                      <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
+                        <Layers size={28} className="text-gray-300" />
+                        <p className="text-xs text-gray-400">
+                          {contentType === "workshop"
+                            ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                            : "No modules yet. Add a module to get started."}
+                        </p>
+                      </div>
+                    )}
+
+                    {modules.map((mod) => (
+                      <div key={mod.id} className="mb-0.5">
+                        {/* Module row */}
+                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModules((prev) =>
+                                prev.map((m) =>
+                                  m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                                )
+                              )
+                            }
+                            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                          >
+                            {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
+
+                          {isEditing("module", mod.id) ? (
+                            renameInput("text-xs font-semibold text-gray-700")
+                          ) : (
+                            <span
+                              onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                              className="flex-1 truncate text-xs font-semibold text-gray-700"
+                              title={mod.title}
+                            >
+                              {mod.title}
+                            </span>
+                          )}
+
+                          {status !== "SUBMITTED" && (
+                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  title="Add lesson or quiz"
+                                  className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                                >
+                                  <Plus size={12} />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" sideOffset={4}>
+                                  <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                    <FileText size={13} />
+                                    Lesson
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                                <Pencil size={12} />
+                              </IconBtn>
+                              <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                                <Trash2 size={12} />
+                              </IconBtn>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Lessons and quizzes, interleaved by position */}
+                        {mod.expanded && (
+                          <div className="ml-3 border-l border-gray-200 pl-1.5">
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={(event) => handleDragEnd(mod.id, event)}
+                            >
+                              <SortableContext
+                                items={mod.lessons.map((l) => l.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {mod.lessons.map((l) => ({ kind: "lesson" as const, node: l }))
+                                  .sort((a, b) => a.node.position - b.node.position)
+                                  .map((item) => {
+                                    const isActive = activeLessonId === item.node.id;
+                                    return (
+                                      <SortableRow
+                                        key={item.node.id}
+                                        id={item.node.id}
+                                        className={`group flex items-center gap-1 rounded-lg pl-2 pr-1.5 ${isActive ? "bg-[#14142b] shadow-sm" : "hover:bg-slate-50"
+                                          }`}
+                                      >
+                                        {(dragHandleProps) => (
+                                          <>
+                                            <div
+                                              {...dragHandleProps}
+                                              className="cursor-grab hover:text-gray-900 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity -ml-1 py-1"
+                                            >
+                                              <GripVertical size={13} />
+                                            </div>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setActiveModuleId(mod.id);
+                                                openLesson(item.node);
+                                              }}
+                                              className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
+                                                ? "font-semibold text-white"
+                                                : "text-slate-500"
+                                                }`}
+                                            >
+                                              <FileText size={11} className="flex-shrink-0" />
+                                              {isEditing(item.kind, item.node.id) ? (
+                                                renameInput("text-xs")
+                                              ) : (
+                                                <span className="truncate" title={item.node.title}>
+                                                  {item.node.title}
+                                                </span>
+                                              )}
+                                            </button>
+                                            {status !== "SUBMITTED" && (
+                                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                                <IconBtn
+                                                  title="Rename lesson"
+                                                  onClick={() =>
+                                                    startEdit(item.kind, item.node.id, item.node.title)
+                                                  }
+                                                >
+                                                  <Pencil size={12} />
+                                                </IconBtn>
+                                                <IconBtn
+                                                  title="Delete lesson"
+                                                  danger
+                                                  onClick={() => askDeleteLesson(item.node)}
+                                                >
+                                                  <Trash2 size={12} />
+                                                </IconBtn>
+                                              </div>
+                                            )}
+                                          </>
+                                        )}
+                                      </SortableRow>
+                                    );
+                                  })}
+                              </SortableContext>
+                            </DndContext>
+
+                            {/* Add lesson to this Day/module */}
+                            {status !== "SUBMITTED" && (
+                              <div className="mt-0.5 flex items-center gap-3 pl-2">
+                                <button
+                                  type="button"
+                                  onClick={() => addLesson(mod.id)}
+                                  className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
+                                >
+                                  <Plus size={11} />
+                                  Add {adapter.terminology.leafDocument}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sidebar footer — settings also in top bar; keep quick access here */}
+                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
+                    {status !== "SUBMITTED" && contentType === "workshop" && (
+                      <button
+                        type="button"
+                        onClick={addWorkshopDay}
+                        className="mb-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
+                      >
+                        <Plus size={14} />
+                        Add Day
+                      </button>
+                    )}
+                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+                      <button
+                        type="button"
+                        onClick={addModule}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
+                      >
+                        <Plus size={14} />
+                        Add {adapter.terminology.container}
+                      </button>
+                    )}
+                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+                      <button
+                        type="button"
+                        onClick={() => setQbOpen(true)}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
+                      >
+                        <FileText size={13} />
+                        Question Bank
+                      </button>
+                    )}
+                    {status !== "SUBMITTED" && contentType === "workshop" && (
+                      <button
+                        type="button"
+                        className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-400 opacity-60"
+                        title="Resources (Coming soon)"
+                      >
+                        <FileText size={13} />
+                        Resources
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
+                      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${view === "settings"
+                        ? "bg-[#14142b] text-white"
+                        : "text-slate-500 hover:bg-white hover:text-[#14142b]"
+                        }`}
+                    >
+                      <Settings size={13} />
+                      {adapter.terminology.root} Settings
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-        </aside>
+            )}
+          </aside>
+        )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="absolute inset-0 z-0 overflow-y-auto">
+          {status === "SUBMITTED" && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
+              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
+            </div>
+          )}
           {view === "settings" ? (
             <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
               <div className="overflow-hidden rounded-2xl border border-gray-100">
-                <ContentSettingsPanel terminology={adapter.terminology}
-                  contentId={contentId}
-                  title={title}
-                  description={description}
-                  status={status}
-                  pricingModel={pricingModel}
-                  createdAt={createdAt}
-                  updatedAt={updatedAt}
-                  onDeleted={() => router.push("/")}
-                  onDescriptionChange={(desc) => {
-                    setDescription(desc);
-                    scheduleCourseMetaSave({ description: desc });
-                  }}
-                />
+                <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
+                  <ContentSettingsPanel terminology={adapter.terminology}
+                    contentId={contentId}
+                    title={title}
+                    description={description}
+                    status={status}
+                    pricingModel={pricingModel}
+                    createdAt={createdAt}
+                    updatedAt={updatedAt}
+                    onDeleted={() => router.push("/studio")}
+                    onDescriptionChange={(desc) => {
+                      setDescription(desc);
+                      scheduleCourseMetaSave({ description: desc });
+                    }}
+                  />
+                </div>
               </div>
+            </div>
+          ) : contentType === "roadmap" && roadmapData ? (
+            <div className="absolute inset-0 z-0 pt-[49px]">
+               <RoadmapCanvas 
+                 roadmap={roadmapData}
+                 readOnly={status === "SUBMITTED"}
+                 onGraphChange={async (graphJson) => {
+                   await roadmapService.updateRoadmap(contentId!, { graphJson });
+                   setHasDraftChanges(true);
+                 }}
+               />
             </div>
           ) : activeLessonId ? (
             <div
@@ -1656,23 +1691,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}
                     chromeless
+                    readOnly={status === "SUBMITTED"}
                   />
                 )}
-              </div>
-            </div>
-          ) : activeQuizId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div>
-                <div className="mb-5 flex items-center gap-3">
-                  <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
-                  <DebouncedTitleInput
-                    value={activeQuizTitle}
-                    onCommit={saveQuizTitle}
-                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                    placeholder="Quiz title"
-                  />
-                </div>
-                <QuizEditor key={activeQuizId} quizId={activeQuizId} />
               </div>
             </div>
           ) : (
@@ -1696,6 +1717,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
+      <ContentStatusHistoryModal
+        contentId={contentId!}
+        contentType={
+          contentType === "roadmap"
+            ? "roadmap"
+            : contentType === "workshop"
+              ? "workshop"
+              : "course"
+        }
+        open={statusHistoryOpen}
+        onClose={() => setStatusHistoryOpen(false)}
+      />
     </div>
   );
 }

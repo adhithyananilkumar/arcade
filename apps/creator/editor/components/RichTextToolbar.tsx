@@ -1,6 +1,8 @@
 "use client";
 
 import { memo } from "react";
+import type { Editor } from "@tiptap/react";
+import { localeActions } from "reactjs-tiptap-editor/locale-bundle";
 import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
 import { RichTextHeading } from "reactjs-tiptap-editor/heading";
 import { RichTextFontFamily } from "reactjs-tiptap-editor/fontfamily";
@@ -18,27 +20,43 @@ import { RichTextIndent } from "reactjs-tiptap-editor/indent";
 
 // Insert tools
 import { RichTextEmoji } from "reactjs-tiptap-editor/emoji";
-import { RichTextImage } from "reactjs-tiptap-editor/image";
-import { RichTextVideo } from "reactjs-tiptap-editor/video";
 import { RichTextImageGif } from "reactjs-tiptap-editor/imagegif";
 import { RichTextTable } from "reactjs-tiptap-editor/table";
 import { RichTextColumn } from "reactjs-tiptap-editor/column";
 import { RichTextIframe } from "reactjs-tiptap-editor/iframe";
-import { RichTextExportPdf } from "reactjs-tiptap-editor/exportpdf";
 import { RichTextImportWord } from "reactjs-tiptap-editor/importword";
 import { RichTextAttachment } from "reactjs-tiptap-editor/attachment";
 import { RichTextExcalidraw } from "reactjs-tiptap-editor/excalidraw";
-import { RichTextDrawer } from "reactjs-tiptap-editor/drawer";
-import { RichTextTwitter } from "reactjs-tiptap-editor/twitter";
 import { RichTextHorizontalRule } from "reactjs-tiptap-editor/horizontalrule";
 import { RichTextCodeBlock } from "reactjs-tiptap-editor/codeblock";
 
 import { Separator } from "@/shared/design-system/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/design-system/ui/popover";
 import { Button } from "@/shared/design-system/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Subscript, Superscript } from "lucide-react";
+import { VideoUploadButton } from "./VideoUploadButton";
+import { ImageUploadButton } from "./ImageUploadButton";
+import { UploadQueuePanel } from "./UploadQueuePanel";
 
-export const RichTextToolbar = memo(function RichTextToolbar() {
+// The font family/size dropdowns show this string for unstyled text — the library's
+// own copy is the literal word "Default", which is honest about "no override" but
+// tells the author nothing about what they're actually looking at. Arcade's actual
+// base typography (app/globals.css `body`, mirrored in editor.css's `.ProseMirror`
+// rule) is Geist at 16px, so that's what unmarked text really renders as — the label
+// should say so. This is a one-time i18n string override, not a document mutation:
+// it changes what "no override" is *called*, not what's stored in any lesson's
+// content, so redefining the actual default later is a one-line change here (plus
+// the matching CSS rule), not a content migration.
+localeActions.setMessage("en", {
+  "editor.fontFamily.default.tooltip": "Geist",
+  "editor.fontSize.default.tooltip": "16px",
+});
+
+interface RichTextToolbarProps {
+  editor: Editor | null;
+}
+
+export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
   return (
     // Surface colour, bottom rule and separator colour live in editor.css —
     // the design-system utilities for them don't resolve inside this tree.
@@ -100,25 +118,44 @@ export const RichTextToolbar = memo(function RichTextToolbar() {
               Insert Elements
             </div>
             <div className="flex flex-wrap gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                onClick={() => editor?.chain().focus().toggleSubscript().run()}
+                title="Subscript"
+              >
+                <Subscript size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted"
+                onClick={() => editor?.chain().focus().toggleSuperscript().run()}
+                title="Superscript"
+              >
+                <Superscript size={16} />
+              </Button>
               <RichTextEmoji />
-              <RichTextImage />
-              <RichTextVideo />
+              <ImageUploadButton editor={editor} />
+              <VideoUploadButton editor={editor} />
               <RichTextImageGif />
               <RichTextTable />
               <RichTextColumn />
               <RichTextIframe />
-              <RichTextExportPdf />
               <RichTextImportWord />
               <RichTextAttachment />
               <RichTextExcalidraw />
-              <RichTextDrawer />
-              <RichTextTwitter />
               <RichTextHorizontalRule />
               <RichTextCodeBlock />
             </div>
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* Portalled to <body> — tracks background uploads queued from ImageUploadButton /
+          VideoUploadButton above, independent of where this toolbar sits on the page. */}
+      <UploadQueuePanel />
     </div>
   );
 });

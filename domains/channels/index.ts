@@ -18,5 +18,8 @@
 export { ChannelStaffService } from './api/channel-staff.service';
 export type { ChannelStaff, ChannelInvitation } from './api/channel-staff.service';
 export { channelService } from './api/channel.service';
-export type { ChannelDeletionRequestDto, Channel } from './api/channel.service';
+export type { ChannelDeletionRequestDto, Channel, ChannelAuditLogEntry, ChannelContentItem } from './api/channel.service';
 export { CreateChannelModal } from './components/CreateChannelModal';
+export { ChannelPicker } from './components/ChannelPicker';
+export { useStudioAccess } from './hooks/useStudioAccess';
+export { useEligibleChannels } from './hooks/useEligibleChannels';

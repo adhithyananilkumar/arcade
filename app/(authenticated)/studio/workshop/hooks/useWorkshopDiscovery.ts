@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getPublishedWorkshops, WorkshopSearchParams } from '../api/discoveryApi';
 import { Workshop } from '../types';
 
-export function useWorkshopDiscovery() {
+export function useWorkshopDiscovery(options?: { types?: string[] }) {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +28,8 @@ export function useWorkshopDiscovery() {
       // Filter by type if selected
       if (params?.type && params.type !== 'all') {
         list = list.filter(w => w.workshopType === params.type);
+      } else if (params?.types && params.types.length > 0) {
+        list = list.filter(w => params.types?.includes(w.workshopType as string));
       }
 
       setWorkshops(list);
@@ -45,12 +47,13 @@ export function useWorkshopDiscovery() {
       loadWorkshops({
         search: searchQuery,
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        type: selectedType !== 'all' ? selectedType : undefined
+        type: selectedType !== 'all' ? selectedType : undefined,
+        types: options?.types
       });
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, selectedType, loadWorkshops]);
+  }, [searchQuery, selectedCategory, selectedType, options?.types, loadWorkshops]);
 
   return {
     workshops,
@@ -62,6 +65,6 @@ export function useWorkshopDiscovery() {
     setSelectedCategory,
     selectedType,
     setSelectedType,
-    refetch: () => loadWorkshops({ search: searchQuery, category: selectedCategory, type: selectedType })
+    refetch: () => loadWorkshops({ search: searchQuery, category: selectedCategory, type: selectedType, types: options?.types })
   };
 }

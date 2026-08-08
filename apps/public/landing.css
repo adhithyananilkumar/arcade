@@ -19,6 +19,23 @@
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────── */
+@keyframes ambientCanvasFloat {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: translateY(-24px) scale(1.03);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.85;
+  }
+}
+
 .landing-root {
   position: relative;
   font-family: "Inter", system-ui, sans-serif;
@@ -28,7 +45,37 @@
   overflow-x: hidden;
 }
 
-.landing-root::before {
+/* ─── Single Global Page Background Container ────────────────────────────── */
+.page-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #F8FAFC;
+  background-image:
+    /* Layered radial gradients flowing seamlessly down the full scroll height */
+    radial-gradient(ellipse 70% 35% at 50% 4%, rgba(255, 255, 255, 0.95) 0%, transparent 60%),
+    radial-gradient(ellipse 65% 38% at 14% 7%, rgba(196, 181, 253, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 38% at 86% 14%, rgba(147, 197, 253, 0.40) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 36% at 50% 25%, rgba(103, 232, 249, 0.38) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 30% at 8% 33%, rgba(255, 255, 255, 0.80) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 40% at 92% 46%, rgba(196, 181, 253, 0.40) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 36% at 10% 54%, rgba(110, 231, 183, 0.38) 0%, transparent 62%),
+    radial-gradient(ellipse 65% 38% at 50% 66%, rgba(147, 197, 253, 0.38) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 32% at 88% 75%, rgba(255, 255, 255, 0.85) 0%, transparent 58%),
+    radial-gradient(ellipse 60% 36% at 12% 86%, rgba(103, 232, 249, 0.35) 0%, transparent 62%),
+    radial-gradient(ellipse 65% 40% at 84% 93%, rgba(110, 231, 183, 0.38) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 35% at 50% 98%, rgba(196, 181, 253, 0.32) 0%, transparent 60%),
+    linear-gradient(180deg,
+      #F6F8FD 0%,
+      #F4F7FC 20%,
+      #FAF8FF 40%,
+      #F2F9F8 60%,
+      #F4F6FD 80%,
+      #F7FAF9 100%);
+}
+
+.page-background::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -41,6 +88,51 @@
     radial-gradient(ellipse 50% 35% at 94% 76%, rgba(59, 130, 246, 0.18) 0%, transparent 60%),
     radial-gradient(ellipse 40% 30% at 48% 94%, rgba(147, 197, 253, 0.15) 0%, transparent 60%);
   pointer-events: none;
+  background-image:
+    radial-gradient(circle 500px at 20% 16%, rgba(196, 181, 253, 0.28) 0%, transparent 70%),
+    radial-gradient(circle 550px at 80% 36%, rgba(103, 232, 249, 0.25) 0%, transparent 70%),
+    radial-gradient(circle 500px at 25% 60%, rgba(110, 231, 183, 0.25) 0%, transparent 70%),
+    radial-gradient(circle 560px at 75% 82%, rgba(147, 197, 253, 0.28) 0%, transparent 70%);
+  animation: ambientCanvasFloat 20s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* ─── Universal Section Transparency Overrides ────────────────────────────── */
+section,
+.l-hero,
+.trusted-section,
+.l-showcase,
+.l-testimonials,
+.jt-section,
+.arc-footer {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  position: relative;
+  z-index: 1;
+}
+
+section::before,
+section::after,
+.l-hero::before,
+.l-hero::after,
+.trusted-section::before,
+.trusted-section::after,
+.l-showcase::before,
+.l-showcase::after,
+.l-testimonials::before,
+.l-testimonials::after,
+.jt-section::before,
+.jt-section::after,
+.arc-footer::before,
+.arc-footer::after {
+  background: none !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* ─── Nav ───────────────────────────────────────────────────────────── */
@@ -228,7 +320,9 @@
   padding-top: 130px;
   /* nav height plus spacing */
   position: relative;
-  overflow: hidden;
+  /* overflow:hidden removed — it was clipping the radial glows in ::before
+     from bleeding into the LogoStrip and CourseShowcase sections below */
+  overflow-x: hidden;
 }
 
 /* Keep hero content above the gradient */
@@ -390,12 +484,15 @@
 }
 
 .l-showcase__card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(20, 23, 31, 0.08);
+  /* Background, border, shadow, and backdrop-filter all removed.
+     The card is now a layout-only grid container — no visible panel edge.
+     Content sits directly on the continuous page background. */
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
   border-radius: 28px;
-  box-shadow: 0 12px 32px -8px rgba(20, 23, 31, 0.08);
+  box-shadow: none;
   display: grid;
   grid-template-columns: 1.15fr 1.2fr;
   gap: 2.5rem;
@@ -404,17 +501,13 @@
   width: 100%;
   max-width: 1200px;
   position: relative;
-  overflow: hidden;
+  /* overflow:hidden removed — was creating a hard paint edge */
 }
 
 .l-showcase__card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #2451D6 0%, #10b981 100%);
+  /* Removed — the coloured top bar created a hard visual divider
+     between the hero and the showcase card. */
+  content: none;
 }
 
 .l-showcase__info {

@@ -1,27 +1,16 @@
 import React from 'react';
-import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/workshop/types';
-import { Calendar, Clock, MapPin, Users, Award, PlayCircle } from 'lucide-react';
+import { WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
+import { Calendar, Clock, PlayCircle } from 'lucide-react';
 import Image from 'next/image';
+import { RegistrationSidebar } from './RegistrationSidebar';
 
 interface Props {
   preview: WorkshopPreviewDto;
+  onRegister?: () => Promise<void>;
 }
 
-export const WorkshopPreview: React.FC<Props> = ({ preview }) => {
-  const { basicInfo, schedule, resources, pricing, settings } = preview;
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || 'USD'
-    }).format(amount);
-  };
-
-  const getStartDate = () => {
-    if (!schedule || schedule.length === 0) return 'No sessions scheduled';
-    const sorted = [...schedule].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    return new Date(sorted[0].startDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  };
+export const WorkshopPreview: React.FC<Props> = ({ preview, onRegister }) => {
+  const { basicInfo, schedule } = preview;
 
   return (
     <div className="bg-white dark:bg-gray-900 w-full min-h-full">
@@ -99,47 +88,7 @@ export const WorkshopPreview: React.FC<Props> = ({ preview }) => {
 
         {/* Sidebar (Right) */}
         <div className="w-full md:w-80 flex-shrink-0">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sticky top-6">
-            
-            <div className="mb-6">
-              <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                {pricing?.pricingModel === PricingModel.FREE ? 'Free' : formatCurrency(pricing?.price || 0, pricing?.currency || 'USD')}
-              </span>
-              {pricing?.pricingModel !== PricingModel.FREE && pricing?.earlyBirdEnabled && (
-                <p className="text-sm text-green-600 dark:text-green-400 font-medium mt-1">
-                  Early bird pricing available
-                </p>
-              )}
-            </div>
-
-            <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-6">
-              Register Now
-            </button>
-
-            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span>{basicInfo.deliveryMode === 'ONLINE' ? 'Online Workshop' : 'In-Person'}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-gray-400" />
-                <span>{basicInfo.difficulty?.charAt(0) + basicInfo.difficulty?.slice(1).toLowerCase()} Level</span>
-              </div>
-              {settings?.certificateEnabled && (
-                <div className="flex items-center gap-3">
-                  <Award className="w-5 h-5 text-gray-400" />
-                  <span>Certificate of Completion</span>
-                </div>
-              )}
-              {settings?.recordingAvailable && (
-                <div className="flex items-center gap-3">
-                  <PlayCircle className="w-5 h-5 text-gray-400" />
-                  <span>Recordings Included</span>
-                </div>
-              )}
-            </div>
-            
-          </div>
+          <RegistrationSidebar preview={preview} onRegister={onRegister} />
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-export type Scope = 'PLATFORM' | 'PUBLISHER' | 'CHANNEL';
+export type Scope = 'PLATFORM' | 'CHANNEL';
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface PermissionMetadata {

@@ -1,222 +1,482 @@
 'use client';
 
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Channel, channelService } from "@/domains/channels";
+import Link from 'next/link';
+import {
+  Channel,
+  ChannelContentItem,
+  ChannelDeletionRequestDto,
+  channelService,
+} from '@/domains/channels';
+import { platformReviewApi } from '@/domains/publishing';
 import { toast } from 'sonner';
-import { Tv, Upload, Settings, Users, BarChart3, Video, Loader2, ArrowLeft, Shield } from 'lucide-react';
+import {
+  Home,
+  ArrowLeft,
+  LayoutGrid,
+  AlertTriangle,
+  BookOpen,
+  Users,
+  FileText,
+  Calendar,
+  Star,
+  BarChart3,
+  Activity,
+  ShieldAlert,
+  Loader2,
+  Video,
+  Upload,
+} from 'lucide-react';
+
+import { OrganizationHeader } from './components/OrganizationHeader';
+import { SmallCourseOverview } from './components/SmallCourseOverview';
+import { CourseManagementSection } from './components/CourseManagementSection';
+import { ReviewsFeedbackSection } from './components/ReviewsFeedbackSection';
+import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
+import { RecentActivityTimeline } from './components/RecentActivityTimeline';
+import { EditOrganizationModal } from './components/EditOrganizationModal';
+
+import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelDangerZone } from './ChannelDangerZone';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion } from 'framer-motion';
-import { ChannelSettingsManager } from './ChannelSettingsManager';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
+
+type ManageTab =
+  | 'OVERVIEW'
+  | 'CONTENT'
+  | 'STAFF'
+  | 'REVIEWS'
+  | 'ANALYTICS'
+  | 'ACTIVITY'
+  | 'DANGER';
+
+type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
 
 export default function ManageChannelPage() {
   const params = useParams();
   const router = useRouter();
   const channelId = params.id as string;
+  const { user } = useAuthStore();
 
   const [channel, setChannel] = useState<Channel | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [pendingDeletionRequest, setPendingDeletionRequest] =
+    useState<ChannelDeletionRequestDto | null>(null);
+  const [content, setContent] = useState<ChannelContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'STAFF'>('OVERVIEW');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
+  const [channelReviews, setChannelReviews] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (channelId) {
-      fetchChannel();
-    }
+    if (channelId) fetchChannel();
   }, [channelId]);
 
   const fetchChannel = async () => {
     try {
       setLoading(true);
-      const [channelData, perms] = await Promise.all([
+      const [channelData, perms, myDeletionRequests, channelContent] = await Promise.all([
         channelService.getChannel(channelId),
-        channelService.getMyChannelPermissions(channelId)
+        channelService.getMyChannelPermissions(channelId),
+        channelService.getMyDeletionRequests().catch(() => []),
+        channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
       ]);
-      setChannel(channelData);
+
+      const savedBanner = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_banner_${channelId}`) : null;
+      const savedLogo = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_logo_${channelId}`) : null;
+
+      const channelWithSavedBranding: Channel = {
+        ...channelData,
+        bannerUrl: savedBanner !== null ? savedBanner : channelData.bannerUrl,
+        iconUrl: savedLogo !== null ? savedLogo : channelData.iconUrl,
+      };
+
+      setChannel(channelWithSavedBranding);
       setPermissions(perms);
-    } catch (error) {
+      setPendingDeletionRequest(
+        myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null,
+      );
+      setContent(channelContent);
+    } catch {
       toast.error('Failed to load channel details');
-      router.push('/');
+      router.push('/manage-channels');
     } finally {
       setLoading(false);
     }
   };
 
+  const stats = useMemo(() => {
+    const published = content.filter((c) => c.status?.toUpperCase() === 'PUBLISHED').length;
+    const drafts = content.filter((c) => c.status?.toUpperCase() === 'DRAFT').length;
+    const inReview = content.filter((c) => c.status?.toUpperCase() === 'SUBMITTED').length;
+    return {
+      total: content.length,
+      published,
+      drafts,
+      inReview,
+    };
+  }, [content]);
+
+  const filteredContent = useMemo(() => {
+    if (contentFilter === 'ALL') return content;
+    return content.filter((c) => c.status?.toUpperCase() === contentFilter);
+  }, [content, contentFilter]);
+
+  const recentContent = useMemo(
+    () =>
+      [...content]
+        .filter((c) => c.status?.toUpperCase() === 'PUBLISHED')
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 6),
+    [content],
+  );
+
+  const canReviewChannelContent =
+    permissions.includes('ALL') ||
+    permissions.includes('channel.content.review');
+
+  useEffect(() => {
+    if (canReviewChannelContent) {
+      platformReviewApi.list({ channelId }).then(items => {
+        const reviewMap: Record<string, string> = {};
+        items.forEach(i => {
+           if (i.status === 'OPEN') {
+             reviewMap[i.contentId] = i.id;
+           }
+        });
+        setChannelReviews(reviewMap);
+      }).catch(console.error);
+    }
+  }, [channelId, canReviewChannelContent]);
+
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+          <p className="text-xs font-black uppercase tracking-widest text-indigo-900">
+            Loading Arcade Organization Dashboard...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!channel) return null;
 
+  const isSuspended = channel.status === 'SUSPENDED';
+  const isOwner = user?.id === channel.ownerId;
+  const isPersonalChannel = channel.type?.toUpperCase() === 'PERSONAL' || channel.isPersonal;
+
+  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
+    { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
+    { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
+    { id: 'STAFF', label: 'Staff', icon: Users, badge: '34' },
+    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
+    { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
+    ...(isOwner && !isPersonalChannel ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert }] : []),
+  ];
+
   return (
-    <div className="w-full space-y-8 pb-12">
-      <button 
-        onClick={() => router.push('/')}
-        className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to Dashboard
-      </button>
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+      }}
+    >
+      {/* Floating Horizontal Bottom Dock Navigation Bar */}
+      <TooltipProvider delay={100}>
+        <motion.nav
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", bounce: 0.3, duration: 0.8 }}
+          aria-label="Floating Organization Navigation Dock"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
+        >
+        {/* 1. Home Icon Button */}
+        <motion.div 
+          layout 
+          className={`relative group shrink-0 ${hoveredTab === 'HOME' ? 'mx-2 sm:mx-3' : 'mx-0'}`}
+          onHoverStart={() => setHoveredTab('HOME')}
+          onHoverEnd={() => setHoveredTab(null)}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b] transition-all duration-300 cursor-pointer"
+                title="Go to Home"
+              >
+                <Home size={19} className="group-hover:scale-110 transition-transform" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+              Home
+            </TooltipContent>
+          </Tooltip>
+        </motion.div>
 
-      {/* Channel Banner & Header (YouTube Style) */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-100"
-      >
-        {/* Banner */}
-        {channel.bannerUrl ? (
-          <div className="h-48 w-full">
-            <img src={channel.bannerUrl} alt={`${channel.name} banner`} className="h-full w-full object-cover" />
-          </div>
-        ) : (
-          <div className="h-48 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-        )}
-        
-        {/* Profile Info */}
-        <div className="px-4 sm:px-8 pb-8">
-          <div className="flex flex-col md:flex-row gap-6 md:items-end md:justify-between -mt-12 mb-6">
-            <div className="flex flex-col md:flex-row gap-6 md:items-end flex-1">
-              <div className="h-24 w-24 sm:h-32 sm:w-32 shrink-0 overflow-hidden rounded-full border-4 border-white bg-indigo-50 flex items-center justify-center shadow-md">
-                {channel.iconUrl ? (
-                  <img src={channel.iconUrl} alt={channel.name} className="h-full w-full object-cover" />
-                ) : (
-                  <Tv size={48} className="text-indigo-300" />
-                )}
-              </div>
-              
-              <div className="flex-1 space-y-1">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{channel.name}</h1>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 font-medium">
-                  <span>{channel.ownerName}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>{channel.isPersonal ? 'Personal Channel' : 'Organization Channel'}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>Created {new Date(channel.createdAt).toLocaleDateString()}</span>
-                </div>
-              </div>
+        {/* Divider line */}
+        <motion.div layout className="h-6 w-px bg-slate-200 shrink-0 mx-1" />
+
+        {/* 2. Management Tab Icons */}
+        {mainTabs.map((tab) => {
+          const active = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <motion.div 
+              layout 
+              key={tab.id} 
+              className={`relative group shrink-0 ${hoveredTab === tab.id ? 'mx-2 sm:mx-3' : 'mx-0'}`}
+              onHoverStart={() => setHoveredTab(tab.id)}
+              onHoverEnd={() => setHoveredTab(null)}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
+                      active
+                        ? tab.id === 'DANGER'
+                          ? 'text-rose-600'
+                          : 'text-indigo-600'
+                        : tab.id === 'DANGER'
+                        ? 'text-rose-600 hover:bg-rose-50'
+                        : 'text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]'
+                    }`}
+                  >
+                    <Icon size={19} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+                  {tab.label}
+                </TooltipContent>
+              </Tooltip>
+            </motion.div>
+          );
+        })}
+        </motion.nav>
+      </TooltipProvider>
+
+      {/* Main Content Container */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-20 sm:px-8 sm:pt-24">
+        {/* Top Back Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => router.push('/manage-channels')}
+            className="group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4.5 py-2 text-xs font-black text-slate-700 shadow-xs hover:border-slate-300 hover:bg-white hover:text-[#14142b] transition-all"
+          >
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            <span>All Channels & Organizations</span>
+          </button>
+
+          {channel.status && channel.status !== 'ACTIVE' && (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span>{channel.status}</span>
+              </span>
             </div>
-            
-            <div className="flex shrink-0 gap-3 mt-4 md:mt-0 flex-wrap">
-              <button 
-                onClick={() => setIsSettingsOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200"
-              >
-                <Settings size={18} />
-                Settings
-              </button>
-              <button 
-                onClick={() => router.push('/studio')}
-                className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-indigo-700 hover:shadow"
-              >
-                <Upload size={18} />
-                Create Content
-              </button>
-            </div>
-          </div>
-          
-          <div className="max-w-3xl">
-            <h3 className="font-semibold text-gray-900 mb-2">About this channel</h3>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-              {channel.description || 'No description provided.'}
-            </p>
-          </div>
+          )}
         </div>
-      </motion.div>
 
-      {/* Tabs Menu */}
-      <div className="flex gap-6 border-b border-gray-200 mt-8 mb-6">
-        <button
-          onClick={() => setActiveTab('OVERVIEW')}
-          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'OVERVIEW' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
-        >
-          Overview
-          {activeTab === 'OVERVIEW' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
-        </button>
-        <button
-          onClick={() => setActiveTab('STAFF')}
-          className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === 'STAFF' ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
-        >
-          Staff & Permissions
-          {activeTab === 'STAFF' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-full" />}
-        </button>
+        {/* Lock Warning Banners */}
+        {!isSuspended && pendingDeletionRequest && (
+          <div className="flex items-start gap-3.5 rounded-2xl border border-amber-200 bg-amber-50/90 p-4.5 shadow-xs">
+            <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-amber-900 text-sm">Deletion Request Pending</h3>
+              <p className="mt-0.5 text-xs font-medium text-amber-800/90">
+                Submitted on {new Date(pendingDeletionRequest.createdAt).toLocaleDateString()}.
+                Settings, staff, and content controls are locked while pending platform review.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Organization Header Banner & Profile Section */}
+        {activeTab === 'OVERVIEW' && (
+          <OrganizationHeader
+            channel={channel}
+            onEditClick={() => setIsEditModalOpen(true)}
+            onViewPublicClick={() => router.push(`/channels/${channelId}`)}
+          />
+        )}
+
+        {/* Dynamic Lower Section Content Display */}
+        <div className="space-y-10">
+          {/* TAB 1: SMALL COURSE OVERVIEW DASHBOARD */}
+          {activeTab === 'OVERVIEW' && (
+            <SmallCourseOverview
+              onNavigateToCatalog={() => setActiveTab('CONTENT')}
+              onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
+              onAddCourse={() => router.push('/studio')}
+            />
+          )}
+
+          {/* TAB 2: CONTENT */}
+          {activeTab === 'CONTENT' && (
+            <CourseManagementSection onAddCourse={() => router.push('/studio')} />
+          )}
+
+          {/* TAB 3: STAFF */}
+          {activeTab === 'STAFF' && (
+            <ChannelStaffManager
+              channelId={channelId}
+              permissions={permissions}
+              isSuspended={isSuspended}
+              isPersonalChannel={isPersonalChannel}
+            />
+          )}
+
+          {/* TAB 6 & 7: UNIFIED ANALYTICS & REVIEWS FEEDBACK */}
+          {(activeTab === 'ANALYTICS' || activeTab === 'REVIEWS') && (
+            <OrganizationAnalyticsSection />
+          )}
+
+          {/* TAB 8: ACTIVITY */}
+          {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
+
+          {/* TAB 9: DANGER ZONE */}
+          {activeTab === 'DANGER' && isOwner && !isPersonalChannel && (
+            <ChannelDangerZone channel={channel} />
+          )}
+        </div>
       </div>
 
-      {activeTab === 'OVERVIEW' ? (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          <div 
-            onClick={() => router.push('/studio')}
-            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
-              <Video size={24} />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900">Content</h4>
-              <p className="text-sm text-gray-500">Manage videos and courses</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 group-hover:scale-110 transition-transform">
-              <BarChart3 size={24} />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900">Analytics</h4>
-              <p className="text-sm text-gray-500">View channel performance</p>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm flex items-center gap-4 cursor-pointer hover:border-indigo-200 hover:shadow transition-all group">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition-transform">
-              <Users size={24} />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900">Community</h4>
-              <p className="text-sm text-gray-500">Manage comments & members</p>
-            </div>
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-        >
-          <div className="lg:col-span-2">
-            {/* Staff Management Component Placeholder */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Channel Staff</h3>
-              <p className="text-sm text-gray-500">Manage members and their roles here.</p>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="max-w-6xl sm:max-w-5xl md:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Channel Settings</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <ChannelSettingsManager channel={channel} onUpdate={setChannel} permissions={permissions} />
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Edit Organization Modal Overlay */}
+      <EditOrganizationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        channel={channel}
+        onUpdate={(updated) => setChannel(updated)}
+      />
     </div>
+  );
+}
+
+function editHref(item: ChannelContentItem) {
+  if (item.type === 'COURSE') return `/studio/courses/${item.id}`;
+  if (item.type === 'ROADMAP') return `/studio/roadmaps/${item.id}`;
+  return `/studio`;
+}
+
+function statusTone(status: string) {
+  switch (status?.toUpperCase()) {
+    case 'PUBLISHED':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    case 'DRAFT':
+      return 'border-amber-200 bg-amber-50 text-amber-700';
+    case 'SUBMITTED':
+      return 'border-sky-200 bg-sky-50 text-sky-700';
+    default:
+      return 'border-slate-200 bg-slate-50 text-slate-700';
+  }
+}
+
+function TypeIcon({ type }: { type: string }) {
+  if (type === 'COURSE') return <BookOpen size={18} />;
+  if (type === 'ROADMAP') return <FileText size={18} />;
+  return <Video size={18} />;
+}
+
+function ContentRow({
+  item,
+  last,
+  reviewHref,
+  canReview,
+}: {
+  item: ChannelContentItem;
+  last?: boolean;
+  reviewHref?: string;
+  canReview?: boolean;
+}) {
+  return (
+    <li
+      className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${
+        last ? '' : 'border-b border-slate-100'
+      }`}
+    >
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-500">
+        {item.coverImageUrl ? (
+          <img src={item.coverImageUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <TypeIcon type={item.type} />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-bold text-[#14142b]">{item.title}</p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-400">
+          <span className="uppercase tracking-wide">{item.type}</span>
+          <span
+            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${statusTone(
+              item.status,
+            )}`}
+          >
+            {item.status}
+          </span>
+          <span>
+            Edited{' '}
+            {new Date(item.updatedAt).toLocaleString(undefined, {
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+            })}
+            {item.authorUsername ? (
+              <>
+                {' by '}
+                <Link
+                  href={`/${item.authorUsername}`}
+                  className="hover:underline font-semibold hover:text-blue-600"
+                >
+                  @{item.authorUsername}
+                </Link>
+              </>
+            ) : item.authorName ? (
+              ` by ${item.authorName}`
+            ) : (
+              ''
+            )}
+          </span>
+        </p>
+      </div>
+      {(() => {
+        if (item.status === 'SUBMITTED') {
+          if (canReview) {
+            return (
+              <Link
+                href={reviewHref || editHref(item)}
+                className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+              >
+                {reviewHref ? 'Review' : 'Open'}
+              </Link>
+            );
+          } else {
+            return null;
+          }
+        }
+        return (
+          <Link
+            href={editHref(item)}
+            className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
+          >
+            Open
+          </Link>
+        );
+      })()}
+    </li>
   );
 }

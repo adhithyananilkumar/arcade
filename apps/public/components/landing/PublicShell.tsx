@@ -10,7 +10,6 @@
 
 import { usePathname } from "next/navigation";
 import { IntroProvider, useIntroContext } from "@/apps/public/components/intro/IntroProvider";
-import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import HeroNav from "./HeroNav";
 import Footer from "./Footer";
 
@@ -19,30 +18,29 @@ import { useParams } from "next/navigation";
 /** Inner shell — reads IntroContext (which is available when isLanding is true) */
 function ShellInner({ children }: { children: React.ReactNode }) {
   const { introActive } = useIntroContext();
-  const status = useAuthStore((state) => state.status);
-  const showNav = !introActive && status !== 'authenticated';
   const params = useParams();
   const isProfile = !!params?.username;
 
+  // HeroNav renders correctly for both auth states on its own (it swaps "Get Started" for
+  // "Open Arcade"), and public routes never render any other nav — hiding it here for
+  // authenticated users used to leave them with no top nav at all on every public page.
+  // Only the landing-page intro animation is a legitimate reason to hide it.
   return (
     <>
-      {showNav && <HeroNav />}
+      {!introActive && <HeroNav />}
       {children}
-      {!introActive && !isProfile && <Footer />}
     </>
   );
 }
 
 /** Outer shell — used for non-landing pages where no intro context exists */
 function ShellOuter({ children }: { children: React.ReactNode }) {
-  const status = useAuthStore((state) => state.status);
-  const showNav = status !== 'authenticated';
   const params = useParams();
   const isProfile = !!params?.username;
 
   return (
     <>
-      {showNav && <HeroNav />}
+      <HeroNav />
       {children}
       {!isProfile && <Footer />}
     </>

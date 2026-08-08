@@ -13,6 +13,7 @@ export interface WorkshopSearchParams {
   search?: string;
   category?: string;
   type?: string;
+  types?: string[];
   difficulty?: string;
   page?: number;
   size?: number;
@@ -26,6 +27,7 @@ export const getPublishedWorkshops = async (params?: WorkshopSearchParams): Prom
     if (params.search) queryParams.append('search', params.search);
     if (params.category) queryParams.append('category', params.category);
     if (params.type) queryParams.append('type', params.type);
+    if (params.types && params.types.length > 0) queryParams.append('types', params.types.join(','));
     if (params.difficulty) queryParams.append('difficulty', params.difficulty);
     if (params.page !== undefined) queryParams.append('page', params.page.toString());
     if (params.size !== undefined) queryParams.append('size', params.size.toString());
