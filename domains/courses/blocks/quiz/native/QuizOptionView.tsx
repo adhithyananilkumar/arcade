@@ -9,6 +9,7 @@ export function QuizOptionView({ node, updateAttributes, deleteNode }: NodeViewP
       <div className="pt-1" contentEditable={false}>
         <button
           type="button"
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={() => updateAttributes({ isCorrect: !isCorrect })}
           className={`flex h-5 w-5 flex-shrink-0 items-center justify-center border transition-colors rounded ${
             isCorrect
@@ -30,6 +31,7 @@ export function QuizOptionView({ node, updateAttributes, deleteNode }: NodeViewP
       <div className="pt-1 opacity-0 group-hover:opacity-100 transition-opacity" contentEditable={false}>
         <button
           type="button"
+          onMouseDown={(e) => e.stopPropagation()}
           onClick={deleteNode}
           className="rounded-md p-1.5 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-500"
         >

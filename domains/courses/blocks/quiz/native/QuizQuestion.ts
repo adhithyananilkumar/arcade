@@ -5,7 +5,7 @@ import { QuizQuestionView } from "./QuizQuestionView";
 export const QuizQuestionNode = Node.create({
   name: "quizQuestion",
   group: "block",
-  content: "quizPrompt quizOption+",
+  content: "quizPrompt quizOption*",
 
   addAttributes() {
     return {

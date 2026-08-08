@@ -5,7 +5,7 @@ import { QuizBlockView } from "./QuizBlockView";
 export const QuizBlockNode = Node.create({
   name: "quizBlock",
   group: "block",
-  content: "quizQuestion+",
+  content: "quizQuestion*",
 
   parseHTML() {
     return [{ tag: 'div[data-type="quiz-block"]' }];

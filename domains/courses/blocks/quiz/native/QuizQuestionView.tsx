@@ -80,6 +80,7 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
             type="button"
             title="Delete question"
             onClick={deleteNode}
+            onMouseDown={(e) => e.stopPropagation()}
             className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
           >
             <Trash2 size={14} />
