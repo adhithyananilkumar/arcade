@@ -62,24 +62,11 @@ const fadeInUp: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12 },
-  },
-};
-
 export default function FoundersPage() {
   const headerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
   const [activeEraIndex, setActiveEraIndex] = useState<number>(0);
-  const [founderCardModes, setFounderCardModes] = useState<Record<string, "vision" | "impact">>({
-    "founder-1": "vision",
-    "founder-2": "vision",
-    "founder-3": "vision",
-  });
 
   // Mouse Parallax values
   const mouseX = useMotionValue(0);
@@ -105,10 +92,6 @@ export default function FoundersPage() {
     mouseY.set(0);
   };
 
-  const toggleFounderMode = (id: string, mode: "vision" | "impact") => {
-    setFounderCardModes((prev) => ({ ...prev, [id]: mode }));
-  };
-
   const activeMilestone = TIMELINE_MILESTONES[activeEraIndex];
 
   return (
@@ -125,14 +108,6 @@ export default function FoundersPage() {
           background-size: 200% 200%;
           animation: gradientShift15s 15s ease-in-out infinite;
         }
-
-        @keyframes floatPill {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-6px); }
-        }
-        .animate-float-pill-1 { animation: floatPill 5s ease-in-out infinite; }
-        .animate-float-pill-2 { animation: floatPill 6s ease-in-out 1s infinite; }
-        .animate-float-pill-3 { animation: floatPill 7s ease-in-out 2s infinite; }
       `}</style>
 
       {/* Background Radial Glow Blobs */}
@@ -142,14 +117,14 @@ export default function FoundersPage() {
         <div className="absolute top-1/3 left-0 w-[600px] h-[600px] bg-teal-50/50 rounded-full blur-[100px]" />
       </div>
 
-      {/* --- HERO SECTION: UNIQUE GEOMETRIC STACK CANVAS (LIGHT THEME) --- */}
+      {/* --- HERO SECTION --- */}
       <section
         ref={headerRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative w-full min-h-[90vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white/80 backdrop-blur-md pt-28 pb-16"
+        className="relative w-full min-h-[85vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white/80 backdrop-blur-md pt-28 pb-12"
       >
-        {/* Decorative Light Radial Rings (No recycled ink-dome trees) */}
+        {/* Decorative Light Radial Rings */}
         <motion.div
           style={{ x: bgX, y: bgY }}
           className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10 opacity-40"
@@ -159,11 +134,7 @@ export default function FoundersPage() {
           <div className="w-[250px] h-[250px] sm:w-[420px] sm:h-[420px] rounded-full border border-indigo-200/60 absolute" />
         </motion.div>
 
-
-
-        <div className="relative z-10 max-w-[920px] mx-auto text-center space-y-8 py-8">
-
-
+        <div className="relative z-10 max-w-[920px] mx-auto text-center space-y-8 py-4">
           {/* HEADLINE */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -212,7 +183,7 @@ export default function FoundersPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
-            className="pt-4 flex flex-wrap justify-center items-center gap-4"
+            className="pt-2 flex flex-wrap justify-center items-center gap-4"
           >
             <a
               href="#founders-deck"
@@ -235,9 +206,126 @@ export default function FoundersPage() {
         </div>
       </section>
 
+      {/* --- MEET THE FOUNDERS SECTION --- */}
+      <section id="founders-deck" className="py-20 px-6 bg-slate-50 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-16">
+          {/* SECTION HEADER */}
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-200">
+              The 10 Founders of Arcade
+            </span>
+            <h2
+              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+            >
+              Meet The Founders
+            </h2>
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
+              The engineers, educators, and creators who designed Arcade from the ground up to empower students and faculty.
+            </p>
+          </div>
 
+          {/* 10 FOUNDERS CLEAN GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 sm:gap-8 items-stretch">
+            {FOUNDERS_DATA.map((founder, index) => (
+              <motion.div
+                key={founder.id}
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: (index % 5) * 0.1 }}
+                className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+                onClick={() => setSelectedFounder(founder)}
+              >
+                <div>
+                  {/* CLEAR PORTRAIT IMAGE CONTAINER */}
+                  <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-4 bg-slate-100 shadow-inner">
+                    <Image
+                      src={founder.image}
+                      alt={founder.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
+                      priority={index < 5}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  </div>
 
-      {/* --- HOW IT STARTED: UNIQUE INTERACTIVE ERA CANVAS (LIGHT THEME) --- */}
+                  {/* DETAILS */}
+                  <div className="space-y-2">
+                    <span className="inline-block text-[10px] font-extrabold tracking-wider uppercase text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+                      {founder.role}
+                    </span>
+
+                    <h3 className="text-xl font-bold text-slate-900 font-serif leading-tight group-hover:text-blue-600 transition-colors">
+                      {founder.name}
+                    </h3>
+
+                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-3">
+                      "{founder.quote}"
+                    </p>
+                  </div>
+                </div>
+
+                {/* BOTTOM ACTION BAR */}
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                  {/* Social Links */}
+                  <div className="flex items-center gap-1.5">
+                    {founder.social.linkedin && (
+                      <a
+                        href={founder.social.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-500 transition-colors shadow-sm"
+                        title="LinkedIn"
+                      >
+                        <LinkedinIcon className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {founder.social.github && (
+                      <a
+                        href={founder.social.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-500 transition-colors shadow-sm"
+                        title="GitHub"
+                      >
+                        <GithubIcon className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {founder.social.email && (
+                      <a
+                        href={`mailto:${founder.social.email}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-full bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-500 transition-colors shadow-sm"
+                        title="Email"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Full Bio Modal Trigger */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedFounder(founder);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-0.5"
+                  >
+                    <span>Full Bio</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- HOW IT STARTED: UNIQUE INTERACTIVE ERA CANVAS --- */}
       <section id="story-canvas" className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-6xl mx-auto space-y-16">
           {/* SECTION HEADER */}
@@ -335,164 +423,6 @@ export default function FoundersPage() {
               </div>
             </motion.div>
           </AnimatePresence>
-        </div>
-      </section>
-
-      {/* --- MEET THE FOUNDERS: SIGNATURE LIGHT DECK --- */}
-      <section id="founders-deck" className="py-24 px-6 bg-slate-50 relative z-10">
-        <div className="max-w-6xl mx-auto space-y-16">
-          {/* SECTION HEADER */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-200/80">
-              Founding Leadership
-            </span>
-            <h2
-              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              Meet The Founders
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-              The engineers, educators, and creators who designed Arcade from the ground up to empower students and faculty.
-            </p>
-          </div>
-
-          {/* FOUNDERS GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {FOUNDERS_DATA.map((founder) => {
-              const currentMode = founderCardModes[founder.id] || "vision";
-              return (
-                <motion.div
-                  key={founder.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                  className="bg-white rounded-3xl border border-slate-200/80 shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Portrait Container */}
-                    <div className="relative w-full h-72 overflow-hidden bg-slate-100">
-                      <Image
-                        src={founder.image}
-                        alt={founder.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-80" />
-
-                      <div className="absolute bottom-4 left-6 right-6 text-white space-y-1">
-                        <h3 className="text-2xl font-bold font-serif leading-tight">
-                          {founder.name}
-                        </h3>
-                        <p className="text-xs font-medium text-teal-300 uppercase tracking-wider">
-                          {founder.role}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Mode Switcher Tabs */}
-                    <div className="px-6 pt-4 flex border-b border-slate-100">
-                      <button
-                        onClick={() => toggleFounderMode(founder.id, "vision")}
-                        className={`pb-2.5 px-3 text-xs font-semibold transition-colors border-b-2 ${
-                          currentMode === "vision"
-                            ? "border-blue-600 text-blue-600"
-                            : "border-transparent text-slate-400 hover:text-slate-700"
-                        }`}
-                      >
-                        Vision & Story
-                      </button>
-                      <button
-                        onClick={() => toggleFounderMode(founder.id, "impact")}
-                        className={`pb-2.5 px-3 text-xs font-semibold transition-colors border-b-2 ${
-                          currentMode === "impact"
-                            ? "border-teal-600 text-teal-600"
-                            : "border-transparent text-slate-400 hover:text-slate-700"
-                        }`}
-                      >
-                        Impact & Stack
-                      </button>
-                    </div>
-
-                    {/* Content View */}
-                    <div className="p-6 space-y-4 min-h-[160px]">
-                      {currentMode === "vision" ? (
-                        <>
-                          <p className="text-slate-600 text-xs sm:text-sm leading-relaxed italic border-l-2 border-blue-500 pl-3">
-                            "{founder.quote}"
-                          </p>
-                          <p className="text-slate-700 text-xs sm:text-sm leading-relaxed line-clamp-3">
-                            {founder.bio}
-                          </p>
-                        </>
-                      ) : (
-                        <div className="space-y-3">
-                          <ul className="space-y-1.5">
-                            {founder.achievements.slice(0, 2).map((item, i) => (
-                              <li key={i} className="flex items-start gap-2 text-xs text-slate-700">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
-                                <span>{item}</span>
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="flex flex-wrap gap-1.5 pt-2">
-                            {founder.skills.slice(0, 3).map((sk) => (
-                              <span key={sk} className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-slate-100 text-slate-700">
-                                {sk}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Footer */}
-                  <div className="p-6 pt-0 flex items-center justify-between border-t border-slate-100 mt-2">
-                    <div className="flex items-center gap-2">
-                      {founder.social.linkedin && (
-                        <a
-                          href={founder.social.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 transition-colors"
-                        >
-                          <LinkedinIcon className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      {founder.social.github && (
-                        <a
-                          href={founder.social.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 rounded-lg bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-600 transition-colors"
-                        >
-                          <GithubIcon className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      {founder.social.email && (
-                        <a
-                          href={`mailto:${founder.social.email}`}
-                          className="p-2 rounded-lg bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-600 transition-colors"
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => setSelectedFounder(founder)}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 group-hover:translate-x-1 transition-transform"
-                    >
-                      <span>Full Bio</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
       </section>
 

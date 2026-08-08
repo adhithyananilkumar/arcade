@@ -78,7 +78,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             <div className="px-6 sm:px-10 pb-8 -mt-16 relative z-10">
               {/* Image & Quick Info Header */}
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left pb-6 border-b border-slate-100">
-                <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-slate-100">
+                <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-purple-50">
                   <Image
                     src={founder.image}
                     alt={founder.name}
