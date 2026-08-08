@@ -54,6 +54,24 @@ interface ContentSummary {
 
 const CONTENT_TYPES = [
   {
+    id: "course",
+    icon: BookOpen,
+    label: "Course",
+    desc: "Structured learning path with modules & lessons",
+    href: "/studio/course/new",
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
+  },
+  {
+    id: "roadmap",
+    icon: Map,
+    label: "Roadmap",
+    desc: "Visual learning path with nodes & connections",
+    href: "",
+    color: "text-[#14142b]",
+    bg: "bg-fuchsia-50",
+  },
+  {
     id: "workshop",
     icon: Wrench,
     label: "Workshop / Bootcamp",
@@ -70,6 +88,15 @@ const CONTENT_TYPES = [
     href: "/studio/webinar/new",
     color: "text-blue-600",
     bg: "bg-blue-50",
+  },
+  {
+    id: "article",
+    icon: FileText,
+    label: "Article",
+    desc: "Standalone rich document authored with the editor",
+    href: "/studio/article/new",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
   },
 ] as const;
 
@@ -103,13 +130,6 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#FFF1E8] text-[#C45E28] border-[#FFD4BC]">
         <Wrench size={10} /> Workshop
-      </span>
-    );
-  }
-  if (type === "WEBINAR") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
-        <Radio size={10} /> Webinar
       </span>
     );
   }
@@ -718,7 +738,7 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const isWorkshop = item.type === "WORKSHOP" || item.type === "WEBINAR";
+  const isWorkshop = item.type === "WORKSHOP";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
     : isWorkshop
@@ -847,7 +867,7 @@ export default function DashboardPage() {
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "WORKSHOP" | "WEBINAR">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "WORKSHOP">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
   
   const { channels } = useEligibleChannels();
@@ -868,14 +888,7 @@ export default function DashboardPage() {
     setLoadingItems(true);
     api
       .get<ContentSummary[]>("/api/content")
-      .then((res) => {
-        const filtered = res.filter(
-          (item) =>
-            item.type?.toUpperCase() === "WORKSHOP" ||
-            item.type?.toUpperCase() === "WEBINAR"
-        );
-        setItems(filtered);
-      })
+      .then(setItems)
       .catch(() => setItems([]))
       .finally(() => setLoadingItems(false));
   };
@@ -910,7 +923,9 @@ export default function DashboardPage() {
       const statusOk =
         statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
       const typeOk =
-        typeFilter === "ALL" || item.type?.toUpperCase() === typeFilter;
+        typeFilter === "ALL" ||
+        item.type?.toUpperCase() === typeFilter ||
+        (typeFilter === "WORKSHOP" && item.type?.toUpperCase() === "WEBINAR");
       const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
       return statusOk && typeOk && channelOk;
     });
@@ -936,8 +951,9 @@ export default function DashboardPage() {
 
   const TYPE_CHIPS = [
     { id: "ALL" as const, label: "All types" },
+    { id: "COURSE" as const, label: "Courses" },
+    { id: "ROADMAP" as const, label: "Roadmaps" },
     { id: "WORKSHOP" as const, label: "Workshops" },
-    { id: "WEBINAR" as const, label: "Webinars" },
   ];
 
   return (
@@ -1162,12 +1178,12 @@ export default function DashboardPage() {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-white/70 py-20 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-              <Wrench size={24} className="text-slate-400" />
+              <BookOpen size={24} className="text-slate-400" />
             </div>
             <div>
               <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
               <p className="mt-1 text-xs text-slate-400">
-                Click &quot;Create Content&quot; to build your first workshop or webinar.
+                Click &quot;Create Content&quot; to build your first course or roadmap.
               </p>
             </div>
           </div>

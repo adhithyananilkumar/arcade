@@ -184,7 +184,7 @@ export default function ManageChannelPage() {
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
 
-  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
+  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'COURSES', label: 'Courses', icon: BookOpen, badge: `${content.length || 48}` },
     ...(!channel.isPersonal

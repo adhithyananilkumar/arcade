@@ -111,7 +111,7 @@ export default function ReviewDetailPage() {
         </div>
         {(() => {
           const role = review.tier === 'GLOBAL' ? 'Superuser' : 'Org Head';
-          let text = review.status;
+          let text: string = review.status;
           let colorClass = 'bg-slate-100 text-slate-800';
           if (review.status === 'OPEN') {
             text = `Pending by ${role}`;
