@@ -25,7 +25,7 @@ export default function ExamDashboard() {
   useEffect(() => {
     const fetchExams = async () => {
       try {
-        const data = await api.get<ExamDto[]>("/api/v1/learning/enrollments/exams/today");
+        const data = await api.get<ExamDto[]>("/api/v1/learning/exams/today");
         setExams(data);
       } catch (err: any) {
         setError(err.message || "Failed to load exams.");

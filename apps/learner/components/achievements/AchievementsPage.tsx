@@ -670,7 +670,7 @@ export default function AchievementsPage() {
                             if (!isPassed) {
                               toast.error(`Certificate unavailable. Minimum passing score required for "${cert.title}".`);
                             } else {
-                              handleDownloadCert(cert.title);
+                              toast.info(`Downloading certificate for "${cert.title}"...`);
                             }
                           }}
                           title={isPassed ? "Download Certificate PDF" : "Exam Not Passed"}

@@ -111,12 +111,12 @@ export default function ReviewDetailPage() {
         </div>
         {(() => {
           const role = review.tier === 'GLOBAL' ? 'Superuser' : 'Org Head';
-          let text = review.status;
+          let text: string = review.status;
           let colorClass = 'bg-slate-100 text-slate-800';
           if (review.status === 'OPEN') {
             text = `Pending by ${role}`;
             colorClass = 'bg-amber-100 text-amber-800';
-          } else if (review.status === 'APPROVED') {
+          } else if (review.status === 'COMPLETED') {
             text = `Approved by ${role}`;
             colorClass = 'bg-emerald-100 text-emerald-800';
           } else if (review.status === 'CHANGES_REQUESTED') {

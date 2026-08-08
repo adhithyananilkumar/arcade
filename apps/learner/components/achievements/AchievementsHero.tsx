@@ -225,7 +225,7 @@ export default function AchievementsHero({
   streakDays = 14,
   certificatesCount,
 }: AchievementsHeroProps) {
-  const cubicEase = [0.16, 1, 0.3, 1];
+  const cubicEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
   return (
     <div className="relative w-full overflow-hidden pt-4 pb-6 mb-6 flex flex-col items-center justify-center text-center">
