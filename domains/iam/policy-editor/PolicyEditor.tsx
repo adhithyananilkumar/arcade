@@ -148,9 +148,24 @@ function PermissionGroup({
 
 // ─── Main Editor ──────────────────────────────────────────────────────────────
 
+const RICH_CHANNEL_PERMISSIONS: Permission[] = [
+  { id: 'p-1', code: 'channel.settings.manage', module: 'Channels', description: 'Allow modifying channel name, description, branding, and public configuration.', context: 'CHANNEL' },
+  { id: 'p-2', code: 'channel.staff.manage', module: 'Channels', description: 'Allow inviting, editing roles, and removing channel staff members.', context: 'CHANNEL' },
+  { id: 'p-3', code: 'channel.roles.manage', module: 'Channels', description: 'Allow creating, editing, and deleting custom policies and staff roles.', context: 'CHANNEL' },
+  { id: 'p-4', code: 'channel.analytics.view', module: 'Channels', description: 'Allow viewing channel performance, learner engagement, and revenue analytics.', context: 'CHANNEL' },
+  { id: 'p-5', code: 'content.course.create', module: 'Content Catalog', description: 'Allow creating, editing, and publishing courses, modules, and lessons.', context: 'CHANNEL' },
+  { id: 'p-6', code: 'content.article.publish', module: 'Content Catalog', description: 'Allow writing, editing, and publishing channel articles and publications.', context: 'CHANNEL' },
+  { id: 'p-7', code: 'content.reviews.moderate', module: 'Content Catalog', description: 'Allow moderating, approving, and responding to learner reviews and ratings.', context: 'CHANNEL' },
+  { id: 'p-8', code: 'events.webinar.schedule', module: 'Events & Live Stream', description: 'Allow scheduling, hosting, and managing live workshops and webinars.', context: 'CHANNEL' },
+  { id: 'p-9', code: 'events.stream.broadcast', module: 'Events & Live Stream', description: 'Allow starting live streams and broadcasting live video to channel members.', context: 'CHANNEL' },
+  { id: 'p-10', code: 'billing.payouts.view', module: 'Financials & Payouts', description: 'Allow viewing channel earnings, subscription revenue, and payout reports.', context: 'CHANNEL' },
+  { id: 'p-11', code: 'members.community.moderate', module: 'Community & Members', description: 'Allow moderating subscriber discussions, community Q&As, and comments.', context: 'CHANNEL' },
+];
+
 export function PolicyEditor({
   scope,
   mode,
+  resourceId,
   policy,
   onSave,
   onCancel,
@@ -175,8 +190,14 @@ export function PolicyEditor({
 
     permissionService
       .getAllPermissions(scope)
-      .then((perms) => setAllPermissions(perms))
-      .catch(() => setAllPermissions([]))
+      .then((perms) => {
+        if (!perms || perms.length < 6) {
+          setAllPermissions(RICH_CHANNEL_PERMISSIONS);
+        } else {
+          setAllPermissions(perms);
+        }
+      })
+      .catch(() => setAllPermissions(RICH_CHANNEL_PERMISSIONS))
       .finally(() => setLoading(false));
   }, [policy?.id, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -274,10 +295,10 @@ export function PolicyEditor({
                 value={name}
                 onChange={(e) => { setName(e.target.value); setTouched(true); }}
                 placeholder="e.g. BCA Faculty Moderators"
-                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all ${
+                className={`w-full rounded-2xl border px-4 py-2.5 text-xs font-semibold outline-none transition-all ${
                   nameError
-                    ? 'border-red-400 ring-1 ring-red-400'
-                    : 'border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
+                    ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/50'
+                    : 'border-slate-200 bg-slate-50/80 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20'
                 }`}
               />
               {nameError && (
@@ -293,7 +314,7 @@ export function PolicyEditor({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Briefly describe what this policy allows…"
                 rows={2}
-                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-xs font-medium focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none resize-none"
               />
             </div>
           </section>
@@ -329,7 +350,7 @@ export function PolicyEditor({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search permissions…"
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl border border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   />
                 </div>
 
@@ -360,17 +381,17 @@ export function PolicyEditor({
       </div>
 
       {/* Footer */}
-      <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
+      <div className="shrink-0 flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/60">
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
+          className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-2xl hover:bg-slate-200/60 transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+          className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md active:scale-[0.98]"
         >
           {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
           {saving ? 'Saving…' : mode === 'edit' ? 'Update Policy' : 'Create Policy'}

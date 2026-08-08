@@ -1045,7 +1045,7 @@ function ExploreCatalog() {
   useEffect(() => {
     if (activeTab === "roadmaps") {
       setIsRoadmapsLoading(true);
-      roadmapService.getAllRoadmaps()
+      roadmapService.getPublishedRoadmaps()
         .then(async (data) => {
           const published = data.filter(r => r.status?.toLowerCase() === 'published');
           setRoadmaps(published);

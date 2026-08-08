@@ -24,6 +24,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import type * as Y from "yjs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { TiptapContentView } from "@/domains/learning";
@@ -75,8 +92,30 @@ import {
   History,
   MessageSquare,
   Lock,
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
+
+function SortableRow({ id, children, isActive }: { id: string, children: (dragHandleProps: any) => React.ReactNode, isActive?: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"}`}
+    >
+      {children({ ...attributes, ...listeners })}
+    </div>
+  );
+}
 
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
@@ -102,22 +141,15 @@ interface LessonNode {
   position: number;
 }
 
-interface QuizNode {
-  id: string;
-  title: string;
-  position: number;
-}
-
 interface ModuleNode {
   id: string;
   title: string;
   position: number;
   lessons: LessonNode[];
-  quizzes: QuizNode[];
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson" | "quiz";
+type EditKind = "module" | "lesson";
 
 interface ConfirmOptions {
   title: string;
@@ -437,8 +469,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState("Untitled Lesson");
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
-  const [activeQuizTitle, setActiveQuizTitle] = useState("Untitled Quiz");
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
     undefined
@@ -455,7 +485,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   // transaction that didn't actually change the document is dropped before it costs
   // a CRDT encode and a network round-trip. Reset whenever the open lesson changes.
   const lastSavedBodyRef = useRef<string | null>(null);
-  const [copiedQuizId, setCopiedQuizId] = useState<string | null>(null);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -477,6 +507,61 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
   const [editingValue, setEditingValue] = useState("");
   const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
+
+  // ── Drag and Drop Handlers ────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (moduleId: string, event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setModules((prev) =>
+      prev.map((m) => {
+        if (m.id !== moduleId) return m;
+
+        // Flatten items to get their current order
+        const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
+          .sort((a, b) => a.node.position - b.node.position);
+        
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) return m;
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Update positions
+        const nextLessons = [...m.lessons];
+        
+        const itemIds: string[] = [];
+
+        newItems.forEach((item, index) => {
+          itemIds.push(item.id);
+          if (item.type === 'lesson') {
+            const lIndex = nextLessons.findIndex(l => l.id === item.id);
+            if (lIndex !== -1) nextLessons[lIndex] = { ...nextLessons[lIndex], position: index };
+          }
+        });
+
+        // Fire API call in background
+        api.patch(`/api/modules/${moduleId}/reorder`, { itemIds }).catch((e) => {
+          console.error("Failed to reorder items", e);
+          toast.error("Failed to save new order");
+        });
+
+        return { ...m, lessons: nextLessons };
+      })
+    );
+  };
 
   // ── Bootstrap: create or load course on mount ─────────────────────────────
 
@@ -501,9 +586,8 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
             id: m.id,
             title: m.title,
             position: m.position,
-            lessons: m.lessons,
-            quizzes: m.quizzes ?? [],
-            expanded: true,
+            expanded: false,
+            lessons: m.lessons ?? [],
           }))
         );
         setCourseData(course);
@@ -595,7 +679,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
       // Commit together: React batches these so the editor remounts once, bound to
       // the hydrated Y.Doc with any legacy seed ready.
-      setActiveQuizId(null);
       setActiveYDoc(ydoc);
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
@@ -603,28 +686,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
     },
     [resolveLegacyContent]
   );
-
-  // ── Open a quiz item (mutually exclusive with a lesson) ────────────────────
-  const openQuiz = useCallback(async (quiz: QuizNode) => {
-    setView("tree");
-    setHistoryOpen(false);
-
-    // Flush and tear down any open lesson editor before switching to the quiz.
-    if (editorRef.current) {
-      try {
-        await editorRef.current.flush();
-      } catch {
-        // best-effort
-      }
-    }
-    activeYDocRef.current = null;
-    setActiveYDoc(null);
-    setActiveSeedContent(undefined);
-    setActiveLessonId(null);
-
-    setActiveQuizTitle(quiz.title);
-    setActiveQuizId(quiz.id);
-  }, []);
 
   // ── Auto-save handler ─────────────────────────────────────────────────────
 
@@ -736,7 +797,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
           title: m.title,
           position: m.position,
           lessons: [],
-          quizzes: [],
           expanded: true,
         },
       ]);
@@ -772,33 +832,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
     [courseId, modules, openLesson]
   );
 
-  // ── Tree mutation: Add Quiz (sibling of a lesson under a module) ────────────
-
-  const addQuiz = useCallback(
-    async (moduleId: string) => {
-      if (!courseId) return;
-      try {
-        const mod = modules.find((m) => m.id === moduleId);
-        const nextIndex = (mod?.quizzes.length ?? 0) + 1;
-        const newQuiz = await api.post<QuizResponse>(
-          `/api/modules/${moduleId}/quizzes`,
-          { title: `Quiz ${nextIndex}` }
-        );
-        setModules((prev) =>
-          prev.map((m) =>
-            m.id === moduleId
-              ? { ...m, expanded: true, quizzes: [...m.quizzes, newQuiz] }
-              : m
-          )
-        );
-        await openQuiz(newQuiz);
-      } catch (e) {
-        console.error("Failed to add quiz", e);
-      }
-    },
-    [courseId, modules, openQuiz]
-  );
-
   // ── Inline rename ─────────────────────────────────────────────────────────
 
   const startEdit = (kind: EditKind, id: string, current: string) => {
@@ -820,19 +853,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       } catch (e) {
         console.warn("Module rename failed", e);
       }
-    } else if (kind === "quiz") {
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) => (q.id === id ? { ...q, title: value } : q)),
-        }))
-      );
-      if (activeQuizId === id) setActiveQuizTitle(value);
-      try {
-        await api.patch(`/api/quizzes/${id}`, { title: value });
-      } catch (e) {
-        console.warn("Quiz rename failed", e);
-      }
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -853,9 +873,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
 
   const deleteModuleNow = async (mod: ModuleNode) => {
     const hadActive = mod.lessons.some((l) => l.id === activeLessonId);
-    const hadActiveQuiz = mod.quizzes.some((q) => q.id === activeQuizId);
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
-    if (hadActiveQuiz) setActiveQuizId(null);
     if (hadActive) {
       setActiveLessonId(null);
       // The effect cleanup destroys the doc after the editor unmounts.
@@ -907,53 +925,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
       danger: true,
       onConfirm: () => deleteLessonNow(lesson.id),
     });
-
-  const deleteQuizNow = async (quizId: string) => {
-    setModules((prev) =>
-      prev.map((m) => ({ ...m, quizzes: m.quizzes.filter((q) => q.id !== quizId) }))
-    );
-    if (activeQuizId === quizId) {
-      setActiveQuizId(null);
-    }
-    try {
-      await api.delete(`/api/quizzes/${quizId}`);
-    } catch (e) {
-      console.error("Failed to delete quiz", e);
-    }
-  };
-
-  const askDeleteQuiz = (quiz: QuizNode) =>
-    setConfirm({
-      title: "Delete quiz?",
-      message: `"${quiz.title}" and all of its questions will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete",
-      danger: true,
-      onConfirm: () => deleteQuizNow(quiz.id),
-    });
-
-  // ── Quiz title save (from main panel input) ───────────────────────────────
-
-  const saveQuizTitle = useCallback(
-    async (newTitle: string) => {
-      if (!activeQuizId) return;
-      const value = newTitle.trim() || "Untitled Quiz";
-      setActiveQuizTitle(value);
-      setModules((prev) =>
-        prev.map((m) => ({
-          ...m,
-          quizzes: m.quizzes.map((q) =>
-            q.id === activeQuizId ? { ...q, title: value } : q
-          ),
-        }))
-      );
-      try {
-        await api.patch(`/api/quizzes/${activeQuizId}`, { title: value });
-      } catch (e) {
-        console.warn("Quiz title save failed", e);
-      }
-    },
-    [activeQuizId]
-  );
 
   // ── Course metadata debounced save ────────────────────────────────────────
 
@@ -1097,7 +1068,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
           setEditing(null);
         }
       }}
-      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-white px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
+      className={`min-w-0 flex-1 rounded border border-indigo-300 bg-transparent px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-indigo-300 ${className}`}
     />
   );
 
@@ -1174,9 +1145,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                 ? "Course Settings"
                 : activeLessonId
                   ? activeLessonTitle
-                  : activeQuizId
-                    ? activeQuizTitle
-                    : ""}
+                  : ""}
             </span>
           </div>
 
@@ -1299,10 +1268,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                                 <FileText size={13} />
                                 Lesson
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => addQuiz(mod.id)}>
-                                <ListChecks size={13} />
-                                Quiz
-                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
@@ -1314,92 +1279,79 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                         </div>
                       </div>
 
-                      {/* Lessons and quizzes, interleaved by position */}
+                      {/* Lessons */}
                       {mod.expanded && (
                         <div className="ml-3 border-l border-gray-200 pl-1.5">
-                          {[
-                            ...mod.lessons.map((l) => ({ kind: "lesson" as const, node: l })),
-                            ...mod.quizzes.map((q) => ({ kind: "quiz" as const, node: q })),
-                          ]
-                            .sort((a, b) => a.node.position - b.node.position)
-                            .map((item) => {
-                              const isActive =
-                                item.kind === "lesson"
-                                  ? activeLessonId === item.node.id
-                                  : activeQuizId === item.node.id;
-                              return (
-                                <div
-                                  key={item.node.id}
-                                  className={`group flex items-center gap-1 rounded-md pl-2 pr-1.5 ${isActive ? "bg-indigo-50" : "hover:bg-gray-100"
-                                    }`}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      item.kind === "lesson"
-                                        ? openLesson(item.node)
-                                        : openQuiz(item.node)
-                                    }
-                                    className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
-                                      ? "font-medium text-indigo-700"
-                                      : "text-gray-500"
-                                      }`}
-                                  >
-                                    {item.kind === "lesson" ? (
-                                      <FileText size={11} className="flex-shrink-0" />
-                                    ) : (
-                                      <ListChecks size={11} className="flex-shrink-0 text-amber-500" />
-                                    )}
-                                    {isEditing(item.kind, item.node.id) ? (
-                                      renameInput("text-xs")
-                                    ) : (
-                                      <span className="truncate" title={item.node.title}>
-                                        {item.node.title}
-                                      </span>
-                                    )}
-                                  </button>
-                                  <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                                    {item.kind === "quiz" && (
-                                      <IconBtn
-                                        title="Copy quiz ID — paste into an inline Quiz block"
-                                        onClick={() => {
-                                          navigator.clipboard.writeText(item.node.id);
-                                          setCopiedQuizId(item.node.id);
-                                          setTimeout(() => setCopiedQuizId(null), 1500);
-                                        }}
-                                      >
-                                        {copiedQuizId === item.node.id ? (
-                                          <Check size={12} className="text-emerald-500" />
-                                        ) : (
-                                          <Copy size={12} />
-                                        )}
-                                      </IconBtn>
-                                    )}
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Rename lesson" : "Rename quiz"}
-                                      onClick={() =>
-                                        startEdit(item.kind, item.node.id, item.node.title)
-                                      }
+                          <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={(event) => handleDragEnd(mod.id, event)}
+                          >
+                            <SortableContext
+                              items={mod.lessons.map((l) => l.id)}
+                              strategy={verticalListSortingStrategy}
+                            >
+                              {mod.lessons.map((l) => ({ kind: "lesson" as const, node: l }))
+                                .sort((a, b) => a.node.position - b.node.position)
+                                .map((item) => {
+                                  const isActive = activeLessonId === item.node.id;
+                                  return (
+                                    <SortableRow
+                                      key={item.node.id}
+                                      id={item.node.id}
+                                      isActive={isActive}
                                     >
-                                      <Pencil size={12} />
-                                    </IconBtn>
-                                    <IconBtn
-                                      title={item.kind === "lesson" ? "Delete lesson" : "Delete quiz"}
-                                      danger
-                                      onClick={() =>
-                                        item.kind === "lesson"
-                                          ? askDeleteLesson(item.node)
-                                          : askDeleteQuiz(item.node)
-                                      }
-                                    >
-                                      <Trash2 size={12} />
-                                    </IconBtn>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                      {(dragHandleProps) => (
+                                        <>
+                                          <div
+                                            {...dragHandleProps}
+                                            className="cursor-grab hover:text-gray-900 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity -ml-1 py-1"
+                                          >
+                                            <GripVertical size={13} />
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => openLesson(item.node)}
+                                            className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive
+                                              ? "font-medium text-indigo-700"
+                                              : "text-gray-500"
+                                              }`}
+                                          >
+                                            <FileText size={11} className="flex-shrink-0" />
+                                            {isEditing(item.kind, item.node.id) ? (
+                                              renameInput("text-xs")
+                                            ) : (
+                                              <span className="truncate" title={item.node.title}>
+                                                {item.node.title}
+                                              </span>
+                                            )}
+                                          </button>
+                                          <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                            <IconBtn
+                                              title="Rename lesson"
+                                              onClick={() =>
+                                                startEdit(item.kind, item.node.id, item.node.title)
+                                              }
+                                            >
+                                              <Pencil size={12} />
+                                            </IconBtn>
+                                            <IconBtn
+                                              title="Delete lesson"
+                                              danger
+                                              onClick={() => askDeleteLesson(item.node)}
+                                            >
+                                              <Trash2 size={12} />
+                                            </IconBtn>
+                                          </div>
+                                        </>
+                                      )}
+                                    </SortableRow>
+                                  );
+                                })}
+                            </SortableContext>
+                          </DndContext>
 
-                          {/* Add lesson / quiz to this module */}
+                          {/* Add lesson to this module */}
                           <div className="mt-0.5 flex items-center gap-3 pl-2">
                             <button
                               type="button"
@@ -1408,14 +1360,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                             >
                               <Plus size={11} />
                               Add lesson
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => addQuiz(mod.id)}
-                              className="flex items-center gap-1 py-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600"
-                            >
-                              <Plus size={11} />
-                              Add quiz
                             </button>
                           </div>
                         </div>
@@ -1504,21 +1448,6 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                     chromeless
                   />
                 )}
-              </div>
-            </div>
-          ) : activeQuizId ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div>
-                <div className="mb-5 flex items-center gap-3">
-                  <ListChecks size={22} className="flex-shrink-0 text-amber-500" />
-                  <DebouncedTitleInput
-                    value={activeQuizTitle}
-                    onCommit={saveQuizTitle}
-                    className="min-w-0 flex-1 border-0 bg-transparent text-2xl font-bold text-gray-900 outline-none placeholder:text-gray-300"
-                    placeholder="Quiz title"
-                  />
-                </div>
-                <QuizEditor key={activeQuizId} quizId={activeQuizId} />
               </div>
             </div>
           ) : (

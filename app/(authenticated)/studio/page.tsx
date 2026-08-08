@@ -28,6 +28,8 @@ import {
   Copy,
   Lock,
   User,
+  FileQuestion,
+  HelpCircle,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -98,6 +100,24 @@ const CONTENT_TYPES = [
     color: "text-emerald-600",
     bg: "bg-emerald-50",
   },
+  {
+    id: "quiz",
+    icon: HelpCircle,
+    label: "Quiz",
+    desc: "Standalone question bank with automated grading",
+    href: "/studio/quiz/new",
+    color: "text-rose-600",
+    bg: "bg-rose-50",
+  },
+  {
+    id: "exam",
+    icon: ClipboardCheck,
+    label: "Exam",
+    desc: "Standalone exam or quiz",
+    href: "/studio/exam/new",
+    color: "text-orange-600",
+    bg: "bg-orange-50",
+  },
 ] as const;
 
 function StatusBadge({ status }: { status: string }) {
@@ -130,6 +150,13 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#FFF1E8] text-[#C45E28] border-[#FFD4BC]">
         <Wrench size={10} /> Workshop
+      </span>
+    );
+  }
+  if (type === "QUIZ") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+        <FileQuestion size={10} /> Quiz
       </span>
     );
   }
@@ -254,6 +281,113 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── New Quiz creation modal ──────────────────────────────────────────────────
+
+function CreateQuizModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !channelId) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const quiz = await api.post<{ id: string }>("/api/quizzes", {
+        title: name.trim(),
+        channelId,
+      });
+      toast.success(`"${name.trim()}" created`);
+      router.push(`/studio/quiz/${quiz.id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not create quiz";
+      setError(message);
+      toast.error(message);
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <HelpCircle size={20} className="text-[#14142b]" />
+          </div>
+          <div>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Quiz name <span className="text-rose-500">*</span>
+            </label>
+            <input
+              id="quiz-name"
+              type="text"
+              required
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Chapter 1 Quiz"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+            />
+          </div>
+          {!channelsLoading && channels.length > 1 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-rose-600">
+              You need a channel with content-authoring rights before you can create a quiz.
+            </p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim() || !channelId || creating}
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+            >
+              {creating ? "Creating…" : "Create Quiz"}
             </button>
           </div>
         </form>
@@ -438,6 +572,11 @@ function CreateWorkshopModal({
     }
   }
 
+  const typeLabel = workshopType === WorkshopType.WEBINAR ? "Webinar" : 
+                    workshopType === WorkshopType.BOOTCAMP ? "Bootcamp" :
+                    workshopType === WorkshopType.MASTERCLASS ? "Masterclass" :
+                    workshopType === WorkshopType.AMA ? "AMA" : "Workshop";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
@@ -454,7 +593,7 @@ function CreateWorkshopModal({
             <Wrench size={20} className="text-[#14142b]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Workshop</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
             <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
@@ -468,7 +607,7 @@ function CreateWorkshopModal({
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label htmlFor="workshop-type" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Workshop Type <span className="text-red-500">*</span>
+              Type <span className="text-red-500">*</span>
             </label>
             <select
               id="workshop-type"
@@ -477,16 +616,16 @@ function CreateWorkshopModal({
               onChange={(e) => setWorkshopType(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60 bg-white"
             >
-              <option value={WorkshopType.WORKSHOP}>Workshop</option>
-              <option value={WorkshopType.BOOTCAMP}>Bootcamp</option>
-              <option value={WorkshopType.MASTERCLASS}>Masterclass</option>
-              <option value={WorkshopType.WEBINAR}>Webinar</option>
-              <option value={WorkshopType.AMA}>AMA</option>
+              {defaultType === WorkshopType.WEBINAR ? (
+                <option value={WorkshopType.WEBINAR}>Webinar</option>
+              ) : (
+                <option value={WorkshopType.WORKSHOP}>Workshop</option>
+              )}
             </select>
           </div>
           <div>
             <label htmlFor="workshop-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Workshop Title <span className="text-red-500">*</span>
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               id="workshop-title"
@@ -519,7 +658,7 @@ function CreateWorkshopModal({
           )}
           {!channelsLoading && channels.length === 0 && (
             <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a workshop.
+              You need a channel with content-authoring rights before you can create a {typeLabel.toLowerCase()}.
             </p>
           )}
           <div className="flex justify-end gap-2 pt-1">
@@ -535,7 +674,7 @@ function CreateWorkshopModal({
               disabled={!title.trim() || !channelId || creating}
               className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
-              {creating ? "Creating…" : "Create Workshop"}
+              {creating ? "Creating…" : `Create ${typeLabel}`}
             </button>
           </div>
         </form>
@@ -734,11 +873,14 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
   const isWorkshop = item.type === "WORKSHOP";
+  const isQuiz = item.type === "QUIZ";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
     : isWorkshop
       ? `/studio/workshop/${item.id}`
-      : `/studio/course/${item.id}/edit`;
+      : isQuiz
+        ? `/studio/quiz/${item.id}`
+        : `/studio/course/${item.id}/edit`;
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
@@ -858,17 +1000,20 @@ function ContentCard({
 
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | "webinar" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | "webinar" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "WORKSHOP">("ALL");
+  const [channelFilter, setChannelFilter] = useState<string>("ALL");
+  
+  const { channels } = useEligibleChannels();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const create = params.get("create");
-    if (create === "webinar" || create === "workshop" || create === "course" || create === "roadmap") {
+    if (create === "webinar" || create === "workshop" || create === "course" || create === "roadmap" || create === "quiz") {
       setCreateOpen(create);
     }
   }, []);
@@ -918,9 +1063,20 @@ export default function DashboardPage() {
         typeFilter === "ALL" ||
         item.type?.toUpperCase() === typeFilter ||
         (typeFilter === "WORKSHOP" && item.type?.toUpperCase() === "WEBINAR");
-      return statusOk && typeOk;
+      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
+      return statusOk && typeOk && channelOk;
     });
-  }, [items, statusFilter, typeFilter]);
+  }, [items, statusFilter, typeFilter, channelFilter]);
+
+  const CHANNEL_CHIPS = useMemo(() => {
+    const base = [{ id: "ALL", label: "All channels" }];
+    return base.concat(
+      channels.map(c => ({
+        id: c.id,
+        label: c.isPersonal ? "Personal" : c.name
+      }))
+    );
+  }, [channels]);
 
   const STATUS_TABS = [
     { id: "ALL" as const, label: "All" },
@@ -946,6 +1102,7 @@ export default function DashboardPage() {
     >
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WORKSHOP} />}
       {createOpen === "webinar" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WEBINAR} />}
       {renameTarget && (
@@ -982,6 +1139,24 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {channels.length > 0 && (
+              <div className="relative">
+                <select
+                  value={channelFilter}
+                  onChange={(e) => setChannelFilter(e.target.value)}
+                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-3.5 pr-8 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b] outline-none cursor-pointer focus:ring-2 focus:ring-slate-200"
+                >
+                  {CHANNEL_CHIPS.map((chip) => (
+                    <option key={chip.id} value={chip.id}>
+                      {chip.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown size={14} className="text-slate-400" />
+                </div>
+              </div>
+            )}
             <Link
               href="/studio/review"
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
@@ -1041,7 +1216,7 @@ export default function DashboardPage() {
                       );
                       const cls =
                         "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50";
-                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" || type.id === "webinar" ? (
+                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" || type.id === "webinar" || type.id === "quiz" ? (
                         <button
                           key={type.id}
                           type="button"
@@ -1154,12 +1329,13 @@ export default function DashboardPage() {
           <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200/80 bg-white/80 py-16 text-center">
             <GraduationCap size={28} className="text-slate-300" />
             <p className="text-sm font-semibold text-[#14142b]">Nothing in this segment</p>
-            <p className="text-xs text-slate-400">Try another status or type filter.</p>
+            <p className="text-xs text-slate-400">Try another filter.</p>
             <button
               type="button"
               onClick={() => {
                 setStatusFilter("ALL");
                 setTypeFilter("ALL");
+                setChannelFilter("ALL");
               }}
               className="mt-1 text-[12px] font-semibold text-[#FF6B4A] hover:underline"
             >

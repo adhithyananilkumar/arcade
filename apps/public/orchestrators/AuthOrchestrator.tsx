@@ -64,8 +64,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   useEffect(() => {
     if (mode !== 'verify') return;
     if (!token) {
-      setVerifyStatus('error');
-      setGlobalError('No verification token provided.');
+      // Manual OTP verification mode - user will enter code manually
       return;
     }
 
@@ -107,6 +106,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
     firstName: string;
     lastName: string;
     confirmPassword?: string;
+    otp?: string;
   }) => {
     setGlobalError(undefined);
     setLoading(true);
@@ -133,8 +133,20 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
+          handleModeChange('verify');
+        }, 2000);
+      } else if (mode === 'verify') {
+        if (!data.otp) {
+          setGlobalError('Please enter the 6-digit verification code.');
+          return;
+        }
+        await AuthService.verifyEmail(data.otp, data.email);
+        setSuccessKind('verify');
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
           handleModeChange('login');
-        }, 3500);
+        }, 2500);
       } else if (mode === 'forgot') {
         await AuthService.forgotPassword(data.email);
         setSuccessKind('forgot');
@@ -159,6 +171,15 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google';
   };
 
+  const handleResendOtp = async (email: string) => {
+    try {
+      await AuthService.resendVerificationCode(email);
+    } catch (err: any) {
+      setGlobalError(err.response?.data?.message || err.message || 'Failed to resend code');
+      throw err;
+    }
+  };
+
   return (
     <AuthForm
       mode={mode}
@@ -170,6 +191,8 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
       onModeChange={handleModeChange}
       onSubmit={handleSubmit}
       onGoogleLogin={handleGoogleLogin}
+      hasToken={!!token}
+      onResendOtp={handleResendOtp}
     />
   );
 }

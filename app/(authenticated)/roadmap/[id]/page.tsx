@@ -59,7 +59,7 @@ export default function RoadmapViewPage({
 
   return (
     <div className="flex-1 flex flex-col w-full h-screen relative m-0 p-0 overflow-hidden">
-      <RoadmapViewer 
+      <RoadmapViewer
         roadmapId={roadmap.id}
         title={roadmap.title}
         description={roadmap.description}

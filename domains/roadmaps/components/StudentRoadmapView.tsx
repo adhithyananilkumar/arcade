@@ -156,6 +156,7 @@ export function StudentRoadmapView({ roadmapId }: StudentRoadmapViewProps) {
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
+          fitViewOptions={{ maxZoom: 1.0 }}
           minZoom={0.5}
           maxZoom={1.5}
         >
@@ -170,8 +171,23 @@ export function StudentRoadmapView({ roadmapId }: StudentRoadmapViewProps) {
               <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 uppercase tracking-wider">
                 {String(selectedNode.data.type || "unknown")}
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">{String(selectedNode.data.title || "Untitled")}</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">{String(selectedNode.data.title || selectedNode.data.label || "Untitled")}</h2>
               <p className="text-sm text-gray-600 mb-6">{String(selectedNode.data.description || "")}</p>
+              
+              {((selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : [])).length > 0 && (
+                <div className="mb-6 space-y-2">
+                  {((selectedNode.data.courseIds as string[]) || (selectedNode.data.courseId ? [selectedNode.data.courseId as string] : [])).map((id, index, arr) => (
+                    <Link
+                      key={id}
+                      href={`/learn/${id}`}
+                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                    >
+                      <Play size={16} className="fill-current" /> {arr.length > 1 ? `Go to Course ${index + 1}` : 'Go to Course'}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
               
               <div className="space-y-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Your Progress</h4>
