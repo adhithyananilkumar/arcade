@@ -116,7 +116,7 @@ export default function ReviewDetailPage() {
           if (review.status === 'OPEN') {
             text = `Pending by ${role}`;
             colorClass = 'bg-amber-100 text-amber-800';
-          } else if (review.status === 'APPROVED') {
+          } else if (review.status === 'COMPLETED') {
             text = `Approved by ${role}`;
             colorClass = 'bg-emerald-100 text-emerald-800';
           } else if (review.status === 'CHANGES_REQUESTED') {

@@ -348,6 +348,10 @@ export default function AchievementsPage() {
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates' | 'quests'>('badges');
 
+  const handleDownloadCert = (title: string) => {
+    toast.success(`Downloading certificate for "${title}"...`);
+  };
+
   // Load fresh profile details from DB if available
   useEffect(() => {
     const loadUserData = async () => {

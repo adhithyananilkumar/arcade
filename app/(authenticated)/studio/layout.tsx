@@ -60,11 +60,10 @@ export default function ContentStudioLayout({
   
   // Authorized if admin, or visiting a workshop they have view access to, or visiting the collaborations page, or has general studio access
   const isAuthorized = hasAdminAccess || 
-    (workshopId ? hasWorkshopAccess === true : (isCollaborationsPage ? hasCollabs === true : hasAccess));
+    (workshopId ? hasWorkshopAccess === true : (isCollaborationsPage ? true : hasAccess));
 
   const isLayoutLoading = loading || 
-    (workshopId !== null && hasWorkshopAccess === null) ||
-    (isCollaborationsPage && hasCollabs === null);
+    (workshopId !== null && hasWorkshopAccess === null);
 
   useEffect(() => {
     if (!hasAdminAccess && !isLayoutLoading && !isAuthorized) {
