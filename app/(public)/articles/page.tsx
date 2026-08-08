@@ -1,5 +1,5 @@
-import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
+import ArticlesDetailedView from "@/components/explore/ArticlesDetailedView";
 
 export default function ArticlesPage() {
-  return <CategoryDetailedView viewType="articles" />;
+  return <ArticlesDetailedView viewType="articles" />;
 }

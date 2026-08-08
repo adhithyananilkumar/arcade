@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Play, VolumeX, Settings, Share2, Clock } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 export default function CourseShowcase() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -14,29 +13,12 @@ export default function CourseShowcase() {
 
   return (
     <section className="l-showcase" aria-label="Course showcase section">
-      <motion.div 
-        className="l-showcase__card"
-        initial={{ opacity: 0, y: 50, scale: 0.98 }}
-        whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-      >
+      <div className="l-showcase__card">
         {/* Left Column: Info & Details */}
         <div className="l-showcase__info">
-          <div className="flex items-center mb-5">
-            <div className="flex items-center gap-[2.5px]">
-              <div className="bg-[#2451D6] text-white flex items-center justify-center font-bold overflow-hidden" style={{ width: '24px', height: '32px', fontSize: '32px', lineHeight: 0.8 }}>
-                <span style={{ marginTop: '2px' }}>A</span>
-              </div>
-              <div className="flex flex-col justify-center mt-0.5">
-                <span className="font-bold text-[14px] uppercase leading-none tracking-[0.05em] text-[#2451D6] mb-[3px]">
-                  RCADE STORY
-                </span>
-                <span className="text-[9px] font-medium uppercase text-slate-500 tracking-[0.18em] leading-none mt-[1px]">
-                  LEARN • BUILD • CONNECT
-                </span>
-              </div>
-            </div>
+          <div className="l-showcase__badge">
+            <div className="l-showcase__badge-icon" />
+            <span>The Arcade Story</span>
           </div>
 
           <h2 className="l-showcase__title">
@@ -114,7 +96,7 @@ export default function CourseShowcase() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

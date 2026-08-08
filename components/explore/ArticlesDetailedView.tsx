@@ -11,6 +11,7 @@ import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { api } from "@/infrastructure/http/api";
+import { FeaturedKnowledgeIllustration } from "./FeaturedKnowledgeIllustration";
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -22,7 +23,7 @@ function hexToRgbStr(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-const HoneycombIllustration: React.FC = () => {
+const ArticlesIllustration: React.FC = () => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <svg
@@ -41,32 +42,18 @@ const HoneycombIllustration: React.FC = () => {
             to { stroke-dashoffset: 0; }
           }
           @keyframes shuttleFlight {
-            0% {
-              transform: translate(350px, 45px) rotate(-30deg);
-            }
-            35% {
-              /* Flying towards the racket */
-              transform: translate(322px, 60px) rotate(-55deg);
-            }
-            45% {
-              /* Contact with racket, flip orientation */
-              transform: translate(316px, 66px) rotate(35deg);
-            }
-            80% {
-              /* Flying back to peak height */
-              transform: translate(372px, 28px) rotate(10deg);
-            }
-            100% {
-              /* Returning to resting orbit position */
-              transform: translate(350px, 45px) rotate(-30deg);
-            }
+            0% { transform: translate(350px, 45px) rotate(-30deg); }
+            35% { transform: translate(322px, 60px) rotate(-55deg); }
+            45% { transform: translate(316px, 66px) rotate(35deg); }
+            80% { transform: translate(372px, 28px) rotate(10deg); }
+            100% { transform: translate(350px, 45px) rotate(-30deg); }
           }
           @keyframes racketSwing {
             0%, 100% { transform: rotate(0deg); }
-            30% { transform: rotate(-8deg); }     /* Swing back */
-            38% { transform: rotate(15deg); }    /* Forward strike */
-            50% { transform: rotate(5deg); }     /* Follow through */
-            65% { transform: rotate(0deg); }     /* Return to idle */
+            30% { transform: rotate(-8deg); }
+            38% { transform: rotate(15deg); }
+            50% { transform: rotate(5deg); }
+            65% { transform: rotate(0deg); }
           }
           @keyframes sparkleTwinkleRight {
             0%, 100% { transform: translate(380px, 210px) scale(0.8); opacity: 0.6; }
@@ -84,106 +71,42 @@ const HoneycombIllustration: React.FC = () => {
             0%, 100% { transform: translate(390px, 250px) scale(0.95); }
             50% { transform: translate(390px, 250px) scale(1.15); }
           }
-
-          .flow-forward {
-            animation: flowForward 2s linear infinite;
-          }
-          .flow-backward {
-            animation: flowBackward 2s linear infinite;
-          }
-          .animate-shuttle {
-            animation: shuttleFlight 5s ease-in-out infinite;
-          }
-          .animate-racket {
-            animation: racketSwing 5s ease-in-out infinite;
-            transform-origin: -2px 2px;
-          }
-          .animate-sparkle-right {
-            animation: sparkleTwinkleRight 3s ease-in-out infinite;
-          }
-          .animate-sparkle-left {
-            animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;
-          }
-          .animate-clink-sparks {
-            animation: clinkSparksPulse 2.5s ease-in-out infinite;
-          }
-          .animate-expand-arrows {
-            animation: expandArrowsPulse 4s ease-in-out infinite;
-          }
+          .flow-forward { animation: flowForward 2s linear infinite; }
+          .flow-backward { animation: flowBackward 2s linear infinite; }
+          .animate-shuttle { animation: shuttleFlight 5s ease-in-out infinite; }
+          .animate-racket { animation: racketSwing 5s ease-in-out infinite; transform-origin: -2px 2px; }
+          .animate-sparkle-right { animation: sparkleTwinkleRight 3s ease-in-out infinite; }
+          .animate-sparkle-left { animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s; }
+          .animate-clink-sparks { animation: clinkSparksPulse 2.5s ease-in-out infinite; }
+          .animate-expand-arrows { animation: expandArrowsPulse 4s ease-in-out infinite; }
         `}</style>
 
         {/* Background dotted line paths / orbits */}
-        <path
-          className="flow-forward"
-          d="M 120,40 C 200,-10 320,10 340,90"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-backward"
-          d="M 50,110 C 30,50 120,10 200,60"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-forward"
-          d="M 280,240 C 360,250 430,190 410,120"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-backward"
-          d="M 60,190 C 80,250 180,270 230,240"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
+        <path className="flow-forward" d="M 120,40 C 200,-10 320,10 340,90" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 4" fill="none" />
+        <path className="flow-backward" d="M 50,110 C 30,50 120,10 200,60" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 4" fill="none" />
+        <path className="flow-forward" d="M 280,240 C 360,250 430,190 410,120" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 4" fill="none" />
+        <path className="flow-backward" d="M 60,190 C 80,250 180,270 230,240" stroke="#CBD5E1" strokeWidth="1.5" strokeDasharray="4 4" fill="none" />
 
-        {/* Glitter particles sliding along dotted paths */}
         <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 120,40 C 200,-10 320,10 340,90"
-            dur="6s"
-            repeatCount="indefinite"
-          />
+          <animateMotion path="M 120,40 C 200,-10 320,10 340,90" dur="6s" repeatCount="indefinite" />
         </circle>
         <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 50,110 C 30,50 120,10 200,60"
-            dur="7s"
-            repeatCount="indefinite"
-          />
+          <animateMotion path="M 50,110 C 30,50 120,10 200,60" dur="7s" repeatCount="indefinite" />
         </circle>
         <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 280,240 C 360,250 430,190 410,120"
-            dur="8s"
-            repeatCount="indefinite"
-          />
+          <animateMotion path="M 280,240 C 360,250 430,190 410,120" dur="8s" repeatCount="indefinite" />
         </circle>
         <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 60,190 C 80,250 180,270 230,240"
-            dur="6.5s"
-            repeatCount="indefinite"
-          />
+          <animateMotion path="M 60,190 C 80,250 180,270 230,240" dur="6.5s" repeatCount="indefinite" />
         </circle>
 
-        {/* Small floating elements like badminton shuttles or balls */}
+        {/* Small floating elements */}
         <g className="animate-shuttle" transform="translate(350, 45) rotate(-30)">
           <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
           <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
           <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
         </g>
         
-        {/* Sparkles / star outlines */}
         <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
@@ -191,170 +114,207 @@ const HoneycombIllustration: React.FC = () => {
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
 
-        {/* Diagonal Expand Arrows in bottom-right */}
         <g className="animate-expand-arrows" transform="translate(390, 250)">
           <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
           <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
-        {/* Center Hexagon: Girl with Clipboard (Center: 210, 150, radius: 52) */}
+        {/* Center Square: Reader with Book */}
         <g transform="translate(210, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FFFFFF"
-            stroke="#E2E8F0"
-            strokeWidth="1.8"
-          />
-          {/* Sketch: Girl with Clipboard */}
-          <path d="M-18,-2 C-22,12 -16,28 -14,38 M18,-2 C22,12 16,28 14,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,-8 C-13,8 13,8 13,-8 C13,-18 -13,-18 -13,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-14,-10 Q0,-22 14,-10 M-14,-10 C-18,-5 -15,10 -15,10 M14,-10 C18,-5 15,10 15,10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <ellipse cx="-5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <ellipse cx="5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <path d="M-3,-2 Q0,1 3,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-4,4 L-4,10 M4,4 L4,10" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="-14" y="10" width="28" height="30" rx="3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-6,10 L-6,7 C-6,6 -5,5 -4,5 H4 C5,5 6,6 6,7 L6,10 Z" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-18,22 Q-13,20 -12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,22 Q13,20 12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <line x1="-8" y1="18" x2="8" y2="18" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="-8" y1="24" x2="4" y2="24" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="-8" y1="30" x2="0" y2="30" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.8" />
+          <g transform="translate(0, -6)">
+            {/* Body */}
+            <path d="M-14,35 C-14,15 14,15 14,35" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <circle cx="0" cy="-2" r="10" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Reading Glasses */}
+            <circle cx="-4" cy="-4" r="3" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+            <circle cx="4" cy="-4" r="3" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+            <line x1="-1" y1="-4" x2="1" y2="-4" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Smile */}
+            <path d="M-3,2 Q0,5 3,2" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Book */}
+            <path d="M-12,18 L0,22 L12,18 L12,8 L0,12 L-12,8 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+            <line x1="0" y1="12" x2="0" y2="22" stroke="#1E293B" strokeWidth="1.6" />
+            <line x1="-8" y1="12" x2="-2" y2="14" stroke="#CBD5E1" strokeWidth="1.2" />
+            <line x1="-8" y1="15" x2="-2" y2="17" stroke="#CBD5E1" strokeWidth="1.2" />
+            <line x1="2" y1="14" x2="8" y2="12" stroke="#CBD5E1" strokeWidth="1.2" />
+            <line x1="2" y1="17" x2="8" y2="15" stroke="#CBD5E1" strokeWidth="1.2" />
+            {/* Arms holding book */}
+            <path d="M-14,20 L-10,16 L-8,18" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M14,20 L10,16 L8,18" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          </g>
         </g>
 
-        {/* Top-Left Hexagon: Old Man with flat cap (Center: 132, 105, radius: 52) */}
+        {/* Top-Left Square: Journalist with Notepad */}
         <g transform="translate(132, 105)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FEF08A"
-            stroke="#F59E0B"
-            strokeWidth="1.8"
-          />
-          <path d="M-15,-6 C-15,10 15,10 15,-6 C15,-16 -15,-16 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-22,-12 C-15,-28 15,-28 22,-12 Z" fill="#F1F5F9" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-26,-10 C-10,-2 10,-2 26,-10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,8 C-5,22 5,22 10,8" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,3 Q0,-1 10,3 Q5,7 0,5 Q-5,7 -10,3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <circle cx="-6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <circle cx="6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-1.5" y1="-6" x2="1.5" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10.5,-6 L-15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M10.5,-6 L15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M0,-4 Q2,0 -1,2" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-25,32 Q-12,18 0,22 Q12,18 25,32" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <line x1="0" y1="22" x2="0" y2="35" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10,24 L-5,32 M10,24 L5,32" stroke="#1E293B" strokeWidth="1.6" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#FEF08A" stroke="#F59E0B" strokeWidth="1.8" />
+          <g transform="translate(0, -5)">
+            {/* Body */}
+            <path d="M-16,35 C-16,15 16,15 16,35" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Press Hat */}
+            <path d="M-10,-8 C-10,-18 10,-18 10,-8 Z" fill="#F59E0B" stroke="#1E293B" strokeWidth="1.6" />
+            <rect x="-4" y="-14" width="8" height="4" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1" />
+            {/* Head */}
+            <path d="M-10,-8 C-10,4 10,4 10,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Eyes */}
+            <circle cx="-4" cy="-2" r="1.5" fill="#1E293B" />
+            <circle cx="4" cy="-2" r="1.5" fill="#1E293B" />
+            {/* Notepad */}
+            <rect x="-12" y="10" width="14" height="18" rx="2" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            <line x1="-8" y1="14" x2="-2" y2="14" stroke="#CBD5E1" strokeWidth="1.5" />
+            <line x1="-8" y1="18" x2="-2" y2="18" stroke="#CBD5E1" strokeWidth="1.5" />
+            <line x1="-8" y1="22" x2="0" y2="22" stroke="#CBD5E1" strokeWidth="1.5" />
+            {/* Pen */}
+            <path d="M12,12 L6,22" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <circle cx="6" cy="22" r="1" fill="#1E293B" />
+            {/* Arms */}
+            <path d="M-16,22 L-12,18" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M16,22 L10,16 L12,12" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          </g>
         </g>
 
-        {/* Top-Right Hexagon: Badminton Player (Center: 288, 105, radius: 52) */}
+        {/* Top-Right Square: Scholar with Graduation Cap */}
         <g transform="translate(288, 105)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FFFFFF"
-            stroke="#E2E8F0"
-            strokeWidth="1.8"
-          />
-          <circle cx="-6" cy="-5" r="7" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M1,-5 L4,-4 L1,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-4" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <g className="animate-racket">
-            <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
-            <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-            <g transform="translate(28, -32) rotate(45)">
-              <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-              <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
-              <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
-              <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
-              <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1.8" />
+          <g transform="translate(0, -2)">
+            {/* Body (Robe) */}
+            <path d="M-18,35 C-12,15 12,15 18,35" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <circle cx="0" cy="-2" r="9" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Graduation Cap */}
+            <path d="M-16,-9 L0,-15 L16,-9 L0,-3 Z" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+            <path d="M-8,-6 L-8,0 C-8,4 8,4 8,0 L8,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Tassel */}
+            <path d="M0,-9 Q8,-9 10,-4 L10,2" fill="none" stroke="#F59E0B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Glasses */}
+            <rect x="-7" y="-3" width="5" height="4" rx="1" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+            <rect x="2" y="-3" width="5" height="4" rx="1" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+            <line x1="-2" y1="-1" x2="2" y2="-1" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Diploma */}
+            <g transform="translate(10, 15) rotate(-20)">
+              <rect x="-6" y="-3" width="12" height="6" rx="2" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+              <line x1="-2" y1="-5" x2="-2" y2="5" stroke="#EF4444" strokeWidth="1.6" />
             </g>
           </g>
-          <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Middle-Left Hexagon: Spiky Hair waving`,StartLine:24,TargetContent: (Center: 54, 150, radius: 52) */}
+        {/* Middle-Left Square: Reader with Newspaper */}
         <g transform="translate(54, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FCA5A5"
-            stroke="#F87171"
-            strokeWidth="1.8"
-          />
-          <path d="M-18,-8 L-14,-22 L-6,-16 L2,-25 L8,-15 L16,-20 L18,-6 L14,4 L-15,4 Z" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-13,-6 C-13,10 13,10 13,-6 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <circle cx="-5" cy="-2" r="1.2" fill="#1E293B" />
-          <circle cx="5" cy="-2" r="1.2" fill="#1E293B" />
-          <path d="M-3,3 Q0,6 3,3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,6 C-22,-2 -26,-12 -28,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-28,-18 Q-32,-21 -29,-23 M-28,-18 Q-28,-22 -26,-22 M-28,-18 Q-24,-20 -24,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,12 L-14,35 M10,12 L14,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        </g>
-
-        {/* Middle-Right Hexagon: Child pointing to target (Center: 366, 150, radius: 52) */}
-        <g transform="translate(366, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#F472B6"
-            stroke="#EC4899"
-            strokeWidth="1.8"
-          />
-          <g transform="translate(24, 0)">
-            <circle cx="0" cy="0" r="12" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
-            <circle cx="0" cy="0" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
-            <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#FCA5A5" stroke="#F87171" strokeWidth="1.8" />
+          <g transform="translate(0, -6)">
+            {/* Body */}
+            <path d="M-14,35 C-14,10 14,10 14,35" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <circle cx="0" cy="-2" r="9" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Hair */}
+            <path d="M-9,-2 C-9,-12 9,-12 9,-2" fill="#1E293B" />
+            {/* Eyes */}
+            <circle cx="-3" cy="0" r="1.5" fill="#FFFFFF" />
+            <circle cx="3" cy="0" r="1.5" fill="#FFFFFF" />
+            {/* Newspaper (covers bottom of face) */}
+            <path d="M-18,8 L0,12 L18,8 L20,24 L0,28 L-20,24 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+            <line x1="0" y1="12" x2="0" y2="28" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Newspaper Text Lines */}
+            <line x1="-16" y1="12" x2="-4" y2="14" stroke="#94A3B8" strokeWidth="1.5" />
+            <line x1="-16" y1="16" x2="-4" y2="18" stroke="#94A3B8" strokeWidth="1.5" />
+            <line x1="-16" y1="20" x2="-8" y2="22" stroke="#94A3B8" strokeWidth="1.5" />
+            <line x1="4" y1="14" x2="16" y2="12" stroke="#94A3B8" strokeWidth="1.5" />
+            <line x1="4" y1="18" x2="16" y2="16" stroke="#94A3B8" strokeWidth="1.5" />
+            {/* Hands holding newspaper */}
+            <path d="M-18,24 L-22,18 L-14,14" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M18,24 L22,18 L14,14" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
           </g>
-          <circle cx="-10" cy="-6" r="8" stroke="#1E293B" strokeWidth="1.6" fill="#FFFFFF" />
-          <path d="M-18,-8 C-21,-12 -16,-17 -12,-14 C-10,-19 -4,-18 -4,-14 C-1,-17 3,-12 1,-8 M-18,-8 C-21,-5 -20,2 -18,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-5" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-7,-3 Q-5,-1 -3,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-2,2 Q8,-2 18,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,-2 C20,-2 22,-2 24,-2 M18,-2 L17,1 L15,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-14,7 C-12,20 -18,36 -18,36 M-6,7 C-4,18 -2,30 -1,36" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Bottom-Left Hexagon: Girl clinking glass (Center: 132, 195, radius: 52) */}
+        {/* Middle-Right Square: Researcher with Magnifying Glass */}
+        <g transform="translate(366, 150)">
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#F472B6" stroke="#EC4899" strokeWidth="1.8" />
+          <g transform="translate(0, -6)">
+            {/* Body */}
+            <path d="M-16,35 C-16,15 16,15 16,35" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <path d="M-9,-4 C-9,6 9,6 9,-4 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            <path d="M-9,-4 C-9,-14 9,-14 9,-4 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Left Eye */}
+            <circle cx="-4" cy="-2" r="1.5" fill="#1E293B" />
+            {/* Magnifying Glass over Right Eye */}
+            <g transform="translate(4, -2)">
+              <circle cx="0" cy="0" r="5" fill="#A7F3D0" stroke="#1E293B" strokeWidth="1.6" />
+              <circle cx="0" cy="0" r="1.5" fill="#1E293B" />
+              <line x1="4" y1="4" x2="8" y2="8" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            </g>
+            {/* Hand holding magnifier */}
+            <path d="M14,14 L12,8 L8,6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Small book floating */}
+            <g transform="translate(-14, 10) rotate(-15)">
+              <rect x="-6" y="-8" width="12" height="16" rx="1" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.2" />
+              <line x1="-4" y1="-4" x2="4" y2="-4" stroke="#CBD5E1" strokeWidth="1" />
+              <line x1="-4" y1="0" x2="4" y2="0" stroke="#CBD5E1" strokeWidth="1" />
+            </g>
+          </g>
+        </g>
+
+        {/* Bottom-Left Square: Writer with Quill */}
         <g transform="translate(132, 195)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#A7F3D0"
-            stroke="#10B981"
-            strokeWidth="1.8"
-          />
-          <path d="M-12,-8 C-12,8 12,8 12,-8 C12,-18 -12,-18 -12,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-6 C-17,-18 17,-18 15,-6 C16,4 12,12 12,12 L-12,12 C-12,12 -16,4 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="-4" cy="-8" r="1.2" fill="#1E293B" />
-          <circle cx="4" cy="-8" r="1.2" fill="#1E293B" />
-          <path d="M-2.5,-3 Q0,-1 2.5,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M6,10 Q14,8 18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,10 L24,11 L22,20 L16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M22,13 Q25,14 24,16 Q23,17 21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-12,14 L-15,35 M6,14 L4,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#A7F3D0" stroke="#10B981" strokeWidth="1.8" />
+          <g transform="translate(0, -6)">
+            {/* Body */}
+            <path d="M-15,35 C-15,10 15,10 15,35" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <circle cx="0" cy="-2" r="9" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Hair Bun */}
+            <circle cx="0" cy="-12" r="4" fill="#1E293B" />
+            {/* Eyes (looking down) */}
+            <path d="M-4,-2 Q-3,0 -1,-2" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M1,-2 Q3,0 4,-2" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Scroll/Paper */}
+            <path d="M-10,12 L10,8 L12,24 L-8,28 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+            {/* Giant Quill */}
+            <g transform="translate(8, 14) rotate(30)">
+              <path d="M0,0 Q10,-10 15,-20 Q5,-15 0,0" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+              <line x1="0" y1="0" x2="12" y2="-16" stroke="#1E293B" strokeWidth="1.6" />
+            </g>
+            {/* Hands */}
+            <path d="M-12,22 L-8,16" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M14,24 L10,18" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          </g>
         </g>
 
-        {/* Bottom-Right Hexagon: Man clinking glass (Center: 288, 195, radius: 52) */}
+        {/* Bottom-Right Square: Person with Tea */}
         <g transform="translate(288, 195)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#94A3B8"
-            stroke="#475569"
-            strokeWidth="1.8"
-          />
-          <path d="M-12,-6 C-12,8 12,8 12,-6 C12,-16 -12,-16 -12,-6" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-10 C-10,-22 10,-22 15,-10 L-15,-10" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-18,-8 L-22,-6 L-16,-6" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <rect x="-9" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="2" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-2" y1="-6" x2="2" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-3,1 Q0,3 3,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-6,10 Q-14,8 -18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-18,10 L-24,11 L-22,20 L-16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <rect x="-45" y="-45" width="90" height="90" rx="8" fill="#94A3B8" stroke="#475569" strokeWidth="1.8" />
+          <g transform="translate(0, -6)">
+            {/* Stack of books on the right */}
+            <g transform="translate(14, 25)">
+              <rect x="-6" y="-12" width="12" height="4" rx="1" fill="#3B82F6" stroke="#1E293B" strokeWidth="1.2" />
+              <rect x="-5" y="-8" width="12" height="4" rx="1" fill="#EF4444" stroke="#1E293B" strokeWidth="1.2" />
+              <rect x="-7" y="-4" width="14" height="4" rx="1" fill="#10B981" stroke="#1E293B" strokeWidth="1.2" />
+            </g>
+            {/* Body */}
+            <path d="M-14,35 C-14,10 8,10 8,35" fill="#F8FAFC" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Head */}
+            <circle cx="-2" cy="-4" r="9" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
+            {/* Eyes (contented closed) */}
+            <path d="M-6,-5 Q-4,-3 -2,-5" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            <path d="M0,-5 Q2,-3 4,-5" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Smile */}
+            <path d="M-2,0 Q0,3 2,0" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+            {/* Tea Cup */}
+            <g transform="translate(-10, 14)">
+              <path d="M-4,0 L4,0 L3,6 C3,8 -3,8 -3,6 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M4,1 C6,1 6,4 4,4" fill="none" stroke="#1E293B" strokeWidth="1.6" />
+              {/* Steam */}
+              <path d="M-2,-2 Q-4,-6 -2,-10" fill="none" stroke="#64748B" strokeWidth="1.2" strokeLinecap="round" />
+              <path d="M2,-4 Q4,-8 2,-12" fill="none" stroke="#64748B" strokeWidth="1.2" strokeLinecap="round" />
+            </g>
+            {/* Arm holding tea */}
+            <path d="M-2,20 L-6,14" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
+          </g>
         </g>
         
-        {/* Clink sparks between bottom left & right cups */}
+        {/* Clink sparks */}
         <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
           <line x1="-8" y1="-8" x2="-3" y2="-3" />
           <line x1="8" y1="-8" x2="3" y2="-3" />
@@ -1654,13 +1614,13 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-type CategoryDetailedViewProps = {
+type ArticlesDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
   viewType?: "courses" | "livesession" | "webinars" | "articles";
 };
 
-function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: CategoryDetailedViewProps = {}) {
+function ArticlesDetailedViewContent({ hubBasePath, viewType = "courses" }: ArticlesDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const exploreHome = hubBasePath || "/explore";
@@ -1753,9 +1713,19 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
         paddingBottom: isEmbeddedHub ? "8px" : "100px",
+        background: "linear-gradient(to bottom, #f0fdf4 0%, #ffffff 30%, #ffffff 70%, #eff6ff 100%)",
       }}
     >
       <style>{`
+        .landing-root::before {
+          background-image:
+            radial-gradient(ellipse 55% 40% at 8% 12%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 92% 24%, rgba(6, 182, 212, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 35% at 5% 52%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 6% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 94% 76%, rgba(99, 102, 241, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 30% at 48% 94%, rgba(16, 185, 129, 0.07) 0%, transparent 60%) !important;
+        }
         .course-card-premium {
           transition: all 0.18s ease !important;
         }
@@ -2151,7 +2121,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
 
           </div>
 
-          {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+          {/* Banner Right Panel: Articles Illustration */}
           <div
             style={{
               position: "relative",
@@ -2165,185 +2135,11 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
               zIndex: 2,
             }}
           >
-            <HoneycombIllustration />
+            <FeaturedKnowledgeIllustration />
           </div>
         </div>
 
-        {/* Section A: Courses */}
-        {(viewType === "courses" || viewType === "articles") && (
-          <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                  Featured Courses
-                </h2>
-              </div>
-              <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-                Showing {filteredCourses.length} of {activeData.courses.length} courses
-              </span>
-            </div>
-
-            {/* Professional Horizontal Filters Bar */}
-            <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-            <div
-              ref={filtersGridRef}
-              style={{
-                display: "flex",
-                gap: "24px",
-                marginBottom: "32px",
-                background: "rgba(255, 255, 255, 0.65)",
-                border: "1px solid rgba(20, 23, 31, 0.06)",
-                borderRadius: "16px",
-                padding: "20px 24px",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-                flexWrap: "wrap",
-                alignItems: "flex-start"
-              }}
-            >
-              {/* Difficulty Filter */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Course Level
-                </label>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  {difficultyLevels.map((level) => {
-                    const isActive = selectedDifficulty === level;
-                    return (
-                      <FilterPillButton
-                        key={level}
-                        isActive={isActive}
-                        activeData={activeData}
-                        onClick={() => setSelectedDifficulty(level)}
-                      >
-                        {level}
-                      </FilterPillButton>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Vertical Divider */}
-              <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
-
-              {/* Topic Filter */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-                <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Course Type
-                </label>
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                  {topics.map((topic) => {
-                    const isActive = selectedTopic === topic;
-                    return (
-                      <FilterPillButton
-                        key={topic}
-                        isActive={isActive}
-                        activeData={activeData}
-                        onClick={() => setSelectedTopic(topic)}
-                      >
-                        {topic}
-                      </FilterPillButton>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {filteredCourses.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-                <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-                <button 
-                  onClick={() => setCourseSearchQuery("")}
-                  style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
-                >
-                  Reset search
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-                {filteredCourses.map((course, index) => {
-                  const slug = slugify(course.title);
-                  const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
-                  return (
-                    <CourseCard
-                      key={course.title}
-                      course={course}
-                      index={index}
-                      activeCategoryName={activeCategoryName}
-                      activeData={activeData}
-                      router={router}
-                      realRating={stats.averageRating}
-                      realReviewsCount={stats.reviewsCount}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Section B: Bootcamps Layout */}
-        {viewType === "livesession" && (
-          <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                  Practical Bootcamps
-                </h2>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-              {activeData.bootcamps
-                .filter(b => b.title.toLowerCase().includes(courseSearchQuery.toLowerCase()))
-                .map((bootcamp, index) => (
-                  <BootcampCard 
-                    key={bootcamp.title}
-                    title={bootcamp.title}
-                    desc={bootcamp.desc}
-                    duration={bootcamp.duration}
-                    cat={activeCategoryName}
-                    index={index}
-                    colors={activeData.colors}
-                  />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Section B: Webinars Layout */}
-        {(viewType === "webinars" || viewType === "livesession") && (
-          <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-                <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                  Expert Webinars
-                </h2>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-              {WEBINARS_DATA
-                .filter(w => w.category === activeCategoryName && (w.title.toLowerCase().includes(courseSearchQuery.toLowerCase())))
-                .map((w, index) => (
-                  <WebinarCard 
-                    key={w.title}
-                    title={w.title}
-                    category={w.category}
-                    duration={w.duration}
-                    status={w.status}
-                    host={w.host}
-                    date={w.date}
-                    index={index}
-                  />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Removed Sections A & B for Articles view */}
 
         {/* Section C: Resources */}
         {(viewType === "courses" || viewType === "articles") && (
@@ -2352,7 +2148,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
                 <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                  Resource Libraries
+                  Featured Articles & Guides
                 </h2>
               </div>
             </div>
@@ -2428,10 +2224,10 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
   );
 }
 
-export default function CategoryDetailedView(props: CategoryDetailedViewProps) {
+export default function ArticlesDetailedView(props: ArticlesDetailedViewProps) {
   return (
     <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "#6B7280" }}>Loading Explore Content...</div>}>
-      <CategoryDetailedViewContent {...props} />
+      <ArticlesDetailedViewContent {...props} />
     </Suspense>
   );
 }

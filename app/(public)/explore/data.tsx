@@ -484,44 +484,64 @@ function CategoryIllustration({ category }: { category: string }) {
   }
 }
 
-export function CategoryHeaderIllustration({ category }: { category: string }) {
+export function CategoryHeaderIllustration({ category, variant = "courses" }: { category: string; variant?: string }) {
+  let cDark = "#4E608A";
+  let cMed = "#BACDEB";
+  let cLight = "#E2ECF7";
+  let cLine = "#E2E8F0";
+  let cLineDash = "#F1F5F9";
+  
+  if (variant === "live") {
+    cDark = "#7C3AED"; // Vibrant Purple
+    cMed = "#C4B5FD";
+    cLight = "#F5F3FF";
+    cLine = "#EDE9FE";
+    cLineDash = "#F5F3FF";
+  } else if (variant === "articles") {
+    cDark = "#059669"; // Emerald Green
+    cMed = "#6EE7B7";
+    cLight = "#ECFDF5";
+    cLine = "#D1FAE5";
+    cLineDash = "#ECFDF5";
+  }
+
   switch (category) {
     case "Computer Science":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Background grid or elements */}
-          <path d="M 30,120 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-          <path d="M 50,40 H 250 M 50,70 H 250" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="5 5" />
+          <path d="M 30,120 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          <path d="M 50,40 H 250 M 50,70 H 250" stroke={cLineDash} strokeWidth="1" strokeDasharray="5 5" />
 
           {/* Plant on the left */}
-          <rect x="50" y="95" width="20" height="25" rx="3" fill="#BACDEB" />
+          <rect x="50" y="95" width="20" height="25" rx="3" fill={cMed} />
           <path d="M 60,95 Q 50,75 40,80 Q 50,90 60,95 Z" fill="#8C9CBF" />
-          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill="#4E608A" />
+          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill={cDark} />
           <path d="M 60,95 Q 70,75 80,82 Q 70,90 60,95 Z" fill="#8C9CBF" />
 
           {/* Coffee cup */}
-          <rect x="220" y="100" width="18" height="20" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" />
+          <rect x="220" y="100" width="18" height="20" rx="2" fill={cLight} stroke="#8C9CBF" strokeWidth="1.5" />
           <path d="M 238,104 Q 244,104 244,110 Q 244,116 238,116" stroke="#8C9CBF" strokeWidth="1.5" fill="none" />
 
           {/* Code Window / Laptop */}
           {/* Base */}
-          <rect x="85" y="55" width="130" height="80" rx="8" fill="#4E608A" />
+          <rect x="85" y="55" width="130" height="80" rx="8" fill={cDark} />
           {/* Screen inside */}
           <rect x="92" y="62" width="116" height="66" rx="4" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
           {/* Laptop keyboard part */}
-          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-          <rect x="135" y="136" width="30" height="3" rx="1" fill="#4E608A" />
+          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill={cMed} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
+          <rect x="135" y="136" width="30" height="3" rx="1" fill={cDark} />
 
           {/* Code lines on screen */}
-          <rect x="100" y="70" width="40" height="4" rx="2" fill="#BACDEB" />
+          <rect x="100" y="70" width="40" height="4" rx="2" fill={cMed} />
           <rect x="100" y="80" width="60" height="4" rx="2" fill="#8C9CBF" />
-          <rect x="110" y="90" width="50" height="4" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1" />
-          <rect x="110" y="100" width="35" height="4" rx="2" fill="#BACDEB" />
-          <rect x="100" y="110" width="25" height="4" rx="2" fill="#4E608A" />
+          <rect x="110" y="90" width="50" height="4" rx="2" fill={cLight} stroke="#8C9CBF" strokeWidth="1" />
+          <rect x="110" y="100" width="35" height="4" rx="2" fill={cMed} />
+          <rect x="100" y="110" width="25" height="4" rx="2" fill={cDark} />
 
           {/* Floating brackets */}
-          <text x="75" y="75" fill="#BACDEB" fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
-          <text x="210" y="110" fill="#BACDEB" fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
+          <text x="75" y="75" fill={cMed} fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
+          <text x="210" y="110" fill={cMed} fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
           <text x="215" y="65" fill="#8C9CBF" fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
         </svg>
       );
@@ -529,92 +549,92 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Server rack on the left */}
-          <rect x="60" y="80" width="45" height="42" rx="4" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-          <line x1="68" y1="90" x2="97" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="90" r="1.5" fill="#E2ECF7" />
-          <line x1="68" y1="100" x2="97" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="100" r="1.5" fill="#E2ECF7" />
-          <line x1="68" y1="110" x2="97" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="110" r="1.5" fill="#E2ECF7" />
+          <rect x="60" y="80" width="45" height="42" rx="4" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+          <line x1="68" y1="90" x2="97" y2="90" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="90" r="1.5" fill={cLight} />
+          <line x1="68" y1="100" x2="97" y2="100" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="100" r="1.5" fill={cLight} />
+          <line x1="68" y1="110" x2="97" y2="110" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="110" r="1.5" fill={cLight} />
 
           {/* Database/Server rack on the right */}
-          <rect x="195" y="80" width="45" height="42" rx="4" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-          <line x1="203" y1="90" x2="232" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="90" r="1.5" fill="#BACDEB" />
-          <line x1="203" y1="100" x2="232" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="100" r="1.5" fill="#BACDEB" />
-          <line x1="203" y1="110" x2="232" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="110" r="1.5" fill="#BACDEB" />
+          <rect x="195" y="80" width="45" height="42" rx="4" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+          <line x1="203" y1="90" x2="232" y2="90" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="90" r="1.5" fill={cMed} />
+          <line x1="203" y1="100" x2="232" y2="100" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="100" r="1.5" fill={cMed} />
+          <line x1="203" y1="110" x2="232" y2="110" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="110" r="1.5" fill={cMed} />
 
           {/* Big Cloud in the Center */}
-          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
 
           {/* Network Connections */}
           {/* Cloud to Server Left */}
-          <path d="M 125,85 L 82,85 L 82,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          <path d="M 125,85 L 82,85 L 82,80" stroke={cDark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
           {/* Cloud to Server Right */}
-          <path d="M 175,85 L 217,85 L 217,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          <path d="M 175,85 L 217,85 L 217,80" stroke={cDark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
           {/* Cloud to Floor */}
-          <path d="M 150,94 L 150,130" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <path d="M 150,94 L 150,130" stroke={cDark} strokeWidth="1.5" strokeLinecap="round" fill="none" />
 
           {/* Small laptop/pc at the bottom middle */}
-          <rect x="135" y="115" width="30" height="12" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <line x1="140" y1="127" x2="160" y2="127" stroke="#4E608A" strokeWidth="2" />
+          <rect x="135" y="115" width="30" height="12" rx="2" fill={cMed} stroke={cDark} strokeWidth="1" />
+          <line x1="140" y1="127" x2="160" y2="127" stroke={cDark} strokeWidth="2" />
 
           {/* Arrows inside cloud or around */}
-          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke={cDark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "Business & Management":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Briefcase */}
-          <rect x="50" y="80" width="60" height="42" rx="6" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+          <rect x="50" y="80" width="60" height="42" rx="6" fill={cMed} stroke={cDark} strokeWidth="1.5" />
           {/* Handle */}
-          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke="#4E608A" strokeWidth="1.5" fill="none" />
+          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke={cDark} strokeWidth="1.5" fill="none" />
           {/* Lock */}
-          <rect x="74" y="92" width="12" height="8" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1" />
+          <rect x="74" y="92" width="12" height="8" rx="1" fill={cLight} stroke={cDark} strokeWidth="1" />
 
           {/* Pie Chart / Analytics */}
-          <circle cx="205" cy="75" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill="#4E608A" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1" />
+          <circle cx="205" cy="75" r="28" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill={cDark} stroke={cDark} strokeWidth="1" />
+          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke={cDark} strokeWidth="1" />
 
           {/* Calculator or Folder at the bottom right */}
-          <rect x="215" y="105" width="22" height="22" rx="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="221" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="226" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="231" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="221" cy="116" r="1.5" fill="#4E608A" />
-          <circle cx="226" cy="116" r="1.5" fill="#4E608A" />
-          <circle cx="231" cy="116" r="1.5" fill="#4E608A" />
+          <rect x="215" y="105" width="22" height="22" rx="3" fill={cMed} stroke={cDark} strokeWidth="1" />
+          <circle cx="221" cy="111" r="1.5" fill={cDark} />
+          <circle cx="226" cy="111" r="1.5" fill={cDark} />
+          <circle cx="231" cy="111" r="1.5" fill={cDark} />
+          <circle cx="221" cy="116" r="1.5" fill={cDark} />
+          <circle cx="226" cy="116" r="1.5" fill={cDark} />
+          <circle cx="231" cy="116" r="1.5" fill={cDark} />
 
           {/* Growing Trend Graph Arrow */}
-          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M 195,60 H 205 V 70" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke={cDark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 195,60 H 205 V 70" stroke={cDark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
           {/* Grid lines behind Graph */}
-          <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+          <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke={cLineDash} strokeWidth="1" strokeDasharray="3 3" />
         </svg>
       );
     case "Civil & Mechanical":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Blueprint background details */}
-          <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke="#F1F5F9" strokeWidth="1" />
-          <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
+          <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke={cLineDash} strokeWidth="1" />
+          <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke={cLineDash} strokeWidth="1" />
 
           {/* Drafting Ruler / Triangle */}
-          <path d="M 50,120 L 110,60 L 110,120 Z" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 50,120 L 110,60 L 110,120 Z" fill={cLight} stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
           <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
 
           {/* Hard Hat in the Center/Left */}
@@ -629,8 +649,8 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Gears on the Right */}
           <g transform="translate(195, 75)">
             {/* Gear 1 */}
-            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke={cDark} strokeWidth="1.5" />
             {/* Teeth */}
             {Array.from({ length: 8 }).map((_, idx) => {
               const angle = (idx * 360) / 8;
@@ -642,7 +662,7 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
                   width="6"
                   height="5"
                   rx="1"
-                  fill="#4E608A"
+                  fill={cDark}
                   transform={`rotate(${angle})`}
                 />
               );
@@ -651,8 +671,8 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
 
           <g transform="translate(230, 100)">
             {/* Gear 2 (Smaller, interlocking) */}
-            <circle cx="0" cy="0" r="12" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="12" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke={cDark} strokeWidth="1.5" />
             {/* Teeth */}
             {Array.from({ length: 6 }).map((_, idx) => {
               const angle = (idx * 360) / 6;
@@ -664,7 +684,7 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
                   width="4"
                   height="4"
                   rx="1"
-                  fill="#4E608A"
+                  fill={cDark}
                   transform={`rotate(${angle})`}
                 />
               );
@@ -672,54 +692,54 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
           </g>
 
           {/* Compass tool */}
-          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="140" cy="50" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="140" cy="50" r="3.5" fill={cMed} stroke={cDark} strokeWidth="1" />
         </svg>
       );
     case "Basic Sciences":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Test Tubes Rack */}
           <g transform="translate(45, 75)">
             {/* Rack base & frame */}
-            <rect x="0" y="45" width="60" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <line x1="8" y1="20" x2="8" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-            <line x1="52" y1="20" x2="52" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-            <line x1="0" y1="20" x2="60" y2="20" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="45" width="60" height="8" rx="2" fill={cMed} stroke={cDark} strokeWidth="1" />
+            <line x1="8" y1="20" x2="8" y2="45" stroke={cDark} strokeWidth="1.5" />
+            <line x1="52" y1="20" x2="52" y2="45" stroke={cDark} strokeWidth="1.5" />
+            <line x1="0" y1="20" x2="60" y2="20" stroke={cDark} strokeWidth="1.5" />
 
             {/* Test Tube 1 (left) */}
-            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill={cLight} stroke={cDark} strokeWidth="1.5" />
             <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
 
             {/* Test Tube 2 (right) */}
-            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill={cLight} stroke={cDark} strokeWidth="1.5" />
             <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
           </g>
 
           {/* Chemical Flask (Center/Right) */}
           <g transform="translate(130, 50)">
             {/* Flask body */}
-            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
             {/* Flask liquid */}
-            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill="#BACDEB" />
+            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill={cMed} />
             {/* Bubbles */}
-            <circle cx="20" cy="35" r="2.5" fill="#4E608A" />
-            <circle cx="34" cy="22" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <circle cx="27" cy="12" r="2" fill="#4E608A" />
+            <circle cx="20" cy="35" r="2.5" fill={cDark} />
+            <circle cx="34" cy="22" r="3.5" fill={cMed} stroke={cDark} strokeWidth="1" />
+            <circle cx="27" cy="12" r="2" fill={cDark} />
           </g>
 
           {/* Atom Symbol Floating on Right */}
           <g transform="translate(225, 75)">
-            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(30)" />
-            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(-30)" />
-            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="2" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={cMed} strokeWidth="1" transform="rotate(30)" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={cMed} strokeWidth="1" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="8" fill={cDark} stroke="#FFFFFF" strokeWidth="2" />
 
             {/* Electrons */}
-            <circle cx="-26" cy="-6" r="3" fill="#4E608A" />
-            <circle cx="26" cy="6" r="3" fill="#BACDEB" />
+            <circle cx="-26" cy="-6" r="3" fill={cDark} />
+            <circle cx="26" cy="6" r="3" fill={cMed} />
           </g>
         </svg>
       );
@@ -727,30 +747,30 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Column structure on Left */}
           <g transform="translate(45, 45)">
-            <rect x="0" y="75" width="50" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <rect x="5" y="70" width="40" height="5" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="75" width="50" height="8" rx="2" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <rect x="5" y="70" width="40" height="5" rx="1" fill={cLight} stroke={cDark} strokeWidth="1.5" />
             {/* Pillars */}
-            <rect x="10" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <rect x="32" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="10" y="10" width="8" height="60" rx="1" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <rect x="32" y="10" width="8" height="60" rx="1" fill={cMed} stroke={cDark} strokeWidth="1.5" />
             {/* Top */}
-            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
           </g>
 
           {/* Stack of books in center */}
           <g transform="translate(125, 75)">
             {/* Bottom Book */}
-            <rect x="0" y="36" width="65" height="15" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="36" width="65" height="15" rx="2" fill={cMed} stroke={cDark} strokeWidth="1.5" />
             <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
             {/* Middle Book */}
-            <rect x="8" y="22" width="55" height="14" rx="2" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="8" y="22" width="55" height="14" rx="2" fill={cLight} stroke={cDark} strokeWidth="1.5" />
             <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
             {/* Top Leaning Book */}
             <g transform="rotate(-15, 12, 10)">
-              <rect x="10" y="0" width="50" height="12" rx="2" fill="#4E608A" stroke="#4E608A" strokeWidth="1.5" />
+              <rect x="10" y="0" width="50" height="12" rx="2" fill={cDark} stroke={cDark} strokeWidth="1.5" />
               <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
             </g>
           </g>
@@ -758,13 +778,13 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Scroll and Quill on Right */}
           <g transform="translate(205, 65)">
             {/* Open Scroll / Document */}
-            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <path d="M 5,45 H 42" stroke="#4E608A" strokeWidth="1" />
-            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke="#BACDEB" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <path d="M 5,45 H 42" stroke={cDark} strokeWidth="1" />
+            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke={cMed} strokeWidth="1.5" strokeLinecap="round" />
 
             {/* Quill Pen */}
-            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <path d="M 28,21 L 43,2" stroke="#4E608A" strokeWidth="1" />
+            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill={cMed} stroke={cDark} strokeWidth="1" />
+            <path d="M 28,21 L 43,2" stroke={cDark} strokeWidth="1" />
           </g>
         </svg>
       );
@@ -772,41 +792,161 @@ export function CategoryHeaderIllustration({ category }: { category: string }) {
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
           {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
 
           {/* Target with Dart on Left */}
           <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="28" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="8" fill={cDark} stroke="#FFFFFF" strokeWidth="1.5" />
 
             {/* Dart */}
-            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
             {/* Dart flights */}
-            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill="#4E608A" />
+            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill={cDark} />
           </g>
 
           {/* Staircase/Steps on Right */}
           <g transform="translate(150, 45)">
             {/* Steps outline */}
-            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke="#BACDEB" strokeWidth="1" />
+            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke={cMed} strokeWidth="1" />
 
             {/* Person celebrating at the top step */}
             <g transform="translate(25, -20)">
               {/* Head */}
-              <circle cx="0" cy="-6" r="4.5" fill="#4E608A" />
+              <circle cx="0" cy="-6" r="4.5" fill={cDark} />
               {/* Body */}
-              <path d="M 0,-1 L 0,10" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 0,-1 L 0,10" stroke={cDark} strokeWidth="2.5" strokeLinecap="round" />
               {/* Arms */}
-              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
               {/* Legs */}
-              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke={cDark} strokeWidth="2" strokeLinecap="round" />
             </g>
           </g>
 
           {/* Sparkles / Stars in the sky */}
           <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
+        </svg>
+      );
+    case "Art & Design":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          
+          {/* Digital Tablet */}
+          <rect x="70" y="70" width="80" height="55" rx="4" fill={cMed} stroke={cDark} strokeWidth="1.5" transform="rotate(-10 110 97)" />
+          <rect x="76" y="76" width="68" height="43" rx="2" fill="#FFFFFF" stroke={cDark} strokeWidth="1" transform="rotate(-10 110 97)" />
+          <path d="M 85,90 Q 110,80 130,95 Q 140,105 130,115" stroke={cLight} strokeWidth="3" fill="none" transform="rotate(-10 110 97)" />
+
+          {/* Stylus / Pen */}
+          <g transform="translate(140, 50) rotate(25)">
+            <rect x="0" y="0" width="6" height="40" rx="2" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <path d="M 0,40 L 3,50 L 6,40 Z" fill={cDark} />
+            <circle cx="3" cy="50" r="1" fill="#FFFFFF" />
+          </g>
+
+          {/* Color Palette or Shapes */}
+          <g transform="translate(180, 75)">
+             <circle cx="20" cy="20" r="18" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+             <circle cx="12" cy="12" r="4" fill={cMed} />
+             <circle cx="28" cy="12" r="4" fill="#F87171" />
+             <circle cx="12" cy="28" r="4" fill="#FCD34D" />
+             <circle cx="28" cy="28" r="4" fill="#60A5FA" />
+          </g>
+          
+          {/* Sparkles */}
+          <path d="M 230,30 L 232,35 L 237,36 L 232,37 L 230,42 L 228,37 L 223,36 L 228,35 Z" fill="#FCD34D" stroke="#CA8A04" strokeWidth="1" />
+          <path d="M 90,40 L 91,43 L 94,44 L 91,45 L 90,48 L 89,45 L 86,44 L 89,43 Z" fill={cMed} stroke={cDark} strokeWidth="1" />
+        </svg>
+      );
+    case "Data Science & AI":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          {/* Network Graph */}
+          <g transform="translate(150, 75)">
+            <line x1="-40" y1="-20" x2="0" y2="20" stroke={cDark} strokeWidth="1.5" />
+            <line x1="40" y1="-20" x2="0" y2="20" stroke={cDark} strokeWidth="1.5" />
+            <line x1="0" y1="-30" x2="-40" y2="-20" stroke={cDark} strokeWidth="1.5" />
+            <line x1="0" y1="-30" x2="40" y2="-20" stroke={cDark} strokeWidth="1.5" />
+            
+            <circle cx="-40" cy="-20" r="8" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="40" cy="-20" r="8" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="-30" r="12" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <circle cx="0" cy="20" r="14" fill={cDark} />
+            <circle cx="0" cy="20" r="4" fill="#FFFFFF" />
+          </g>
+          {/* Small bar chart */}
+          <rect x="70" y="90" width="12" height="40" rx="2" fill={cMed} />
+          <rect x="90" y="70" width="12" height="60" rx="2" fill={cDark} />
+          <rect x="110" y="100" width="12" height="30" rx="2" fill={cLight} stroke={cDark} strokeWidth="1" />
+        </svg>
+      );
+    case "Medicine & Health":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          {/* Medical Cross Shield */}
+          <rect x="120" y="40" width="60" height="70" rx="8" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+          <path d="M 140,75 H 160 M 150,65 V 85" stroke="#F87171" strokeWidth="6" strokeLinecap="round" />
+          {/* Heartbeat Monitor */}
+          <rect x="200" y="80" width="50" height="30" rx="4" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+          <path d="M 205,95 H 215 L 220,85 L 225,105 L 230,95 H 245" stroke="#10B981" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+          {/* Pill */}
+          <g transform="translate(70, 90) rotate(45)">
+            <rect x="0" y="0" width="16" height="36" rx="8" fill={cDark} />
+            <path d="M 0,18 H 16 V 28 Q 16,36 8,36 Q 0,36 0,28 Z" fill={cMed} />
+          </g>
+        </svg>
+      );
+    case "Law & Ethics":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          {/* Scales of Justice */}
+          <g transform="translate(150, 40)">
+            {/* Center Pillar */}
+            <rect x="-4" y="0" width="8" height="90" rx="2" fill={cDark} />
+            <path d="M -15,90 H 15 L 10,80 H -10 Z" fill={cMed} stroke={cDark} strokeWidth="1.5" />
+            {/* Beam */}
+            <rect x="-45" y="10" width="90" height="4" rx="2" fill={cDark} />
+            {/* Left Scale */}
+            <path d="M -40,14 L -55,50 A 15 10 0 0 0 -25 50 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <line x1="-40" y1="14" x2="-25" y2="50" stroke={cDark} strokeWidth="1" />
+            {/* Right Scale */}
+            <path d="M 40,14 L 25,50 A 15 10 0 0 0 55 50 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" />
+            <line x1="40" y1="14" x2="55" y2="50" stroke={cDark} strokeWidth="1" />
+          </g>
+          {/* Gavel */}
+          <g transform="translate(80, 100) rotate(-20)">
+            <rect x="0" y="0" width="16" height="30" rx="2" fill={cDark} />
+            <rect x="6" y="30" width="4" height="35" rx="2" fill={cMed} stroke={cDark} strokeWidth="1" />
+          </g>
+        </svg>
+      );
+    case "Agriculture & Ecology":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke={cLine} strokeWidth="2" strokeLinecap="round" />
+          {/* Sun */}
+          <circle cx="230" cy="50" r="16" fill="#FCD34D" />
+          <path d="M 230,25 V 20 M 230,75 V 80 M 205,50 H 200 M 260,50 H 255" stroke="#FCD34D" strokeWidth="2" strokeLinecap="round" />
+          {/* Plant growing */}
+          <g transform="translate(150, 130)">
+             {/* Pot */}
+             <path d="M -20,0 L -15,-25 H 15 L 20,0 Z" fill={cLight} stroke={cDark} strokeWidth="1.5" strokeLinejoin="round" />
+             <rect x="-22" y="-30" width="44" height="5" rx="2" fill={cDark} />
+             {/* Stem */}
+             <path d="M 0,-30 Q 10,-60 -5,-80" stroke="#10B981" strokeWidth="3" fill="none" strokeLinecap="round" />
+             {/* Leaves */}
+             <path d="M -2,-50 Q -20,-55 -15,-70 Q -5,-65 -2,-50 Z" fill="#10B981" />
+             <path d="M 4,-65 Q 20,-60 15,-45 Q 5,-50 4,-65 Z" fill="#34D399" />
+          </g>
+          {/* Water drops */}
+          <path d="M 100,50 Q 95,65 100,70 Q 105,65 100,50 Z" fill="#60A5FA" />
+          <path d="M 120,40 Q 115,55 120,60 Q 125,55 120,40 Z" fill="#93C5FD" />
         </svg>
       );
     default:

@@ -4,7 +4,7 @@ import LogoStrip from "@/apps/public/components/landing/LogoStrip";
 import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
 import Testimonials from "@/apps/public/components/landing/Testimonials";
 import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
-import MagicBento from "@/apps/public/components/landing/MagicBento";
+import { TabbedShowcase } from "@/apps/public/components/landing/TabbedShowcase";
 import { BookOpen, MonitorPlay, MessageSquare, Award, Trophy, Video } from "lucide-react";
 import "@/apps/public/landing.css";
 
@@ -22,46 +22,94 @@ export const metadata: Metadata = {
 
 const arcadeFeatures = [
   {
-    color: '#ffffff',
-    title: 'Interactive Courses',
-    description: 'Learn through hands-on, high-quality technical content built by experts.',
-    label: 'Learn',
-    icon: BookOpen
+    color: '#FDF2D0', // Cream Yellow
+    title: 'Universities & colleges',
+    description: 'Accredited-quality academic pathways and departments. Empower your faculty with our advanced publishing tools to build state-of-the-art digital curricula.',
+    label: 'Higher Ed',
+    icon: BookOpen,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-slate-900 opacity-[0.05]">
+        <pattern id="sketch-1" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(15)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-1)" />
+      </svg>
+    )
   },
   {
     color: '#2451D6', // Arcade Blue
-    title: 'Live Workshops',
-    description: 'Join real-time sessions and build projects alongside the community.',
-    label: 'Build',
-    icon: MonitorPlay
+    title: 'Companies & enterprises',
+    description: 'Professional internal onboarding and skill tracks at scale. Provide your employees with unified tools, real-time analytics, and customized sandboxes to accelerate technical proficiency.',
+    label: 'Enterprise',
+    icon: MonitorPlay,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-white opacity-[0.08]">
+        <pattern id="sketch-2" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-2)" />
+      </svg>
+    )
   },
   {
-    color: '#ffffff',
-    title: 'Student Forums',
-    description: 'Ask questions, share knowledge, and collaborate with peers.',
-    label: 'Connect',
-    icon: MessageSquare
+    color: '#E2F1E8', // Soft Mint
+    title: 'Freelancers & experts',
+    description: 'Monetize domain expertise and build personal brand value. Create self-paced learning resources, publish interactive guides, and grow your unique audience.',
+    label: 'Professionals',
+    icon: MessageSquare,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-slate-900 opacity-[0.05]">
+        <pattern id="sketch-3" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(-15)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-3)" />
+      </svg>
+    )
   },
   {
-    color: '#12141C', // Dark Slate
-    title: 'Verified Certificates',
-    description: 'Earn verifiable credentials to showcase your new skills.',
-    label: 'Achieve',
-    icon: Award
+    color: '#EBEAFA', // Soft Lavender
+    title: 'Training institutes',
+    description: 'Structured cohorts and certified bootcamp programs. Manage student cohorts, grade assignments, and issue verifiable credentials seamlessly.',
+    label: 'Institutes',
+    icon: Award,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-white opacity-[0.05]">
+        <pattern id="sketch-4" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-4)" />
+      </svg>
+    )
   },
   {
-    color: '#ffffff',
-    title: 'Hackathons & Competitions',
-    description: 'Test your abilities in live coding challenges and campus-wide hackathons.',
-    label: 'Compete',
-    icon: Trophy
+    color: '#FDE2E4', // Soft Pink
+    title: 'Nonprofits & communities',
+    description: 'Mission-driven open education and public impact tracks. Build robust, accessible learning resources to democratize education for a global audience.',
+    label: 'Nonprofits',
+    icon: Trophy,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-slate-900 opacity-[0.05]">
+        <pattern id="sketch-5" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(75)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-5)" />
+      </svg>
+    )
   },
   {
-    color: '#ffffff',
-    title: 'Webinars & Articles',
-    description: 'Deep dive into specialized topics with industry experts and written tutorials.',
-    label: 'Explore',
-    icon: Video
+    color: '#E3F2FD', // Soft Blue
+    title: 'Independent creators',
+    description: 'Publish self-paced learning paths on your own terms. Leverage standard-setting publishing tools to deliver world-class educational content.',
+    label: 'Creators',
+    icon: Video,
+    bgSvg: (
+      <svg className="absolute inset-0 w-full h-full text-slate-900 opacity-[0.05]">
+        <pattern id="sketch-6" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(-75)">
+          <path d="M0,10 Q10,12 20,8 T40,10 M0,20 Q10,18 20,22 T40,20 M0,30 Q10,32 20,28 T40,30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </pattern>
+        <rect x="0" y="0" width="100%" height="100%" fill="url(#sketch-6)" />
+      </svg>
+    )
   }
 ];
 
@@ -75,15 +123,20 @@ export default function PublicLandingPage() {
       {/* Bento Grid Section */}
       <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto w-full flex flex-col items-center">
         <div className="mb-16 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-            Everything you need to level up.
+          <div className="text-xs font-bold text-indigo-500 tracking-[0.2em] uppercase mb-4 flex items-center justify-center gap-4">
+            <span className="w-6 h-[1px] bg-indigo-300"></span>
+            Built for every educator
+            <span className="w-6 h-[1px] bg-indigo-300"></span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+            A professional platform, whoever<br className="hidden md:block" /> you are
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Master new skills, build real projects, and connect with other builders using our unified platform tools.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+            Arcade powers educational creators with standard-setting publishing tools, sandboxes, and analytics.
           </p>
         </div>
         <div className="w-full">
-          <MagicBento cardData={arcadeFeatures} glowColor="36, 81, 214" particleCount={15} />
+          <TabbedShowcase features={arcadeFeatures} />
         </div>
       </section>
 

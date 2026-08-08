@@ -69,7 +69,7 @@ export function ExploreCategoryGrid({
                     overflow: "hidden"
                   }}
                 >
-                  <CategoryHeaderIllustration category={cat} />
+                  <CategoryHeaderIllustration category={cat} variant={activeTab} />
                 </div>
 
                 {/* Card Content Section */}

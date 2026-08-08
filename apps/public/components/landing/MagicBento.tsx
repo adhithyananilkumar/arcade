@@ -16,6 +16,7 @@ export interface MagicBentoCardData {
   description: string;
   label: string;
   icon?: React.ComponentType<{ size?: number; className?: string }>;
+  bgSvg?: React.ReactNode;
 }
 
 const defaultCardData: MagicBentoCardData[] = [
@@ -367,6 +368,9 @@ const ParticleCard: React.FC<ParticleCardProps> = ({
         ref={cardRef as any}
         layout={true}
         layoutId={layoutId}
+        transition={{ layout: { type: "tween", duration: 1.0, ease: "easeInOut" } }}
+        initial={{ boxShadow: "8px 8px 0px #0f172a" }}
+        whileHover={{ x: 4, y: 4, boxShadow: "4px 4px 0px #0f172a" }}
         className={`${className} particle-container`}
         style={{ ...style, position: 'relative', overflow: 'hidden' }}
         onMouseEnter={onMouseEnter}
@@ -609,21 +613,48 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({
 
   
           return (
-            <InteractiveCard
+            <ParticleCard
               key={index}
-              card={card}
-              index={index}
+              layout={true}
+              layoutId={`bento-card-interactive-${index}`}
               isExpanded={isExpanded}
               onMouseEnter={onMouseEnter}
-              baseClassName={baseClassName}
-              customStyle={customStyle}
-              enableTilt={enableTilt}
-              enableMagnetism={enableMagnetism}
-              clickEffect={clickEffect}
-              glowColor={glowColor}
+              className={baseClassName}
+              style={customStyle}
               disableAnimations={disableAnimations}
-              isLight={isLight}
-            />
+              particleCount={0}
+              glowColor={glowColor}
+              enableTilt={enableTilt}
+              clickEffect={clickEffect}
+              enableMagnetism={enableMagnetism}
+            >
+              {card.bgSvg && (
+                <div className="absolute inset-0 z-0 overflow-hidden rounded-[inherit] pointer-events-none">
+                  {card.bgSvg}
+                </div>
+              )}
+              <motion.div layout="position" className="magic-bento-card__header flex items-center justify-between w-full relative z-10">
+                <div className="magic-bento-card__label">{card.label}</div>
+                {card.icon && <card.icon size={18} className={isLight ? "text-slate-800/60 group-hover:text-slate-900 transition-colors duration-300 relative z-10" : "text-white/60 group-hover:text-white transition-colors duration-300 relative z-10"} />}
+              </motion.div>
+              <motion.div layout="position" className="magic-bento-card__content relative z-10">
+                <h2 className="magic-bento-card__title">{card.title}</h2>
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.p
+                      key="description"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="magic-bento-card__description"
+                    >
+                      {card.description}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </ParticleCard>
           );
 
 };
@@ -663,7 +694,7 @@ const MagicBento: React.FC<MagicBentoProps> = ({
       <BentoCardGrid gridRef={gridRef}>
         {cardData.map((card, index) => {
           const isExpanded = index === expandedIndex;
-          const isLight = card.color === '#ffffff' || card.color === '#fff' || card.color.toLowerCase() === 'white';
+          const isLight = !['#2451d6', '#12141c', '#000000'].includes(card.color.toLowerCase());
           const sizeClassName = isExpanded ? 'magic-bento-card--expanded' : 'magic-bento-card--collapsed';
           const baseClassName = `magic-bento-card ${sizeClassName} ${textAutoHide ? 'magic-bento-card--text-autohide' : ''} ${enableBorderGlow ? 'magic-bento-card--border-glow' : ''} ${isLight ? 'magic-bento-card--light' : ''}`;
           
@@ -689,15 +720,21 @@ const MagicBento: React.FC<MagicBentoProps> = ({
                 clickEffect={clickEffect}
                 enableMagnetism={enableMagnetism}
               >
-                <motion.div layout="position" className="magic-bento-card__header flex items-center justify-between w-full">
+                {card.bgSvg && (
+                  <div className="absolute inset-0 z-0 overflow-hidden rounded-[inherit] pointer-events-none">
+                    {card.bgSvg}
+                  </div>
+                )}
+                <motion.div layout="position" className="magic-bento-card__header flex items-center justify-between w-full relative z-10">
                   <div className="magic-bento-card__label">{card.label}</div>
-                  {card.icon && <card.icon size={18} className={isLight ? "text-slate-800/60 group-hover:text-slate-900 transition-colors duration-300" : "text-white/60 group-hover:text-white transition-colors duration-300"} />}
+                  {card.icon && <card.icon size={18} className={isLight ? "text-slate-800/60 group-hover:text-slate-900 transition-colors duration-300 relative z-10" : "text-white/60 group-hover:text-white transition-colors duration-300 relative z-10"} />}
                 </motion.div>
-                <motion.div layout="position" className="magic-bento-card__content">
+                <motion.div layout="position" className="magic-bento-card__content relative z-10">
                   <h2 className="magic-bento-card__title">{card.title}</h2>
                   <AnimatePresence>
                     {isExpanded && (
                       <motion.p
+                        key="description"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}

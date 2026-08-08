@@ -11,6 +11,7 @@ import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { api } from "@/infrastructure/http/api";
+import { DeveloperDesk } from "./DeveloperDesk";
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
   if (hex.length === 3) {
@@ -22,7 +23,7 @@ function hexToRgbStr(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-const HoneycombIllustration: React.FC = () => {
+const DesignThinkingIllustration: React.FC = () => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <svg
@@ -32,336 +33,123 @@ const HoneycombIllustration: React.FC = () => {
         style={{ overflow: "visible", display: "block", maxWidth: "450px" }}
       >
         <style>{`
-          @keyframes flowForward {
-            from { stroke-dashoffset: 24; }
-            to { stroke-dashoffset: 0; }
+          @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
           }
-          @keyframes flowBackward {
-            from { stroke-dashoffset: -24; }
-            to { stroke-dashoffset: 0; }
+          @keyframes docFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
           }
-          @keyframes shuttleFlight {
-            0% {
-              transform: translate(350px, 45px) rotate(-30deg);
-            }
-            35% {
-              /* Flying towards the racket */
-              transform: translate(322px, 60px) rotate(-55deg);
-            }
-            45% {
-              /* Contact with racket, flip orientation */
-              transform: translate(316px, 66px) rotate(35deg);
-            }
-            80% {
-              /* Flying back to peak height */
-              transform: translate(372px, 28px) rotate(10deg);
-            }
-            100% {
-              /* Returning to resting orbit position */
-              transform: translate(350px, 45px) rotate(-30deg);
-            }
+          @keyframes bulbGlow {
+            0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.4)); transform: scale(0.95); }
+            50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.9)); transform: scale(1.05); }
           }
-          @keyframes racketSwing {
-            0%, 100% { transform: rotate(0deg); }
-            30% { transform: rotate(-8deg); }     /* Swing back */
-            38% { transform: rotate(15deg); }    /* Forward strike */
-            50% { transform: rotate(5deg); }     /* Follow through */
-            65% { transform: rotate(0deg); }     /* Return to idle */
+          @keyframes gridPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
           }
-          @keyframes sparkleTwinkleRight {
-            0%, 100% { transform: translate(380px, 210px) scale(0.8); opacity: 0.6; }
-            50% { transform: translate(380px, 210px) scale(1.05); opacity: 1; }
+          @keyframes glassSearch {
+            0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+            25% { transform: translate(-2px, -2px) rotate(-10deg); }
+            75% { transform: translate(2px, 2px) rotate(10deg); }
           }
-          @keyframes sparkleTwinkleLeft {
-            0%, 100% { transform: translate(60px, 60px) scale(0.6); opacity: 0.5; }
-            50% { transform: translate(60px, 60px) scale(0.85); opacity: 1; }
-          }
-          @keyframes clinkSparksPulse {
-            0%, 100% { transform: translate(210px, 208px) scale(0.85); opacity: 0.6; }
-            50% { transform: translate(210px, 208px) scale(1.15); opacity: 1; }
-          }
-          @keyframes expandArrowsPulse {
-            0%, 100% { transform: translate(390px, 250px) scale(0.95); }
-            50% { transform: translate(390px, 250px) scale(1.15); }
+          @keyframes flowPath {
+            to { stroke-dashoffset: -20; }
           }
 
-          .flow-forward {
-            animation: flowForward 2s linear infinite;
-          }
-          .flow-backward {
-            animation: flowBackward 2s linear infinite;
-          }
-          .animate-shuttle {
-            animation: shuttleFlight 5s ease-in-out infinite;
-          }
-          .animate-racket {
-            animation: racketSwing 5s ease-in-out infinite;
-            transform-origin: -2px 2px;
-          }
-          .animate-sparkle-right {
-            animation: sparkleTwinkleRight 3s ease-in-out infinite;
-          }
-          .animate-sparkle-left {
-            animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;
-          }
-          .animate-clink-sparks {
-            animation: clinkSparksPulse 2.5s ease-in-out infinite;
-          }
-          .animate-expand-arrows {
-            animation: expandArrowsPulse 4s ease-in-out infinite;
-          }
+          .anim-heart { animation: heartBeat 2.5s ease-in-out infinite; transform-origin: center; }
+          .anim-doc { animation: docFloat 3s ease-in-out infinite; transform-origin: center; }
+          .anim-bulb { animation: bulbGlow 2s ease-in-out infinite; transform-origin: center; }
+          .anim-grid { animation: gridPulse 4s ease-in-out infinite; transform-origin: center; }
+          .anim-glass { animation: glassSearch 3.5s ease-in-out infinite; transform-origin: center; }
+          .anim-path { animation: flowPath 1s linear infinite; }
         `}</style>
 
-        {/* Background dotted line paths / orbits */}
-        <path
-          className="flow-forward"
-          d="M 120,40 C 200,-10 320,10 340,90"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-backward"
-          d="M 50,110 C 30,50 120,10 200,60"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-forward"
-          d="M 280,240 C 360,250 430,190 410,120"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
-        />
-        <path
-          className="flow-backward"
-          d="M 60,190 C 80,250 180,270 230,240"
-          stroke="#CBD5E1"
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-          fill="none"
+        {/* Background Connecting Path */}
+        <polyline 
+          points="60,130 105,130 165,164.64 225,130 285,164.64 345,130 390,130" 
+          fill="none" 
+          stroke="#CBD5E1" 
+          strokeWidth="2" 
+          strokeDasharray="6 4" 
+          className="anim-path"
         />
 
-        {/* Glitter particles sliding along dotted paths */}
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 120,40 C 200,-10 320,10 340,90"
-            dur="6s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 50,110 C 30,50 120,10 200,60"
-            dur="7s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 280,240 C 360,250 430,190 410,120"
-            dur="8s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 60,190 C 80,250 180,270 230,240"
-            dur="6.5s"
-            repeatCount="indefinite"
-          />
-        </circle>
-
-        {/* Small floating elements like badminton shuttles or balls */}
-        <g className="animate-shuttle" transform="translate(350, 45) rotate(-30)">
-          <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
-          <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
-          <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
-        </g>
-        
-        {/* Sparkles / star outlines */}
-        <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
-          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
-        </g>
-        <g className="animate-sparkle-left" transform="translate(60, 60) scale(0.6)">
-          <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
+        {/* Hexagon 1: Empathize (Blue, Heart) */}
+        <g transform="translate(105, 130)">
+          <polygon points="-20,-34.64 20,-34.64 40,0 20,34.64 -20,34.64 -40,0" fill="#FFFFFF" stroke="#3B82F6" strokeWidth="3.5" strokeLinejoin="round" />
+          <g className="anim-heart">
+            <path d="M0,12 C-15,-3 -10,-15 0,-5 C10,-15 15,-3 0,12 Z" fill="#3B82F6" />
+            <line x1="8" y1="-10" x2="12" y2="-14" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="10" y1="-5" x2="15" y2="-7" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-8" y1="10" x2="-12" y2="14" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="-10" y1="5" x2="-15" y2="7" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round" />
+          </g>
         </g>
 
-        {/* Diagonal Expand Arrows in bottom-right */}
-        <g className="animate-expand-arrows" transform="translate(390, 250)">
-          <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
-          <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </g>
-
-        {/* Center Hexagon: Girl with Clipboard (Center: 210, 150, radius: 52) */}
-        <g transform="translate(210, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FFFFFF"
-            stroke="#E2E8F0"
-            strokeWidth="1.8"
-          />
-          {/* Sketch: Girl with Clipboard */}
-          <path d="M-18,-2 C-22,12 -16,28 -14,38 M18,-2 C22,12 16,28 14,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,-8 C-13,8 13,8 13,-8 C13,-18 -13,-18 -13,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-14,-10 Q0,-22 14,-10 M-14,-10 C-18,-5 -15,10 -15,10 M14,-10 C18,-5 15,10 15,10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <ellipse cx="-5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <ellipse cx="5" cy="-8" rx="1.2" ry="1.8" fill="#1E293B" />
-          <path d="M-3,-2 Q0,1 3,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-4,4 L-4,10 M4,4 L4,10" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="-14" y="10" width="28" height="30" rx="3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-6,10 L-6,7 C-6,6 -5,5 -4,5 H4 C5,5 6,6 6,7 L6,10 Z" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-18,22 Q-13,20 -12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,22 Q13,20 12,23" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <line x1="-8" y1="18" x2="8" y2="18" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="-8" y1="24" x2="4" y2="24" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
-          <line x1="-8" y1="30" x2="0" y2="30" stroke="#CBD5E1" strokeWidth="1.5" strokeLinecap="round" />
-        </g>
-
-        {/* Top-Left Hexagon: Old Man with flat cap (Center: 132, 105, radius: 52) */}
-        <g transform="translate(132, 105)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FEF08A"
-            stroke="#F59E0B"
-            strokeWidth="1.8"
-          />
-          <path d="M-15,-6 C-15,10 15,10 15,-6 C15,-16 -15,-16 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M-22,-12 C-15,-28 15,-28 22,-12 Z" fill="#F1F5F9" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-26,-10 C-10,-2 10,-2 26,-10" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,8 C-5,22 5,22 10,8" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,3 Q0,-1 10,3 Q5,7 0,5 Q-5,7 -10,3" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" />
-          <circle cx="-6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <circle cx="6" cy="-6" r="4.5" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-1.5" y1="-6" x2="1.5" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10.5,-6 L-15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M10.5,-6 L15,-8" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M0,-4 Q2,0 -1,2" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-25,32 Q-12,18 0,22 Q12,18 25,32" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <line x1="0" y1="22" x2="0" y2="35" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-10,24 L-5,32 M10,24 L5,32" stroke="#1E293B" strokeWidth="1.6" />
-        </g>
-
-        {/* Top-Right Hexagon: Badminton Player (Center: 288, 105, radius: 52) */}
-        <g transform="translate(288, 105)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FFFFFF"
-            stroke="#E2E8F0"
-            strokeWidth="1.8"
-          />
-          <circle cx="-6" cy="-5" r="7" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M1,-5 L4,-4 L1,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-4" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-13,-5 C-12,-15 -2,-15 -2,-12 M-13,-5 C-16,-3 -13,4 -13,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <g className="animate-racket">
-            <path d="M-2,2 Q10,-10 18,-20" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-            <circle cx="18" cy="-20" r="2.5" fill="#1E293B" stroke="#1E293B" />
-            <line x1="18" y1="-20" x2="25" y2="-28" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-            <g transform="translate(28, -32) rotate(45)">
-              <ellipse cx="0" cy="0" rx="6" ry="8" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-              <line x1="-6" y1="0" x2="6" y2="0" stroke="#1E293B" strokeWidth="1" />
-              <line x1="0" y1="-8" x2="0" y2="8" stroke="#1E293B" strokeWidth="1" />
-              <line x1="-4" y1="-4" x2="4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
-              <line x1="4" y1="-4" x2="-4" y2="4" stroke="#1E293B" strokeWidth="0.8" />
+        {/* Hexagon 2: Define (Teal, Document) */}
+        <g transform="translate(165, 164.64)">
+          <polygon points="-20,-34.64 20,-34.64 40,0 20,34.64 -20,34.64 -40,0" fill="#FFFFFF" stroke="#14B8A6" strokeWidth="3.5" strokeLinejoin="round" />
+          <g className="anim-doc">
+            <rect x="-10" y="-12" width="20" height="26" rx="2" fill="#14B8A6" />
+            <line x1="-5" y1="-6" x2="5" y2="-6" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="-5" y1="-1" x2="5" y2="-1" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="-5" y1="4" x2="1" y2="4" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+            <rect x="-7" y="-7.5" width="2" height="2" fill="#FFFFFF" />
+            <rect x="-7" y="-2.5" width="2" height="2" fill="#FFFFFF" />
+            <rect x="-7" y="2.5" width="2" height="2" fill="#FFFFFF" />
+            <g transform="translate(8, 2) rotate(15)">
+               <rect x="0" y="-8" width="4" height="16" fill="#FACC15" />
+               <path d="M0,8 L2,12 L4,8 Z" fill="#3B82F6" />
+               <line x1="2" y1="-8" x2="2" y2="8" stroke="#FFFFFF" strokeWidth="0.5" />
             </g>
           </g>
-          <path d="M-10,5 C-8,18 -15,38 -15,38 M-4,5 C-2,15 5,30 8,38" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Middle-Left Hexagon: Spiky Hair waving`,StartLine:24,TargetContent: (Center: 54, 150, radius: 52) */}
-        <g transform="translate(54, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#FCA5A5"
-            stroke="#F87171"
-            strokeWidth="1.8"
-          />
-          <path d="M-18,-8 L-14,-22 L-6,-16 L2,-25 L8,-15 L16,-20 L18,-6 L14,4 L-15,4 Z" fill="#1E293B" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-13,-6 C-13,10 13,10 13,-6 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <circle cx="-5" cy="-2" r="1.2" fill="#1E293B" />
-          <circle cx="5" cy="-2" r="1.2" fill="#1E293B" />
-          <path d="M-3,3 Q0,6 3,3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-13,6 C-22,-2 -26,-12 -28,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-28,-18 Q-32,-21 -29,-23 M-28,-18 Q-28,-22 -26,-22 M-28,-18 Q-24,-20 -24,-18" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-10,12 L-14,35 M10,12 L14,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        </g>
-
-        {/* Middle-Right Hexagon: Child pointing to target (Center: 366, 150, radius: 52) */}
-        <g transform="translate(366, 150)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#F472B6"
-            stroke="#EC4899"
-            strokeWidth="1.8"
-          />
-          <g transform="translate(24, 0)">
-            <circle cx="0" cy="0" r="12" stroke="#FFFFFF" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
-            <circle cx="0" cy="0" r="7" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
-            <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+        {/* Hexagon 3: Ideate (Yellow, Lightbulb) */}
+        <g transform="translate(225, 130)">
+          <polygon points="-20,-34.64 20,-34.64 40,0 20,34.64 -20,34.64 -40,0" fill="#FFFFFF" stroke="#FACC15" strokeWidth="3.5" strokeLinejoin="round" />
+          <g className="anim-bulb">
+             <circle cx="0" cy="-2" r="9" fill="#FACC15" />
+             <path d="M-5,4 L-3,10 L3,10 L5,4 Z" fill="#FACC15" />
+             <line x1="-2" y1="12" x2="2" y2="12" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+             <path d="M-3,3 L0,-1 L3,3" fill="none" stroke="#FFFFFF" strokeWidth="1.5" />
+             <line x1="0" y1="-15" x2="0" y2="-19" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+             <line x1="-10" y1="-12" x2="-13" y2="-15" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
+             <line x1="10" y1="-12" x2="13" y2="-15" stroke="#FACC15" strokeWidth="2" strokeLinecap="round" />
           </g>
-          <circle cx="-10" cy="-6" r="8" stroke="#1E293B" strokeWidth="1.6" fill="#FFFFFF" />
-          <path d="M-18,-8 C-21,-12 -16,-17 -12,-14 C-10,-19 -4,-18 -4,-14 C-1,-17 3,-12 1,-8 M-18,-8 C-21,-5 -20,2 -18,4" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <circle cx="-5" cy="-7" r="1" fill="#1E293B" />
-          <path d="M-7,-3 Q-5,-1 -3,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-2,2 Q8,-2 18,-2" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,-2 C20,-2 22,-2 24,-2 M18,-2 L17,1 L15,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-14,7 C-12,20 -18,36 -18,36 M-6,7 C-4,18 -2,30 -1,36" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Bottom-Left Hexagon: Girl clinking glass (Center: 132, 195, radius: 52) */}
-        <g transform="translate(132, 195)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#A7F3D0"
-            stroke="#10B981"
-            strokeWidth="1.8"
-          />
-          <path d="M-12,-8 C-12,8 12,8 12,-8 C12,-18 -12,-18 -12,-8" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-6 C-17,-18 17,-18 15,-6 C16,4 12,12 12,12 L-12,12 C-12,12 -16,4 -15,-6" fill="none" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="-4" cy="-8" r="1.2" fill="#1E293B" />
-          <circle cx="4" cy="-8" r="1.2" fill="#1E293B" />
-          <path d="M-2.5,-3 Q0,-1 2.5,-3" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M6,10 Q14,8 18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M18,10 L24,11 L22,20 L16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M22,13 Q25,14 24,16 Q23,17 21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-12,14 L-15,35 M6,14 L4,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        {/* Hexagon 4: Prototype (Orange, Grid) */}
+        <g transform="translate(285, 164.64)">
+          <polygon points="-20,-34.64 20,-34.64 40,0 20,34.64 -20,34.64 -40,0" fill="#FFFFFF" stroke="#F97316" strokeWidth="3.5" strokeLinejoin="round" />
+          <g className="anim-grid">
+             <rect x="-10" y="-10" width="5" height="5" fill="#3B82F6" />
+             <rect x="-3" y="-10" width="5" height="5" fill="#F97316" />
+             <rect x="4" y="-10" width="5" height="5" fill="#FACC15" />
+             <rect x="-10" y="-3" width="5" height="5" fill="#14B8A6" />
+             <rect x="-3" y="-3" width="5" height="5" fill="#3B82F6" />
+             <rect x="4" y="-3" width="5" height="5" fill="#EF4444" />
+             <rect x="-10" y="4" width="5" height="5" fill="#FACC15" />
+             <rect x="-3" y="4" width="5" height="5" fill="#EF4444" />
+             <rect x="4" y="4" width="5" height="5" fill="#14B8A6" />
+          </g>
         </g>
 
-        {/* Bottom-Right Hexagon: Man clinking glass (Center: 288, 195, radius: 52) */}
-        <g transform="translate(288, 195)">
-          <polygon
-            points="-52,0 -26,-45 26,-45 52,0 26,45 -26,45"
-            fill="#94A3B8"
-            stroke="#475569"
-            strokeWidth="1.8"
-          />
-          <path d="M-12,-6 C-12,8 12,8 12,-6 C12,-16 -12,-16 -12,-6" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinecap="round" />
-          <path d="M-15,-10 C-10,-22 10,-22 15,-10 L-15,-10" fill="#E2E8F0" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-18,-8 L-22,-6 L-16,-6" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <rect x="-9" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <rect x="2" y="-8" width="7" height="5" rx="1" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <line x1="-2" y1="-6" x2="2" y2="-6" stroke="#1E293B" strokeWidth="1.6" />
-          <path d="M-3,1 Q0,3 3,1" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-6,10 Q-14,8 -18,13" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-          <path d="M-18,10 L-24,11 L-22,20 L-16,19 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.6" strokeLinejoin="round" />
-          <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
-          <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        </g>
-        
-        {/* Clink sparks between bottom left & right cups */}
-        <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
-          <line x1="-8" y1="-8" x2="-3" y2="-3" />
-          <line x1="8" y1="-8" x2="3" y2="-3" />
-          <line x1="-8" y1="8" x2="-3" y2="3" />
-          <line x1="8" y1="8" x2="3" y2="3" />
-          <line x1="0" y1="-10" x2="0" y2="-4" />
-          <line x1="0" y1="10" x2="0" y2="4" />
+        {/* Hexagon 5: Test (Red, Magnifier & Cross) */}
+        <g transform="translate(345, 130)">
+          <polygon points="-20,-34.64 20,-34.64 40,0 20,34.64 -20,34.64 -40,0" fill="#FFFFFF" stroke="#EF4444" strokeWidth="3.5" strokeLinejoin="round" />
+          <g className="anim-glass">
+             <circle cx="-3" cy="-3" r="8" fill="none" stroke="#EF4444" strokeWidth="2.5" />
+             <line x1="2" y1="2" x2="8" y2="8" stroke="#EF4444" strokeWidth="3" strokeLinecap="round" />
+             <path d="M-6,-3 L-4,-1 L0,-5" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+             <circle cx="10" cy="-8" r="5" fill="#EF4444" />
+             <line x1="8" y1="-10" x2="12" y2="-6" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+             <line x1="8" y1="-6" x2="12" y2="-10" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+          </g>
         </g>
       </svg>
     </div>
@@ -1654,13 +1442,13 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   );
 };
 
-type CategoryDetailedViewProps = {
+type LiveSessionDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
   viewType?: "courses" | "livesession" | "webinars" | "articles";
 };
 
-function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: CategoryDetailedViewProps = {}) {
+function LiveSessionDetailedViewContent({ hubBasePath, viewType = "courses" }: LiveSessionDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const exploreHome = hubBasePath || "/explore";
@@ -1753,9 +1541,19 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
         paddingBottom: isEmbeddedHub ? "8px" : "100px",
+        background: "linear-gradient(to bottom, #f3e8ff 0%, #ffffff 30%, #ffffff 70%, #fae8ff 100%)",
       }}
     >
       <style>{`
+        .landing-root::before {
+          background-image:
+            radial-gradient(ellipse 55% 40% at 8% 12%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 92% 24%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 45% 35% at 5% 52%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 6% 76%, rgba(217, 70, 239, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 35% at 94% 76%, rgba(192, 132, 252, 0.11) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 30% at 48% 94%, rgba(168, 85, 247, 0.07) 0%, transparent 60%) !important;
+        }
         .course-card-premium {
           transition: all 0.18s ease !important;
         }
@@ -2151,7 +1949,6 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
 
           </div>
 
-          {/* Banner Right Panel: Honeycomb Sketch Illustration */}
           <div
             style={{
               position: "relative",
@@ -2165,7 +1962,7 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
               zIndex: 2,
             }}
           >
-            <HoneycombIllustration />
+            <DeveloperDesk />
           </div>
         </div>
 
@@ -2428,10 +2225,10 @@ function CategoryDetailedViewContent({ hubBasePath, viewType = "courses" }: Cate
   );
 }
 
-export default function CategoryDetailedView(props: CategoryDetailedViewProps) {
+export default function LiveSessionDetailedView(props: LiveSessionDetailedViewProps) {
   return (
     <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "#6B7280" }}>Loading Explore Content...</div>}>
-      <CategoryDetailedViewContent {...props} />
+      <LiveSessionDetailedViewContent {...props} />
     </Suspense>
   );
 }

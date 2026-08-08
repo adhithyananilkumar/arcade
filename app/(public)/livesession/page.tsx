@@ -1,5 +1,5 @@
-import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
+import LiveSessionDetailedView from "@/components/explore/LiveSessionDetailedView";
 
-export default function BootcampsPage() {
-  return <CategoryDetailedView viewType="livesession" />;
+export default function LiveSessionPage() {
+  return <LiveSessionDetailedView viewType="livesession" />;
 }
