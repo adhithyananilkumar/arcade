@@ -43,8 +43,34 @@ function typeTone(type: string): string {
 export function NotificationList({ notifications, onItemClick, emptyMessage }: NotificationListProps) {
   if (notifications.length === 0) {
     return (
-      <div className="p-4 text-center text-sm text-slate-500">
-        {emptyMessage || 'No notifications yet'}
+      <div className="py-12 px-4 text-center select-none">
+        <div className="relative w-24 h-24 mx-auto flex items-center justify-center mb-3">
+          {/* Detailed SVG representation of the leaves surrounding the bell */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" fill="none">
+            {/* Left Leaf Group (Teal/Green) */}
+            <path d="M 22 55 C 16 48, 16 38, 24 32 C 26 40, 24 48, 22 55 Z" fill="#10b981" opacity="0.75" />
+            <path d="M 12 42 C 8 36, 12 28, 20 28 C 18 34, 16 38, 12 42 Z" fill="#34d399" opacity="0.65" />
+            <path d="M 28 62 C 24 58, 26 52, 32 48 C 30 54, 30 58, 28 62 Z" fill="#059669" opacity="0.5" />
+            
+            {/* Right Leaf Group (Blue/Indigo) */}
+            <path d="M 78 55 C 84 48, 84 38, 76 32 C 74 40, 76 48, 78 55 Z" fill="#3b82f6" opacity="0.75" />
+            <path d="M 88 42 C 92 36, 88 28, 80 28 C 82 34, 84 38, 88 42 Z" fill="#60a5fa" opacity="0.65" />
+            <path d="M 72 62 C 76 58, 74 52, 68 48 C 70 54, 70 58, 72 62 Z" fill="#2563eb" opacity="0.5" />
+          </svg>
+
+          {/* Center circular background with bell icon */}
+          <div className="w-16 h-16 rounded-full bg-slate-100/80 border border-slate-200/40 flex items-center justify-center relative z-10">
+            <svg viewBox="0 0 24 24" className="w-7 h-7 text-slate-800" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </div>
+        </div>
+
+        <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 mb-1">You're all caught up!</h4>
+        <p className="text-[10px] text-slate-400 font-semibold max-w-[180px] mx-auto leading-relaxed">
+          {emptyMessage || "We'll notify you when something new arrives."}
+        </p>
       </div>
     );
   }

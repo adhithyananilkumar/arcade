@@ -336,6 +336,15 @@ export default function LearnerNavbar() {
                       emptyMessage={(invitations.length > 0 || pendingAdminTasks.length > 0) ? undefined : 'No new notifications'}
                     />
                   </div>
+                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
+                    <Link 
+                      href="/notifications" 
+                      onClick={() => setIsNotificationsOpen(false)}
+                      className="text-xs font-extrabold text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                      See more
+                    </Link>
+                  </div>
                 </div>
               </>
             )}

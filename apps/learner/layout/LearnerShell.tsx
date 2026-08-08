@@ -19,6 +19,7 @@ const IMMERSIVE_ROUTES = [
   /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
+  /^\/roadmap\/[^/]+\/?$/,
 ];
 
 /** Full-focus surfaces — hide the bottom dock so content can breathe. */
