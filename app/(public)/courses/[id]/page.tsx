@@ -857,26 +857,30 @@ export default function CoursePreviewPage() {
   );
 
   return (
-    <main className="min-h-screen arcade-wash text-ink">
-      {/* Hero section */}
-      <div className="mx-auto max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
-        <CourseHero
-          title={displayTitle}
-          authorName={authorName}
-          authorUsername={authorUsername}
-          authorAvatarUrl={authorAvatarUrl}
-          lessonCount={lessonCount}
-          onEnroll={handleEnrollClick}
-          isEnrolled={isEnrolled}
-          courseId={params?.id}
-        />
+    <main className="min-h-screen bg-white text-ink">
+      {/* Hero section with gradient background */}
+      <div className="w-full arcade-wash">
+        <div className="mx-auto max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
+          <CourseHero
+            title={displayTitle}
+            authorName={authorName}
+            authorUsername={authorUsername}
+            authorAvatarUrl={authorAvatarUrl}
+            lessonCount={lessonCount}
+            onEnroll={handleEnrollClick}
+            isEnrolled={isEnrolled}
+            courseId={params?.id}
+          />
+        </div>
       </div>
 
-      {/* Body */}
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-        <CourseTabs courseTitle={displayTitle} />
-        <div className="mt-20">
-          <ReviewsBlock courseId={params?.id} />
+      {/* Body below hero with pure white background */}
+      <div className="w-full bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+          <CourseTabs courseTitle={displayTitle} />
+          <div className="mt-20">
+            <ReviewsBlock courseId={params?.id} />
+          </div>
         </div>
       </div>
     </main>
