@@ -178,7 +178,7 @@ export default function ManageChannelPage() {
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
-    ...(!isPersonalChannel ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }] : []),
+    { id: 'STAFF', label: 'Staff', icon: Users, badge: '34' },
     { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
     ...(isOwner && !isPersonalChannel ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert }] : []),
@@ -332,11 +332,12 @@ export default function ManageChannelPage() {
           )}
 
           {/* TAB 3: STAFF */}
-          {activeTab === 'STAFF' && !isPersonalChannel && (
+          {activeTab === 'STAFF' && (
             <ChannelStaffManager
               channelId={channelId}
               permissions={permissions}
               isSuspended={isSuspended}
+              isPersonalChannel={isPersonalChannel}
             />
           )}
 
