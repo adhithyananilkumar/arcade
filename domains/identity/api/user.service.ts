@@ -64,15 +64,7 @@ export class UserService {
     return data;
   }
 
-  static  async enrollInCourse(courseId: string): Promise<User> {
-    await api.post(`/api/v1/enrollments`, { resourceType: 'COURSE', resourceId: courseId });
-    return this.getMe();
-  }
 
-  static async unenrollFromCourse(courseId: string): Promise<User> {
-    await api.post(`/api/v1/enrollments/resource/COURSE/${courseId}/revoke`);
-    return this.getMe();
-  }
 
   static async acceptContentCreatorInvite(): Promise<void> {
     await api.post('/api/v1/content-creators/accept');

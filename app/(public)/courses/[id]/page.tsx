@@ -26,11 +26,10 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
-import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
-import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { UserService } from "@/domains/identity"
-import { EnrollmentService } from "@/domains/enrollment/api/enrollment.service"
-
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
+import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
+import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -456,24 +455,19 @@ function CourseHero({
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>
               )}
             </div>
-            {isEnrolled ? (
-              <Link
-                href={`/learn/${courseId}/learn`}
-                className="animated-button"
-              >
-                <span className="text">Go to course →</span>
-              </Link>
-            ) : (
-              <EnrollButton onClick={() => {
-                setEnrolling(true);
-                try {
-                  if (onEnroll) onEnroll();
-                } finally {
-                  setEnrolling(false);
-                }
-              }}>
-                {enrolling ? "Enrolling..." : "Enroll now"}
-              </EnrollButton>
+            {courseId && (
+              <div className="w-48">
+                <EnrollmentButton
+                  resourceType="COURSE"
+                  resourceId={courseId}
+                  initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+                  onStateChange={(state) => {
+                    if (state === "ENROLLED" && onEnroll) {
+                      onEnroll(); // Trigger profile refresh if needed
+                    }
+                  }}
+                />
+              </div>
             )}
             <button
               onClick={() => setSaved((s) => !s)}
@@ -831,15 +825,20 @@ function EnrollCta({
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        {isEnrolled ? (
-          <Link
-            href={`/learn/${courseId}/learn`}
-            className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
-          >
-            Go to course →
-          </Link>
-        ) : (
-          <EnrollButton onClick={onEnroll}>Enroll for ${priceAmount || 20}</EnrollButton>
+        {courseId && (
+          <div className="w-48">
+            <EnrollmentButton
+              resourceType="COURSE"
+              resourceId={courseId}
+              initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+              className="!bg-white !text-ink hover:!bg-white/90"
+              onStateChange={(state) => {
+                if (state === "ENROLLED" && onEnroll) {
+                  onEnroll();
+                }
+              }}
+            />
+          </div>
         )}
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
@@ -860,29 +859,21 @@ export default function CoursePreviewPage() {
   const [loading, setLoading] = useState(true)
   const { user, updateUser } = useAuthStore()
 
-  const handleEnrollClick = async () => {
+  const handleEnrollSuccess = async () => {
     if (!user) {
       router.push('/sign?mode=login')
       return
     }
 
-    if (params?.id) {
-      try {
-        const result = await EnrollmentService.enroll('COURSE', params.id);
-        if (result.status === 'GRANTED') {
-          const updatedUser = await UserService.getMe();
-          updateUser(updatedUser);
-          router.push(`/learn/${params.id}`);
-        } else if (result.status === 'PENDING_ACTION') {
-          alert(`Enrollment pending: ${result.message}`);
-          if (result.redirectUrl) router.push(result.redirectUrl);
-        } else {
-          alert(`Enrollment denied: ${result.message}`);
-        }
-      } catch (err: any) {
-        console.error("Failed to enroll:", err);
-        alert(err.message || "Failed to enroll");
-      }
+    try {
+      const updatedUser = await UserService.getMe();
+      updateUser(updatedUser);
+      // Wait for state to settle, then redirect
+      setTimeout(() => {
+        router.push(`/learn/${params.id}`);
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to refresh user profile:", err);
     }
   }
 
@@ -926,7 +917,7 @@ export default function CoursePreviewPage() {
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
             lessonCount={lessonCount}
-            onEnroll={handleEnrollClick}
+            onEnroll={handleEnrollSuccess}
             isEnrolled={isEnrolled}
             courseId={params?.id}
           />
@@ -941,7 +932,7 @@ export default function CoursePreviewPage() {
         </div>
         <div className="mt-16">
           <EnrollCta
-            onEnroll={handleEnrollClick}
+            onEnroll={handleEnrollSuccess}
             priceAmount={course?.priceAmount || 20}
             isEnrolled={isEnrolled}
             courseId={params?.id}

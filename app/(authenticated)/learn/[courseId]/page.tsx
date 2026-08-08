@@ -26,9 +26,9 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
-import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { UserService } from "@/domains/identity"
-import { EnrollmentService } from "@/domains/enrollment/api/enrollment.service"
+import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
+import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
 import { toast } from "sonner"
 
 /* ------------------------------------------------------------------ */
@@ -398,7 +398,6 @@ function CourseHero({
   authorAvatarUrl,
   lessonCount = 0,
   onEnroll,
-  isEnrolling = false,
   isEnrolled = false,
   pricingModel,
   priceAmount,
@@ -410,7 +409,6 @@ function CourseHero({
   authorAvatarUrl?: string | null
   lessonCount?: number
   onEnroll?: () => void
-  isEnrolling?: boolean
   isEnrolled?: boolean
   pricingModel?: string
   priceAmount?: number
@@ -499,17 +497,19 @@ function CourseHero({
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>
               )}
             </div>
-            {isEnrolled ? (
-              <Link
-                href={`/learn/${courseId}/learn`}
-                className="flex h-11 items-center gap-2 rounded-full bg-green-500 px-6 font-semibold text-white transition-all hover:bg-green-600"
-              >
-                <Check size={18} /> Go to course
-              </Link>
-            ) : (
-              <EnrollButton onClick={onEnroll}>
-                {isEnrolling ? "Enrolling..." : "Enroll now"}
-              </EnrollButton>
+            {courseId && (
+              <div className="w-48">
+                <EnrollmentButton
+                  resourceType="COURSE"
+                  resourceId={courseId}
+                  initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+                  onStateChange={(state) => {
+                    if (state === "ENROLLED" && onEnroll) {
+                      onEnroll();
+                    }
+                  }}
+                />
+              </div>
             )}
             <button
               onClick={() => setSaved((s) => !s)}
@@ -864,7 +864,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolling?: boolean; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
+function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -880,17 +880,20 @@ function EnrollCta({ onEnroll, isEnrolling = false, isEnrolled = false, pricingM
         designers.
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        {isEnrolled ? (
-          <Link
-            href={`/learn/${courseId}/learn`}
-            className="flex h-12 items-center gap-2 rounded-full bg-white px-8 font-semibold text-ink transition-all hover:bg-white/90"
-          >
-            <Check size={18} /> Go to course
-          </Link>
-        ) : (
-          <EnrollButton onClick={onEnroll}>
-            {isEnrolling ? "Enrolling..." : "Enroll now"}
-          </EnrollButton>
+        {courseId && (
+          <div className="w-48">
+            <EnrollmentButton
+              resourceType="COURSE"
+              resourceId={courseId}
+              initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+              className="!bg-white !text-ink hover:!bg-white/90"
+              onStateChange={(state) => {
+                if (state === "ENROLLED" && onEnroll) {
+                  onEnroll();
+                }
+              }}
+            />
+          </div>
         )}
         <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-paper transition-colors hover:bg-white/10">
           See how it works →
@@ -913,7 +916,6 @@ export default function CoursePage() {
   const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isEnrolling, setIsEnrolling] = useState(false)
   const [isEnrolled, setIsEnrolled] = useState(false)
 
   useEffect(() => {
@@ -923,26 +925,13 @@ export default function CoursePage() {
     }
   }, [user, params?.courseId])
 
-  const handleEnroll = async () => {
-    if (!params?.courseId) return;
+  const handleEnrollSuccess = async () => {
     try {
-      setIsEnrolling(true);
-      const result = await EnrollmentService.enroll('COURSE', params.courseId as string);
-      if (result.status === 'GRANTED') {
-        const updatedUser = await UserService.getMe();
-        updateUser(updatedUser);
-        toast.success("Successfully enrolled!");
-        setIsEnrolled(true);
-      } else if (result.status === 'PENDING_ACTION') {
-        toast.info(`Enrollment pending: ${result.message}`);
-        if (result.redirectUrl) router.push(result.redirectUrl);
-      } else {
-        toast.error(`Enrollment denied: ${result.message}`);
-      }
+      const updatedUser = await UserService.getMe();
+      updateUser(updatedUser);
+      setIsEnrolled(true);
     } catch (error: any) {
-      toast.error(error.message || "Failed to enroll. Please try again.");
-    } finally {
-      setIsEnrolling(false);
+      console.error("Failed to refresh user profile:", error);
     }
   }
 
@@ -982,8 +971,7 @@ export default function CoursePage() {
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
             lessonCount={lessonCount}
-            onEnroll={handleEnroll}
-            isEnrolling={isEnrolling}
+            onEnroll={handleEnrollSuccess}
             isEnrolled={isEnrolled}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
@@ -999,7 +987,7 @@ export default function CoursePage() {
           <ReviewsBlock />
         </div>
         <div className="mt-16">
-          <EnrollCta onEnroll={handleEnroll} isEnrolling={isEnrolling} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
+          <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
         </div>
       </div>
     </main>

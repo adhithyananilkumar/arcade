@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-react';
 import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/workshop/types';
-import { getMyRegistrationStatus, registerForWorkshop } from '@/app/workshop/api/registration';
+import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
+import { UIEnrollmentState } from '@/domains/enrollment/types/enrollment.types';
+import { getMyRegistrationStatus } from '@/app/workshop/api/registration';
 import { toast } from 'sonner';
 
 interface Props {
@@ -13,19 +15,15 @@ interface Props {
 
 export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) => {
   const { basicInfo, pricing, settings } = preview;
-  
   const [registration, setRegistration] = useState<any>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
-  const [isRegistering, setIsRegistering] = useState(false);
 
   useEffect(() => {
-    // If we're inside the studio wizard (no real ID yet), skip fetching
     if (!basicInfo.id) {
       setLoadingStatus(false);
       return;
     }
     
-    // Fetch current user's registration status
     getMyRegistrationStatus(basicInfo.id)
       .then(data => {
         setRegistration(data);
@@ -37,36 +35,18 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
         setLoadingStatus(false);
       });
   }, [basicInfo.id]);
-
-  const handleRegister = async () => {
-    if (!onRegister && !basicInfo.id) {
-      toast.success('This is a preview. Registration would happen here!');
-      return;
-    }
-
-    setIsRegistering(true);
-    try {
-      if (onRegister) {
-        await onRegister();
-      } else {
-        await registerForWorkshop(basicInfo.id!);
-        toast.success('Successfully registered for workshop!');
-      }
-      
-      // Refresh status after successful registration
-      const newStatus = await getMyRegistrationStatus(basicInfo.id!);
-      setRegistration(newStatus);
-    } catch (err: any) {
-      console.error('Registration error:', err);
-      if (err.message?.includes('401')) {
-        toast.error('Please log in to register.');
-      } else if (err.message?.includes('409') || err.message?.includes('already registered')) {
-        toast.error('You are already registered for this workshop.');
-      } else {
-        toast.error(err.message || 'Failed to register. Please try again.');
-      }
-    } finally {
-      setIsRegistering(false);
+  const getUIState = (status?: string): UIEnrollmentState => {
+    if (!status) return 'NOT_ENROLLED';
+    switch (status) {
+      case 'APPROVED':
+      case 'COMPLETED':
+        return 'ENROLLED';
+      case 'WAITLISTED':
+        return 'WAITLISTED';
+      case 'PENDING':
+        return 'PENDING';
+      default:
+        return 'NOT_ENROLLED';
     }
   };
 
@@ -134,23 +114,28 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
           </button>
         )}
         
-        {status === 'WAITLISTED' && (
-          <button disabled className="w-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-semibold py-3 px-4 rounded-lg shadow-sm mb-2 opacity-80 cursor-not-allowed border border-amber-200 dark:border-amber-800">
-            On Waitlist
-          </button>
-        )}
-        
-        {status === 'PENDING' && (
-          <button disabled className="w-full bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 font-semibold py-3 px-4 rounded-lg shadow-sm mb-2 opacity-80 cursor-not-allowed border border-blue-100 dark:border-blue-800">
-            Pending Approval
-          </button>
-        )}
-
         {status === 'COMPLETED' && (
           <button className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-2">
             View Certificate
           </button>
         )}
+
+        <div className="mt-4">
+          <EnrollmentButton
+            resourceType="WORKSHOP"
+            resourceId={basicInfo.id!}
+            initialState={getUIState(status)}
+            onStateChange={(state) => {
+              if (onRegister) {
+                onRegister();
+              } else {
+                getMyRegistrationStatus(basicInfo.id!)
+                  .then(setRegistration)
+                  .catch(console.error);
+              }
+            }}
+          />
+        </div>
       </div>
     );
   }
@@ -169,13 +154,22 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
         )}
       </div>
 
-      <button 
-        onClick={handleRegister}
-        disabled={isRegistering}
-        className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-6 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
-        {isRegistering && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-        {isRegistering ? 'Registering...' : 'Register Now'}
-      </button>
+      <div className="mb-6">
+        <EnrollmentButton
+          resourceType="WORKSHOP"
+          resourceId={basicInfo.id!}
+          initialState="NOT_ENROLLED"
+          onStateChange={(state) => {
+            if (onRegister) {
+              onRegister();
+            } else {
+              getMyRegistrationStatus(basicInfo.id!)
+                .then(setRegistration)
+                .catch(console.error);
+            }
+          }}
+        />
+      </div>
 
       <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-3">
