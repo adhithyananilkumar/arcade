@@ -45,7 +45,7 @@ export default function UnifiedManagePage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'OWNED' | 'COLLAB'>('ALL');
-  const [activeType, setActiveType] = useState<'ALL' | 'WORKSHOP' | 'WEBINAR'>('ALL');
+
 
   useEffect(() => {
     const loadAllWorkspaces = async () => {
@@ -103,10 +103,8 @@ export default function UnifiedManagePage() {
       activeFilter === 'ALL' ||
       (activeFilter === 'OWNED' && item.isOwner) ||
       (activeFilter === 'COLLAB' && !item.isOwner);
-
-    const matchesType = activeType === 'ALL' || item.workshopType === activeType;
     
-    return matchesSearch && matchesOwnership && matchesType;
+    return matchesSearch && matchesOwnership;
   });
 
   // Calculate statistics
@@ -255,27 +253,6 @@ export default function UnifiedManagePage() {
             ))}
           </div>
 
-          {/* Type Filter */}
-          <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
-            {[
-              { id: 'ALL', label: 'All Types' },
-              { id: 'WORKSHOP', label: 'Workshops' },
-              { id: 'WEBINAR', label: 'Webinars' },
-            ].map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setActiveType(f.id as any)}
-                className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeType === f.id
-                    ? 'bg-white text-slate-800 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Search Field */}
@@ -305,7 +282,7 @@ export default function UnifiedManagePage() {
             </div>
             <p className="text-sm text-slate-700 font-bold">No workspaces found</p>
             <p className="text-xs text-slate-400 max-w-sm mt-1">
-              {searchQuery || activeFilter !== 'ALL' || activeType !== 'ALL'
+              {searchQuery || activeFilter !== 'ALL'
                 ? 'Try adjusting your filters or search criteria.' 
                 : 'Create your first workshop or webinar using the "New Workspace" button above.'}
             </p>
