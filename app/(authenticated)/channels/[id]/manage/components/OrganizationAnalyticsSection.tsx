@@ -513,7 +513,7 @@ export function OrganizationAnalyticsSection() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2 pb-3">
             {currentReviews.map((rev, idx) => {
-              const isWide = rev.cardSize === 'wide';
+              const isWide = (rev as any).cardSize === 'wide';
               const themes = [
                 'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',
                 'border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 shadow-[-5px_5px_0px_rgba(139,92,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(124,58,237,0.35)]',

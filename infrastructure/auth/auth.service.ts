@@ -5,11 +5,20 @@ let refreshPromise: Promise<any> | null = null;
 
 export class AuthService {
   static async login(credentials: any) {
-    const { data } = await axios.post('/api/internal/auth/login', credentials, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      withCredentials: true
-    });
-    return data;
+    try {
+      const { data } = await axios.post('/api/internal/auth/login', credentials, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        withCredentials: true
+      });
+      return data;
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        const { data } = await axios.post(`${backendUrl}/auth/login`, credentials);
+        return data;
+      }
+      throw err;
+    }
   }
 
   static async logout() {

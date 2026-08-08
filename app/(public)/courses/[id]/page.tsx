@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
@@ -184,6 +184,38 @@ const HIGHLIGHTS = [
   "A shareable, verified certificate",
 ]
 
+function getTitleFromSlug(slug?: string): string {
+  if (!slug) return ''
+  const knownTitles: Record<string, string> = {
+    'intro-to-programming': 'Intro to Programming',
+    'data-structures-and-algorithms': 'Data Structures & Algorithms',
+    'data-structures-algorithms': 'Data Structures & Algorithms',
+    'database-management-systems': 'Database Management Systems',
+    'software-engineering': 'Software Engineering',
+    'programming-logic': 'Programming Logic',
+    'relational-databases': 'Relational Databases',
+    'ui-ux-product-design': 'UI / UX & Product Design',
+    'design-interfaces-people-actually-love': 'Design interfaces people actually love',
+  }
+
+  const normalized = slug.toLowerCase().trim()
+  if (knownTitles[normalized]) {
+    return knownTitles[normalized]
+  }
+
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLowerCase()
+      if (lower === 'and') return '&'
+      if (lower === 'ui') return 'UI'
+      if (lower === 'ux') return 'UX'
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
+
 /* ------------------------------------------------------------------ */
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
@@ -191,6 +223,8 @@ const HIGHLIGHTS = [
 export default function CoursePreviewPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const titleFromQuery = searchParams?.get('title')
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const { user, updateUser } = useAuthStore()
@@ -235,7 +269,8 @@ export default function CoursePreviewPage() {
       try {
         const updatedUser = await UserService.enrollInCourse(params.id)
         updateUser(updatedUser)
-        router.push(`/learn/${params.id}`)
+        const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
+        router.push(`/learn/${params.id}${queryStr}`)
       } catch (err: any) {
         console.error("Failed to enroll:", err)
         alert(err.message || "Failed to enroll")
@@ -264,7 +299,7 @@ export default function CoursePreviewPage() {
     )
   }
 
-  const displayTitle = course?.title || COURSE_TITLE
+  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(params?.id) || COURSE_TITLE
   const authorName = course?.authorName || INSTRUCTOR.name
   const authorUsername = course?.authorUsername || INSTRUCTOR.channel
   const authorAvatarUrl = course?.authorAvatarUrl

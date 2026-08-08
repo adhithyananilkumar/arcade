@@ -176,6 +176,14 @@ export default function AboutPage() {
                 <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
               </span>
             </Link>
+            <button
+              disabled
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
+              title="Verification feature coming soon"
+            >
+              <ShieldCheck size={18} />
+              <span>Verify Certificates</span>
+            </button>
           </motion.div>
         </div>
       </section>
@@ -183,7 +191,7 @@ export default function AboutPage() {
       {/* --- AJCE ANIMATION + WHY AJCE SECTION --- */}
       <AJCESection />
 
-      {/* --- WHY GET CERTIFIED SECTION (from aboutt) --- */}
+      {/* --- WHY GET CERTIFIED SECTION --- */}
       <WhyGetCertifiedSection />
     </div>
   );

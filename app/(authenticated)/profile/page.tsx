@@ -1,21 +1,27 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { gsap } from 'gsap';
 import { 
   User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3, 
   ChevronRight, Code, GitPullRequest, Star, BookOpen, GitCommit, 
   MessageSquare, Flame, Trophy, Check, GraduationCap, Award, Compass,
   Loader2, X, Camera, Phone, Settings, Globe, CheckSquare, Activity,
-  BadgeCheck, Lock, Trash2
+  BadgeCheck, Lock, Trash2, Pin, ExternalLink, Search, Filter, Sparkles, Zap, Shield
 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import { ImageCropModal } from '@/shared/design-system/ui/image-crop-modal';
+import MagicBento, { ParticleCard, GlobalSpotlight, useMobileDetection } from '@/components/ui/MagicBento';
+import Masonry from '@/components/ui/Masonry';
+import PartyPopper from '@/components/ui/PartyPopper';
+import AnimatedList, { AnimatedItem } from '@/components/ui/AnimatedList';
+import TicketNotchBorder from '@/components/ui/TicketNotchBorder';
 
 const badges = [
   { 
@@ -427,6 +433,39 @@ function BadgeGraphic({ type }: { type: string }) {
   );
 }
 
+function CountUpNumber({ value }: { value: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: false, amount: 0.3 });
+
+  useEffect(() => {
+    if (!isInView) {
+      setDisplayValue(0);
+      return;
+    }
+
+    let startTimestamp: number | null = null;
+    const duration = 300;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.floor(easedProgress * value));
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        setDisplayValue(value);
+      }
+    };
+
+    requestAnimationFrame(step);
+  }, [isInView, value]);
+
+  return <span ref={ref}>{displayValue}</span>;
+}
+
 function ProfilePageContent() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -435,9 +474,80 @@ function ProfilePageContent() {
   const [profileData, setProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
+  const bentoGridRef = useRef<HTMLDivElement>(null);
+  const achievementsModalRef = useRef<HTMLDivElement>(null);
+  const certificatesModalRef = useRef<HTMLDivElement>(null);
+  const isMobile = useMobileDetection();
+
+  useLayoutEffect(() => {
+    if (!bentoGridRef.current) return;
+    const cards = bentoGridRef.current.querySelectorAll('.magic-bento-card');
+    if (cards.length > 0) {
+      gsap.fromTo(
+        cards,
+        { opacity: 0, y: 40, filter: 'blur(10px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.6,
+          ease: 'power3.out',
+          stagger: 0.08
+        }
+      );
+    }
+  }, []);
+  
   // Badge visibility toggle
   const [showAllBadges, setShowAllBadges] = useState(false);
-  
+
+  // Achievements & Pinned Certificates Modal States
+  const [isAchievementsModalOpen, setIsAchievementsModalOpen] = useState(false);
+  const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false);
+  const [achievementFilter, setAchievementFilter] = useState<'all' | 'unlocked' | 'in_progress'>('all');
+  const [achievementSearch, setAchievementSearch] = useState('');
+  const [certificateSearch, setCertificateSearch] = useState('');
+
+  // Full list of achievements
+  const allAchievementsList = useMemo(() => [
+    { id: '1', title: 'Quick Learner', desc: 'Complete 5 courses', date: 'Jul 15, 2026', icon: Star, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Learning', unlocked: true, progress: 100 },
+    { id: '2', title: 'Knowledge Seeker', desc: 'Earn 3 certificates', date: 'Jul 10, 2026', icon: Trophy, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Certificates', unlocked: true, progress: 100 },
+    { id: '3', title: 'Consistent Streak', desc: 'Maintain a 7-day streak', date: 'Jul 5, 2026', icon: Flame, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Streak', unlocked: true, progress: 100 },
+    { id: '4', title: 'Top Performer', desc: 'Score 90%+ in any course', date: 'Jun 28, 2026', icon: Award, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Excellence', unlocked: true, progress: 100 },
+    { id: '5', title: 'Speed Demon', desc: 'Complete 1 module in under 30 mins', date: 'Jun 18, 2026', icon: Zap, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Speed', unlocked: true, progress: 100 },
+    { id: '6', title: 'Code Pioneer', desc: 'Submit 10 interactive lab exercises', date: 'Jun 05, 2026', icon: Code, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Coding', unlocked: true, progress: 100 },
+    { id: '7', title: 'Community Helper', desc: 'Post 5 helpful answers in student forum', date: 'May 22, 2026', icon: MessageSquare, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Community', unlocked: true, progress: 100 },
+    { id: '8', title: 'Master Scholar', desc: 'Earn 10 certificates across tracks', date: 'In Progress', icon: GraduationCap, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Certificates', unlocked: false, progress: 80 },
+    { id: '9', title: 'Night Owl', desc: 'Complete 3 midnight study sessions', date: 'In Progress', icon: Compass, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Habits', unlocked: false, progress: 66 },
+    { id: '10', title: 'Arcade Vanguard', desc: 'Participate in platform beta releases', date: 'Jan 01, 2026', icon: Shield, color: 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700', category: 'Special', unlocked: true, progress: 100 },
+  ], []);
+
+  // List of all certificates with pinning status
+  const [certificatesList, setCertificatesList] = useState([
+    { id: 'cert-1', name: 'React Fundamentals & UI Patterns', issuer: 'Arcade Academy', date: 'Jul 15, 2026', grade: '98% (Distinction)', credentialId: 'ARC-2026-8812', isPinned: true },
+    { id: 'cert-2', name: 'Advanced Next.js Architecture', issuer: 'Arcade Academy', date: 'Jul 10, 2026', grade: '95% (Honors)', credentialId: 'ARC-2026-9204', isPinned: true },
+    { id: 'cert-3', name: 'TypeScript Masterclass & Patterns', issuer: 'Amal Jyothi College', date: 'Jul 02, 2026', grade: '92%', credentialId: 'ARC-2026-4410', isPinned: true },
+    { id: 'cert-4', name: 'Full Stack Engineering Specialization', issuer: 'Amal Jyothi College', date: 'Jun 20, 2026', grade: '96% (Distinction)', credentialId: 'ARC-2026-1189', isPinned: true },
+    { id: 'cert-5', name: 'Cloud Native DevOps & Kubernetes', issuer: 'Arcade Ecosystem', date: 'Jun 05, 2026', grade: '90%', credentialId: 'ARC-2026-7731', isPinned: false },
+    { id: 'cert-6', name: 'System Architecture & Microservices', issuer: 'Arcade Ecosystem', date: 'May 28, 2026', grade: '94%', credentialId: 'ARC-2026-3092', isPinned: false },
+    { id: 'cert-7', name: 'UI/UX Design Systems & Motion Design', issuer: 'Arcade Ecosystem', date: 'May 14, 2026', grade: '99% (High Distinction)', credentialId: 'ARC-2026-5519', isPinned: false },
+  ]);
+
+  const togglePinCertificate = (id: string) => {
+    setCertificatesList(prev => {
+      const target = prev.find(c => c.id === id);
+      if (!target) return prev;
+      const currentlyPinned = prev.filter(c => c.isPinned).length;
+      if (!target.isPinned && currentlyPinned >= 4) {
+        toast.error('You can pin up to 4 certificates on your profile.');
+        return prev;
+      }
+      const newPinned = !target.isPinned;
+      toast.success(newPinned ? `Pinned "${target.name}" to profile!` : `Unpinned "${target.name}".`);
+      return prev.map(c => c.id === id ? { ...c, isPinned: newPinned } : c);
+    });
+  };
+
   // Sub Navigation Active Tab
   const [activeTab, setActiveTab] = useState<'courses' | 'enrolled' | 'certificates'>('courses');
   
@@ -686,29 +796,50 @@ function ProfilePageContent() {
     }
   };
 
-  // Generate 53x7 grid with real date calculation and random counts
-  const contributionGrid = useMemo(() => {
-    const cols = 53;
-    const rows = 7;
-    const today = new Date();
-    const grid = [];
+  // Generate calendar year grid (Jan 1 to Dec 31 of current year, Sun=0 to Sat=6)
+  const { contributionGrid, months, totalWeeks } = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const jan1 = new Date(currentYear, 0, 1);
+    const jan1Day = jan1.getDay(); // 0 = Sun, ..., 6 = Sat
     
-    for (let c = 0; c < cols; c++) {
+    // Start on Sunday of the week containing Jan 1
+    const startDate = new Date(jan1);
+    startDate.setDate(jan1.getDate() - jan1Day);
+
+    const dec31 = new Date(currentYear, 11, 31);
+    const dec31Day = dec31.getDay();
+    const endDate = new Date(dec31);
+    endDate.setDate(dec31.getDate() + (6 - dec31Day));
+
+    const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const numWeeks = Math.ceil(totalDays / 7);
+
+    const grid = [];
+    const monthHeaders: { name: string; col: number }[] = [];
+    let lastMonth = -1;
+
+    for (let w = 0; w < numWeeks; w++) {
       const week = [];
-      for (let r = 0; r < rows; r++) {
-        // Calculate offset in days relative to today
-        const todayDayOfWeek = (today.getDay() + 6) % 7; // Mon=0, Sun=6
-        const dayOffset = (52 - c) * 7 + (todayDayOfWeek - r);
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() - dayOffset);
+      for (let r = 0; r < 7; r++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + w * 7 + r);
         
-        const dateStr = targetDate.toLocaleDateString(undefined, {
+        const m = currentDate.getMonth();
+        if (m !== lastMonth && currentDate.getFullYear() === currentYear) {
+          monthHeaders.push({
+            name: currentDate.toLocaleDateString('en-US', { month: 'short' }),
+            col: w
+          });
+          lastMonth = m;
+        }
+
+        const dateStr = currentDate.toLocaleDateString(undefined, {
           year: 'numeric',
           month: 'short',
           day: 'numeric'
         });
 
-        const targetDateISO = targetDate.toISOString().split('T')[0];
+        const targetDateISO = currentDate.toISOString().split('T')[0];
         
         let count = 0; // minutes
         if (activityData[targetDateISO]) {
@@ -716,16 +847,16 @@ function ProfilePageContent() {
         }
 
         let level = 0;
-        if (count < 15) level = 0; // Blank
-        else if (count < 30) level = 1; // Light Blue
-        else if (count < 45) level = 2; // Little Dark Blue
-        else level = 3; // Dark Blue
+        if (count < 15) level = 0;
+        else if (count < 30) level = 1;
+        else if (count < 45) level = 2;
+        else level = 3;
 
         week.push({ dateStr, count, level });
       }
       grid.push(week);
     }
-    return grid;
+    return { contributionGrid: grid, months: monthHeaders, totalWeeks: numWeeks };
   }, [activityData]);
 
   const totalMinutesSpent = useMemo(() => {
@@ -754,7 +885,7 @@ function ProfilePageContent() {
       if (count > 0) {
         streak++;
       } else {
-        if (i === 0) continue; // If today is 0, don't break the streak just yet
+        if (i === 0) continue;
         break;
       }
     }
@@ -770,15 +901,33 @@ function ProfilePageContent() {
     });
   }, [currentStreak]);
 
-  const months = useMemo(() => {
-    const cols = [0, 4, 9, 13, 17, 22, 26, 31, 35, 39, 44, 48, 52];
+  const currentWeekDays = useMemo(() => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
-    return cols.map(c => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (52 - c) * 7);
-      return { name: d.toLocaleDateString(undefined, { month: 'short' }), col: c };
+    const currentDayOfWeek = today.getDay();
+    
+    const sunDate = new Date(today);
+    sunDate.setDate(today.getDate() - currentDayOfWeek);
+
+    return dayNames.map((dayName, idx) => {
+      const d = new Date(sunDate);
+      d.setDate(sunDate.getDate() + idx);
+      const isoDate = d.toISOString().split('T')[0];
+      
+      const seconds = activityData[isoDate] || 0;
+      const isCompleted = seconds > 0 || (idx <= currentDayOfWeek && currentStreak > 0 && (currentDayOfWeek - idx) < currentStreak);
+      const isToday = idx === currentDayOfWeek;
+      const isFuture = idx > currentDayOfWeek;
+
+      return {
+        dayName,
+        isoDate,
+        isCompleted,
+        isToday,
+        isFuture
+      };
     });
-  }, []);
+  }, [activityData, currentStreak]);
 
   if (isLoading) {
     return (
@@ -807,54 +956,52 @@ function ProfilePageContent() {
 
   return (
     <>
-      {/* Global Background (Pure White / Dark) */}
-      <div className="fixed inset-0 pointer-events-none z-0 bg-white dark:bg-[#020617]"></div>
+      {/* Page Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-slate-50 via-[#f8fafc] to-slate-100 dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#090d16]"></div>
+      
+      {/* Ambient background glow orbs */}
+      <div className="fixed top-12 left-1/4 w-[500px] h-[500px] bg-indigo-200/20 dark:bg-indigo-900/10 rounded-full blur-[130px] pointer-events-none z-0" />
+      <div className="fixed top-96 right-1/4 w-[450px] h-[450px] bg-purple-200/20 dark:bg-purple-900/10 rounded-full blur-[130px] pointer-events-none z-0" />
+
       <motion.div 
-        className="mx-auto max-w-6xl w-full space-y-6 pb-16 px-4 sm:px-6 relative transition-colors z-10 pt-28 md:pt-32"
+        className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-28 relative transition-colors z-10"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
 
-      {/* ── Main Profile Header Card ── */}
-      <div className="relative px-6 py-6 transition-colors mb-8">
-        
-        {/* Edit Profile Button - Moved to Top Right Corner */}
-        <button 
-          onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-6 right-6 z-30 inline-flex items-center gap-2 rounded-md border border-[#dadce0] bg-white px-3.5 py-2 text-xs font-semibold text-[#4C6FFF] shadow-sm transition-colors hover:bg-[#f8f9fa] cursor-pointer"
-        >
-          <Edit3 size={14} />
-          Edit Profile
-        </button>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10 w-full">
-          
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 w-full md:w-auto">
-            {/* Avatar Container */}
-            <div className="relative flex h-[120px] w-[120px] shrink-0 group/avatar">
-              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full bg-white dark:bg-black p-1 shadow-sm border border-slate-100 dark:border-neutral-800 transition-colors">
-                <div className="flex h-full w-full items-center justify-center rounded-full overflow-hidden bg-slate-50 dark:bg-neutral-900 relative group transition-colors">
-                  {currentUser.avatarUrl ? (
-                    <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+
+        {/* ── Main GitHub 2-Column Responsive Layout ── */}
+        <div className="flex flex-col md:flex-row gap-8 items-start">
+
+          {/* ── LEFT SIDEBAR (GitHub Profile Column) ── */}
+          <div className="w-full md:w-72 lg:w-80 shrink-0 space-y-5">
+
+            <div className="relative flex w-48 h-48 sm:w-64 sm:h-64 shrink-0 group/avatar mx-auto md:mx-0">
+              <div className="relative z-10 flex h-full w-full items-center justify-center rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900 transition-transform hover:scale-[1.02]">
+                {currentUser.avatarUrl ? (
+                  <img src={getAvatarUrl(currentUser.avatarUrl)} alt="Avatar" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <UserIcon size={110} className="text-purple-400 dark:text-purple-300" />
+                )}
+
+                {/* Camera Hover Overlay */}
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingAvatar || isRemovingAvatar}
+                  className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Upload Avatar"
+                >
+                  {isUploadingAvatar ? (
+                    <Loader2 className="animate-spin text-white mb-1" size={28} />
                   ) : (
-                    <UserIcon size={52} className="text-purple-400" />
+                    <>
+                      <Camera size={28} className="mb-1" />
+                      <span className="text-xs font-semibold">Change avatar</span>
+                    </>
                   )}
-
-                  {/* Camera Hover Overlay */}
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar || isRemovingAvatar}
-                    className="absolute inset-0 bg-black/45 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Upload Avatar"
-                  >
-                    {isUploadingAvatar ? (
-                      <Loader2 className="animate-spin text-white" size={24} />
-                    ) : (
-                      <Camera size={24} />
-                    )}
-                  </button>
-                </div>
+                </button>
               </div>
 
               {/* Remove Avatar Button */}
@@ -862,7 +1009,7 @@ function ProfilePageContent() {
                 <button
                   onClick={handleRemoveAvatar}
                   disabled={isRemovingAvatar || isUploadingAvatar}
-                  className="absolute top-1 right-1 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-red-500 shadow-md opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-red-500 shadow-md opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Remove Avatar"
                 >
                   {isRemovingAvatar ? (
@@ -872,6 +1019,7 @@ function ProfilePageContent() {
                   )}
                 </button>
               )}
+            </div>
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -879,327 +1027,419 @@ function ProfilePageContent() {
                 accept="image/jpeg, image/png, image/webp" 
                 onChange={handleAvatarSelect}
               />
-            </div>
 
-            {/* Details / Bio */}
-            <div className="flex-grow flex flex-col items-center md:items-start text-center md:text-left pt-5 w-full relative">
-              <div className="flex items-center gap-3">
-                <h1 className="text-[28px] sm:text-[32px] font-extrabold text-[#111827] dark:text-white tracking-tight leading-none transition-colors flex items-center gap-2">
-                  {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
-                  
-                  {/* Verification Tick */}
-                  {(() => {
-                    const bioLower = (currentUser.bio || '').toLowerCase();
-                    const isCreator = currentUser.platformRoles?.some((r: any) => r.code === 'CREATOR') || bioLower.includes('creator');
-                    const isDeveloper = currentUser.platformRoles?.some((r: any) => r.code === 'DEVELOPER') || bioLower.includes('developer');
-                    
-                    if (isCreator || isDeveloper) {
-                      return <BadgeCheck className="text-white fill-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] shrink-0 ml-1.5" size={26} strokeWidth={2.5} />;
-                    }
-                    return null;
-                  })()}
-                </h1>
-              </div>
-              
-              <p className="text-[14px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-purple-600 mt-2 transition-colors">
-                @{username}
-              </p>
-
-              {/* Bio */}
-              {currentUser.bio && (
-                <div className="mt-5 flex items-start gap-1.5 text-[#4b5563] dark:text-neutral-400 text-[13px] font-bold leading-relaxed w-full transition-colors">
-                  <Code size={15} className="text-purple-600 shrink-0 mt-[1px]" />
-                  <div className="flex flex-wrap items-center md:items-start">
-                    {currentUser.bio.split('|').map((part: string, i: number, arr: string[]) => (
-                      <span key={i} className="inline-flex items-center">
-                        {part.trim()}
-                        {i < arr.length - 1 && <span className="mx-1.5 text-slate-300 dark:text-neutral-600">|</span>}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Location / Joined */}
-              <div className="mt-4 flex flex-wrap items-center gap-6 text-[13px] text-slate-500 dark:text-neutral-500 font-bold w-full transition-colors">
-                <div className="flex items-center gap-1.5">
-                  <MapPin size={15} className="shrink-0 text-slate-400" />
-                  <span className="truncate">{currentUser.address || 'India'}</span>
-                </div>
+            {/* User Full Name & Role */}
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center justify-center md:justify-start gap-2">
+                {currentUser.fullName || (currentUser.firstName + (currentUser.lastName ? ' ' + currentUser.lastName : '')) || 'User'}
                 
-                <div className="flex items-center gap-1.5">
-                  <Calendar size={15} className="shrink-0 text-slate-400" />
-                  <span className="truncate">Joined July 2026</span>
-                </div>
+                {/* Verification Tick */}
+                {(() => {
+                  const bioLower = (currentUser.bio || '').toLowerCase();
+                  const isAdmin = 
+                    currentUser.role === 'ADMIN' ||
+                    currentUser.role === 'ROLE_ADMIN' ||
+                    currentUser.role === 'PLATFORM_ADMIN' ||
+                    currentUser.isAdmin === true ||
+                    currentUser.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
+
+                  const isCreator = 
+                    currentUser.role === 'CREATOR' ||
+                    currentUser.role === 'ROLE_CREATOR' ||
+                    currentUser.role === 'INSTRUCTOR' ||
+                    currentUser.isCreator === true ||
+                    currentUser.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
+                    bioLower.includes('creator');
+
+                  if (isAdmin) {
+                    return (
+                      <span title="Verified Admin" className="inline-flex items-center">
+                        <BadgeCheck className="text-white fill-[#8b5cf6] dark:fill-[#8b5cf6] drop-shadow-[0_2px_6px_rgba(139,92,246,0.4)] shrink-0 ml-1 align-middle" size={24} strokeWidth={2.2} />
+                      </span>
+                    );
+                  }
+
+                  if (isCreator) {
+                    return (
+                      <span title="Verified Creator" className="inline-flex items-center">
+                        <BadgeCheck className="text-white fill-[#1d9bf0] dark:fill-[#1d9bf0] drop-shadow-[0_2px_6px_rgba(29,155,240,0.4)] shrink-0 ml-1 align-middle" size={24} strokeWidth={2.2} />
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
+              </h1>
+
+              <div className="flex items-center justify-center md:justify-start gap-2 mt-1">
+                <span className="text-base font-normal text-slate-500 dark:text-slate-400">
+                  @{username}
+                </span>
+                <span className="text-slate-400 font-medium">•</span>
+                {(() => {
+                  const bioLower = (currentUser.bio || '').toLowerCase();
+                  const isAdmin = 
+                    currentUser.role === 'ADMIN' ||
+                    currentUser.role === 'ROLE_ADMIN' ||
+                    currentUser.role === 'PLATFORM_ADMIN' ||
+                    currentUser.isAdmin === true ||
+                    currentUser.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
+
+                  const isCreator = 
+                    currentUser.role === 'CREATOR' ||
+                    currentUser.role === 'ROLE_CREATOR' ||
+                    currentUser.role === 'INSTRUCTOR' ||
+                    currentUser.isCreator === true ||
+                    currentUser.platformRoles?.some((r: any) => ['CREATOR', 'INSTRUCTOR', 'TEACHER', 'AUTHOR'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('CREATOR')) ||
+                    bioLower.includes('creator');
+
+                  if (isAdmin) {
+                    return (
+                      <span className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <Shield size={13} className="fill-rose-500/20 text-rose-600 dark:text-rose-400" /> Admin
+                      </span>
+                    );
+                  }
+
+                  if (isCreator) {
+                    return (
+                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                        <Sparkles size={13} className="fill-blue-500 text-blue-500" /> Creator
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                      <Star size={13} className="fill-amber-500 text-amber-500" /> Learner
+                    </span>
+                  );
+                })()}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── Badges Section ── */}
-      <div className="relative z-10 mb-8 mt-2 px-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            <Trophy size={18} className="text-purple-600" />
-            Badges
-          </h3>
-          <button 
-            onClick={() => setShowAllBadges(!showAllBadges)}
-            className="text-[13px] font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 cursor-pointer focus:outline-none"
-          >
-            {showAllBadges ? 'Show less' : 'View all badges'} <span className="font-light tracking-tighter">{'->'}</span>
-          </button>
-        </div>
-
-        {/* Row 1: Exactly 10 Badges in a single line */}
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3 w-full items-center justify-items-center pt-1 pb-2">
-          {dynamicBadges.slice(0, 10).map((badge) => (
-            <div 
-              key={badge.name} 
-              className="flex flex-col items-center justify-center group relative cursor-pointer w-full"
-            >
-              <div className="relative w-[48px] h-[48px] sm:w-[58px] sm:h-[58px] md:w-[68px] md:h-[68px] flex items-center justify-center z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">
-                <BadgeGraphic type={badge.type as string} />
-              </div>
-
-              {/* Tooltip Hover Box */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
-                  <div className="w-16 h-16 mb-4 drop-shadow-md">
-                    <BadgeGraphic type={badge.type as string} />
-                  </div>
-                  <h4 className="font-extrabold text-[15px] text-slate-900 dark:text-white mb-1.5 leading-tight">{badge.courseName}</h4>
-                  <p className="text-[12px] font-semibold text-slate-400 dark:text-slate-500 mb-4">Achieved: {badge.achievedDate}</p>
-                  <a href={badge.link} className="text-[12px] font-extrabold bg-purple-50 hover:bg-purple-100 text-purple-600 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 dark:text-purple-400 py-2 px-5 rounded-full transition-colors w-full shadow-sm">
-                    View Course
-                  </a>
-                </div>
-                {/* Arrow pointing down */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-100 dark:border-slate-800 rotate-45"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Other Badges listed below the 10 badges when "View all badges" is clicked */}
-        <AnimatePresence>
-          {showAllBadges && dynamicBadges.length > 10 && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3 w-full items-center justify-items-center pt-4 border-t border-slate-100 dark:border-neutral-900 mt-3"
-            >
-              {dynamicBadges.slice(10).map((badge) => (
-                <div 
-                  key={badge.name} 
-                  className="flex flex-col items-center justify-center group relative cursor-pointer w-full"
-                >
-                  <div className="relative w-[48px] h-[48px] sm:w-[58px] sm:h-[58px] md:w-[68px] md:h-[68px] flex items-center justify-center z-10 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">
-                    <BadgeGraphic type={badge.type as string} />
-                  </div>
-
-                  {/* Tooltip Hover Box */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center text-center">
-                      <div className="w-16 h-16 mb-4 drop-shadow-md">
-                        <BadgeGraphic type={badge.type as string} />
-                      </div>
-                      <h4 className="font-extrabold text-[15px] text-slate-900 dark:text-white mb-1.5 leading-tight">{badge.courseName}</h4>
-                      <p className="text-[12px] font-semibold text-slate-400 dark:text-slate-500 mb-4">Achieved: {badge.achievedDate}</p>
-                      <a href={badge.link} className="text-[12px] font-extrabold bg-purple-50 hover:bg-purple-100 text-purple-600 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 dark:text-purple-400 py-2 px-5 rounded-full transition-colors w-full shadow-sm">
-                        View Course
-                      </a>
-                    </div>
-                    {/* Arrow pointing down */}
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-b border-r border-slate-100 dark:border-slate-800 rotate-45"></div>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Working GitHub-Style Contribution Section (Purple Light Theme) ── */}
-      <div className="rounded-[24px] border-[1px] border-slate-100/80 dark:border-neutral-900 bg-white/80 backdrop-blur-md dark:bg-black/60 px-8 py-8 shadow-[0_2px_15px_rgb(0,0,0,0.015)] text-slate-700 dark:text-neutral-300 font-sans relative transition-colors mt-8">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            <Activity size={18} className="text-purple-600 stroke-[2.5]" />
-            Streak
-          </h3>
-          
-          {/* Interactive Contribution Settings Dropdown (re-styled as Last 1 Year) */}
-          <div className="relative">
-            <button 
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-xs font-bold text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white border border-slate-200 dark:border-neutral-700 rounded-lg px-3 py-1.5 transition-colors flex items-center gap-2 cursor-pointer focus:outline-none"
-            >
-              <span>Last 1 Year</span>
-              <ChevronRight size={12} className={`transition-transform duration-200 ${showSettings ? 'rotate-90' : 'rotate-90'}`} />
-            </button>
-            
-            <AnimatePresence>
-              {showSettings && (
-                <>
-                  {/* Backdrop Clicker */}
-                  <div className="fixed inset-0 z-30" onClick={() => setShowSettings(false)}></div>
-                  
-                  <motion.div 
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 5 }}
-                    className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-100 bg-white p-2.5 shadow-xl z-40 text-xs font-semibold text-slate-600"
-                  >
-                    <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Visibility
-                    </div>
-                    <button 
-                      onClick={() => { setActivityVisibility('Public'); setShowSettings(false); }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
-                    >
-                      <span>Public activity only</span>
-                      {activityVisibility === 'Public' && <Check size={14} className="text-purple-600" />}
-                    </button>
-                    <button 
-                      onClick={() => { setActivityVisibility('Private'); setShowSettings(false); }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
-                    >
-                      <span>Include private activity</span>
-                      {activityVisibility === 'Private' && <Check size={14} className="text-purple-600" />}
-                    </button>
-                    
-                    <div className="h-px bg-slate-100 my-1.5"></div>
-                    
-                    <button 
-                      onClick={() => setShowPrivateActivity(!showPrivateActivity)}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 text-left cursor-pointer"
-                    >
-                      <span>Show private counts</span>
-                      {showPrivateActivity && <Check size={14} className="text-purple-600" />}
-                    </button>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Container for the grid without inner border */}
-        <div className="transition-colors">
-          <div className="flex gap-4 items-start">
-            
-            {/* Mon, Wed, Fri Labels */}
-            <div className="hidden sm:grid grid-rows-7 gap-[2px] md:gap-[3px] text-[8px] md:text-[9px] text-slate-400 font-bold select-none shrink-0 pt-5">
-              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
-              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Mon</div>
-              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
-              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Wed</div>
-              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
-              <div className="flex items-center h-[7px] md:h-[10px] lg:h-[11px]">Fri</div>
-              <div className="h-[7px] md:h-[10px] lg:h-[11px]"></div>
-            </div>
-
-            <div className="flex-grow w-full overflow-hidden flex justify-end sm:justify-start">
-              <div className="w-fit">
-                <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
-                  {months.map((m, i) => (
-                    <span 
-                      key={`${m.name}-${m.col}-${i}`} 
-                      className="absolute" 
-                      style={{ left: `calc(${m.col} * (100% / 53))` }}
-                    >
-                      {m.name}
+            {/* Bio */}
+            <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed text-center md:text-left">
+              {currentUser.bio ? (
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-1">
+                  <Code size={14} className="text-purple-600 dark:text-purple-400 shrink-0 mr-1" />
+                  {currentUser.bio.split('|').map((part: string, i: number, arr: string[]) => (
+                    <span key={i} className="inline-flex items-center">
+                      {part.trim()}
+                      {i < arr.length - 1 && <span className="mx-1.5 text-slate-300 dark:text-slate-700">|</span>}
                     </span>
                   ))}
                 </div>
-
-                <div className="grid grid-flow-col grid-rows-7 gap-[1px] sm:gap-[2px] md:gap-[3px]">
-                  {contributionGrid.map((week, wIdx) => 
-                    week.map((cell, dIdx) => (
-                      <div 
-                        key={`${wIdx}-${dIdx}`}
-                        onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                        setHoveredCell({
-                          count: cell.count,
-                          dateStr: cell.dateStr,
-                          x: rect.left + rect.width / 2,
-                          y: rect.top - 8
-                        });
-                      }}
-                      onMouseLeave={() => setHoveredCell(null)}
-                      className={`w-[8px] h-[8px] sm:w-[10px] sm:h-[10px] md:w-[12px] md:h-[12px] lg:w-[14px] lg:h-[14px] rounded-full transition-all duration-200 cursor-pointer ${
-                        cell.level === 0 ? 'bg-cyan-50 hover:bg-cyan-100 dark:bg-neutral-800 dark:hover:bg-neutral-700' :
-                        cell.level === 1 ? 'bg-teal-400 hover:scale-105' :
-                        cell.level === 2 ? 'bg-cyan-500 hover:scale-105' :
-                        'bg-blue-600 hover:scale-105 shadow-sm'
-                      }`}
-                    />
-                  ))
-                )}
-              </div>
+              ) : (
+                <p>Passionate learner exploring new skills and enhancing knowledge every day.</p>
+              )}
             </div>
+
+            {/* GitHub Details List */}
+            <div className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium pt-1">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-slate-400 shrink-0" />
+                <span>{currentUser.address || 'India'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-slate-400 shrink-0" />
+                <span>Joined July 2026</span>
+              </div>
+              {currentUser.email && (
+                <div className="flex items-center gap-2 truncate">
+                  <Mail size={16} className="text-slate-400 shrink-0" />
+                  <span className="truncate">{currentUser.email}</span>
+                </div>
+              )}
+              {currentUser.linkedinUrl && (
+                <div className="flex items-center gap-2">
+                  <FaLinkedin size={16} className="text-blue-600 shrink-0" />
+                  <a href={currentUser.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-purple-600 dark:text-purple-400 truncate">
+                    {currentUser.linkedinUrl.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+              {currentUser.githubUrl && (
+                <div className="flex items-center gap-2">
+                  <Globe size={16} className="text-slate-500 shrink-0" />
+                  <a href={currentUser.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-purple-600 dark:text-purple-400 truncate">
+                    {currentUser.githubUrl.replace(/^https?:\/\//, '')}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* GitHub-style Full Width Edit Profile Button */}
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
+            >
+              <Edit3 size={15} />
+              <span>Edit profile</span>
+            </button>
+
+            {/* Sidebar Achievements Section */}
+            <div className="border-t border-slate-200 dark:border-slate-800 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Badges
+                </h4>
+                <button 
+                  onClick={() => setShowAllBadges(!showAllBadges)}
+                  className="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 cursor-pointer focus:outline-none transition-colors"
+                >
+                  <span>{showAllBadges ? 'Show less' : 'View all badges'}</span>
+                  <ChevronRight size={12} className={`transition-transform ${showAllBadges ? 'rotate-90' : ''}`} />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {(showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 5)).map((badge) => (
+                  <div 
+                    key={badge.name} 
+                    className="relative group cursor-pointer"
+                  >
+                    <div className="w-11 h-11 relative flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
+                      <BadgeGraphic type={badge.type as string} />
+                    </div>
+
+                    {/* Hover Tooltip Box */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-60 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 z-50 translate-y-2 group-hover:translate-y-0">
+                      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center">
+                        <div className="w-14 h-14 mb-2 drop-shadow-md">
+                          <BadgeGraphic type={badge.type as string} />
+                        </div>
+                        <h4 className="font-extrabold text-xs text-slate-900 dark:text-white mb-1 leading-tight">{badge.courseName}</h4>
+                        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mb-2.5">Achieved: {badge.achievedDate}</p>
+                        <a 
+                          href={badge.link} 
+                          className="text-[11px] font-extrabold bg-purple-50 hover:bg-purple-100 text-purple-600 dark:bg-purple-500/10 dark:hover:bg-purple-500/20 dark:text-purple-400 py-1.5 px-4 rounded-full transition-colors w-full shadow-xs text-center"
+                        >
+                          View Course
+                        </a>
+                      </div>
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white dark:bg-slate-900 border-b border-r border-slate-200 dark:border-slate-800 rotate-45" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Grid Footer - Interactive elements */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 mt-6 text-xs text-slate-500 font-semibold">
-            <div className="flex items-center gap-2 select-none">
-              <span>Less</span>
-              <div className="w-[12px] h-[12px] rounded-full bg-cyan-50 dark:bg-neutral-800"></div>
-              <div className="w-[12px] h-[12px] rounded-full bg-teal-400"></div>
-              <div className="w-[12px] h-[12px] rounded-full bg-cyan-500"></div>
-              <div className="w-[12px] h-[12px] rounded-full bg-blue-600"></div>
-              <span>More</span>
-            </div>
-          </div>
-        </div>
-      </div>
+          {/* ── RIGHT MAIN CONTENT (GitHub Profile Cards Column) ── */}
+          <div className="flex-1 min-w-0 w-full space-y-6">
 
-      {/* ── Pinned Certificates Section ── */}
-      <div className="mt-12 mb-8 px-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            <Award size={18} className="text-amber-500" />
-            Pinned Certificates
-          </h3>
-          <span className="text-[11px] font-bold text-slate-400 bg-slate-50 dark:bg-neutral-800 px-2.5 py-1 rounded-md">
-            Max 10
-          </span>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {currentUser.certificates && currentUser.certificates.length > 0 ? (
-            currentUser.certificates.slice(0, 10).map((cert: any, idx: number) => (
-              <div key={idx} className="group flex items-center justify-between p-4 rounded-[20px] border border-slate-100 dark:border-neutral-900 bg-white dark:bg-black shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-md transition-all cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 text-amber-500 dark:text-amber-400 transition-colors group-hover:scale-105 duration-300">
-                    <Award size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-[14px] font-extrabold text-slate-800 dark:text-white tracking-tight leading-snug group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{cert.name}</h4>
-                    <p className="text-[11px] text-slate-400 dark:text-neutral-500 font-bold mt-0.5">Issued by {cert.issuer}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <span className="text-[10px] font-extrabold text-slate-400 dark:text-neutral-500 bg-slate-50 dark:bg-neutral-900 border border-slate-100 dark:border-neutral-800 px-2 py-0.5 rounded-md">
-                    {cert.date}
-                  </span>
+
+            {/* 2. Learning Streak & GitHub Contribution Matrix */}
+            <div className="py-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                    <Flame size={18} className="text-amber-500" />
+                    <span>Learning Streak & Activity</span>
+                  </h3>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="col-span-1 md:col-span-2 text-center py-10 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-3xl text-slate-400 text-sm font-bold bg-slate-50/20 dark:bg-neutral-900/30">
-              No pinned certificates yet.
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Edit Profile — portaled above dock/nav */}
+              {/* Daily Streak Checks + Heatmap Grid */}
+              <div className="flex flex-col lg:flex-row items-center gap-6 pt-1">
+                {/* Heatmap Grid */}
+                <div className="flex-grow w-full overflow-hidden">
+                  <div className="flex gap-3 items-start">
+                    <div className="hidden sm:grid grid-rows-7 gap-[2px] text-[9px] text-slate-400 font-bold select-none shrink-0 pt-4">
+                      <div className="flex items-center h-[10px]">Sun</div>
+                      <div className="h-[10px]" />
+                      <div className="flex items-center h-[10px]">Wed</div>
+                      <div className="h-[10px]" />
+                      <div className="flex items-center h-[10px]">Fri</div>
+                      <div className="h-[10px]" />
+                    </div>
+
+                    <div className="flex-grow overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
+                      <div className="w-fit">
+                        <div className="flex text-[9px] text-slate-400 font-bold mb-1.5 h-3.5 relative select-none">
+                          {months.map((m, i) => (
+                            <span 
+                              key={`${m.name}-${m.col}-${i}`} 
+                              className="absolute" 
+                              style={{ left: `calc(${m.col} * (100% / ${totalWeeks || 53}))` }}
+                            >
+                              {m.name}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="grid grid-flow-col grid-rows-7 gap-[2px]">
+                          {contributionGrid.map((week, wIdx) => 
+                            week.map((cell, dIdx) => (
+                              <div 
+                                key={`${wIdx}-${dIdx}`}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setHoveredCell({
+                                    count: cell.count,
+                                    dateStr: cell.dateStr,
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 8
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredCell(null)}
+                                className={`w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-xs transition-all duration-150 cursor-pointer ${
+                                  cell.level === 0 ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200' :
+                                  cell.level === 1 ? 'bg-purple-200 dark:bg-purple-900/60 hover:scale-110' :
+                                  cell.level === 2 ? 'bg-purple-400 dark:bg-purple-600 hover:scale-110' :
+                                  'bg-purple-600 dark:bg-purple-500 hover:scale-110 shadow-2xs'
+                                }`}
+                              />
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 mt-3 text-xs text-slate-400 font-medium">
+                    <span>Less</span>
+                    <div className="w-2.5 h-2.5 rounded-xs bg-slate-100 dark:bg-slate-800" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-200 dark:bg-purple-900/60" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-400 dark:bg-purple-600" />
+                    <div className="w-2.5 h-2.5 rounded-xs bg-purple-600 dark:bg-purple-500" />
+                    <span>More</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Achievements & Pinned Certificates Grid */}
+            <MagicBento glowColor="147, 51, 234" enableSpotlight={true} enableBorderGlow={true}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full bento-section">
+
+                {/* Achievements Card - Party Popper Confetti Blast + Magic Bento Border Glow */}
+                <ParticleCard
+                  glowColor="147, 51, 234"
+                  enableTilt={false}
+                  className="relative bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 p-6 shadow-xs flex flex-col justify-between asymmetric-leaf-card magic-bento-card magic-bento-card--border-glow"
+                >
+                  <PartyPopper className="w-full h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                          <Star size={18} className="text-slate-900 dark:text-white shrink-0" />
+                          <span className="text-slate-900 dark:text-white font-black">
+                            Achievements
+                          </span>
+                        </h3>
+                        <button 
+                          onClick={() => setIsAchievementsModalOpen(true)}
+                          className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 cursor-pointer hover:underline transition-all relative z-20 shrink-0"
+                        >
+                          View all <span>-&gt;</span>
+                        </button>
+                      </div>
+
+                      <AnimatedList
+                        items={allAchievementsList.slice(0, 4)}
+                        showGradients={false}
+                        displayScrollbar={false}
+                        staggerDelay={0.06}
+                        renderItem={(ach, idx, isSelected) => {
+                          const IconComponent = ach.icon;
+                          return (
+                            <div key={idx} className={`flex items-center justify-between p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border transition-all ${isSelected ? 'border-purple-400 dark:border-purple-500 shadow-xs bg-purple-50/30 dark:bg-purple-950/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center border shrink-0 ${ach.color}`}>
+                                  <IconComponent size={16} />
+                                </div>
+                                <div>
+                                  <h4 className="text-xs font-black text-slate-900 dark:text-white">{ach.title}</h4>
+                                  <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold">{ach.desc}</p>
+                                </div>
+                              </div>
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 shrink-0">{ach.date}</span>
+                            </div>
+                          );
+                        }}
+                      />
+                    </div>
+                  </PartyPopper>
+                </ParticleCard>
+
+                {/* Pinned Certificates Card - Party Popper Confetti Blast + Magic Bento Border Glow */}
+                <ParticleCard
+                  glowColor="147, 51, 234"
+                  enableTilt={false}
+                  className="relative bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 p-6 shadow-xs flex flex-col justify-between asymmetric-leaf-card magic-bento-card magic-bento-card--border-glow"
+                >
+                  <PartyPopper className="w-full h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-extrabold tracking-tight flex items-center gap-2">
+                          <Award size={18} className="text-slate-900 dark:text-white shrink-0" />
+                          <span className="text-slate-900 dark:text-white font-black">
+                            Pinned Certificates
+                          </span>
+                        </h3>
+                        <button 
+                          onClick={() => setIsCertificatesModalOpen(true)}
+                          className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 cursor-pointer hover:underline transition-all relative z-20 shrink-0"
+                        >
+                          View all <span>-&gt;</span>
+                        </button>
+                      </div>
+
+                      {certificatesList.filter(c => c.isPinned).length > 0 ? (
+                        <AnimatedList
+                          items={certificatesList.filter(c => c.isPinned).slice(0, 4)}
+                          showGradients={false}
+                          displayScrollbar={false}
+                          staggerDelay={0.06}
+                          renderItem={(cert: any, idx: number, isSelected: boolean) => (
+                            <div key={idx} className={`flex items-center justify-between p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border transition-all ${isSelected ? 'border-purple-400 dark:border-purple-500 shadow-xs bg-purple-50/30 dark:bg-purple-950/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-900 dark:text-white shrink-0">
+                                  <Award size={16} />
+                                </div>
+                                <div>
+                                  <h4 className="text-xs font-black text-slate-900 dark:text-white">{cert.name}</h4>
+                                  <p className="text-[11px] text-slate-700 dark:text-slate-300 font-semibold">Issued by {cert.issuer}</p>
+                                </div>
+                              </div>
+                              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 shrink-0">{cert.date}</span>
+                            </div>
+                          )}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center p-6 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/30">
+                          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-white mb-2 border border-slate-200 dark:border-slate-700">
+                            <Award size={22} />
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-white mb-1">No pinned certificates yet.</h4>
+                          <button 
+                            onClick={() => setIsCertificatesModalOpen(true)}
+                            className="text-xs font-bold text-slate-900 dark:text-white hover:underline mt-1 relative z-20"
+                          >
+                            Browse Certificates
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </PartyPopper>
+                </ParticleCard>
+              </div>
+            </MagicBento>
+
+
+          </div>
+        </div>
+
+
+
+      </motion.div>
+
+      {/* Edit Profile Modal */}
       {portalReady && createPortal(
         <AnimatePresence>
           {isEditModalOpen && (
@@ -1209,7 +1449,7 @@ function ProfilePageContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsEditModalOpen(false)}
-                className="absolute inset-0 bg-[#202124]/55 backdrop-blur-[2px]"
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
               />
 
               <motion.div
@@ -1220,22 +1460,22 @@ function ProfilePageContent() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="relative z-10 flex max-h-[min(88vh,720px)] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-[#dadce0] bg-white shadow-[0_24px_48px_rgba(32,33,36,0.28)]"
+                className="relative z-10 flex max-h-[min(88vh,720px)] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#e8eaed] px-5 py-4 sm:px-6">
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 px-6 py-5">
                   <div className="min-w-0">
-                    <h3 id="edit-profile-title" className="text-lg font-medium tracking-tight text-[#202124]">
-                      Edit profile info
+                    <h3 id="edit-profile-title" className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                      Edit Profile Info
                     </h3>
-                    <p className="mt-0.5 text-sm text-[#5f6368]">
-                      Update your details, credentials, and social profiles.
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      Update your details, bio, and social connections.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(false)}
-                    className="rounded-md p-2 text-[#5f6368] transition-colors hover:bg-[#f1f3f4] hover:text-[#202124]"
+                    className="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors"
                     aria-label="Close"
                   >
                     <X size={18} />
@@ -1243,32 +1483,32 @@ function ProfilePageContent() {
                 </div>
 
                 <form onSubmit={handleEditSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5 sm:px-6">
+                  <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">First name</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">First name</label>
                         <input
                           type="text"
                           required
                           value={editFirstName}
                           onChange={(e) => setEditFirstName(e.target.value)}
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Last name</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Last name</label>
                         <input
                           type="text"
                           required
                           value={editLastName}
                           onChange={(e) => setEditLastName(e.target.value)}
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Username</label>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Username</label>
                       <div className="relative">
                         <input
                           type="text"
@@ -1279,34 +1519,34 @@ function ProfilePageContent() {
                             usernameAvailable === true
                               ? 'border-emerald-500 focus:border-emerald-600 focus:ring-emerald-600'
                               : usernameAvailable === false
-                                ? 'border-[#d93025] focus:border-[#d93025] focus:ring-[#d93025]'
-                                : 'border-[#dadce0] focus:border-[#4C6FFF] focus:ring-[#4C6FFF]'
-                          } w-full rounded-md border bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition focus:ring-1`}
+                                ? 'border-rose-500 focus:border-rose-600 focus:ring-rose-600'
+                                : 'border-slate-200 dark:border-slate-700 focus:border-purple-600 focus:ring-purple-600'
+                          } w-full rounded-xl border bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-1`}
                         />
                         <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
-                          {isCheckingUsername && <Loader2 className="animate-spin text-[#4C6FFF]" size={14} />}
+                          {isCheckingUsername && <Loader2 className="animate-spin text-purple-600" size={14} />}
                           {usernameAvailable === true && (
-                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                            <span className="rounded bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                               Available
                             </span>
                           )}
                           {usernameAvailable === false && (
-                            <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-[#d93025]">
+                            <span className="rounded bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400">
                               Taken
                             </span>
                           )}
                         </div>
                       </div>
                       {usernameAvailable === false && usernameSuggestions.length > 0 && (
-                        <div className="mt-2 rounded-md border border-[#fce8e6] bg-[#fce8e6]/50 p-3 text-[12px]">
-                          <p className="mb-1.5 font-medium text-[#c5221f]">Username is taken. Try:</p>
+                        <div className="mt-2 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/50 dark:bg-rose-950/30 p-3 text-[12px]">
+                          <p className="mb-1.5 font-bold text-rose-600 dark:text-rose-400">Username is taken. Try:</p>
                           <div className="flex flex-wrap gap-1.5">
                             {usernameSuggestions.map((s) => (
                               <button
                                 key={s}
                                 type="button"
                                 onClick={() => setEditUsername(s)}
-                                className="rounded-md border border-[#dadce0] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#202124] transition hover:border-[#4C6FFF] hover:text-[#4C6FFF]"
+                                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 transition hover:border-purple-600 hover:text-purple-600"
                               >
                                 {s}
                               </button>
@@ -1319,21 +1559,21 @@ function ProfilePageContent() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <div className="mb-1.5 flex items-center justify-between">
-                          <label className="text-xs font-medium text-[#5f6368]">Email</label>
-                          <span className="inline-flex items-center gap-1 rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#80868b]">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Email</label>
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                             <Lock size={9} /> Locked
                           </span>
                         </div>
-                        <input type="email" disabled value={editEmail} className="w-full cursor-not-allowed select-none rounded-md border border-[#e8eaed] bg-[#f1f3f4] px-3.5 py-2.5 text-sm font-medium text-[#80868b] outline-none" />
+                        <input type="email" disabled value={editEmail} className="w-full cursor-not-allowed select-none rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/40 px-3.5 py-2.5 text-sm font-medium text-slate-400 outline-none" />
                       </div>
                       <div>
                         <div className="mb-1.5 flex items-center justify-between">
-                          <label className="text-xs font-medium text-[#5f6368]">Gender</label>
-                          <span className="inline-flex items-center gap-1 rounded bg-[#f1f3f4] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#80868b]">
+                          <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Gender</label>
+                          <span className="inline-flex items-center gap-1 rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                             <Lock size={9} /> Locked
                           </span>
                         </div>
-                        <select disabled value={editGender} className="w-full cursor-not-allowed select-none rounded-md border border-[#e8eaed] bg-[#f1f3f4] px-3.5 py-2.5 text-sm font-medium text-[#80868b] outline-none appearance-none">
+                        <select disabled value={editGender} className="w-full cursor-not-allowed select-none rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/40 px-3.5 py-2.5 text-sm font-medium text-slate-400 outline-none appearance-none">
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
                           <option value="OTHER">Other</option>
@@ -1343,78 +1583,78 @@ function ProfilePageContent() {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">LinkedIn</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">LinkedIn</label>
                         <input
                           type="url"
                           value={editLinkedinUrl}
                           onChange={(e) => setEditLinkedinUrl(e.target.value)}
                           placeholder="https://linkedin.com/in/username"
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">GitHub</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">GitHub</label>
                         <input
                           type="url"
                           value={editGithubUrl}
                           onChange={(e) => setEditGithubUrl(e.target.value)}
                           placeholder="https://github.com/username"
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Mobile</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Mobile</label>
                         <input
                           type="text"
                           required
                           value={editMobileNumber}
                           onChange={(e) => setEditMobileNumber(e.target.value)}
                           placeholder="+91 XXXXX XXXXX"
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                       <div>
-                        <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Address</label>
+                        <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Address</label>
                         <input
                           type="text"
                           value={editAddress}
                           onChange={(e) => setEditAddress(e.target.value)}
                           placeholder="City, State, Country"
-                          className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF]"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#5f6368]">Bio</label>
-                      <p className="mb-1.5 text-[11px] text-[#80868b]">Use | to split lines</p>
+                      <label className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">Bio</label>
+                      <p className="mb-1.5 text-[11px] text-slate-400">Use | to split lines</p>
                       <textarea
                         rows={3}
                         value={editBio}
                         onChange={(e) => setEditBio(e.target.value)}
-                        className="w-full rounded-md border border-[#dadce0] bg-white px-3.5 py-2.5 text-sm text-[#202124] outline-none transition placeholder:text-[#80868b] focus:border-[#4C6FFF] focus:ring-1 focus:ring-[#4C6FFF] resize-none"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-purple-600 focus:ring-1 focus:ring-purple-600 resize-none"
                       />
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center justify-end gap-2 border-t border-[#e8eaed] bg-[#f8f9fa] px-5 py-3.5 sm:px-6">
+                  <div className="flex shrink-0 items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-6 py-4">
                     <button
                       type="button"
                       onClick={() => setIsEditModalOpen(false)}
-                      className="rounded-md px-4 py-2 text-sm font-medium text-[#4C6FFF] transition hover:bg-[#4C6FFF]/08"
+                      className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={isSaving || usernameAvailable === false}
-                      className="inline-flex items-center gap-2 rounded-md bg-[#4C6FFF] px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#3a5ae6] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-xl bg-purple-600 hover:bg-purple-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {isSaving && <Loader2 size={15} className="animate-spin" />}
-                      Save
+                      Save Changes
                     </button>
                   </div>
                 </form>
@@ -1425,7 +1665,260 @@ function ProfilePageContent() {
         document.body
       )}
 
-      {/* Absolute Custom Hover Tooltip */}
+      {/* All Achievements Modal */}
+      {portalReady && createPortal(
+        <AnimatePresence>
+          {isAchievementsModalOpen && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsAchievementsModalOpen(false)}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              />
+
+              <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="achievements-modal-title"
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 w-full max-w-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PartyPopper className="flex max-h-[min(88vh,750px)] w-full flex-col overflow-hidden rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  {/* Modal Header */}
+                  <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 px-6 py-5">
+                    <div>
+                      <h3 id="achievements-modal-title" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
+                        <Star size={20} className="text-slate-900 dark:text-white" />
+                        <span className="text-slate-900 dark:text-white font-black">
+                          All Achievements & Milestones
+                        </span>
+                      </h3>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Explore all earned badges, skill milestones, and learning streaks.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsAchievementsModalOpen(false)}
+                      className="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer relative z-20"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  {/* Filter and Search Bar */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="relative w-full sm:w-64">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search achievements..."
+                        value={achievementSearch}
+                        onChange={(e) => setAchievementSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:border-slate-900 dark:focus:border-white focus:ring-1 focus:ring-slate-900 dark:focus:ring-white relative z-20"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 w-full sm:w-auto">
+                      {(['all', 'unlocked', 'in_progress'] as const).map(tab => (
+                        <button
+                          key={tab}
+                          onClick={() => setAchievementFilter(tab)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer relative z-20 ${
+                            achievementFilter === tab
+                              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {tab === 'all' ? 'All' : tab === 'unlocked' ? 'Unlocked' : 'In Progress'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Achievement Items List */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                    <AnimatedList
+                      items={allAchievementsList
+                        .filter(ach => {
+                          if (achievementFilter === 'unlocked') return ach.unlocked;
+                          if (achievementFilter === 'in_progress') return !ach.unlocked;
+                          return true;
+                        })
+                        .filter(ach => {
+                          if (!achievementSearch) return true;
+                          return ach.title.toLowerCase().includes(achievementSearch.toLowerCase()) ||
+                                 ach.desc.toLowerCase().includes(achievementSearch.toLowerCase());
+                        })}
+                      showGradients={false}
+                      displayScrollbar={false}
+                      staggerDelay={0.04}
+                      renderItem={(ach, idx, isSelected) => {
+                        const IconComponent = ach.icon;
+                        return (
+                          <div key={ach.id} className={`flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border transition-all ${isSelected ? 'border-purple-400 dark:border-purple-500 shadow-xs bg-purple-50/30 dark:bg-purple-950/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 ${ach.color}`}>
+                                <IconComponent size={22} />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-xs font-bold text-slate-800 dark:text-white">{ach.title}</h4>
+                                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                    ach.unlocked
+                                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700'
+                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+                                  }`}>
+                                    {ach.unlocked ? 'Unlocked' : `${ach.progress}%`}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-400 font-medium mt-0.5">{ach.desc}</p>
+                                {!ach.unlocked && (
+                                  <div className="w-36 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
+                                    <div className="h-full bg-slate-900 dark:bg-white rounded-full" style={{ width: `${ach.progress}%` }} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <span className="text-[11px] font-semibold text-slate-400 shrink-0">{ach.date}</span>
+                          </div>
+                        );
+                      }}
+                    />
+                  </div>
+                </PartyPopper>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* All Certificates Modal */}
+      {portalReady && createPortal(
+        <AnimatePresence>
+          {isCertificatesModalOpen && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsCertificatesModalOpen(false)}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              />
+
+              <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="certificates-modal-title"
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 w-full max-w-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PartyPopper className="flex max-h-[min(88vh,750px)] w-full flex-col overflow-hidden rounded-3xl border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  {/* Modal Header */}
+                  <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 px-6 py-5">
+                    <div>
+                      <h3 id="certificates-modal-title" className="text-lg font-extrabold tracking-tight flex items-center gap-2">
+                        <Award size={20} className="text-slate-900 dark:text-white" />
+                        <span className="text-slate-900 dark:text-white font-black">
+                          All Earned Certificates
+                        </span>
+                      </h3>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                        Manage pinned certificates on your profile (Max 4 pinned).
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsCertificatesModalOpen(false)}
+                      className="rounded-full p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer relative z-20"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  {/* Search Bar */}
+                  <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="relative w-full">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search certificates..."
+                        value={certificateSearch}
+                        onChange={(e) => setCertificateSearch(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white outline-none focus:border-slate-900 dark:focus:border-white focus:ring-1 focus:ring-slate-900 dark:focus:ring-white relative z-20"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Certificates List */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                    <AnimatedList
+                      items={certificatesList
+                        .filter(cert => {
+                          if (!certificateSearch) return true;
+                          return cert.name.toLowerCase().includes(certificateSearch.toLowerCase()) ||
+                                 cert.issuer.toLowerCase().includes(certificateSearch.toLowerCase()) ||
+                                 cert.credentialId.toLowerCase().includes(certificateSearch.toLowerCase());
+                        })}
+                      showGradients={false}
+                      displayScrollbar={false}
+                      staggerDelay={0.04}
+                      renderItem={(cert, idx, isSelected) => (
+                        <div key={cert.id} className={`flex items-center justify-between p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border transition-all ${isSelected ? 'border-purple-400 dark:border-purple-500 shadow-xs bg-purple-50/30 dark:bg-purple-950/20' : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'}`}>
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-900 dark:text-white shrink-0">
+                              <Award size={22} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-xs font-bold text-slate-800 dark:text-white">{cert.name}</h4>
+                                <span className="text-[10px] font-mono text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md">
+                                  {cert.credentialId}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                Issued by {cert.issuer} • Grade: <span className="font-semibold text-slate-600 dark:text-slate-300">{cert.grade}</span>
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">{cert.date}</span>
+                            <button
+                              onClick={() => togglePinCertificate(cert.id)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer relative z-20 ${
+                                cert.isPinned
+                                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs hover:bg-slate-800 dark:hover:bg-slate-100'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                              }`}
+                            >
+                              <Pin size={13} className={cert.isPinned ? 'fill-white dark:fill-slate-900' : ''} />
+                              <span>{cert.isPinned ? 'Pinned' : 'Pin'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </div>
+                </PartyPopper>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Hover Tooltip for Contribution Heatmap Cells */}
       <AnimatePresence>
         {hoveredCell && (
           <motion.div 
@@ -1442,7 +1935,6 @@ function ProfilePageContent() {
           </motion.div>
         )}
       </AnimatePresence>
-
       <ImageCropModal
         open={cropSourceFile !== null}
         file={cropSourceFile}
@@ -1451,7 +1943,6 @@ function ProfilePageContent() {
         onCancel={() => setCropSourceFile(null)}
         onCropped={handleAvatarCropped}
       />
-    </motion.div>
     </>
   );
 }
