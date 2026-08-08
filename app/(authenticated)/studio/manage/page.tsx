@@ -5,15 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
 import { getDashboardWorkshops } from '@/app/(authenticated)/studio/workshop/api/dashboardApi';
-import { 
-  Wrench, 
-  ArrowRight, 
-  Clock, 
-  Video, 
-  BookOpen, 
-  Search, 
-  Layers, 
-  Calendar, 
+import {
+  Wrench,
+  ArrowRight,
+  Clock,
+  Video,
+  BookOpen,
+  Search,
+  Layers,
+  Calendar,
   SlidersHorizontal,
   ChevronRight,
   ShieldCheck,
@@ -88,8 +88,8 @@ export default function UnifiedManagePage() {
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return isNaN(d.getTime()) 
-      ? '' 
+    return isNaN(d.getTime())
+      ? ''
       : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -97,13 +97,13 @@ export default function UnifiedManagePage() {
     const title = item.title?.toLowerCase() || '';
     const category = item.category?.toLowerCase() || '';
     const query = searchQuery.toLowerCase().trim();
-    
+
     const matchesSearch = title.includes(query) || category.includes(query);
-    const matchesOwnership = 
+    const matchesOwnership =
       activeFilter === 'ALL' ||
       (activeFilter === 'OWNED' && item.isOwner) ||
       (activeFilter === 'COLLAB' && !item.isOwner);
-    
+
     return matchesSearch && matchesOwnership;
   });
 
@@ -123,7 +123,7 @@ export default function UnifiedManagePage() {
           <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-2xl w-72" />
           <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-xl w-96" />
         </div>
-        
+
         {/* KPI Cards skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5].map(i => (
@@ -142,7 +142,7 @@ export default function UnifiedManagePage() {
   }
 
   return (
-    <div 
+    <div
       className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 min-h-screen"
       style={{
         background: 'linear-gradient(180deg, #F1F5F9 0%, #F8FAFC 50%, #FFFFFF 100%)'
@@ -242,11 +242,10 @@ export default function UnifiedManagePage() {
                 key={f.id}
                 type="button"
                 onClick={() => setActiveFilter(f.id as any)}
-                className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                  activeFilter === f.id
+                className={`flex-1 sm:flex-initial px-4 py-2 text-xs font-bold rounded-lg transition-all ${activeFilter === f.id
                     ? 'bg-white text-slate-800 shadow-sm'
                     : 'text-slate-500 hover:text-slate-800'
-                }`}
+                  }`}
               >
                 {f.label}
               </button>
@@ -271,7 +270,7 @@ export default function UnifiedManagePage() {
       {/* Content Grid */}
       <AnimatePresence mode="popLayout">
         {filteredItems.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
@@ -283,7 +282,7 @@ export default function UnifiedManagePage() {
             <p className="text-sm text-slate-700 font-bold">No workspaces found</p>
             <p className="text-xs text-slate-400 max-w-sm mt-1">
               {searchQuery || activeFilter !== 'ALL'
-                ? 'Try adjusting your filters or search criteria.' 
+                ? 'Try adjusting your filters or search criteria.'
                 : 'Create your first workshop or webinar using the "New Workspace" button above.'}
             </p>
           </motion.div>
@@ -292,7 +291,7 @@ export default function UnifiedManagePage() {
             {filteredItems.map((item) => {
               const isWebinar = item.workshopType === 'WEBINAR';
               return (
-                <motion.div 
+                <motion.div
                   key={item.id}
                   layout
                   initial={{ opacity: 0, scale: 0.96 }}
@@ -304,17 +303,16 @@ export default function UnifiedManagePage() {
                   {/* Banner / Cover Section */}
                   <div className="aspect-video w-full bg-slate-100 relative overflow-hidden">
                     {item.coverImageUrl ? (
-                      <img 
-                        src={item.coverImageUrl} 
-                        alt={item.title} 
-                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      <img
+                        src={item.coverImageUrl}
+                        alt={item.title}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className={`h-full w-full flex items-center justify-center opacity-80 ${
-                        isWebinar 
-                          ? 'bg-gradient-to-tr from-sky-400 via-blue-500 to-indigo-600' 
+                      <div className={`h-full w-full flex items-center justify-center opacity-80 ${isWebinar
+                          ? 'bg-gradient-to-tr from-sky-400 via-blue-500 to-indigo-600'
                           : 'bg-gradient-to-tr from-orange-400 via-rose-500 to-purple-600'
-                      }`}>
+                        }`}>
                         <span className="text-white/35 font-black text-4xl uppercase tracking-wider select-none">
                           {isWebinar ? 'Live' : 'Studio'}
                         </span>
@@ -330,15 +328,14 @@ export default function UnifiedManagePage() {
 
                     {/* Role Badge */}
                     <div className="absolute bottom-3.5 left-3.5">
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-3 py-1 rounded-full border shadow-sm uppercase ${
-                        item.role === 'OWNER'
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-3 py-1 rounded-full border shadow-sm uppercase ${item.role === 'OWNER'
                           ? 'bg-amber-500 text-white border-amber-400'
                           : item.role === 'MANAGER'
-                          ? 'bg-emerald-600 text-white border-emerald-500'
-                          : item.role === 'EDITOR'
-                          ? 'bg-indigo-600 text-white border-indigo-500'
-                          : 'bg-slate-500 text-white border-slate-400'
-                      }`}>
+                            ? 'bg-emerald-600 text-white border-emerald-500'
+                            : item.role === 'EDITOR'
+                              ? 'bg-indigo-600 text-white border-indigo-500'
+                              : 'bg-slate-500 text-white border-slate-400'
+                        }`}>
                         {item.role || 'Collaborator'}
                       </span>
                     </div>
@@ -348,11 +345,10 @@ export default function UnifiedManagePage() {
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase ${
-                          isWebinar
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase ${isWebinar
                             ? 'bg-blue-50 text-blue-700 border-blue-200'
                             : 'bg-orange-50 text-orange-700 border-orange-200'
-                        }`}>
+                          }`}>
                           {isWebinar ? <Video size={10} /> : <Wrench size={10} />} {item.workshopType}
                         </span>
                         {item.category && (
