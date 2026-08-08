@@ -63,8 +63,11 @@ export default function UnifiedManagePage() {
           isOwner: false
         }));
 
-        // Combine and sort by updatedAt descending
-        const combined = [...ownedMapped, ...collabMapped].sort(
+        // Combine and sort by updatedAt descending, filtering out any duplicate IDs in collaborated workshops
+        const ownedIds = new Set(ownedMapped.map(w => w.id));
+        const uniqueCollab = collabMapped.filter(w => !ownedIds.has(w.id));
+
+        const combined = [...ownedMapped, ...uniqueCollab].sort(
           (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
 

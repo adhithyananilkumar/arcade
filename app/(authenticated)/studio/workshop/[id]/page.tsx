@@ -204,12 +204,14 @@ export default function SingleWorkshopDashboard() {
                   >
                     ✏️ Edit Content
                   </Link>
-                  <button
-                    onClick={handleDelete}
-                    className="px-4 py-2 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
-                  >
-                    Delete
-                  </button>
+                  {hasManageAccess && (
+                    <button
+                      onClick={handleDelete}
+                      className="px-4 py-2 border border-red-200 dark:border-red-900 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </>
               )}
               <Link
