@@ -1,11 +1,12 @@
 .arc-footer {
-  --fe-bg: #ffffff;
+  --fe-bg: transparent;
   --fe-text: #111827;
   --fe-text-soft: #4b5563;
   --fe-border: rgba(17, 24, 39, 0.08);
   --fe-accent: #2563eb;
 
-  background-color: var(--fe-bg);
+  background: transparent !important;
+  background-color: transparent !important;
   padding: 64px 0 160px 0;
   color: var(--fe-text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -25,6 +26,8 @@
   pointer-events: none;
   opacity: 0.8;
   z-index: 1;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 1) 30%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 1) 30%);
 }
 
 .arc-footer__container {

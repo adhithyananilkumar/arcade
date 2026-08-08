@@ -4,6 +4,8 @@ import LogoStrip from "@/apps/public/components/landing/LogoStrip";
 import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
 import Testimonials from "@/apps/public/components/landing/Testimonials";
 import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
+import Footer from "@/apps/public/components/landing/Footer";
+import GlobalBackground from "@/apps/public/components/landing/GlobalBackground";
 import "@/apps/public/landing.css";
 
 export const metadata: Metadata = {
@@ -21,11 +23,13 @@ export const metadata: Metadata = {
 export default function PublicLandingPage() {
   return (
     <div className="landing-root">
+      <GlobalBackground />
       <HeroSection />
       <LogoStrip />
       <CourseShowcase />
       <Testimonials />
       <JourneyTimeline />
+      <Footer />
     </div>
   );
 }
