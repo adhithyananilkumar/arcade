@@ -29,6 +29,7 @@ export type ReviewQueueItem = {
   title: string;
   thumbnail?: string | null;
   ownerName: string;
+  ownerUsername?: string | null;
   channelId: string;
   channelName: string;
   submittedAt: string;
@@ -48,6 +49,7 @@ export type ReviewResponse = {
   contentType: ContentType;
   contentId: string;
   channelId: string;
+  tier: 'ORG' | 'GLOBAL';
   status: ReviewStatus;
   currentRound: number;
   assignedReviewerId?: string | null;
