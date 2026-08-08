@@ -28,6 +28,7 @@ import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { UserService } from "@/domains/identity"
+import { EnrollmentService } from "@/domains/enrollment/api/enrollment.service"
 import { toast } from "sonner"
 
 /* ------------------------------------------------------------------ */
@@ -926,12 +927,20 @@ export default function CoursePage() {
     if (!params?.courseId) return;
     try {
       setIsEnrolling(true);
-      const updatedUser = await UserService.enrollInCourse(params.courseId as string);
-      updateUser(updatedUser);
-      toast.success("Successfully enrolled!");
-      setIsEnrolled(true);
-    } catch (error) {
-      toast.error("Failed to enroll. Please try again.");
+      const result = await EnrollmentService.enroll('COURSE', params.courseId as string);
+      if (result.status === 'GRANTED') {
+        const updatedUser = await UserService.getMe();
+        updateUser(updatedUser);
+        toast.success("Successfully enrolled!");
+        setIsEnrolled(true);
+      } else if (result.status === 'PENDING_ACTION') {
+        toast.info(`Enrollment pending: ${result.message}`);
+        if (result.redirectUrl) router.push(result.redirectUrl);
+      } else {
+        toast.error(`Enrollment denied: ${result.message}`);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to enroll. Please try again.");
     } finally {
       setIsEnrolling(false);
     }

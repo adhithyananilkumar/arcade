@@ -29,6 +29,8 @@ import type { CourseResponse } from "@/shared/types/api.types"
 import { EnrollButton } from "@/shared/design-system/ui/EnrollButton"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { UserService } from "@/domains/identity"
+import { EnrollmentService } from "@/domains/enrollment/api/enrollment.service"
+
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -866,12 +868,20 @@ export default function CoursePreviewPage() {
 
     if (params?.id) {
       try {
-        const updatedUser = await UserService.enrollInCourse(params.id)
-        updateUser(updatedUser)
-        router.push(`/learn/${params.id}`)
+        const result = await EnrollmentService.enroll('COURSE', params.id);
+        if (result.status === 'GRANTED') {
+          const updatedUser = await UserService.getMe();
+          updateUser(updatedUser);
+          router.push(`/learn/${params.id}`);
+        } else if (result.status === 'PENDING_ACTION') {
+          alert(`Enrollment pending: ${result.message}`);
+          if (result.redirectUrl) router.push(result.redirectUrl);
+        } else {
+          alert(`Enrollment denied: ${result.message}`);
+        }
       } catch (err: any) {
-        console.error("Failed to enroll:", err)
-        alert(err.message || "Failed to enroll")
+        console.error("Failed to enroll:", err);
+        alert(err.message || "Failed to enroll");
       }
     }
   }
