@@ -561,7 +561,7 @@ function CreateEventModal({
   const EVENT_TYPES = [
     {
       id: "WORKSHOP",
-      label: "Event",
+      label: "Workshop",
       desc: "Flexible interactive sessions, activities and resources.",
     },
     {

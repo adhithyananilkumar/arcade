@@ -1,7 +1,7 @@
 import { EventType, DeliveryMode, Difficulty, Visibility } from '@/app/(authenticated)/studio/events/types';
 
 export const WORKSHOP_TYPES = [
-  { value: EventType.WORKSHOP, label: 'Event' },
+  { value: EventType.WORKSHOP, label: 'Workshop' },
   { value: EventType.BOOTCAMP, label: 'Bootcamp' },
   { value: EventType.MASTERCLASS, label: 'Masterclass' },
   { value: EventType.WEBINAR, label: 'Webinar' },
