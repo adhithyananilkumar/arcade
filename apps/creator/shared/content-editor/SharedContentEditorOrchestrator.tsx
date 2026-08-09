@@ -1166,7 +1166,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setUpdatedAt(updated.updatedAt);
       } else if (contentType === "workshop") {
         const { submitWorkshop } = await import(
-          "@/app/(authenticated)/studio/workshop/api/publish"
+          "@/app/(authenticated)/studio/events/api/publish"
         );
         const updated = await submitWorkshop(contentId, { message: data.message });
         setStatus(updated.status);

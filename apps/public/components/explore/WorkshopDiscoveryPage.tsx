@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useWorkshopDiscovery } from '@/app/(authenticated)/studio/workshop/hooks/useWorkshopDiscovery';
-import { Workshop, WorkshopType } from '@/app/(authenticated)/studio/workshop/types';
+import { useWorkshopDiscovery } from '@/app/(authenticated)/studio/events/hooks/useWorkshopDiscovery';
+import { Workshop, WorkshopType } from '@/app/(authenticated)/studio/events/types';
 
 const THEMES = [
   { border: '#8B5CF6', bg: '#F5F3FF', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' }, // Purple - Code

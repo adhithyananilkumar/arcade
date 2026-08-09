@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react';
 import { notFound } from 'next/navigation';
-import { WorkshopPreview } from '@/app/(authenticated)/studio/workshop/components/wizard/review/WorkshopPreview';
-import { getWorkshopPreview } from '@/app/(authenticated)/studio/workshop/api/publish';
-import { WorkshopPreviewDto } from '@/app/(authenticated)/studio/workshop/types';
+import { WorkshopPreview } from '@/app/(authenticated)/studio/events/components/wizard/review/WorkshopPreview';
+import { getWorkshopPreview } from '@/app/(authenticated)/studio/events/api/publish';
+import { WorkshopPreviewDto } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
   params: Promise<{

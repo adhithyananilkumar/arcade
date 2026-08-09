@@ -14,7 +14,7 @@ import { courseProgressService } from '@/domains/learning/progress/api/coursePro
 import GradientText from '@/apps/public/components/landing/GradientText';
 import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
 import type { EventDto } from '@/app/(public)/events/types/event.types';
-import { DeliveryMode } from '@/app/(authenticated)/studio/workshop/types';
+import { DeliveryMode } from '@/app/(authenticated)/studio/events/types';
 import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
 import { StreakCalendar } from './StreakCalendar';
 import {

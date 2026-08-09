@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/infrastructure/http/api';
-import { SessionForm } from '@/app/(authenticated)/studio/workshop/components/wizard/schedule/SessionForm';
-import { WorkshopSession } from '@/app/(authenticated)/studio/workshop/types';
+import { SessionForm } from '@/app/(authenticated)/studio/events/components/wizard/schedule/SessionForm';
+import { WorkshopSession } from '@/app/(authenticated)/studio/events/types';
 import { X, Loader2 } from 'lucide-react';
 
 interface Props {

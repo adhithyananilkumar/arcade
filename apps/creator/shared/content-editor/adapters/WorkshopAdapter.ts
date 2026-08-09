@@ -1,6 +1,6 @@
 import { api } from "@/infrastructure/http/api";
 import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
-import type { Workshop, WorkshopSession } from "@/app/(authenticated)/studio/workshop/types";
+import type { Workshop, WorkshopSession } from "@/app/(authenticated)/studio/events/types";
 
 export class WorkshopAdapter implements ContentDataAdapter {
   private workshopId: string;

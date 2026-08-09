@@ -3,7 +3,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import Link from 'next/link';
 import { api } from '@/infrastructure/http/api';
-import { getDashboardWorkshops } from '@/app/(authenticated)/studio/workshop/api/dashboardApi';
+import { getDashboardWorkshops } from '@/app/(authenticated)/studio/events/api/dashboardApi';
 import {
   Wrench,
   ArrowRight,

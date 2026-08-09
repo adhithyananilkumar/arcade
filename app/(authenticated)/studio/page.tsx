@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
-import { WorkshopType } from "@/app/(authenticated)/studio/workshop/types";
+import { WorkshopType } from "@/app/(authenticated)/studio/events/types";
 import {
   BookOpen,
   Calendar,
@@ -496,10 +496,10 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             </button>
             <button
               type="submit"
-              disabled={!title.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              disabled={creating}
+              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {creating ? "Creating…" : "Create Roadmap"}
+              {creating ? "Creating..." : "Create roadmap"}
             </button>
           </div>
         </form>
@@ -508,21 +508,19 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── New Event creation modal ──────────────────────────────────────────────────
-
 function CreateEventModal({
   onClose,
 }: {
   onClose: () => void;
 }) {
   const router = useRouter();
+  const [step, setStep] = useState<"SELECT_TYPE" | "DETAILS">("SELECT_TYPE");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventType, setEventType] = useState<string>("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
-
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -551,7 +549,7 @@ function CreateEventModal({
         channelId,
       });
       toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/workshop/${event.id}/edit`);
+      router.push(`/studio/events/${event.id}/edit`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not create event";
       setError(message);
@@ -560,12 +558,67 @@ function CreateEventModal({
     }
   }
 
-  const typeLabel = eventType === "WEBINAR" ? "Webinar" :
-    eventType === "BOOTCAMP" ? "Bootcamp" :
-      eventType === "MASTERCLASS" ? "Masterclass" :
-        eventType === "AMA" ? "AMA" : "Workshop";
+  const EVENT_TYPES = [
+    {
+      id: "WORKSHOP",
+      label: "Workshop",
+      desc: "Flexible interactive sessions, activities and resources.",
+    },
+    {
+      id: "WEBINAR",
+      label: "Webinar",
+      desc: "Live online event with scheduled date/time and meeting details.",
+    },
+    {
+      id: "BOOTCAMP",
+      label: "Bootcamp",
+      desc: "Structured multi-session intensive learning event.",
+    }
+  ];
 
-  // ...existing modal JSX with type selector...<EventTypeSelector>
+  if (step === "SELECT_TYPE") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+        <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+          <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+            <X size={18} />
+          </button>
+          
+          <div className="mb-8 text-center">
+            <h3 className="text-xl font-bold tracking-tight text-[#14142b] uppercase">Select Event Type</h3>
+            <p className="mt-2 text-sm text-slate-500">Choose the format that best fits your content delivery.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {EVENT_TYPES.map(type => (
+              <button
+                key={type.id}
+                onClick={() => {
+                  setEventType(type.id);
+                  setStep("DETAILS");
+                }}
+                className="flex flex-col items-start p-5 text-left border-2 border-slate-100 rounded-xl hover:border-violet-500 hover:bg-violet-50 transition-all group"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-violet-100 text-violet-600 group-hover:bg-violet-200">
+                    <Calendar size={18} />
+                  </div>
+                  <span className="font-bold text-[#14142b]">{type.label}</span>
+                </div>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  {type.desc}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const typeLabel = EVENT_TYPES.find(t => t.id === eventType)?.label || "Event";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
@@ -574,32 +627,23 @@ function CreateEventModal({
           className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
+        <button type="button" onClick={() => setStep("SELECT_TYPE")}
+          className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+          <span className="text-xs font-semibold uppercase">Back</span>
+        </button>
+        <div className="mb-6 mt-4 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
             <Calendar size={20} className="text-violet-600" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Create a {typeLabel} event</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
           </div>
         </div>
         {error && (
           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
         )}
         <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Event Type <span className="text-red-500">*</span>
-            </label>
-            <select value={eventType} onChange={(e) => setEventType(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
-              <option value="WORKSHOP">Workshop</option>
-              <option value="WEBINAR">Webinar</option>
-              <option value="BOOTCAMP">Bootcamp</option>
-              <option value="MASTERCLASS">Masterclass</option>
-              <option value="AMA">AMA</option>
-            </select>
-          </div>
           <div>
             <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Title <span className="text-red-500">*</span>
@@ -628,80 +672,8 @@ function CreateEventModal({
       </div>
     </div>
   );
-            </label>
-            <select
-              id="workshop-type"
-              required
-              value={workshopType}
-              onChange={(e) => setWorkshopType(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60 bg-white"
-            >
-              {defaultType === WorkshopType.WEBINAR ? (
-                <option value={WorkshopType.WEBINAR}>Webinar</option>
-              ) : (
-                <option value={WorkshopType.WORKSHOP}>Workshop</option>
-              )}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="workshop-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="workshop-title"
-              type="text"
-              required
-              autoFocus
-              minLength={5}
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Advanced TypeScript"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          <div>
-            <label htmlFor="workshop-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Description <span className="font-medium text-slate-400">(optional)</span>
-            </label>
-            <textarea
-              id="workshop-desc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a {typeLabel.toLowerCase()}.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!title.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
-            >
-              {creating ? "Creating…" : `Create ${typeLabel}`}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
 }
+
 
 // ── Rename roadmap modal (title/description only — ported from the old /roadmaps list) ─
 
@@ -1020,7 +992,7 @@ function ContentCard({
 
 export default function DashboardPage() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "workshop" | "webinar" | "quiz" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1236,7 +1208,7 @@ export default function DashboardPage() {
                       );
                       const cls =
                         "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50";
-                      return type.id === "course" || type.id === "roadmap" || type.id === "workshop" || type.id === "webinar" || type.id === "quiz" ? (
+                      return type.id === "course" || type.id === "roadmap" || type.id === "event" || type.id === "quiz" ? (
                         <button
                           key={type.id}
                           type="button"
