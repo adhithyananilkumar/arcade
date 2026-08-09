@@ -1296,7 +1296,7 @@ export default function MyLearningPage() {
 
                   <div className="pt-2 flex items-center gap-3">
                     <Link
-                      href={`/learn/${continueLearningItem.id}/learn`}
+                      href={`/learn/${continueLearningItem.id}`}
                       className="flex-1 py-3 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-sky-500 via-indigo-600 to-purple-600 animate-changing-gradient hover:shadow-lg"
                     >
                       <Play size={13} className="fill-current" />

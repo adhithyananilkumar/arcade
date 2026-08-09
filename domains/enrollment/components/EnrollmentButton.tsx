@@ -143,7 +143,7 @@ export function EnrollmentButton({
       return;
     }
     if (resourceType === 'COURSE') {
-      router.push(`/learn/${resourceId}/learn`);
+      router.push(`/learn/${resourceId}`);
     } else if (resourceType === 'WORKSHOP') {
       router.push(`/workshop/${resourceId}`);
     }

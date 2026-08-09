@@ -308,7 +308,7 @@ export default function CoursePreviewPage() {
       accentColor="#1db876"
       actionButton={
         isEnrolled ? (
-          <Link href={`/learn/${params?.id}/learn`} className="animated-button">
+          <Link href={`/learn/${params?.id}`} className="animated-button">
             <span className="text">Go to course →</span>
           </Link>
         ) : (
@@ -525,7 +525,7 @@ export default function CoursePreviewPage() {
       primaryAction={
         isEnrolled ? (
           <Link
-            href={`/learn/${params?.id}/learn`}
+            href={`/learn/${params?.id}`}
             className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
           >
             Go to course →
