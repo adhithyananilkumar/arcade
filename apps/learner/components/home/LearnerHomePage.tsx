@@ -12,8 +12,8 @@ import DashboardLoading from '@/app/(authenticated)/loading';
 import { UserService } from '@/domains/identity';
 import { courseProgressService } from '@/domains/learning/progress/api/courseProgress';
 import GradientText from '@/apps/public/components/landing/GradientText';
-import { getPublishedWorkshops } from '@/app/(authenticated)/studio/workshop/api/discoveryApi';
-import type { Workshop } from '@/app/(authenticated)/studio/workshop/types';
+import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
+import type { EventDto } from '@/app/(public)/events/types/event.types';
 import { DeliveryMode } from '@/app/(authenticated)/studio/workshop/types';
 import { getDynamicGreeting, HOME_SEEN_KEY } from './greeting';
 import { StreakCalendar } from './StreakCalendar';
@@ -80,28 +80,28 @@ function deliveryLabel(mode?: DeliveryMode | string) {
   }
 }
 
-function workshopToEvent(w: Workshop, index: number): EventCard {
-  const typeLabel = String(w.workshopType || 'Workshop')
+function eventToCard(e: EventDto, index: number): EventCard {
+  const typeLabel = String(e.eventType || 'Workshop')
     .toLowerCase()
     .replace(/_/g, ' ');
   return {
-    id: w.id,
-    title: w.title,
+    id: e.id,
+    title: e.title,
     tagline:
-      w.subtitle ||
-      w.description?.slice(0, 90) ||
-      `${typeLabel.charAt(0).toUpperCase()}${typeLabel.slice(1)} · ${w.category || 'General'}`,
-    when: new Date(w.updatedAt || w.createdAt).toLocaleDateString(undefined, {
+      e.subtitle ||
+      e.description?.slice(0, 90) ||
+      `${typeLabel.charAt(0).toUpperCase()}${typeLabel.slice(1)} · ${e.category || 'General'}`,
+    when: new Date(e.updatedAt || e.createdAt).toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric',
     }),
-    where: deliveryLabel(w.deliveryMode),
+    where: deliveryLabel(e.deliveryMode as DeliveryMode),
     seats:
-      typeof w.capacity === 'number' && w.capacity > 0
-        ? `${w.capacity} seats`
+      typeof e.capacity === 'number' && e.capacity > 0
+        ? `${e.capacity} seats`
         : 'Open registration',
     tone: EVENT_TONES[index % EVENT_TONES.length],
-    href: `/workshop/${w.id}`,
+    href: `/events/${e.slug || e.id}`,
     statusLabel: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1),
   };
 }

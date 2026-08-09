@@ -144,14 +144,17 @@ export function EnrollmentButton({
     }
     if (resourceType === 'COURSE') {
       router.push(`/learn/${resourceId}`);
+    } else if (resourceType === 'EVENT') {
+      router.push(`/events/${resourceId}`);
     } else if (resourceType === 'WORKSHOP') {
-      router.push(`/workshop/${resourceId}`);
+      // Legacy compatibility — route to new Event page
+      router.push(`/events/${resourceId}`);
     }
   };
 
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
-    const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Workshop';
+    const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Event';
     return (
       <div className="flex items-center gap-2.5 w-full">
         <button 

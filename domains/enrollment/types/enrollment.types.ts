@@ -1,4 +1,4 @@
-export type ResourceType = 'COURSE' | 'WORKSHOP';
+export type ResourceType = 'COURSE' | 'WORKSHOP' | 'EVENT';
 
 export type EnrollmentResultStatus = 'GRANTED' | 'PENDING_ACTION' | 'DENIED';
 

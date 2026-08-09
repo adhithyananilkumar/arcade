@@ -12,8 +12,7 @@ import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { WorkshopType } from "@/app/(authenticated)/studio/workshop/types";
 import {
   BookOpen,
-  Wrench,
-  Radio,
+  Calendar,
   FileText,
   Plus,
   ChevronDown,
@@ -74,22 +73,13 @@ const CONTENT_TYPES = [
     bg: "bg-fuchsia-50",
   },
   {
-    id: "workshop",
-    icon: Wrench,
-    label: "Workshop / Bootcamp",
-    desc: "Flexible sessions with videos, activities & resources",
-    href: "/studio/workshop/new",
-    color: "text-[#14142b]",
+    id: "event",
+    icon: Calendar,
+    label: "Event",
+    desc: "Workshops, webinars, bootcamps & live sessions",
+    href: "/studio/events/new",
+    color: "text-violet-600",
     bg: "bg-violet-50",
-  },
-  {
-    id: "webinar",
-    icon: Radio,
-    label: "Webinar",
-    desc: "Live session with Zoom link, date & time",
-    href: "/studio/webinar/new",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
   },
   {
     id: "article",
@@ -146,10 +136,10 @@ function TypeBadge({ type }: { type: string }) {
       </span>
     );
   }
-  if (type === "WORKSHOP") {
+  if (type === "WORKSHOP" || type === "EVENT") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#FFF1E8] text-[#C45E28] border-[#FFD4BC]">
-        <Wrench size={10} /> Workshop
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
+        <Calendar size={10} /> Event
       </span>
     );
   }
@@ -518,19 +508,17 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── New Workshop creation modal ─────────────────────────────────────────────────
+// ── New Event creation modal ──────────────────────────────────────────────────
 
-function CreateWorkshopModal({
+function CreateEventModal({
   onClose,
-  defaultType = WorkshopType.WORKSHOP,
 }: {
   onClose: () => void;
-  defaultType?: string;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [workshopType, setWorkshopType] = useState<string>(defaultType);
+  const [eventType, setEventType] = useState<string>("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -548,10 +536,10 @@ function CreateWorkshopModal({
     setError(null);
 
     try {
-      const workshop = await api.post<{ id: string }>("/api/workshops", {
+      const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
         description: description.trim() || undefined,
-        workshopType: workshopType,
+        eventType: eventType,
         category: "uncategorized",
         tags: [],
         deliveryMode: "ONLINE",
@@ -563,51 +551,83 @@ function CreateWorkshopModal({
         channelId,
       });
       toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/workshop/${workshop.id}/edit`);
+      router.push(`/studio/workshop/${event.id}/edit`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create workshop";
+      const message = err instanceof Error ? err.message : "Could not create event";
       setError(message);
       toast.error(message);
       setCreating(false);
     }
   }
 
-  const typeLabel = workshopType === WorkshopType.WEBINAR ? "Webinar" :
-    workshopType === WorkshopType.BOOTCAMP ? "Bootcamp" :
-      workshopType === WorkshopType.MASTERCLASS ? "Masterclass" :
-        workshopType === WorkshopType.AMA ? "AMA" : "Workshop";
+  const typeLabel = eventType === "WEBINAR" ? "Webinar" :
+    eventType === "BOOTCAMP" ? "Bootcamp" :
+      eventType === "MASTERCLASS" ? "Masterclass" :
+        eventType === "AMA" ? "AMA" : "Workshop";
 
+  // ...existing modal JSX with type selector...<EventTypeSelector>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-        >
+        <button type="button" onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Wrench size={20} className="text-[#14142b]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
+            <Calendar size={20} className="text-violet-600" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
+            <p className="text-[12px] font-medium text-slate-500">Create a {typeLabel} event</p>
           </div>
         </div>
-
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
         )}
-
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="workshop-type" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Type <span className="text-red-500">*</span>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Event Type <span className="text-red-500">*</span>
+            </label>
+            <select value={eventType} onChange={(e) => setEventType(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
+              <option value="WORKSHOP">Workshop</option>
+              <option value="WEBINAR">Webinar</option>
+              <option value="BOOTCAMP">Bootcamp</option>
+              <option value="MASTERCLASS">Masterclass</option>
+              <option value="AMA">AMA</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Full-Stack Workshop" maxLength={120}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">Description</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description..." rows={2}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Channel <span className="text-red-500">*</span>
+            </label>
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} loading={channelsLoading} />
+          </div>
+          <button type="submit" disabled={!title.trim() || !channelId || creating}
+            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
+            {creating ? "Creating..." : "Create Event"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
             </label>
             <select
               id="workshop-type"
@@ -1091,6 +1111,7 @@ export default function DashboardPage() {
     { id: "COURSE" as const, label: "Courses" },
     { id: "ROADMAP" as const, label: "Roadmaps" },
     { id: "WORKSHOP" as const, label: "Workshops" },
+    { id: "EVENT" as const, label: "Events" },
   ];
 
   return (
@@ -1103,8 +1124,7 @@ export default function DashboardPage() {
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "workshop" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WORKSHOP} />}
-      {createOpen === "webinar" && <CreateWorkshopModal onClose={() => setCreateOpen(null)} defaultType={WorkshopType.WEBINAR} />}
+      {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
         <RenameRoadmapModal
           item={renameTarget}
