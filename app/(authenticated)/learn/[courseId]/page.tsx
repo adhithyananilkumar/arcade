@@ -520,7 +520,7 @@ function CourseHero({
               )}
             </div>
             {courseId && (
-              <div className="w-48">
+              <div className="min-w-[200px] sm:min-w-[240px]">
                 <EnrollmentButton
                   resourceType="COURSE"
                   resourceId={courseId}
@@ -924,7 +924,7 @@ function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, co
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         {courseId && (
-          <div className="w-48">
+          <div className="min-w-[200px] sm:min-w-[240px]">
             <EnrollmentButton
               resourceType="COURSE"
               resourceId={courseId}

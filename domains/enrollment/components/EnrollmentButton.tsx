@@ -1,16 +1,20 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { EnrollmentService } from '../api/enrollment.service';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
+import { ArrowRight, Loader2, LogOut } from 'lucide-react';
 
-interface EnrollmentButtonProps {
+export interface EnrollmentButtonProps {
   resourceType: ResourceType;
   resourceId: string;
   initialState: UIEnrollmentState;
   className?: string;
   onStateChange?: (newState: UIEnrollmentState) => void;
+  onGoToResource?: () => void;
+  targetUrl?: string;
 }
 
 export function EnrollmentButton({
@@ -18,8 +22,11 @@ export function EnrollmentButton({
   resourceId,
   initialState,
   className = '',
-  onStateChange
+  onStateChange,
+  onGoToResource,
+  targetUrl
 }: EnrollmentButtonProps) {
+  const router = useRouter();
   const [currentState, setCurrentState] = useState<UIEnrollmentState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -57,7 +64,7 @@ export function EnrollmentButton({
         case 'GRANTED':
           notifyStateChange('ENROLLED');
           toast.success('Successfully enrolled!');
-          resetIdempotencyKey(); // Action succeeded, reset for future distinct actions
+          resetIdempotencyKey();
           break;
         case 'PENDING_ACTION':
           if (result.nextAction === 'WAITLIST') {
@@ -90,14 +97,11 @@ export function EnrollmentButton({
           } else {
             toast.error(result.message || 'Enrollment denied');
           }
-          // Do not reset idempotency key on denial/failure unless we want retries to hit a new logical action.
-          // Since it's a hard denial based on state, reusing it is fine or resetting is fine. Let's reset so they can retry if state changes.
           resetIdempotencyKey();
           break;
       }
     } catch (err: any) {
       console.error('Enrollment error:', err);
-      // Network error or 500, we DO NOT reset idempotency key so retry uses same key
       if (err?.message?.includes('401')) {
         toast.error('Please log in to enroll.');
       } else {
@@ -111,7 +115,7 @@ export function EnrollmentButton({
   const handleRevoke = async () => {
     if (isProcessing) return;
     
-    if (!confirm('Are you sure you want to drop this?')) {
+    if (!confirm('Are you sure you want to unenroll from this resource?')) {
       return;
     }
 
@@ -119,7 +123,7 @@ export function EnrollmentButton({
     try {
       await EnrollmentService.revoke(resourceType, resourceId);
       notifyStateChange('NOT_ENROLLED');
-      toast.success('Successfully dropped');
+      toast.success('Successfully unenrolled');
       resetIdempotencyKey();
     } catch (err: any) {
       console.error('Revoke error:', err);
@@ -129,21 +133,40 @@ export function EnrollmentButton({
     }
   };
 
+  const handleGoToResource = () => {
+    if (onGoToResource) {
+      onGoToResource();
+      return;
+    }
+    if (targetUrl) {
+      router.push(targetUrl);
+      return;
+    }
+    if (resourceType === 'COURSE') {
+      router.push(`/learn/${resourceId}/learn`);
+    } else if (resourceType === 'WORKSHOP') {
+      router.push(`/workshop/${resourceId}`);
+    }
+  };
+
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
+    const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Workshop';
     return (
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2.5 w-full">
         <button 
-          disabled
-          className={`bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-semibold py-3 px-4 rounded-lg shadow-sm opacity-90 cursor-default border border-emerald-200 dark:border-emerald-800 flex-1 text-center ${className}`}>
-          Enrolled / Continue
+          onClick={handleGoToResource}
+          className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 text-sm ${className}`}>
+          <span>Go to {resourceLabel}</span>
+          <ArrowRight className="w-4 h-4 shrink-0" />
         </button>
         <button 
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-900/20 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-4 rounded-lg transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50"
-          title="Drop this resource">
-          Unenroll
+          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0 flex items-center gap-1.5"
+          title="Unenroll">
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Unenroll</span>
         </button>
       </div>
     );
@@ -151,18 +174,18 @@ export function EnrollmentButton({
 
   if (currentState === 'WAITLISTED') {
     return (
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2.5 w-full">
         <button 
           disabled
-          className={`bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-semibold py-3 px-4 rounded-lg shadow-sm opacity-90 cursor-default border border-amber-200 dark:border-amber-800 flex-1 text-center ${className}`}>
+          className={`bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-amber-200 dark:border-amber-700 flex-1 text-center text-sm ${className}`}>
           Waitlisted
         </button>
         <button 
           onClick={handleRevoke}
           disabled={isProcessing}
-          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-900/20 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-4 rounded-lg transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50"
+          className="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 dark:bg-gray-800 dark:hover:bg-red-950/40 dark:text-gray-400 dark:hover:text-red-400 font-medium py-3 px-3.5 rounded-xl transition-colors border border-gray-200 dark:border-gray-700 disabled:opacity-50 text-xs shrink-0"
           title="Leave waitlist">
-          Drop
+          Leave
         </button>
       </div>
     );
@@ -172,7 +195,7 @@ export function EnrollmentButton({
     return (
       <button 
         disabled
-        className={`bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 font-semibold py-3 px-4 rounded-lg shadow-sm opacity-90 cursor-default border border-blue-100 dark:border-blue-800 w-full ${className}`}>
+        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${className}`}>
         Action required
       </button>
     );
@@ -183,9 +206,18 @@ export function EnrollmentButton({
     <button 
       onClick={handleEnroll}
       disabled={isProcessing}
-      className={`bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full ${className}`}>
-      {isProcessing && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-      {isProcessing ? 'Processing...' : 'Enroll Now'}
+      className={`bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed w-full text-sm ${className}`}>
+      {isProcessing ? (
+        <>
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+          <span>Enrolling...</span>
+        </>
+      ) : (
+        <>
+          <span>Enroll Now</span>
+          <ArrowRight className="w-4 h-4 shrink-0" />
+        </>
+      )}
     </button>
   );
 }

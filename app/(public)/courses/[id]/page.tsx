@@ -313,7 +313,7 @@ export default function CoursePreviewPage() {
           </Link>
         ) : (
           params?.id ? (
-            <div className="w-48">
+            <div className="min-w-[200px] sm:min-w-[240px]">
               <EnrollmentButton
                 resourceType="COURSE"
                 resourceId={params.id}
@@ -532,7 +532,7 @@ export default function CoursePreviewPage() {
           </Link>
         ) : (
           params?.id ? (
-            <div className="w-48">
+            <div className="min-w-[200px] sm:min-w-[240px]">
               <EnrollmentButton
                 resourceType="COURSE"
                 resourceId={params.id}
