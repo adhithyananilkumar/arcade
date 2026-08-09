@@ -1,4 +1,4 @@
-export enum WorkshopStatus {
+export enum EventStatus {
   DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',
   APPROVED = 'APPROVED',
@@ -9,7 +9,7 @@ export enum WorkshopStatus {
   COMPLETED = 'COMPLETED'
 }
 
-export enum WorkshopType {
+export enum EventType {
   WORKSHOP = 'WORKSHOP',
   BOOTCAMP = 'BOOTCAMP',
   MASTERCLASS = 'MASTERCLASS',
@@ -37,19 +37,19 @@ export enum Visibility {
   DRAFT_ONLY = 'DRAFT_ONLY'
 }
 
-export interface Workshop {
+export interface Event {
   id: string;
   title: string;
   subtitle?: string;
   slug: string;
   description?: string;
-  status: WorkshopStatus;
+  status: EventStatus;
   category: string;
   tags?: string[];
   thumbnailUrl?: string;
   coverImageUrl?: string;
   promoVideoUrl?: string;
-  workshopType: WorkshopType;
+  eventType: EventType;
   meetingUrl?: string;
   deliveryMode: DeliveryMode;
   difficulty: Difficulty;
@@ -63,17 +63,17 @@ export interface Workshop {
   updatedAt: string;
 }
 
-export type CreateWorkshopRequest = Omit<Workshop, 'id' | 'createdBy' | 'createdAt' | 'updatedAt' | 'status'>;
+export type CreateEventRequest = Omit<Event, 'id' | 'createdBy' | 'createdAt' | 'updatedAt' | 'status'>;
 
-export interface WorkshopFormData extends Partial<CreateWorkshopRequest> {
+export interface EventFormData extends Partial<CreateEventRequest> {
   title: string;
   category: string;
   language: string;
-  sessions: Partial<WorkshopSession>[];
-  pricing: Partial<WorkshopPricing>;
-  folders: Partial<WorkshopFolder>[];
-  resources: Partial<WorkshopResource>[];
-  settings: Partial<WorkshopSettings>;
+  sessions: Partial<EventSession>[];
+  pricing: Partial<EventPricing>;
+  folders: Partial<EventFolder>[];
+  resources: Partial<EventResource>[];
+  settings: Partial<EventSettings>;
 }
 
 export enum SessionStatus {
@@ -101,7 +101,7 @@ export enum MeetingProvider {
   CUSTOM = 'CUSTOM'
 }
 
-export interface WorkshopLesson {
+export interface EventLesson {
   id: string;
   sessionId: string;
   title: string;
@@ -110,9 +110,9 @@ export interface WorkshopLesson {
   updatedAt: string;
 }
 
-export interface WorkshopSession {
+export interface EventSession {
   id: string;
-  workshopId: string;
+  eventId: string;
   title: string;
   description?: string;
   sessionNumber: number;
@@ -132,11 +132,11 @@ export interface WorkshopSession {
   isManuallyReleased?: boolean;
   createdAt: string;
   updatedAt: string;
-  lessons?: WorkshopLesson[];
+  lessons?: EventLesson[];
 }
 
-export type CreateWorkshopSessionRequest = Omit<WorkshopSession, 'id' | 'workshopId' | 'sessionNumber' | 'status' | 'isManuallyReleased' | 'createdAt' | 'updatedAt' | 'lessons'>;
-export type UpdateWorkshopSessionRequest = Partial<CreateWorkshopSessionRequest> & { status?: SessionStatus };
+export type CreateEventSessionRequest = Omit<EventSession, 'id' | 'eventId' | 'sessionNumber' | 'status' | 'isManuallyReleased' | 'createdAt' | 'updatedAt' | 'lessons'>;
+export type UpdateEventSessionRequest = Partial<CreateEventSessionRequest> & { status?: SessionStatus };
 
 
 export enum PricingModel {
@@ -166,9 +166,9 @@ export enum RefundPolicy {
   CUSTOM = 'CUSTOM'
 }
 
-export interface WorkshopPricing {
+export interface EventPricing {
   id: string;
-  workshopId: string;
+  eventId: string;
   pricingModel: PricingModel;
   price: number;
   currency: string;
@@ -188,7 +188,7 @@ export interface WorkshopPricing {
   updatedAt: string;
 }
 
-export type SaveWorkshopPricingRequest = Omit<WorkshopPricing, 'id' | 'workshopId' | 'createdAt' | 'updatedAt'>;
+export type SaveEventPricingRequest = Omit<EventPricing, 'id' | 'eventId' | 'createdAt' | 'updatedAt'>;
 
 export enum ListingStatus {
   LISTED = 'LISTED',
@@ -202,9 +202,9 @@ export enum RecordingVisibility {
   INSTRUCTOR_ONLY = 'INSTRUCTOR_ONLY'
 }
 
-export interface WorkshopSettings {
+export interface EventSettings {
   id: string;
-  workshopId: string;
+  eventId: string;
   visibility: Visibility;
   listingStatus: ListingStatus;
   allowReviews: boolean;
@@ -226,7 +226,7 @@ export interface WorkshopSettings {
   updatedAt: string;
 }
 
-export type SaveWorkshopSettingsRequest = Omit<WorkshopSettings, 'id' | 'workshopId' | 'createdAt' | 'updatedAt'>;
+export type SaveEventSettingsRequest = Omit<EventSettings, 'id' | 'eventId' | 'createdAt' | 'updatedAt'>;
 
 export interface ValidationIssue {
   section: string;
@@ -240,12 +240,12 @@ export interface PublishValidationResponse {
   issues: ValidationIssue[];
 }
 
-export interface WorkshopPreviewDto {
-  basicInfo: Workshop;
-  schedule: WorkshopSession[];
-  resources: WorkshopResource[];
-  pricing: WorkshopPricing;
-  settings: WorkshopSettings;
+export interface EventPreviewDto {
+  basicInfo: Event;
+  schedule: EventSession[];
+  resources: EventResource[];
+  pricing: EventPricing;
+  settings: EventSettings;
 }
 
 export enum ResourceType {
@@ -271,9 +271,9 @@ export enum StorageProvider {
   EXTERNAL = 'EXTERNAL'
 }
 
-export interface WorkshopFolder {
+export interface EventFolder {
   id: string;
-  workshopId: string;
+  eventId: string;
   name: string;
   parentFolderId?: string;
   displayOrder: number;
@@ -281,9 +281,9 @@ export interface WorkshopFolder {
   updatedAt: string;
 }
 
-export interface WorkshopResource {
+export interface EventResource {
   id: string;
-  workshopId: string;
+  eventId: string;
   folderId?: string;
   title: string;
   description?: string;

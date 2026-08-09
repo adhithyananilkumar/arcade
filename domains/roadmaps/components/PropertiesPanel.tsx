@@ -291,7 +291,7 @@ export function PropertiesPanel() {
               <input
                 type="text"
                 disabled={readOnly}
-                value={(data.linkedCourseId as string) || (data.linkedWorkshopId as string) || ""}
+                value={(data.linkedCourseId as string) || (data.linkedEventId as string) || ""}
                 onChange={(e) => handleChange("linkedCourseId", e.target.value)}
                 placeholder="Select content..."
                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 outline-none focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all"

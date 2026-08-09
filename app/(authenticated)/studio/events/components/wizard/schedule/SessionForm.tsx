@@ -1,8 +1,8 @@
 import React from 'react';
-import { WorkshopSession, MeetingProvider, SessionReleaseType } from '@/app/(authenticated)/studio/events/types';
+import { EventSession, MeetingProvider, SessionReleaseType } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
-  session: Partial<WorkshopSession>;
+  session: Partial<EventSession>;
   onUpdate: (field: string, value: any) => void;
 }
 

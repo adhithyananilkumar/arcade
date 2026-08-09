@@ -30,7 +30,7 @@ export function EventStepper({ currentStep, steps, onStepClick, completedSteps }
 
 
                 <div
-                  onClick={() => onSelectStep?.(index)}
+                  onClick={() => onStepClick?.(index)}
                   className="relative flex items-center group cursor-pointer transition-colors"
                 >
                   <span className="flex items-center">

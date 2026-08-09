@@ -3,14 +3,14 @@ import type { Metadata } from "next";
 import { SharedContentEditorOrchestrator } from "@/apps/creator/shared/content-editor/SharedContentEditorOrchestrator";
 
 export const metadata: Metadata = {
-  title: "Edit Workshop — Arcade",
+  title: "Edit Event — Arcade",
 };
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditWorkshopPage({ params }: Props) {
+export default async function EditEventPage({ params }: Props) {
   const { id } = await params;
 
   return (

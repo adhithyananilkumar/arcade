@@ -15,7 +15,7 @@ const TYPE_META: Record<
   { label: string; desc: string; icon: React.ElementType; color: string; bg: string }
 > = {
   workshop: {
-    label: "Workshop / Bootcamp",
+    label: "Event / Bootcamp",
     desc: "Flexible container for videos, activities, and resources. Supports Online, Offline, and Hybrid delivery modes.",
     icon: Wrench,
     color: "text-violet-500",

@@ -1,11 +1,11 @@
 import React from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 import { SessionCard } from './SessionCard';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 export const SessionBuilder: React.FC<Props> = ({ form }) => {

@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/infrastructure/http/api';
 import { SessionForm } from '@/app/(authenticated)/studio/events/components/wizard/schedule/SessionForm';
-import { WorkshopSession } from '@/app/(authenticated)/studio/events/types';
+import { EventSession } from '@/app/(authenticated)/studio/events/types';
 import { X, Loader2 } from 'lucide-react';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  workshopId: string;
+  eventId: string;
   sessionId: string | null;
-  onSaved?: (updatedSession: Partial<WorkshopSession>) => void;
+  onSaved?: (updatedSession: Partial<EventSession>) => void;
 }
 
-export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, workshopId, sessionId, onSaved }) => {
-  const [session, setSession] = useState<Partial<WorkshopSession> | null>(null);
+export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, eventId, sessionId, onSaved }) => {
+  const [session, setSession] = useState<Partial<EventSession> | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open && sessionId && workshopId) {
+    if (open && sessionId && eventId) {
       setLoading(true);
       setError(null);
       // Fetch all sessions and find ours since there's no GET by ID endpoint currently
-      api.get<WorkshopSession[]>(`/api/workshops/${workshopId}/sessions`)
+      api.get<EventSession[]>(`/api/v1/events/${eventId}/sessions`)
         .then(sessions => {
           const s = sessions.find(x => x.id === sessionId);
           if (s) {
@@ -37,7 +37,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, workshop
     } else {
       setSession(null);
     }
-  }, [open, sessionId, workshopId]);
+  }, [open, sessionId, eventId]);
 
   const handleUpdate = (field: string, value: any) => {
     setSession(prev => prev ? { ...prev, [field]: value } : prev);
@@ -48,7 +48,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, workshop
     setSaving(true);
     setError(null);
     try {
-      await api.patch(`/api/workshops/${workshopId}/sessions/${sessionId}`, session);
+      await api.patch(`/api/v1/events/${eventId}/sessions/${sessionId}`, session);
       onSaved?.(session);
       onClose();
     } catch (err: any) {

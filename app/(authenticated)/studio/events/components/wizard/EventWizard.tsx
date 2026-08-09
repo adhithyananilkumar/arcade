@@ -3,49 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { WorkshopHeader } from '@/app/(authenticated)/studio/events/components/layout/WorkshopHeader';
+import { EventHeader } from '@/app/(authenticated)/studio/events/components/layout/EventHeader';
 
-import { WorkshopFooter } from '@/app/(authenticated)/studio/events/components/layout/WorkshopFooter';
+import { EventFooter } from '@/app/(authenticated)/studio/events/components/layout/EventFooter';
 import { BasicInformationStep } from '@/app/(authenticated)/studio/events/components/wizard/BasicInformationStep';
 import { ScheduleStep } from '@/app/(authenticated)/studio/events/components/wizard/schedule/ScheduleStep';
 import { PricingStep } from '@/app/(authenticated)/studio/events/components/wizard/pricing/PricingStep';
 import { SettingsStep } from '@/app/(authenticated)/studio/events/components/wizard/settings/SettingsStep';
 import { ReviewStep } from '@/app/(authenticated)/studio/events/components/wizard/review/ReviewStep';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
-import { createWorkshop, updateWorkshop, getWorkshop } from '@/app/(authenticated)/studio/events/api/workshop';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
+import { createEvent, updateEvent, getEvent } from '@/app/(authenticated)/studio/events/api/event';
 
 interface EventWizardProps {
-  workshopId?: string;
+  eventId?: string;
   initialStep?: number;
 }
 
-export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorkshopId, initialStep = 0 }) => {
+export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, initialStep = 0 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
   // Support both prop-based and URL-param-based workshop id
   const urlId = searchParams?.get('id') || undefined;
-  const workshopId = propWorkshopId || urlId;
+  const eventId = propEventId || urlId;
   
   // Support both prop-based and URL-param-based initial step (1-indexed from URL, 0-indexed internally)
   const urlStep = searchParams?.get('step');
   const startStep = urlStep ? Math.max(0, parseInt(urlStep, 10) - 1) : initialStep;
   
   const [currentStep, setCurrentStep] = useState(startStep);
-  const [workshopStatus, setWorkshopStatus] = useState<string>('DRAFT');
-  const form = useWorkshopForm();
+  const [workshopStatus, setEventStatus] = useState<string>('DRAFT');
+  const form = useEventForm();
 
   // Load existing workshop data when editing
   useEffect(() => {
-    if (workshopId) {
-      getWorkshop(workshopId).then((data: any) => {
+    if (eventId) {
+      getEvent(eventId).then((data: any) => {
         // Populate form with existing workshop data
         form.handleChange('id' as any, data.id);
-        setWorkshopStatus(data.status || 'DRAFT');
+        setEventStatus(data.status || 'DRAFT');
         form.handleChange('title', data.title || '');
         form.handleChange('description', data.description || '');
         form.handleChange('category', data.category || '');
-        form.handleChange('workshopType', data.workshopType || 'WORKSHOP');
+        form.handleChange('eventType', data.eventType || 'WORKSHOP');
         if (data.meetingUrl) form.handleChange('meetingUrl', data.meetingUrl);
         form.handleChange('deliveryMode', data.deliveryMode || 'ONLINE');
         form.handleChange('difficulty', data.difficulty || 'BEGINNER');
@@ -64,7 +64,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
       form.handleChange('id' as any, undefined);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workshopId]);
+  }, [eventId]);
 
   const handleSaveDraft = async (navigateAfterSave = true) => {
     try {
@@ -90,7 +90,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
         coverImageUrl: form.formData.coverImageUrl,
         promoVideoUrl: form.formData.promoVideoUrl,
         meetingUrl: form.formData.meetingUrl,
-        workshopType: form.formData.workshopType,
+        eventType: form.formData.eventType,
         deliveryMode: form.formData.deliveryMode,
         difficulty: form.formData.difficulty,
         language: form.formData.language || 'en',
@@ -100,16 +100,16 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
         visibility: form.formData.visibility
       };
 
-      const existingId = (form.formData as any).id || workshopId;
+      const existingId = (form.formData as any).id || eventId;
       let savedId = existingId;
 
       if (existingId) {
         try {
-          await updateWorkshop(existingId, createPayload);
+          await updateEvent(existingId, createPayload);
         } catch (updateErr: any) {
           // If the workshop was not found on server (e.g. stale ID), fallback to creating a new workshop
           if (updateErr?.message?.includes('not found') || updateErr?.message?.includes('404')) {
-            const response = await createWorkshop(createPayload);
+            const response = await createEvent(createPayload);
             savedId = response.id;
             form.handleChange('id' as any, response.id);
           } else {
@@ -117,12 +117,12 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
           }
         }
       } else {
-        const response = await createWorkshop(createPayload);
+        const response = await createEvent(createPayload);
         savedId = response.id;
         form.handleChange('id' as any, response.id);
       }
 
-      toast.success('Workshop saved successfully!');
+      toast.success('Event saved successfully!');
       if (navigateAfterSave) {
         router.push(`/studio/workshop/${savedId}/edit`);
       }
@@ -146,7 +146,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     } else {
-      const id = (form.formData as any).id || workshopId;
+      const id = (form.formData as any).id || eventId;
       if (id) {
         router.push(`/studio/workshop/${id}`);
       } else {
@@ -155,13 +155,13 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
     }
   };
 
-  const isWebinar = form.formData.workshopType === 'WEBINAR';
-  const hasId = !!((form.formData as any).id || workshopId);
-  const headerTitle = hasId ? (isWebinar ? 'Edit Webinar' : 'Edit Workshop') : (isWebinar ? 'Create Webinar' : 'Create Workshop');
+  const isWebinar = form.formData.eventType === 'WEBINAR';
+  const hasId = !!((form.formData as any).id || eventId);
+  const headerTitle = hasId ? (isWebinar ? 'Edit Webinar' : 'Edit Event') : (isWebinar ? 'Create Webinar' : 'Create Event');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <WorkshopHeader title={form.formData.title || "Create Workshop"} status={workshopStatus} />
+      <EventHeader title={form.formData.title || "Create Event"} status={workshopStatus} />
 
       <div className="flex flex-col md:flex-row gap-8">
 
@@ -173,8 +173,8 @@ export const EventWizard: React.FC<EventWizardProps> = ({ workshopId: propWorksh
           {currentStep === 3 && <SettingsStep form={form} />}
           {currentStep === 4 && <ReviewStep form={form} onNavigateToStep={setCurrentStep} onSaveDraft={handleSaveDraft} isSaving={form.isSubmitting} />}
 
-          {(currentStep < 4 || !((form.formData as any).id || workshopId)) && (
-            <WorkshopFooter
+          {(currentStep < 4 || !((form.formData as any).id || eventId)) && (
+            <EventFooter
               onBack={handleBack}
               onSaveDraft={handleSaveDraft}
               onContinue={currentStep < 4 ? handleContinue : undefined}

@@ -304,7 +304,7 @@ export default function ReachUsPage() {
                         Select a topic...
                       </option>
                       <option value="General Inquiry">General Inquiry</option>
-                      <option value="Courses & Workshops">Courses & Workshops</option>
+                      <option value="Courses & Events">Courses & Events</option>
                       <option value="Hackathons & Events">Hackathons & Events</option>
                       <option value="Technical Support">Technical Support</option>
                       <option value="Partnership / Creator Inquiry">

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { WorkshopListDto } from '@/app/(authenticated)/studio/events/api/dashboardApi';
+import { EventListDto } from '@/app/(authenticated)/studio/events/api/dashboardApi';
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return '';
@@ -9,7 +9,7 @@ const formatDate = (dateStr?: string) => {
 };
 
 interface EventCardProps {
-  workshop: WorkshopListDto;
+  workshop: EventListDto;
   onDuplicate: (id: string) => void;
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
@@ -47,10 +47,10 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
 
       <div className="p-4 flex flex-col flex-1">
         <div className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-          {workshop.category || 'Uncategorized'} • {workshop.workshopType || 'UNKNOWN'}
+          {workshop.category || 'Uncategorized'} • {workshop.eventType || 'UNKNOWN'}
         </div>
         <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 line-clamp-2 mb-2 flex-1">
-          {workshop.title || 'Untitled Workshop'}
+          {workshop.title || 'Untitled Event'}
         </h3>
         
         <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400 mb-4">
@@ -85,7 +85,7 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
             <Link 
               href={`/studio/workshop/${workshop.id}/edit`}
               className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:text-zinc-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
-              title="Edit Workshop"
+              title="Edit Event"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

@@ -51,7 +51,7 @@ const mockEvents: ChannelEvent[] = [
   },
   {
     id: 'evt-2',
-    title: 'Hands-on RAG Pipeline & Vector DB Optimization Workshop',
+    title: 'Hands-on RAG Pipeline & Vector DB Optimization Event',
     type: 'WORKSHOP',
     thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
     speaker: 'Alex Rivera',
@@ -127,7 +127,7 @@ export function EventsManagementSection({ onScheduleEvent }: EventsManagementSec
               <Calendar size={18} />
             </div>
             <h2 className="text-base font-black tracking-tight text-[#14142b]">
-              Events & Live Sessions (Webinars & Workshops)
+              Events & Live Sessions (Webinars & Events)
             </h2>
           </div>
           <p className="mt-1 text-xs font-semibold text-slate-500">
@@ -175,7 +175,7 @@ export function EventsManagementSection({ onScheduleEvent }: EventsManagementSec
               activeSubTab === 'WORKSHOPS' ? 'bg-white text-indigo-600 shadow-2xs' : 'text-slate-500'
             }`}
           >
-            Workshops ({events.filter((e) => e.type === 'WORKSHOP').length})
+            Events ({events.filter((e) => e.type === 'WORKSHOP').length})
           </button>
         </div>
 

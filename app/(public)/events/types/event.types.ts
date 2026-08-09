@@ -1,4 +1,4 @@
-// Canonical Event types — replaces the legacy Workshop types
+// Canonical Event types — replaces the legacy Event types
 export type EventType = 'WORKSHOP' | 'WEBINAR' | 'BOOTCAMP' | 'MASTERCLASS' | 'AMA';
 export type EventStatus = 'DRAFT' | 'SUBMITTED' | 'REJECTED' | 'APPROVED' | 'PUBLISHED' | 'UNPUBLISHED' | 'ARCHIVED' | 'COMPLETED';
 export type DeliveryMode = 'ONLINE' | 'OFFLINE' | 'HYBRID' | 'RECORDED';

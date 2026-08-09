@@ -1,44 +1,44 @@
 import { api } from '@/infrastructure/http/api';
-import { PublishValidationResponse, WorkshopPreviewDto, Workshop } from '@/app/(authenticated)/studio/events/types';
+import { PublishValidationResponse, EventPreviewDto, Event } from '@/app/(authenticated)/studio/events/types';
 
-const API_BASE_PATH = '/api/workshops';
+const API_BASE_PATH = '/api/v1/events';
 
-export const validateWorkshop = async (workshopId: string): Promise<PublishValidationResponse> => {
-  return await api.get<PublishValidationResponse>(`${API_BASE_PATH}/${workshopId}/review`);
+export const validateEvent = async (eventId: string): Promise<PublishValidationResponse> => {
+  return await api.get<PublishValidationResponse>(`${API_BASE_PATH}/${eventId}/review`);
 };
 
-export const getWorkshopPreview = async (workshopId: string): Promise<WorkshopPreviewDto> => {
-  return await api.get<WorkshopPreviewDto>(`${API_BASE_PATH}/${workshopId}/preview`);
+export const getEventPreview = async (eventId: string): Promise<EventPreviewDto> => {
+  return await api.get<EventPreviewDto>(`${API_BASE_PATH}/${eventId}/preview`);
 };
 
-export const submitWorkshop = async (workshopId: string, data?: { message?: string }): Promise<Workshop> => {
-  return await api.post<Workshop>(`${API_BASE_PATH}/${workshopId}/submit`, data);
+export const submitEvent = async (eventId: string, data?: { message?: string }): Promise<Event> => {
+  return await api.post<Event>(`${API_BASE_PATH}/${eventId}/submit`, data);
 };
 
-export const approveWorkshop = async (workshopId: string, data?: { note?: string }): Promise<Workshop> => {
-  return await api.post<Workshop>(`${API_BASE_PATH}/${workshopId}/approve`, data);
+export const approveEvent = async (eventId: string, data?: { note?: string }): Promise<Event> => {
+  return await api.post<Event>(`${API_BASE_PATH}/${eventId}/approve`, data);
 };
 
-export const rejectWorkshop = async (workshopId: string, data: { reason: string }): Promise<Workshop> => {
-  return await api.post<Workshop>(`${API_BASE_PATH}/${workshopId}/reject`, data);
+export const rejectEvent = async (eventId: string, data: { reason: string }): Promise<Event> => {
+  return await api.post<Event>(`${API_BASE_PATH}/${eventId}/reject`, data);
 };
 
-export const editWorkshop = async (workshopId: string): Promise<Workshop> => {
-  return await api.post<Workshop>(`${API_BASE_PATH}/${workshopId}/edit`);
+export const editEvent = async (eventId: string): Promise<Event> => {
+  return await api.post<Event>(`${API_BASE_PATH}/${eventId}/edit`);
 };
 
-export const getWorkshopStatusHistory = async (workshopId: string): Promise<any[]> => {
-  return await api.get<any[]>(`${API_BASE_PATH}/${workshopId}/status-history`);
+export const getEventStatusHistory = async (eventId: string): Promise<any[]> => {
+  return await api.get<any[]>(`${API_BASE_PATH}/${eventId}/status-history`);
 };
 
-export const unpublishWorkshop = async (workshopId: string): Promise<void> => {
-  await api.post<void>(`${API_BASE_PATH}/${workshopId}/unpublish`);
+export const unpublishEvent = async (eventId: string): Promise<void> => {
+  await api.post<void>(`${API_BASE_PATH}/${eventId}/unpublish`);
 };
 
-export const archiveWorkshop = async (workshopId: string): Promise<void> => {
-  await api.post<void>(`${API_BASE_PATH}/${workshopId}/archive`);
+export const archiveEvent = async (eventId: string): Promise<void> => {
+  await api.post<void>(`${API_BASE_PATH}/${eventId}/archive`);
 };
 
-export const duplicateWorkshop = async (workshopId: string): Promise<Workshop> => {
-  return await api.post<Workshop>(`${API_BASE_PATH}/${workshopId}/duplicate`);
+export const duplicateEvent = async (eventId: string): Promise<Event> => {
+  return await api.post<Event>(`${API_BASE_PATH}/${eventId}/duplicate`);
 };

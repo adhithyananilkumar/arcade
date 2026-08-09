@@ -1,11 +1,11 @@
-import { WorkshopType, DeliveryMode, Difficulty, Visibility } from '@/app/(authenticated)/studio/events/types';
+import { EventType, DeliveryMode, Difficulty, Visibility } from '@/app/(authenticated)/studio/events/types';
 
 export const WORKSHOP_TYPES = [
-  { value: WorkshopType.WORKSHOP, label: 'Workshop' },
-  { value: WorkshopType.BOOTCAMP, label: 'Bootcamp' },
-  { value: WorkshopType.MASTERCLASS, label: 'Masterclass' },
-  { value: WorkshopType.WEBINAR, label: 'Webinar' },
-  { value: WorkshopType.AMA, label: 'AMA' },
+  { value: EventType.WORKSHOP, label: 'Event' },
+  { value: EventType.BOOTCAMP, label: 'Bootcamp' },
+  { value: EventType.MASTERCLASS, label: 'Masterclass' },
+  { value: EventType.WEBINAR, label: 'Webinar' },
+  { value: EventType.AMA, label: 'AMA' },
 ];
 
 export const DELIVERY_MODES = [

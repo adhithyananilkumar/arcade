@@ -12,7 +12,7 @@ export interface StudioAccessState {
  * Whether the current user should see/reach Content Studio.
  *
  * Owning a channel always qualifies. Being a staff member of an org channel with content-authoring
- * permissions qualifies. Workshop-only collaborators do NOT get general studio access.
+ * permissions qualifies. Event-only collaborators do NOT get general studio access.
  */
 export function useStudioAccess(): StudioAccessState {
   const [state, setState] = useState<StudioAccessState>({ hasAccess: false, loading: true });

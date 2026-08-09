@@ -1,8 +1,8 @@
 import React from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 export const SettingsSummary: React.FC<Props> = ({ form }) => {
@@ -20,7 +20,7 @@ export const SettingsSummary: React.FC<Props> = ({ form }) => {
         {/* Visibility Summary */}
         <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
           <div className="flex justify-between items-start mb-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Workshop Visibility</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Event Visibility</span>
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {settings.visibility ? (settings.visibility.charAt(0) + settings.visibility.slice(1).toLowerCase()) : 'N/A'}
             </span>

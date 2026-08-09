@@ -83,29 +83,29 @@ export default function LearnerDock() {
   const router = useRouter();
   const params = useParams();
   const { hasAccess: hasStudioAccess } = useStudioAccess();
-  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
 
   useEffect(() => {
-    api.get<any[]>('/api/workshops/my-collaborations')
+    api.get<any[]>('/api/v1/events/my-collaborations')
       .then(res => {
         if (res && res.length > 0) {
-          setCollaboratedWorkshopId(res[0].id);
+          setCollaboratedEventId(res[0].id);
           setHasMultipleCollabs(res.length > 1);
         } else {
-          setCollaboratedWorkshopId(null);
+          setCollaboratedEventId(null);
           setHasMultipleCollabs(false);
         }
       })
       .catch(() => {
-        setCollaboratedWorkshopId(null);
+        setCollaboratedEventId(null);
         setHasMultipleCollabs(false);
       });
   }, []);
 
   const items = useMemo(() => {
     const list: DockNavItem[] = [...dockItems];
-    const isCollaborator = !!collaboratedWorkshopId;
+    const isCollaborator = !!collaboratedEventId;
     
     if (hasStudioAccess || isCollaborator) {
       list.push({
@@ -118,7 +118,7 @@ export default function LearnerDock() {
       });
     }
     return list;
-  }, [hasStudioAccess, collaboratedWorkshopId]);
+  }, [hasStudioAccess, collaboratedEventId]);
   
   // If we are viewing a specific course, point the exam button to that course's exam.
   // Otherwise, point to a default test course for demonstration.

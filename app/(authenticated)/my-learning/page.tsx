@@ -50,7 +50,7 @@ import TextType from '@/shared/design-system/ui/TextType/TextType';
 interface LearningItem {
   id: string;
   title: string;
-  type: 'Course' | 'Webinar' | 'Workshop' | 'Article';
+  type: 'Course' | 'Webinar' | 'Event' | 'Article';
   category: string;
   status: 'In Progress' | 'Completed' | 'Upcoming' | 'Live' | 'Not Started';
   progress?: number;
@@ -240,9 +240,9 @@ export default function MyLearningPage() {
     : '0.0';
 
   const learningHistoryLogs = [
-    { date: 'Jul 27, 2026', time: '14:30', title: 'Completed Intensive Fullstack Sprint', duration: '9.5 hrs', category: 'Course & Workshop' },
+    { date: 'Jul 27, 2026', time: '14:30', title: 'Completed Intensive Fullstack Sprint', duration: '9.5 hrs', category: 'Course & Event' },
     { date: 'Jul 28, 2026', time: '09:15', title: 'Database Migration & API Security Module', duration: '4.0 hrs', category: 'Course' },
-    { date: 'Jul 25, 2026', time: '16:00', title: 'Fullstack Workshop Lab Session', duration: '5.5 hrs', category: 'Workshop' },
+    { date: 'Jul 25, 2026', time: '16:00', title: 'Fullstack Event Lab Session', duration: '5.5 hrs', category: 'Event' },
     { date: 'Jul 23, 2026', time: '11:20', title: 'TypeScript & Next.js Advanced Patterns', duration: '3.0 hrs', category: 'Article' },
     { date: 'Jul 22, 2026', time: '10:00', title: 'React Masterclass Intro', duration: '1.5 hrs', category: 'Course' },
   ];
@@ -404,7 +404,7 @@ export default function MyLearningPage() {
         if (course.type) {
           const upperType = course.type.toUpperCase();
           if (upperType === 'WEBINAR') mappedType = 'Webinar';
-          else if (upperType === 'WORKSHOP') mappedType = 'Workshop';
+          else if (upperType === 'WORKSHOP') mappedType = 'Event';
           else if (upperType === 'ARTICLE') mappedType = 'Article';
         }
         let inferredCategory = course.category;
@@ -535,7 +535,7 @@ export default function MyLearningPage() {
     let matchesTab = true;
     if (activeTab === 'courses') matchesTab = item.type === 'Course';
     else if (activeTab === 'webinars') matchesTab = item.type === 'Webinar';
-    else if (activeTab === 'workshops') matchesTab = item.type === 'Workshop';
+    else if (activeTab === 'workshops') matchesTab = item.type === 'Event';
     else if (activeTab === 'articles') matchesTab = item.type === 'Article';
     else if (activeTab === 'completed') matchesTab = item.status === 'Completed';
 
@@ -690,7 +690,7 @@ export default function MyLearningPage() {
                   { id: 'all', label: 'All Content', icon: Grid, count: learningItems.length },
                   { id: 'courses', label: 'Courses', icon: BookOpen, count: enrolledCount },
                   { id: 'webinars', label: 'Webinars', icon: Video, count: attendedCount },
-                  { id: 'workshops', label: 'Workshops', icon: Wrench, count: learningItems.filter(i => i.type === 'Workshop').length },
+                  { id: 'workshops', label: 'Events', icon: Wrench, count: learningItems.filter(i => i.type === 'Event').length },
                   { id: 'articles', label: 'Articles', icon: FileText, count: readCount },
                 ];
                 const selectedOption = contentTypeOptions.find(o => o.id === activeTab) || contentTypeOptions[0];

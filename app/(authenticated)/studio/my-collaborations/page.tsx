@@ -7,12 +7,12 @@ import { api } from '@/infrastructure/http/api';
 import { Wrench, ArrowRight, Clock, User, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface WorkshopCollaboratorDto {
+interface EventCollaboratorDto {
   id: string;
   title: string;
   category: string;
   status: string;
-  workshopType: string;
+  eventType: string;
   coverImageUrl: string;
   sessionsCount: number;
   resourcesCount: number;
@@ -22,13 +22,13 @@ interface WorkshopCollaboratorDto {
 
 export default function MyCollaborationsPage() {
   const router = useRouter();
-  const [workshops, setWorkshops] = useState<WorkshopCollaboratorDto[]>([]);
+  const [workshops, setEvents] = useState<EventCollaboratorDto[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get<WorkshopCollaboratorDto[]>('/api/workshops/my-collaborations')
+    api.get<EventCollaboratorDto[]>('/api/v1/events/my-collaborations')
       .then(res => {
-        setWorkshops(res || []);
+        setEvents(res || []);
         setLoading(false);
       })
       .catch(() => {
@@ -94,13 +94,13 @@ export default function MyCollaborationsPage() {
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50">
-                    <Wrench size={10} /> {workshop.workshopType}
+                    <Wrench size={10} /> {workshop.eventType}
                   </span>
                   <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">• {workshop.category}</span>
                 </div>
 
                 <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-[15px] leading-snug line-clamp-2">
-                  {workshop.title || 'Untitled Workshop'}
+                  {workshop.title || 'Untitled Event'}
                 </h3>
                 
                 <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
@@ -114,7 +114,7 @@ export default function MyCollaborationsPage() {
                   href={`/studio/workshop/${workshop.id}`}
                   className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold rounded-xl transition-all"
                 >
-                  Manage Workshop <ArrowRight size={13} />
+                  Manage Event <ArrowRight size={13} />
                 </Link>
               </div>
             </div>

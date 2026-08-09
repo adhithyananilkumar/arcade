@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
   selectedFolderId: string | null;
   onSelectFolder: (id: string | null) => void;
 }

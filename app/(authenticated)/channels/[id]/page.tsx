@@ -29,7 +29,7 @@ function TypeIcon({ type }: { type: string }) {
 
 function typeLabel(type: string) {
   if (type === 'ROADMAP') return 'Roadmap';
-  if (type === 'WORKSHOP') return 'Workshop';
+  if (type === 'WORKSHOP') return 'Event';
   if (type === 'WEBINAR') return 'Webinar';
   return 'Course';
 }
@@ -180,7 +180,7 @@ export default function ChannelHomePage() {
     { id: 'ALL', label: 'All', count: counts.all },
     { id: 'COURSE', label: 'Courses', count: counts.courses },
     { id: 'ROADMAP', label: 'Roadmaps', count: counts.roadmaps },
-    { id: 'WORKSHOP', label: 'Workshops', count: counts.workshops },
+    { id: 'WORKSHOP', label: 'Events', count: counts.workshops },
   ];
 
   return (

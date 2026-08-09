@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/http/api';
-import { Workshop } from '@/app/(authenticated)/studio/events/types';
+import { Event } from '@/app/(authenticated)/studio/events/types';
 
 export interface ActivityLog {
   action: string;
@@ -7,12 +7,12 @@ export interface ActivityLog {
   timestamp: string;
 }
 
-export interface WorkshopSummary {
+export interface EventSummary {
   id: string;
   title: string;
   category: string;
   status: string;
-  workshopType: string;
+  eventType: string;
   deliveryMode: string;
   visibility: string;
   language: string;
@@ -30,12 +30,12 @@ export interface WorkshopSummary {
   recentActivity: ActivityLog[];
 }
 
-export interface WorkshopListDto {
+export interface EventListDto {
   id: string;
   title: string;
   category: string;
   status: string;
-  workshopType: string;
+  eventType: string;
   coverImageUrl: string;
   sessionsCount: number;
   resourcesCount: number;
@@ -43,8 +43,8 @@ export interface WorkshopListDto {
   updatedAt: string;
 }
 
-export interface WorkshopPage {
-  content: WorkshopListDto[];
+export interface EventPage {
+  content: EventListDto[];
   totalElements: number;
   totalPages: number;
   size: number;
@@ -62,9 +62,9 @@ export interface DashboardFilter {
   size?: number;
 }
 
-const API_BASE_PATH = '/api/workshops';
+const API_BASE_PATH = '/api/v1/events';
 
-export const getDashboardWorkshops = async (filter?: DashboardFilter): Promise<WorkshopPage> => {
+export const getDashboardEvents = async (filter?: DashboardFilter): Promise<EventPage> => {
   const params = new URLSearchParams();
   if (filter) {
     if (filter.search) params.append('search', filter.search);
@@ -77,13 +77,13 @@ export const getDashboardWorkshops = async (filter?: DashboardFilter): Promise<W
     if (filter.size !== undefined) params.append('size', filter.size.toString());
   }
 
-  return await api.get<WorkshopPage>(`${API_BASE_PATH}/dashboard?${params.toString()}`);
+  return await api.get<EventPage>(`${API_BASE_PATH}/dashboard?${params.toString()}`);
 };
 
-export const getWorkshopSummary = async (workshopId: string): Promise<WorkshopSummary> => {
-  return await api.get<WorkshopSummary>(`${API_BASE_PATH}/${workshopId}/summary`);
+export const getEventSummary = async (eventId: string): Promise<EventSummary> => {
+  return await api.get<EventSummary>(`${API_BASE_PATH}/${eventId}/summary`);
 };
 
-export const deleteWorkshop = async (workshopId: string): Promise<void> => {
-  await api.delete<void>(`${API_BASE_PATH}/${workshopId}`);
+export const deleteEvent = async (eventId: string): Promise<void> => {
+  await api.delete<void>(`${API_BASE_PATH}/${eventId}`);
 };

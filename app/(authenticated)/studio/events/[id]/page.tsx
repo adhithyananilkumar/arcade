@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getWorkshopSummary, WorkshopSummary, deleteWorkshop } from '../api/dashboardApi';
-import { updateWorkshop } from '../api/workshop';
+import { getEventSummary, EventSummary, deleteEvent } from '../api/dashboardApi';
+import { updateEvent } from '../api/event';
 import { toast } from 'sonner';
 import { EventWizard } from '../components/wizard/EventWizard';
 import RegisteredMembersPage from './participants/page';
-import { WorkshopCollaboratorsManager } from '../components/wizard/review/WorkshopCollaboratorsManager';
+import { EventCollaboratorsManager } from '../components/wizard/review/EventCollaboratorsManager';
 
 import { api } from '@/infrastructure/http/api';
 import { LayoutGrid, Tag, Settings, Users, UserCog } from 'lucide-react';
@@ -50,10 +50,10 @@ const TAB_STEPS: Record<Tab, number> = {
   collaborators: -1,
 };
 
-export default function SingleWorkshopDashboard() {
+export default function SingleEventDashboard() {
   const { id } = useParams();
   const router = useRouter();
-  const [summary, setSummary] = useState<WorkshopSummary | null>(null);
+  const [summary, setSummary] = useState<EventSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [hasEditAccess, setHasEditAccess] = useState<boolean>(false);
@@ -93,7 +93,7 @@ export default function SingleWorkshopDashboard() {
       });
 
       // 4. Update workshop
-      await updateWorkshop(id as string, { coverImageUrl: publicUrl });
+      await updateEvent(id as string, { coverImageUrl: publicUrl });
       
       // Update local state summary
       setSummary(prev => prev ? { ...prev, coverImageUrl: publicUrl } : null);
@@ -109,10 +109,10 @@ export default function SingleWorkshopDashboard() {
   useEffect(() => {
     if (id) {
       loadSummary(id as string);
-      api.get<boolean>(`/api/workshops/${id}/edit-access`)
+      api.get<boolean>(`/api/v1/events/${id}/edit-access`)
         .then(res => setHasEditAccess(res))
         .catch(() => setHasEditAccess(false));
-      api.get<boolean>(`/api/workshops/${id}/manage-access`)
+      api.get<boolean>(`/api/v1/events/${id}/manage-access`)
         .then(res => setHasManageAccess(res))
         .catch(() => setHasManageAccess(false));
     }
@@ -123,13 +123,13 @@ export default function SingleWorkshopDashboard() {
     return TABS.filter(t => t.id === 'overview');
   }, [hasManageAccess]);
 
-  const loadSummary = async (workshopId: string) => {
+  const loadSummary = async (eventId: string) => {
     setLoading(true);
     try {
-      const data = await getWorkshopSummary(workshopId);
+      const data = await getEventSummary(eventId);
       setSummary(data);
       try {
-        const analyticsData = await api.get<any>(`/api/v1/workshops/${workshopId}/participants/analytics`);
+        const analyticsData = await api.get<any>(`/api/v1/events/${eventId}/participants/analytics`);
         setAnalytics({
           totalRegistrations: analyticsData.totalRegistrations || 0,
           totalRevenue: analyticsData.totalRevenue || 0,
@@ -147,7 +147,7 @@ export default function SingleWorkshopDashboard() {
   const handleDelete = async () => {
     if (confirm('Are you sure you want to delete this workshop?')) {
       try {
-        await deleteWorkshop(id as string);
+        await deleteEvent(id as string);
         router.push('/studio');
       } catch (err) {
         console.error(err);
@@ -165,7 +165,7 @@ export default function SingleWorkshopDashboard() {
     );
   }
 
-  if (!summary) return <div className="p-8 text-center text-zinc-500">Workshop not found</div>;
+  if (!summary) return <div className="p-8 text-center text-zinc-500">Event not found</div>;
 
   const initialStep = TAB_STEPS[activeTab];
 
@@ -179,7 +179,7 @@ export default function SingleWorkshopDashboard() {
               <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
                 <Link href="/studio" className="hover:text-zinc-700 dark:hover:text-zinc-300">Studio</Link>
                 <span>/</span>
-                <span className="truncate max-w-[200px]">{summary.title || 'Workshop'}</span>
+                <span className="truncate max-w-[200px]">{summary.title || 'Event'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${
@@ -190,7 +190,7 @@ export default function SingleWorkshopDashboard() {
                   {summary.status}
                 </span>
                 <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 truncate max-w-xs">
-                  {summary.title || 'Untitled Workshop'}
+                  {summary.title || 'Untitled Event'}
                 </h1>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function SingleWorkshopDashboard() {
                     <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1.5">Type</div>
                     <div className="mt-1">
                       <span className="inline-flex items-center rounded-full bg-violet-50 dark:bg-violet-950/40 px-3 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wide">
-                        {(summary.workshopType || 'N/A').toUpperCase()}
+                        {(summary.eventType || 'N/A').toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -434,13 +434,13 @@ export default function SingleWorkshopDashboard() {
           </div>
         ) : activeTab === 'collaborators' ? (
           <div className="p-6 md:p-8 max-w-7xl mx-auto h-[calc(100vh-250px)]">
-            <WorkshopCollaboratorsManager workshopId={id as string} />
+            <EventCollaboratorsManager eventId={id as string} />
           </div>
         ) : (
           /* Wizard steps embedded inline */
           <EventWizard
             key={activeTab}
-            workshopId={id as string}
+            eventId={id as string}
             initialStep={initialStep}
           />
         )}

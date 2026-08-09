@@ -17,7 +17,7 @@ export default function EmptyState() {
         href="/studio/workshop/new" 
         className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
       >
-        Create Workshop
+        Create Event
       </Link>
     </div>
   );

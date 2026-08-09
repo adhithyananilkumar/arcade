@@ -81,7 +81,7 @@ function deliveryLabel(mode?: DeliveryMode | string) {
 }
 
 function eventToCard(e: EventDto, index: number): EventCard {
-  const typeLabel = String(e.eventType || 'Workshop')
+  const typeLabel = String(e.eventType || 'Event')
     .toLowerCase()
     .replace(/_/g, ' ');
   return {
@@ -144,11 +144,11 @@ export default function LearnerHomePage() {
   }, []);
 
   useEffect(() => {
-    getPublishedWorkshops({ size: 12 })
+    getPublishedEvents({ size: 12 })
       .then((page) => {
         const list = page?.content ?? [];
         if (list.length > 0) {
-          const mapped = list.map(workshopToEvent);
+          const mapped = list.map(eventToCard);
           setUpcomingEvents(pickDailyEvents(mapped, 2));
         } else {
           setUpcomingEvents(pickDailyEvents(FALLBACK_EVENTS, 2));

@@ -115,7 +115,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Workshop' : 'Course'} for Review</DialogTitle>
+          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Event' : 'Course'} for Review</DialogTitle>
           <DialogDescription>
             Configure the final details before sending your {contentType === 'roadmap' ? 'roadmap' : contentType === 'workshop' ? 'workshop' : 'course'} for approval.
           </DialogDescription>

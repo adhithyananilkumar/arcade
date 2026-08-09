@@ -137,7 +137,7 @@ export default function CreatorFormats() {
     },
     {
       step: "02",
-      title: "Workshop",
+      title: "Event",
       desc: "Focused interactive sandbox sessions built around practical outcomes.",
       badge: "One skill, fast",
       icon: Terminal,

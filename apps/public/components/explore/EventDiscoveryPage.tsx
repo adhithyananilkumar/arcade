@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useWorkshopDiscovery } from '@/app/(authenticated)/studio/events/hooks/useWorkshopDiscovery';
-import { Workshop, WorkshopType } from '@/app/(authenticated)/studio/events/types';
+import { useEventDiscovery } from '@/app/(authenticated)/studio/events/hooks/useEventDiscovery';
+import { Event, EventType } from '@/app/(authenticated)/studio/events/types';
 
 const THEMES = [
   { border: '#8B5CF6', bg: '#F5F3FF', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' }, // Purple - Code
@@ -15,7 +15,7 @@ const THEMES = [
   { border: '#14B8A6', bg: '#F0FDFA', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4' }, // Teal - DB/Layers
 ];
 
-export default function WorkshopDiscoveryPage({
+export default function EventDiscoveryPage({
   typesFilter = [],
   placeholder = "Search by title, description...",
   emptyStateTitle = "No bootcamps found",
@@ -39,7 +39,7 @@ export default function WorkshopDiscoveryPage({
     selectedType,
     setSelectedType,
     refetch
-  } = useWorkshopDiscovery({ types: typesFilter });
+  } = useEventDiscovery({ types: typesFilter });
 
   const categories = [
     { value: 'all', label: 'All Categories' },
@@ -52,11 +52,11 @@ export default function WorkshopDiscoveryPage({
 
   const types = [
     { value: 'all', label: 'All Types' },
-    { value: WorkshopType.WORKSHOP, label: 'Workshop' },
-    { value: WorkshopType.BOOTCAMP, label: 'Bootcamp' },
-    { value: WorkshopType.MASTERCLASS, label: 'Masterclass' },
-    { value: WorkshopType.WEBINAR, label: 'Webinar' },
-    { value: WorkshopType.AMA, label: 'AMA' }
+    { value: EventType.WORKSHOP, label: 'Event' },
+    { value: EventType.BOOTCAMP, label: 'Bootcamp' },
+    { value: EventType.MASTERCLASS, label: 'Masterclass' },
+    { value: EventType.WEBINAR, label: 'Webinar' },
+    { value: EventType.AMA, label: 'AMA' }
   ];
 
   return (
@@ -154,7 +154,7 @@ export default function WorkshopDiscoveryPage({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {workshops.map((workshop, idx) => (
-              <WorkshopCard key={workshop.id} workshop={workshop} idx={idx} />
+              <EventCard key={workshop.id} workshop={workshop} idx={idx} />
             ))}
           </div>
         )}
@@ -163,7 +163,7 @@ export default function WorkshopDiscoveryPage({
   );
 }
 
-function WorkshopCard({ workshop, idx }: { workshop: Workshop; idx: number }) {
+function EventCard({ workshop, idx }: { workshop: Event; idx: number }) {
   const theme = THEMES[idx % THEMES.length];
   // Calculate duration or fallback
   const duration = (workshop as any).sessions ? `${(workshop as any).sessions.length} Days` : 'Self-paced';

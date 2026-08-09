@@ -1,9 +1,9 @@
 import React from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 import { PricingModel, RegistrationType, SeatType } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 export const PricingSummary: React.FC<Props> = ({ form }) => {

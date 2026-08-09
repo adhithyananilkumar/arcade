@@ -52,7 +52,7 @@ export function ContentStatusHistoryModal({
       const endpoint = contentType === "roadmap"
         ? `/api/roadmaps/${contentId}/status-history`
         : contentType === "workshop"
-        ? `/api/workshops/${contentId}/status-history`
+        ? `/api/v1/events/${contentId}/status-history`
         : `/api/courses/${contentId}/status-history`;
       const data = await api.get<ContentStatusHistoryResponse[]>(endpoint);
       setHistory(data ?? []);

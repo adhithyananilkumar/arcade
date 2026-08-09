@@ -3,7 +3,7 @@
 import { useEffect, useState, Fragment } from 'react';
 import Link from 'next/link';
 import { api } from '@/infrastructure/http/api';
-import { getDashboardWorkshops } from '@/app/(authenticated)/studio/events/api/dashboardApi';
+import { getDashboardEvents } from '@/app/(authenticated)/studio/events/api/dashboardApi';
 import {
   Wrench,
   ArrowRight,
@@ -19,12 +19,12 @@ import { channelService } from '@/domains/channels';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface UnifiedWorkshopDto {
+interface UnifiedEventDto {
   id: string;
   title: string;
   category: string;
   status: string;
-  workshopType: string;
+  eventType: string;
   coverImageUrl?: string | null;
   sessionsCount: number;
   resourcesCount: number;
@@ -35,7 +35,7 @@ interface UnifiedWorkshopDto {
 }
 
 export default function UnifiedManagePage() {
-  const [items, setItems] = useState<UnifiedWorkshopDto[]>([]);
+  const [items, setItems] = useState<UnifiedEventDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'OWNED' | 'COLLAB' | 'ARCHIVED'>('ALL');
@@ -49,16 +49,16 @@ export default function UnifiedManagePage() {
         setCanCreate(channels.length > 0);
 
         // Fetch created/owned workshops
-        const ownedRes = await getDashboardWorkshops({ size: 100 }).catch(() => ({ content: [] }));
-        const ownedMapped: UnifiedWorkshopDto[] = (ownedRes.content || []).map(w => ({
+        const ownedRes = await getDashboardEvents({ size: 100 }).catch(() => ({ content: [] }));
+        const ownedMapped: UnifiedEventDto[] = (ownedRes.content || []).map(w => ({
           ...w,
           isOwner: true,
           role: 'OWNER'
         }));
 
         // Fetch collaborated workshops
-        const collabRes = await api.get<any[]>('/api/workshops/my-collaborations').catch(() => []);
-        const collabMapped: UnifiedWorkshopDto[] = collabRes.map(w => ({
+        const collabRes = await api.get<any[]>('/api/v1/events/my-collaborations').catch(() => []);
+        const collabMapped: UnifiedEventDto[] = collabRes.map(w => ({
           ...w,
           isOwner: false,
           role: w.collaboratorRole
@@ -265,7 +265,7 @@ export default function UnifiedManagePage() {
         ) : (
           <div className="space-y-4">
             {filteredItems.map((item) => {
-              const isWebinar = item.workshopType === 'WEBINAR';
+              const isWebinar = item.eventType === 'WEBINAR';
               return (
                 <motion.div
                   key={item.id}
@@ -325,7 +325,7 @@ export default function UnifiedManagePage() {
                             ? 'bg-blue-50 text-blue-700 border-blue-200'
                             : 'bg-orange-50 text-orange-700 border-orange-200'
                           }`}>
-                          {isWebinar ? <Video size={10} /> : <Wrench size={10} />} {item.workshopType}
+                          {isWebinar ? <Video size={10} /> : <Wrench size={10} />} {item.eventType}
                         </span>
                         {item.category && (
                           <span className="text-[11px] text-slate-400 font-semibold tracking-wide uppercase">
@@ -360,7 +360,7 @@ export default function UnifiedManagePage() {
                         href={`/studio/workshop/${item.id}`}
                         className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all shadow-sm active:scale-98"
                       >
-                        Manage {isWebinar ? 'Webinar' : 'Workshop'} <ArrowRight size={13} />
+                        Manage {isWebinar ? 'Webinar' : 'Event'} <ArrowRight size={13} />
                       </Link>
                     </div>
                   </div>

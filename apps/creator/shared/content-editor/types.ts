@@ -26,8 +26,8 @@ export interface ContentMeta {
 }
 
 export interface Terminology {
-  root: string; // e.g. "Course", "Workshop"
-  container: string; // e.g. "Module", "Workshop Section"
+  root: string; // e.g. "Course", "Event"
+  container: string; // e.g. "Module", "Event Section"
   leafDocument: string; // e.g. "Lesson", "Session"
   leafQuiz: string; // e.g. "Quiz", "Assessment"
 }

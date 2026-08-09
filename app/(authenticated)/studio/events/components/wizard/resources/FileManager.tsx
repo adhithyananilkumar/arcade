@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
-import { ResourceType, StorageProvider, WorkshopResource } from '@/app/(authenticated)/studio/events/types';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
+import { ResourceType, StorageProvider, EventResource } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
   selectedFolderId: string | null;
 }
 
@@ -31,7 +31,7 @@ export const FileManager: React.FC<Props> = ({ form, selectedFolderId }) => {
         displayOrder: resources.length,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      } as WorkshopResource));
+      } as EventResource));
 
       form.handleChange('resources', [...resources, ...newResources]);
     }
@@ -41,7 +41,7 @@ export const FileManager: React.FC<Props> = ({ form, selectedFolderId }) => {
     const url = prompt('Enter External URL:');
     if (!url) return;
     
-    const newResource: Partial<WorkshopResource> = {
+    const newResource: Partial<EventResource> = {
       id: crypto.randomUUID(),
       title: 'External Resource',
       externalUrl: url,

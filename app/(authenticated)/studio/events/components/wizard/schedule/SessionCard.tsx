@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, ChevronDown, ChevronUp, Copy, Trash2 } from 'lucide-react';
-import { WorkshopSession } from '@/app/(authenticated)/studio/events/types';
+import { EventSession } from '@/app/(authenticated)/studio/events/types';
 import { SessionForm } from './SessionForm';
 
 interface Props {
   id: string;
-  session: Partial<WorkshopSession>;
+  session: Partial<EventSession>;
   index: number;
   onUpdate: (field: string, value: any) => void;
   onDelete: () => void;

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import GradientText from "@/apps/public/components/landing/GradientText";
 import Link from "next/link";
-import WorkshopDiscoveryPage from "@/apps/public/components/explore/WorkshopDiscoveryPage";
+import EventDiscoveryPage from "@/apps/public/components/explore/EventDiscoveryPage";
 import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
 import { roadmapService, roadmapProgressService, type RoadmapData } from "@/domains/roadmaps";
@@ -126,7 +126,7 @@ export const CATEGORY_DATA: Record<string, {
     ],
     bootcamps: [
       { title: "MATLAB Coding for Scientific Research", duration: "1 Week", type: "Interactive", date: "Starts Friday", desc: "Simulate numerical data sets, write equations, and plot matrices." },
-      { title: "Physics Simulator Engines", duration: "3 Days", type: "Workshop", date: "Starts Saturday", desc: "Examine mechanical simulations, wave structures, and thermal limits." },
+      { title: "Physics Simulator Engines", duration: "3 Days", type: "Event", date: "Starts Saturday", desc: "Examine mechanical simulations, wave structures, and thermal limits." },
       { title: "Chemical Synthesis Lab Processes", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Model molecular reactions, setup safe test environments, and process syntheses." }
     ],
     resources: [
@@ -148,7 +148,7 @@ export const CATEGORY_DATA: Record<string, {
     ],
     bootcamps: [
       { title: "Public Speaking Mastery", duration: "3 Days", type: "Interactive", date: "Starts Friday", desc: "Master posture, tone adjustments, slides integration, and stage confidence." },
-      { title: "UX Writing & Copy Workshop", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Design button labels, warning messages, and setup style rules." },
+      { title: "UX Writing & Copy Event", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Design button labels, warning messages, and setup style rules." },
       { title: "Vocal Presentation Studio", duration: "1 Day", type: "Intensive", date: "Starts Saturday", desc: "Refine verbal pacing, breathing control, and microphone setups." }
     ],
     resources: [
@@ -171,7 +171,7 @@ export const CATEGORY_DATA: Record<string, {
     bootcamps: [
       { title: "Goal Setting & Okrs Masterclass", duration: "1 Day", type: "Interactive", date: "Starts Saturday", desc: "Map quarterly team objectives and structure key performance metrics." },
       { title: "Tech Interview Prep & Leetcode Sprints", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Master algorithmic patterns, systems design, and behavioral pitch structures." },
-      { title: "Resume & Portfolio Optimization Workshop", duration: "3 Hours", type: "Workshop", date: "Starts Friday", desc: "Design outstanding resumes, optimize LinkedIn SEO, and format github pages." }
+      { title: "Resume & Portfolio Optimization Event", duration: "3 Hours", type: "Event", date: "Starts Friday", desc: "Design outstanding resumes, optimize LinkedIn SEO, and format github pages." }
     ],
     resources: [
       { title: "Strategies for Negotiating Your Tech Job Offer", type: "Article", readTime: "5 min read" },
@@ -1366,7 +1366,7 @@ function ExploreCatalog() {
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Workshops & Bootcamps
+                Events & Bootcamps
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Join live, interactive, mentor-led programs designed for technical skill development.
@@ -1734,7 +1734,7 @@ function ExploreCatalog() {
           {/* 2. BOOTCAMPS TAB CONTENT */}
           {activeTab === "bootcamps" && (
             <div className="tab-content-panel">
-              <WorkshopDiscoveryPage 
+              <EventDiscoveryPage 
                 typesFilter={['WORKSHOP', 'BOOTCAMP']} 
                 placeholder="Search workshops and bootcamps..." 
                 emptyStateTitle="No workshops or bootcamps found" 
@@ -1746,7 +1746,7 @@ function ExploreCatalog() {
           {/* 3. WEBINARS TAB CONTENT */}
           {activeTab === "webinars" && (
             <div className="tab-content-panel">
-              <WorkshopDiscoveryPage 
+              <EventDiscoveryPage 
                 typesFilter={['WEBINAR', 'MASTERCLASS', 'AMA']} 
                 placeholder="Search webinars, masterclasses and AMAs..." 
                 emptyStateTitle="No expert webinars found" 

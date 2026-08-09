@@ -1,15 +1,15 @@
 import { api } from '@/infrastructure/http/api';
-import { Workshop } from '@/app/(authenticated)/studio/events/types';
+import { Event } from '@/app/(authenticated)/studio/events/types';
 
-export interface PublishedWorkshopPage {
-  content: Workshop[];
+export interface PublishedEventPage {
+  content: Event[];
   totalElements: number;
   totalPages: number;
   size: number;
   number: number;
 }
 
-export interface WorkshopSearchParams {
+export interface EventSearchParams {
   search?: string;
   category?: string;
   type?: string;
@@ -19,9 +19,9 @@ export interface WorkshopSearchParams {
   size?: number;
 }
 
-const API_BASE_PATH = '/api/workshops';
+const API_BASE_PATH = '/api/v1/events';
 
-export const getPublishedWorkshops = async (params?: WorkshopSearchParams): Promise<PublishedWorkshopPage> => {
+export const getPublishedEvents = async (params?: EventSearchParams): Promise<PublishedEventPage> => {
   const queryParams = new URLSearchParams();
   if (params) {
     if (params.search) queryParams.append('search', params.search);
@@ -33,9 +33,9 @@ export const getPublishedWorkshops = async (params?: WorkshopSearchParams): Prom
     if (params.size !== undefined) queryParams.append('size', params.size.toString());
   }
 
-  return await api.get<PublishedWorkshopPage>(`${API_BASE_PATH}/published?${queryParams.toString()}`);
+  return await api.get<PublishedEventPage>(`${API_BASE_PATH}/published?${queryParams.toString()}`);
 };
 
-export const getPublicWorkshopById = async (id: string): Promise<Workshop> => {
-  return await api.get<Workshop>(`${API_BASE_PATH}/${id}`);
+export const getPublicEventById = async (id: string): Promise<Event> => {
+  return await api.get<Event>(`${API_BASE_PATH}/${id}`);
 };

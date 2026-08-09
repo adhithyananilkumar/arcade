@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Calendar, Clock, MapPin, Video, BookOpen, ArrowLeft } from "lucide-react";
-import { getEventById } from "../api/event.service";
-import type { EventDto } from "../types/event.types";
+import { getEventById } from "@/app/(public)/events/api/event.service";
+import type { EventDto } from "@/app/(public)/events/types/event.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 
 export default function EventLearnPage() {

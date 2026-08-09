@@ -148,7 +148,7 @@ function scheduleIdle(fn: () => void) {
 }
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
-import { WorkshopAdapter } from "./adapters/WorkshopAdapter";
+import { EventAdapter } from "./adapters/EventAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
@@ -520,7 +520,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       ? new CourseAdapter()
       : contentType === "roadmap"
       ? new RoadmapAdapter()
-      : new WorkshopAdapter(contentId || "");
+      : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -565,7 +565,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [isInitializing, setIsInitializing] = useState(true);
   const [navigatingBack, setNavigatingBack] = useState(false);
 
-  // Workshop Day Settings dialog — keyed on the session (container) ID, not the lesson.
+  // Event Day Settings dialog — keyed on the session (container) ID, not the lesson.
   const [sessionSettingsSessionId, setSessionSettingsSessionId] = useState<string | null>(null);
   // Track which module (Day) currently contains the active lesson for the Settings button.
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
@@ -871,7 +871,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Tree mutation: Add Day (container) — workshop only ───────────────────
 
-  const addWorkshopDay = useCallback(
+  const addEventDay = useCallback(
     async () => {
       if (!contentId) return;
       try {
@@ -1165,10 +1165,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setStatus(updated.status);
         setUpdatedAt(updated.updatedAt);
       } else if (contentType === "workshop") {
-        const { submitWorkshop } = await import(
+        const { submitEvent } = await import(
           "@/app/(authenticated)/studio/events/api/publish"
         );
-        const updated = await submitWorkshop(contentId, { message: data.message });
+        const updated = await submitEvent(contentId, { message: data.message });
         setStatus(updated.status);
         if (updated.updatedAt) setUpdatedAt(updated.updatedAt);
       }
@@ -1239,7 +1239,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       <SessionSettingsDialog
         open={!!sessionSettingsSessionId}
         onClose={() => setSessionSettingsSessionId(null)}
-        workshopId={contentId!}
+        eventId={contentId!}
         sessionId={sessionSettingsSessionId}
         onSaved={(updatedSession) => {
           // Sync the new Day title into the sidebar module (container) row.
@@ -1591,7 +1591,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
-                        onClick={addWorkshopDay}
+                        onClick={addEventDay}
                         className="mb-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
                       >
                         <Plus size={14} />

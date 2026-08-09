@@ -17,9 +17,11 @@ import {
   MapPin,
   Calendar,
 } from 'lucide-react';
+import { EventCollaboratorsManager } from './EventCollaboratorsManager';
+import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
 import { toast } from 'sonner';
-import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
-import { getMyRegistrationStatus, registerForWorkshop } from '@/app/(public)/workshop/api/registration';
+import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
+import { getMyRegistrationStatus, registerForEvent } from '@/app/(public)/workshop/api/registration';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +42,7 @@ import {
 } from '@/shared/design-system/ui/learning';
 
 interface Props {
-  preview: WorkshopPreviewDto;
+  preview: EventPreviewDto;
   onRegister?: () => Promise<void>;
 }
 
@@ -105,7 +107,7 @@ const REVIEWS = [
   },
 ];
 
-export function EventPreview({ data, onRegister, showActions = true }: { data: WorkshopPreviewDto, onRegister?: () => void, showActions?: boolean }) {
+export function EventPreview({ data, onRegister, showActions = true }: { data: EventPreviewDto, onRegister?: () => void, showActions?: boolean }) {
   const { basicInfo, schedule, settings, pricing } = data;
   const [registration, setRegistration] = useState<any>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
@@ -149,7 +151,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
         contentType: 'EVENT',
         note: reportNote
       });
-      toast.success('Workshop reported. Our moderation team will review it shortly.');
+      toast.success('Event reported. Our moderation team will review it shortly.');
       setReportModalOpen(false);
       setReportNote('');
     } catch (err: any) {
@@ -171,7 +173,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
       if (onRegister) {
         await onRegister();
       } else {
-        await registerForWorkshop(basicInfo.id!);
+        await registerForEvent(basicInfo.id!);
         toast.success('Successfully registered for workshop!');
       }
       await loadRegistration();
@@ -189,7 +191,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
     }
   };
 
-  const title = basicInfo.title || 'Untitled Workshop';
+  const title = basicInfo.title || 'Untitled Event';
 
   const highlights = useMemo(() => {
     const list = [
@@ -264,15 +266,15 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
   const heroContent = (
     <LearningHero
       breadcrumbs={[
-        { label: "Workshops", href: "/workshops" }
+        { label: "Events", href: "/workshops" }
       ]}
-      category={basicInfo.category || 'Workshop'}
+      category={basicInfo.category || 'Event'}
       title={title}
       authorName={INSTRUCTOR.name}
       authorUsername={INSTRUCTOR.channel}
       authorAccent={INSTRUCTOR.accent}
       metaChips={[
-        { icon: MapPin, label: basicInfo.deliveryMode === 'ONLINE' ? 'Online Workshop' : 'In-Person', dotColor: "var(--color-blue)" },
+        { icon: MapPin, label: basicInfo.deliveryMode === 'ONLINE' ? 'Online Event' : 'In-Person', dotColor: "var(--color-blue)" },
         { icon: Users, label: `${basicInfo.difficulty?.charAt(0) + basicInfo.difficulty?.slice(1).toLowerCase()} Level`, dotColor: "var(--color-amber)" },
         ...(basicInfo.language ? [{ icon: GraduationCap, label: basicInfo.language, dotColor: "var(--color-teal)" }] : []),
       ]}
@@ -283,7 +285,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
       onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
       onReportClick={() => setReportModalOpen(true)}
       previewImageUrl={basicInfo.coverImageUrl}
-      previewLabel="Workshop Preview"
+      previewLabel="Event Preview"
       previewVideoDuration="0:15 / 1:30"
       accentColor="#4c6fff"
       actionButton={renderActionButton()}
@@ -465,10 +467,10 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
           label: "Certificate",
           content: (
             <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
-              <LearningBadge label="Workshop" accent="var(--color-blue)" />
+              <LearningBadge label="Event" accent="var(--color-blue)" />
               <div>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
-                  <Sparkles size={13} className="text-amber" /> Workshop badge
+                  <Sparkles size={13} className="text-amber" /> Event badge
                 </span>
                 <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
                 <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
@@ -502,7 +504,7 @@ export function EventPreview({ data, onRegister, showActions = true }: { data: W
     <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Report Workshop</DialogTitle>
+          <DialogTitle>Report Event</DialogTitle>
           <DialogDescription>
             Please provide details about what is wrong with this workshop.
           </DialogDescription>

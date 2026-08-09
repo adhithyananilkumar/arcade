@@ -4,7 +4,7 @@ interface Props {
   status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'ARCHIVED' | string;
 }
 
-export const WorkshopStatusBadge: React.FC<Props> = ({ status }) => {
+export const EventStatusBadge: React.FC<Props> = ({ status }) => {
   const getStyles = () => {
     switch (status) {
       case 'DRAFT':

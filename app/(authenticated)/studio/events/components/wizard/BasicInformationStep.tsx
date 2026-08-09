@@ -1,9 +1,9 @@
 import React from 'react';
 import { CATEGORIES, DELIVERY_MODES, DIFFICULTIES, LANGUAGES, WORKSHOP_TYPES } from '@/app/(authenticated)/studio/events/constants';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 const InputWrapper = ({ label, name, error, children, required = false, className = '' }: any) => (
@@ -24,7 +24,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-8">Basic Information</h2>
       
       {/* Title spans full width to emphasize it */}
-      <InputWrapper label="Workshop Title" name="title" error={errors.title} required className="w-full">
+      <InputWrapper label="Event Title" name="title" error={errors.title} required className="w-full">
         <input
           type="text"
           id="title"
@@ -52,15 +52,15 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
           </select>
         </InputWrapper>
 
-        <InputWrapper label="Type" name="workshopType" error={errors.workshopType} required>
+        <InputWrapper label="Type" name="eventType" error={errors.eventType} required>
           <select
-            id="workshopType"
-            value={formData.workshopType}
-            onChange={(e) => handleChange('workshopType', e.target.value as any)}
-            disabled={formData.workshopType === 'WEBINAR'}
+            id="eventType"
+            value={formData.eventType}
+            onChange={(e) => handleChange('eventType', e.target.value as any)}
+            disabled={formData.eventType === 'WEBINAR'}
             className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-300 dark:text-white disabled:opacity-60"
           >
-            {formData.workshopType === 'WEBINAR' ? (
+            {formData.eventType === 'WEBINAR' ? (
               <option value="WEBINAR">Webinar</option>
             ) : (
               WORKSHOP_TYPES.map(t => (
@@ -70,7 +70,7 @@ export const BasicInformationStep: React.FC<Props> = ({ form }) => {
           </select>
         </InputWrapper>
 
-        {formData.workshopType === 'WEBINAR' && (
+        {formData.eventType === 'WEBINAR' && (
           <InputWrapper label="Meeting URL" name="meetingUrl" error={errors.meetingUrl} required>
             <input
               type="url"

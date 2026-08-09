@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function WorkshopsPage() {
+export default function EventsPage() {
   redirect("/events");
 }

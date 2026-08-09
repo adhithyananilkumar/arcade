@@ -29,7 +29,7 @@ export default function LearnerNavbar() {
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
-  const [collaboratedWorkshopId, setCollaboratedWorkshopId] = useState<string | null>(null);
+  const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
   
   // Pending tasks for platform admins
@@ -183,18 +183,18 @@ export default function LearnerNavbar() {
   const showStudio = hasStudioAccess;
 
   useEffect(() => {
-    api.get<any[]>('/api/workshops/my-collaborations')
+    api.get<any[]>('/api/v1/events/my-collaborations')
       .then(res => {
         if (res && res.length > 0) {
-          setCollaboratedWorkshopId(res[0].id);
+          setCollaboratedEventId(res[0].id);
           setHasMultipleCollabs(res.length > 1);
         } else {
-          setCollaboratedWorkshopId(null);
+          setCollaboratedEventId(null);
           setHasMultipleCollabs(false);
         }
       })
       .catch(() => {
-        setCollaboratedWorkshopId(null);
+        setCollaboratedEventId(null);
         setHasMultipleCollabs(false);
       });
   }, []);
@@ -420,12 +420,12 @@ export default function LearnerNavbar() {
                 Content Studio
               </MenuItem>
             )}
-            {collaboratedWorkshopId && (
+            {collaboratedEventId && (
               <MenuItem 
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio/manage')}
               >
-                Manage Workshops
+                Manage Events
               </MenuItem>
             )}
             {showArcConsole && (

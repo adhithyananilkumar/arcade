@@ -17,10 +17,10 @@ export default function ContentStudioLayout({
   const { user } = useAuthStore();
   const { hasAccess, loading } = useStudioAccess();
   
-  const workshopIdMatch = pathname.match(/^\/studio\/workshop\/([a-f0-9-]+)/i);
-  const workshopId = workshopIdMatch ? workshopIdMatch[1] : null;
-  const [hasWorkshopAccess, setHasWorkshopAccess] = useState<boolean | null>(null);
-  const [checkingWorkshop, setCheckingWorkshop] = useState(false);
+  const eventIdMatch = pathname.match(/^\/studio\/workshop\/([a-f0-9-]+)/i);
+  const eventId = eventIdMatch ? eventIdMatch[1] : null;
+  const [hasEventAccess, setHasEventAccess] = useState<boolean | null>(null);
+  const [checkingEvent, setCheckingEvent] = useState(false);
 
   const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/manage');
   const isPublishedPreview = pathname.startsWith('/studio/published/');
@@ -28,7 +28,7 @@ export default function ContentStudioLayout({
 
   useEffect(() => {
     if (isCollaborationsPage) {
-      api.get<any[]>('/api/workshops/my-collaborations')
+      api.get<any[]>('/api/v1/events/my-collaborations')
         .then(res => {
           setHasCollabs(res && res.length > 0);
         })
@@ -39,32 +39,32 @@ export default function ContentStudioLayout({
   }, [isCollaborationsPage]);
 
   useEffect(() => {
-    if (workshopId) {
-      setCheckingWorkshop(true);
-      api.get<boolean>(`/api/workshops/${workshopId}/view-access`)
+    if (eventId) {
+      setCheckingEvent(true);
+      api.get<boolean>(`/api/v1/events/${eventId}/view-access`)
         .then(res => {
-          setHasWorkshopAccess(res);
-          setCheckingWorkshop(false);
+          setHasEventAccess(res);
+          setCheckingEvent(false);
         })
         .catch(() => {
-          setHasWorkshopAccess(false);
-          setCheckingWorkshop(false);
+          setHasEventAccess(false);
+          setCheckingEvent(false);
         });
     } else {
-      setHasWorkshopAccess(null);
-      setCheckingWorkshop(false);
+      setHasEventAccess(null);
+      setCheckingEvent(false);
     }
-  }, [workshopId]);
+  }, [eventId]);
 
   // Platform admins / course reviewers get in regardless of channel affiliation.
   const hasAdminAccess = AuthorizationService.canManageChannels(user) || AuthorizationService.canReviewCourses(user);
   
   // Authorized if admin, or visiting a workshop they have view access to, or visiting the collaborations page, or viewing a published preview, or has general studio access
   const isAuthorized = hasAdminAccess || isPublishedPreview ||
-    (workshopId ? hasWorkshopAccess === true : (isCollaborationsPage ? true : hasAccess));
+    (eventId ? hasEventAccess === true : (isCollaborationsPage ? true : hasAccess));
 
   const isLayoutLoading = loading || 
-    (workshopId !== null && hasWorkshopAccess === null);
+    (eventId !== null && hasEventAccess === null);
 
   useEffect(() => {
     if (!hasAdminAccess && !isLayoutLoading && !isAuthorized) {

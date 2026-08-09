@@ -1,10 +1,10 @@
 import React from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 import { SettingsForm } from './SettingsForm';
 import { SettingsSummary } from './SettingsSummary';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 export const SettingsStep: React.FC<Props> = ({ form }) => {

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
 import { FileManager } from './FileManager';
 import { FolderList } from './FolderList';
-import { WorkshopFolder } from '@/app/(authenticated)/studio/events/types';
+import { EventFolder } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 export const ResourcesStep: React.FC<Props> = ({ form }) => {

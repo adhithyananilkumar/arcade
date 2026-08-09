@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-react';
-import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
+import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
 import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
 import { UIEnrollmentState } from '@/domains/enrollment/types/enrollment.types';
 import { getMyRegistrationStatus } from '@/app/(public)/workshop/api/registration';
 import { toast } from 'sonner';
 
 interface Props {
-  preview: WorkshopPreviewDto;
+  preview: EventPreviewDto;
   onRegister?: () => Promise<void>;
 }
 
@@ -89,7 +89,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
                  status === 'WAITLISTED' ? 'You are on the Waitlist' :
                  status === 'PENDING' ? 'Registration Pending' :
                  status === 'CANCELLED' ? 'Registration Cancelled' :
-                 status === 'COMPLETED' ? 'Workshop Completed' : status}</span>
+                 status === 'COMPLETED' ? 'Event Completed' : status}</span>
         </div>
 
         <div className="space-y-4 mb-6">
@@ -103,7 +103,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
 
         {status === 'APPROVED' && (
           <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition-colors mb-2">
-            View Workshop
+            View Event
           </button>
         )}
         
@@ -167,7 +167,7 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
       <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center gap-3">
           <MapPin className="w-5 h-5 text-gray-400" />
-          <span>{basicInfo.deliveryMode === 'ONLINE' ? 'Online Workshop' : 'In-Person'}</span>
+          <span>{basicInfo.deliveryMode === 'ONLINE' ? 'Online Event' : 'In-Person'}</span>
         </div>
         <div className="flex items-center gap-3">
           <Users className="w-5 h-5 text-gray-400" />

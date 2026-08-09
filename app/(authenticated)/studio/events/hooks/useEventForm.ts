@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { DeliveryMode, Difficulty, Visibility, WorkshopFormData, WorkshopType, PricingModel, RegistrationType, SeatType, RefundPolicy, ListingStatus } from '@/app/(authenticated)/studio/events/types';
+import { DeliveryMode, Difficulty, Visibility, EventFormData, EventType, PricingModel, RegistrationType, SeatType, RefundPolicy, ListingStatus } from '@/app/(authenticated)/studio/events/types';
 
-const initialData: WorkshopFormData = {
+const initialData: EventFormData = {
   title: '',
   subtitle: '',
 
@@ -11,7 +11,7 @@ const initialData: WorkshopFormData = {
   thumbnailUrl: '',
   coverImageUrl: '',
   promoVideoUrl: '',
-  workshopType: WorkshopType.WORKSHOP,
+  eventType: EventType.WORKSHOP,
   deliveryMode: DeliveryMode.ONLINE,
   difficulty: Difficulty.BEGINNER,
   language: 'en',
@@ -51,8 +51,8 @@ const initialData: WorkshopFormData = {
   }
 };
 
-export const useWorkshopForm = () => {
-  const [formData, setFormData] = useState<WorkshopFormData>(() => {
+export const useEventForm = () => {
+  const [formData, setFormData] = useState<EventFormData>(() => {
     if (typeof window !== 'undefined') {
       const savedDraft = localStorage.getItem('arcade_workshop_draft');
       if (savedDraft) {
@@ -107,7 +107,7 @@ export const useWorkshopForm = () => {
     return error;
   }, []);
 
-  const handleChange = useCallback((name: keyof WorkshopFormData, value: any) => {
+  const handleChange = useCallback((name: keyof EventFormData, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     const error = validateField(name, value);
     setErrors(prev => {
@@ -122,7 +122,7 @@ export const useWorkshopForm = () => {
   }, [validateField]);
 
   const isValid = useMemo(() => {
-    const requiredFields: (keyof WorkshopFormData)[] = ['title', 'category', 'language'];
+    const requiredFields: (keyof EventFormData)[] = ['title', 'category', 'language'];
     const hasMissingFields = requiredFields.some(field => !formData[field]);
     return !hasMissingFields && Object.keys(errors).length === 0;
   }, [formData, errors]);

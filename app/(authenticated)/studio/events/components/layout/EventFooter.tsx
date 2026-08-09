@@ -8,7 +8,7 @@ interface Props {
   isSaving?: boolean;
 }
 
-export const WorkshopFooter: React.FC<Props> = ({ 
+export const EventFooter: React.FC<Props> = ({ 
   onBack, 
   onSaveDraft, 
   onContinue, 

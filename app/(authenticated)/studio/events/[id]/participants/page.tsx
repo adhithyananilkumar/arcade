@@ -29,7 +29,7 @@ export default function RegisteredMembersPage() {
 
   useEffect(() => {
     if (id) {
-      api.get<any[]>(`/api/v1/workshops/${id}/participants`)
+      api.get<any[]>(`/api/v1/events/${id}/participants`)
         .then(data => {
           setParticipants(data);
           setLoading(false);
@@ -177,7 +177,7 @@ export default function RegisteredMembersPage() {
                               setActionMenuId(null);
                               if (confirm('Are you sure you want to remove this participant?')) {
                                 try {
-                                  await api.delete(`/api/v1/workshops/${id}/participants/${p.id}`);
+                                  await api.delete(`/api/v1/events/${id}/participants/${p.id}`);
                                   setParticipants(prev => prev.filter(participant => participant.id !== p.id));
                                   if (activeParticipant?.id === p.id) setActiveParticipant(null);
                                   import('sonner').then(({ toast }) => toast.success('Participant removed'));
@@ -317,7 +317,7 @@ export default function RegisteredMembersPage() {
                 onClick={async () => {
                   if (confirm('Are you sure you want to remove this participant?')) {
                     try {
-                      await api.delete(`/api/v1/workshops/${id}/participants/${activeParticipant.id}`);
+                      await api.delete(`/api/v1/events/${id}/participants/${activeParticipant.id}`);
                       setParticipants(prev => prev.filter(p => p.id !== activeParticipant.id));
                       setActiveParticipant(null);
                       import('sonner').then(({ toast }) => toast.success('Participant removed'));

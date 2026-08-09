@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
-import { WorkshopType } from "@/app/(authenticated)/studio/events/types";
+import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
   BookOpen,
   Calendar,
@@ -76,7 +76,7 @@ const CONTENT_TYPES = [
     id: "event",
     icon: Calendar,
     label: "Event",
-    desc: "Workshops, webinars, bootcamps & live sessions",
+    desc: "Events, webinars, bootcamps & live sessions",
     href: "/studio/events/new",
     color: "text-violet-600",
     bg: "bg-violet-50",
@@ -561,7 +561,7 @@ function CreateEventModal({
   const EVENT_TYPES = [
     {
       id: "WORKSHOP",
-      label: "Workshop",
+      label: "Event",
       desc: "Flexible interactive sessions, activities and resources.",
     },
     {
@@ -649,7 +649,7 @@ function CreateEventModal({
               Title <span className="text-red-500">*</span>
             </label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Full-Stack Workshop" maxLength={120}
+              placeholder="e.g. Full-Stack Event" maxLength={120}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
           </div>
           <div>
@@ -662,7 +662,7 @@ function CreateEventModal({
             <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Channel <span className="text-red-500">*</span>
             </label>
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} loading={channelsLoading} />
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           </div>
           <button type="submit" disabled={!title.trim() || !channelId || creating}
             className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
@@ -864,11 +864,11 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const isWorkshop = item.type === "WORKSHOP";
+  const isEvent = item.type === "WORKSHOP";
   const isQuiz = item.type === "QUIZ";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
-    : isWorkshop
+    : isEvent
       ? `/studio/workshop/${item.id}`
       : isQuiz
         ? `/studio/quiz/${item.id}`
@@ -996,7 +996,7 @@ export default function DashboardPage() {
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "WORKSHOP">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
 
   const { channels } = useEligibleChannels();
@@ -1005,7 +1005,9 @@ export default function DashboardPage() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const create = params.get("create");
-    if (create === "webinar" || create === "workshop" || create === "course" || create === "roadmap" || create === "quiz") {
+    if (create === "webinar" || create === "workshop" || create === "event") {
+      setCreateOpen("event");
+    } else if (create === "course" || create === "roadmap" || create === "quiz") {
       setCreateOpen(create);
     }
   }, []);
@@ -1053,8 +1055,7 @@ export default function DashboardPage() {
         statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
       const typeOk =
         typeFilter === "ALL" ||
-        item.type?.toUpperCase() === typeFilter ||
-        (typeFilter === "WORKSHOP" && item.type?.toUpperCase() === "WEBINAR");
+        item.type?.toUpperCase() === typeFilter;
       const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
       return statusOk && typeOk && channelOk;
     });
@@ -1082,7 +1083,6 @@ export default function DashboardPage() {
     { id: "ALL" as const, label: "All types" },
     { id: "COURSE" as const, label: "Courses" },
     { id: "ROADMAP" as const, label: "Roadmaps" },
-    { id: "WORKSHOP" as const, label: "Workshops" },
     { id: "EVENT" as const, label: "Events" },
   ];
 

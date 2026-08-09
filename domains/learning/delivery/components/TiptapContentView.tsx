@@ -3,7 +3,7 @@
 // workshop session, webinar notes, ...). Deliberately does NOT load Tiptap — the renderer only
 // ever consumes the structured JSON contract (types/editor.ts), per the platform architecture's
 // "delivery never loads Tiptap" rule. Content-type-agnostic on purpose — see
-// docs/render-engine-future-work.md for how upcoming content types (Article/Workshop/Webinar)
+// docs/render-engine-future-work.md for how upcoming content types (Article/Event/Webinar)
 // are expected to plug into this same component.
 
 import type { CSSProperties, JSX, ReactNode } from "react";

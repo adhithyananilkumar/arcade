@@ -1,9 +1,9 @@
 import React from 'react';
-import { useWorkshopForm } from '@/app/(authenticated)/studio/events/hooks/useWorkshopForm';
-import { Visibility, ListingStatus, RecordingVisibility, WorkshopSettings } from '@/app/(authenticated)/studio/events/types';
+import { useEventForm } from '@/app/(authenticated)/studio/events/hooks/useEventForm';
+import { Visibility, ListingStatus, RecordingVisibility, EventSettings } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
-  form: ReturnType<typeof useWorkshopForm>;
+  form: ReturnType<typeof useEventForm>;
 }
 
 const Toggle = ({ 
@@ -40,7 +40,7 @@ const Toggle = ({
 export const SettingsForm: React.FC<Props> = ({ form }) => {
   const { settings } = form.formData;
 
-  const updateSettings = <K extends keyof WorkshopSettings>(key: K, value: WorkshopSettings[K]) => {
+  const updateSettings = <K extends keyof EventSettings>(key: K, value: EventSettings[K]) => {
     form.handleChange('settings', {
       ...settings,
       [key]: value

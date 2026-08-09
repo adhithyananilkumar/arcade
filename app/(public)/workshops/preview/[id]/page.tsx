@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react';
 import { notFound } from 'next/navigation';
-import { WorkshopPreview } from '@/app/(authenticated)/studio/events/components/wizard/review/WorkshopPreview';
-import { getWorkshopPreview } from '@/app/(authenticated)/studio/events/api/publish';
-import { WorkshopPreviewDto } from '@/app/(authenticated)/studio/events/types';
+import { EventPreview } from '@/app/(authenticated)/studio/events/components/wizard/review/EventPreview';
+import { getEventPreview } from '@/app/(authenticated)/studio/events/api/publish';
+import { EventPreviewDto } from '@/app/(authenticated)/studio/events/types';
 
 interface Props {
   params: Promise<{
@@ -14,7 +14,7 @@ interface Props {
 
 export default function PublicPreviewPage({ params }: Props) {
   const { id } = use(params);
-  const [previewData, setPreviewData] = useState<WorkshopPreviewDto | null>(null);
+  const [previewData, setPreviewData] = useState<EventPreviewDto | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
   
@@ -24,7 +24,7 @@ export default function PublicPreviewPage({ params }: Props) {
       return;
     }
     
-    getWorkshopPreview(id)
+    getEventPreview(id)
       .then(data => {
         setPreviewData(data);
         setLoading(false);
@@ -73,9 +73,9 @@ export default function PublicPreviewPage({ params }: Props) {
         </span>
       </header>
       
-      <main>
-        <WorkshopPreview preview={previewData} />
-      </main>
+      <div className="mt-8">
+        <EventPreview data={previewData} showActions={false} />
+      </div>
     </div>
   );
 }

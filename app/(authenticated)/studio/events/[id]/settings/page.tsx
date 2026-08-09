@@ -7,11 +7,11 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default function WorkshopSettingsPage({ params }: Props) {
+export default function EventSettingsPage({ params }: Props) {
   const { id } = use(params);
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
-      <EventWizard workshopId={id} initialStep={2} />
+      <EventWizard eventId={id} initialStep={2} />
     </div>
   );
 }

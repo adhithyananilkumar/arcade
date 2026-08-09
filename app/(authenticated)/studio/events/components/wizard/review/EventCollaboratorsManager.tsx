@@ -18,10 +18,10 @@ import { Input } from '@/shared/design-system/ui/input';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 interface Props {
-  workshopId: string;
+  eventId: string;
 }
 
-export function WorkshopCollaboratorsManager({ workshopId }: Props) {
+export function EventCollaboratorsManager({ eventId }: Props) {
   const { user } = useAuthStore();
   const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
 
   useEffect(() => {
     loadCollaborators();
-  }, [workshopId]);
+  }, [eventId]);
 
   useEffect(() => {
     if (collaborators.length > 0 && !isOwner) {
@@ -44,7 +44,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
   const loadCollaborators = async () => {
     try {
       setLoading(true);
-      const data = await getCollaborators(workshopId);
+      const data = await getCollaborators(eventId);
       setCollaborators(data);
     } catch (err: any) {
       console.error(err);
@@ -60,7 +60,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
 
     setInviting(true);
     try {
-      await inviteCollaborator(workshopId, inviteEmail.trim(), inviteRole);
+      await inviteCollaborator(eventId, inviteEmail.trim(), inviteRole);
       toast.success('Collaborator added successfully!');
       setInviteEmail('');
       loadCollaborators();
@@ -74,7 +74,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
 
   const handleRoleChange = async (userId: string, newRole: 'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER') => {
     try {
-      await updateCollaboratorRole(workshopId, userId, newRole);
+      await updateCollaboratorRole(eventId, userId, newRole);
       toast.success('Collaborator role updated!');
       loadCollaborators();
     } catch (err: any) {
@@ -87,7 +87,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
     if (!confirm('Are you sure you want to remove this collaborator?')) return;
 
     try {
-      await removeCollaborator(workshopId, userId);
+      await removeCollaborator(eventId, userId);
       toast.success('Collaborator removed successfully!');
       loadCollaborators();
     } catch (err: any) {
@@ -110,7 +110,7 @@ export function WorkshopCollaboratorsManager({ workshopId }: Props) {
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-2">
           <Users className="w-5 h-5 text-indigo-600" />
-          Add Workshop Collaborators
+          Add Event Collaborators
         </h2>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
           Grant other users edit or view access to this workshop and webinar contents under role-based policies.

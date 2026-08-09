@@ -1,16 +1,16 @@
 import { api } from "@/infrastructure/http/api";
 import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
-import type { Workshop, WorkshopSession } from "@/app/(authenticated)/studio/events/types";
+import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
 
-export class WorkshopAdapter implements ContentDataAdapter {
-  private workshopId: string;
+export class EventAdapter implements ContentDataAdapter {
+  private eventId: string;
 
-  constructor(workshopId: string) {
-    this.workshopId = workshopId;
+  constructor(eventId: string) {
+    this.eventId = eventId;
   }
 
   terminology = {
-    root: "Workshop",
+    root: "Event",
     container: "Day",
     leafDocument: "Lesson",
     leafQuiz: "Quiz",
@@ -18,11 +18,11 @@ export class WorkshopAdapter implements ContentDataAdapter {
 
   async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[] }> {
     const [workshop, sessions] = await Promise.all([
-      api.get<Workshop>(`/api/workshops/${id}`),
-      api.get<WorkshopSession[]>(`/api/workshops/${id}/sessions`).catch(() => []),
+      api.get<Event>(`/api/v1/events/${id}`),
+      api.get<EventSession[]>(`/api/v1/events/${id}/sessions`).catch(() => []),
     ]);
 
-    if (workshop.workshopType === "WEBINAR") {
+    if (workshop.eventType === "WEBINAR") {
       this.terminology.root = "Webinar";
     }
 
@@ -53,20 +53,20 @@ export class WorkshopAdapter implements ContentDataAdapter {
   }
 
   async updateMeta(id: string, patch: Partial<ContentMeta>): Promise<void> {
-    await api.patch(`/api/workshops/${id}`, {
+    await api.patch(`/api/v1/events/${id}`, {
       title: patch.title,
       description: patch.description,
     });
   }
 
   async deleteContent(id: string, confirmTitle: string): Promise<void> {
-    await api.delete(`/api/workshops/${id}`, { confirmText: confirmTitle });
+    await api.delete(`/api/v1/events/${id}`, { confirmText: confirmTitle });
   }
 
-  /** Add a new Day (WorkshopSession container). */
+  /** Add a new Day (EventSession container). */
   async addContainer(contentId: string, title: string): Promise<ContainerNode> {
     const today = new Date().toISOString().split("T")[0];
-    const s = await api.post<WorkshopSession>(`/api/workshops/${contentId}/sessions`, {
+    const s = await api.post<EventSession>(`/api/v1/events/${contentId}/sessions`, {
       title,
       startDate: today,
       endDate: today,
@@ -85,21 +85,21 @@ export class WorkshopAdapter implements ContentDataAdapter {
   }
 
   async deleteContainer(containerId: string): Promise<void> {
-    // containerId is a session id; workshopId is available on this instance
-    await api.delete(`/api/workshops/${this.workshopId}/sessions/${containerId}`);
+    // containerId is a session id; eventId is available on this instance
+    await api.delete(`/api/v1/events/${this.eventId}/sessions/${containerId}`);
   }
 
   async renameContainer(containerId: string, title: string): Promise<void> {
-    await api.patch(`/api/workshops/${this.workshopId}/sessions/${containerId}`, { title });
+    await api.patch(`/api/v1/events/${this.eventId}/sessions/${containerId}`, { title });
   }
 
   /** Add a new Lesson inside a Day (sessionId = containerId). */
   async addLeaf(containerId: string, title: string, type: LeafNode["type"]): Promise<LeafNode> {
     if (type !== "document") {
-      throw new Error("Workshops currently only support lesson documents.");
+      throw new Error("Events currently only support lesson documents.");
     }
     const l = await api.post<{ id: string; title: string; position: number }>(
-      `/api/workshops/sessions/${containerId}/lessons`,
+      `/api/v1/events/sessions/${containerId}/lessons`,
       { title }
     );
     return {
@@ -113,33 +113,33 @@ export class WorkshopAdapter implements ContentDataAdapter {
   async deleteLeaf(leafId: string, type: LeafNode["type"]): Promise<void> {
     // We need to delete by lesson id; find session id from the lesson endpoint isn't
     // straightforward, so we use the lesson-scoped delete path via a generic approach.
-    // The backend accepts DELETE /api/workshops/sessions/{sessionId}/lessons/{lessonId}
+    // The backend accepts DELETE /api/v1/events/sessions/{sessionId}/lessons/{lessonId}
     // but we don't have sessionId here — use a top-level lesson delete instead.
     // For now, search through containers is done at orchestrator level; here we trust the
     // orchestrator passes the right leafId. We expose a direct lesson endpoint:
-    await api.delete(`/api/workshops/lessons/${leafId}`);
+    await api.delete(`/api/v1/events/lessons/${leafId}`);
   }
 
   async renameLeaf(leafId: string, title: string, type: LeafNode["type"]): Promise<void> {
-    await api.patch(`/api/workshops/lessons/${leafId}`, { title });
+    await api.patch(`/api/v1/events/lessons/${leafId}`, { title });
   }
 
   async getLeafDocument(leafId: string): Promise<{ ydocState: string | null; body: string | null } | null> {
     const res = await api.get<{ ydocState?: string; body: string } | null>(
-      `/api/workshops/lessons/${leafId}/document`
+      `/api/v1/events/lessons/${leafId}/document`
     );
     if (!res) return null;
     return { ydocState: res.ydocState ?? null, body: res.body ?? null };
   }
 
   async saveLeafDocument(leafId: string, payload: { ydocState: string; body: string }): Promise<void> {
-    await api.put(`/api/workshops/lessons/${leafId}/document`, payload);
+    await api.put(`/api/v1/events/lessons/${leafId}/document`, payload);
   }
 
   async saveLeafVersion(
     leafId: string,
     payload: { snapshot?: string; body: string; kind: string; label?: string }
   ): Promise<void> {
-    await api.post(`/api/workshops/lessons/${leafId}/document/versions`, payload);
+    await api.post(`/api/v1/events/lessons/${leafId}/document/versions`, payload);
   }
 }

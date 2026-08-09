@@ -206,7 +206,7 @@ export const mockContent: ExtendedContent[] = [
   },
   {
     id: 'event-1',
-    title: 'Live Workshop: Building High-Performance Web Apps',
+    title: 'Live Event: Building High-Performance Web Apps',
     thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
     instructor: 'Dr. Sarah Chen',
     category: 'Web Development',
