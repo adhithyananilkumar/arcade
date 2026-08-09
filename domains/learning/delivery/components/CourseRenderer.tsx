@@ -204,8 +204,8 @@ export function CourseRenderer({
             course.modules.map((mod) => {
               const collapsed = collapsedModules.has(mod.id);
               const items: TreeItem[] = [
-                ...mod.lessons.map((l): TreeItem => ({ kind: "lesson", moduleId: mod.id, item: l })),
-                ...mod.quizzes.map(
+                ...(mod.lessons || []).map((l): TreeItem => ({ kind: "lesson", moduleId: mod.id, item: l })),
+                ...(mod.quizzes || []).map(
                   (q): TreeItem => ({
                     kind: "quiz",
                     moduleId: mod.id,

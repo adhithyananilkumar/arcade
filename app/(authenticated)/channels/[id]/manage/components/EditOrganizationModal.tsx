@@ -89,18 +89,12 @@ export function EditOrganizationModal({
   const handleRemoveBanner = () => {
     setBannerPreview('');
     setBannerFile(null);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`arcade_org_banner_${channel.id}`, '');
-    }
     toast.info('Organization banner removed');
   };
 
   const handleRemoveLogo = () => {
     setIconPreview('');
     setIconFile(null);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`arcade_org_logo_${channel.id}`, '');
-    }
     toast.info('Organization logo removed');
   };
 
@@ -114,12 +108,6 @@ export function EditOrganizationModal({
         iconFile || undefined,
         bannerFile || undefined
       );
-
-      // Persist base64 Data URLs to localStorage so changes stay permanent
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`arcade_org_banner_${channel.id}`, bannerPreview);
-        localStorage.setItem(`arcade_org_logo_${channel.id}`, iconPreview);
-      }
 
       const finalChannel: Channel = {
         ...channel,

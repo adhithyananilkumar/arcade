@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api/v1';
 
+export async function GET() {
+  return NextResponse.json({ message: 'Refresh API route active' });
+}
+
 export async function POST(request: Request) {
   try {
     // CSRF Protection: Verify X-Requested-With header
@@ -20,7 +24,7 @@ export async function POST(request: Request) {
       console.log('[REFRESH] Failing because no refresh token was found in cookies');
       return NextResponse.json({ message: 'No refresh token' }, { status: 401 });
     }
-    
+
     const response = await fetch(`${BACKEND_URL}/auth/refresh`, {
       method: 'POST',
       headers: {

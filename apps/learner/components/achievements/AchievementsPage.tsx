@@ -348,6 +348,7 @@ export default function AchievementsPage() {
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates' | 'quests'>('badges');
 
+
   // Load fresh profile details from DB if available
   useEffect(() => {
     const loadUserData = async () => {
@@ -360,6 +361,10 @@ export default function AchievementsPage() {
     };
     loadUserData();
   }, []);
+
+  const handleDownloadCert = (certTitle: string) => {
+    toast.success(`Downloading certificate PDF for "${certTitle}"...`);
+  };
 
   // User display helpers
   const displayName = user?.fullName || (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Arcade Learner');

@@ -20,16 +20,33 @@ import {
   Star,
   Users,
   Volume2,
+  Flag,
 } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useState, useEffect, useRef } from "react"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { UserService } from "@/domains/identity"
+import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
 import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/design-system/ui/dialog"
+import CourseReviewsSection from "@/components/course/CourseReviewsSection"
+import CourseVideoPreviewCard from "@/components/course/CourseVideoPreviewCard"
+import { AnimatedList, AnimatedItem } from "@/components/ui/AnimatedList"
+import BadgeGraphic, { getBadgeForCourse } from "@/components/ui/BadgeGraphic"
+import FoldText from "@/components/ui/FoldText"
+import { motion } from "framer-motion"
+import PartyPopper, { PartyPopperRef } from "@/components/ui/PartyPopper"
 
 /* ------------------------------------------------------------------ */
 /*  Data                                                               */
@@ -128,6 +145,28 @@ const MODULES: Module[] = [
       { title: "Final review with a mentor", length: "18m" },
     ],
   },
+]
+
+const MODULE_LIGHT_GRADIENTS = [
+  "linear-gradient(135deg, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(245, 158, 11, 0.14) 0%, rgba(251, 146, 60, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+  "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
+]
+
+const MODULE_BORDER_COLORS = [
+  "rgba(59, 130, 246, 0.28)",
+  "rgba(245, 158, 11, 0.28)",
+  "rgba(139, 92, 246, 0.28)",
+  "rgba(16, 185, 129, 0.28)",
+]
+
+const EXPERTISE_TAG_STYLES = [
+  { bg: "rgba(59, 130, 246, 0.14)", border: "rgba(59, 130, 246, 0.3)", text: "#1d4ed8" },
+  { bg: "rgba(245, 158, 11, 0.14)", border: "rgba(245, 158, 11, 0.3)", text: "#b45309" },
+  { bg: "rgba(139, 92, 246, 0.14)", border: "rgba(139, 92, 246, 0.3)", text: "#6d28d9" },
+  { bg: "rgba(16, 185, 129, 0.14)", border: "rgba(16, 185, 129, 0.3)", text: "#047857" },
+  { bg: "rgba(236, 72, 153, 0.14)", border: "rgba(236, 72, 153, 0.3)", text: "#be185d" },
 ]
 
 const TOTAL_LESSONS = MODULES.reduce((sum, m) => sum + m.lessons.length, 0)
@@ -272,46 +311,42 @@ function Avatar({
   )
 }
 
-/* A medallion badge, unique per course via label + accent */
-function CourseBadge({ label = "UI / UX", accent = "var(--color-blue)" }: { label?: string; accent?: string }) {
-  const scallops = Array.from({ length: 12 })
+/* A hex badge matching the platform's gamified badge system with 3-second rotation & party popper burst */
+function CourseBadge({ type = "crystal" }: { type?: string }) {
+  const popperRef = useRef<PartyPopperRef>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (popperRef.current) {
+        popperRef.current.burst(20, 70)
+        popperRef.current.burst(140, 70)
+      }
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
-    <div className="relative shrink-0">
-      <svg width="164" height="188" viewBox="0 0 164 188" aria-hidden="true">
-        <defs>
-          <linearGradient id="badgeGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor={accent} />
-            <stop offset="1" stopColor="var(--color-purple)" />
-          </linearGradient>
-        </defs>
-        {/* ribbon tails */}
-        <path d="M60 118 L44 180 L70 162 L80 128 Z" fill="var(--color-coral)" />
-        <path d="M104 118 L120 180 L94 162 L84 128 Z" fill="var(--color-teal)" />
-        {/* scalloped ring */}
-        {scallops.map((_, i) => {
-          const a = (i / 12) * Math.PI * 2
-          const cx = 82 + Math.cos(a) * 52
-          const cy = 74 + Math.sin(a) * 52
-          return <circle key={i} cx={cx} cy={cy} r="12" fill="url(#badgeGrad)" />
-        })}
-        <circle cx="82" cy="74" r="56" fill="url(#badgeGrad)" />
-        <circle cx="82" cy="74" r="45" fill="var(--color-ink)" />
-        <circle
-          cx="82"
-          cy="74"
-          r="45"
-          fill="none"
-          stroke="rgba(255,255,255,0.28)"
-          strokeWidth="1.5"
-          strokeDasharray="3 5"
-        />
-      </svg>
-      <div className="absolute inset-x-0 top-[44px] flex flex-col items-center text-paper">
-        <Award size={30} className="text-amber" />
-        <span className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-white/80">{label}</span>
-        <span className="text-[10px] text-white/45">Certified</span>
-      </div>
-    </div>
+    <PartyPopper ref={popperRef} className="relative flex shrink-0 items-center justify-center p-4">
+      <motion.div
+        initial={{ rotateY: 1080, rotateZ: -20, scale: 0.3, opacity: 0 }}
+        animate={{ rotateY: 0, rotateZ: 0, scale: 1, opacity: 1 }}
+        transition={{
+          duration: 3,
+          ease: [0.25, 1, 0.5, 1],
+        }}
+        whileHover={{ scale: 1.08, rotate: 6 }}
+        onClick={() => {
+          popperRef.current?.burst(20, 70)
+          popperRef.current?.burst(140, 70)
+        }}
+        className="relative flex items-center justify-center cursor-pointer"
+        style={{ perspective: 1000 }}
+      >
+        <div className="h-36 w-28 drop-shadow-xl">
+          <BadgeGraphic type={type} />
+        </div>
+      </motion.div>
+    </PartyPopper>
   )
 }
 
@@ -369,19 +404,19 @@ function Breadcrumb({ title }: { title: string }) {
   ]
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
-      <ol className="flex flex-wrap items-center gap-1.5 text-[13px]">
+      <ol className="flex flex-wrap items-center gap-2 text-[13.5px]">
         {crumbs.map((c) => (
-          <li key={c.label} className="flex items-center gap-1.5">
+          <li key={c.label} className="flex items-center gap-2">
             <Link
               href={c.href}
-              className="rounded-full px-2.5 py-1 font-medium text-subtle transition-colors hover:bg-mist hover:text-ink"
+              className="font-bold text-slate-700 hover:text-ink transition-colors"
             >
               {c.label}
             </Link>
-            <ChevronRight size={13} className="text-subtle/40" />
+            <ChevronRight size={13} className="text-subtle/50" />
           </li>
         ))}
-        <li className="rounded-full bg-ink/[0.04] px-2.5 py-1 font-semibold text-ink">{title}</li>
+        <li className="font-bold text-ink">{title}</li>
       </ol>
     </nav>
   )
@@ -401,7 +436,8 @@ function CourseHero({
   isEnrolled = false,
   pricingModel,
   priceAmount,
-  courseId
+  courseId,
+  onReportClick
 }: {
   title: string
   authorName?: string
@@ -413,6 +449,7 @@ function CourseHero({
   pricingModel?: string
   priceAmount?: number
   courseId?: string
+  onReportClick?: () => void
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -437,51 +474,36 @@ function CourseHero({
       <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         {/* Left — editorial copy */}
         <div>
-          {/* Course name as the headline, keeping the word-marking */}
+          {/* Course name as the headline */}
           <h1
-            className="mt-6 text-[2.75rem] font-normal leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
-            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif', fontWeight: 700 }}
+            className="mt-6 text-[2.75rem] font-bold leading-[1.05] tracking-tight text-ink text-balance sm:text-[4rem]"
+            style={{ fontFamily: '"Clash Display", var(--font-sora), sans-serif' }}
           >
             {firstPart}{" "}
-            <span className="relative whitespace-nowrap italic text-[#4c6fff]">
+            <span className="bg-gradient-to-r from-[#00c885] via-[#0284c7] to-[#4f46e5] bg-clip-text text-transparent">
               {lastWord}
-              <FlowerMark
-                size={26}
-                color="var(--color-ink)"
-                className="arcade-spin absolute -right-8 -top-2 hidden sm:block"
-              />
-              <svg
-                className="absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 200 12"
-                fill="none"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path d="M2 9C40 3 160 3 198 8" stroke="var(--color-amber)" strokeWidth="4" strokeLinecap="round" />
-              </svg>
             </span>
-            .
           </h1>
 
-          {/* Instructor: name + channel (with org already shown on top) */}
-          <div className="mt-7 flex items-center gap-3">
-            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={46} />
+          {/* Instructor: name + channel */}
+          <div className="mt-5 flex items-center gap-2.5">
+            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={34} />
             <div>
-              <p className="text-[15px] font-semibold text-ink">{displayAuthor}</p>
-              <p className="flex items-center gap-1.5 text-[13px] text-subtle">
-                <Radio size={13} className="text-blue" /> @{displayUsername}
+              <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
+              <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
+                <Radio size={12} className="text-blue" /> @{displayUsername}
               </p>
             </div>
           </div>
 
           <div className="mt-7 flex flex-wrap gap-2.5">
-            {metaData.map(({ icon: Icon, label, dot }) => (
+            {metaData.map(({ icon: Icon, label }) => (
               <span
                 key={label}
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-2 text-[13px] font-medium text-ink"
               >
-                <span className="size-1.5 rounded-full" style={{ background: dot }} />
-                <Icon size={14} className="text-subtle" /> {label}
+                <Icon size={14} className="text-subtle shrink-0" />
+                <span>{label}</span>
               </span>
             ))}
           </div>
@@ -523,63 +545,25 @@ function CourseHero({
                 color={saved ? "var(--color-coral)" : "currentColor"}
               />
             </button>
+            <button
+              onClick={onReportClick}
+              aria-label="Report course"
+              className="grid size-11 place-items-center rounded-full border border-line bg-paper text-subtle transition-colors hover:text-red-500"
+            >
+              <Flag size={18} />
+            </button>
           </div>
         </div>
 
-        {/* Right — dark video preview card */}
-        <div className="relative">
-          <div
-            className="absolute -right-4 -top-5 hidden size-24 rounded-full opacity-70 blur-2xl lg:block"
-            style={{ background: "#1db876" }}
-            aria-hidden="true"
-          />
-          <div className="relative rounded-3xl bg-[#14142b] p-3.5 shadow-[0_28px_60px_rgba(20,22,28,0.28)]">
-            <div className="mb-3 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2.5">
-                <span className="grid size-8 place-items-center overflow-hidden rounded-full bg-[#4c6fff] text-xs font-bold text-white">
-                  {authorAvatarUrl ? (
-                    <img src={authorAvatarUrl} alt={displayAuthor} className="size-full object-cover" />
-                  ) : (
-                    authorInitials
-                  )}
-                </span>
-                <div>
-                  <p className="text-[13px] font-semibold text-white">Course preview</p>
-                  <p className="text-[11px] text-white/50">@{displayUsername}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-white/45">
-                <Volume2 size={15} />
-                <Settings size={15} />
-              </div>
-            </div>
-
-            <div className="relative grid h-56 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#1d2130] to-[#262a38]">
-              <div
-                className="absolute -left-6 -top-6 size-24 rounded-full opacity-40 blur-2xl"
-                style={{ background: "#9b5de5" }}
-                aria-hidden="true"
-              />
-              <button
-                aria-label="Play course preview"
-                className="grid size-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/20 backdrop-blur-sm transition-transform hover:scale-105"
-              >
-                <Play size={22} className="translate-x-0.5 text-white" fill="currentColor" />
-              </button>
-            </div>
-
-            <div className="mt-3.5 h-1 rounded-full bg-white/12">
-              <div className="h-full w-[35%] rounded-full bg-[#ff6b4a]" />
-            </div>
-            <div className="mt-2.5 flex items-center justify-between px-0.5 text-[11px] text-white/50">
-              <span>0:42 / 2:00</span>
-              <span className="flex items-center gap-3">
-                <Share2 size={13} />
-                <Clock size={13} />
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Right — Futuristic glassmorphic video preview card */}
+        <CourseVideoPreviewCard
+          authorAvatarUrl={authorAvatarUrl}
+          displayAuthor={displayAuthor}
+          displayUsername={displayUsername}
+          authorInitials={authorInitials}
+          videoSrc="/boradingui.mp4"
+          posterUrl="/ink-dome-bg.jpg"
+        />
       </div>
     </section>
   )
@@ -589,59 +573,83 @@ function CourseHero({
 /*  Tabs                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseTabs() {
+function CourseTabs({ courseTitle }: { courseTitle?: string }) {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
-  const params = useParams()
+  const params = useParams<{ courseId?: string }>()
+  const searchParams = useSearchParams()
+  const titleFromQuery = searchParams?.get('title')
+  const badgeInfo = getBadgeForCourse(courseTitle || titleFromQuery || params?.courseId)
 
   return (
     <div>
       {/* Segmented tab control */}
       <div className="flex justify-center">
-        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5">
-          {TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              aria-pressed={tab === t}
-              className={`rounded-full px-4 py-2 text-[13px] font-semibold transition-colors sm:px-5 ${tab === t ? "bg-ink text-paper" : "text-subtle hover:text-ink"
+        <div className="inline-flex flex-wrap justify-center gap-1 rounded-full border border-line bg-paper p-1.5 shadow-sm">
+          {TABS.map((t) => {
+            const isActive = tab === t
+            return (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                onMouseEnter={() => setTab(t)}
+                onFocus={() => setTab(t)}
+                aria-pressed={isActive}
+                className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-colors duration-200 sm:px-5 ${
+                  isActive ? "text-paper" : "text-subtle hover:text-ink"
                 }`}
-            >
-              {t}
-            </button>
-          ))}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeLearnTabPill"
+                    className="absolute inset-0 rounded-full bg-ink"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{t}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      <div key={tab} className="arcade-fade mt-10">
+      <div key={tab} className="arcade-fade mt-16 sm:mt-20">
         {tab === "Overview" && (
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-3xl border border-line bg-paper p-7">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+            <AnimatedItem index={0} style={{ cursor: "default" }}>
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
               <p className="mt-4 text-[15px] leading-relaxed text-subtle">
                 This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by a working product designer. You&apos;ll leave with a portfolio piece, not
-                just a certificate.
+                assignment, reviewed by working product designers. You&apos;ll leave with a portfolio-ready piece,
+                not just a certificate.
               </p>
-            </div>
-            <div className="rounded-3xl border border-line bg-paper p-7">
+              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
+                Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
+              </p>
+            </AnimatedItem>
+            <div className="md:pl-16 lg:pl-28">
               <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
-              <ul className="mt-4 flex flex-col gap-3">
-                {HIGHLIGHTS.map((h) => (
-                  <li key={h} className="flex items-center gap-3 text-[15px] text-ink">
-                    <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                      <Check size={13} className="text-teal" />
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4">
+                <AnimatedList
+                  items={HIGHLIGHTS}
+                  showGradients={false}
+                  displayScrollbar={false}
+                  renderItem={(h) => (
+                    <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
+                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                        <Check size={13} className="text-teal" />
+                      </span>
+                      <span>{h}</span>
+                    </div>
+                  )}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {tab === "Syllabus" && (
-          <div className="mx-auto max-w-3xl">
+          <div className="w-full">
             {/* Structured summary of the course layout */}
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
               {[
@@ -661,10 +669,16 @@ function CourseTabs() {
             <div className="flex flex-col gap-3">
               {MODULES.map((m, idx) => {
                 const open = openMod === idx
+                const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
+                const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
                 return (
                   <div
                     key={m.title}
-                    className="overflow-hidden rounded-2xl border border-line bg-paper transition-colors hover:border-ink/15"
+                    className="overflow-hidden rounded-2xl border transition-all duration-200 hover:shadow-sm"
+                    style={{
+                      background: bgGradient,
+                      borderColor: borderColor,
+                    }}
                   >
                     <button
                       onClick={() => setOpenMod(open ? -1 : idx)}
@@ -672,8 +686,8 @@ function CourseTabs() {
                       className="flex w-full items-center gap-4 px-5 py-4 text-left"
                     >
                       <span
-                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-base font-medium text-paper"
-                        style={{ background: m.accent }}
+                        className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
+                        style={{ color: m.accent, borderColor: borderColor }}
                       >
                         {idx + 1}
                       </span>
@@ -693,11 +707,14 @@ function CourseTabs() {
                       />
                     </button>
                     {open && (
-                      <ul className="flex flex-col gap-1 border-t border-line px-3 pb-3 pt-2">
+                      <ul
+                        className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
+                        style={{ borderColor: borderColor }}
+                      >
                         {m.lessons.map((lesson, li) => (
                           <li
                             key={lesson.title}
-                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-mist"
+                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
                             <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
@@ -715,7 +732,13 @@ function CourseTabs() {
         )}
 
         {tab === "Instructor" && (
-          <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-paper p-8">
+          <div
+            className="w-full rounded-3xl border p-8 transition-all"
+            style={{
+              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+              borderColor: "rgba(139, 92, 246, 0.28)",
+            }}
+          >
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
               <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
               <div className="flex-1">
@@ -727,10 +750,6 @@ function CourseTabs() {
                   <span className="inline-flex items-center gap-1.5">
                     <Briefcase size={13} /> {INSTRUCTOR.role}
                   </span>
-                  <span className="text-subtle/40">·</span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Radio size={13} className="text-blue" /> {INSTRUCTOR.channel}
-                  </span>
                 </p>
               </div>
               <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
@@ -741,20 +760,31 @@ function CourseTabs() {
             <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
 
             <div className="mt-6 flex flex-wrap gap-2">
-              {INSTRUCTOR.expertise.map((e) => (
-                <span
-                  key={e}
-                  className="rounded-full border border-line bg-mist px-3 py-1.5 text-[12px] font-medium text-ink"
-                >
-                  {e}
-                </span>
-              ))}
+              {INSTRUCTOR.expertise.map((e, idx) => {
+                const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
+                return (
+                  <span
+                    key={e}
+                    className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
+                    style={{
+                      background: style.bg,
+                      borderColor: style.border,
+                      color: style.text,
+                    }}
+                  >
+                    {e}
+                  </span>
+                )
+              })}
             </div>
 
-            <div className="mt-7 grid grid-cols-2 gap-3 border-t border-line pt-6 sm:grid-cols-4">
+            <div
+              className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center sm:grid-cols-4"
+              style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
+            >
               {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                <div key={label}>
-                  <Icon size={16} style={{ color: c }} />
+                <div key={label} className="flex flex-col items-center justify-center">
+                  <Icon size={18} style={{ color: c }} />
                   <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
                   <p className="text-[12px] text-subtle">{label}</p>
                 </div>
@@ -764,37 +794,50 @@ function CourseTabs() {
         )}
 
         {tab === "Certificate" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-10 rounded-3xl border border-line bg-paper p-8 sm:flex-row sm:items-center">
-            <CourseBadge label="UI / UX" accent="var(--color-blue)" />
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 sm:flex-row sm:items-center">
+            <CourseBadge type={badgeInfo.type} />
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber/15 px-2.5 py-1 text-[12px] font-semibold text-ink">
-                <Sparkles size={13} className="text-amber" /> Course badge
-              </span>
-              <h3 className="mt-3 font-serif text-2xl font-light text-ink">Earn a badge that&apos;s one of a kind</h3>
-              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-subtle">
-                This badge is unique to <span className="font-medium text-ink">{COURSE_TITLE}</span> — no other
-                course carries it. Finish all four modules and your final case study to unlock it on your profile.
-                You&apos;ll also receive a verified certificate of completion to share.
+              <h3 className="font-serif text-2xl font-light text-ink">
+                <FoldText
+                  text={`Earn the ${badgeInfo.title}`}
+                  splitBy="char"
+                  hinge="top"
+                  trigger="mount"
+                  duration={0.65}
+                  stagger={0.03}
+                  fontSize="inherit"
+                  fontWeight="inherit"
+                  color="currentColor"
+                />
+              </h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
+                Master the core principles and practical skills of this curriculum with real feedback from working product designers. Finish all four core modules and your final case study to unlock the exclusive <span className="font-semibold text-ink">{badgeInfo.badgeName}</span> badge on your profile alongside an official verifiable certificate of completion.
               </p>
             </div>
           </div>
         )}
 
         {tab === "Exam" && (
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-2xl border border-slate-200/80 bg-white/95 p-8 text-center shadow-[0_8px_24px_rgba(20,20,43,0.05)] sm:p-10">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#14142b]">
-              <BadgeCheck size={14} /> Final assessment
+          <div
+            className="flex w-full flex-col items-center gap-6 rounded-3xl border p-8 text-center sm:p-10"
+            style={{
+              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.14) 0%, rgba(20, 184, 166, 0.04) 100%)",
+              borderColor: "rgba(16, 185, 129, 0.28)",
+            }}
+          >
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-white/70 dark:bg-black/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-ink">
+              <BadgeCheck size={14} className="text-teal" /> Final assessment
             </span>
             <div>
-              <h3 className="text-[1.5rem] font-bold tracking-tight text-[#14142b]">
+              <h3 className="text-[1.5rem] font-bold tracking-tight text-ink">
                 Take the final exam
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-slate-500">
+              <p className="mx-auto mt-2 max-w-md text-[13px] font-medium leading-relaxed text-subtle">
                 25 questions · 60 minutes · secure fullscreen session. Pass to earn your certificate.
               </p>
             </div>
             <Link
-              href={`/learn/${params.courseId}/exam`}
+              href={`/learn/exam/${params.courseId}`}
               className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-7 py-3 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
             >
               Proceed to exam <ChevronRight size={16} />
@@ -907,16 +950,77 @@ function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, co
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
-import { useAuthStore } from "@/infrastructure/auth/auth.store"
+function getTitleFromSlug(slug?: string): string {
+  if (!slug) return ''
+  const knownTitles: Record<string, string> = {
+    'intro-to-programming': 'Intro to Programming',
+    'data-structures-and-algorithms': 'Data Structures & Algorithms',
+    'data-structures-algorithms': 'Data Structures & Algorithms',
+    'database-management-systems': 'Database Management Systems',
+    'software-engineering': 'Software Engineering',
+    'programming-logic': 'Programming Logic',
+    'relational-databases': 'Relational Databases',
+    'ui-ux-product-design': 'UI / UX & Product Design',
+    'design-interfaces-people-actually-love': 'Design interfaces people actually love',
+  }
+
+  const normalized = slug.toLowerCase().trim()
+  if (knownTitles[normalized]) {
+    return knownTitles[normalized]
+  }
+
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLowerCase()
+      if (lower === 'and') return '&'
+      if (lower === 'ui') return 'UI'
+      if (lower === 'ux') return 'UX'
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+}
 
 export default function CoursePage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, updateUser } = useAuthStore()
   const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEnrolled, setIsEnrolled] = useState(false)
+
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportNote, setReportNote] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+
+  const handleReportSubmit = async () => {
+    if (!reportNote.trim()) {
+      toast.error('Please provide a note about the issue.');
+      return;
+    }
+    setIsReporting(true);
+    try {
+      await api.post('/api/v1/reports', {
+        contentId: params?.courseId,
+        contentType: 'COURSE',
+        note: reportNote
+      });
+      toast.success('Course reported. Our moderation team will review it shortly.');
+      setReportModalOpen(false);
+      setReportNote('');
+    } catch (err: any) {
+      console.error('Failed to report course:', err);
+      toast.error(err.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
+  const titleFromQuery = searchParams.get('title')
+  const courseIdParam = (params?.courseId as string) || ''
 
   useEffect(() => {
     if ((user as any)?.enrolledCourses && params?.courseId) {
@@ -954,16 +1058,16 @@ export default function CoursePage() {
     )
   }
 
-  const displayTitle = course?.title || COURSE_TITLE;
+  const displayTitle = titleFromQuery || course?.title || getTitleFromSlug(courseIdParam) || COURSE_TITLE;
   const authorName = course?.authorName;
   const authorUsername = course?.authorUsername;
   const authorAvatarUrl = course?.authorAvatarUrl;
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
 
   return (
-    <main className="min-h-screen bg-transparent text-ink">
-      {/* Hero wash */}
-      <div className="arcade-wash">
+    <main className="min-h-screen bg-white text-ink">
+      {/* Hero section with gradient background */}
+      <div className="w-full arcade-wash">
         <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32">
           <CourseHero 
             title={displayTitle} 
@@ -976,20 +1080,57 @@ export default function CoursePage() {
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
             courseId={params?.courseId as string}
+            onReportClick={() => setReportModalOpen(true)}
           />
         </div>
       </div>
 
-      {/* Body */}
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-        <CourseTabs />
-        <div className="mt-20">
-          <ReviewsBlock />
-        </div>
-        <div className="mt-16">
-          <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
+      {/* Body below hero with pure white background */}
+      <div className="w-full bg-white">
+        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+          <CourseTabs courseTitle={displayTitle} />
+          <div className="mt-20">
+            <ReviewsBlock />
+          </div>
+          <div className="mt-16">
+            <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
+          </div>
         </div>
       </div>
+
+      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report Course</DialogTitle>
+            <DialogDescription>
+              Please provide details about what is wrong with this course.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <textarea
+              className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Tell us what's wrong..."
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setReportModalOpen(false)}
+              className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleReportSubmit}
+              disabled={isReporting}
+              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
+            >
+              {isReporting ? 'Submitting...' : 'Submit Report'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }

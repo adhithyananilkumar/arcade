@@ -13,18 +13,10 @@
   
   font-family:'Inter',system-ui,sans-serif;
   color:var(--ink);
-  
-  /* Continuous lavender-mint mesh backdrop theme across the entire page */
-  background: 
-    radial-gradient(at 10% 8%, #E8ECFB 0px, transparent 35%), 
-    radial-gradient(at 90% 24%, #E3F9F5 0px, transparent 35%), 
-    radial-gradient(at 10% 45%, #E8ECFB 0px, transparent 35%), 
-    radial-gradient(at 90% 64%, #E3F9F5 0px, transparent 35%), 
-    radial-gradient(at 10% 85%, #E8ECFB 0px, transparent 35%), 
-    #ffffff;
-    
+  background: transparent;
   line-height:1.6;
   -webkit-font-smoothing:antialiased;
+  position: relative;
 }
 
 .for-creators-root h1,
@@ -108,14 +100,44 @@
   box-shadow:var(--shadow-sm);
 }
 
-.for-creators-root section {
-  padding:64px 0;
-  background:transparent; /* transparent sections so backdrop mesh shows through */
+/* Reduced vertical spacing (40%) & Transparent section wrappers */
+.for-creators-root section,
+.for-creators-root .hero,
+.for-creators-root .statbar,
+.for-creators-root .milestone-sec,
+.for-creators-root .dashboard-sec,
+.for-creators-root .format-sec,
+.for-creators-root .edu-sec,
+.for-creators-root .puzzle-sec,
+.for-creators-root .trust,
+.for-creators-root .faq-sec,
+.for-creators-root .cta {
+  padding: 38px 0;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  position: relative;
+  z-index: 1;
+}
+
+.for-creators-root section::before,
+.for-creators-root section::after,
+.for-creators-root .hero::before,
+.for-creators-root .hero::after,
+.for-creators-root .cta::before,
+.for-creators-root .cta::after {
+  background: none !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .for-creators-root .sec-head {
   max-width:620px;
-  margin:0 auto 40px;
+  margin:0 auto 24px;
   text-align:center;
 }
 
@@ -330,10 +352,14 @@
 
 /* MINIMAL HORIZONTAL MILESTONE TIMELINE */
 .for-creators-root .milestone-sec {
-  background: transparent;
+  background: transparent !important;
   color: var(--ink);
   position: relative;
-  overflow: hidden;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding-bottom: 20px !important;
+  /* overflow: hidden removed — allows ambient blobs to bleed across section boundary */
 }
 
 .for-creators-root .milestones-track {
@@ -342,7 +368,7 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-top: 48px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .for-creators-root .milestones-line {
@@ -1146,9 +1172,9 @@
 /* CTA */
 .for-creators-root .cta {
   background: transparent;
-  border-top: 1px solid var(--lav-100);
+  border-top: none;
   text-align: center;
-  padding: 84px 0;
+  padding: 48px 0;
 }
 
 .for-creators-root .cta-inner {
@@ -1554,3 +1580,17 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@keyframes badgeShine {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  25%, 100% {
+    transform: translateX(350%) rotate(25deg);
+  }
+}
+
+.animate-badge-shine {
+  animation: badgeShine 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

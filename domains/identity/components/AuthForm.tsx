@@ -23,8 +23,11 @@ export interface AuthFormProps {
     firstName: string;
     lastName: string;
     confirmPassword?: string;
+    otp?: string;
   }) => void;
   onGoogleLogin: () => void;
+  hasToken?: boolean;
+  onResendOtp?: (email: string) => Promise<void>;
 }
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -176,6 +179,8 @@ export default function AuthForm({
   onModeChange,
   onSubmit,
   onGoogleLogin,
+  hasToken,
+  onResendOtp,
 }: AuthFormProps) {
   const reduce = useReducedMotion();
   const [email, setEmail] = useState('');
@@ -183,10 +188,13 @@ export default function AuthForm({
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dismissedGlobal, setDismissedGlobal] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   useEffect(() => {
     if (globalError) setDismissedGlobal(false);
@@ -240,6 +248,13 @@ export default function AuthForm({
       if (password !== confirmPassword) {
         next.confirmPassword = 'Passwords do not match.';
       }
+    } else if (mode === 'verify') {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        next.email = 'Enter a valid email address.';
+      }
+      if (!/^\d{6}$/.test(otp)) {
+        next.otp = 'Verification code must be exactly 6 digits.';
+      }
     }
     return next;
   };
@@ -252,7 +267,7 @@ export default function AuthForm({
       setErrors(validationErrors);
       return;
     }
-    onSubmit({ email, password, firstName, lastName, confirmPassword });
+    onSubmit({ email, password, firstName, lastName, confirmPassword, otp });
   };
 
   const activeGlobal = globalError && !dismissedGlobal ? globalError : undefined;
@@ -325,7 +340,7 @@ export default function AuthForm({
               }
             : {
                 title: 'Account created',
-                body: 'Your account is ready. Taking you to sign in…',
+                body: 'Please verify your email address to continue.',
               };
 
     return (
@@ -366,7 +381,7 @@ export default function AuthForm({
     );
   }
 
-  if (mode === 'verify') {
+  if (mode === 'verify' && hasToken) {
     return (
       <motion.div
         className="w-full text-center sm:text-left"
@@ -423,7 +438,7 @@ export default function AuthForm({
       transition={{ duration: 0.55, ease: easeOut }}
     >
       <div className="mb-8 text-center sm:text-left">
-          {(mode === 'forgot' || mode === 'reset') && (
+          {(mode === 'forgot' || mode === 'reset' || mode === 'verify') && (
             <button
               type="button"
               onClick={() => handleModeChange('login')}
@@ -487,7 +502,7 @@ export default function AuthForm({
               )}
             </AnimatePresence>
 
-            {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+            {(mode === 'login' || mode === 'signup' || mode === 'forgot' || mode === 'verify') && (
               <InputField
                 label={mode === 'login' ? 'Email or username' : 'Email'}
                 type={mode === 'login' ? 'text' : 'email'}
@@ -502,6 +517,55 @@ export default function AuthForm({
                 error={emailError}
                 autoComplete={mode === 'login' ? 'username' : 'email'}
               />
+            )}
+
+            {mode === 'verify' && (
+              <div className="flex w-full flex-col">
+                <InputField
+                  label="Verification Code (OTP)"
+                  type="text"
+                  placeholder="6-digit code"
+                  value={otp}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setOtp(val);
+                    if (errors.otp) setErrors((prev) => ({ ...prev, otp: '' }));
+                  }}
+                  icon={CheckCircle2}
+                  error={errors.otp}
+                  autoComplete="one-time-code"
+                />
+                <div className="mt-2.5 flex justify-end pr-1">
+                  {resendSuccess ? (
+                    <span className="text-xs font-semibold text-green-600">
+                      Verification code resent!
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={resending || !email}
+                      onClick={async () => {
+                        if (!email) return;
+                        setResending(true);
+                        try {
+                          if (onResendOtp) {
+                            await onResendOtp(email);
+                            setResendSuccess(true);
+                            setTimeout(() => setResendSuccess(false), 5000);
+                          }
+                        } catch (err) {
+                          // Error handled by parent
+                        } finally {
+                          setResending(false);
+                        }
+                      }}
+                      className="text-xs font-bold text-[#4C6FFF] hover:text-[#3a5ae6] disabled:opacity-50 transition-colors"
+                    >
+                      {resending ? 'Resending...' : 'Resend verification code'}
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
 
             {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
@@ -571,7 +635,9 @@ export default function AuthForm({
                   ? 'Create account'
                   : mode === 'forgot'
                     ? 'Send reset link'
-                    : 'Update password'}
+                    : mode === 'verify'
+                      ? 'Verify code'
+                      : 'Update password'}
             </PrimaryButton>
 
             {(mode === 'login' || mode === 'signup') && (

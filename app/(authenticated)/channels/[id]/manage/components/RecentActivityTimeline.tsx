@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   BookOpen,
   UserPlus,
@@ -11,8 +11,6 @@ import {
   Award,
   Edit3,
   Clock,
-  CheckCircle2,
-  Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -96,22 +94,87 @@ const mockActivities: ActivityFeedItem[] = [
 ];
 
 const iconMap = {
-  COURSE: { icon: BookOpen, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
-  STAFF: { icon: UserPlus, color: 'text-purple-600 bg-purple-50 border-purple-200' },
-  WEBINAR: { icon: Video, color: 'text-sky-600 bg-sky-50 border-sky-200' },
-  BOOTCAMP: { icon: Rocket, color: 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200' },
-  REVIEW: { icon: Star, color: 'text-amber-500 bg-amber-50 border-amber-200' },
-  ARTICLE: { icon: FileText, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-  CERTIFICATE: { icon: Award, color: 'text-teal-600 bg-teal-50 border-teal-200' },
-  UPDATE: { icon: Edit3, color: 'text-slate-600 bg-slate-100 border-slate-200' },
+  COURSE: {
+    icon: BookOpen,
+    badgeColor: 'text-indigo-600 bg-indigo-50 border-indigo-200/80',
+    borderBg: 'bg-indigo-200/60 shadow-[0_4px_16px_rgba(99,102,241,0.05)]',
+    triangleBorder: 'border-r-indigo-200/60',
+  },
+  STAFF: {
+    icon: UserPlus,
+    badgeColor: 'text-purple-600 bg-purple-50 border-purple-200/80',
+    borderBg: 'bg-purple-200/60 shadow-[0_4px_16px_rgba(168,85,247,0.05)]',
+    triangleBorder: 'border-r-purple-200/60',
+  },
+  WEBINAR: {
+    icon: Video,
+    badgeColor: 'text-sky-600 bg-sky-50 border-sky-200/80',
+    borderBg: 'bg-sky-200/60 shadow-[0_4px_16px_rgba(14,165,233,0.05)]',
+    triangleBorder: 'border-r-sky-200/60',
+  },
+  BOOTCAMP: {
+    icon: Rocket,
+    badgeColor: 'text-fuchsia-600 bg-fuchsia-50 border-fuchsia-200/80',
+    borderBg: 'bg-fuchsia-200/60 shadow-[0_4px_16px_rgba(217,70,239,0.05)]',
+    triangleBorder: 'border-r-fuchsia-200/60',
+  },
+  REVIEW: {
+    icon: Star,
+    badgeColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
+    borderBg: 'bg-amber-200/60 shadow-[0_4px_16px_rgba(245,158,11,0.05)]',
+    triangleBorder: 'border-r-amber-200/60',
+  },
+  ARTICLE: {
+    icon: FileText,
+    badgeColor: 'text-emerald-600 bg-emerald-50 border-emerald-200/80',
+    borderBg: 'bg-emerald-200/60 shadow-[0_4px_16px_rgba(16,185,129,0.05)]',
+    triangleBorder: 'border-r-emerald-200/60',
+  },
+  CERTIFICATE: {
+    icon: Award,
+    badgeColor: 'text-teal-600 bg-teal-50 border-teal-200/80',
+    borderBg: 'bg-teal-200/60 shadow-[0_4px_16px_rgba(20,184,166,0.05)]',
+    triangleBorder: 'border-r-teal-200/60',
+  },
+  UPDATE: {
+    icon: Edit3,
+    badgeColor: 'text-slate-600 bg-slate-100 border-slate-200/80',
+    borderBg: 'bg-slate-200/60 shadow-[0_4px_16px_rgba(100,116,139,0.04)]',
+    triangleBorder: 'border-r-slate-200/60',
+  },
 };
+
+const TRIANGLE_RIGHT_CLIP = 'polygon(0% 0%, calc(100% - 24px) 0%, 100% 50%, calc(100% - 24px) 100%, 0% 100%)';
 
 export function RecentActivityTimeline() {
   const [filterType, setFilterType] = useState<string>('ALL');
 
-  const filteredActivities = filterType === 'ALL'
-    ? mockActivities
-    : mockActivities.filter((a) => a.type === filterType);
+  const filteredActivities = useMemo(() => {
+    return filterType === 'ALL'
+      ? mockActivities
+      : mockActivities.filter((a) => a.type === filterType);
+  }, [filterType]);
+
+  const itemSpacing = 118;
+  const startY = 20;
+
+  // Generate SVG wavy path passing through every badge center continuously
+  const wavePath = useMemo(() => {
+    let path = `M 20 0 L 20 ${startY}`;
+    for (let idx = 0; idx < filteredActivities.length; idx++) {
+      const currY = startY + idx * itemSpacing;
+      const nextY = startY + (idx + 1) * itemSpacing;
+      const curveRight = idx % 2 === 0;
+
+      const controlX1 = curveRight ? 36 : 4;
+      const controlX2 = curveRight ? 4 : 36;
+      const midY = (currY + nextY) / 2;
+
+      path += ` C ${controlX1} ${currY + 30}, ${controlX2} ${midY + 15}, 20 ${nextY}`;
+    }
+    path += ` L 20 ${(filteredActivities.length + 0.5) * itemSpacing}`;
+    return path;
+  }, [filteredActivities.length]);
 
   return (
     <div className="space-y-6">
@@ -126,39 +189,51 @@ export function RecentActivityTimeline() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 p-1 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
           <button
             type="button"
+            onMouseEnter={() => setFilterType('ALL')}
             onClick={() => setFilterType('ALL')}
-            className={`rounded-xl px-3 py-1.5 transition-all ${
-              filterType === 'ALL' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'ALL'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             All Activity
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('COURSE')}
             onClick={() => setFilterType('COURSE')}
-            className={`rounded-xl px-3 py-1.5 transition-all ${
-              filterType === 'COURSE' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'COURSE'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Courses
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('STAFF')}
             onClick={() => setFilterType('STAFF')}
-            className={`rounded-xl px-3 py-1.5 transition-all ${
-              filterType === 'STAFF' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'STAFF'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Staff
           </button>
           <button
             type="button"
+            onMouseEnter={() => setFilterType('WEBINAR')}
             onClick={() => setFilterType('WEBINAR')}
-            className={`rounded-xl px-3 py-1.5 transition-all ${
-              filterType === 'WEBINAR' ? 'bg-white text-indigo-600 shadow-2xs font-extrabold' : 'text-slate-500'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+              filterType === 'WEBINAR'
+                ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
             }`}
           >
             Webinars
@@ -166,45 +241,103 @@ export function RecentActivityTimeline() {
         </div>
       </div>
 
-      {/* Timeline Feed */}
-      <div className="relative border-l-2 border-slate-200/80 ml-4 pl-6 space-y-6">
-        {filteredActivities.map((act) => {
+      {/* Wavy Timeline Feed Container */}
+      <div className="relative pl-12 space-y-6">
+        {/* Continuous Vertical Wavy SVG Line */}
+        <div className="absolute left-0 top-0 bottom-0 w-12 pointer-events-none overflow-visible">
+          <svg className="h-full w-full overflow-visible" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="timelineWavyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0ea5e9" />
+                <stop offset="35%" stopColor="#8b5cf6" />
+                <stop offset="70%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+            </defs>
+
+            {/* Wavy SVG Background Soft Blur Path */}
+            <path
+              d={wavePath}
+              fill="none"
+              stroke="url(#timelineWavyGrad)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              opacity="0.2"
+              className="blur-[3px]"
+            />
+
+            {/* Primary Wavy Dashed Path */}
+            <motion.path
+              d={wavePath}
+              fill="none"
+              stroke="url(#timelineWavyGrad)"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeDasharray="4 3"
+              animate={{ strokeDashoffset: [0, -28] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'linear' }}
+            />
+          </svg>
+        </div>
+
+        {/* Timeline Event Feed Cards */}
+        {filteredActivities.map((act, index) => {
           const config = iconMap[act.type];
           const Icon = config.icon;
 
           return (
             <motion.div
               key={act.id}
-              initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
-              className="relative group"
+              transition={{ delay: index * 0.05 }}
+              className="relative group transition-all"
             >
-              {/* Timeline Bullet Icon */}
-              <span className={`absolute -left-[37px] top-0 flex h-8 w-8 items-center justify-center rounded-full border shadow-2xs transition-transform group-hover:scale-110 ${config.color}`}>
-                <Icon size={14} />
+              {/* Circular Node Icon Badge */}
+              <span
+                className={`absolute -left-[44px] top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border ring-4 ring-white shadow-[0_4px_12px_rgba(0,0,0,0.06)] transition-transform group-hover:scale-115 ${config.badgeColor}`}
+              >
+                <Icon size={15} />
               </span>
 
-              {/* Feed Card */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-xs font-black text-[#14142b]">{act.title}</h4>
-                  <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-400">
-                    <Clock size={12} />
-                    {act.timestamp}
-                  </span>
-                </div>
+              {/* Light Bordered Left Pointer Triangle */}
+              <div className={`absolute -left-[10px] top-[13px] z-15 h-0 w-0 border-y-[7px] border-y-transparent border-r-[10px] ${config.triangleBorder}`} />
+              <div className="absolute -left-[8px] top-[14px] z-20 h-0 w-0 border-y-[6px] border-y-transparent border-r-[9px] border-r-white" />
 
-                <p className="mt-1 text-xs font-medium text-slate-600">{act.description}</p>
+              {/* Polygon Border Wrapper with Lightened Border Color */}
+              <div
+                className={`relative rounded-2xl rounded-r-none p-[1.5px] transition-all hover:shadow-md ${config.borderBg}`}
+                style={{ clipPath: TRIANGLE_RIGHT_CLIP }}
+              >
+                {/* Pure White Inner Card Content */}
+                <div
+                  className="bg-white p-4 pr-12 rounded-[14.5px] rounded-r-none w-full h-full"
+                  style={{ clipPath: TRIANGLE_RIGHT_CLIP }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-black text-[#14142b]">{act.title}</h4>
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
+                      <Clock size={12} />
+                      {act.timestamp}
+                    </span>
+                  </div>
 
-                <div className="mt-2.5 flex items-center gap-2 pt-2 border-t border-slate-100 text-[11px] font-bold text-slate-500">
-                  {act.userAvatar && (
-                    <img
-                      src={act.userAvatar}
-                      alt={act.user}
-                      className="h-4 w-4 rounded-full object-cover"
-                    />
-                  )}
-                  <span>Action by: <span className="text-slate-800 font-extrabold">{act.user}</span></span>
+                  <p className="mt-1 text-xs font-semibold text-slate-600 leading-relaxed">
+                    {act.description}
+                  </p>
+
+                  <div className="mt-2.5 flex items-center gap-2 pt-2 border-t border-slate-100 text-[11px] font-bold text-slate-500">
+                    {act.userAvatar && (
+                      <img
+                        src={act.userAvatar}
+                        alt={act.user}
+                        className="h-4 w-4 rounded-full object-cover"
+                      />
+                    )}
+                    <span>
+                      Action by: <span className="text-[#14142b] font-black">{act.user}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </motion.div>

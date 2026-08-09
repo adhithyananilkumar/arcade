@@ -5,7 +5,7 @@ import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-rea
 import { WorkshopPreviewDto, PricingModel } from '@/app/(authenticated)/studio/workshop/types';
 import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
 import { UIEnrollmentState } from '@/domains/enrollment/types/enrollment.types';
-import { getMyRegistrationStatus } from '@/app/workshop/api/registration';
+import { getMyRegistrationStatus } from '@/app/(public)/workshop/api/registration';
 import { toast } from 'sonner';
 
 interface Props {
@@ -25,10 +25,10 @@ export const RegistrationSidebar: React.FC<Props> = ({ preview, onRegister }) =>
     }
     
     getMyRegistrationStatus(basicInfo.id)
-      .then(data => {
+      .then((data: any) => {
         setRegistration(data);
       })
-      .catch(err => {
+      .catch((err: any) => {
         console.error('Failed to fetch registration status:', err);
       })
       .finally(() => {

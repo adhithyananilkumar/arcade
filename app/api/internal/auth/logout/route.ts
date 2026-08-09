@@ -3,6 +3,10 @@ import { cookies } from 'next/headers';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api/v1';
 
+export async function GET() {
+  return NextResponse.json({ message: 'Logout API route active' });
+}
+
 export async function POST(request: Request) {
   try {
     // CSRF Protection
@@ -12,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const authHeader = request.headers.get('authorization');
-    
+
     // Call backend to revoke tokens (best effort)
     if (authHeader) {
       await fetch(`${BACKEND_URL}/auth/logout`, {

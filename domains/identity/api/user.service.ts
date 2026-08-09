@@ -1,5 +1,5 @@
 import { api } from '@/infrastructure/http/api';
-import { User } from '@/infrastructure/auth/auth.store';
+import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export class UserService {
   static async getMe(): Promise<User> {
@@ -64,7 +64,10 @@ export class UserService {
     return data;
   }
 
-
+  static async removeAvatar(): Promise<User> {
+    const data = await api.delete<User>('/api/v1/users/me/avatar');
+    return data;
+  }
 
   static async acceptContentCreatorInvite(): Promise<void> {
     await api.post('/api/v1/content-creators/accept');

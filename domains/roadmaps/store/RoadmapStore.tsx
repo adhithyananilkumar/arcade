@@ -296,7 +296,7 @@ export function RoadmapEditorProvider({
         duration: 400,
         padding: 2,
         minZoom: 1,
-        maxZoom: 1.5,
+        maxZoom: 1.0,
       });
     }, 50);
   }, [nodes, selectedNodeId, setNodes, setEdges, isEffectiveReadOnly, appearance, pushToHistory, reactFlowFitView]);
@@ -349,7 +349,7 @@ export function RoadmapEditorProvider({
     const layouted = LayoutEngine.getLayoutedElements(nodes, edges);
     setNodes(layouted.nodes);
     setEdges(layouted.edges);
-    setTimeout(() => reactFlowFitView({ duration: 500, padding: 0.2 }), 50);
+    setTimeout(() => reactFlowFitView({ duration: 500, padding: 0.2, maxZoom: 1.0 }), 50);
   }, [nodes, edges, appearance, setNodes, setEdges, reactFlowFitView, isEffectiveReadOnly, pushToHistory]);
 
   const bringToFront = useCallback((id: string) => {
@@ -388,7 +388,7 @@ export function RoadmapEditorProvider({
         duration: 500,
         padding: 2,
         minZoom: 1,
-        maxZoom: 1.5,
+        maxZoom: 1.0,
       });
     }
   }, [nodes, reactFlowFitView]);
@@ -452,13 +452,13 @@ export function RoadmapEditorProvider({
         duration: 500,
         padding: 2,
         minZoom: 1,
-        maxZoom: 1.5,
+        maxZoom: 1.0,
       });
     }
   }, [nodes, selectedNodeId, reactFlowFitView]);
 
   const fitView = useCallback((options?: any) => {
-    reactFlowFitView(options || { duration: 500, padding: 0.2 });
+    reactFlowFitView(options || { duration: 500, padding: 0.2, maxZoom: 1.0 });
   }, [reactFlowFitView]);
 
   const zoomIn = useCallback(() => reactFlowZoomIn(), [reactFlowZoomIn]);

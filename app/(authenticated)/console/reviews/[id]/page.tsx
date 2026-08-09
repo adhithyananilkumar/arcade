@@ -113,13 +113,13 @@ export default function ReviewDetailPage() {
           const role = review.tier === 'GLOBAL' ? 'Superuser' : 'Org Head';
           let text: string = review.status;
           let colorClass = 'bg-slate-100 text-slate-800';
-          if (review.status === 'OPEN') {
+          if ((review.status as string) === 'OPEN') {
             text = `Pending by ${role}`;
             colorClass = 'bg-amber-100 text-amber-800';
           } else if (review.status === 'COMPLETED') {
             text = `Approved by ${role}`;
             colorClass = 'bg-emerald-100 text-emerald-800';
-          } else if (review.status === 'CHANGES_REQUESTED') {
+          } else if ((review.status as string) === 'CHANGES_REQUESTED') {
             text = `Rejected by ${role}`;
             colorClass = 'bg-rose-100 text-rose-800';
           }
@@ -260,11 +260,10 @@ export default function ReviewDetailPage() {
                 type="button"
                 onClick={submitDecision}
                 disabled={busy || (dialog === "changes" && !reason.trim())}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${
-                  dialog === "approve"
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${dialog === "approve"
                     ? "bg-[#14142b] hover:bg-[#232735]"
                     : "bg-rose-600 hover:bg-rose-700"
-                }`}
+                  }`}
               >
                 {busy && <Loader2 size={14} className="animate-spin" />}
                 {dialog === "approve" ? "Publish" : "Request changes"}

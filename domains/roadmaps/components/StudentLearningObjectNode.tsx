@@ -40,6 +40,7 @@ export function StudentLearningObjectNode({ data, id }: any) {
         isCurrent={isCurrent}
         editable={false}
         showHandles={true}
+        shape={data.shape || 'rectangle'}
         onCheckboxClick={handleCheckboxClick}
       />
     </div>

@@ -66,22 +66,22 @@
 
     /* arcade brand palette */
     --ink: #14161c;
-    --paper: #ffffff;
-    --mist: #f6f7fb;
+    --paper: #eef5fc;
+    --mist: #e2eefc;
     --blue: #3457e8;
     --teal: #0fa676;
     --purple: #6d5ef0;
     --amber: #f2b23c;
     --coral: #f5654f;
-    --line: #ecedf3;
+    --line: #d8e6f7;
     --subtle: #6a6d7c;
 
     --background: var(--paper);
     --foreground: var(--ink);
-    --card: #ffffff;
+    --card: #f4f8fe;
     --card-foreground: var(--ink);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
+    --popover: oklch(0.99 0.01 245);
+    --popover-foreground: oklch(0.145 0.02 245);
     --primary: var(--ink);
     --primary-foreground: #ffffff;
     --secondary: oklch(0.97 0 0);
@@ -193,12 +193,14 @@
     }
 }
 
-/* Soft arcade gradient wash used behind the hero */
+/* Soft arcade gradient wash applied across the entire page */
 .arcade-wash {
     background:
-        radial-gradient(60% 55% at 15% 0%, color-mix(in oklab, var(--blue) 16%, transparent) 0%, transparent 60%),
-        radial-gradient(55% 50% at 95% 8%, color-mix(in oklab, var(--teal) 15%, transparent) 0%, transparent 55%),
-        linear-gradient(180deg, #eef1fb 0%, #f4f7f6 42%, var(--paper) 100%);
+        radial-gradient(70% 45% at 15% 0%, color-mix(in oklab, var(--blue) 18%, transparent) 0%, transparent 65%),
+        radial-gradient(65% 45% at 95% 5%, color-mix(in oklab, var(--teal) 18%, transparent) 0%, transparent 60%),
+        radial-gradient(60% 50% at 5% 40%, color-mix(in oklab, var(--teal) 14%, transparent) 0%, transparent 55%),
+        radial-gradient(65% 50% at 95% 75%, color-mix(in oklab, var(--blue) 15%, transparent) 0%, transparent 60%),
+        linear-gradient(180deg, #eef1fb 0%, #f4f7f6 30%, #f1f5f7 65%, #f4f7f6 100%);
 }
 
 .arcade-cta-wash {

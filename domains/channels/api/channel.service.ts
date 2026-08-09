@@ -6,6 +6,7 @@ export interface Channel {
   iconUrl?: string;
   bannerUrl?: string;
   description?: string;
+  socialLinks?: string[];
   isPersonal: boolean;
   status: string;
   suspensionReason?: string;
@@ -61,6 +62,20 @@ export interface ChannelDeletionRequestDto {
   isPersonal: boolean;
 }
 
+export interface OwnershipTransferResponse {
+  id: string;
+  channelId: string;
+  channelName: string;
+  currentOwnerId: string;
+  currentOwnerName: string;
+  proposedOwnerId: string;
+  proposedOwnerName: string;
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
+  createdAt: string;
+  expiresAt: string;
+  respondedAt?: string | null;
+}
+
 export const channelService = {
   createChannelRequest: async (
     name: string,
@@ -85,7 +100,10 @@ export const channelService = {
     channelId: string,
     description: string,
     iconFile?: File,
-    bannerFile?: File
+    bannerFile?: File,
+    removeIcon: boolean = false,
+    removeBanner: boolean = false,
+    socialLinks?: string[]
   ): Promise<Channel> => {
     const formData = new FormData();
     formData.append('description', description);
@@ -95,6 +113,15 @@ export const channelService = {
     }
     if (bannerFile) {
       formData.append('banner', bannerFile);
+    }
+    
+    formData.append('removeIcon', String(removeIcon));
+    formData.append('removeBanner', String(removeBanner));
+    
+    if (socialLinks) {
+      socialLinks.forEach((link) => {
+        formData.append('socialLinks', link);
+      });
     }
     
     const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
@@ -201,5 +228,54 @@ export const channelService = {
   getAuditLog: async (): Promise<ChannelAuditLogEntry[]> => {
     const response = await api.get<{ content: ChannelAuditLogEntry[] }>('/api/v1/channels/audit-log?size=100');
     return response.content;
+  },
+
+  getChannelAuditLog: async (channelId: string): Promise<ChannelAuditLogEntry[]> => {
+    const response = await api.get<{ content: ChannelAuditLogEntry[] }>(`/api/v1/channels/${channelId}/audit-log?size=100`);
+    return response.content;
+  },
+
+  sendOwnershipTransferOtp: async (channelId: string, email: string): Promise<void> => {
+    await api.post(`/api/v1/channels/${channelId}/ownership-transfer/send-otp`, { email });
+  },
+
+  verifyOwnershipTransferOtp: async (channelId: string, email: string, otp: string): Promise<void> => {
+    await api.post(`/api/v1/channels/${channelId}/ownership-transfer/verify-otp`, { email, otp });
+  },
+
+  requestOwnershipTransfer: async (
+    channelId: string,
+    proposedOwnerId: string,
+    channelName?: string,
+    currentOwnerEmail?: string,
+    otp?: string
+  ): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/channels/${channelId}/ownership-transfer`, {
+      proposedOwnerId,
+      channelName,
+      currentOwnerEmail,
+      otp
+    });
+    return response;
+  },
+
+  getOwnershipTransferStatus: async (channelId: string): Promise<OwnershipTransferResponse | null> => {
+    const response = await api.get<OwnershipTransferResponse | null>(`/api/v1/channels/${channelId}/ownership-transfer`);
+    return response;
+  },
+
+  acceptOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/accept`);
+    return response;
+  },
+
+  declineOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.post<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}/decline`);
+    return response;
+  },
+
+  cancelOwnershipTransfer: async (requestId: string): Promise<OwnershipTransferResponse> => {
+    const response = await api.delete<OwnershipTransferResponse>(`/api/v1/ownership-transfer/${requestId}`);
+    return response;
   }
 };

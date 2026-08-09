@@ -34,10 +34,7 @@ function parseSlots(raw?: string | null) {
 
 export default function ExamSchedulesPage() {
   const { user } = useAuthStore();
-  if (
-    !AuthorizationService.canReviewCourses(user) &&
-    !AuthorizationService.canReviewContent(user)
-  ) {
+  if (!AuthorizationService.canReviewPlatformContent(user)) {
     notFound();
   }
 

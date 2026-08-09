@@ -4,6 +4,7 @@ export interface RoadmapNode {
   description?: string;
   type?: string; // 'lesson', 'project', etc.
   contentId?: string;
+  courseIds?: string[];
   difficulty?: string;
   durationMinutes?: number;
   duration?: string;
@@ -60,3 +61,63 @@ export interface RenderableGraph {
   levels?: RoadmapNode[][];
   canvasAppearance?: CanvasAppearance;
 }
+
+export interface JourneyChapter {
+  id: string;
+  title: string;
+  subtitle: string;
+  chapterIndex: number;
+  nodeIds: string[];
+  y: number;
+  isCompleted: boolean;
+}
+
+export interface JourneyWaypoint {
+  id: string;
+  nodeId: string;
+  x: number;
+  y: number;
+  tangentX: number;
+  tangentY: number;
+  normalX: number;
+  normalY: number;
+  side: 'left' | 'right';
+  cardX: number;
+  cardY: number;
+  cardWidth: number;
+  cardHeight: number;
+  connectorPathD: string; // Smooth curved Bezier connector string
+  progressRatio: number; // 0 to 1 along path length
+}
+
+export interface JourneyNodeAttachment {
+  node: RoadmapNode;
+  waypoint: JourneyWaypoint;
+  state: 'completed' | 'current' | 'locked' | 'optional';
+  isMilestone: boolean;
+  milestoneType?: 'checkpoint' | 'project' | 'quiz' | 'certificate' | 'assessment';
+}
+
+export interface JourneyRoadPath {
+  mainRoadD: string;          // Full SVG d attribute for main road
+  completedPathsD: string[];  // SVG d attributes for completed road segments (Green)
+  currentPathD: string;       // SVG d attribute for current active road segment (Indigo Glow)
+  lockedPathsD: string[];     // SVG d attributes for locked road segments (Slate Gray)
+  centerLineD: string;        // SVG d attribute for center line
+  totalLength: number;        // Arc length in pixels
+}
+
+export interface JourneyRenderResult {
+  nodes: RoadmapNode[];
+  edges: RoadmapEdge[];
+  attachments: JourneyNodeAttachment[];
+  chapters: JourneyChapter[];
+  roadPath: JourneyRoadPath;
+  width: number;
+  height: number;
+  minX: number;
+  minY: number;
+  canvasAppearance?: CanvasAppearance;
+}
+
+

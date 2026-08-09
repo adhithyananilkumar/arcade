@@ -19,6 +19,12 @@ import {
   BookOpen,
   Users,
   FileText,
+  CheckCircle2,
+  Clock,
+  Send,
+  ChevronRight,
+  Link as LinkIcon,
+  Bell,
   Calendar,
   Star,
   BarChart3,
@@ -40,18 +46,24 @@ import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 
 import { ChannelStaffManager } from './ChannelStaffManager';
+import { ChannelNotificationsManager } from './ChannelNotificationsManager';
+import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
 
 type ManageTab =
   | 'OVERVIEW'
   | 'COURSES'
+  | 'CONTENT'
   | 'STAFF'
   | 'ARTICLES'
   | 'EVENTS'
   | 'REVIEWS'
   | 'ANALYTICS'
   | 'ACTIVITY'
+  | 'NOTIFICATIONS'
   | 'DANGER';
 
 type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
@@ -69,6 +81,7 @@ export default function ManageChannelPage() {
   const [content, setContent] = useState<ChannelContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
   const [channelReviews, setChannelReviews] = useState<Record<string, string>>({});
@@ -87,16 +100,7 @@ export default function ManageChannelPage() {
         channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
       ]);
 
-      const savedBanner = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_banner_${channelId}`) : null;
-      const savedLogo = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_logo_${channelId}`) : null;
-
-      const channelWithSavedBranding: Channel = {
-        ...channelData,
-        bannerUrl: savedBanner !== null ? savedBanner : channelData.bannerUrl,
-        iconUrl: savedLogo !== null ? savedLogo : channelData.iconUrl,
-      };
-
-      setChannel(channelWithSavedBranding);
+      setChannel(channelData);
       setPermissions(perms);
       setPendingDeletionRequest(
         myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null,
@@ -174,17 +178,22 @@ export default function ManageChannelPage() {
 
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
+  const isPersonalChannel = channel.isPersonal;
+  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
 
-  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string }[] = [
+  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
     { id: 'COURSES', label: 'Courses', icon: BookOpen, badge: `${content.length || 48}` },
-    { id: 'STAFF', label: 'Staff', icon: Users, badge: '34' },
+    ...(!channel.isPersonal
+      ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
+      : []),
     { id: 'ARTICLES', label: 'Articles', icon: FileText, badge: '124' },
     { id: 'EVENTS', label: 'Events', icon: Calendar, badge: '18' },
     { id: 'REVIEWS', label: 'Reviews', icon: Star, badge: '4.92 ★' },
     { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
-    ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert }] : []),
+    { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
+    ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
   ];
 
   return (
@@ -195,72 +204,83 @@ export default function ManageChannelPage() {
       }}
     >
       {/* Floating Horizontal Bottom Dock Navigation Bar */}
-      <nav
-        aria-label="Floating Organization Navigation Dock"
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
-      >
-        {/* 1. Home Icon Button */}
-        <div className="relative group shrink-0">
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-indigo-600 hover:bg-indigo-50 transition-all duration-300 cursor-pointer"
-            title="Go to Home"
-          >
-            <Home size={19} className="group-hover:scale-110 transition-transform" />
-          </button>
-
-          {/* Hover Tooltip Popup Above */}
-          <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-50 hidden group-hover:flex items-center gap-2 whitespace-nowrap rounded-2xl bg-[#14142b] px-3.5 py-2 text-xs font-extrabold text-white shadow-xl border border-slate-800 animate-in fade-in-0 slide-in-from-bottom-2 duration-150">
-            <span>Home</span>
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-6 border-t-[#14142b]" />
-          </div>
-        </div>
+      <TooltipProvider delay={100}>
+        <motion.nav
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", bounce: 0.3, duration: 0.8 }}
+          aria-label="Floating Organization Navigation Dock"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-[0_16px_40px_rgba(20,20,43,0.15)] backdrop-blur-xl ring-1 ring-black/[0.04] max-w-[95vw] overflow-x-auto scrollbar-none"
+        >
+        <motion.div 
+          layout 
+          className={`relative group shrink-0 ${hoveredTab === 'HOME' ? 'mx-2 sm:mx-3' : 'mx-0'}`}
+          onHoverStart={() => setHoveredTab('HOME')}
+          onHoverEnd={() => setHoveredTab(null)}
+        >
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={() => router.push('/')}
+                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b] transition-all duration-300 cursor-pointer"
+                  title="Go to Home"
+                >
+                  <Home size={19} className="group-hover:scale-110 transition-transform" />
+                </button>
+              }
+            />
+            <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+              Home
+            </TooltipContent>
+          </Tooltip>
+        </motion.div>
 
         {/* Divider line */}
-        <div className="h-6 w-px bg-slate-200 shrink-0 mx-1" />
+        <motion.div layout className="h-6 w-px bg-slate-200 shrink-0 mx-1" />
 
         {/* 2. Management Tab Icons */}
         {mainTabs.map((tab) => {
           const active = activeTab === tab.id;
           const Icon = tab.icon;
           return (
-            <div key={tab.id} className="relative group shrink-0">
-              <button
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-300 cursor-pointer ${
-                  active
-                    ? tab.id === 'DANGER'
-                      ? 'bg-rose-600 text-white shadow-[0_4px_16px_rgba(225,29,72,0.35)] scale-105'
-                      : 'bg-gradient-to-br from-[#14142b] via-indigo-950 to-slate-900 text-white shadow-[0_4px_16px_rgba(20,20,43,0.3)] scale-105'
-                    : tab.id === 'DANGER'
-                    ? 'text-rose-600 hover:bg-rose-50'
-                    : 'text-slate-600 hover:bg-slate-100/90 hover:text-[#14142b]'
-                }`}
-              >
-                <Icon size={18} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
-                
-                {/* Dot badge indicator */}
-                {tab.badge && !active && (
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white" />
-                )}
-              </button>
-
-              {/* Hover Label Tooltip Above */}
-              <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 z-50 hidden group-hover:flex items-center gap-2 whitespace-nowrap rounded-2xl bg-[#14142b] px-3.5 py-2 text-xs font-extrabold text-white shadow-xl border border-slate-800 animate-in fade-in-0 slide-in-from-bottom-2 duration-150">
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-black text-indigo-200">
-                    {tab.badge}
-                  </span>
-                )}
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-6 border-t-[#14142b]" />
-              </div>
-            </div>
+            <motion.div 
+              layout 
+              key={tab.id} 
+              className={`relative group shrink-0 ${hoveredTab === tab.id ? 'mx-2 sm:mx-3' : 'mx-0'}`}
+              onHoverStart={() => setHoveredTab(tab.id)}
+              onHoverEnd={() => setHoveredTab(null)}
+            >
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors duration-300 cursor-pointer ${
+                        active
+                          ? tab.id === 'DANGER'
+                            ? 'text-rose-600'
+                            : 'text-indigo-600'
+                          : tab.id === 'DANGER'
+                          ? 'text-rose-600 hover:bg-rose-50'
+                          : 'text-slate-500 hover:bg-slate-100/90 hover:text-[#14142b]'
+                      }`}
+                    >
+                      <Icon size={19} className={active ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
+                    </button>
+                  }
+                />
+                <TooltipContent side="top" sideOffset={8} className="bg-white text-slate-800 border border-slate-200 shadow-xl font-extrabold text-xs px-3.5 py-2 rounded-2xl [&_.fill-foreground]:hidden">
+                  {tab.label}
+                </TooltipContent>
+              </Tooltip>
+            </motion.div>
           );
         })}
-      </nav>
+        </motion.nav>
+      </TooltipProvider>
 
       {/* Main Content Container */}
       <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-20 sm:px-8 sm:pt-24">
@@ -302,25 +322,36 @@ export default function ManageChannelPage() {
         )}
 
         {/* Organization Header Banner & Profile Section */}
-        <OrganizationHeader
-          channel={channel}
-          onEditClick={() => setIsEditModalOpen(true)}
-          onViewPublicClick={() => router.push(`/channels/${channelId}`)}
-        />
+        {activeTab === 'OVERVIEW' && (
+          <OrganizationHeader
+            channel={channel}
+            canEdit={canEdit}
+            onEditClick={() => setIsEditModalOpen(true)}
+            onViewPublicClick={() => router.push(`/channels/${channelId}`)}
+          />
+        )}
 
         {/* Dynamic Lower Section Content Display */}
         <div className="space-y-10">
           {/* TAB 1: SMALL COURSE OVERVIEW DASHBOARD */}
           {activeTab === 'OVERVIEW' && (
-            <SmallCourseOverview
-              onNavigateToCatalog={() => setActiveTab('COURSES')}
-              onAddCourse={() => router.push('/studio')}
-            />
+            <div className="space-y-6">
+              <SmallCourseOverview
+                onNavigateToCatalog={() => setActiveTab('COURSES')}
+                onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
+                onAddCourse={() => router.push('/studio')}
+              />
+              <ChannelSocialLinksCard 
+                channel={channel} 
+                canManageSettings={permissions.includes('ALL') || permissions.includes('channel.settings.manage') || isOwner} 
+                onUpdate={setChannel} 
+              />
+            </div>
           )}
 
           {/* TAB 2: COURSES */}
           {activeTab === 'COURSES' && (
-            <CourseManagementSection onAddCourse={() => router.push('/studio')} />
+            <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
           )}
 
           {/* TAB 3: STAFF */}
@@ -329,6 +360,7 @@ export default function ManageChannelPage() {
               channelId={channelId}
               permissions={permissions}
               isSuspended={isSuspended}
+              isPersonalChannel={isPersonalChannel}
             />
           )}
 
@@ -347,7 +379,10 @@ export default function ManageChannelPage() {
           {/* TAB 8: ACTIVITY */}
           {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
 
-          {/* TAB 9: DANGER ZONE */}
+          {/* TAB 9: NOTIFICATIONS */}
+          {activeTab === 'NOTIFICATIONS' && <ChannelNotificationsManager channel={channel} />}
+
+          {/* TAB 10: DANGER ZONE */}
           {activeTab === 'DANGER' && isOwner && (
             <ChannelDangerZone channel={channel} />
           )}
