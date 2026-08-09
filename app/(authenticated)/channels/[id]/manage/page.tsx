@@ -100,16 +100,7 @@ export default function ManageChannelPage() {
         channelService.getChannelContent(channelId).catch(() => [] as ChannelContentItem[]),
       ]);
 
-      const savedBanner = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_banner_${channelId}`) : null;
-      const savedLogo = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_logo_${channelId}`) : null;
-
-      const channelWithSavedBranding: Channel = {
-        ...channelData,
-        bannerUrl: savedBanner !== null ? savedBanner : channelData.bannerUrl,
-        iconUrl: savedLogo !== null ? savedLogo : channelData.iconUrl,
-      };
-
-      setChannel(channelWithSavedBranding);
+      setChannel(channelData);
       setPermissions(perms);
       setPendingDeletionRequest(
         myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null,
@@ -188,6 +179,7 @@ export default function ManageChannelPage() {
   const isSuspended = channel.status === 'SUSPENDED';
   const isOwner = user?.id === channel.ownerId;
   const isPersonalChannel = channel.isPersonal;
+  const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
@@ -333,6 +325,7 @@ export default function ManageChannelPage() {
         {activeTab === 'OVERVIEW' && (
           <OrganizationHeader
             channel={channel}
+            canEdit={canEdit}
             onEditClick={() => setIsEditModalOpen(true)}
             onViewPublicClick={() => router.push(`/channels/${channelId}`)}
           />
@@ -358,7 +351,7 @@ export default function ManageChannelPage() {
 
           {/* TAB 2: COURSES */}
           {activeTab === 'COURSES' && (
-            <CourseManagementSection onAddCourse={() => router.push('/studio')} />
+            <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
           )}
 
           {/* TAB 3: STAFF */}

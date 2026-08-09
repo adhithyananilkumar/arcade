@@ -259,7 +259,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
-          {!channelsLoading && channels.length > 1 && (
+          {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
@@ -366,7 +366,7 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
-          {!channelsLoading && channels.length > 1 && (
+          {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
@@ -488,7 +488,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
-          {!channelsLoading && channels.length > 1 && (
+          {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
@@ -572,10 +572,10 @@ function CreateWorkshopModal({
     }
   }
 
-  const typeLabel = workshopType === WorkshopType.WEBINAR ? "Webinar" : 
-                    workshopType === WorkshopType.BOOTCAMP ? "Bootcamp" :
-                    workshopType === WorkshopType.MASTERCLASS ? "Masterclass" :
-                    workshopType === WorkshopType.AMA ? "AMA" : "Workshop";
+  const typeLabel = workshopType === WorkshopType.WEBINAR ? "Webinar" :
+    workshopType === WorkshopType.BOOTCAMP ? "Bootcamp" :
+      workshopType === WorkshopType.MASTERCLASS ? "Masterclass" :
+        workshopType === WorkshopType.AMA ? "AMA" : "Workshop";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -653,7 +653,7 @@ function CreateWorkshopModal({
               className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
-          {!channelsLoading && channels.length > 1 && (
+          {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
           {!channelsLoading && channels.length === 0 && (
@@ -1006,7 +1006,7 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "WORKSHOP">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
-  
+
   const { channels } = useEligibleChannels();
 
   useEffect(() => {
@@ -1258,17 +1258,15 @@ export default function DashboardPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
-                  active
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${active
                     ? "bg-[#14142b] text-white shadow-sm"
                     : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
-                }`}
+                  }`}
               >
                 {tab.label}
                 <span
-                  className={`tabular-nums ${
-                    active ? "text-white/70" : "text-slate-400"
-                  }`}
+                  className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"
+                    }`}
                 >
                   {count}
                 </span>
@@ -1286,11 +1284,10 @@ export default function DashboardPage() {
                 key={chip.id}
                 type="button"
                 onClick={() => setTypeFilter(chip.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                  active
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${active
                     ? "border-[#FF6B4A]/35 bg-[#FF6B4A]/10 text-[#D94F32]"
                     : "border-slate-200 bg-white/80 text-slate-500 hover:border-slate-300 hover:text-[#14142b]"
-                }`}
+                  }`}
               >
                 {chip.label}
               </button>

@@ -97,8 +97,10 @@ async function request<T>(
         const err = JSON.parse(text);
         message = err.message ?? message;
       } catch {
-        // If it's not JSON, we might want to log it, but let's keep the generic message
-        console.error("Failed to parse API error:", text);
+        // If it's not JSON (like plain text "Too many requests"), use it directly if it's a short string
+        if (text.length < 100 && !text.includes('<html')) {
+          message = text;
+        }
       }
     }
     throw new Error(message);

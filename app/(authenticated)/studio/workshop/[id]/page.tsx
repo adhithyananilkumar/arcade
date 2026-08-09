@@ -129,7 +129,7 @@ export default function SingleWorkshopDashboard() {
       const data = await getWorkshopSummary(workshopId);
       setSummary(data);
       try {
-        const analyticsData = await api.get<any>(`/api/workshops/${workshopId}/participants/analytics`);
+        const analyticsData = await api.get<any>(`/api/v1/workshops/${workshopId}/participants/analytics`);
         setAnalytics({
           totalRegistrations: analyticsData.totalRegistrations || 0,
           totalRevenue: analyticsData.totalRevenue || 0,

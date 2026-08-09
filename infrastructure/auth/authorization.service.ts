@@ -16,8 +16,14 @@ export const AuthorizationService = {
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
 
-  /** Accepts platform.content.review or legacy platform.courses.review. */
+  /** Accepts platform.content.review, legacy platform.courses.review, or channel.content.review. */
   canReviewContent: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.content.review') ||
+    AuthorizationService.hasPermission(user, 'platform.courses.review') ||
+    AuthorizationService.hasPermission(user, 'channel.content.review'),
+
+  /** Checks if the user is a platform/global reviewer */
+  canReviewPlatformContent: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'platform.content.review') ||
     AuthorizationService.hasPermission(user, 'platform.courses.review'),
 

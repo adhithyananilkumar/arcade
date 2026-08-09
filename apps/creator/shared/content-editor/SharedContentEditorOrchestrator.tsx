@@ -1306,17 +1306,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
             <StatusPill status={status} />
 
+            {activeLessonId && (
+              <button
+                type="button"
+                onClick={() => setHistoryOpen(true)}
+                title="Lesson version history"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              >
+                <History size={15} />
+                <span className="hidden md:inline">History</span>
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={() => {
-                if (activeLessonId) setHistoryOpen(true);
-                else setStatusHistoryOpen(true);
-              }}
-              title={activeLessonId ? "Version history" : "Status history"}
+              onClick={() => setStatusHistoryOpen(true)}
+              title="Course status & reviewer comments"
               className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
-              <History size={15} />
-              <span className="hidden md:inline">History</span>
+              <MessageSquare size={15} />
+              <span className="hidden md:inline">Status</span>
             </button>
 
             <button
@@ -1346,20 +1355,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             )}
 
             {status !== "SUBMITTED" && (
-              <button
-                type="button"
-                onClick={askSubmit}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Send size={14} />
-                <span className="hidden sm:inline">
-                  {status === "PUBLISHED" || status === "APPROVED"
-                    ? "Submit Updates"
-                    : status === "REJECTED"
-                      ? "Resubmit"
-                      : "Submit"}
-                </span>
-              </button>
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline text-xs font-medium text-slate-400">All changes saved</span>
+                <button
+                  type="button"
+                  onClick={askSubmit}
+                  className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Send size={14} />
+                  <span className="hidden sm:inline">
+                    {status === "PUBLISHED" || status === "APPROVED"
+                      ? "Submit Updates"
+                      : status === "REJECTED"
+                        ? "Resubmit"
+                        : "Submit"}
+                  </span>
+                </button>
+              </div>
             )}
 
             {contentType === "workshop" && contentId && (

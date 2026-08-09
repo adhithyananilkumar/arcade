@@ -53,12 +53,14 @@ interface OrganizationHeaderProps {
     ownerEmail?: string;
     ownerUsername?: string;
   };
+  canEdit?: boolean;
   onEditClick: () => void;
   onViewPublicClick: () => void;
 }
 
 export function OrganizationHeader({
   channel,
+  canEdit = true,
   onEditClick,
   onViewPublicClick,
 }: OrganizationHeaderProps) {
@@ -187,14 +189,16 @@ export function OrganizationHeader({
 
           {/* Action Buttons Row */}
           <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
-            <button
-              type="button"
-              onClick={onEditClick}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all active:scale-[0.98]"
-            >
-              <Edit3 size={14} className="text-indigo-600" />
-              <span>Edit</span>
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={onEditClick}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all active:scale-[0.98]"
+              >
+                <Edit3 size={14} className="text-indigo-600" />
+                <span>Edit</span>
+              </button>
+            )}
 
             <button
               type="button"

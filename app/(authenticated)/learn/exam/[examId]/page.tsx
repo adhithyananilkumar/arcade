@@ -67,7 +67,7 @@ export default function ExamAcknowledgementPage() {
     } catch (err) {
       console.warn('Failed to enter fullscreen', err);
     }
-    router.push(`/learn/${params.examId}/exam/start`);
+    router.push(`/learn/exam/${params.examId}/start`);
   };
 
   return (

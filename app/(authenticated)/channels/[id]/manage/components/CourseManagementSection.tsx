@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -56,10 +56,10 @@ export interface ExtendedContent {
   reviewsCount: number;
   wishlistCount: number;
   lastUpdated: string;
-  status: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
+  status: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED' | 'SUBMITTED';
   addedByStaff?: {
     name: string;
-    avatar: string;
+    avatar?: string;
     role: string;
     dateAdded: string;
   };
@@ -225,11 +225,17 @@ export const mockContent: ExtendedContent[] = [
 ];
 
 interface CourseManagementSectionProps {
+  channelId?: string;
   onAddCourse?: () => void;
+  reviewMap?: Record<string, string>;
 }
 
-export function CourseManagementSection({ onAddCourse }: CourseManagementSectionProps) {
-  const [courses, setCourses] = useState<ExtendedContent[]>(mockContent);
+import { useRouter } from 'next/navigation';
+
+export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {} }: CourseManagementSectionProps) {
+  const router = useRouter();
+  const [courses, setCourses] = useState<ExtendedContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('ALL');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -243,6 +249,50 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
   const [topPerformanceFilter, setTopPerformanceFilter] = useState<
     'TOP_COMPLETION' | 'MOST_ENROLLED' | 'HIGHEST_RATED' | 'NEEDS_ATTENTION' | 'RECENTLY_UPDATED'
   >('TOP_COMPLETION');
+
+  useEffect(() => {
+    if (!channelId) {
+      setCourses(mockContent);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    import('@/infrastructure/http/api').then(({ api }) => {
+      api.get<any[]>(`/api/v1/channels/${channelId}/content`)
+        .then((data) => {
+          const transformed = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            thumbnail: item.coverImageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
+            instructor: item.authorName || 'Unknown',
+            category: item.type,
+            contentType: item.type === 'COURSE' ? 'Course' : item.type === 'ARTICLE' ? 'Article' : 'Event',
+            difficulty: 'Beginner' as const,
+            duration: 'Unknown',
+            price: 'Free',
+            enrollments: 0,
+            completionRate: 0,
+            rating: 0,
+            reviewsCount: 0,
+            wishlistCount: 0,
+            lastUpdated: new Date(item.updatedAt).toLocaleDateString(),
+            status: item.status,
+            addedByStaff: {
+              name: item.authorName || 'Unknown',
+              avatar: undefined,
+              role: 'Author',
+              dateAdded: new Date(item.createdAt).toLocaleDateString(),
+            }
+          }));
+          setCourses(transformed);
+        })
+        .catch((err) => {
+          console.error("Failed to load channel content", err);
+          toast.error("Failed to load channel content");
+        })
+        .finally(() => setIsLoading(false));
+    });
+  }, [channelId]);
 
   const categories = useMemo(
     () => ['ALL', ...Array.from(new Set(courses.map((c) => c.category)))],
@@ -306,15 +356,36 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
     setActiveMenuId(null);
   };
 
-  const handleTogglePublish = (id: string) => {
+  const handleAction = (id: string, action: 'SUBMIT' | 'PUBLISH' | 'UNPUBLISH') => {
     setCourses(
-      courses.map((c) =>
-        c.id === id
-          ? { ...c, status: c.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED' }
-          : c,
-      ),
+      courses.map((c) => {
+        if (c.id !== id) return c;
+        if (action === 'SUBMIT') return { ...c, status: 'SUBMITTED' };
+        if (action === 'PUBLISH') return { ...c, status: 'PUBLISHED' };
+        if (action === 'UNPUBLISH') return { ...c, status: 'DRAFT' };
+        return c;
+      })
     );
     toast.success('Course status updated!');
+    setActiveMenuId(null);
+  };
+
+  const handleCardClick = (course: ExtendedContent) => {
+    if (course.status === 'SUBMITTED') {
+      const reviewId = reviewMap[course.id];
+      if (reviewId) {
+        router.push(`/console/reviews/${reviewId}`);
+      } else {
+        toast.error('Review record not found');
+      }
+    } else {
+      router.push(`/studio/course/${course.id}`);
+    }
+  };
+
+  const handleTogglePublish = (id: string) => {
+    setCourses(courses.filter((c) => c.id !== id));
+    toast.success('Course archived/deleted');
     setActiveMenuId(null);
   };
 
@@ -378,13 +449,14 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
           <Select value={selectedStatus} onValueChange={(val) => setSelectedStatus(val || 'ALL')}>
             <SelectTrigger className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3.5 h-[34px] py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50/80 hover:border-indigo-200 hover:text-indigo-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-[0_2px_10px_rgba(20,20,43,0.02)] hover:shadow-[0_4px_15px_rgba(79,70,229,0.08)] transition-all duration-300 cursor-pointer">
               <SelectValue placeholder="All Statuses">
-                {selectedStatus === 'ALL' ? 'All Statuses' : selectedStatus === 'PUBLISHED' ? 'Published' : selectedStatus === 'DRAFT' ? 'Draft' : 'Archived'}
+                {selectedStatus === 'ALL' ? 'All Statuses' : selectedStatus === 'PUBLISHED' ? 'Published' : selectedStatus === 'DRAFT' ? 'Draft' : selectedStatus === 'SUBMITTED' ? 'In Review' : 'Archived'}
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="rounded-3xl p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-200/60 bg-white/95 backdrop-blur-xl">
               <SelectItem value="ALL" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">All Statuses</SelectItem>
               <SelectItem value="PUBLISHED" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Published</SelectItem>
               <SelectItem value="DRAFT" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Draft</SelectItem>
+              <SelectItem value="SUBMITTED" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">In Review</SelectItem>
               <SelectItem value="ARCHIVED" className="group rounded-xl cursor-pointer py-2 px-3 mb-1 last:mb-0 text-xs font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 focus:bg-indigo-50 focus:text-indigo-700 data-[highlighted]:bg-indigo-50 data-[highlighted]:text-indigo-700 transition-colors duration-150">Archived</SelectItem>
             </SelectContent>
           </Select>
@@ -426,7 +498,11 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
       </div>
 
       {/* Content Display Grid / List */}
-      {filteredCourses.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center p-12">
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : filteredCourses.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center">
           <BookOpen size={36} className="mx-auto text-slate-300 mb-3" />
           <h3 className="text-base font-extrabold text-slate-800">No content matches your filter criteria</h3>
@@ -440,7 +516,8 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
               layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="group relative overflow-hidden rounded-2xl rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgba(20,20,43,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              onClick={() => handleCardClick(course)}
+              className="group relative cursor-pointer overflow-hidden rounded-2xl rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgba(20,20,43,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
               {/* Small Traveling Multicolor Border Beam Line Segment */}
               <div
@@ -493,7 +570,10 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                 <div className="absolute top-3 right-3 flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={() => setActiveMenuId(activeMenuId === course.id ? null : course.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenuId(activeMenuId === course.id ? null : course.id);
+                    }}
                     className="flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-black/70 transition-colors"
                   >
                     <MoreVertical size={14} />
@@ -526,11 +606,17 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                   {/* Added By Staff Badge */}
                   {course.addedByStaff && (
                     <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-slate-50 p-2 text-[11px] font-semibold text-slate-600 border border-slate-100">
-                      <img
-                        src={course.addedByStaff.avatar}
-                        alt={course.addedByStaff.name}
-                        className="h-5 w-5 rounded-full object-cover border border-white shadow-2xs"
-                      />
+                      {course.addedByStaff.avatar ? (
+                        <img
+                          src={course.addedByStaff.avatar}
+                          alt={course.addedByStaff.name}
+                          className="h-5 w-5 rounded-full object-cover border border-white shadow-2xs"
+                        />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full bg-slate-200 border border-white shadow-2xs flex shrink-0 items-center justify-center font-bold text-[9px] text-slate-500">
+                          {course.addedByStaff.name.charAt(0)}
+                        </div>
+                      )}
                       <div className="min-w-0 truncate">
                         <span className="text-slate-400">Added by </span>
                         <span className="font-extrabold text-slate-900">{course.addedByStaff.name}</span>
@@ -591,17 +677,39 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                     exit={{ opacity: 0, y: -8 }}
                     className="absolute top-12 right-4 z-30 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl backdrop-blur-xl"
                   >
+                    {course.status === 'DRAFT' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'SUBMIT'); }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        <CheckCircle2 size={14} className="text-sky-600" />
+                        <span>Submit for Review</span>
+                      </button>
+                    )}
+                    {course.status === 'SUBMITTED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'PUBLISH'); }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        <CheckCircle2 size={14} className="text-emerald-600" />
+                        <span>Approve & Publish</span>
+                      </button>
+                    )}
+                    {course.status === 'PUBLISHED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'UNPUBLISH'); }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        <CheckCircle2 size={14} className="text-slate-400" />
+                        <span>Unpublish</span>
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => handleTogglePublish(course.id)}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-                    >
-                      <CheckCircle2 size={14} className="text-emerald-600" />
-                      <span>{course.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDuplicate(course.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDuplicate(course.id); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                     >
                       <Copy size={14} className="text-indigo-600" />
@@ -609,7 +717,7 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(course.id)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(course.id); }}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
                     >
                       <Trash2 size={14} />
@@ -626,7 +734,11 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
         <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs">
           <div className="divide-y divide-slate-100">
             {filteredCourses.map((course) => (
-              <div key={course.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors">
+              <div 
+                key={course.id} 
+                onClick={() => handleCardClick(course)}
+                className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center gap-4 min-w-0">
                   <img
                     src={course.thumbnail}
@@ -662,16 +774,46 @@ export function CourseManagementSection({ onAddCourse }: CourseManagementSection
                 <div className="flex items-center gap-4 justify-between sm:justify-end">
                   <span className="text-sm font-black text-[#14142b]">{course.price}</span>
                   <div className="flex items-center gap-2">
+                    {course.status === 'DRAFT' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'SUBMIT'); }}
+                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100"
+                      >
+                        Request Review
+                      </button>
+                    )}
+                    {course.status === 'SUBMITTED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'PUBLISH'); }}
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    {course.status === 'PUBLISHED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'UNPUBLISH'); }}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                      >
+                        Unpublish
+                      </button>
+                    )}
+                    {course.status === 'ARCHIVED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-500"
+                        disabled
+                      >
+                        Archived
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => handleTogglePublish(course.id)}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
-                    >
-                      {course.status}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toast.info(`Editing course ${course.title}`)}
+                      onClick={(e) => { e.stopPropagation(); router.push(`/studio/course/${course.id}`); }}
                       className="rounded-xl bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-900"
                     >
                       Edit

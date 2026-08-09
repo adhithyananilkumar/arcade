@@ -33,10 +33,10 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       .renderCourse(courseId)
       .then((data) => {
         setCourse(data);
-        const firstLesson = data.modules.find((m) => m.lessons.length > 0)?.lessons[0];
+        const firstLesson = data.modules.find((m) => (m.lessons || []).length > 0)?.lessons?.[0];
         setSelectedItem(firstLesson ? { kind: "lesson", id: firstLesson.id } : null);
 
-        const quizIds = data.modules.flatMap((m) => m.quizzes.map((q) => q.id));
+        const quizIds = data.modules.flatMap((m) => (m.quizzes || []).map((q) => q.id));
         if (quizIds.length > 0) {
           getQuizStats(quizIds)
             .then((stats) => {

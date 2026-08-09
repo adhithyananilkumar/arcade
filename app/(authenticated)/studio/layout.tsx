@@ -23,6 +23,7 @@ export default function ContentStudioLayout({
   const [checkingWorkshop, setCheckingWorkshop] = useState(false);
 
   const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/manage');
+  const isPublishedPreview = pathname.startsWith('/studio/published/');
   const [hasCollabs, setHasCollabs] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -58,8 +59,8 @@ export default function ContentStudioLayout({
   // Platform admins / course reviewers get in regardless of channel affiliation.
   const hasAdminAccess = AuthorizationService.canManageChannels(user) || AuthorizationService.canReviewCourses(user);
   
-  // Authorized if admin, or visiting a workshop they have view access to, or visiting the collaborations page, or has general studio access
-  const isAuthorized = hasAdminAccess || 
+  // Authorized if admin, or visiting a workshop they have view access to, or visiting the collaborations page, or viewing a published preview, or has general studio access
+  const isAuthorized = hasAdminAccess || isPublishedPreview ||
     (workshopId ? hasWorkshopAccess === true : (isCollaborationsPage ? true : hasAccess));
 
   const isLayoutLoading = loading || 
