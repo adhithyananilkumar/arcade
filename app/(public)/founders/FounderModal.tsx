@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { X, CheckCircle2, Award, Sparkles } from "lucide-react";
+import { X, CheckCircle2, Award } from "lucide-react";
 import { Founder } from "./foundersData";
 
 function LinkedinIcon({ className }: { className?: string }) {
@@ -69,13 +69,14 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Header Banner Background */}
-            <div className="h-28 sm:h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+            {/* Header Banner Background (Faded Soft Gradient & Reduced Height) */}
+            <div className="h-16 sm:h-20 bg-gradient-to-r from-blue-500/25 via-indigo-500/20 to-teal-400/25 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-white" />
             </div>
 
             {/* Body */}
-            <div className="px-6 sm:px-8 pb-7 -mt-14 sm:-mt-16 relative z-10 space-y-6">
+            <div className="px-6 sm:px-8 pb-7 -mt-10 sm:-mt-12 relative z-10 space-y-6">
               {/* Image & Quick Info Header */}
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left pb-5 border-b border-slate-100">
                 <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-purple-50 shrink-0">
@@ -88,9 +89,6 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                 </div>
 
                 <div className="flex-1 space-y-1">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200">
-                    <Sparkles className="w-3.5 h-3.5" /> Arcade Founder
-                  </span>
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-serif">
                     {founder.name}
                   </h2>
@@ -129,7 +127,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Full Journey & Role
                 </h3>
-                <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-sans">
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 font-sans">
                   {founder.extendedBio}
                 </p>
               </div>
