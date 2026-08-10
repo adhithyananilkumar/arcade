@@ -543,8 +543,8 @@ function CreateEventModal({
         deliveryMode: "ONLINE",
         difficulty: "BEGINNER",
         language: "en",
-        price: 0,
-        currency: "USD",
+        priceAmount: 0,
+        currency: "INR",
         visibility: "PRIVATE",
         channelId,
       });

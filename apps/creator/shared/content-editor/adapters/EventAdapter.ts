@@ -32,7 +32,7 @@ export class EventAdapter implements ContentDataAdapter {
         title: workshop.title,
         description: workshop.description ?? "",
         status: workshop.status,
-        pricingModel: workshop.price > 0 ? "PAID" : "FREE",
+        pricingModel: workshop.priceAmount > 0 ? "PAID" : "FREE",
         createdAt: workshop.createdAt,
         updatedAt: workshop.updatedAt,
       },

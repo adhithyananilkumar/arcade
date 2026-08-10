@@ -15,15 +15,15 @@ const initialData: EventFormData = {
   deliveryMode: DeliveryMode.ONLINE,
   difficulty: Difficulty.BEGINNER,
   language: 'en',
-  price: 0,
-  currency: 'USD',
+  priceAmount: 0,
+  currency: 'INR',
   capacity: undefined,
   visibility: Visibility.PRIVATE,
   sessions: [],
   pricing: {
     pricingModel: PricingModel.FREE,
     price: 0,
-    currency: 'USD',
+    currency: 'INR',
     registrationType: RegistrationType.OPEN,
     seatType: SeatType.UNLIMITED,
     waitlistEnabled: false,
@@ -95,7 +95,7 @@ export const useEventForm = () => {
       case 'language':
         if (!value) error = 'Language is required';
         break;
-      case 'price':
+      case 'priceAmount':
         if (value < 0) error = 'Price cannot be negative';
         break;
       case 'capacity':
