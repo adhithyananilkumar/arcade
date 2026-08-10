@@ -788,24 +788,38 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
           ))}
         </div>
       ) : (
-        /* List Mode View */
-        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs">
-          <div className="divide-y divide-slate-100">
-            {filteredCourses.map((course) => (
-              <div 
-                key={course.id} 
+        /* List Mode View with Left Accent Borders (Grey by default, colored on hover/focus) */
+        <div className="space-y-3">
+          {filteredCourses.map((course) => {
+            const hoverBorderColor =
+              course.status === 'PUBLISHED'
+                ? 'group-hover:border-l-emerald-500 group-focus-within:border-l-emerald-500'
+                : course.status === 'DRAFT'
+                ? 'group-hover:border-l-amber-500 group-focus-within:border-l-amber-500'
+                : course.status === 'SUBMITTED'
+                ? 'group-hover:border-l-sky-500 group-focus-within:border-l-sky-500'
+                : 'group-hover:border-l-indigo-600 group-focus-within:border-l-indigo-600';
+
+            return (
+              <div
+                key={course.id}
+                tabIndex={0}
                 onClick={() => handleCardClick(course)}
-                className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors cursor-pointer"
+                className={`group relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200/90 border-l-[4px] border-l-slate-300 ${hoverBorderColor} bg-white shadow-2xs hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer outline-none`}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="h-16 w-24 shrink-0 rounded-2xl object-cover border border-slate-200"
-                  />
+                  <div className="relative shrink-0 overflow-hidden rounded-xl border border-slate-200/80 shadow-2xs">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="h-16 w-24 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="font-extrabold text-indigo-600">{course.category}</span>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100/80">
+                        {course.category}
+                      </span>
                       <span className="text-slate-300">·</span>
                       <span className="font-semibold text-slate-500">{course.instructor}</span>
                       {course.addedByStaff && (
@@ -815,28 +829,33 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                         </>
                       )}
                     </div>
-                    <h3 className="text-sm font-extrabold text-[#14142b] truncate">{course.title}</h3>
+                    <h3 className="text-sm font-extrabold text-[#14142b] truncate mt-1 group-hover:text-indigo-600 transition-colors">
+                      {course.title}
+                    </h3>
                     <div className="mt-1 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
                       <span>{course.enrollments.toLocaleString()} enrolled</span>
                       <span>·</span>
-                      <span className="flex items-center gap-0.5 text-amber-500">
+                      <span className="flex items-center gap-0.5 text-amber-500 font-bold">
                         <Star size={11} className="fill-amber-400 text-amber-400" />
                         {course.rating}
                       </span>
                       <span>·</span>
-                      <span className="text-emerald-600">{course.completionRate}% completion</span>
+                      <span className="text-emerald-600 font-extrabold">{course.completionRate}% completion</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 justify-between sm:justify-end">
-                  <span className="text-sm font-black text-[#14142b]">{course.price}</span>
+                <div className="flex items-center gap-4 justify-between sm:justify-end shrink-0">
+                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
                   <div className="flex items-center gap-2">
                     {course.status === 'DRAFT' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'SUBMIT'); }}
-                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'SUBMIT');
+                        }}
+                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition-colors"
                       >
                         Request Review
                       </button>
@@ -844,8 +863,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     {course.status === 'SUBMITTED' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'PUBLISH'); }}
-                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'PUBLISH');
+                        }}
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors"
                       >
                         Approve
                       </button>
@@ -853,8 +875,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     {course.status === 'PUBLISHED' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'UNPUBLISH'); }}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'UNPUBLISH');
+                        }}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
                       >
                         Unpublish
                       </button>
@@ -871,16 +896,19 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     )}
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); router.push(`/studio/course/${course.id}`); }}
-                      className="rounded-xl bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-900"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/studio/course/${course.id}`);
+                      }}
+                      className="rounded-xl bg-[#14142b] px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-900 shadow-2xs transition-colors"
                     >
                       Edit
                     </button>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </div>
