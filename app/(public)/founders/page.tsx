@@ -294,7 +294,7 @@ export default function FoundersPage() {
                       {founder.role}
                     </p>
 
-                    {/* Social Icons Row */}
+                    {/* Social Icons Row (Only LinkedIn & GitHub) */}
                     <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
                       {founder.social.linkedin && (
                         <a
@@ -318,16 +318,6 @@ export default function FoundersPage() {
                           title="GitHub"
                         >
                           <GithubIcon className="w-4 h-4" />
-                        </a>
-                      )}
-                      {founder.social.email && (
-                        <a
-                          href={`mailto:${founder.social.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="hover:text-slate-900 transition-colors p-1"
-                          title="Email"
-                        >
-                          <Mail size={16} />
                         </a>
                       )}
                     </div>
@@ -393,16 +383,6 @@ export default function FoundersPage() {
                             title="GitHub"
                           >
                             <GithubIcon className="w-4 h-4" />
-                          </a>
-                        )}
-                        {founder.social.email && (
-                          <a
-                            href={`mailto:${founder.social.email}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="hover:text-slate-900 transition-colors p-1"
-                            title="Email"
-                          >
-                            <Mail size={16} />
                           </a>
                         )}
                       </div>

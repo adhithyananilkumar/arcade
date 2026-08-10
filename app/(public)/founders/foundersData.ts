@@ -86,7 +86,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Academic Strategy", "Curriculum Design", "NAAC & NBA Standards", "Pedagogical Engineering", "Research"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "athira@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -106,8 +106,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["UI/UX Design", "Figma", "Design Systems", "Framer Motion", "Brand Identity"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "anandhu@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -127,8 +126,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["React & Next.js", "State Management", "Web Vitals", "PostgreSQL", "CI/CD"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "akash@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -148,7 +146,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Operations Strategy", "Program Management", "Community Growth", "Cross-functional Leadership", "Event Execution"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "deepthi@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -168,8 +166,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Cloud Infrastructure", "Kubernetes & Docker", "Terraform", "Monitoring & Observability", "Security"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "anandhulal@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -189,7 +186,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Community Management", "Developer Relations", "Student Advocacy", "Event Management", "Public Speaking"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "kalyany@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -209,8 +206,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Cybersecurity", "Cryptography", "OAuth2 & JWT", "Penetration Testing", "Security Auditing"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "aloshy@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -230,7 +226,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["EdTech Gamification", "Instructional Design", "Adaptive Learning", "Data Analytics", "User Engagement"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "anjali@arcade.ajce.in"
+      github: "https://github.com"
     }
   }
 ];
