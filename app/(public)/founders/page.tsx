@@ -49,6 +49,37 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
+function FlourishLine({ className }: { className?: string }) {
+  return (
+    <motion.svg
+      viewBox="0 0 240 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.path
+        d="M 4 16 C 24 9, 42 21, 62 16 C 74 13, 78 4, 80 7 C 83 12, 75 19, 70 13 C 66 8, 74 7, 96 13 C 114 18, 118 5, 121 8 C 124 13, 116 20, 111 14 C 107 9, 117 8, 144 14 C 170 20, 196 9, 218 15 C 228 17, 234 14, 236 14"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={{ once: true }}
+        transition={{
+          duration: 1.6,
+          ease: [0.43, 0.13, 0.23, 0.96],
+          delay: 0.2,
+        }}
+      />
+    </motion.svg>
+  );
+}
+
 const STATS = [
   { label: "Founders & Engineers", value: "10" },
   { label: "Active Student Developers", value: "2,000+" },
@@ -131,79 +162,161 @@ export default function FoundersPage() {
               </p>
             </div>
 
-            {/* Circular Team Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8 items-start justify-items-center">
-              {FOUNDERS_DATA.map((founder, index) => (
-                <motion.div
-                  key={founder.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: (index % 4) * 0.1 }}
-                  onClick={() => setSelectedFounder(founder)}
-                  className="group flex flex-col items-center text-center cursor-pointer max-w-[240px]"
-                >
-                  {/* Large Circular Portrait Image */}
-                  <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
-                    <Image
-                      src={founder.image}
-                      alt={founder.name}
-                      fill
-                      className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
-                      sizes="200px"
-                      priority={index < 4}
-                    />
-                  </div>
+            {/* Circular Team Cards Grid (Top 8 + Bottom 2 with Flourish Lines) */}
+            <div className="space-y-12 max-w-6xl mx-auto">
+              {/* First 8 Founders (4 per row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 sm:gap-x-10 items-start justify-items-center">
+                {FOUNDERS_DATA.slice(0, 8).map((founder, index) => (
+                  <motion.div
+                    key={founder.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: (index % 4) * 0.1 }}
+                    onClick={() => setSelectedFounder(founder)}
+                    className="group flex flex-col items-center text-center cursor-pointer max-w-[240px]"
+                  >
+                    {/* Large Circular Portrait Image */}
+                    <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
+                      <Image
+                        src={founder.image}
+                        alt={founder.name}
+                        fill
+                        className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
+                        sizes="200px"
+                        priority={index < 4}
+                      />
+                    </div>
 
-                  {/* Name */}
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
-                    {founder.name}
-                  </h3>
+                    {/* Name */}
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                      {founder.name}
+                    </h3>
 
-                  {/* Role */}
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                    {founder.role}
-                  </p>
+                    {/* Role */}
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                      {founder.role}
+                    </p>
 
-                  {/* Social Icons Row */}
-                  <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
-                    {founder.social.linkedin && (
-                      <a
-                        href={founder.social.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="hover:text-slate-900 transition-colors p-1"
-                        title="LinkedIn"
-                      >
-                        <LinkedinIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                    {founder.social.github && (
-                      <a
-                        href={founder.social.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="hover:text-slate-900 transition-colors p-1"
-                        title="GitHub"
-                      >
-                        <GithubIcon className="w-4 h-4" />
-                      </a>
-                    )}
-                    {founder.social.email && (
-                      <a
-                        href={`mailto:${founder.social.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="hover:text-slate-900 transition-colors p-1"
-                        title="Email"
-                      >
-                        <Mail size={16} />
-                      </a>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                    {/* Social Icons Row */}
+                    <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
+                      {founder.social.linkedin && (
+                        <a
+                          href={founder.social.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-slate-900 transition-colors p-1"
+                          title="LinkedIn"
+                        >
+                          <LinkedinIcon className="w-4 h-4" />
+                        </a>
+                      )}
+                      {founder.social.github && (
+                        <a
+                          href={founder.social.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-slate-900 transition-colors p-1"
+                          title="GitHub"
+                        >
+                          <GithubIcon className="w-4 h-4" />
+                        </a>
+                      )}
+                      {founder.social.email && (
+                        <a
+                          href={`mailto:${founder.social.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-slate-900 transition-colors p-1"
+                          title="Email"
+                        >
+                          <Mail size={16} />
+                        </a>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Bottom Row: 2 Centered Founder Cards Flanked by Flourish Lines */}
+              <div className="flex items-center justify-center gap-4 sm:gap-10 pt-4">
+                {/* Left Flourish Line */}
+                <FlourishLine className="w-24 sm:w-40 md:w-56 h-auto text-slate-900 shrink-0 hidden sm:block opacity-80" />
+
+                {/* Centered Founders (Aloshy Antony & Anjali) */}
+                <div className="flex flex-wrap justify-center gap-y-12 gap-x-6 sm:gap-x-10">
+                  {FOUNDERS_DATA.slice(8).map((founder, index) => (
+                    <motion.div
+                      key={founder.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      onClick={() => setSelectedFounder(founder)}
+                      className="group flex flex-col items-center text-center cursor-pointer max-w-[240px]"
+                    >
+                      <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
+                        <Image
+                          src={founder.image}
+                          alt={founder.name}
+                          fill
+                          className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
+                          sizes="200px"
+                        />
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                        {founder.name}
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                        {founder.role}
+                      </p>
+
+                      <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
+                        {founder.social.linkedin && (
+                          <a
+                            href={founder.social.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-slate-900 transition-colors p-1"
+                            title="LinkedIn"
+                          >
+                            <LinkedinIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                        {founder.social.github && (
+                          <a
+                            href={founder.social.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-slate-900 transition-colors p-1"
+                            title="GitHub"
+                          >
+                            <GithubIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                        {founder.social.email && (
+                          <a
+                            href={`mailto:${founder.social.email}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-slate-900 transition-colors p-1"
+                            title="Email"
+                          >
+                            <Mail size={16} />
+                          </a>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Right Flourish Line (Flipped) */}
+                <FlourishLine className="w-24 sm:w-40 md:w-56 h-auto text-slate-900 shrink-0 hidden sm:block opacity-80 transform scale-x-[-1]" />
+              </div>
             </div>
           </section>
 
