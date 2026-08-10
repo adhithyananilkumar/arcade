@@ -437,19 +437,45 @@ export default function FoundersPage() {
                     <span className="text-slate-400">{ERA_HEADERS[activeEraIndex] || "ERA ARCHITECTURE"}</span>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-0 pt-1">
                     {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => (
-                      <div
-                        key={sIdx}
-                        className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 flex items-start gap-3"
-                      >
-                        <CheckCircle2
-                          size={18}
-                          className={sIdx === 0 ? "text-emerald-500 shrink-0 mt-0.5" : "text-blue-500 shrink-0 mt-0.5"}
-                        />
-                        <span className="text-xs font-medium text-slate-700 leading-snug">
-                          {standardText}
-                        </span>
+                      <div key={sIdx} className="relative flex flex-col items-center group">
+                        {/* If first board: Top Triangle Rope & Peg Pin */}
+                        {sIdx === 0 ? (
+                          <div className="flex justify-center -mb-1 z-10">
+                            <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
+                              {/* Wall Pin / Peg */}
+                              <circle cx="30" cy="3" r="3.5" fill="#5C3A1E" stroke="#3D2310" strokeWidth="1" />
+                              <circle cx="30" cy="3" r="1.5" fill="#D4AF37" />
+                              {/* Left & Right Hanging Strings */}
+                              <line x1="30" y1="3" x2="8" y2="19" stroke="#9C6B3D" strokeWidth="2.5" strokeLinecap="round" />
+                              <line x1="30" y1="3" x2="52" y2="19" stroke="#9C6B3D" strokeWidth="2.5" strokeLinecap="round" />
+                            </svg>
+                          </div>
+                        ) : (
+                          /* Connecting Vertical Left & Right Ropes from Board Above */
+                          <div className="h-4.5 w-full flex justify-between px-10 -my-0.5 z-10">
+                            <div className="w-1.5 h-full bg-gradient-to-b from-[#9C6B3D] to-[#7E5229] rounded-sm border-x border-[#47270D] shadow-xs" />
+                            <div className="w-1.5 h-full bg-gradient-to-b from-[#9C6B3D] to-[#7E5229] rounded-sm border-x border-[#47270D] shadow-xs" />
+                          </div>
+                        )}
+
+                        {/* Wooden Placard Box */}
+                        <div className="w-full rounded-xl bg-gradient-to-b from-[#8C592B] via-[#75471F] to-[#5C3515] border-2 border-[#47270D] p-3.5 shadow-md flex items-center gap-3 relative overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 cursor-pointer z-20">
+                          {/* Inner Bevel Top Glow */}
+                          <div className="absolute inset-x-0 top-0 h-0.5 bg-amber-200/25 pointer-events-none" />
+                          {/* Wood Texture Detail */}
+                          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(90deg,transparent_0%,rgba(0,0,0,0.4)_50%,transparent_100%)] pointer-events-none" />
+
+                          {/* Checkmark Icon */}
+                          <CheckCircle2
+                            size={18}
+                            className="text-amber-300 shrink-0 drop-shadow-xs"
+                          />
+                          <span className="text-xs font-semibold text-amber-50 leading-snug tracking-wide drop-shadow-xs">
+                            {standardText}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
