@@ -1445,7 +1445,7 @@ const CategoryGlobalSpotlight: React.FC<CategoryGlobalSpotlightProps> = ({
   return null;
 };
 
-interface CourseCardProps {
+export interface CourseCardProps {
   course: any;
   index: number;
   activeCategoryName: string;
@@ -1455,7 +1455,7 @@ interface CourseCardProps {
   realReviewsCount: number;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({
+export const CourseCard: React.FC<CourseCardProps> = ({
   course,
   index,
   activeCategoryName,
@@ -2634,12 +2634,12 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         {mode === "courses" && (
           <>
             {renderCoursesSection("Popular Courses")}
-            {renderBootcampsSection("Practical Bootcamps")}
           </>
         )}
 
         {mode === "events" && (
           <>
+            {renderBootcampsSection("Practical Bootcamps")}
             {renderLiveSessionsSection("Live Sessions & Events")}
           </>
         )}
