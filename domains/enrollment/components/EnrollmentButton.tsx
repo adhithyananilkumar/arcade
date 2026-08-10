@@ -87,6 +87,12 @@ export function EnrollmentButton({
           if (result.reasonCode === 'ALREADY_ENROLLED') {
             notifyStateChange('ENROLLED');
             toast.info('You are already enrolled');
+          } else if (result.reasonCode === 'ENROLLMENT_PAYMENT_PENDING' && result.recordId) {
+            // A prior enrollment attempt is still awaiting payment — resume that checkout
+            // instead of ever treating an unpaid enrollment as granted access.
+            notifyStateChange('PENDING');
+            setPendingPaymentEnrollmentId(result.recordId);
+            setShowPaymentModal(true);
           } else if (result.reasonCode === 'CAPACITY_EXHAUSTED') {
             toast.error('The capacity for this resource is exhausted.');
           } else if (result.reasonCode === 'RESOURCE_NOT_PUBLISHED') {
