@@ -24,6 +24,8 @@ import {
   Star,
 } from "lucide-react";
 
+import BlurText from "@/components/BlurText";
+
 import {
   FOUNDERS_DATA,
   TIMELINE_MILESTONES,
@@ -80,12 +82,24 @@ function FlourishLine({ className }: { className?: string }) {
   );
 }
 
-const STATS = [
-  { label: "Founders & Engineers", value: "10" },
-  { label: "Active Student Developers", value: "2,000+" },
-  { label: "Verifiable Credentials", value: "100%" },
-  { label: "Campus Departments", value: "8" },
-];
+const ERA_STANDARDS: Record<number, string[]> = {
+  0: [
+    "High scalability and verifiable credential pipelines built-in.",
+    "Collaborative workshop engines for faculty mentors and student creators."
+  ],
+  1: [
+    "Next.js App Router & Tailwind CSS custom design tokens.",
+    "Cryptographic digital certificate generation and verification pipeline."
+  ],
+  2: [
+    "Closed beta rollout across 8 engineering departments at AJCE.",
+    "1,200+ active student developers & 40+ faculty mentors participating."
+  ],
+  3: [
+    "Comprehensive platform for multi-department learning & AI creator hubs.",
+    "Institutional ranking support & creator empowerment across colleges."
+  ]
+};
 
 export default function FoundersPage() {
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
@@ -95,20 +109,23 @@ export default function FoundersPage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-900 font-sans">
-      {/* ── HERO SECTION (WHITE BACKGROUND, CLEAN TITLE & SUBTITLE ONLY) ── */}
-      <div className="w-full bg-white border-b border-slate-100">
+      {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
+      <div className="w-full arcade-wash border-b border-slate-100">
         <div className="mx-auto max-w-6xl px-5 pt-48 pb-24 sm:px-8 sm:pt-56 sm:pb-32">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
-            {/* Title */}
-            <h1
-              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15]"
+            {/* Title with BlurText Animation from React Bits */}
+            <BlurText
+              text="The Minds Behind Arcade."
+              delay={150}
+              animateBy="words"
+              direction="top"
+              stepDuration={0.35}
+              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] justify-center"
               style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
-            >
-              The Minds Behind{" "}
-              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1 inline-block">
-                Arcade.
-              </span>
-            </h1>
+              wordClasses={{
+                "Arcade.": "bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1"
+              }}
+            />
 
             {/* Description */}
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
@@ -327,58 +344,107 @@ export default function FoundersPage() {
             </div>
           </section>
 
-          {/* --- PLATFORM MILESTONES TIMELINE --- */}
-          <section className="rounded-[28px] border border-slate-100 bg-slate-50/60 p-8 sm:p-12 space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/80 pb-6">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                  Our Evolution
-                </span>
-                <h2 className="font-serif text-3xl sm:text-4xl font-medium text-slate-900 mt-1">
-                  Arcade Milestones
-                </h2>
-              </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-                {TIMELINE_MILESTONES.map((m, idx) => (
+          {/* --- PLATFORM MILESTONES TIMELINE (MATCHING REFERENCE DESIGN) --- */}
+          <section className="space-y-8 pt-4">
+            {/* Section Header */}
+            <div className="text-center space-y-3 max-w-2xl mx-auto">
+              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-100">
+                Our Evolution
+              </span>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight">
+                How Arcade Started ?
+              </h2>
+            </div>
+
+            {/* Top Centered Era Navigation Pills */}
+            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 pt-2">
+              {TIMELINE_MILESTONES.map((m, idx) => {
+                const isActive = activeEraIndex === idx;
+                const numberLabels = ["1", "2", "3", "4"];
+                const eraTitles = ["Origin", "Architecture", "Beta Launch", "Future Vision"];
+                const eraYears = ["(2024)", "(2024)", "(2025)", "(2026 & Beyond)"];
+
+                return (
                   <button
                     key={m.year}
                     onClick={() => setActiveEraIndex(idx)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
-                      activeEraIndex === idx
-                        ? "bg-slate-900 text-white shadow-xs"
-                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                    className={`flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-[#0B132B] text-white shadow-md"
+                        : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80 shadow-2xs"
                     }`}
                   >
-                    {m.year}
+                    <span
+                      className={`flex items-center justify-center w-4.5 h-4.5 rounded-full text-[11px] font-bold ${
+                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {numberLabels[idx]}
+                    </span>
+                    <span>{eraTitles[idx]}</span>
+                    <span className={isActive ? "text-slate-300 font-normal" : "text-slate-400 font-normal"}>
+                      {eraYears[idx]}
+                    </span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-4">
-                <span className="inline-block rounded-full bg-indigo-50 border border-indigo-100 px-3 py-1 text-xs font-bold text-indigo-600">
-                  {activeMilestone.badge}
-                </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-medium text-slate-900">
-                  {activeMilestone.title}
-                </h3>
-                <p className="text-sm font-semibold text-slate-600">
-                  {activeMilestone.subtitle}
-                </p>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {activeMilestone.description}
-                </p>
-              </div>
+            {/* Main Milestone Detail Card */}
+            <div className="rounded-[28px] border border-slate-100 bg-slate-50/70 p-8 sm:p-12 shadow-sm">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left Detail Content */}
+                <div className="lg:col-span-7 space-y-4">
+                  {/* Badge & Era Tag Row */}
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-blue-100/90 text-blue-700 px-3.5 py-1 text-xs font-semibold">
+                      {activeMilestone.year}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 font-sans">
+                      {activeMilestone.badge}
+                    </span>
+                  </div>
 
-              <div className="lg:col-span-4 rounded-2xl bg-white border border-slate-100 p-6 text-center space-y-3 shadow-xs">
-                <Rocket className="w-10 h-10 text-indigo-600 mx-auto" />
-                <h4 className="font-serif text-lg font-medium text-slate-900">
-                  {activeMilestone.year}
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Campus Milestone Achieved at AJCE
-                </p>
+                  {/* Heading */}
+                  <h3 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+                    {activeMilestone.title}
+                  </h3>
+
+                  {/* Subtitle */}
+                  <p className="text-sm font-semibold text-blue-600 font-sans">
+                    {activeMilestone.subtitle}
+                  </p>
+
+                  {/* Description */}
+                  <p className="text-sm text-slate-500 leading-relaxed font-normal">
+                    {activeMilestone.description}
+                  </p>
+                </div>
+
+                {/* Right Standards Card */}
+                <div className="lg:col-span-5 rounded-2xl bg-white border border-slate-100 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest border-b border-slate-100 pb-3">
+                    <span className="text-slate-400">ERA ARCHITECTURE</span>
+                    <span className="text-blue-600">AJCE STANDARDS</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 flex items-start gap-3"
+                      >
+                        <CheckCircle2
+                          size={18}
+                          className={sIdx === 0 ? "text-emerald-500 shrink-0 mt-0.5" : "text-blue-500 shrink-0 mt-0.5"}
+                        />
+                        <span className="text-xs font-medium text-slate-700 leading-snug">
+                          {standardText}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </section>

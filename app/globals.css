@@ -382,3 +382,11 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
+
+/* Arcade soft gradient wash */
+.arcade-wash {
+  background:
+    radial-gradient(70% 45% at 15% 0%, rgba(41, 98, 214, 0.08) 0%, transparent 65%),
+    radial-gradient(65% 45% at 95% 5%, rgba(39, 197, 216, 0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #ffffff 100%);
+}
