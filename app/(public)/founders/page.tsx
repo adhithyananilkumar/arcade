@@ -412,7 +412,6 @@ export default function FoundersPage() {
                 const isActive = activeEraIndex === idx;
                 const numberLabels = ["1", "2", "3", "4"];
                 const eraTitles = ["Origin", "Architecture", "Beta Launch", "Future Vision"];
-                const eraYears = ["(2024)", "(2024)", "(2025)", "(2026 & Beyond)"];
 
                 return (
                   <button
@@ -432,9 +431,6 @@ export default function FoundersPage() {
                       {numberLabels[idx]}
                     </span>
                     <span>{eraTitles[idx]}</span>
-                    <span className={isActive ? "text-slate-300 font-normal" : "text-slate-400 font-normal"}>
-                      {eraYears[idx]}
-                    </span>
                   </button>
                 );
               })}
