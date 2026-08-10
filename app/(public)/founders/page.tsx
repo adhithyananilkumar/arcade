@@ -97,7 +97,7 @@ export default function FoundersPage() {
     <main className="min-h-screen bg-white text-slate-900 font-sans">
       {/* ── HERO SECTION (WHITE BACKGROUND, CLEAN TITLE & SUBTITLE ONLY) ── */}
       <div className="w-full bg-white border-b border-slate-100">
-        <div className="mx-auto max-w-6xl px-5 pt-32 pb-24 sm:px-8 sm:pt-36 sm:pb-32">
+        <div className="mx-auto max-w-6xl px-5 pt-48 pb-24 sm:px-8 sm:pt-56 sm:pb-32">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
             {/* Title */}
             <h1
