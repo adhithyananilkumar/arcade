@@ -91,36 +91,36 @@ const ERA_HEADERS: Record<number, string> = {
 
 const PLACARD_THEMES = [
   {
-    // 0: Soft Ice Blue (Module 1 reference color)
-    boxBg: "bg-gradient-to-r from-blue-50/95 via-sky-50 to-indigo-50/95",
-    border: "border-blue-200/90",
-    text: "text-blue-950 font-semibold",
-    iconColor: "text-blue-600",
-    shadow: "shadow-xs hover:shadow-md hover:border-blue-300"
+    // 0: Vibrant Blue
+    boxBg: "bg-gradient-to-r from-blue-100 via-sky-100 to-indigo-100",
+    border: "border-blue-300",
+    text: "text-blue-950 font-bold",
+    numberColor: "text-blue-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-blue-400"
   },
   {
-    // 1: Soft Warm Amber/Yellow (Module 2 reference color)
-    boxBg: "bg-gradient-to-r from-amber-50/95 via-orange-50/80 to-yellow-50/95",
-    border: "border-amber-200/90",
-    text: "text-amber-950 font-semibold",
-    iconColor: "text-amber-700",
-    shadow: "shadow-xs hover:shadow-md hover:border-amber-300"
+    // 1: Vibrant Warm Amber
+    boxBg: "bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100",
+    border: "border-amber-300",
+    text: "text-amber-950 font-bold",
+    numberColor: "text-amber-700",
+    shadow: "shadow-xs hover:shadow-md hover:border-amber-400"
   },
   {
-    // 2: Soft Lavender/Purple (Module 3 reference color)
-    boxBg: "bg-gradient-to-r from-purple-50/95 via-fuchsia-50/80 to-violet-50/95",
-    border: "border-purple-200/90",
-    text: "text-purple-950 font-semibold",
-    iconColor: "text-purple-600",
-    shadow: "shadow-xs hover:shadow-md hover:border-purple-300"
+    // 2: Vibrant Purple
+    boxBg: "bg-gradient-to-r from-purple-100 via-fuchsia-100 to-violet-100",
+    border: "border-purple-300",
+    text: "text-purple-950 font-bold",
+    numberColor: "text-purple-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-purple-400"
   },
   {
-    // 3: Soft Mint Emerald (Module 4 reference color)
-    boxBg: "bg-gradient-to-r from-emerald-50/95 via-teal-50/80 to-green-50/95",
-    border: "border-emerald-200/90",
-    text: "text-emerald-950 font-semibold",
-    iconColor: "text-emerald-600",
-    shadow: "shadow-xs hover:shadow-md hover:border-emerald-300"
+    // 3: Vibrant Emerald Green
+    boxBg: "bg-gradient-to-r from-emerald-100 via-teal-100 to-green-100",
+    border: "border-emerald-300",
+    text: "text-emerald-950 font-bold",
+    numberColor: "text-emerald-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-emerald-400"
   }
 ];
 
@@ -500,21 +500,15 @@ export default function FoundersPage() {
 
                           {/* Reference Color Module Box */}
                           <div className={`w-full rounded-2xl ${theme.boxBg} border ${theme.border} p-4 ${theme.shadow} flex items-center gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer z-20`}>
-                            {/* Number Badge Pill */}
-                            <div className={`w-7 h-7 rounded-full bg-white/80 border ${theme.border} flex items-center justify-center text-xs font-bold ${theme.iconColor} shrink-0 shadow-2xs`}>
+                            {/* White Round Circle Container for Number */}
+                            <div className={`w-7 h-7 rounded-full bg-white/90 border ${theme.border} flex items-center justify-center text-xs font-bold ${theme.numberColor} shrink-0 shadow-2xs`}>
                               {sIdx + 1}
                             </div>
 
-                            {/* Text Content */}
-                            <span className={`text-xs font-semibold ${theme.text} leading-snug tracking-wide`}>
+                            {/* Text Content Aligned Left */}
+                            <span className={`text-xs font-bold ${theme.text} leading-snug tracking-wide`}>
                               {standardText}
                             </span>
-
-                            {/* Right Checkmark */}
-                            <CheckCircle2
-                              size={18}
-                              className={`${theme.iconColor} shrink-0 ml-auto opacity-90`}
-                            />
                           </div>
                         </div>
                       );
