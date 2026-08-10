@@ -1,14 +1,14 @@
 .arc-footer {
-  --fe-bg: transparent;
+  --fe-bg: #ffffff;
   --fe-text: #111827;
   --fe-text-soft: #4b5563;
   --fe-border: rgba(17, 24, 39, 0.08);
   --fe-accent: #2563eb;
 
-  background: transparent !important;
-  background-color: transparent !important;
-  padding: 64px 0 160px 0;
-  color: var(--fe-text);
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  padding: 80px 0 32px 0;
+  color: #111827 !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
   z-index: 10;
@@ -52,7 +52,7 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 40px;
-  margin-bottom: 40px;
+  margin-bottom: 80px;
   align-items: flex-start;
 }
 
@@ -66,7 +66,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--fe-text);
+  color: #111827 !important;
   margin: 0 0 16px 0;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .arc-footer__mono-list a {
-  color: var(--fe-text-soft);
+  color: #4b5563 !important;
   font-size: 14px;
   font-weight: 450;
   text-decoration: none;
@@ -89,7 +89,7 @@
 }
 
 .arc-footer__mono-list a:hover {
-  color: var(--fe-accent);
+  color: #2563eb !important;
   transform: translateX(3px);
 }
 
@@ -102,7 +102,7 @@
 .arc-footer__news-desc {
   font-size: 13.5px;
   line-height: 1.6;
-  color: var(--fe-text-soft);
+  color: #4b5563 !important;
   margin: 0 0 16px 0;
   max-width: 320px;
 }
@@ -181,13 +181,13 @@
   justify-content: space-between;
   align-items: center;
   font-size: 13.5px;
-  color: var(--fe-text-soft);
+  color: #4b5563 !important;
   position: relative;
   z-index: 10;
 }
 
 .arc-footer__mono-copy strong {
-  color: var(--fe-text);
+  color: #111827 !important;
   font-weight: 600;
 }
 
@@ -198,14 +198,14 @@
 }
 
 .arc-footer__mono-legal a {
-  color: var(--fe-text-soft);
+  color: #4b5563 !important;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.18s ease;
 }
 
 .arc-footer__mono-legal a:hover {
-  color: var(--fe-accent);
+  color: #2563eb !important;
 }
 
 .arc-footer__dot {
