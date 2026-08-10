@@ -205,14 +205,50 @@ export const mockContent: ExtendedContent[] = [
     status: 'PUBLISHED',
   },
   {
+    id: 'article-2',
+    title: 'Demystifying WebAssembly and Rust for Web Performance',
+    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Dr. Sarah Chen',
+    category: 'Web Development',
+    contentType: 'Article',
+    difficulty: 'Advanced',
+    duration: '15m read',
+    price: 'Free',
+    enrollments: 18400,
+    completionRate: 92.5,
+    rating: 4.94,
+    reviewsCount: 210,
+    wishlistCount: 680,
+    lastUpdated: '3 days ago',
+    status: 'PUBLISHED',
+  },
+  {
+    id: 'article-3',
+    title: 'State Management Trends in 2026: Signals vs Selectors',
+    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80',
+    instructor: 'David Kim',
+    category: 'Frontend Engineering',
+    contentType: 'Article',
+    difficulty: 'Intermediate',
+    duration: '8m read',
+    price: 'Free',
+    enrollments: 9200,
+    completionRate: 89.0,
+    rating: 4.87,
+    reviewsCount: 140,
+    wishlistCount: 390,
+    lastUpdated: '4 days ago',
+    status: 'DRAFT',
+  },
+  {
     id: 'event-1',
-    title: 'Live Event: Building High-Performance Web Apps',
+    title: 'Live Workshop: Building High-Performance Web Apps',
     thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
     instructor: 'Dr. Sarah Chen',
     category: 'Web Development',
     contentType: 'Event',
     difficulty: 'Beginner',
-    duration: '2h',
+    duration: '2h live session',
     price: 'Free',
     enrollments: 1200,
     completionRate: 100,
@@ -220,6 +256,24 @@ export const mockContent: ExtendedContent[] = [
     reviewsCount: 150,
     wishlistCount: 200,
     lastUpdated: 'Just now',
+    status: 'PUBLISHED',
+  },
+  {
+    id: 'event-2',
+    title: 'Global AI Summit 2026: Keynote & Live Q&A',
+    thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Prof. Michael Vance',
+    category: 'AI Engineering',
+    contentType: 'Event',
+    difficulty: 'Intermediate',
+    duration: '4h keynote',
+    price: '$29.99',
+    enrollments: 3400,
+    completionRate: 96.0,
+    rating: 4.98,
+    reviewsCount: 410,
+    wishlistCount: 1100,
+    lastUpdated: 'Yesterday',
     status: 'PUBLISHED',
   },
 ];
@@ -310,11 +364,15 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
         const matchesSearch =
           c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           c.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          c.category.toLowerCase().includes(searchQuery.toLowerCase());
+          c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.contentType.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType =
+          selectedType === 'ALL' ||
+          c.contentType.toLowerCase() === selectedType.toLowerCase();
         const matchesCat = selectedCategory === 'ALL' || c.category === selectedCategory;
         const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
         const matchesInst = selectedInstructor === 'ALL' || c.instructor === selectedInstructor;
-        return matchesSearch && matchesCat && matchesStatus && matchesInst;
+        return matchesSearch && matchesType && matchesCat && matchesStatus && matchesInst;
       })
       .sort((a, b) => {
         if (sortBy === 'POPULAR') return b.enrollments - a.enrollments;
@@ -322,7 +380,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
         if (sortBy === 'COMPLETION') return b.completionRate - a.completionRate;
         return 0;
       });
-  }, [courses, searchQuery, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
+  }, [courses, searchQuery, selectedType, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
 
   const rankedTopCourses = useMemo(() => {
     const sorted = [...courses];
@@ -647,7 +705,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
 
                 {/* Price & Actions Row */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
+                  <span className="text-base font-black text-[#14142b] pl-3 sm:pl-4">{course.price}</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"

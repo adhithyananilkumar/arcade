@@ -7,7 +7,7 @@ import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/
 import { UserService } from "@/domains/identity";
 import { Role, roleService } from "@/domains/identity";
 import { toast } from 'sonner';
-import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil } from 'lucide-react';
+import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil, Search, ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -240,26 +240,24 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
-        <div className="flex flex-col gap-3 border-b border-slate-100/80 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-purple-50/60 px-6 py-4 sm:flex-row sm:items-center justify-between">
-          <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
-            <span className="grid size-9 place-items-center rounded-2xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
-              <Users size={18} />
+        <div className="flex flex-col gap-3 border-b border-indigo-200/90 bg-gradient-to-r from-indigo-100/90 via-purple-100/70 to-indigo-50 px-6 py-4 sm:flex-row sm:items-center justify-between">
+          <h4 className="flex items-center gap-2.5 text-sm font-black text-[#14142b]">
+            <span className="grid size-9 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white shadow-xs">
+              <Users size={17} />
             </span>
             <span>Staff Roster</span>
-            {staff.length > 0 && (
-              <span className="rounded-full bg-indigo-100/80 px-2.5 py-0.5 text-xs font-black text-indigo-800 border border-indigo-200/60">
-                {staff.length} Members
-              </span>
-            )}
           </h4>
           {staff.length > 0 && (
-            <Input
-              type="text"
-              value={staffSearch}
-              onChange={(e) => setStaffSearch(e.target.value)}
-              placeholder="Search by name or email..."
-              className="w-full sm:w-64 border-slate-200 bg-white/90 focus:border-[#14142b] focus:ring-2 focus:ring-[#14142b]/10 text-xs rounded-xl"
-            />
+            <div className="relative w-full sm:w-64">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Input
+                type="text"
+                value={staffSearch}
+                onChange={(e) => setStaffSearch(e.target.value)}
+                placeholder="Search by name or email..."
+                className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 text-xs rounded-xl shadow-2xs font-medium placeholder:text-slate-400"
+              />
+            </div>
           )}
         </div>
         {staff.length === 0 ? (
@@ -294,7 +292,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
           <>
             <div className="divide-y divide-slate-100">
               {/* Header Row */}
-              <div className="hidden sm:grid sm:grid-cols-12 items-center gap-4 px-6 py-3 bg-slate-50/70 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-slate-100">
+              <div className="hidden sm:grid sm:grid-cols-12 items-center gap-4 px-6 py-3 bg-slate-50/80 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100/90">
                 <div className="col-span-5">Member</div>
                 <div className="col-span-5">Policies & Roles</div>
                 <div className="col-span-2 text-right">Actions</div>
@@ -305,27 +303,30 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 return (
                   <div
                     key={member.id}
-                    className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 px-6 py-4 hover:bg-purple-50/20 transition-colors"
+                    className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 px-6 py-4 hover:bg-indigo-50/30 transition-all duration-150 group"
                   >
                     {/* Member Info (Col 5) */}
                     <div className="col-span-1 sm:col-span-5 flex items-center gap-3.5 min-w-0">
-                      <Avatar className="h-10 w-10 shrink-0 bg-gradient-to-tr from-[#14142b] to-purple-900 text-white shadow-2xs">
-                        <AvatarFallback className="font-extrabold text-xs">
-                          {member.userName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative shrink-0">
+                        <Avatar className="h-10 w-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white font-extrabold shadow-xs ring-2 ring-indigo-100">
+                          <AvatarFallback className="font-extrabold text-xs text-white">
+                            {member.userName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" title="Active Staff Member" />
+                      </div>
                       <div className="min-w-0">
                         <p className="text-xs font-black text-[#14142b] truncate flex items-center gap-1.5">
                           <span>{member.userName}</span>
                           {isSelf && (
-                            <span className="rounded-md bg-purple-100 px-1.5 py-0.2 text-[10px] font-black text-purple-700">
+                            <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/60">
                               You
                             </span>
                           )}
                         </p>
                         <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
                           {member.username ? (
-                            <Link href={`/${member.username}`} className="font-bold text-indigo-600 hover:underline">
+                            <Link href={`/${member.username}`} className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
                               @{member.username}
                             </Link>
                           ) : (
@@ -341,8 +342,9 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                         <Badge
                           key={role.id}
                           variant="outline"
-                          className="text-purple-700 border-purple-200/70 bg-purple-50/90 text-[11px] font-black px-3 py-1 rounded-full shadow-2xs"
+                          className="inline-flex items-center gap-1 text-purple-700 border-purple-200/80 bg-purple-50/90 text-[11px] font-extrabold px-3 py-1 rounded-full shadow-2xs group-hover:bg-purple-100/80 transition-colors"
                         >
+                          <ShieldCheck size={12} className="text-purple-500" />
                           {role.displayName}
                         </Badge>
                       ))}
@@ -355,7 +357,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => openEditRoles(member)}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-[#14142b] hover:bg-slate-100"
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100/80 transition-all"
                           title="Edit policies"
                         >
                           <Pencil size={15} />
@@ -366,7 +368,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleRemoveStaff(member.userId, isSelf)}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100/80 transition-all"
                           title={isSelf ? 'Leave channel' : 'Remove staff member'}
                         >
                           {isSelf ? <LogOut size={15} /> : <Trash2 size={15} />}

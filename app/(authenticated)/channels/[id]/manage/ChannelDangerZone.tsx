@@ -295,7 +295,7 @@ export function ChannelDangerZone({ channel }: Props) {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
           <AlertTriangle size={20} />

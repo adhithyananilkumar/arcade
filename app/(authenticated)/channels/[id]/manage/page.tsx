@@ -40,7 +40,6 @@ import { SmallCourseOverview } from './components/SmallCourseOverview';
 import { CourseManagementSection } from './components/CourseManagementSection';
 import { ArticlesManagementSection } from './components/ArticlesManagementSection';
 import { EventsManagementSection } from './components/EventsManagementSection';
-import { ReviewsFeedbackSection } from './components/ReviewsFeedbackSection';
 import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
 import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
@@ -53,14 +52,12 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
 
+
+
 type ManageTab =
   | 'OVERVIEW'
-  | 'COURSES'
   | 'CONTENT'
   | 'STAFF'
-  | 'ARTICLES'
-  | 'EVENTS'
-  | 'REVIEWS'
   | 'ANALYTICS'
   | 'ACTIVITY'
   | 'NOTIFICATIONS'
@@ -183,14 +180,11 @@ export default function ManageChannelPage() {
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
-    { id: 'COURSES', label: 'Courses', icon: BookOpen, badge: `${content.length || 48}` },
+    { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
     ...(!channel.isPersonal
       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
       : []),
-    { id: 'ARTICLES', label: 'Articles', icon: FileText, badge: '124' },
-    { id: 'EVENTS', label: 'Events', icon: Calendar, badge: '18' },
-    { id: 'REVIEWS', label: 'Reviews', icon: Star, badge: '4.92 ★' },
-    { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
+    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3, badge: '4.92 ★' },
     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
     { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
@@ -337,7 +331,7 @@ export default function ManageChannelPage() {
           {activeTab === 'OVERVIEW' && (
             <div className="space-y-6">
               <SmallCourseOverview
-                onNavigateToCatalog={() => setActiveTab('COURSES')}
+                onNavigateToCatalog={() => setActiveTab('CONTENT')}
                 onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
                 onAddCourse={() => router.push('/studio')}
               />
@@ -349,8 +343,8 @@ export default function ManageChannelPage() {
             </div>
           )}
 
-          {/* TAB 2: COURSES */}
-          {activeTab === 'COURSES' && (
+          {/* TAB 2: CONTENT */}
+          {activeTab === 'CONTENT' && (
             <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
           )}
 
@@ -364,16 +358,7 @@ export default function ManageChannelPage() {
             />
           )}
 
-          {/* TAB 4: ARTICLES */}
-          {activeTab === 'ARTICLES' && <ArticlesManagementSection />}
-
-          {/* TAB 5: EVENTS */}
-          {activeTab === 'EVENTS' && <EventsManagementSection />}
-
-          {/* TAB 6: REVIEWS */}
-          {activeTab === 'REVIEWS' && <ReviewsFeedbackSection />}
-
-          {/* TAB 7: ANALYTICS */}
+          {/* TAB 4: ANALYTICS & REVIEWS */}
           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
 
           {/* TAB 8: ACTIVITY */}
