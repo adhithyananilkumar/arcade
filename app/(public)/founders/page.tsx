@@ -82,6 +82,13 @@ function FlourishLine({ className }: { className?: string }) {
   );
 }
 
+const ERA_HEADERS: Record<number, string> = {
+  0: "ERA ARCHITECTURE",
+  1: "THE FOUNDATION",
+  2: "THE EXPERIENCE",
+  3: "FUTURE VISION"
+};
+
 const ERA_STANDARDS: Record<number, string[]> = {
   0: [
     "A learning space without boundaries",
@@ -90,12 +97,16 @@ const ERA_STANDARDS: Record<number, string[]> = {
     "A vision for accessible education"
   ],
   1: [
-    "Next.js App Router & Tailwind CSS custom design tokens.",
-    "Cryptographic digital certificate generation and verification pipeline."
+    "Learning, structured for every journey",
+    "One platform, many possibilities",
+    "Learning beyond the lecture",
+    "Designed to grow"
   ],
   2: [
-    "Closed beta rollout across 8 engineering departments at AJCE.",
-    "1,200+ active student developers & 40+ faculty mentors participating."
+    "Learn at your own pace",
+    "Progress becomes visible",
+    "Classrooms find a digital home",
+    "Learning becomes engaging"
   ],
   3: [
     "Comprehensive platform for multi-department learning & AI creator hubs.",
@@ -421,7 +432,7 @@ export default function FoundersPage() {
                 {/* Right Standards Card */}
                 <div className="lg:col-span-5 rounded-2xl bg-white border border-slate-100 p-6 shadow-xs space-y-4">
                   <div className="text-[11px] font-bold uppercase tracking-widest border-b border-slate-100 pb-3">
-                    <span className="text-slate-400">ERA ARCHITECTURE</span>
+                    <span className="text-slate-400">{ERA_HEADERS[activeEraIndex] || "ERA ARCHITECTURE"}</span>
                   </div>
 
                   <div className="space-y-3">

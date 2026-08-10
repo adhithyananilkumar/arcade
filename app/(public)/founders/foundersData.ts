@@ -246,17 +246,17 @@ export const TIMELINE_MILESTONES: Milestone[] = [
   },
   {
     year: "2024 - Q4",
-    title: "Blueprint & System Architecture",
-    subtitle: "Engineering an open, modern learning infrastructure",
-    description: "The team established the core technical stack: Next.js App Router, Tailwind CSS with custom editorial design tokens, Framer Motion springs, and verifiable credential cryptography for certificates.",
+    title: "From Idea to Infrastructure",
+    subtitle: "Building the foundation for a learning ecosystem",
+    description: "An idea becomes meaningful when it can serve people. Arcade began taking shape as a digital learning ecosystem — bringing together courses, classrooms, educators, learners, and opportunities under one roof.\n\nThe platform was envisioned not merely as a collection of videos, but as a place where learning could be followed, measured, experienced, and celebrated. Self-paced courses, progress tracking, badges, live learning, and structured educational spaces became pieces of the larger Arcade vision.",
     badge: "Architecture",
     iconName: "code"
   },
   {
     year: "2025 - Q2",
-    title: "Campus Beta Rollout at AJCE",
-    subtitle: "Real-world testing with students and faculty mentors",
-    description: "Arcade launched its first closed beta across engineering departments. Over 1,200+ students and 40+ faculty members participated, running workshops, webinars, and coding challenges on the platform.",
+    title: "The Idea Meets Its Learners",
+    subtitle: "From a campus vision to a learning experience",
+    description: "Arcade began opening its doors to a wider learning community, transforming the original vision into something students could experience for themselves.\n\nFree video-based courses, live classes, progress tracking, badges, and interactive learning experiences began coming together. The platform also expanded beyond individual learners, creating possibilities for schools and institutions to bring their own classrooms into the digital space.\n\nAnd as learners moved forward, Arcade began learning from them too — laying the foundation for more personalised experiences powered by data and machine learning.",
     badge: "Beta Launch",
     iconName: "rocket"
   },
