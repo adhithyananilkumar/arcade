@@ -13,17 +13,6 @@ export interface CheckoutResponse {
   gatewayClientFields: Record<string, unknown>;
 }
 
-export interface QrCodeResponse {
-  qrCodeId: string;
-  imageUrl: string;
-  expiresAt?: string;
-}
-
-export interface PaymentMethodOption {
-  code: string;
-  label: string;
-}
-
 export interface PaymentOrderResponse {
   id: string;
   enrollmentId: string;

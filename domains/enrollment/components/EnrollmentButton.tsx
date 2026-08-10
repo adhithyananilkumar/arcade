@@ -6,7 +6,7 @@ import { EnrollmentService } from '../api/enrollment.service';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
-import { PaymentModal } from '@/domains/payment';
+import { launchRazorpayCheckout } from '@/domains/payment';
 
 export interface EnrollmentButtonProps {
   resourceType: ResourceType;
@@ -31,7 +31,7 @@ export function EnrollmentButton({
   const [currentState, setCurrentState] = useState<UIEnrollmentState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPaymentEnrollmentId, setPendingPaymentEnrollmentId] = useState<string | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
@@ -54,6 +54,44 @@ export function EnrollmentButton({
     }
   }, [onStateChange]);
 
+  const startPayment = useCallback(async (paymentEnrollmentId: string) => {
+    if (isPaying) return;
+    setIsPaying(true);
+    setPendingPaymentEnrollmentId(paymentEnrollmentId);
+    notifyStateChange('PENDING');
+
+    await launchRazorpayCheckout(paymentEnrollmentId, crypto.randomUUID(), {
+      onGranted: () => {
+        setIsPaying(false);
+        setPendingPaymentEnrollmentId(null);
+        notifyStateChange('ENROLLED');
+        toast.success('Payment successful — you are enrolled!');
+      },
+      onFailed: () => {
+        setIsPaying(false);
+        toast.error('Payment failed. No amount was deducted — you can try again.');
+      },
+      onExpired: () => {
+        setIsPaying(false);
+        toast.error('This checkout session expired. Please try again.');
+      },
+      onVerifying: () => {
+        toast.info('Verifying your payment…');
+      },
+      onVerifyTimeout: () => {
+        setIsPaying(false);
+        toast.info('Still confirming your payment — check back in a moment.');
+      },
+      onDismissed: () => {
+        setIsPaying(false);
+      },
+      onError: (message) => {
+        setIsPaying(false);
+        toast.error(message);
+      },
+    });
+  }, [isPaying, notifyStateChange]);
+
   const handleEnroll = async () => {
     if (isProcessing) return;
     
@@ -74,9 +112,7 @@ export function EnrollmentButton({
             notifyStateChange('WAITLISTED');
             toast.success('Added to waitlist');
           } else if (result.nextAction === 'REQUIRE_PAYMENT' && result.recordId) {
-            notifyStateChange('PENDING');
-            setPendingPaymentEnrollmentId(result.recordId);
-            setShowPaymentModal(true);
+            startPayment(result.recordId);
           } else {
             notifyStateChange('PENDING');
             toast.info('Action required: ' + result.nextAction);
@@ -90,9 +126,7 @@ export function EnrollmentButton({
           } else if (result.reasonCode === 'ENROLLMENT_PAYMENT_PENDING' && result.recordId) {
             // A prior enrollment attempt is still awaiting payment — resume that checkout
             // instead of ever treating an unpaid enrollment as granted access.
-            notifyStateChange('PENDING');
-            setPendingPaymentEnrollmentId(result.recordId);
-            setShowPaymentModal(true);
+            startPayment(result.recordId);
           } else if (result.reasonCode === 'CAPACITY_EXHAUSTED') {
             toast.error('The capacity for this resource is exhausted.');
           } else if (result.reasonCode === 'RESOURCE_NOT_PUBLISHED') {
@@ -165,19 +199,6 @@ export function EnrollmentButton({
     }
   };
 
-  const paymentModal = (
-    <PaymentModal
-      open={showPaymentModal}
-      enrollmentId={pendingPaymentEnrollmentId || ''}
-      onClose={() => setShowPaymentModal(false)}
-      onGranted={() => {
-        setShowPaymentModal(false);
-        setPendingPaymentEnrollmentId(null);
-        notifyStateChange('ENROLLED');
-      }}
-    />
-  );
-
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
     const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Event';
@@ -223,14 +244,19 @@ export function EnrollmentButton({
   if (currentState === 'PENDING') {
     if (pendingPaymentEnrollmentId) {
       return (
-        <>
-          <button
-            onClick={() => setShowPaymentModal(true)}
-            className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all w-full text-sm ${className}`}>
-            Complete Payment
-          </button>
-          {paymentModal}
-        </>
+        <button
+          onClick={() => startPayment(pendingPaymentEnrollmentId)}
+          disabled={isPaying}
+          className={`bg-[#4c6fff] hover:bg-[#3d5ce0] active:scale-[0.98] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition-all w-full text-sm flex items-center justify-center gap-2 disabled:opacity-70 ${className}`}>
+          {isPaying ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+              <span>Processing…</span>
+            </>
+          ) : (
+            'Complete Payment'
+          )}
+        </button>
       );
     }
     return (
