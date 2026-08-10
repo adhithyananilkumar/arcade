@@ -14,8 +14,8 @@ export function fromMinorUnits(minorUnits: number): number {
 
 /** Formats integer minor units as a localized currency string, e.g. formatMoney(99900, "INR") -> "₹999.00". */
 export function formatMoney(minorUnits: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: currency || "USD",
+    currency: currency || "INR",
   }).format(fromMinorUnits(minorUnits ?? 0));
 }

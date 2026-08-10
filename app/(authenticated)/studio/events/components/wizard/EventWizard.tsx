@@ -95,7 +95,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
         difficulty: form.formData.difficulty,
         language: form.formData.language || 'en',
         priceAmount: form.formData.priceAmount || 0,
-        currency: form.formData.currency || 'USD',
+        currency: form.formData.currency || 'INR',
         capacity: (form.formData.capacity as any) === '' ? null : form.formData.capacity,
         visibility: form.formData.visibility
       };

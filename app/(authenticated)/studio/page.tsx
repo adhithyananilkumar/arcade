@@ -544,7 +544,7 @@ function CreateEventModal({
         difficulty: "BEGINNER",
         language: "en",
         priceAmount: 0,
-        currency: "USD",
+        currency: "INR",
         visibility: "PRIVATE",
         channelId,
       });
