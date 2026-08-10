@@ -124,7 +124,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
 
       toast.success('Event saved successfully!');
       if (navigateAfterSave) {
-        router.push(`/studio/workshop/${savedId}/edit`);
+        router.push(`/studio/events/${savedId}/edit`);
       }
       return savedId;
     } catch (error: any) {
@@ -148,7 +148,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
     } else {
       const id = (form.formData as any).id || eventId;
       if (id) {
-        router.push(`/studio/workshop/${id}`);
+        router.push(`/studio/events/${id}`);
       } else {
         router.push('/studio');
       }

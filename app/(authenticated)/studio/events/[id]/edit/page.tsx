@@ -1,4 +1,4 @@
-// app/(authenticated)/studio/workshop/[id]/edit/page.tsx
+// app/(authenticated)/studio/events/[id]/edit/page.tsx
 import type { Metadata } from "next";
 import { SharedContentEditorOrchestrator } from "@/apps/creator/shared/content-editor/SharedContentEditorOrchestrator";
 

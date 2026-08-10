@@ -11,13 +11,13 @@ export default async function ParticipantsLayout({
   const { id } = await params;
   
   const tabs = [
-    { name: "Registered Members", href: `/studio/workshop/${id}/participants` },
-    { name: "Pending Approvals", href: `/studio/workshop/${id}/participants/pending` },
-    { name: "Waitlist", href: `/studio/workshop/${id}/participants/waitlist` },
-    { name: "Attendance", href: `/studio/workshop/${id}/participants/attendance` },
-    { name: "Certificates", href: `/studio/workshop/${id}/participants/certificates` },
-    { name: "Messages", href: `/studio/workshop/${id}/participants/messages` },
-    { name: "Analytics", href: `/studio/workshop/${id}/participants/analytics` },
+    { name: "Registered Members", href: `/studio/events/${id}/participants` },
+    { name: "Pending Approvals", href: `/studio/events/${id}/participants/pending` },
+    { name: "Waitlist", href: `/studio/events/${id}/participants/waitlist` },
+    { name: "Attendance", href: `/studio/events/${id}/participants/attendance` },
+    { name: "Certificates", href: `/studio/events/${id}/participants/certificates` },
+    { name: "Messages", href: `/studio/events/${id}/participants/messages` },
+    { name: "Analytics", href: `/studio/events/${id}/participants/analytics` },
   ];
 
   return (

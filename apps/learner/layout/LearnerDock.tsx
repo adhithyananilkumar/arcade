@@ -110,8 +110,8 @@ export default function LearnerDock() {
     if (hasStudioAccess || isCollaborator) {
       list.push({
         id: 'studio',
-        label: 'Manage',
-        href: '/studio/manage',
+        label: 'Events',
+        href: '/studio/events',
         icon: LayoutDashboard,
         activeColor: 'text-indigo-600 dark:text-indigo-400',
         exact: false,
