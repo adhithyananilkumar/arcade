@@ -166,7 +166,7 @@ export default function UnifiedManagePage() {
         {/* Right: primary action */}
         {canCreate && (
           <Link
-            href="/studio/workshop/new"
+            href="/studio/events/new"
             className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 py-2.5 text-sm font-semibold text-white transition-all self-start sm:self-center"
           >
             <Plus size={15} /> New Workspace
@@ -255,7 +255,7 @@ export default function UnifiedManagePage() {
             </div>
             {!searchQuery && activeFilter === 'ALL' && (
               <Link
-                href="/studio/workshop/new"
+                href="/studio/events/new"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
               >
                 <Plus size={16} /> New Workspace
@@ -357,7 +357,7 @@ export default function UnifiedManagePage() {
                     {/* Manage Link button */}
                     <div className="shrink-0 self-start sm:self-center">
                       <Link
-                        href={`/studio/workshop/${item.id}`}
+                        href={`/studio/events/${item.id}`}
                         className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all shadow-sm active:scale-98"
                       >
                         Manage {isWebinar ? 'Webinar' : 'Event'} <ArrowRight size={13} />

@@ -99,7 +99,7 @@ export const ReviewStep: React.FC<Props> = ({ form, onNavigateToStep, onSaveDraf
     try {
       const copy = await duplicateEvent(eventId);
       toast.success('Event duplicated.');
-      router.push(`/studio/workshop/new?id=${copy.id}`);
+      router.push(`/studio/events/new?id=${copy.id}`);
     } catch (e: any) {
       toast.error(e?.message || 'Failed to duplicate workshop.');
     } finally {

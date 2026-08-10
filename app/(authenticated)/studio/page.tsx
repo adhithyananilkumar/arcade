@@ -864,12 +864,12 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const isEvent = item.type === "WORKSHOP";
+  const isEvent = ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type);
   const isQuiz = item.type === "QUIZ";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
     : isEvent
-      ? `/studio/workshop/${item.id}`
+      ? `/studio/events/${item.id}/edit`
       : isQuiz
         ? `/studio/quiz/${item.id}`
         : `/studio/course/${item.id}/edit`;

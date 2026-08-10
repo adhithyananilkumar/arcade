@@ -199,7 +199,7 @@ export default function SingleEventDashboard() {
               {hasEditAccess && (
                 <>
                   <Link
-                    href={`/studio/workshop/${summary.id}/edit`}
+                    href={`/studio/events/${summary.id}/edit`}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
                   >
                     ✏️ Edit Content
