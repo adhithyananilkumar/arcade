@@ -457,15 +457,6 @@ function CourseHero({
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <div className="flex items-baseline gap-2 pr-1">
-              {pricingModel === "PAID" ? (
-                <>
-                  <span className="font-serif text-3xl font-medium text-ink">${priceAmount}</span>
-                </>
-              ) : (
-                <span className="font-serif text-3xl font-medium text-ink">Free</span>
-              )}
-            </div>
             {isEnrolled ? (
               <Link
                 href={`/learn/${courseId}/learn`}
