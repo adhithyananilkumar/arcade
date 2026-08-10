@@ -32,6 +32,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
 import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
 import { toast } from "sonner"
+import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
   Dialog,
   DialogContent,
@@ -996,27 +997,13 @@ export default function CoursePage() {
   const [reportNote, setReportNote] = useState('');
   const [isReporting, setIsReporting] = useState(false);
 
-  const handleReportSubmit = async () => {
-    if (!reportNote.trim()) {
-      toast.error('Please provide a note about the issue.');
-      return;
-    }
-    setIsReporting(true);
-    try {
-      await api.post('/api/v1/reports', {
-        contentId: params?.courseId,
-        contentType: 'COURSE',
-        note: reportNote
-      });
-      toast.success('Course reported. Our moderation team will review it shortly.');
-      setReportModalOpen(false);
-      setReportNote('');
-    } catch (err: any) {
-      console.error('Failed to report course:', err);
-      toast.error(err.message || 'Failed to submit report. Please try again.');
-    } finally {
-      setIsReporting(false);
-    }
+  const handleReportSubmit = async (combinedNote: string) => {
+    await api.post('/api/v1/reports', {
+      contentId: params?.courseId,
+      contentType: 'COURSE',
+      note: combinedNote
+    });
+    toast.success('Course reported. Our moderation team will review it shortly.');
   };
 
   const titleFromQuery = searchParams.get('title')
@@ -1098,39 +1085,14 @@ export default function CoursePage() {
         </div>
       </div>
 
-      <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Report Course</DialogTitle>
-            <DialogDescription>
-              Please provide details about what is wrong with this course.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <textarea
-              className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Tell us what's wrong..."
-              value={reportNote}
-              onChange={(e) => setReportNote(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <button
-              onClick={() => setReportModalOpen(false)}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleReportSubmit}
-              disabled={isReporting}
-              className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
-            >
-              {isReporting ? 'Submitting...' : 'Submit Report'}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
+        title="Report Course"
+        description="Help us understand what is wrong with this course."
+        contentType="COURSE"
+      />
     </main>
   )
 }

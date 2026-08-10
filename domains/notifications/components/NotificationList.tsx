@@ -37,6 +37,8 @@ function typeLabel(type: string): string | null {
     case 'CHANNEL_APPROVED':
     case 'CHANNEL_REJECTED':
       return 'Channel';
+    case 'REACH_US':
+      return 'Reach Us';
     default:
       return null;
   }
@@ -57,6 +59,8 @@ function typeTone(type: string): string {
       return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'CONTENT_SUBMITTED':
       return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'REACH_US':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200';
   }
@@ -475,7 +479,7 @@ export function NotificationList({
               </div>
               {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{n.message}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 break-words">{n.message}</p>
             {n.actorName && (
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                 by {n.actorName}

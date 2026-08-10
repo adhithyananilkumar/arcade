@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Inbox } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -22,6 +22,7 @@ export default function ArcConsoleLayout({
     AuthorizationService.canManageUsers(user) ||
     AuthorizationService.canManageRoles(user) ||
     AuthorizationService.canManagePermissions(user);
+  const showInbox = AuthorizationService.canAccessConsole(user);
 
   const navItems = [
     ...(showAdminChannels
@@ -34,6 +35,7 @@ export default function ArcConsoleLayout({
       ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar }]
       : []),
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield }] : []),
+    ...(showInbox ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox }] : []),
   ];
 
   // Removed notFound() when navItems is empty. This allows Org staff to access 

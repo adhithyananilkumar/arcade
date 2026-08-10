@@ -24,6 +24,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
 import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
 import { toast } from "sonner"
+import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
   Dialog,
   DialogContent,
@@ -232,27 +233,13 @@ export default function CoursePreviewPage() {
   const [openMod, setOpenMod] = useState(0)
   const [isWishlisted, setIsWishlisted] = useState(false)
 
-  const handleReportSubmit = async () => {
-    if (!reportNote.trim()) {
-      toast.error("Please provide a note about the issue.")
-      return
-    }
-    setIsReporting(true)
-    try {
-      await api.post("/api/v1/reports", {
-        contentId: params?.id,
-        contentType: "COURSE",
-        note: reportNote
-      })
-      toast.success("Course reported. Our moderation team will review it shortly.")
-      setReportModalOpen(false)
-      setReportNote("")
-    } catch (err: any) {
-      console.error("Failed to report course:", err)
-      toast.error(err.message || "Failed to submit report. Please try again.")
-    } finally {
-      setIsReporting(false)
-    }
+  const handleReportSubmit = async (combinedNote: string) => {
+    await api.post("/api/v1/reports", {
+      contentId: params?.id,
+      contentType: "COURSE",
+      note: combinedNote
+    })
+    toast.success("Course reported. Our moderation team will review it shortly.")
   }
 
   useEffect(() => {
@@ -280,7 +267,7 @@ export default function CoursePreviewPage() {
   const authorAvatarUrl = course?.authorAvatarUrl
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0
   const isEnrolled = Boolean(
-    params?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === params.id)
+    course?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === course.id)
   )
 
   const heroContent = (
@@ -307,21 +294,26 @@ export default function CoursePreviewPage() {
       onReportClick={() => setReportModalOpen(true)}
       accentColor="#1db876"
       actionButton={
-        isEnrolled ? (
-          <Link href={`/learn/${params?.id}`} className="animated-button">
+        isEnrolled && course?.id ? (
+          <Link href={`/learn/${course.id}/learn`} className="animated-button">
             <span className="text">Go to course →</span>
           </Link>
         ) : (
-          params?.id ? (
+          course?.id ? (
             <div className="min-w-[200px] sm:min-w-[240px]">
               <EnrollmentButton
                 resourceType="COURSE"
-                resourceId={params.id}
+                resourceId={course.id}
                 initialState="NOT_ENROLLED"
+                targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
+                onGoToResource={() => {
+                  const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
+                  router.push(`/learn/${course.id}/learn${queryStr}`)
+                }}
                 onStateChange={(state) => {
                   if (state === "ENROLLED") {
                     const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                    router.push(`/learn/${params.id}${queryStr}`)
+                    router.push(`/learn/${course.id}/learn${queryStr}`)
                   }
                 }}
               />
@@ -523,25 +515,30 @@ export default function CoursePreviewPage() {
       title={<>Light the path to your next <span className="italic text-amber">design role.</span></>}
       description="Join 12,480 builders learning to design interfaces people actually love — with feedback from working designers."
       primaryAction={
-        isEnrolled ? (
+        isEnrolled && course?.id ? (
           <Link
-            href={`/learn/${params?.id}`}
+            href={`/learn/${course.id}/learn`}
             className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-white/90"
           >
             Go to course →
           </Link>
         ) : (
-          params?.id ? (
+          course?.id ? (
             <div className="min-w-[200px] sm:min-w-[240px]">
               <EnrollmentButton
                 resourceType="COURSE"
-                resourceId={params.id}
+                resourceId={course.id}
                 initialState="NOT_ENROLLED"
                 className="!bg-white !text-ink hover:!bg-white/90"
+                targetUrl={`/learn/${course.id}/learn${titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''}`}
+                onGoToResource={() => {
+                  const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
+                  router.push(`/learn/${course.id}/learn${queryStr}`)
+                }}
                 onStateChange={(state) => {
                   if (state === "ENROLLED") {
                     const queryStr = titleFromQuery ? `?title=${encodeURIComponent(titleFromQuery)}` : ''
-                    router.push(`/learn/${params.id}${queryStr}`)
+                    router.push(`/learn/${course.id}/learn${queryStr}`)
                   }
                 }}
               />
@@ -553,39 +550,14 @@ export default function CoursePreviewPage() {
   )
 
   const modals = (
-    <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Report Course</DialogTitle>
-          <DialogDescription>
-            Please provide details about what is wrong with this course.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <textarea
-            className="min-h-[100px] w-full rounded-md border border-gray-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="Tell us what's wrong..."
-            value={reportNote}
-            onChange={(e) => setReportNote(e.target.value)}
-          />
-        </div>
-        <DialogFooter>
-          <button
-            onClick={() => setReportModalOpen(false)}
-            className="rounded-full px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleReportSubmit}
-            disabled={isReporting}
-            className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 disabled:opacity-50"
-          >
-            {isReporting ? "Submitting..." : "Submit Report"}
-          </button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ReportModal
+      isOpen={reportModalOpen}
+      onClose={() => setReportModalOpen(false)}
+      onSubmit={handleReportSubmit}
+      title="Report Course"
+      description="Help us understand what is wrong with this course."
+      contentType="COURSE"
+    />
   )
 
   return (
