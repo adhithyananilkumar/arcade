@@ -3,10 +3,10 @@
 import React, { Suspense } from "react";
 import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 
-export default function EventsPage() {
+export default function ArticlesPage() {
   return (
     <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading category...</div>}>
-      <CategoryDetailedView mode="events" />
+      <CategoryDetailedView mode="articles" />
     </Suspense>
   );
 }

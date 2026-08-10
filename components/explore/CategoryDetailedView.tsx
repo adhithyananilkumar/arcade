@@ -21,6 +21,60 @@ function hexToRgbStr(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
+
+// Dummy data and header for live learning events
+const WEBINARS_DATA = [
+  { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
+  { title: "Building Secure & Resilient APIs", category: "Information Technology", host: "Security DevOps Lead", date: "Thursday, 2:00 PM", status: "Upcoming", duration: "75 mins" },
+  { title: "Cloud Computing & Serverless AWS Architectures", category: "Information Technology", host: "AWS Solution Architect", date: "Recorded", status: "Recorded Video", duration: "120 mins" },
+  { title: "Strategic Product Management Sprints", category: "Business & Management", host: "VP of Product", date: "Recorded", status: "Recorded Video", duration: "45 mins" },
+  { title: "Structural Analysis & Materials Mechanics", category: "Civil & Mechanical", host: "Senior Civil Engineer", date: "Recorded", status: "Recorded Video", duration: "80 mins" }
+];
+
+export function WebinarCardHeader({ title, status, duration, category }: any) {
+  const isLive = status === "Live Today";
+  const isUpcoming = status === "Upcoming";
+
+  const getBgTheme = () => {
+    switch(category) {
+      case "Computer Science": return "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)";
+      case "Information Technology": return "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)";
+      case "Business & Management": return "linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%)";
+      case "Civil & Mechanical": return "linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)";
+      default: return "linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%)";
+    }
+  };
+
+  const getAccentColor = () => {
+    switch(category) {
+      case "Computer Science": return "#4F46E5";
+      case "Information Technology": return "#2563EB";
+      case "Business & Management": return "#EA580C";
+      case "Civil & Mechanical": return "#059669";
+      default: return "#4B5563";
+    }
+  };
+
+  return (
+    <div style={{ height: "140px", background: getBgTheme(), position: "relative", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden" }}>
+      <svg width="200" height="200" viewBox="0 0 200 200" style={{ position: "absolute", top: "-50px", right: "-50px", opacity: 0.1, color: getAccentColor() }}>
+        <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="10 10" />
+        <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M50 100 L150 100 M100 50 L100 150" stroke="currentColor" strokeWidth="2" />
+      </svg>
+      
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+          {category}
+        </div>
+        <div style={{ display: "inline-block", padding: "4px 8px", background: isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#6B7280"), borderRadius: "6px", fontSize: "0.7rem", fontWeight: "700", color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          {status}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const HoneycombIllustration: React.FC = () => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -1656,12 +1710,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
   hubBasePath?: string;
+  mode?: "courses" | "events" | "articles";
 };
 
-export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedViewProps = {}) {
+export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: CategoryDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const exploreHome = hubBasePath || "/explore";
+  const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "articles" ? "/articles" : "/explore");
   const isEmbeddedHub = Boolean(hubBasePath);
 
   // Route selector
@@ -1673,11 +1728,16 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
 
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
-
   useEffect(() => {
-    api.get<Record<string, { averageRating: number; reviewsCount: number }>>("/api/v1/reviews/stats")
-      .then(setCourseStats)
-      .catch((err) => console.error("Failed to fetch course stats", err));
+    const fetchStats = async () => {
+      try {
+        const stats = await api.get<Record<string, { averageRating: number; reviewsCount: number }>>("/api/v1/reviews/stats");
+        setCourseStats(stats);
+      } catch (err: any) {
+        // Silently ignore dummy fetch errors
+      }
+    };
+    fetchStats();
   }, []);
 
   const coursesSectionRef = useRef<HTMLDivElement>(null);
@@ -1743,10 +1803,399 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
     return matchesSearch && matchesDifficulty && matchesTopic;
   });
 
+  const renderCoursesSection = (title: string = "Popular Courses") => (
+    <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                {title}
+              </h2>
+            </div>
+            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
+              Showing {filteredCourses.length} of {activeData.courses.length} courses
+            </span>
+          </div>
+
+          {/* Professional Horizontal Filters Bar */}
+          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
+          <div
+            ref={filtersGridRef}
+            style={{
+              display: "flex",
+              gap: "24px",
+              marginBottom: "32px",
+              background: "rgba(255, 255, 255, 0.65)",
+              border: "1px solid rgba(20, 23, 31, 0.06)",
+              borderRadius: "16px",
+              padding: "20px 24px",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
+              flexWrap: "wrap",
+              alignItems: "flex-start"
+            }}
+          >
+            {/* Difficulty Filter */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Course Level
+              </label>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {difficultyLevels.map((level) => {
+                  const isActive = selectedDifficulty === level;
+                  return (
+                    <FilterPillButton
+                      key={level}
+                      isActive={isActive}
+                      activeData={activeData}
+                      onClick={() => setSelectedDifficulty(level)}
+                    >
+                      {level}
+                    </FilterPillButton>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
+
+            {/* Topic Filter */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Course Type
+              </label>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {topics.map((topic) => {
+                  const isActive = selectedTopic === topic;
+                  return (
+                    <FilterPillButton
+                      key={topic}
+                      isActive={isActive}
+                      activeData={activeData}
+                      onClick={() => setSelectedTopic(topic)}
+                    >
+                      {topic}
+                    </FilterPillButton>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {filteredCourses.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
+              <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
+              <button 
+                onClick={() => setCourseSearchQuery("")}
+                style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
+              >
+                Reset search
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
+              {filteredCourses.map((course, index) => {
+                const slug = slugify(course.title);
+                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
+                return (
+                  <CourseCard
+                    key={course.title}
+                    course={course}
+                    index={index}
+                    activeCategoryName={activeCategoryName}
+                    activeData={activeData}
+                    router={router}
+                    realRating={stats.averageRating}
+                    realReviewsCount={stats.reviewsCount}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </section>
+  );
+
+  const renderBootcampsSection = (title: string = "Practical Bootcamps") => (
+    <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                {title}
+              </h2>
+            </div>
+            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer" }}>
+              View all
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+            {activeData.bootcamps.map((bootcamp) => (
+              <div
+                key={bootcamp.title}
+                style={{
+                  background: "rgba(255, 255, 255, 0.65)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid rgba(20, 23, 31, 0.06)",
+                  borderRadius: "16px",
+                  padding: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
+                  position: "relative",
+                  overflow: "hidden"
+                }}
+                className="hover-card-y"
+              >
+                {/* Accent Watermark */}
+                <div style={{ position: "absolute", right: "-10px", bottom: "-10px", opacity: 0.05, transform: "scale(1.5)", color: activeData.colors.primary }}>
+                  {CATEGORY_ICONS[activeCategoryName]}
+                </div>
+
+                {/* Left Mini Icon Graphic */}
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "14px",
+                    background: `linear-gradient(135deg, ${activeData.colors.primary} 0%, #FFFFFF 200%)`,
+                    color: "#FFFFFF",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  {CATEGORY_ICONS[activeCategoryName]}
+                </div>
+
+                {/* Right Details */}
+                <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
+                  <h4 style={{ fontSize: "0.9rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 4px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {bootcamp.title}
+                  </h4>
+                  <div style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.5)", fontWeight: "600" }}>
+                    {bootcamp.type} • {bootcamp.duration}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, marginTop: "6px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ color: "#F59E0B" }}>
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                    4.8 <span style={{ color: "rgba(20, 20, 43, 0.4)", fontWeight: "500" }}>(3.2k)</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+  );
+
+  const renderResourcesSection = (title: string = "Resource Libraries") => (
+    <section>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+                {title}
+              </h2>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+            {activeData.resources.map((doc) => (
+              <div
+                key={doc.title}
+                style={{
+                  background: "rgba(255, 255, 255, 0.65)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  border: "1px solid rgba(20, 23, 31, 0.06)",
+                  borderRadius: "16px",
+                  padding: "24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  minHeight: "140px",
+                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
+                }}
+                className="hover-card-y"
+              >
+                <div>
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: "800",
+                      color: activeData.colors.primary,
+                      background: activeData.colors.secondary,
+                      padding: "3px 8px",
+                      borderRadius: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.03em",
+                      display: "inline-block",
+                      marginBottom: "12px"
+                    }}
+                  >
+                    {doc.type}
+                  </span>
+                  <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {doc.title}
+                  </h3>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
+                  <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
+                  <span
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: "800",
+                      color: activeData.colors.primary,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px"
+                    }}
+                  >
+                    Read Guide
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+  );
+
+
+  const renderLiveSessionsSection = (title: string = "Live Sessions & Events") => {
+    let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
+    if (categoryWebinars.length === 0) {
+      categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
+    }
+
+    return (
+      <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
+            <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+              {title}
+            </h2>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+          {categoryWebinars.map((w, i) => {
+            const isLive = w.status === "Live Today";
+            const isUpcoming = w.status === "Upcoming";
+            const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
+            const ctaColor = "#FFFFFF";
+            const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
+            const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
+            const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
+
+            return (
+              <div
+                key={i}
+                style={{
+                  background: "#FFFFFF",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  overflow: "hidden",
+                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
+                }}
+              >
+                <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
+
+                <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        {w.category} • {w.duration.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <h3
+                      style={{
+                        fontSize: "1.1rem",
+                        fontWeight: "800",
+                        color: titleColor,
+                        marginBottom: "16px",
+                        lineHeight: "1.4",
+                        minHeight: "56px",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        letterSpacing: "-0.01em"
+                      }}
+                    >
+                      {w.title}
+                    </h3>
+
+                    <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
+                    </div>
+                  </div>
+
+                  <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                          <line x1="16" y1="2" x2="16" y2="6" />
+                          <line x1="8" y1="2" x2="8" y2="6" />
+                          <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
+                          {w.date}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          background: ctaBg,
+                          color: ctaColor,
+                          fontSize: "0.82rem",
+                          fontWeight: "700",
+                          boxShadow: ctaShadow,
+                          transition: "all 0.3s"
+                        }}
+                      >
+                        {isLive ? "Join Now" : (isUpcoming ? "Register" : "Watch")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <div
       className="landing-root"
       style={{
+        background: mode === "events" ? "linear-gradient(to bottom right, #fdf4ff, #fae8ff)" :
+                    mode === "articles" ? "linear-gradient(to bottom right, #f0fdf4, #dcfce7)" :
+                    "#f8fafc",
         // Authenticated hub already clears the dock via LearnerShell pb-28.
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
@@ -2088,14 +2537,28 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
                 fontFamily: "'Space Grotesk', sans-serif"
               }}
             >
-              {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
-              <GradientText
-                colors={['#2563EB', '#0EA5E9', '#06B6D4', '#10B981', '#4F46E5', '#2563EB']}
-                animationSpeed={8}
-                showBorder={false}
-              >
-                {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
-              </GradientText>
+              {mode === "courses" ? (
+                <>
+                  {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                    {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+                  </GradientText>
+                </>
+              ) : mode === "events" ? (
+                <>
+                  Live Sessions & Events for <br />
+                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                    {activeCategoryName}
+                  </GradientText>
+                </>
+              ) : (
+                <>
+                  Latest Research & Articles in <br />
+                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                    {activeCategoryName}
+                  </GradientText>
+                </>
+              )}
             </h1>
             <p
               style={{
@@ -2167,270 +2630,25 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
           </div>
         </div>
 
-        {/* Section A: Popular / Available Courses */}
-        <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Popular Courses
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-              Showing {filteredCourses.length} of {activeData.courses.length} courses
-            </span>
-          </div>
 
-          {/* Professional Horizontal Filters Bar */}
-          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-          <div
-            ref={filtersGridRef}
-            style={{
-              display: "flex",
-              gap: "24px",
-              marginBottom: "32px",
-              background: "rgba(255, 255, 255, 0.65)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              borderRadius: "16px",
-              padding: "20px 24px",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-              flexWrap: "wrap",
-              alignItems: "flex-start"
-            }}
-          >
-            {/* Difficulty Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Level
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {difficultyLevels.map((level) => {
-                  const isActive = selectedDifficulty === level;
-                  return (
-                    <FilterPillButton
-                      key={level}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedDifficulty(level)}
-                    >
-                      {level}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
+        {mode === "courses" && (
+          <>
+            {renderCoursesSection("Popular Courses")}
+            {renderBootcampsSection("Practical Bootcamps")}
+          </>
+        )}
 
-            {/* Vertical Divider */}
-            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
+        {mode === "events" && (
+          <>
+            {renderLiveSessionsSection("Live Sessions & Events")}
+          </>
+        )}
 
-            {/* Topic Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Type
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {topics.map((topic) => {
-                  const isActive = selectedTopic === topic;
-                  return (
-                    <FilterPillButton
-                      key={topic}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedTopic(topic)}
-                    >
-                      {topic}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {filteredCourses.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-              <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-              <button 
-                onClick={() => setCourseSearchQuery("")}
-                style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
-              >
-                Reset search
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-              {filteredCourses.map((course, index) => {
-                const slug = slugify(course.title);
-                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
-                return (
-                  <CourseCard
-                    key={course.title}
-                    course={course}
-                    index={index}
-                    activeCategoryName={activeCategoryName}
-                    activeData={activeData}
-                    router={router}
-                    realRating={stats.averageRating}
-                    realReviewsCount={stats.reviewsCount}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* Section B: Bootcamps ("Trending Now" Layout) */}
-        <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Practical Bootcamps
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer" }}>
-              View all
-            </span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.bootcamps.map((bootcamp) => (
-              <div
-                key={bootcamp.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-                  position: "relative",
-                  overflow: "hidden"
-                }}
-                className="hover-card-y"
-              >
-                {/* Accent Watermark */}
-                <div style={{ position: "absolute", right: "-10px", bottom: "-10px", opacity: 0.05, transform: "scale(1.5)", color: activeData.colors.primary }}>
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Left Mini Icon Graphic */}
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "14px",
-                    background: `linear-gradient(135deg, ${activeData.colors.primary} 0%, #FFFFFF 200%)`,
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  }}
-                >
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Right Details */}
-                <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
-                  <h4 style={{ fontSize: "0.9rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 4px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {bootcamp.title}
-                  </h4>
-                  <div style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.5)", fontWeight: "600" }}>
-                    {bootcamp.type} • {bootcamp.duration}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, marginTop: "6px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ color: "#F59E0B" }}>
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    4.8 <span style={{ color: "rgba(20, 20, 43, 0.4)", fontWeight: "500" }}>(3.2k)</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Section C: Resources */}
-        <section>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                Resource Libraries
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.resources.map((doc) => (
-              <div
-                key={doc.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  minHeight: "140px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
-                }}
-                className="hover-card-y"
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      background: activeData.colors.secondary,
-                      padding: "3px 8px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.03em",
-                      display: "inline-block",
-                      marginBottom: "12px"
-                    }}
-                  >
-                    {doc.type}
-                  </span>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {doc.title}
-                  </h3>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
-                  <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
-                    Read Guide
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {mode === "articles" && (
+          <>
+            {renderResourcesSection("Articles & Research")}
+          </>
+        )}
 
       </main>
     </div>

@@ -169,6 +169,42 @@ export const CATEGORY_DATA: Record<string, {
       { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
       { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
     ]
+  },
+  "Design & UI/UX": {
+    coursesCount: 8,
+    gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
+    colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
+    desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Data Science & AI": {
+    coursesCount: 15,
+    gradient: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)",
+    colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
+    desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Productivity Tools": {
+    coursesCount: 4,
+    gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+    colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
+    desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Marketing & SEO": {
+    coursesCount: 9,
+    gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
+    colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
+    desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
+    courses: [],
+    bootcamps: [],
+    resources: []
   }
 };
 
@@ -885,14 +921,19 @@ function CoursesContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "webinars") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -911,7 +952,11 @@ function CoursesContent() {
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
-    router.push(`/courses?category=${encodeURIComponent(category)}`);
+    const encodedCat = encodeURIComponent(category);
+    if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
+    else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
+    else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
   };
 
   const handleGoBackToExplore = () => {
@@ -942,7 +987,6 @@ function CoursesContent() {
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
         .lp-category-card:hover {
-          transform: translateY(-8px);
           border-color: var(--hover-color) !important;
           box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
         }
@@ -1183,10 +1227,10 @@ function CoursesContent() {
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Events & Bootcamps
+                Live Learning
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Join live, interactive, mentor-led programs designed for technical skill development.
+                Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
@@ -1214,31 +1258,30 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
-
-          {/* Card: Webinars */}
+          {/* Card: Articles */}
           <motion.div
-            onClick={() => handleTabSwitch("webinars")}
+            onClick={() => handleTabSwitch("articles")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
             animate={{
-              scale: activeTab === "webinars" ? 1.03 : 0.97,
-              opacity: activeTab === "webinars" ? 1 : 0.7,
-              rotate: activeTab === "webinars" ? 1.5 : 0
+              scale: activeTab === "articles" ? 1.03 : 0.97,
+              opacity: activeTab === "articles" ? 1 : 0.7,
+              rotate: activeTab === "articles" ? 1.5 : 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "webinars" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "webinars" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              background: activeTab === "articles" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "articles" ? "3px solid #0A1931" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "webinars" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              boxShadow: activeTab === "articles" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              zIndex: activeTab === "webinars" ? 3 : 1,
+              zIndex: activeTab === "articles" ? 3 : 1,
               transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
@@ -1246,55 +1289,55 @@ function CoursesContent() {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "webinars" ? "#1E3A8A" : "#6B7280",
+                color: activeTab === "articles" ? "#1E3A8A" : "#6B7280",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
                 transition: "color 0.3s"
               }}>
-                03 // EXPERT LED
+                03 // ARTICLES
               </div>
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "webinars" ? "#0F172A" : "#1A1A1A",
+                color: activeTab === "articles" ? "#0F172A" : "#1A1A1A",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Expert Webinars
+                Articles
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Watch recorded sessions or register for live-streamed presentations.
+                Read comprehensive articles, insightful guides, and technical documentation to deepen your knowledge.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
             <motion.div
               animate={{
-                scale: activeTab === "webinars" ? 1.15 : 1,
-                y: activeTab === "webinars" ? -5 : 0
+                scale: activeTab === "articles" ? 1.15 : 1,
+                y: activeTab === "articles" ? -5 : 0
               }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
@@ -1388,11 +1431,16 @@ function CoursesContent() {
           ref={contentRef}
           style={{ scrollMarginTop: "100px" }}
         >
-          {activeTab === "courses" && (
+          {(() => {
+            const filteredCategories = categoriesList.filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()));
+            const itemsPerPage = 8;
+            const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+            const currentCategories = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+            return (
             <div className="tab-content-panel">
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-                {categoriesList
-                  .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+                {currentCategories
                   .map((cat) => {
                     const data = CATEGORY_DATA[cat];
                     return (
@@ -1442,219 +1490,32 @@ function CoursesContent() {
                               </h3>
                             </div>
 
-                            <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 24px" }}>
+                            <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
                               {data.desc}
                             </p>
                           </div>
 
-                          {/* Card Bottom Row with Explore text and simple arrow */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
-                              Explore Category
-                            </span>
-                            <svg
-                              className="lp-category-card-arrow"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#9CA3AF"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              style={{ transition: "all 0.3s ease" }}
-                            >
-                              <line x1="5" y1="12" x2="19" y2="12" />
-                              <polyline points="12 5 19 12 12 19" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* 2. BOOTCAMPS TAB CONTENT */}
-          {activeTab === "bootcamps" && (
-            <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-                {categoriesList.flatMap(cat => {
-                  const data = CATEGORY_DATA[cat];
-                  return data.bootcamps.map(bootcamp => ({ ...bootcamp, cat, colors: data.colors }));
-                })
-                  .filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .slice(0, 6)
-                  .map((b, i) => {
-                    const cardColorPattern = [
-                      { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" }, // Purple (CS)
-                      { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },  // Blue (IT/Maths)
-                      { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },  // Green (Pers. Dev)
-                      { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },  // Amber/Orange (Business)
-                      { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" }   // Teal (Sciences)
-                    ];
-                    const cardColors = cardColorPattern[i % cardColorPattern.length];
-
-                    const watermarkCat = [
-                      "Computer Science",
-                      "Information Technology",
-                      "Basic Sciences",
-                      "Business & Management",
-                      "Personal Development"
-                    ][i % 5];
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          background: `linear-gradient(135deg, #FFFFFF 60%, ${cardColors.secondary} 100%)`,
-                          border: "1px solid #E5E7EB",
-                          borderLeft: `6px solid ${cardColors.primary}`,
-                          borderRadius: "16px",
-                          padding: "28px",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          minHeight: "220px",
-                          cursor: "default",
-                          position: "relative",
-                          overflow: "hidden"
-                        }}
-                      >
-                        <CategoryWatermark category={watermarkCat} color={cardColors.primary} />
-                        <div style={{ position: "relative", zIndex: 1 }}>
-                          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "14px" }}>
-                            <span style={{ fontSize: "0.75rem", color: "#6B7280", fontWeight: "600" }}>{b.duration}</span>
-                          </div>
-                          <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                            {b.title}
-                          </h3>
-                          <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: "0 0 16px" }}>
-                            {b.desc}
-                          </p>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", paddingTop: "14px", position: "relative", zIndex: 1 }}>
-                          <Link
-                            href="/login"
-                            className="explore-register-btn"
-                            style={{
-                              "--btn-primary": cardColors.primary,
-                              "--btn-secondary": cardColors.secondary
-                            } as React.CSSProperties}
-                          >
-                            Register
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* 3. WEBINARS TAB CONTENT */}
-          {activeTab === "webinars" && (
-            <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-                {WEBINARS_DATA
-                  .filter(w => w.title.toLowerCase().includes(searchQuery.toLowerCase()) || w.category.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((w, i) => {
-                    const isLive = w.status === "Live Today";
-                    const isUpcoming = w.status === "Upcoming";
-                    const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
-                    const ctaColor = "#FFFFFF";
-                    const ctaHoverBg = isLive ? "#DC2626" : (isUpcoming ? "#D97706" : "#15305B");
-                    const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
-
-                    const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
-                    const statusBg = isLive ? "#FEE2E2" : (isUpcoming ? "#FEF3C7" : "#EFF4FC");
-                    const statusText = isLive ? "LIVE TODAY" : (isUpcoming ? "UPCOMING" : "RECORDED");
-
-                    const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
-                          borderRadius: "20px",
-                          display: "flex",
-                          flexDirection: "column",
-                          position: "relative",
-                          overflow: "hidden",
-                          boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
-                        }}
-                        className="lp-webinar-card"
-                      >
-                        {/* Custom Topic Themed Header Graphic */}
-                        <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
-
-                        {/* Card Content Body */}
-                        <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                           <div>
-                            {/* Upper category and status row */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                              <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                                {w.category} • {w.duration.toUpperCase()}
-                              </span>
-                            </div>
-
-                            {/* Webinar Title */}
-                            <h3
-                              style={{
-                                fontSize: "1.1rem",
-                                fontWeight: "800",
-                                color: titleColor,
-                                marginBottom: "16px",
-                                lineHeight: "1.4",
-                                minHeight: "56px",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                letterSpacing: "-0.01em"
-                              }}
-                            >
-                              {w.title}
-                            </h3>
-
-                            {/* Host Details */}
-                            <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                              </svg>
-                              <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
-                            </div>
-                          </div>
-
-                          {/* Calendar timeline and Button row */}
-                          <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
+                            {/* Card Bottom Row with Explore text and simple arrow */}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                  <line x1="16" y1="2" x2="16" y2="6" />
-                                  <line x1="8" y1="2" x2="8" y2="6" />
-                                  <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
-                                  {w.date}
-                                </span>
-                              </div>
-
-                              <Link
-                                href="/sign"
-                                className="lp-webinar-btn"
-                                style={{
-                                  "--cta-bg": ctaBg,
-                                  "--cta-shadow": ctaShadow
-                                } as React.CSSProperties}
+                              <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
+                                Explore Category
+                              </span>
+                              <svg
+                                className="lp-category-card-arrow"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#9CA3AF"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                style={{ transition: "all 0.3s ease" }}
                               >
-                                {isLive ? "Join Broadcast" : (isUpcoming ? "Save Seat" : "Watch Video")}
-                              </Link>
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                              </svg>
                             </div>
                           </div>
                         </div>
@@ -1662,8 +1523,48 @@ function CoursesContent() {
                     );
                   })}
               </div>
+              {totalPages > 1 && (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
+                      color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      fontWeight: "500",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
+                      color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      fontWeight: "500",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
         </div>{/* end contentRef wrapper */}
       </main>
     </div>
