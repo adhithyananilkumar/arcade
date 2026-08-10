@@ -89,6 +89,32 @@ const ERA_HEADERS: Record<number, string> = {
   3: "THE HORIZON"
 };
 
+const ERA_TITLE_COLORS: Record<number, string> = {
+  0: "text-blue-600",
+  1: "text-amber-700",
+  2: "text-purple-600",
+  3: "text-emerald-600"
+};
+
+const ERA_OUTER_THEMES: Record<number, { mainCard: string; rightCard: string }> = {
+  0: {
+    mainCard: "bg-gradient-to-br from-blue-50/70 via-sky-50/40 to-slate-50/70 border-blue-100/90",
+    rightCard: "bg-blue-50/40 border-blue-100/80"
+  },
+  1: {
+    mainCard: "bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-slate-50/70 border-amber-100/90",
+    rightCard: "bg-amber-50/40 border-amber-100/80"
+  },
+  2: {
+    mainCard: "bg-gradient-to-br from-purple-50/70 via-fuchsia-50/40 to-slate-50/70 border-purple-100/90",
+    rightCard: "bg-purple-50/40 border-purple-100/80"
+  },
+  3: {
+    mainCard: "bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50/70 border-emerald-100/90",
+    rightCard: "bg-emerald-50/40 border-emerald-100/80"
+  }
+};
+
 const PLACARD_THEMES = [
   {
     // 0: Vibrant Blue
@@ -437,36 +463,40 @@ export default function FoundersPage() {
             </div>
 
             {/* Main Milestone Detail Card */}
-            <div className="rounded-[28px] border border-slate-100 bg-slate-50/70 p-8 sm:p-12 shadow-sm">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {/* Left Detail Content */}
-                <div className="lg:col-span-7 space-y-4">
+            {(() => {
+              const outerTheme = ERA_OUTER_THEMES[activeEraIndex] || ERA_OUTER_THEMES[0];
 
-                  {/* Heading */}
-                  <h3 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
-                    {activeMilestone.title}
-                  </h3>
+              return (
+                <div className={`rounded-[28px] border p-8 sm:p-12 shadow-sm transition-all duration-500 ${outerTheme.mainCard}`}>
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    {/* Left Detail Content */}
+                    <div className="lg:col-span-7 space-y-4">
 
-                  {/* Subtitle */}
-                  <p className="text-sm font-semibold text-blue-600 font-sans">
-                    {activeMilestone.subtitle}
-                  </p>
+                      {/* Heading */}
+                      <h3 className={`font-serif text-3xl sm:text-4xl font-bold tracking-tight leading-tight transition-colors duration-300 ${ERA_TITLE_COLORS[activeEraIndex] || "text-slate-900"}`}>
+                        {activeMilestone.title}
+                      </h3>
 
-                  {/* Description */}
-                  <div className="space-y-3">
-                    {activeMilestone.description.split("\n\n").map((para, pIdx) => (
-                      <p key={pIdx} className="text-sm text-slate-500 leading-relaxed font-normal">
-                        {para}
+                      {/* Subtitle */}
+                      <p className="text-sm font-semibold text-blue-600 font-sans">
+                        {activeMilestone.subtitle}
                       </p>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Right Standards Card */}
-                <div className="lg:col-span-5 rounded-2xl bg-white border border-slate-100 p-6 shadow-xs space-y-4">
-                  <div className="text-[11px] font-bold uppercase tracking-widest border-b border-slate-100 pb-3">
-                    <span className="text-slate-400">{ERA_HEADERS[activeEraIndex] || "ERA ARCHITECTURE"}</span>
-                  </div>
+                      {/* Description */}
+                      <div className="space-y-3">
+                        {activeMilestone.description.split("\n\n").map((para, pIdx) => (
+                          <p key={pIdx} className="text-sm text-slate-500 leading-relaxed font-normal">
+                            {para}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right Standards Card */}
+                    <div className={`lg:col-span-5 rounded-2xl border p-6 shadow-xs space-y-4 transition-all duration-500 ${outerTheme.rightCard}`}>
+                      <div className="text-[11px] font-bold uppercase tracking-widest border-b border-slate-200/60 pb-3">
+                        <span className="text-slate-500">{ERA_HEADERS[activeEraIndex] || "ERA ARCHITECTURE"}</span>
+                      </div>
 
                   <div className="space-y-0 pt-1">
                     {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => {
@@ -523,7 +553,9 @@ export default function FoundersPage() {
                 </div>
               </div>
             </div>
-          </section>
+          );
+        })()}
+      </section>
         </div>
       </div>
 
