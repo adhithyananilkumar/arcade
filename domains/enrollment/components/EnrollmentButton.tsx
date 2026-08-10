@@ -6,6 +6,7 @@ import { EnrollmentService } from '../api/enrollment.service';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
+import { PaymentModal } from '@/domains/payment';
 
 export interface EnrollmentButtonProps {
   resourceType: ResourceType;
@@ -29,7 +30,8 @@ export function EnrollmentButton({
   const router = useRouter();
   const [currentState, setCurrentState] = useState<UIEnrollmentState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+  const [paymentEnrollmentId, setPaymentEnrollmentId] = useState<string | null>(null);
+
   // Track idempotency key across component lifecycle for the same logical action
   const idempotencyKeyRef = useRef<string | null>(null);
 
