@@ -2,11 +2,13 @@
 "use client";
 
 import { useEditor } from "@tiptap/react";
+import { HocuspocusProvider } from "@hocuspocus/provider";
 import debounce from "lodash.debounce";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
 
 export interface UseArcadeEditorOptions {
   /**
@@ -41,6 +43,8 @@ export interface UseArcadeEditorOptions {
   seedContent?: TiptapDocument;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
+  /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */
+  documentName?: string;
 }
 
 const DEBOUNCE_MS = 2000;
@@ -62,44 +66,54 @@ export function useArcadeEditor({
   ydoc,
   seedContent,
   contentType,
+  documentName,
 }: UseArcadeEditorOptions = {}) {
-  // The debounced function must be referentially stable (recreating it would drop
-  // pending saves), but it must also call the *current* onSave. Reading through a
-  // ref gives us both — capturing `onSave` in the closure instead would pin the
-  // callback from first render and silently save against a stale lesson id.
+  const { user, accessToken } = useAuthStore();
+
+  const provider = useMemo(() => {
+    if (!documentName || !accessToken || typeof window === "undefined") return null;
+
+    const wsUrl = process.env.NEXT_PUBLIC_COLLABORATION_URL || "ws://localhost:1234";
+    const p = new HocuspocusProvider({
+      url: wsUrl,
+      name: documentName,
+      token: accessToken,
+      document: ydoc,
+    });
+    return p;
+  }, [documentName, accessToken, ydoc]);
+
+  useEffect(() => {
+    return () => {
+      provider?.destroy();
+    };
+  }, [provider]);
+
   const onSaveRef = useRef(onSave);
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  // Defer editor.getJSON() until the debounce actually fires — it's an
-  // O(document size) full-tree serialization, too expensive to run synchronously
-  // on every keystroke via onUpdate.
   const runSave = useCallback((editorInstance: { getJSON: () => unknown }) => {
+    // When connected to Hocuspocus, Hocuspocus handles server-side CRDT persistence.
+    // We still notify onSave if provided (for instance, to update title/metadata or UI status).
     onSaveRef.current?.(editorInstance.getJSON() as TiptapDocument);
   }, []);
 
-  // `runSave` reads onSaveRef, but only when the debounce timer fires — never during
-  // render. The lint rule can't see through the debounce wrapper, hence the exemption.
-  // eslint-disable-next-line react-hooks/refs
   const debouncedSave = useMemo(() => debounce(runSave, DEBOUNCE_MS), [runSave]);
 
-  // Cancel pending debounce on unmount to prevent state updates after unmount
   useEffect(() => {
     return () => {
       debouncedSave.cancel();
     };
   }, [debouncedSave]);
 
-  // buildExtensions() instantiates 50+ Tiptap extensions (each `.configure()` call
-  // produces a new object). Without memoizing, useEditor's internal option-diffing
-  // sees a "changed" extensions array on every re-render of this component and
-  // calls editor.setOptions(), which rebuilds the entire schema/plugin set —
-  // expensive, and easy to trigger from state changes unrelated to typing.
+  const effectiveYDoc = ydoc || provider?.document;
+
   const extensions = useMemo(
-    () => buildExtensions(placeholder, ydoc),
+    () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ydoc] // placeholder changes shouldn't tear down the whole extension set
+    [placeholder, effectiveYDoc, provider, user]
   );
 
   const editor = useEditor({
@@ -108,7 +122,7 @@ export function useArcadeEditor({
     extensions,
     // In collaborative mode the Y.Doc supplies content; passing `content` too would
     // duplicate it. Only seed `content` in the non-collaborative path.
-    content: ydoc ? undefined : initialContent ?? null,
+    content: effectiveYDoc ? undefined : initialContent ?? null,
     editable: !readOnly,
     onUpdate: ({ editor }) => {
       debouncedSave(editor);

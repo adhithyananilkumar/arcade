@@ -1442,6 +1442,7 @@ export function CourseEditorOrchestrator({ courseId: initialCourseId }: CourseEd
                     key={activeLessonId}
                     ref={editorRef}
                     ydoc={activeYDoc}
+                    documentName={`lesson:${activeLessonId}`}
                     seedContent={activeSeedContent}
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}

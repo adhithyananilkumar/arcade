@@ -113,6 +113,7 @@ import {
   Lock,
   Eye,
   GripVertical,
+  Users,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -1383,6 +1384,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 <span className="hidden sm:inline">Manage</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => alert("Collaboration management coming soon!")}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+              title="Manage Collaborators"
+            >
+              <Users size={14} />
+              <span className="hidden sm:inline">Collaborate</span>
+            </button>
           </div>
         </div>
       </header>
@@ -1709,6 +1720,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     key={activeLessonId}
                     ref={editorRef}
                     ydoc={activeYDoc}
+                    documentName={`lesson:${activeLessonId}`}
                     seedContent={activeSeedContent}
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}

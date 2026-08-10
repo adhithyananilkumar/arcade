@@ -84,6 +84,8 @@ interface ArcadeEditorProps {
   chromeless?: boolean;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
+  /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
+  documentName?: string;
 }
 
 // Memoized because the host is a large orchestrator: a keystroke in the course-title
@@ -92,7 +94,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType, documentName },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -131,6 +133,7 @@ export const ArcadeEditor = memo(
     ydoc,
     seedContent,
     contentType,
+    documentName,
   });
 
   useImperativeHandle(
