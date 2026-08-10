@@ -89,6 +89,41 @@ const ERA_HEADERS: Record<number, string> = {
   3: "THE HORIZON"
 };
 
+const PLACARD_THEMES = [
+  {
+    // 0: Soft Ice Blue (Module 1 reference color)
+    boxBg: "bg-gradient-to-r from-blue-50/95 via-sky-50 to-indigo-50/95",
+    border: "border-blue-200/90",
+    text: "text-blue-950 font-semibold",
+    iconColor: "text-blue-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-blue-300"
+  },
+  {
+    // 1: Soft Warm Amber/Yellow (Module 2 reference color)
+    boxBg: "bg-gradient-to-r from-amber-50/95 via-orange-50/80 to-yellow-50/95",
+    border: "border-amber-200/90",
+    text: "text-amber-950 font-semibold",
+    iconColor: "text-amber-700",
+    shadow: "shadow-xs hover:shadow-md hover:border-amber-300"
+  },
+  {
+    // 2: Soft Lavender/Purple (Module 3 reference color)
+    boxBg: "bg-gradient-to-r from-purple-50/95 via-fuchsia-50/80 to-violet-50/95",
+    border: "border-purple-200/90",
+    text: "text-purple-950 font-semibold",
+    iconColor: "text-purple-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-purple-300"
+  },
+  {
+    // 3: Soft Mint Emerald (Module 4 reference color)
+    boxBg: "bg-gradient-to-r from-emerald-50/95 via-teal-50/80 to-green-50/95",
+    border: "border-emerald-200/90",
+    text: "text-emerald-950 font-semibold",
+    iconColor: "text-emerald-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-emerald-300"
+  }
+];
+
 const ERA_STANDARDS: Record<number, string[]> = {
   0: [
     "A learning space without boundaries",
@@ -438,46 +473,52 @@ export default function FoundersPage() {
                   </div>
 
                   <div className="space-y-0 pt-1">
-                    {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => (
-                      <div key={sIdx} className="relative flex flex-col items-center group">
-                        {/* If first board: Top Triangle Rope & Peg Pin */}
-                        {sIdx === 0 ? (
-                          <div className="flex justify-center -mb-1 z-10">
-                            <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
-                              {/* Wall Pin / Peg */}
-                              <circle cx="30" cy="3" r="3.5" fill="#5C3A1E" stroke="#3D2310" strokeWidth="1" />
-                              <circle cx="30" cy="3" r="1.5" fill="#D4AF37" />
-                              {/* Left & Right Hanging Strings */}
-                              <line x1="30" y1="3" x2="8" y2="19" stroke="#9C6B3D" strokeWidth="2.5" strokeLinecap="round" />
-                              <line x1="30" y1="3" x2="52" y2="19" stroke="#9C6B3D" strokeWidth="2.5" strokeLinecap="round" />
-                            </svg>
-                          </div>
-                        ) : (
-                          /* Connecting Vertical Left & Right Ropes from Board Above */
-                          <div className="h-4.5 w-full flex justify-between px-10 -my-0.5 z-10">
-                            <div className="w-1.5 h-full bg-gradient-to-b from-[#9C6B3D] to-[#7E5229] rounded-sm border-x border-[#47270D] shadow-xs" />
-                            <div className="w-1.5 h-full bg-gradient-to-b from-[#9C6B3D] to-[#7E5229] rounded-sm border-x border-[#47270D] shadow-xs" />
-                          </div>
-                        )}
+                    {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => {
+                      const theme = PLACARD_THEMES[sIdx % PLACARD_THEMES.length];
 
-                        {/* Wooden Placard Box */}
-                        <div className="w-full rounded-xl bg-gradient-to-b from-[#8C592B] via-[#75471F] to-[#5C3515] border-2 border-[#47270D] p-3.5 shadow-md flex items-center gap-3 relative overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 cursor-pointer z-20">
-                          {/* Inner Bevel Top Glow */}
-                          <div className="absolute inset-x-0 top-0 h-0.5 bg-amber-200/25 pointer-events-none" />
-                          {/* Wood Texture Detail */}
-                          <div className="absolute inset-0 opacity-10 bg-[linear-gradient(90deg,transparent_0%,rgba(0,0,0,0.4)_50%,transparent_100%)] pointer-events-none" />
+                      return (
+                        <div key={sIdx} className="relative flex flex-col items-center group">
+                          {/* If first board: Top Triangle Rope & Peg Pin */}
+                          {sIdx === 0 ? (
+                            <div className="flex justify-center -mb-1 z-10">
+                              <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
+                                {/* Wall Pin / Peg */}
+                                <circle cx="30" cy="3" r="3.5" fill="#475569" stroke="#334155" strokeWidth="1" />
+                                <circle cx="30" cy="3" r="1.5" fill="#94A3B8" />
+                                {/* Left & Right Hanging Strings */}
+                                <line x1="30" y1="3" x2="16" y2="19" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 1.5" />
+                                <line x1="30" y1="3" x2="44" y2="19" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 1.5" />
+                              </svg>
+                            </div>
+                          ) : (
+                            /* Connecting Vertical Left & Right Ropes (Centered Inward) */
+                            <div className="h-4 w-full flex justify-between px-24 -my-0.5 z-10">
+                              <div className="w-1.5 h-full bg-slate-300 rounded-sm border-x border-slate-400/60 shadow-2xs" />
+                              <div className="w-1.5 h-full bg-slate-300 rounded-sm border-x border-slate-400/60 shadow-2xs" />
+                            </div>
+                          )}
 
-                          {/* Checkmark Icon */}
-                          <CheckCircle2
-                            size={18}
-                            className="text-amber-300 shrink-0 drop-shadow-xs"
-                          />
-                          <span className="text-xs font-semibold text-amber-50 leading-snug tracking-wide drop-shadow-xs">
-                            {standardText}
-                          </span>
+                          {/* Reference Color Module Box */}
+                          <div className={`w-full rounded-2xl ${theme.boxBg} border ${theme.border} p-4 ${theme.shadow} flex items-center gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer z-20`}>
+                            {/* Number Badge Pill */}
+                            <div className={`w-7 h-7 rounded-full bg-white/80 border ${theme.border} flex items-center justify-center text-xs font-bold ${theme.iconColor} shrink-0 shadow-2xs`}>
+                              {sIdx + 1}
+                            </div>
+
+                            {/* Text Content */}
+                            <span className={`text-xs font-semibold ${theme.text} leading-snug tracking-wide`}>
+                              {standardText}
+                            </span>
+
+                            {/* Right Checkmark */}
+                            <CheckCircle2
+                              size={18}
+                              className={`${theme.iconColor} shrink-0 ml-auto opacity-90`}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
