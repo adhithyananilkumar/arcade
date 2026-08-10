@@ -91,7 +91,7 @@ const ERA_HEADERS: Record<number, string> = {
 };
 
 const ERA_TITLE_COLORS: Record<number, string> = {
-  0: "text-blue-600",
+  0: "text-rose-800",
   1: "text-amber-700",
   2: "text-purple-600",
   3: "text-emerald-600"
@@ -516,7 +516,7 @@ export default function FoundersPage() {
                       </h3>
 
                       {/* Subtitle */}
-                      <p className="text-sm font-semibold text-blue-600 font-sans">
+                      <p className="text-sm font-semibold text-slate-900 font-sans">
                         {activeMilestone.subtitle}
                       </p>
 
