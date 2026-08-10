@@ -9,12 +9,15 @@ const DEFAULT_SPOTLIGHT_RADIUS = 300;
 const DEFAULT_GLOW_COLOR = '132, 0, 255';
 const MOBILE_BREAKPOINT = 768;
 
-export interface CardData {
+export interface CardDataItem {
   color?: string;
-  title?: string;
-  description?: string;
+  title: string;
+  description: string;
   label?: string;
-  [key: string]: any;
+  glowColor?: string;
+  headingColor?: string;
+  borderColor?: string;
+  badgeBg?: string;
 }
 
 export interface MagicBentoProps {
@@ -29,11 +32,12 @@ export interface MagicBentoProps {
   glowColor?: string;
   clickEffect?: boolean;
   enableMagnetism?: boolean;
-  cards?: CardData[];
+  cardData?: CardDataItem[];
   children?: React.ReactNode;
+  className?: string;
 }
 
-const createParticleElement = (x: number, y: number, color = DEFAULT_GLOW_COLOR) => {
+const createParticleElement = (x: number, y: number, color: string = DEFAULT_GLOW_COLOR) => {
   const el = document.createElement('div');
   el.className = 'particle';
   el.style.cssText = `
@@ -44,7 +48,7 @@ const createParticleElement = (x: number, y: number, color = DEFAULT_GLOW_COLOR)
     background: rgba(${color}, 1);
     box-shadow: 0 0 6px rgba(${color}, 0.6);
     pointer-events: none;
-    z-index: 100;
+    z-index: 20;
     left: ${x}px;
     top: ${y}px;
   `;
@@ -56,7 +60,13 @@ const calculateSpotlightValues = (radius: number) => ({
   fadeDistance: radius * 0.75
 });
 
-const updateCardGlowProperties = (card: HTMLElement, mouseX: number, mouseY: number, glow: number, radius: number) => {
+const updateCardGlowProperties = (
+  card: HTMLElement,
+  mouseX: number,
+  mouseY: number,
+  glow: number,
+  radius: number
+) => {
   const rect = card.getBoundingClientRect();
   const relativeX = ((mouseX - rect.left) / rect.width) * 100;
   const relativeY = ((mouseY - rect.top) / rect.height) * 100;
@@ -67,8 +77,8 @@ const updateCardGlowProperties = (card: HTMLElement, mouseX: number, mouseY: num
   card.style.setProperty('--glow-radius', `${radius}px`);
 };
 
-export interface ParticleCardProps {
-  children?: React.ReactNode;
+export const ParticleCard: React.FC<{
+  children: React.ReactNode;
   className?: string;
   disableAnimations?: boolean;
   style?: React.CSSProperties;
@@ -78,9 +88,7 @@ export interface ParticleCardProps {
   clickEffect?: boolean;
   enableMagnetism?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-}
-
-export const ParticleCard: React.FC<ParticleCardProps> = ({
+}> = ({
   children,
   className = '',
   disableAnimations = false,
@@ -222,8 +230,8 @@ export const ParticleCard: React.FC<ParticleCardProps> = ({
       const centerY = rect.height / 2;
 
       if (enableTilt) {
-        const rotateX = ((y - centerY) / centerY) * -10;
-        const rotateY = ((x - centerX) / centerX) * 10;
+        const rotateX = ((y - centerY) / centerY) * -8;
+        const rotateY = ((x - centerX) / centerX) * 8;
 
         gsap.to(element, {
           rotateX,
@@ -267,11 +275,11 @@ export const ParticleCard: React.FC<ParticleCardProps> = ({
         width: ${maxDistance * 2}px;
         height: ${maxDistance * 2}px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(${glowColor}, 0.4) 0%, rgba(${glowColor}, 0.2) 30%, transparent 70%);
+        background: radial-gradient(circle, rgba(${glowColor}, 0.35) 0%, rgba(${glowColor}, 0.15) 35%, transparent 70%);
         left: ${x - maxDistance}px;
         top: ${y - maxDistance}px;
         pointer-events: none;
-        z-index: 1000;
+        z-index: 100;
       `;
 
       element.appendChild(ripple);
@@ -319,15 +327,13 @@ export const ParticleCard: React.FC<ParticleCardProps> = ({
   );
 };
 
-export interface GlobalSpotlightProps {
+export const GlobalSpotlight: React.FC<{
   gridRef: React.RefObject<HTMLDivElement | null>;
   disableAnimations?: boolean;
   enabled?: boolean;
   spotlightRadius?: number;
   glowColor?: string;
-}
-
-export const GlobalSpotlight: React.FC<GlobalSpotlightProps> = ({
+}> = ({
   gridRef,
   disableAnimations = false,
   enabled = true,
@@ -349,17 +355,14 @@ export const GlobalSpotlight: React.FC<GlobalSpotlightProps> = ({
       border-radius: 50%;
       pointer-events: none;
       background: radial-gradient(circle,
-        rgba(${glowColor}, 0.15) 0%,
-        rgba(${glowColor}, 0.08) 15%,
-        rgba(${glowColor}, 0.04) 25%,
+        rgba(${glowColor}, 0.12) 0%,
+        rgba(${glowColor}, 0.06) 20%,
         rgba(${glowColor}, 0.02) 40%,
-        rgba(${glowColor}, 0.01) 65%,
         transparent 70%
       );
       z-index: 200;
       opacity: 0;
       transform: translate(-50%, -50%);
-      mix-blend-mode: screen;
     `;
     document.body.appendChild(spotlight);
     spotlightRef.current = spotlight;
@@ -459,13 +462,11 @@ export const GlobalSpotlight: React.FC<GlobalSpotlightProps> = ({
   return null;
 };
 
-export interface BentoCardGridProps {
-  children?: React.ReactNode;
+export const BentoCardGrid: React.FC<{
+  children: React.ReactNode;
   gridRef: React.RefObject<HTMLDivElement | null>;
   className?: string;
-}
-
-export const BentoCardGrid: React.FC<BentoCardGridProps> = ({ children, gridRef, className = '' }) => (
+}> = ({ children, gridRef, className = '' }) => (
   <div className={`card-grid bento-section ${className}`} ref={gridRef}>
     {children}
   </div>
@@ -486,15 +487,6 @@ export const useMobileDetection = () => {
   return isMobile;
 };
 
-const defaultCards: CardData[] = [
-  { color: '#120F17', title: 'Analytics', description: 'Track user behavior', label: 'Insights' },
-  { color: '#120F17', title: 'Dashboard', description: 'Centralized data view', label: 'Overview' },
-  { color: '#120F17', title: 'Collaboration', description: 'Work together seamlessly', label: 'Teamwork' },
-  { color: '#120F17', title: 'Automation', description: 'Streamline workflows', label: 'Efficiency' },
-  { color: '#120F17', title: 'Integration', description: 'Connect favorite tools', label: 'Connectivity' },
-  { color: '#120F17', title: 'Security', description: 'Enterprise-grade protection', label: 'Protection' }
-];
-
 export const MagicBento: React.FC<MagicBentoProps> = ({
   textAutoHide = true,
   enableStars = true,
@@ -507,31 +499,13 @@ export const MagicBento: React.FC<MagicBentoProps> = ({
   glowColor = DEFAULT_GLOW_COLOR,
   clickEffect = true,
   enableMagnetism = true,
-  cards = defaultCards,
-  children
+  cardData,
+  children,
+  className = ''
 }) => {
-  const gridRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const isMobile = useMobileDetection();
   const shouldDisableAnimations = disableAnimations || isMobile;
-
-  if (children) {
-    return (
-      <>
-        {enableSpotlight && (
-          <GlobalSpotlight
-            gridRef={gridRef}
-            disableAnimations={shouldDisableAnimations}
-            enabled={enableSpotlight}
-            spotlightRadius={spotlightRadius}
-            glowColor={glowColor}
-          />
-        )}
-        <BentoCardGrid gridRef={gridRef}>
-          {children}
-        </BentoCardGrid>
-      </>
-    );
-  }
 
   return (
     <>
@@ -545,55 +519,57 @@ export const MagicBento: React.FC<MagicBentoProps> = ({
         />
       )}
 
-      <BentoCardGrid gridRef={gridRef}>
-        {cards.map((card, index) => {
-          const baseClassName = `magic-bento-card ${textAutoHide ? 'magic-bento-card--text-autohide' : ''} ${enableBorderGlow ? 'magic-bento-card--border-glow' : ''}`;
-          const cardProps = {
-            className: baseClassName,
-            style: {
-              ...(card.color ? { backgroundColor: card.color } : {}),
-              '--glow-color': glowColor
-            } as React.CSSProperties
-          };
+      <BentoCardGrid gridRef={gridRef} className={className}>
+        {children ? (
+          children
+        ) : (
+          cardData?.map((card, index) => {
+            const cardGlow = card.glowColor || glowColor;
+            const baseClassName = `magic-bento-card ${textAutoHide ? 'magic-bento-card--text-autohide' : ''} ${enableBorderGlow ? 'magic-bento-card--border-glow' : ''}`;
+            const cardProps = {
+              className: `${baseClassName} ${card.borderColor || ''}`,
+              style: {
+                backgroundColor: card.color || '#FFFFFF',
+                '--glow-color': cardGlow
+              } as React.CSSProperties
+            };
 
-          if (enableStars) {
+            if (enableStars) {
+              return (
+                <ParticleCard
+                  key={index}
+                  {...cardProps}
+                  disableAnimations={shouldDisableAnimations}
+                  particleCount={particleCount}
+                  glowColor={cardGlow}
+                  enableTilt={enableTilt}
+                  clickEffect={clickEffect}
+                  enableMagnetism={enableMagnetism}
+                >
+                  <div className="magic-bento-card__header">
+                    {card.label && <div className="magic-bento-card__label">{card.label}</div>}
+                  </div>
+                  <div className="magic-bento-card__content">
+                    <h2 className={`magic-bento-card__title ${card.headingColor || ''}`}>{card.title}</h2>
+                    <p className="magic-bento-card__description">{card.description}</p>
+                  </div>
+                </ParticleCard>
+              );
+            }
+
             return (
-              <ParticleCard
-                key={index}
-                {...cardProps}
-                disableAnimations={shouldDisableAnimations}
-                particleCount={particleCount}
-                glowColor={glowColor}
-                enableTilt={enableTilt}
-                clickEffect={clickEffect}
-                enableMagnetism={enableMagnetism}
-              >
+              <div key={index} {...cardProps}>
                 <div className="magic-bento-card__header">
-                  <div className="magic-bento-card__label">{card.label}</div>
+                  {card.label && <div className="magic-bento-card__label">{card.label}</div>}
                 </div>
                 <div className="magic-bento-card__content">
-                  <h2 className="magic-bento-card__title">{card.title}</h2>
+                  <h2 className={`magic-bento-card__title ${card.headingColor || ''}`}>{card.title}</h2>
                   <p className="magic-bento-card__description">{card.description}</p>
                 </div>
-              </ParticleCard>
+              </div>
             );
-          }
-
-          return (
-            <div
-              key={index}
-              {...cardProps}
-            >
-              <div className="magic-bento-card__header">
-                <div className="magic-bento-card__label">{card.label}</div>
-              </div>
-              <div className="magic-bento-card__content">
-                <h2 className="magic-bento-card__title">{card.title}</h2>
-                <p className="magic-bento-card__description">{card.description}</p>
-              </div>
-            </div>
-          );
-        })}
+          })
+        )}
       </BentoCardGrid>
     </>
   );

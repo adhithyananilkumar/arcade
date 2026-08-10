@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import BlurText from "@/components/BlurText";
+import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
 
 import {
   FOUNDERS_DATA,
@@ -182,25 +183,29 @@ const PHILOSOPHY_THEMES = [
     // Card 1: Vibrant Blue (Design Systems theme)
     heading: "text-blue-600",
     border: "border-blue-300/90 hover:border-blue-400",
-    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80"
+    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80",
+    glowColor: "37, 99, 235"
   },
   {
     // Card 2: Warm Amber (Interaction & Motion theme)
     heading: "text-amber-800",
     border: "border-amber-300/90 hover:border-amber-400",
-    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80"
+    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80",
+    glowColor: "180, 83, 9"
   },
   {
     // Card 3: Soft Purple (Figma theme)
     heading: "text-purple-600",
     border: "border-purple-300/90 hover:border-purple-400",
-    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80"
+    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80",
+    glowColor: "147, 51, 234"
   },
   {
     // Card 4: Mint / Emerald Green (Prototyping theme)
     heading: "text-emerald-700",
     border: "border-emerald-300/90 hover:border-emerald-400",
-    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80"
+    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80",
+    glowColor: "4, 120, 87"
   }
 ];
 
@@ -425,16 +430,33 @@ export default function FoundersPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <MagicBento
+              enableStars={true}
+              enableSpotlight={true}
+              enableBorderGlow={true}
+              enableTilt={true}
+              enableMagnetism={true}
+              clickEffect={true}
+              spotlightRadius={300}
+              particleCount={10}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
+            >
               {PHILOSOPHY_CARDS.map((card, i) => {
                 const theme = PHILOSOPHY_THEMES[i % PHILOSOPHY_THEMES.length];
+                const baseClassName = `magic-bento-card magic-bento-card--border-glow rounded-[28px] border bg-white p-7 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.03),0_8px_16px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col justify-start min-h-[300px] sm:min-h-[320px] ${theme.border}`;
 
                 return (
-                  <div
+                  <ParticleCard
                     key={i}
-                    className={`rounded-[28px] border bg-white p-7 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.03),0_8px_16px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 flex flex-col justify-start min-h-[300px] sm:min-h-[320px] ${theme.border}`}
+                    className={baseClassName}
+                    style={{ '--glow-color': theme.glowColor } as React.CSSProperties}
+                    particleCount={10}
+                    glowColor={theme.glowColor}
+                    enableTilt={true}
+                    clickEffect={true}
+                    enableMagnetism={true}
                   >
-                    <div className="space-y-6">
+                    <div className="space-y-6 relative z-10">
                       {/* Number Badge with Matching Theme Color */}
                       <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center font-bold text-sm shadow-2xs ${theme.badge}`}>
                         {i + 1}
@@ -450,10 +472,10 @@ export default function FoundersPage() {
                         {card.description}
                       </p>
                     </div>
-                  </div>
+                  </ParticleCard>
                 );
               })}
-            </div>
+            </MagicBento>
           </section>
 
           {/* --- PLATFORM MILESTONES TIMELINE (MATCHING REFERENCE DESIGN) --- */}
