@@ -177,6 +177,33 @@ const ERA_STANDARDS: Record<number, string[]> = {
   ]
 };
 
+const PHILOSOPHY_THEMES = [
+  {
+    // Card 1: Vibrant Blue (Design Systems theme)
+    heading: "text-blue-600",
+    border: "border-blue-300/90 hover:border-blue-400",
+    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80"
+  },
+  {
+    // Card 2: Warm Amber (Interaction & Motion theme)
+    heading: "text-amber-800",
+    border: "border-amber-300/90 hover:border-amber-400",
+    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80"
+  },
+  {
+    // Card 3: Soft Purple (Figma theme)
+    heading: "text-purple-600",
+    border: "border-purple-300/90 hover:border-purple-400",
+    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80"
+  },
+  {
+    // Card 4: Mint / Emerald Green (Prototyping theme)
+    heading: "text-emerald-700",
+    border: "border-emerald-300/90 hover:border-emerald-400",
+    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80"
+  }
+];
+
 export default function FoundersPage() {
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
   const [activeEraIndex, setActiveEraIndex] = useState<number>(0);
@@ -384,39 +411,48 @@ export default function FoundersPage() {
             </div>
           </section>
 
-          {/* --- PLATFORM PHILOSOPHY HIGHLIGHTS --- */}
-          <section className="space-y-10 pt-6">
+          {/* --- PLATFORM PHILOSOPHY HIGHLIGHTS (MATCHING REFERENCE IMAGE) --- */}
+          <section className="space-y-12 pt-6">
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-100">
+              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50/80 px-3.5 py-1.5 rounded-full border border-indigo-100/80">
                 Guiding Principles
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-medium text-slate-900">
                 Our Core Philosophy
               </h2>
-              <p className="text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed font-sans">
                 Arcade was architected around foundational values designed to give every student real-world engineering mastery.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {PHILOSOPHY_CARDS.map((card, i) => (
-                <div
-                  key={i}
-                  className="rounded-[20px] border border-slate-100 bg-white p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                      {i + 1}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+              {PHILOSOPHY_CARDS.map((card, i) => {
+                const theme = PHILOSOPHY_THEMES[i % PHILOSOPHY_THEMES.length];
+
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-[28px] border bg-white p-7 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.03),0_8px_16px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 flex flex-col justify-start min-h-[300px] sm:min-h-[320px] ${theme.border}`}
+                  >
+                    <div className="space-y-6">
+                      {/* Number Badge with Matching Theme Color */}
+                      <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center font-bold text-sm shadow-2xs ${theme.badge}`}>
+                        {i + 1}
+                      </div>
+
+                      {/* Heading with Matching Theme Color */}
+                      <h3 className={`font-serif text-2xl font-normal leading-[1.25] tracking-tight ${theme.heading}`}>
+                        {card.title}
+                      </h3>
+
+                      {/* Clean Body Text */}
+                      <p className="text-xs sm:text-[13px] text-slate-500 leading-relaxed font-sans">
+                        {card.description}
+                      </p>
                     </div>
-                    <h3 className="font-serif text-xl font-medium text-slate-900">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      {card.description}
-                    </p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
