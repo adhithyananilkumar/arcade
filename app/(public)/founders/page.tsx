@@ -149,7 +149,7 @@ export default function FoundersPage() {
                       src={founder.image}
                       alt={founder.name}
                       fill
-                      className="object-cover"
+                      className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
                       sizes="200px"
                       priority={index < 4}
                     />
