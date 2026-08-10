@@ -86,7 +86,7 @@ const ERA_HEADERS: Record<number, string> = {
   0: "ERA ARCHITECTURE",
   1: "THE FOUNDATION",
   2: "THE EXPERIENCE",
-  3: "FUTURE VISION"
+  3: "THE HORIZON"
 };
 
 const ERA_STANDARDS: Record<number, string[]> = {
@@ -109,8 +109,10 @@ const ERA_STANDARDS: Record<number, string[]> = {
     "Learning becomes engaging"
   ],
   3: [
-    "Comprehensive platform for multi-department learning & AI creator hubs.",
-    "Institutional ranking support & creator empowerment across colleges."
+    "Learning that understands you",
+    "Every learner, a different journey",
+    "A connected learning ecosystem",
+    "From learning to possibility"
   ]
 };
 

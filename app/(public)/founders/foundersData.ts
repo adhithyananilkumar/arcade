@@ -262,9 +262,9 @@ export const TIMELINE_MILESTONES: Milestone[] = [
   },
   {
     year: "2026 & Beyond",
-    title: "The Arcade Ecosystem 2.0",
-    subtitle: "Scaling institutional collaboration & AI creator hubs",
-    description: "Today, Arcade is expanding into a comprehensive platform for multi-department learning, automated assessment, institutional ranking support, and creator empowerment across colleges.",
+    title: "A Larger Horizon",
+    subtitle: "Where learning becomes personal, connected, and limitless",
+    description: "Arcade's story does not end with a platform. It continues toward a future where technology can make education more personal, inclusive, and engaging.\n\nMachine learning can help every learner discover what they need next. Gamification can turn progress into motivation. Live learning can bring teachers and students closer, regardless of distance. Institutions can build their own learning communities, while professional learners can move from knowledge to recognised certification.\n\nThe long-term vision is simple: to create a learning ecosystem where anyone can begin, everyone can grow, and every journey has a place.",
     badge: "Future Vision",
     iconName: "globe"
   }
