@@ -477,7 +477,17 @@ export default function FoundersPage() {
                       const theme = PLACARD_THEMES[sIdx % PLACARD_THEMES.length];
 
                       return (
-                        <div key={sIdx} className="relative flex flex-col items-center group">
+                        <motion.div
+                          key={`${activeEraIndex}-${sIdx}`}
+                          initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{
+                            duration: 0.4,
+                            delay: sIdx * 0.12,
+                            ease: [0.25, 0.1, 0.25, 1]
+                          }}
+                          className="relative flex flex-col items-center group w-full"
+                        >
                           {/* If first board: Top Triangle Rope & Peg Pin */}
                           {sIdx === 0 ? (
                             <div className="flex justify-center -mb-1 z-10">
@@ -510,7 +520,7 @@ export default function FoundersPage() {
                               {standardText}
                             </span>
                           </div>
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
