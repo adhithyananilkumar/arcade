@@ -470,6 +470,12 @@ function AuthoredContentCard({ item }: { item: any }) {
 }
 
 
+const RESERVED_ROUTES = new Set([
+  'sign', 'login', 'signup', 'verify-email', 'reset-password', 'forgot-password',
+  'about', 'explore', 'courses', 'forum', 'creators', 'events', 'workshops',
+  'reach-us', 'terms', 'privacy', 'founders', 'arc-console', 'console', 'dashboard'
+]);
+
 export default function PublicProfilePage() {
   const params = useParams();
   const usernameParam = params.username as string;
@@ -486,6 +492,11 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     const loadProfile = async () => {
+      if (!usernameParam || RESERVED_ROUTES.has(usernameParam.toLowerCase())) {
+        setError('User not found.');
+        setIsLoading(false);
+        return;
+      }
       try {
         const data = await UserService.getPublicProfile(usernameParam);
         setProfileData(data);
@@ -495,7 +506,7 @@ export default function PublicProfilePage() {
           dataMap[item.date] = item.secondsSpent;
         });
         setActivityData(dataMap);
-      } catch (err: any) {
+        } catch (err: any) {
         if (err.response?.status === 404) {
           setError('User not found.');
         } else {
