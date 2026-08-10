@@ -1,11 +1,27 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/design-system/ui/dialog';
-import { Loader2, ShieldCheck, CreditCard, Smartphone, Landmark, Wallet, CheckCircle2, XCircle, Clock, RefreshCw, X } from 'lucide-react';
+import {
+  Loader2,
+  ShieldCheck,
+  CreditCard,
+  Smartphone,
+  Landmark,
+  Wallet,
+  Calendar,
+  Clock3,
+  Repeat,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  RefreshCw,
+  X,
+  ChevronRight,
+} from 'lucide-react';
 import { formatMoney } from '@/shared/utils/money';
 import { PaymentService } from '../api/payment.service';
-import { CheckoutResponse, PaymentOrderStatus } from '../types/payment.types';
+import { CheckoutResponse, PaymentMethodOption, QrCodeResponse } from '../types/payment.types';
 import { EnrollmentService } from '@/domains/enrollment/api/enrollment.service';
 import { toast } from 'sonner';
 
@@ -27,6 +43,37 @@ type Stage = 'loading' | 'ready' | 'launching' | 'verifying' | 'success' | 'fail
 
 const RAZORPAY_SCRIPT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
 
+const METHOD_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  UPI: Smartphone,
+  CARD: CreditCard,
+  NETBANKING: Landmark,
+  WALLET: Wallet,
+  EMI: Calendar,
+  CARDLESS_EMI: Calendar,
+  PAYLATER: Clock3,
+  BANK_TRANSFER: Landmark,
+  UPI_RECURRING: Repeat,
+};
+
+const METHOD_RAZORPAY_KEY: Record<string, string> = {
+  UPI: 'upi',
+  CARD: 'card',
+  NETBANKING: 'netbanking',
+  WALLET: 'wallet',
+  EMI: 'emi',
+  CARDLESS_EMI: 'cardless_emi',
+  PAYLATER: 'paylater',
+  BANK_TRANSFER: 'bank_transfer',
+  UPI_RECURRING: 'upi',
+};
+
+const FALLBACK_METHODS: PaymentMethodOption[] = [
+  { code: 'UPI', label: 'UPI' },
+  { code: 'CARD', label: 'Cards' },
+  { code: 'NETBANKING', label: 'Netbanking' },
+  { code: 'WALLET', label: 'Wallets' },
+];
+
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
     if (typeof window === 'undefined') return resolve(false);
@@ -46,35 +93,6 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
-/** Deterministic pixel-grid placeholder standing in for a real QR until Razorpay's QR data is wired in. */
-function PseudoQr({ seed }: { seed: string }) {
-  const cells = useMemo(() => {
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) {
-      hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-    }
-    const size = 7;
-    const grid: boolean[] = [];
-    let state = hash || 1;
-    for (let i = 0; i < size * size; i++) {
-      state = (state * 1103515245 + 12345) >>> 0;
-      grid.push(((state >> 16) & 1) === 1);
-    }
-    return { size, grid };
-  }, [seed]);
-
-  return (
-    <div
-      className="grid gap-[3px] rounded-lg bg-white p-2.5 shadow-inner"
-      style={{ gridTemplateColumns: `repeat(${cells.size}, minmax(0, 1fr))`, width: 132, height: 132 }}
-    >
-      {cells.grid.map((on, i) => (
-        <div key={i} className={`rounded-[1.5px] ${on ? 'bg-[#14142b]' : 'bg-transparent'}`} />
-      ))}
-    </div>
-  );
-}
-
 function CountdownBadge({ expiresAt }: { expiresAt?: string }) {
   const [remaining, setRemaining] = useState<number | null>(null);
 
@@ -92,7 +110,7 @@ function CountdownBadge({ expiresAt }: { expiresAt?: string }) {
   const secs = remaining % 60;
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-      <Clock size={12} /> Expires in {mins}:{secs.toString().padStart(2, '0')}
+      <Clock size={12} /> {mins}:{secs.toString().padStart(2, '0')}
     </span>
   );
 }
@@ -101,6 +119,14 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
   const [stage, setStage] = useState<Stage>('loading');
   const [checkout, setCheckout] = useState<CheckoutResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [methods, setMethods] = useState<PaymentMethodOption[]>(FALLBACK_METHODS);
+  const [selectedMethod, setSelectedMethod] = useState<string>('UPI');
+
+  const [qrData, setQrData] = useState<QrCodeResponse | null>(null);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrError, setQrError] = useState<string | null>(null);
+  const qrFetchedForOrderRef = useRef<string | null>(null);
 
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const pollHandleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,9 +141,18 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
   const startCheckout = useCallback(async () => {
     setStage('loading');
     setErrorMessage(null);
+    setQrData(null);
+    qrFetchedForOrderRef.current = null;
     try {
-      const result = await PaymentService.checkout(enrollmentId, idempotencyKeyRef.current);
+      const [result, supportedMethods] = await Promise.all([
+        PaymentService.checkout(enrollmentId, idempotencyKeyRef.current),
+        PaymentService.getSupportedMethods().catch(() => FALLBACK_METHODS),
+      ]);
       setCheckout(result);
+      if (supportedMethods.length > 0) {
+        setMethods(supportedMethods);
+        setSelectedMethod(supportedMethods.some((m) => m.code === 'UPI') ? 'UPI' : supportedMethods[0].code);
+      }
       if (result.status === 'PAID') {
         setStage('success');
       } else {
@@ -140,6 +175,22 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
   }, [open]);
 
   useEffect(() => clearPoll, [clearPoll]);
+
+  // Fetch the real Razorpay QR only when the user is actually looking at the UPI panel,
+  // and only once per order (cached thereafter).
+  useEffect(() => {
+    if (!checkout || selectedMethod !== 'UPI') return;
+    if (qrFetchedForOrderRef.current === checkout.orderId) return;
+    if (stage !== 'ready') return;
+
+    qrFetchedForOrderRef.current = checkout.orderId;
+    setQrLoading(true);
+    setQrError(null);
+    PaymentService.getOrCreateQrCode(checkout.orderId)
+      .then((data) => setQrData(data))
+      .catch((err: any) => setQrError(err?.message || 'Could not load the UPI QR. Try another payment method.'))
+      .finally(() => setQrLoading(false));
+  }, [checkout, selectedMethod, stage]);
 
   const pollOrder = useCallback(
     (orderId: string, attempt = 0) => {
@@ -177,7 +228,6 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
             return;
           }
           if (attempt >= 30) {
-            // Stop auto-polling after ~60s; user can still check manually.
             setStage('verifying');
             return;
           }
@@ -190,6 +240,15 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
     [clearPoll, enrollmentId, onGranted]
   );
 
+  // Once a QR is shown, start watching for payment automatically — the user shouldn't have to
+  // click anything after scanning.
+  useEffect(() => {
+    if (qrData && checkout && selectedMethod === 'UPI' && stage === 'ready') {
+      pollOrder(checkout.orderId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrData]);
+
   const handlePay = useCallback(async () => {
     if (!checkout) return;
     setStage('launching');
@@ -200,6 +259,9 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
       return;
     }
 
+    const razorpayMethodKey = METHOD_RAZORPAY_KEY[selectedMethod];
+    const methodConfig = razorpayMethodKey ? { [razorpayMethodKey]: true } : undefined;
+
     const rzp = new window.Razorpay({
       key: checkout.gatewayClientFields?.keyId,
       amount: checkout.amount,
@@ -208,6 +270,7 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
       description: checkout.resourceTitle || 'Course / Event enrollment',
       order_id: checkout.gatewayOrderId,
       theme: { color: '#4c6fff' },
+      method: methodConfig,
       handler: function () {
         // Razorpay's own success callback is NOT authoritative — only the backend webhook is.
         setStage('verifying');
@@ -224,17 +287,26 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
       pollOrder(checkout.orderId);
     });
     rzp.open();
-  }, [checkout, pollOrder]);
+  }, [checkout, pollOrder, selectedMethod]);
 
   const handleRetry = useCallback(() => {
     idempotencyKeyRef.current = crypto.randomUUID();
     startCheckout();
   }, [startCheckout]);
 
+  const isReady = stage === 'ready' || stage === 'launching';
+
   return (
     <Dialog open={open} onOpenChange={(val: boolean) => !val && onClose()}>
-      <DialogContent className="max-w-md overflow-hidden p-0" showCloseButton={false}>
-        <div className="relative bg-gradient-to-br from-[#14142b] to-[#2a2a55] px-6 py-5 text-white">
+      <DialogContent
+        className={`overflow-hidden p-0 ${isReady ? 'max-w-xl' : 'max-w-md'}`}
+        showCloseButton={false}
+      >
+        <div className="relative bg-gradient-to-br from-[#14142b] via-[#1c1c3d] to-[#2a2a55] px-6 py-5 text-white">
+          <div className="pointer-events-none absolute inset-0 opacity-[0.07]" style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+            backgroundSize: '18px 18px',
+          }} />
           <button
             onClick={onClose}
             aria-label="Close"
@@ -250,11 +322,22 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
               Complete your payment to unlock access
             </DialogDescription>
           </DialogHeader>
+          {isReady && checkout && (
+            <div className="relative mt-4 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">Amount due</p>
+                <p className="font-serif text-2xl font-medium text-white">
+                  {formatMoney(checkout.amount, checkout.currency)}
+                </p>
+              </div>
+              <CountdownBadge expiresAt={checkout.expiresAt} />
+            </div>
+          )}
         </div>
 
-        <div className="px-6 py-6">
+        <div className={isReady ? 'p-0' : 'px-6 py-6'}>
           {stage === 'loading' && (
-            <div className="flex flex-col items-center gap-3 py-10 text-slate-500">
+            <div className="flex flex-col items-center gap-3 py-14 text-slate-500">
               <Loader2 className="animate-spin" size={26} />
               <p className="text-sm">Preparing your order…</p>
             </div>
@@ -282,66 +365,116 @@ export function PaymentModal({ open, onClose, enrollmentId, onGranted }: Payment
             </div>
           )}
 
-          {(stage === 'ready' || stage === 'launching') && checkout && (
-            <div className="space-y-5">
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Amount due</p>
-                  <p className="font-serif text-3xl font-medium text-[#14142b]">
-                    {formatMoney(checkout.amount, checkout.currency)}
-                  </p>
-                </div>
-                <CountdownBadge expiresAt={checkout.expiresAt} />
-              </div>
-
-              <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <PseudoQr seed={checkout.gatewayOrderId || checkout.orderId} />
-                <div>
-                  <p className="text-[13px] font-semibold text-[#14142b]">Scan to pay via UPI</p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-                    Live QR preview — powered by Razorpay. For now, tap Pay below to complete checkout.
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Accepted payment methods
+          {isReady && checkout && (
+            <div className="grid grid-cols-[168px_1fr] divide-x divide-slate-100">
+              {/* Left: payment methods */}
+              <div className="space-y-1 bg-slate-50/60 p-3">
+                <p className="mb-2 px-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Pay using
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { icon: CreditCard, label: 'Cards' },
-                    { icon: Smartphone, label: 'UPI' },
-                    { icon: Landmark, label: 'Netbanking' },
-                    { icon: Wallet, label: 'Wallets' },
-                  ].map(({ icon: Icon, label }) => (
-                    <span
-                      key={label}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-600"
+                {methods.map((method) => {
+                  const Icon = METHOD_ICONS[method.code] || CreditCard;
+                  const active = selectedMethod === method.code;
+                  return (
+                    <button
+                      key={method.code}
+                      onClick={() => setSelectedMethod(method.code)}
+                      className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-[12.5px] font-medium transition-all ${
+                        active
+                          ? 'bg-white text-[#14142b] shadow-sm ring-1 ring-[#4c6fff]/30'
+                          : 'text-slate-500 hover:bg-white/70 hover:text-slate-700'
+                      }`}
                     >
-                      <Icon size={13} className="text-slate-400" /> {label}
-                    </span>
-                  ))}
-                </div>
+                      <Icon size={15} className={active ? 'text-[#4c6fff]' : 'text-slate-400'} />
+                      <span className="flex-1">{method.label}</span>
+                      {active && <ChevronRight size={13} className="text-[#4c6fff]" />}
+                    </button>
+                  );
+                })}
               </div>
 
-              <button
-                onClick={handlePay}
-                disabled={stage === 'launching'}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#4c6fff] py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(76,111,255,0.35)] transition-all hover:bg-[#3d5ce0] active:scale-[0.98] disabled:opacity-70"
-              >
-                {stage === 'launching' ? (
-                  <>
-                    <Loader2 className="animate-spin" size={16} /> Opening secure checkout…
-                  </>
+              {/* Right: contextual panel */}
+              <div className="flex flex-col justify-between p-5">
+                {selectedMethod === 'UPI' ? (
+                  <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+                    {qrLoading && (
+                      <div className="flex flex-col items-center gap-2 py-6 text-slate-400">
+                        <Loader2 className="animate-spin" size={24} />
+                        <p className="text-[12px]">Fetching your UPI QR…</p>
+                      </div>
+                    )}
+                    {!qrLoading && qrError && (
+                      <div className="flex flex-col items-center gap-2 py-6">
+                        <XCircle className="text-red-400" size={24} />
+                        <p className="text-[12px] text-slate-500">{qrError}</p>
+                        <button
+                          onClick={() => {
+                            qrFetchedForOrderRef.current = null;
+                            setQrError(null);
+                            setSelectedMethod('UPI');
+                          }}
+                          className="text-[12px] font-medium text-[#4c6fff] hover:underline"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+                    {!qrLoading && !qrError && qrData && (
+                      <>
+                        <div className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={qrData.imageUrl} alt="Razorpay UPI QR code" width={168} height={168} className="rounded-lg" />
+                        </div>
+                        <p className="text-[13px] font-semibold text-[#14142b]">Scan with any UPI app</p>
+                        <p className="max-w-[220px] text-[11.5px] leading-relaxed text-slate-500">
+                          GPay, PhonePe, Paytm, BHIM — this page updates automatically the instant we
+                          receive your payment.
+                        </p>
+                        <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400">
+                          <Loader2 size={11} className="animate-spin" /> Watching for payment…
+                        </div>
+                      </>
+                    )}
+                  </div>
                 ) : (
-                  <>Pay {formatMoney(checkout.amount, checkout.currency)}</>
+                  <div className="flex flex-1 flex-col items-center justify-center gap-3 py-6 text-center">
+                    {(() => {
+                      const Icon = METHOD_ICONS[selectedMethod] || CreditCard;
+                      return (
+                        <div className="rounded-2xl bg-[#4c6fff]/10 p-4">
+                          <Icon size={28} className="text-[#4c6fff]" />
+                        </div>
+                      );
+                    })()}
+                    <p className="text-[13px] font-semibold text-[#14142b]">
+                      Pay via {methods.find((m) => m.code === selectedMethod)?.label || selectedMethod}
+                    </p>
+                    <p className="max-w-[220px] text-[11.5px] leading-relaxed text-slate-500">
+                      You'll complete this securely on Razorpay's checkout window.
+                    </p>
+                  </div>
                 )}
-              </button>
 
-              <p className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-                <ShieldCheck size={13} /> Payments secured by Razorpay
-              </p>
+                {selectedMethod !== 'UPI' && (
+                  <button
+                    onClick={handlePay}
+                    disabled={stage === 'launching'}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#4c6fff] py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(76,111,255,0.35)] transition-all hover:bg-[#3d5ce0] active:scale-[0.98] disabled:opacity-70"
+                  >
+                    {stage === 'launching' ? (
+                      <>
+                        <Loader2 className="animate-spin" size={16} /> Opening secure checkout…
+                      </>
+                    ) : (
+                      <>Pay {formatMoney(checkout.amount, checkout.currency)}</>
+                    )}
+                  </button>
+                )}
+
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-[10.5px] text-slate-400">
+                  <ShieldCheck size={12} /> Payments secured by Razorpay
+                </p>
+              </div>
             </div>
           )}
 

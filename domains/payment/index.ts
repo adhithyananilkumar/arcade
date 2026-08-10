@@ -23,6 +23,8 @@ export type {
   PaymentOrderStatus,
   CheckoutResponse,
   PaymentOrderResponse,
+  QrCodeResponse,
+  PaymentMethodOption,
   PaymentLedgerRow,
   PageResponse,
   PaymentLedgerFilters,
