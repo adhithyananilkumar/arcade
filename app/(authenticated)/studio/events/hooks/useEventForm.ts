@@ -15,7 +15,7 @@ const initialData: EventFormData = {
   deliveryMode: DeliveryMode.ONLINE,
   difficulty: Difficulty.BEGINNER,
   language: 'en',
-  price: 0,
+  priceAmount: 0,
   currency: 'USD',
   capacity: undefined,
   visibility: Visibility.PRIVATE,
@@ -95,7 +95,7 @@ export const useEventForm = () => {
       case 'language':
         if (!value) error = 'Language is required';
         break;
-      case 'price':
+      case 'priceAmount':
         if (value < 0) error = 'Price cannot be negative';
         break;
       case 'capacity':

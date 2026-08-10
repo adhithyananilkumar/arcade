@@ -543,7 +543,7 @@ function CreateEventModal({
         deliveryMode: "ONLINE",
         difficulty: "BEGINNER",
         language: "en",
-        price: 0,
+        priceAmount: 0,
         currency: "USD",
         visibility: "PRIVATE",
         channelId,
