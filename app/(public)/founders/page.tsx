@@ -95,29 +95,17 @@ export default function FoundersPage() {
 
   return (
     <main className="min-h-screen bg-white text-slate-900 font-sans">
-      {/* ── HERO SECTION WITH BRAND GRADIENT WASH ── */}
-      <div className="w-full arcade-wash border-b border-slate-100">
-        <div className="mx-auto max-w-6xl px-5 pt-32 pb-20 sm:px-8 sm:pt-36 sm:pb-24">
-          {/* Breadcrumbs */}
-          <nav className="flex items-center justify-center gap-2 text-xs font-semibold text-slate-500 mb-6">
-            <Link href="/" className="hover:text-indigo-600 transition-colors">
-              Explore
-            </Link>
-            <ChevronRight size={12} className="text-slate-300" />
-            <span className="text-slate-800 font-bold">Founders</span>
-          </nav>
-
+      {/* ── HERO SECTION (WHITE BACKGROUND, CLEAN TITLE & SUBTITLE ONLY) ── */}
+      <div className="w-full bg-white border-b border-slate-100">
+        <div className="mx-auto max-w-6xl px-5 pt-32 pb-24 sm:px-8 sm:pt-36 sm:pb-32">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
-            {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 px-3.5 py-1.5 text-xs font-semibold text-indigo-600 shadow-sm backdrop-blur-sm">
-              <Sparkles size={14} className="text-indigo-500" />
-              <span>Meet The Builders &amp; Visionaries</span>
-            </div>
-
             {/* Title */}
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-medium tracking-tight text-slate-900 leading-[1.08]">
+            <h1
+              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15]"
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
+            >
               The Minds Behind{" "}
-              <span className="italic bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1 inline-block">
                 Arcade.
               </span>
             </h1>
@@ -126,32 +114,15 @@ export default function FoundersPage() {
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
               Meet the 10 engineers, educators, and creators who designed Arcade at Amal Jyothi College of Engineering—building verifiable digital credentials, interactive workshops, and modern outcome-based learning.
             </p>
-
-            {/* Stats Row */}
-            <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {STATS.map((stat, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl border border-slate-200/70 bg-white/70 backdrop-blur-sm p-4 text-center shadow-xs"
-                >
-                  <p className="font-serif text-2xl sm:text-3xl font-semibold text-slate-900">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs font-semibold text-slate-500 mt-1">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
 
       {/* ── MAIN BODY (PURE WHITE BACKGROUND) ── */}
       <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 space-y-24">
+        <div className="mx-auto max-w-6xl px-5 pt-20 sm:pt-28 pb-20 sm:px-8 space-y-28">
           {/* --- FOUNDERS CIRCULAR GRID SECTION (MATCHING REFERENCE IMAGE) --- */}
-          <section className="space-y-16 py-4">
+          <section className="space-y-16 pt-6 pb-4">
             {/* Section Header */}
             <div className="text-center space-y-3 max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight font-sans">
