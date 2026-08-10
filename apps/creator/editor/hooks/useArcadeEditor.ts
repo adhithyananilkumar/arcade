@@ -4,11 +4,22 @@
 import { useEditor } from "@tiptap/react";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import debounce from "lodash.debounce";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
+
+export type CollabStatus = "disabled" | "connecting" | "connected" | "disconnected";
+
+export interface ActiveCollaborator {
+  clientId: number;
+  user?: {
+    id?: string;
+    name?: string;
+    color?: string;
+  };
+}
 
 export interface UseArcadeEditorOptions {
   /**
@@ -83,9 +94,44 @@ export function useArcadeEditor({
     return p;
   }, [documentName, accessToken, ydoc]);
 
+  const [statusState, setStatusState] = useState<CollabStatus>(documentName ? "connecting" : "disabled");
+  const [collaborators, setCollaborators] = useState<ActiveCollaborator[]>([]);
+
   useEffect(() => {
+    if (!provider) {
+      setStatusState("disabled");
+      setCollaborators([]);
+      return;
+    }
+
+    const updateStatus = ({ status }: { status: string }) => {
+      setStatusState(status as CollabStatus);
+    };
+
+    const updateAwareness = () => {
+      if (!provider.awareness) return;
+      const states = provider.awareness.getStates();
+      const users: ActiveCollaborator[] = [];
+      states.forEach((state: any, clientId: number) => {
+        if (state.user) {
+          users.push({ clientId, user: state.user });
+        }
+      });
+      setCollaborators(users);
+    };
+
+    provider.on("status", updateStatus);
+    if (provider.awareness) {
+      provider.awareness.on("change", updateAwareness);
+      updateAwareness();
+    }
+
     return () => {
-      provider?.destroy();
+      provider.off("status", updateStatus);
+      if (provider.awareness) {
+        provider.awareness.off("change", updateAwareness);
+      }
+      provider.destroy();
     };
   }, [provider]);
 
@@ -176,5 +222,5 @@ export function useArcadeEditor({
     [editor]
   );
 
-  return { editor, flushSave, setContent, getJSON };
+  return { editor, flushSave, setContent, getJSON, provider, collabStatus: statusState, collaborators };
 }
