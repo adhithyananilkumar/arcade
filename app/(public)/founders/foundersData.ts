@@ -239,8 +239,8 @@ export const TIMELINE_MILESTONES: Milestone[] = [
   {
     year: "2024 - Q3",
     title: "The Genesis Spark",
-    subtitle: "A vision born out of student passion & campus need",
-    description: "During an annual tech symposium at Amal Jyothi College of Engineering, the founding team identified critical gaps in existing LMS platforms—lacking real-time interactivity, verifiable digital certificates, and modern creator tools.",
+    subtitle: "A vision born from student passion & a need for something better",
+    description: "What began as a conversation around the gaps in modern learning slowly became a vision for something more. At Amal Jyothi College of Engineering, the idea of Arcade emerged with a simple belief — learning should be accessible, engaging, and meaningful to everyone.\n\nThe vision was to move beyond conventional classrooms and create a space where students could learn at their own pace, explore new skills, and discover opportunities beyond the boundaries of a campus.",
     badge: "Origin",
     iconName: "spark"
   },

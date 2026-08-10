@@ -84,8 +84,10 @@ function FlourishLine({ className }: { className?: string }) {
 
 const ERA_STANDARDS: Record<number, string[]> = {
   0: [
-    "High scalability and verifiable credential pipelines built-in.",
-    "Collaborative workshop engines for faculty mentors and student creators."
+    "A learning space without boundaries",
+    "Built around the learner",
+    "Beyond the traditional classroom",
+    "A vision for accessible education"
   ],
   1: [
     "Next.js App Router & Tailwind CSS custom design tokens.",
@@ -395,15 +397,6 @@ export default function FoundersPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 {/* Left Detail Content */}
                 <div className="lg:col-span-7 space-y-4">
-                  {/* Badge & Era Tag Row */}
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-blue-100/90 text-blue-700 px-3.5 py-1 text-xs font-semibold">
-                      {activeMilestone.year}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 font-sans">
-                      {activeMilestone.badge}
-                    </span>
-                  </div>
 
                   {/* Heading */}
                   <h3 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
@@ -416,16 +409,19 @@ export default function FoundersPage() {
                   </p>
 
                   {/* Description */}
-                  <p className="text-sm text-slate-500 leading-relaxed font-normal">
-                    {activeMilestone.description}
-                  </p>
+                  <div className="space-y-3">
+                    {activeMilestone.description.split("\n\n").map((para, pIdx) => (
+                      <p key={pIdx} className="text-sm text-slate-500 leading-relaxed font-normal">
+                        {para}
+                      </p>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Right Standards Card */}
                 <div className="lg:col-span-5 rounded-2xl bg-white border border-slate-100 p-6 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest border-b border-slate-100 pb-3">
+                  <div className="text-[11px] font-bold uppercase tracking-widest border-b border-slate-100 pb-3">
                     <span className="text-slate-400">ERA ARCHITECTURE</span>
-                    <span className="text-blue-600">AJCE STANDARDS</span>
                   </div>
 
                   <div className="space-y-3">
