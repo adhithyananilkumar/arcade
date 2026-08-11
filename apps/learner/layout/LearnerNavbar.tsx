@@ -445,14 +445,6 @@ export default function LearnerNavbar() {
                 Content Studio
               </MenuItem>
             )}
-            {collaboratedEventId && (
-              <MenuItem 
-                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
-                onClick={() => router.push('/studio/events')}
-              >
-                Events
-              </MenuItem>
-            )}
             {showArcConsole && (
               <MenuItem 
                 icon={<ShieldAlert className="text-rose-500" strokeWidth={2} />} 
