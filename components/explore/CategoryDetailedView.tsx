@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
@@ -80,7 +80,170 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   );
 }
 
-const HoneycombIllustration: React.FC = () => {
+const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<number> }> = ({ activeColor, progress }) => {
+  const t = progress;
+
+  // Bezier Control points:
+  const P0 = { x: 50, y: 380 };
+  const P1 = { x: 120, y: 220 };
+  const P2 = { x: 260, y: 150 };
+  const P3 = { x: 410, y: 80 };
+
+  // Calculate coordinates:
+  const x = useTransform(t, (val) => {
+    const mt = 1 - val;
+    return mt * mt * mt * P0.x + 3 * mt * mt * val * P1.x + 3 * mt * val * val * P2.x + val * val * val * P3.x;
+  });
+
+  const y = useTransform(t, (val) => {
+    const mt = 1 - val;
+    return mt * mt * mt * P0.y + 3 * mt * mt * val * P1.y + 3 * mt * val * val * P2.y + val * val * val * P3.y;
+  });
+
+  // Tangent derivative for angle calculation:
+  const angle = useTransform(t, (val) => {
+    const mt = 1 - val;
+    const dx = 3 * mt * mt * (P1.x - P0.x) + 6 * mt * val * (P2.x - P1.x) + 3 * val * val * (P3.x - P2.x);
+    const dy = 3 * mt * mt * (P1.y - P0.y) + 6 * mt * val * (P2.y - P1.y) + 3 * val * val * (P3.y - P2.y);
+    return (Math.atan2(dy, dx) * 180) / Math.PI + 90; // +90 deg offset because the rocket SVG points upwards
+  });
+
+  // Astronaut walks when t > 0.9.
+  const astronautX = useTransform(t, (val) => {
+    if (val < 0.9) return P3.x;
+    const progress = Math.min((val - 0.9) / 0.08, 1);
+    return P3.x + progress * 40;
+  });
+  
+  const astronautOpacity = useTransform(t, (val) => {
+    if (val < 0.85) return 0;
+    if (val < 0.9) return (val - 0.85) / 0.05; // Fade in after landing
+    return 1;
+  });
+
+  const flagScale = useTransform(t, (val) => {
+    if (val < 0.94) return 0;
+    return Math.min((val - 0.94) / 0.06, 1); // flag extends
+  });
+
+  const flameOpacity = useTransform(t, (val) => {
+    if (val === 0) return 0.2;
+    if (val >= 0.88) return 0;
+    return 1;
+  });
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: "450px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <svg
+        viewBox="0 0 500 450"
+        width="100%"
+        height="100%"
+        style={{ overflow: "visible", display: "block" }}
+      >
+        <defs>
+          <linearGradient id="traj-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={`${activeColor}22`} />
+            <stop offset="50%" stopColor={`${activeColor}77`} />
+            <stop offset="100%" stopColor={activeColor} />
+          </linearGradient>
+          <linearGradient id="flame-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FBBF24" />
+            <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* 1. Trajectory line */}
+        <path
+          d={`M ${P0.x},${P0.y} C ${P1.x},${P1.y} ${P2.x},${P2.y} ${P3.x},${P3.y}`}
+          fill="none"
+          stroke="url(#traj-grad)"
+          strokeWidth="3"
+          strokeDasharray="6 6"
+          opacity="0.8"
+        />
+
+        {/* 2. Moon (Flat Minimal) */}
+        <g transform={`translate(${P3.x}, ${P3.y})`}>
+          <circle cx="0" cy="0" r="55" fill={activeColor} opacity="0.08" style={{ filter: "blur(8px)" }} />
+          <circle cx="0" cy="0" r="45" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="2.5" />
+          <circle cx="-15" cy="-15" r="8" fill="#E2E8F0" />
+          <circle cx="15" cy="15" r="10" fill="#E2E8F0" />
+          <circle cx="-10" cy="15" r="5" fill="#E2E8F0" />
+          <circle cx="20" cy="-10" r="6" fill="#E2E8F0" />
+        </g>
+
+        {/* 3. Flag */}
+        <motion.g
+          style={{
+            x: P3.x + 40,
+            y: P3.y - 10,
+            scale: flagScale,
+            originX: 0,
+            originY: 1
+          }}
+        >
+          <style>{`
+            @keyframes wave {
+              0%, 100% { transform: skewY(0deg); }
+              50% { transform: skewY(3deg); }
+            }
+            .waving-flag {
+              animation: wave 2s ease-in-out infinite;
+            }
+          `}</style>
+          <line x1="0" y1="0" x2="0" y2="-45" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
+          <g className="waving-flag" transform="translate(0, -45)">
+            <rect x="0" y="0" width="40" height="24" fill={activeColor} rx="2" />
+            <text x="6" y="16" fill="#FFFFFF" fontSize="9" fontWeight="900" fontFamily="sans-serif">a.</text>
+          </g>
+        </motion.g>
+
+        {/* 4. Astronaut (Walks after landing) */}
+        <motion.g
+          style={{
+            x: astronautX,
+            y: P3.y + 15,
+            opacity: astronautOpacity
+          }}
+        >
+          <circle cx="0" cy="-16" r="6" fill="#475569" stroke="#F1F5F9" strokeWidth="1.5" />
+          <circle cx="1" cy="-16" r="3.5" fill="#38BDF8" />
+          <rect x="-6" y="-10" width="12" height="15" rx="3" fill="#F1F5F9" stroke="#475569" strokeWidth="1.5" />
+          <rect x="-9" y="-8" width="3" height="11" rx="1" fill="#94A3B8" />
+          <line x1="-3" y1="5" x2="-3" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="3" y1="5" x2="3" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
+        </motion.g>
+
+        {/* 5. Rocket & Flame */}
+        <motion.g
+          style={{
+            x: x,
+            y: y,
+            rotate: angle,
+            originX: 0.5,
+            originY: 0.5
+          }}
+        >
+          <motion.path
+            d="M -6,18 Q 0,40 6,18 Z"
+            fill="url(#flame-grad)"
+            style={{ opacity: flameOpacity }}
+          />
+          <g transform="translate(0, -5)">
+            <path d="M -12,12 L -18,22 L -8,22 Z" fill="#EF4444" />
+            <path d="M 12,12 L 18,22 L 8,22 Z" fill="#EF4444" />
+            <path d="M 0,-25 C -10,-10 -10,22 0,22 C 10,22 10,-10 0,-25 Z" fill="#F8FAFC" stroke="#475569" strokeWidth="2" />
+            <path d="M 0,-25 C -5,-18 -8,-10 0,-10 C 8,-10 5,-18 0,-25 Z" fill="#EF4444" />
+            <circle cx="0" cy="-2" r="4.5" fill="#38BDF8" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="-1" cy="-3" r="1.5" fill="#FFFFFF" opacity="0.7" />
+          </g>
+        </motion.g>
+      </svg>
+    </div>
+  );
+};
+
+const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true }) => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <svg
@@ -144,35 +307,35 @@ const HoneycombIllustration: React.FC = () => {
           }
 
           .flow-forward {
-            animation: flowForward 2s linear infinite;
+            ${animate ? "animation: flowForward 2s linear infinite;" : ""}
           }
           .flow-backward {
-            animation: flowBackward 2s linear infinite;
+            ${animate ? "animation: flowBackward 2s linear infinite;" : ""}
           }
           .animate-shuttle {
-            animation: shuttleFlight 5s ease-in-out infinite;
+            ${animate ? "animation: shuttleFlight 5s ease-in-out infinite;" : "transform: translate(350px, 45px) rotate(-30deg);"}
           }
           .animate-racket {
-            animation: racketSwing 5s ease-in-out infinite;
+            ${animate ? "animation: racketSwing 5s ease-in-out infinite;" : ""}
             transform-origin: -2px 2px;
           }
           .animate-sparkle-right {
-            animation: sparkleTwinkleRight 3s ease-in-out infinite;
+            ${animate ? "animation: sparkleTwinkleRight 3s ease-in-out infinite;" : "transform: translate(380px, 210px) scale(0.8);"}
           }
           .animate-sparkle-left {
-            animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;
+            ${animate ? "animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;" : "transform: translate(60px, 60px) scale(0.6);"}
           }
           .animate-clink-sparks {
-            animation: clinkSparksPulse 2.5s ease-in-out infinite;
+            ${animate ? "animation: clinkSparksPulse 2.5s ease-in-out infinite;" : "transform: translate(210px, 208px) scale(0.85);"}
           }
           .animate-expand-arrows {
-            animation: expandArrowsPulse 4s ease-in-out infinite;
+            ${animate ? "animation: expandArrowsPulse 4s ease-in-out infinite;" : "transform: translate(390px, 250px) scale(0.95);"}
           }
         `}</style>
 
         {/* Background dotted line paths / orbits */}
         <path
-          className="flow-forward"
+          className={animate ? "flow-forward" : undefined}
           d="M 120,40 C 200,-10 320,10 340,90"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -180,7 +343,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-backward"
+          className={animate ? "flow-backward" : undefined}
           d="M 50,110 C 30,50 120,10 200,60"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -188,7 +351,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-forward"
+          className={animate ? "flow-forward" : undefined}
           d="M 280,240 C 360,250 430,190 410,120"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -196,7 +359,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-backward"
+          className={animate ? "flow-backward" : undefined}
           d="M 60,190 C 80,250 180,270 230,240"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -205,52 +368,56 @@ const HoneycombIllustration: React.FC = () => {
         />
 
         {/* Glitter particles sliding along dotted paths */}
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 120,40 C 200,-10 320,10 340,90"
-            dur="6s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 50,110 C 30,50 120,10 200,60"
-            dur="7s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 280,240 C 360,250 430,190 410,120"
-            dur="8s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 60,190 C 80,250 180,270 230,240"
-            dur="6.5s"
-            repeatCount="indefinite"
-          />
-        </circle>
+        {animate && (
+          <>
+            <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+              <animateMotion
+                path="M 120,40 C 200,-10 320,10 340,90"
+                dur="6s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+              <animateMotion
+                path="M 50,110 C 30,50 120,10 200,60"
+                dur="7s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+              <animateMotion
+                path="M 280,240 C 360,250 430,190 410,120"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+              <animateMotion
+                path="M 60,190 C 80,250 180,270 230,240"
+                dur="6.5s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </>
+        )}
 
         {/* Small floating elements like badminton shuttles or balls */}
-        <g className="animate-shuttle" transform="translate(350, 45) rotate(-30)">
+        <g className={animate ? "animate-shuttle" : undefined} transform={animate ? undefined : "translate(350, 45) rotate(-30)"}>
           <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
           <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
           <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
         </g>
 
         {/* Sparkles / star outlines */}
-        <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
+        <g className={animate ? "animate-sparkle-right" : undefined} transform={animate ? undefined : "translate(380, 210) scale(0.8)"}>
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
-        <g className="animate-sparkle-left" transform="translate(60, 60) scale(0.6)">
+        <g className={animate ? "animate-sparkle-left" : undefined} transform={animate ? undefined : "translate(60, 60) scale(0.6)"}>
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
 
         {/* Diagonal Expand Arrows in bottom-right */}
-        <g className="animate-expand-arrows" transform="translate(390, 250)">
+        <g className={animate ? "animate-expand-arrows" : undefined} transform={animate ? undefined : "translate(390, 250)"}>
           <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
           <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -1158,6 +1325,89 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+
+  const [journeyCompleted, setJourneyCompleted] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const progressValue = useMotionValue(0);
+
+  useEffect(() => {
+    setJourneyCompleted(false);
+    progressValue.set(0);
+  }, [activeCategory, progressValue]);
+
+  useEffect(() => {
+    if (mode !== "events") return;
+
+    if (journeyCompleted) {
+      progressValue.set(1);
+      return;
+    }
+
+    // Lock page scroll initially
+    document.body.style.overflow = "hidden";
+
+    let currentProgress = 0;
+    const scrollStep = 0.15;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (currentProgress >= 1) return;
+
+      // Prevent page from scrolling
+      e.preventDefault();
+
+      // Support scroll down (forward) and scroll up (backward)
+      if (e.deltaY > 0) {
+        currentProgress = Math.min(currentProgress + scrollStep, 1);
+      } else {
+        currentProgress = Math.max(currentProgress - scrollStep, 0);
+      }
+      progressValue.set(currentProgress);
+
+      if (currentProgress >= 1) {
+        // Unlock page scroll
+        document.body.style.overflow = "";
+        setJourneyCompleted(true);
+      }
+    };
+
+    let touchStart = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStart = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (currentProgress >= 1) return;
+
+      e.preventDefault();
+
+      const touchEnd = e.touches[0].clientY;
+      const diff = touchStart - touchEnd;
+
+      if (diff > 8) {
+        currentProgress = Math.min(currentProgress + scrollStep, 1);
+      } else if (diff < -8) {
+        currentProgress = Math.max(currentProgress - scrollStep, 0);
+      }
+      progressValue.set(currentProgress);
+      touchStart = touchEnd;
+
+      if (currentProgress >= 1) {
+        document.body.style.overflow = "";
+        setJourneyCompleted(true);
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [mode, progressValue, journeyCompleted]);
   
   useEffect(() => {
     const fetchStats = async () => {
@@ -1517,125 +1767,353 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           </div>
         </div>
 
-        {/* Hero Section Container (No background card, border, or shadow) */}
-        <div
-          style={{
-            position: "relative",
-            marginBottom: isEmbeddedHub ? "20px" : "56px",
-            display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
-            alignItems: isEmbeddedHub ? "start" : "center",
-            gap: isEmbeddedHub ? "24px" : "40px",
-            zIndex: 10,
-            padding: isEmbeddedHub ? "0" : "24px 0",
-          }}
-        >
-
-          {/* Banner Left Info */}
-          <div style={{ position: "relative", zIndex: 2 }}>
-            <h1
-              style={{
-                fontSize: "clamp(2rem, 4.5vw, 3rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.03em",
-                lineHeight: "1.15",
-                marginBottom: "16px",
-                color: "var(--l-ink)",
-                fontFamily: "'Space Grotesk', sans-serif"
-              }}
-            >
-              {mode === "courses" ? (
-                <>
-                  {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
-                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
-                    {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
-                  </GradientText>
-                </>
-              ) : mode === "events" ? (
-                <>
-                  Live Sessions & Events for <br />
-                  <GradientText colors={["#8B5CF6", "#6D28D9", "#3B82F6", "#1D4ED8", "#8B5CF6"]} animationSpeed={8} showBorder={false}>
-                    {activeCategoryName}
-                  </GradientText>
-                </>
-              ) : (
-                <>
-                  Latest Research & Articles in <br />
-                  <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
-                    {activeCategoryName}
-                  </GradientText>
-                </>
-              )}
-            </h1>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "rgba(20, 20, 43, 0.6)",
-                lineHeight: "1.6",
-                maxWidth: "600px",
-                marginBottom: "28px",
-                fontWeight: 500
-              }}
-            >
-              {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
-            </p>
-
-            {/* Banner Inner Search */}
-            <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-              <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search courses under this category..."
-                value={courseSearchQuery}
-                onChange={(e) => setCourseSearchQuery(e.target.value)}
+        {mode === "events" ? (
+          /* Redesigned Hero Section for Events / Live Sessions */
+          <div
+            ref={heroRef}
+            style={{
+              position: "relative",
+              marginBottom: isEmbeddedHub ? "20px" : "56px",
+              display: "grid",
+              gridTemplateColumns: "1.2fr 0.8fr",
+              alignItems: isEmbeddedHub ? "start" : "center",
+              gap: isEmbeddedHub ? "24px" : "40px",
+              zIndex: 10,
+              padding: isEmbeddedHub ? "0" : "24px 0",
+            }}
+          >
+            {/* Banner Left Info */}
+            <div style={{ position: "relative", zIndex: 2 }}>
+              {/* 1. EYEBROW / LABEL */}
+              <div
                 style={{
-                  width: "100%",
-                  padding: "14px 20px 14px 48px",
-                  borderRadius: "14px",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  background: "rgba(255, 255, 255, 0.8)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: `${activeData.colors.secondary}`,
+                  border: `1.5px solid ${activeData.colors.primary}33`,
+                  padding: "6px 14px",
+                  borderRadius: "100px",
+                  marginBottom: "18px",
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)"
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={activeData.colors.primary} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
+                </svg>
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: "800",
+                    color: activeData.colors.primary,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    fontFamily: "'Space Grotesk', sans-serif"
+                  }}
+                >
+                  Learn • Connect • Grow
+                </span>
+              </div>
+
+              {/* 2. MAIN HEADING */}
+              <h1
+                style={{
+                  fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+                  fontWeight: 900,
+                  letterSpacing: "-0.03em",
+                  lineHeight: "1.1",
+                  marginBottom: "20px",
                   color: "var(--l-ink)",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  outline: "none",
-                  boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                  transition: "all 0.3s ease"
+                  fontFamily: "'Space Grotesk', sans-serif"
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = activeData.colors.primary;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+              >
+                Build the Future <br />
+                <span style={{ fontSize: "0.85em", fontWeight: 700 }}>with </span>
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    display: "inline-block"
+                  }}
+                >
+                  {activeCategoryName}
+                </span>
+              </h1>
+
+              {/* 3. SUPPORTING TEXT */}
+              <p
+                style={{
+                  fontSize: "0.98rem",
+                  color: "rgba(20, 20, 43, 0.65)",
+                  lineHeight: "1.65",
+                  maxWidth: "580px",
+                  marginBottom: "28px",
+                  fontWeight: 500
                 }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                  e.currentTarget.style.boxShadow = "none";
+              >
+                Learn from experts, join live sessions, and build practical skills through events, bootcamps, and hands-on experiences designed for the next generation of developers.
+              </p>
+
+              {/* 5. FEATURE HIGHLIGHTS */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "16px",
+                  marginBottom: "32px",
+                  maxWidth: "580px"
                 }}
-              />
+              >
+                {[
+                  {
+                    title: "Live & Interactive",
+                    desc: "Real-time learning",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" fill="currentColor" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Expert Speakers",
+                    desc: "Industry professionals",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Hands-on Learning",
+                    desc: "Build real-world skills",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Flexible Schedule",
+                    desc: "Learn at your pace",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    )
+                  }
+                ].map((feat, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                      background: "rgba(255, 255, 255, 0.55)",
+                      border: "1px solid rgba(20, 23, 31, 0.05)",
+                      padding: "10px 14px",
+                      borderRadius: "12px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: activeData.colors.primary,
+                        background: `${activeData.colors.secondary}`,
+                        padding: "6px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    >
+                      {feat.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: "800", color: "var(--l-ink)" }}>{feat.title}</div>
+                      <div style={{ fontSize: "0.72rem", color: "rgba(20, 20, 43, 0.5)" }}>{feat.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 6. SEARCH */}
+              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search courses under this category..."
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px 14px 48px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(20, 23, 31, 0.06)",
+                    background: "rgba(255, 255, 255, 0.8)",
+                    color: "var(--l-ink)",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
+                    outline: "none",
+                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
+                    transition: "all 0.3s ease"
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
             </div>
 
+            {/* 7. RIGHT-SIDE ILLUSTRATION */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                minHeight: isEmbeddedHub ? "220px" : "300px",
+                maxHeight: isEmbeddedHub ? "340px" : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              {/* Soft Radial Glow */}
+              <div style={{ position: "absolute", width: "240px", height: "240px", borderRadius: "50%", background: `radial-gradient(circle, ${activeData.colors.primary}1e 0%, transparent 70%)`, filter: "blur(20px)", zIndex: -1 }} />
+              <RocketJourney activeColor={activeData.colors.primary} progress={progressValue} />
+            </div>
           </div>
-
-          {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+        ) : (
+          /* Original Hero Section for Courses / Articles */
           <div
             style={{
               position: "relative",
-              width: "100%",
-              height: "100%",
-              minHeight: isEmbeddedHub ? "220px" : "300px",
-              maxHeight: isEmbeddedHub ? "260px" : undefined,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 2,
+              marginBottom: isEmbeddedHub ? "20px" : "56px",
+              display: "grid",
+              gridTemplateColumns: "1.2fr 0.8fr",
+              alignItems: isEmbeddedHub ? "start" : "center",
+              gap: isEmbeddedHub ? "24px" : "40px",
+              zIndex: 10,
+              padding: isEmbeddedHub ? "0" : "24px 0",
             }}
           >
-            <HoneycombIllustration />
+            {/* Banner Left Info */}
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <h1
+                style={{
+                  fontSize: "clamp(2rem, 4.5vw, 3rem)",
+                  fontWeight: 900,
+                  letterSpacing: "-0.03em",
+                  lineHeight: "1.15",
+                  marginBottom: "16px",
+                  color: "var(--l-ink)",
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}
+              >
+                {mode === "courses" ? (
+                  <>
+                    {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+                    <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                      {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+                    </GradientText>
+                  </>
+                ) : (
+                  <>
+                    Latest Research & Articles in <br />
+                    <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
+                      {activeCategoryName}
+                    </GradientText>
+                  </>
+                )}
+              </h1>
+              <p
+                style={{
+                  fontSize: "0.95rem",
+                  color: "rgba(20, 20, 43, 0.6)",
+                  lineHeight: "1.6",
+                  maxWidth: "600px",
+                  marginBottom: "28px",
+                  fontWeight: 500
+                }}
+              >
+                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
+              </p>
+
+              {/* Banner Inner Search */}
+              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search courses under this category..."
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px 14px 48px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(20, 23, 31, 0.06)",
+                    background: "rgba(255, 255, 255, 0.8)",
+                    color: "var(--l-ink)",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
+                    outline: "none",
+                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
+                    transition: "all 0.3s ease"
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
+
+            </div>
+
+            {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                minHeight: isEmbeddedHub ? "220px" : "300px",
+                maxHeight: isEmbeddedHub ? "260px" : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              <HoneycombIllustration />
+            </div>
           </div>
-        </div>
+        )}
 
 
         {mode === "courses" && (
