@@ -9,6 +9,11 @@ import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { api } from "@/infrastructure/http/api";
+import CoursesView, { CourseCard } from "./CoursesView";
+import EventsView from "./EventsView";
+import ArticlesView from "./ArticlesView";
+
+export { CourseCard };
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -36,7 +41,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isUpcoming = status === "Upcoming";
 
   const getBgTheme = () => {
-    switch(category) {
+    switch (category) {
       case "Computer Science": return "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)";
       case "Information Technology": return "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)";
       case "Business & Management": return "linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%)";
@@ -46,7 +51,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   };
 
   const getAccentColor = () => {
-    switch(category) {
+    switch (category) {
       case "Computer Science": return "#4F46E5";
       case "Information Technology": return "#2563EB";
       case "Business & Management": return "#EA580C";
@@ -62,7 +67,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
         <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="2" />
         <path d="M50 100 L150 100 M100 50 L100 150" stroke="currentColor" strokeWidth="2" />
       </svg>
-      
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
           {category}
@@ -235,7 +240,7 @@ const HoneycombIllustration: React.FC = () => {
           <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
           <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
         </g>
-        
+
         {/* Sparkles / star outlines */}
         <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
@@ -406,7 +411,7 @@ const HoneycombIllustration: React.FC = () => {
           <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
           <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
-        
+
         {/* Clink sparks between bottom left & right cups */}
         <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
           <line x1="-8" y1="-8" x2="-3" y2="-3" />
@@ -811,39 +816,39 @@ const HEADER_COLOR_MESHES: Record<string, string> = {
 
 function getCourseGlyph(title: string, index: number, color: string): React.ReactNode {
   const norm = title.toLowerCase();
-  
+
   if (norm.includes("database") || norm.includes("sql") || norm.includes("query")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="3" width="16" height="12" rx="1.5"/>
-        <line x1="9" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="15" x2="12" y2="21"/>
+        <rect x="4" y="3" width="16" height="12" rx="1.5" />
+        <line x1="9" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="21" />
       </svg>
     );
   }
   if (norm.includes("structure") || norm.includes("algorithm")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M4 6h16M4 12h10M4 18h13"/>
-        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <path d="M4 6h16M4 12h10M4 18h13" />
+        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
       </svg>
     );
   }
   if (norm.includes("principle") || norm.includes("architecture") || norm.includes("design") || norm.includes("software")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
-        <path d="M12 12v9M4 7.5l8 4.5 8-4.5"/>
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+        <path d="M12 12v9M4 7.5l8 4.5 8-4.5" />
       </svg>
     );
   }
   if (norm.includes("operating") || norm.includes("system") || norm.includes("concurrency") || norm.includes("network")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="4" width="16" height="7" rx="1.5"/>
-        <rect x="4" y="13" width="16" height="7" rx="1.5"/>
-        <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none"/>
-        <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>
+        <rect x="4" y="4" width="16" height="7" rx="1.5" />
+        <rect x="4" y="13" width="16" height="7" rx="1.5" />
+        <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+        <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
       </svg>
     );
   }
@@ -853,34 +858,34 @@ function getCourseGlyph(title: string, index: number, color: string): React.Reac
   if (m === 0) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="3" width="16" height="12" rx="1.5"/>
-        <line x1="9" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="15" x2="12" y2="21"/>
+        <rect x="4" y="3" width="16" height="12" rx="1.5" />
+        <line x1="9" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="21" />
       </svg>
     );
   }
   if (m === 1) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M4 6h16M4 12h10M4 18h13"/>
-        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <path d="M4 6h16M4 12h10M4 18h13" />
+        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
       </svg>
     );
   }
   if (m === 2) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
-        <path d="M12 12v9M4 7.5l8 4.5 8-4.5"/>
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+        <path d="M12 12v9M4 7.5l8 4.5 8-4.5" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-      <rect x="4" y="4" width="16" height="7" rx="1.5"/>
-      <rect x="4" y="13" width="16" height="7" rx="1.5"/>
-      <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none"/>
-      <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>
+      <rect x="4" y="4" width="16" height="7" rx="1.5" />
+      <rect x="4" y="13" width="16" height="7" rx="1.5" />
+      <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -931,12 +936,12 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
     if (!buttonRef.current || !isHoveredRef.current) return;
 
     const { width, height } = buttonRef.current.getBoundingClientRect();
-    
+
     // Subtle star particles tailored for smaller button sizes
     for (let i = 0; i < 6; i++) {
       const px = Math.random() * width;
       const py = Math.random() * height;
-      
+
       const particle = document.createElement("div");
       particle.className = "category-particle";
       particle.style.cssText = `
@@ -1122,8 +1127,8 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
         fontSize: "0.9rem",
         fontWeight: "700",
         cursor: "pointer",
-        boxShadow: isActive 
-          ? `0 10px 20px -8px ${itemData.colors.primary}33` 
+        boxShadow: isActive
+          ? `0 10px 20px -8px ${itemData.colors.primary}33`
           : "0 4px 10px -2px rgba(0,0,0,0.02)",
         transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "--glow-color": glowColor
@@ -1134,578 +1139,7 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
   );
 };
 
-interface FilterPillButtonProps {
-  isActive: boolean;
-  activeData: any;
-  onClick: () => void;
-  children: React.ReactNode;
-}
 
-const FilterPillButton: React.FC<FilterPillButtonProps> = ({
-  isActive,
-  activeData,
-  onClick,
-  children
-}) => {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const particlesRef = useRef<HTMLDivElement[]>([]);
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
-  const isHoveredRef = useRef(false);
-  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
-
-  const glowColor = hexToRgbStr(activeData.colors.primary);
-
-  const clearAllParticles = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-    magnetismAnimationRef.current?.kill();
-
-    particlesRef.current.forEach(particle => {
-      gsap.to(particle, {
-        scale: 0,
-        opacity: 0,
-        duration: 0.3,
-        ease: "back.in(1.7)",
-        onComplete: () => {
-          particle.parentNode?.removeChild(particle);
-        }
-      });
-    });
-    particlesRef.current = [];
-  }, []);
-
-  const animateParticles = useCallback(() => {
-    if (!buttonRef.current || !isHoveredRef.current) return;
-
-    const { width, height } = buttonRef.current.getBoundingClientRect();
-    
-    // Subtle star particles tailored for smaller button sizes
-    for (let i = 0; i < 6; i++) {
-      const px = Math.random() * width;
-      const py = Math.random() * height;
-      
-      const particle = document.createElement("div");
-      particle.className = "category-particle";
-      particle.style.cssText = `
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        border-radius: 50%;
-        background: rgba(${glowColor}, 1);
-        box-shadow: 0 0 4px rgba(${glowColor}, 0.6);
-        pointer-events: none;
-        z-index: 10;
-        left: ${px}px;
-        top: ${py}px;
-      `;
-
-      const timeoutId = setTimeout(() => {
-        if (!isHoveredRef.current || !buttonRef.current) return;
-        buttonRef.current.appendChild(particle);
-        particlesRef.current.push(particle);
-
-        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
-
-        gsap.to(particle, {
-          x: (Math.random() - 0.5) * 50,
-          y: (Math.random() - 0.5) * 50,
-          rotation: Math.random() * 360,
-          duration: 1.5 + Math.random() * 1.5,
-          ease: "none",
-          repeat: -1,
-          yoyo: true
-        });
-
-        gsap.to(particle, {
-          opacity: 0.3,
-          duration: 1.2,
-          ease: "power2.inOut",
-          repeat: -1,
-          yoyo: true
-        });
-      }, i * 120);
-
-      timeoutsRef.current.push(timeoutId);
-    }
-  }, [glowColor]);
-
-  useEffect(() => {
-    const element = buttonRef.current;
-    if (!element) return;
-
-    const handleMouseEnter = () => {
-      isHoveredRef.current = true;
-      animateParticles();
-
-      // Subtle 3D tilt on hover
-      gsap.to(element, {
-        rotateX: 4,
-        rotateY: 4,
-        duration: 0.3,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-    };
-
-    const handleMouseLeave = () => {
-      isHoveredRef.current = false;
-      clearAllParticles();
-
-      gsap.to(element, {
-        rotateX: 0,
-        rotateY: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-
-      gsap.to(element, {
-        x: 0,
-        y: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * -6;
-      const rotateY = ((x - centerX) / centerX) * 6;
-      gsap.to(element, {
-        rotateX,
-        rotateY,
-        duration: 0.1,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-
-      // Magnetism: subtle attraction to cursor
-      const magnetX = (x - centerX) * 0.08;
-      const magnetY = (y - centerY) * 0.08;
-      magnetismAnimationRef.current = gsap.to(element, {
-        x: magnetX,
-        y: magnetY,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const maxDistance = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(x - rect.width, y),
-        Math.hypot(x, y - rect.height),
-        Math.hypot(x - rect.width, y - rect.height)
-      );
-
-      const ripple = document.createElement("div");
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${maxDistance * 2}px;
-        height: ${maxDistance * 2}px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(${glowColor}, 0.3) 0%, rgba(${glowColor}, 0.1) 40%, transparent 70%);
-        left: ${x - maxDistance}px;
-        top: ${y - maxDistance}px;
-        pointer-events: none;
-        z-index: 10;
-      `;
-
-      element.appendChild(ripple);
-
-      gsap.fromTo(
-        ripple,
-        { scale: 0, opacity: 1 },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.7,
-          ease: "power2.out",
-          onComplete: () => ripple.remove()
-        }
-      );
-    };
-
-    element.addEventListener("mouseenter", handleMouseEnter);
-    element.addEventListener("mouseleave", handleMouseLeave);
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("click", handleClick);
-
-    return () => {
-      isHoveredRef.current = false;
-      element.removeEventListener("mouseenter", handleMouseEnter);
-      element.removeEventListener("mouseleave", handleMouseLeave);
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("click", handleClick);
-      clearAllParticles();
-    };
-  }, [animateParticles, clearAllParticles, glowColor]);
-
-  return (
-    <button
-      ref={buttonRef}
-      onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
-      style={{
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        padding: "8px 16px",
-        borderRadius: "10px",
-        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? activeData.colors.primary : "#5E606A",
-        fontSize: "0.82rem",
-        fontWeight: "700",
-        cursor: "pointer",
-        boxShadow: isActive 
-          ? `0 10px 20px -8px ${activeData.colors.primary}33` 
-          : "0 4px 10px -2px rgba(0,0,0,0.02)",
-        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-        "--glow-color": glowColor
-      } as React.CSSProperties}
-    >
-      {children}
-    </button>
-  );
-};
-
-interface CategoryGlobalSpotlightProps {
-  gridRef: React.RefObject<HTMLDivElement | null>;
-  spotlightRadius?: number;
-}
-
-const CategoryGlobalSpotlight: React.FC<CategoryGlobalSpotlightProps> = ({
-  gridRef,
-  spotlightRadius = 160
-}) => {
-  useEffect(() => {
-    if (!gridRef?.current) return;
-
-    const container = gridRef.current;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const cards = container.querySelectorAll(".category-bento-card");
-
-      cards.forEach(card => {
-        const cardElement = card as HTMLElement;
-        const cardRect = cardElement.getBoundingClientRect();
-        
-        const centerX = cardRect.left + cardRect.width / 2;
-        const centerY = cardRect.top + cardRect.height / 2;
-        const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY) - Math.max(cardRect.width, cardRect.height) / 2;
-        const effectiveDistance = Math.max(0, distance);
-
-        const proximity = spotlightRadius * 0.5;
-        const fadeDistance = spotlightRadius * 0.75;
-
-        let glowIntensity = 0;
-        if (effectiveDistance <= proximity) {
-          glowIntensity = 1;
-        } else if (effectiveDistance <= fadeDistance) {
-          glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
-        }
-
-        const relativeX = ((e.clientX - cardRect.left) / cardRect.width) * 100;
-        const relativeY = ((e.clientY - cardRect.top) / cardRect.height) * 100;
-
-        cardElement.style.setProperty("--glow-x", `${relativeX}%`);
-        cardElement.style.setProperty("--glow-y", `${relativeY}%`);
-        cardElement.style.setProperty("--glow-intensity", glowIntensity.toString());
-        cardElement.style.setProperty("--glow-radius", `${spotlightRadius}px`);
-      });
-    };
-
-    const handleMouseLeave = () => {
-      container.querySelectorAll(".category-bento-card").forEach(card => {
-        (card as HTMLElement).style.setProperty("--glow-intensity", "0");
-      });
-    };
-
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      container.removeEventListener("mousemove", handleMouseMove);
-      container.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [gridRef, spotlightRadius]);
-
-  return null;
-};
-
-export interface CourseCardProps {
-  course: any;
-  index: number;
-  activeCategoryName: string;
-  activeData: any;
-  router: any;
-  realRating: number;
-  realReviewsCount: number;
-}
-
-export const CourseCard: React.FC<CourseCardProps> = ({
-  course,
-  index,
-  activeCategoryName,
-  activeData,
-  router,
-  realRating,
-  realReviewsCount
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const descRef = useRef<HTMLParagraphElement>(null);
-
-  const enriched = getEnrichedCourse(course, index, activeCategoryName);
-  const courseSlug = slugify(course.title);
-
-  useEffect(() => {
-    if (descRef.current) {
-      // Line-height is 1.5. If the height of element > line-height * 2, it overflows.
-      // Two lines is approx 44px. If scrollHeight is greater, it overflows 2 lines.
-      setIsOverflowing(descRef.current.scrollHeight > 45);
-    }
-  }, [course.desc]);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column"
-      }}
-    >
-      <BorderGlow
-        edgeSensitivity={30}
-        glowColor={hexToHslStr(activeData.colors.primary)}
-        backgroundColor="#FFFFFF"
-        borderRadius={14}
-        glowRadius={40}
-        glowIntensity={0.3}
-        coneSpread={25}
-        animated={false}
-        colors={[`${activeData.colors.primary}40`, '#E6E3F1', `${activeData.colors.primary}40`]}
-        fillOpacity={0.08}
-        className="w-full h-full"
-      >
-        <div
-          style={{
-            background: "#FFFFFF",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            minHeight: "360px"
-          }}
-          className="course-card-premium"
-        >
-          {/* Card Graphic Header */}
-          <div
-            style={{
-              height: "90px",
-              position: "relative",
-              overflow: "hidden",
-              background: `
-                radial-gradient(circle at 25% 25%, ${activeData.colors.primary}12, transparent 55%),
-                repeating-linear-gradient(135deg, ${activeData.colors.primary}08 0 2px, transparent 2px 14px),
-                #F9FAFB
-              `,
-              borderBottom: "1px solid #E6E3F1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            {/* Accent outline category visual watermark */}
-            <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
-              {getCourseGlyph(course.title, index, activeData.colors.primary)}
-            </div>
-          </div>
-
-          {/* Card Body */}
-          <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
-            <div>
-              {/* Title */}
-              <h3
-                style={{
-                  fontSize: "1.05rem",
-                  fontWeight: "800",
-                  color: "var(--l-ink)",
-                  margin: "0 0 6px",
-                  lineHeight: "1.3",
-                  fontFamily: "'Space Grotesk', sans-serif"
-                }}
-              >
-                {course.title}
-              </h3>
-
-              {/* Rating Row */}
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
-                  <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
-                  <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{realReviewsCount > 0 ? realRating.toFixed(1) : "0.0"}</span>
-                  <span style={{ color: "#8886A0" }}>({realReviewsCount} {realReviewsCount === 1 ? "Review" : "Reviews"})</span>
-                </div>
-              </div>
-
-              {/* Description with Read More */}
-              <div style={{ position: "relative", marginBottom: "12px" }}>
-                <p
-                  ref={descRef}
-                  style={isExpanded ? {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0
-                  } : {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    maxHeight: "3em"
-                  }}
-                >
-                  {course.desc}
-                </p>
-                {isOverflowing && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(!isExpanded);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: activeData.colors.primary,
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      cursor: "pointer",
-                      padding: "2px 0 0 0",
-                      marginTop: "4px",
-                      display: "block",
-                      outline: "none"
-                    }}
-                  >
-                    {isExpanded ? "Read less" : "Read more"}
-                  </button>
-                )}
-              </div>
-
-              {/* Instructor Info */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <img
-                  src={enriched.instructor.avatarUrl}
-                  alt={enriched.instructor.name}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #E6E3F1"
-                  }}
-                />
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
-                    {enriched.instructor.name}
-                  </span>
-                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                    {enriched.instructor.role}
-                  </span>
-                </div>
-              </div>
-
-              {/* Primary Action Button */}
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                <button
-                  onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
-                  style={{
-                    width: "100%",
-                    background: activeData.colors.secondary,
-                    color: activeData.colors.primary,
-                    border: "none",
-                    padding: "10px 16px",
-                    borderRadius: "10px",
-                    fontSize: "0.85rem",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    transition: "all 0.25s ease"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary.replace('0.08', '0.16');
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary;
-                    e.currentTarget.style.transform = "none";
-                  }}
-                >
-                  Enroll Now
-                </button>
-              </div>
-            </div>
-
-            {/* Bottom Info Row */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
-              <span
-                onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "700",
-                  color: "#5A5870",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  cursor: "pointer",
-                  transition: "color 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = activeData.colors.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#5A5870";
-                }}
-              >
-                View Course
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </span>
-              
-              <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 2" />
-                </svg>
-                {course.duration}
-              </span>
-            </div>
-          </div>
-        </div>
-      </BorderGlow>
-    </div>
-  );
-};
 
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
@@ -1723,11 +1157,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const initialCategory = searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
-  const [wishlistedCourses, setWishlistedCourses] = useState<Record<string, boolean>>({});
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All Levels");
-  const [selectedTopic, setSelectedTopic] = useState("All Topics");
-
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+  
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -1740,21 +1171,6 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     fetchStats();
   }, []);
 
-  const coursesSectionRef = useRef<HTMLDivElement>(null);
-  const categoriesGridRef = useRef<HTMLDivElement>(null);
-  const filtersGridRef = useRef<HTMLDivElement>(null);
-
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  };
-
   useEffect(() => {
     if (initialCategory && categoriesList.includes(initialCategory)) {
       setActiveCategory(initialCategory);
@@ -1766,436 +1182,26 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     setCourseSearchQuery("");
-    setSelectedDifficulty("All Levels");
-    setSelectedTopic("All Topics");
 
     const base = hubBasePath || window.location.pathname;
     const newUrl = `${base}?category=${encodeURIComponent(category)}`;
     window.history.replaceState(null, "", newUrl);
-
-    coursesSectionRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
   };
 
   const goToExploreHome = () => {
     router.push(exploreHome);
   };
 
-  const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setWishlistedCourses(prev => ({
-      ...prev,
-      [courseTitle]: !prev[courseTitle]
-    }));
-  };
-
   const activeCategoryName = activeCategory || "Computer Science";
   const activeData = CATEGORY_DATA[activeCategoryName];
-
-  const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
-  const topics = ["All Topics", ...Array.from(new Set(activeData.courses.map((c, i) => getEnrichedCourse(c, i, activeCategoryName).categoryTag)))];
-
-  const filteredCourses = activeData.courses.filter((course, index) => {
-    const enriched = getEnrichedCourse(course, index, activeCategoryName);
-    const matchesSearch = course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
-                          course.desc.toLowerCase().includes(courseSearchQuery.toLowerCase());
-    const matchesDifficulty = selectedDifficulty === "All Levels" || course.level === selectedDifficulty;
-    const matchesTopic = selectedTopic === "All Topics" || enriched.categoryTag === selectedTopic;
-    return matchesSearch && matchesDifficulty && matchesTopic;
-  });
-
-  const renderCoursesSection = (title: string = "Popular Courses") => (
-    <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-              Showing {filteredCourses.length} of {activeData.courses.length} courses
-            </span>
-          </div>
-
-          {/* Professional Horizontal Filters Bar */}
-          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-          <div
-            ref={filtersGridRef}
-            style={{
-              display: "flex",
-              gap: "24px",
-              marginBottom: "32px",
-              background: "rgba(255, 255, 255, 0.65)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              borderRadius: "16px",
-              padding: "20px 24px",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-              flexWrap: "wrap",
-              alignItems: "flex-start"
-            }}
-          >
-            {/* Difficulty Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Level
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {difficultyLevels.map((level) => {
-                  const isActive = selectedDifficulty === level;
-                  return (
-                    <FilterPillButton
-                      key={level}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedDifficulty(level)}
-                    >
-                      {level}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Vertical Divider */}
-            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
-
-            {/* Topic Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Type
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {topics.map((topic) => {
-                  const isActive = selectedTopic === topic;
-                  return (
-                    <FilterPillButton
-                      key={topic}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedTopic(topic)}
-                    >
-                      {topic}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {filteredCourses.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-              <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-              <button 
-                onClick={() => setCourseSearchQuery("")}
-                style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
-              >
-                Reset search
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-              {filteredCourses.map((course, index) => {
-                const slug = slugify(course.title);
-                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
-                return (
-                  <CourseCard
-                    key={course.title}
-                    course={course}
-                    index={index}
-                    activeCategoryName={activeCategoryName}
-                    activeData={activeData}
-                    router={router}
-                    realRating={stats.averageRating}
-                    realReviewsCount={stats.reviewsCount}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </section>
-  );
-
-  const renderBootcampsSection = (title: string = "Practical Bootcamps") => (
-    <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer" }}>
-              View all
-            </span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.bootcamps.map((bootcamp) => (
-              <div
-                key={bootcamp.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-                  position: "relative",
-                  overflow: "hidden"
-                }}
-                className="hover-card-y"
-              >
-                {/* Accent Watermark */}
-                <div style={{ position: "absolute", right: "-10px", bottom: "-10px", opacity: 0.05, transform: "scale(1.5)", color: activeData.colors.primary }}>
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Left Mini Icon Graphic */}
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "14px",
-                    background: `linear-gradient(135deg, ${activeData.colors.primary} 0%, #FFFFFF 200%)`,
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  }}
-                >
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Right Details */}
-                <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
-                  <h4 style={{ fontSize: "0.9rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 4px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {bootcamp.title}
-                  </h4>
-                  <div style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.5)", fontWeight: "600" }}>
-                    {bootcamp.type} • {bootcamp.duration}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, marginTop: "6px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ color: "#F59E0B" }}>
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    4.8 <span style={{ color: "rgba(20, 20, 43, 0.4)", fontWeight: "500" }}>(3.2k)</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-  );
-
-  const renderResourcesSection = (title: string = "Resource Libraries") => (
-    <section>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.resources.map((doc) => (
-              <div
-                key={doc.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  minHeight: "140px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
-                }}
-                className="hover-card-y"
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      background: activeData.colors.secondary,
-                      padding: "3px 8px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.03em",
-                      display: "inline-block",
-                      marginBottom: "12px"
-                    }}
-                  >
-                    {doc.type}
-                  </span>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {doc.title}
-                  </h3>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
-                  <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
-                    Read Guide
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-  );
-
-
-  const renderLiveSessionsSection = (title: string = "Live Sessions & Events") => {
-    let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
-    if (categoryWebinars.length === 0) {
-      categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
-    }
-
-    return (
-      <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-            <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-              {title}
-            </h2>
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-          {categoryWebinars.map((w, i) => {
-            const isLive = w.status === "Live Today";
-            const isUpcoming = w.status === "Upcoming";
-            const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
-            const ctaColor = "#FFFFFF";
-            const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
-            const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
-            const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
-
-            return (
-              <div
-                key={i}
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  position: "relative",
-                  overflow: "hidden",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
-                }}
-              >
-                <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
-
-                <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                        {w.category} • {w.duration.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <h3
-                      style={{
-                        fontSize: "1.1rem",
-                        fontWeight: "800",
-                        color: titleColor,
-                        marginBottom: "16px",
-                        lineHeight: "1.4",
-                        minHeight: "56px",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        letterSpacing: "-0.01em"
-                      }}
-                    >
-                      {w.title}
-                    </h3>
-
-                    <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
-                    </div>
-                  </div>
-
-                  <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
-                          {w.date}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          background: ctaBg,
-                          color: ctaColor,
-                          fontSize: "0.82rem",
-                          fontWeight: "700",
-                          boxShadow: ctaShadow,
-                          transition: "all 0.3s"
-                        }}
-                      >
-                        {isLive ? "Join Now" : (isUpcoming ? "Register" : "Watch")}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    );
-  };
 
   return (
     <div
       className="landing-root"
       style={{
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
-                    mode === "articles" ? "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #ECFDF5 100%)" : // Fresh mint-emerald garden mix
-                    "#f8fafc",
+          mode === "articles" ? "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #ECFDF5 100%)" : // Fresh mint-emerald garden mix
+            "#f8fafc",
         // Authenticated hub already clears the dock via LearnerShell pb-28.
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
@@ -2633,22 +1639,30 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
 
 
         {mode === "courses" && (
-          <>
-            {renderCoursesSection("Popular Courses")}
-          </>
+          <CoursesView
+            activeData={activeData}
+            activeCategoryName={activeCategoryName}
+            router={router}
+            isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
+            courseStats={courseStats}
+          />
         )}
 
         {mode === "events" && (
-          <>
-            {renderBootcampsSection("Practical Bootcamps")}
-            {renderLiveSessionsSection("Live Sessions & Events")}
-          </>
+          <EventsView
+            activeData={activeData}
+            activeCategoryName={activeCategoryName}
+            isEmbeddedHub={isEmbeddedHub}
+          />
         )}
 
         {mode === "articles" && (
-          <>
-            {renderResourcesSection("Articles & Research")}
-          </>
+          <ArticlesView
+            activeData={activeData}
+            isEmbeddedHub={isEmbeddedHub}
+          />
         )}
 
       </main>
