@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Inbox,
   Mail,
@@ -32,7 +33,15 @@ export interface ContactMessage {
   updatedAt: string;
 }
 
-export default function ConsoleInboxPage() {
+function ConsoleInboxContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const idParam =
+    searchParams.get('messageId') ||
+    searchParams.get('reportId') ||
+    searchParams.get('id') ||
+    searchParams.get('contactMessageId');
+
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'UNREAD' | 'READ' | 'ARCHIVED'>('ALL');
@@ -61,6 +70,36 @@ export default function ConsoleInboxPage() {
   useEffect(() => {
     fetchMessages();
   }, []);
+
+  useEffect(() => {
+    if (tabParam) {
+      const normalized = tabParam.toUpperCase().replace('-', '_');
+      if (normalized === 'REACH_US' || normalized === 'REACHUS' || normalized === 'CONTACT') {
+        setPrimaryTab('REACH_US');
+      } else if (
+        normalized === 'REPORTS' ||
+        normalized === 'REPORT' ||
+        normalized === 'COURSE_REPORT' ||
+        normalized === 'LESSON_REPORT'
+      ) {
+        setPrimaryTab('REPORTS');
+      }
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    if (idParam && messages.length > 0) {
+      const target = messages.find((m) => m.id === idParam);
+      if (target) {
+        if (target.type === 'CONTACT') {
+          setPrimaryTab('REACH_US');
+        } else if (target.type === 'COURSE_REPORT' || target.type === 'LESSON_REPORT') {
+          setPrimaryTab('REPORTS');
+        }
+        handleSelectMessage(target);
+      }
+    }
+  }, [messages, idParam]);
 
   const handleSelectMessage = async (msg: ContactMessage) => {
     setSelectedMessage(msg);
@@ -566,5 +605,19 @@ export default function ConsoleInboxPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConsoleInboxPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-64 items-center justify-center text-xs font-semibold text-slate-500">
+          Loading inbox...
+        </div>
+      }
+    >
+      <ConsoleInboxContent />
+    </Suspense>
   );
 }
