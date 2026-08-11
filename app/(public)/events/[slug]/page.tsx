@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock, ArrowRight } from "lucide-react";
 import { getEventById } from "../api/event.service";
 import type { EventDto } from "../types/event.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
+import { formatMoney } from "@/shared/utils/money";
 
 export default function EventDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -63,7 +64,7 @@ export default function EventDetailPage() {
             onClick={handleEnroll}
             className="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2"
           >
-            {event.price > 0 ? `Enroll — $${event.price}` : "Enroll for Free"}
+            {event.priceAmount > 0 ? `Enroll — ${formatMoney(event.priceAmount, event.currency)}` : "Enroll for Free"}
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>

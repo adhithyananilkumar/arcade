@@ -51,7 +51,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
         form.handleChange('difficulty', data.difficulty || 'BEGINNER');
         form.handleChange('language', data.language || 'en');
         form.handleChange('visibility', data.visibility || 'PRIVATE');
-        if (data.price !== undefined) form.handleChange('price', data.price);
+        if (data.priceAmount !== undefined) form.handleChange('priceAmount', data.priceAmount);
         if (data.coverImageUrl) form.handleChange('coverImageUrl', data.coverImageUrl);
         if (data.tags) form.handleChange('tags', data.tags);
       }).catch((err) => {
@@ -94,8 +94,8 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
         deliveryMode: form.formData.deliveryMode,
         difficulty: form.formData.difficulty,
         language: form.formData.language || 'en',
-        price: form.formData.price || 0,
-        currency: form.formData.currency || 'USD',
+        priceAmount: form.formData.priceAmount || 0,
+        currency: form.formData.currency || 'INR',
         capacity: (form.formData.capacity as any) === '' ? null : form.formData.capacity,
         visibility: form.formData.visibility
       };
@@ -124,7 +124,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
 
       toast.success('Event saved successfully!');
       if (navigateAfterSave) {
-        router.push(`/studio/workshop/${savedId}/edit`);
+        router.push(`/studio/events/${savedId}/edit`);
       }
       return savedId;
     } catch (error: any) {
@@ -148,7 +148,7 @@ export const EventWizard: React.FC<EventWizardProps> = ({ eventId: propEventId, 
     } else {
       const id = (form.formData as any).id || eventId;
       if (id) {
-        router.push(`/studio/workshop/${id}`);
+        router.push(`/studio/events/${id}`);
       } else {
         router.push('/studio');
       }

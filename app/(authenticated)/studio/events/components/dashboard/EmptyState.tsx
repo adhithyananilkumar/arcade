@@ -14,7 +14,7 @@ export default function EmptyState() {
         Build live workshops, bootcamps, webinars, and masterclasses. Reach learners worldwide with an interactive learning experience.
       </p>
       <Link 
-        href="/studio/workshop/new" 
+        href="/studio/events/new" 
         className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
       >
         Create Event

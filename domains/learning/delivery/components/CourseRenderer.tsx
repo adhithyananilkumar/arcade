@@ -20,6 +20,7 @@ import { QuizPlayer, type QuizStatsResponse } from "@/domains/assessments";
 import { LessonReviewFeedback } from "./LessonReviewFeedback";
 import { PublishCourseDialog } from "./PublishCourseDialog";
 import type { CourseRenderResponse, LessonRenderResponse } from "@/shared/types/api.types";
+import { formatMoney } from "@/shared/utils/money";
 import { toast } from "sonner";
 
 type TreeItem =
@@ -413,7 +414,7 @@ export function CourseRenderer({
                 <div className="mb-6 flex flex-wrap items-center justify-center gap-2 text-[12px] font-semibold text-slate-500">
                   <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5">
                     {course.pricingModel === "PAID"
-                      ? `$${course.priceAmount?.toFixed(2)}`
+                      ? formatMoney(course.priceAmount ?? 0, course.currency ?? "USD")
                       : "Free"}
                   </span>
                   {course.examSchedule && (

@@ -439,9 +439,9 @@ export default function LearnerNavbar() {
             {collaboratedEventId && (
               <MenuItem 
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
-                onClick={() => router.push('/studio/manage')}
+                onClick={() => router.push('/studio/events')}
               >
-                Manage Events
+                Events
               </MenuItem>
             )}
             {showArcConsole && (

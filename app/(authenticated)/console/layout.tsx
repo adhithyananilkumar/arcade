@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar, Inbox } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Receipt } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -17,12 +17,12 @@ export default function ArcConsoleLayout({
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviews = AuthorizationService.canReviewContent(user);
   const showPlatformReviews = AuthorizationService.canReviewPlatformContent(user);
+  const showPayments = AuthorizationService.canViewPayments(user);
   const showIam =
     AuthorizationService.canManageSettings(user) ||
     AuthorizationService.canManageUsers(user) ||
     AuthorizationService.canManageRoles(user) ||
     AuthorizationService.canManagePermissions(user);
-  const showInbox = AuthorizationService.canAccessConsole(user);
 
   const navItems = [
     ...(showAdminChannels
@@ -34,8 +34,10 @@ export default function ArcConsoleLayout({
     ...(showPlatformReviews
       ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar }]
       : []),
+    ...(showPayments
+      ? [{ name: 'Payments', href: '/console/payments', icon: Receipt }]
+      : []),
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield }] : []),
-    ...(showInbox ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox }] : []),
   ];
 
   // Removed notFound() when navItems is empty. This allows Org staff to access 

@@ -2,6 +2,7 @@ import React from "react"
 import Link from "next/link"
 import { ChevronRight, Clock, BookOpen, Users, Radio, Play, Volume2, Settings, Share2, Heart, Flag } from "lucide-react"
 import { FlowerMark, Avatar } from "./LearningDecorations"
+import { formatMoney } from "../../../utils/money"
 
 export interface BreadcrumbItem {
   label: string
@@ -95,14 +96,6 @@ export function LearningHero({
   const displayUsername = authorUsername || authorName.toLowerCase().replace(/\s+/g, "")
   const displayPreviewAuthor = previewAuthorLabel || `@${displayUsername}`
 
-  const formatCurrency = (amount: number, curr: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: curr,
-      maximumFractionDigits: 0
-    }).format(amount)
-  }
-
   return (
     <div className="arcade-fade">
       {breadcrumbs.length > 0 && <LearningBreadcrumb items={breadcrumbs} title={title} />}
@@ -169,7 +162,7 @@ export function LearningHero({
           <div className="flex items-baseline gap-2 pr-1">
             {pricingModel === "PAID" ? (
               <span className="font-serif text-3xl font-medium text-ink">
-                {priceAmount ? formatCurrency(priceAmount, currency) : `$0`}
+                {priceAmount ? formatMoney(priceAmount, currency) : `$0`}
               </span>
             ) : (
               <span className="font-serif text-3xl font-medium text-ink">Free</span>

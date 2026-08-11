@@ -45,7 +45,7 @@ export default function LearnerShell({
   const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
   const hideDock =
     immersive || 
-    (HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? '')) && pathname !== '/studio/manage');
+    (HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? '')) && pathname !== '/studio/events');
 
   // Prevent hydration mismatch
   useEffect(() => {
