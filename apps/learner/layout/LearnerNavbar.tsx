@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
@@ -199,7 +199,25 @@ export default function LearnerNavbar() {
       });
   }, []);
 
+  const searchParams = useSearchParams();
   const isConsole = pathname.startsWith('/console');
+  const isChannelManage = pathname.includes('/channels/') && pathname.includes('/manage');
+  const isChannelPage = pathname.startsWith('/channels/') && !pathname.includes('/manage');
+
+  const channelTabLabel = (() => {
+    if (!isChannelManage) return 'Overview';
+    const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
+    switch (tab) {
+      case 'CONTENT': return 'Content';
+      case 'STAFF': return 'Staff';
+      case 'ANALYTICS': return 'Analytics & Reviews';
+      case 'ACTIVITY': return 'Timeline';
+      case 'NOTIFICATIONS': return 'Notifications';
+      case 'DANGER': return 'Danger Zone';
+      default: return 'Overview';
+    }
+  })();
+
   const consoleCrumb = (() => {
     if (!isConsole) return null;
     if (pathname.startsWith('/console/channels')) return 'Channels';
@@ -235,6 +253,34 @@ export default function LearnerNavbar() {
           />
         </Link>
       </div>
+
+      {/* Center: Channel Manage breadcrumbs */}
+      {isChannelManage && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+          <Link
+            href="/manage-channels"
+            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Channels
+          </Link>
+          <span className="h-3.5 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+          <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+            {channelTabLabel}
+          </span>
+        </div>
+      )}
+
+      {/* Center: Channel Public page breadcrumbs */}
+      {isChannelPage && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+          <Link
+            href="/manage-channels"
+            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Channels
+          </Link>
+        </div>
+      )}
 
       {/* Center: small Console breadcrumbs */}
       {isConsole && (

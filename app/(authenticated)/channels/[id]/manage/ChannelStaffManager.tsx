@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/channels";
@@ -27,6 +27,7 @@ interface ChannelStaffManagerProps {
 
 export function ChannelStaffManager({ channelId, permissions, isSuspended, isPersonalChannel }: ChannelStaffManagerProps) {
   const router = useRouter();
+  const [activeSubView, setActiveSubView] = useState<'ROSTER' | 'CUSTOM_ROLES'>('ROSTER');
   const [staff, setStaff] = useState<ChannelStaff[]>([]);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -87,9 +88,9 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
 
   const filteredStaff = staffSearch.trim()
     ? staff.filter((member) => {
-        const q = staffSearch.trim().toLowerCase();
-        return member.userName.toLowerCase().includes(q) || member.email.toLowerCase().includes(q);
-      })
+      const q = staffSearch.trim().toLowerCase();
+      return member.userName.toLowerCase().includes(q) || member.email.toLowerCase().includes(q);
+    })
     : staff;
 
   useEffect(() => {
@@ -221,112 +222,153 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-xl font-bold text-[#14142b]">Staff Management</h3>
-          <p className="text-sm font-medium text-slate-500">Manage who has access to this channel and their permissions.</p>
-        </div>
-        {canManageStaff && (
-          <Button
-            onClick={() => setIsInviteModalOpen(true)}
-            disabled={isSuspended}
-            title={isSuspended ? 'Channel is suspended' : undefined}
-            className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4 py-2 text-xs font-bold shadow-xs"
+      {/* 1. Sub-View Switcher Bar at the Very Top */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Flat Minimal Sub-View Switcher (No Oval Shapes) with Hover-Based Switching */}
+        <div className="flex items-center gap-6">
+          <button
+            type="button"
+            onMouseEnter={() => setActiveSubView('ROSTER')}
+            onClick={() => setActiveSubView('ROSTER')}
+            className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'ROSTER'
+              ? 'text-blue-600'
+              : 'text-slate-500 hover:text-slate-900'
+              }`}
           >
-            <Plus size={16} />
-            Invite Staff
-          </Button>
+            <Users size={16} className={`transition-transform ${activeSubView === 'ROSTER' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
+            <span>Manage Staff</span>
+            {activeSubView === 'ROSTER' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
+            )}
+          </button>
+
+          {canManageStaff && (
+            <button
+              type="button"
+              onMouseEnter={() => setActiveSubView('CUSTOM_ROLES')}
+              onClick={() => setActiveSubView('CUSTOM_ROLES')}
+              className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'CUSTOM_ROLES'
+                ? 'text-blue-600'
+                : 'text-slate-500 hover:text-slate-900'
+                }`}
+            >
+              <ShieldCheck size={16} className={`transition-transform ${activeSubView === 'CUSTOM_ROLES' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
+              <span>Custom Roles</span>
+              {activeSubView === 'CUSTOM_ROLES' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Actions (Search + Invite Staff) */}
+        {activeSubView === 'ROSTER' && (
+          <div className="flex flex-wrap items-center gap-3">
+            {staff.length > 0 && (
+              <div className="relative w-full sm:w-52">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Input
+                  type="text"
+                  value={staffSearch}
+                  onChange={(e) => setStaffSearch(e.target.value)}
+                  placeholder="Search staff..."
+                  className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-xs rounded-full shadow-2xs font-medium placeholder:text-slate-400"
+                />
+              </div>
+            )}
+
+            {canManageStaff && (
+              <Button
+                onClick={() => setIsInviteModalOpen(true)}
+                disabled={isSuspended}
+                title={isSuspended ? 'Channel is suspended' : undefined}
+                className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4.5 py-2 text-xs font-bold shadow-xs cursor-pointer shrink-0"
+              >
+                <Plus size={16} />
+                <span>Invite Staff</span>
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
-        <div className="flex flex-col gap-3 border-b border-indigo-200/90 bg-gradient-to-r from-indigo-100/90 via-purple-100/70 to-indigo-50 px-6 py-4 sm:flex-row sm:items-center justify-between">
-          <h4 className="flex items-center gap-2.5 text-sm font-black text-[#14142b]">
-            <span className="grid size-9 place-items-center rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white shadow-xs">
-              <Users size={17} />
-            </span>
-            <span>Staff Roster</span>
-          </h4>
-          {staff.length > 0 && (
-            <div className="relative w-full sm:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <Input
-                type="text"
-                value={staffSearch}
-                onChange={(e) => setStaffSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 text-xs rounded-xl shadow-2xs font-medium placeholder:text-slate-400"
-              />
-            </div>
-          )}
-        </div>
-        {staff.length === 0 ? (
-          <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center bg-gradient-to-b from-white via-slate-50/40 to-white">
-            {/* Hand-Drawn Doodle Background Accents */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
-              <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <circle cx="30" cy="20" r="10" strokeDasharray="3 2" />
-                <path d="M15 48 C 15 35, 45 35, 45 48" />
-              </svg>
-              <svg className="absolute right-12 top-1/2 -translate-y-1/2 size-22 text-slate-800" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <rect x="15" y="15" width="40" height="40" rx="8" strokeDasharray="4 2" />
-                <path d="M25 35 L45 35 M35 25 L35 45" />
-              </svg>
-            </div>
+      {/* 2. Dynamic Title Block */}
+      <div>
+        <h3 className="text-xl font-bold text-[#14142b]">
+          {activeSubView === 'ROSTER' ? 'Staff Management' : 'Custom Roles & Policies'}
+        </h3>
+        <p className="text-sm font-medium text-slate-500">
+          {activeSubView === 'ROSTER'
+            ? 'Manage who has access to this channel and their permissions.'
+            : 'Configure custom role policies and permission assignments for your channel staff.'}
+        </p>
+      </div>
 
-            <div className="relative z-10">
-              <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 shadow-2xs">
-                <Users size={22} />
-              </div>
-              <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
-              <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
-                Invite team members or creators to help manage this channel and publish content.
-              </p>
-            </div>
-          </div>
-        ) : filteredStaff.length === 0 ? (
-          <div className="p-8 text-center text-sm font-medium text-slate-400">
-            No staff match &quot;{staffSearch}&quot;.
-          </div>
-        ) : (
-          <>
-            <div className="divide-y divide-slate-100">
-              {/* Header Row */}
-              <div className="hidden sm:grid sm:grid-cols-12 items-center gap-4 px-6 py-3 bg-slate-50/80 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100/90">
-                <div className="col-span-5">Member</div>
-                <div className="col-span-5">Policies & Roles</div>
-                <div className="col-span-2 text-right">Actions</div>
+      {activeSubView === 'ROSTER' ? (
+        <>
+          {staff.length === 0 ? (
+            <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/40 to-white shadow-2xs">
+              {/* Hand-Drawn Doodle Background Accents */}
+              <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
+                <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="30" cy="20" r="10" strokeDasharray="3 2" />
+                  <path d="M15 48 C 15 35, 45 35, 45 48" />
+                </svg>
+                <svg className="absolute right-12 top-1/2 -translate-y-1/2 size-22 text-slate-800" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <rect x="15" y="15" width="40" height="40" rx="8" strokeDasharray="4 2" />
+                  <path d="M25 35 L45 35 M35 25 L35 45" />
+                </svg>
               </div>
 
+              <div className="relative z-10">
+                <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs">
+                  <Users size={22} />
+                </div>
+                <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
+                <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
+                  Invite team members or creators to help manage this channel and publish content.
+                </p>
+              </div>
+            </div>
+          ) : filteredStaff.length === 0 ? (
+            <div className="p-8 text-center text-sm font-medium text-slate-400 rounded-3xl border border-slate-200/80 bg-white">
+              No staff match &quot;{staffSearch}&quot;.
+            </div>
+          ) : (
+            <div className="space-y-3.5">
               {(isStaffExpanded ? filteredStaff : filteredStaff.slice(0, 5)).map((member) => {
                 const isSelf = member.userId === user?.id;
+
                 return (
                   <div
                     key={member.id}
-                    className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 px-6 py-4 hover:bg-indigo-50/30 transition-all duration-150 group"
+                    className="group relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-none border-t-2 border-l-2 border-t-sky-400 border-l-sky-400 border-r border-b border-r-slate-200/60 border-b-slate-200/60 bg-white p-4 sm:p-5 shadow-[6px_-6px_16px_rgba(20,20,43,0.08)] hover:shadow-[8px_-8px_22px_rgba(20,20,43,0.12)] hover:border-t-blue-500 hover:border-l-blue-500 transition-all duration-200"
                   >
-                    {/* Member Info (Col 5) */}
-                    <div className="col-span-1 sm:col-span-5 flex items-center gap-3.5 min-w-0">
+                    {/* Left Block: Avatar + Member Meta */}
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      {/* User Avatar */}
                       <div className="relative shrink-0">
-                        <Avatar className="h-10 w-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white font-extrabold shadow-xs ring-2 ring-indigo-100">
-                          <AvatarFallback className="font-extrabold text-xs text-white">
+                        <Avatar className="h-11 w-11 bg-gradient-to-br from-blue-600 via-sky-600 to-slate-900 text-white font-black shadow-xs ring-2 ring-white">
+                          <AvatarFallback className="font-black text-xs text-white">
                             {member.userName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" title="Active Staff Member" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white shadow-xs" title="Active Staff Member" />
                       </div>
+
+                      {/* Member Name & Handle */}
                       <div className="min-w-0">
-                        <p className="text-xs font-black text-[#14142b] truncate flex items-center gap-1.5">
-                          <span>{member.userName}</span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-black text-[#14142b] truncate">{member.userName}</span>
                           {isSelf && (
-                            <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/60">
+                            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/80">
                               You
                             </span>
                           )}
-                        </p>
-                        <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
+                        </div>
+                        <p className="text-xs font-semibold text-slate-500 truncate mt-0.5">
                           {member.username ? (
-                            <Link href={`/${member.username}`} className="font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                            <Link href={`/${member.username}`} className="font-bold text-blue-600 hover:text-blue-800 transition-colors">
                               @{member.username}
                             </Link>
                           ) : (
@@ -336,28 +378,28 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                       </div>
                     </div>
 
-                    {/* Roles / Policies (Col 5) */}
-                    <div className="col-span-1 sm:col-span-5 flex flex-wrap items-center gap-1.5">
+                    {/* Center Block: Roles & Policies Badges */}
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0 md:justify-center">
                       {member.roles.map((role) => (
                         <Badge
                           key={role.id}
                           variant="outline"
-                          className="inline-flex items-center gap-1 text-purple-700 border-purple-200/80 bg-purple-50/90 text-[11px] font-extrabold px-3 py-1 rounded-full shadow-2xs group-hover:bg-purple-100/80 transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3.5 py-1.5 rounded-full shadow-2xs"
                         >
-                          <ShieldCheck size={12} className="text-purple-500" />
-                          {role.displayName}
+                          <ShieldCheck size={13} className="text-sky-500 shrink-0" />
+                          <span>{role.displayName}</span>
                         </Badge>
                       ))}
                     </div>
 
-                    {/* Actions (Col 2) */}
-                    <div className="col-span-1 sm:col-span-2 flex items-center justify-end gap-1.5 shrink-0">
+                    {/* Right Block: Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                       {canManageStaff && (
                         <Button
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => openEditRoles(member)}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100/80 transition-all"
+                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
                           title="Edit policies"
                         >
                           <Pencil size={15} />
@@ -368,7 +410,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => handleRemoveStaff(member.userId, isSelf)}
-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100/80 transition-all"
+                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
                           title={isSelf ? 'Leave channel' : 'Remove staff member'}
                         >
                           {isSelf ? <LogOut size={15} /> : <Trash2 size={15} />}
@@ -379,33 +421,38 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 );
               })}
             </div>
-            {!isStaffExpanded && filteredStaff.length > 5 && (
-              <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsStaffExpanded(true)}
-                  className="text-xs font-bold text-[#14142b]"
-                >
-                  See {filteredStaff.length - 5} More Members
-                </Button>
-              </div>
-            )}
-            {isStaffExpanded && filteredStaff.length > 5 && (
-              <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsStaffExpanded(false)}
-                  className="text-xs font-bold text-[#14142b]"
-                >
-                  Show Less
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+          )}
+
+          {!isStaffExpanded && filteredStaff.length > 5 && (
+            <div className="pt-2 flex justify-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsStaffExpanded(true)}
+                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
+              >
+                See {filteredStaff.length - 5} More Members
+              </Button>
+            </div>
+          )}
+          {isStaffExpanded && filteredStaff.length > 5 && (
+            <div className="pt-2 flex justify-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsStaffExpanded(false)}
+                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
+              >
+                Show Less
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="pt-1">
+          <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} hideHeader={true} />
+        </div>
+      )}
 
       {isPersonalChannel && invitations.length > 0 && (
         <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
@@ -447,8 +494,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                       inv.status === 'PENDING'
                         ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
                         : inv.status === 'REJECTED'
-                        ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
-                        : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
+                          ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                          : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
                     }
                   >
                     {inv.roleNames.join(', ')} • {inv.status}
@@ -503,7 +550,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="user@example.com or username"
-                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-indigo-500 focus:bg-white"
+                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-blue-500 focus:bg-white"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
                   {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-slate-400" />}
@@ -530,12 +577,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </label>
               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input
                       type="checkbox"
                       checked={selectedRoleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id, selectedRoleIds, setSelectedRoleIds)}
-                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
+                      className="h-4 w-4 rounded-md accent-blue-600 cursor-pointer"
                     />
                     <span>{role.displayName || role.code}</span>
                   </label>
@@ -548,7 +595,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 Cancel
               </Button>
               <Button
-                className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
+                className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
                 onClick={handleInvite}
                 disabled={emailStatus !== 'FOUND' || selectedRoleIds.length === 0}
               >
@@ -572,12 +619,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
               </p>
               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
                 {roles.map(role => (
-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input
                       type="checkbox"
                       checked={editRoleIds.includes(role.id)}
                       onChange={() => toggleRole(role.id, editRoleIds, setEditRoleIds)}
-                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
+                      className="h-4 w-4 rounded-md accent-blue-600 cursor-pointer"
                     />
                     <span>{role.displayName || role.code}</span>
                   </label>
@@ -588,7 +635,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                   Cancel
                 </Button>
                 <Button
-                  className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
+                  className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
                   onClick={handleUpdateRoles}
                   disabled={editRolesSubmitting || editRoleIds.length === 0}
                 >
@@ -599,9 +646,6 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Role Management Section */}
-      <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} />
     </div>
   );
 }

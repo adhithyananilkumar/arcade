@@ -791,21 +791,21 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
         /* List Mode View with Left Accent Borders (Grey by default, colored on hover/focus) */
         <div className="space-y-3">
           {filteredCourses.map((course) => {
-            const hoverBorderColor =
+            const topAndLeftColor =
               course.status === 'PUBLISHED'
-                ? 'group-hover:border-l-emerald-500 group-focus-within:border-l-emerald-500'
+                ? 'border-t-emerald-500 border-l-emerald-500'
                 : course.status === 'DRAFT'
-                ? 'group-hover:border-l-amber-500 group-focus-within:border-l-amber-500'
+                ? 'border-t-purple-500 border-l-purple-500'
                 : course.status === 'SUBMITTED'
-                ? 'group-hover:border-l-sky-500 group-focus-within:border-l-sky-500'
-                : 'group-hover:border-l-indigo-600 group-focus-within:border-l-indigo-600';
+                ? 'border-t-sky-400 border-l-sky-400'
+                : 'border-t-indigo-600 border-l-indigo-600';
 
             return (
               <div
                 key={course.id}
                 tabIndex={0}
                 onClick={() => handleCardClick(course)}
-                className={`group relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200/90 border-l-[4px] border-l-slate-300 ${hoverBorderColor} bg-white shadow-2xs hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer outline-none`}
+                className={`group relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border-t-2 border-l-2 ${topAndLeftColor} border-r border-b border-r-slate-200/80 border-b-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer outline-none`}
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="relative shrink-0 overflow-hidden rounded-xl border border-slate-200/80 shadow-2xs">

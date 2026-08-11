@@ -194,11 +194,10 @@ export function RecentActivityTimeline() {
             type="button"
             onMouseEnter={() => setFilterType('ALL')}
             onClick={() => setFilterType('ALL')}
-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
-              filterType === 'ALL'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'ALL'
                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
-            }`}
+              }`}
           >
             All Activity
           </button>
@@ -206,11 +205,10 @@ export function RecentActivityTimeline() {
             type="button"
             onMouseEnter={() => setFilterType('COURSE')}
             onClick={() => setFilterType('COURSE')}
-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
-              filterType === 'COURSE'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'COURSE'
                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
-            }`}
+              }`}
           >
             Courses
           </button>
@@ -218,11 +216,10 @@ export function RecentActivityTimeline() {
             type="button"
             onMouseEnter={() => setFilterType('STAFF')}
             onClick={() => setFilterType('STAFF')}
-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
-              filterType === 'STAFF'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'STAFF'
                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
-            }`}
+              }`}
           >
             Staff
           </button>
@@ -230,11 +227,10 @@ export function RecentActivityTimeline() {
             type="button"
             onMouseEnter={() => setFilterType('WEBINAR')}
             onClick={() => setFilterType('WEBINAR')}
-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
-              filterType === 'WEBINAR'
+            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'WEBINAR'
                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
-            }`}
+              }`}
           >
             Webinars
           </button>

@@ -329,26 +329,26 @@ export function ChannelDangerZone({ channel }: Props) {
       )}
 
       {/* Transfer Ownership Subtle Danger Card */}
-      <Card className="border border-red-200 dark:border-red-900/40 bg-red-50/60 dark:bg-red-950/20">
+      <Card className="border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20">
         <CardContent className="p-6">
           {loadingTransfer ? (
             <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
-              <Loader2 size={16} className="animate-spin text-red-600" /> Loading transfer details...
+              <Loader2 size={16} className="animate-spin text-amber-600" /> Loading transfer details...
             </div>
           ) : transferRequest && transferRequest.status === 'PENDING' ? (
             user?.id === transferRequest.proposedOwnerId ? (
               // Logged-in user is the proposed owner
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
-                    <Crown size={18} className="text-red-600" />
+                  <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
+                    <Crown size={18} className="text-amber-600" />
                     Pending Ownership Transfer Request
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     You have been requested to become the new owner of this channel.
                   </p>
                 </div>
-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-red-200/80 dark:border-red-800/40 space-y-2 text-sm">
+                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400 font-medium">Requested By:</span>
                     <span className="text-gray-900 dark:text-gray-100 font-semibold">{transferRequest.currentOwnerName}</span>
@@ -368,7 +368,7 @@ export function ChannelDangerZone({ channel }: Props) {
                   <Button
                     onClick={handleAcceptTransfer}
                     disabled={actionLoading}
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
                   >
                     {actionLoading && <Loader2 size={16} className="animate-spin mr-1" />}
                     Accept Ownership
@@ -389,11 +389,11 @@ export function ChannelDangerZone({ channel }: Props) {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
-                      <ShieldAlert size={18} className="text-red-600" />
+                    <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
+                      <ShieldAlert size={18} className="text-amber-600" />
                       Ownership Transfer Requested
                     </h4>
-                    <p className="text-sm text-red-900 dark:text-red-300 mt-1 font-medium">
+                    <p className="text-sm text-amber-900 dark:text-amber-300 mt-1 font-medium">
                       A request has been sent to <span className="font-bold">{transferRequest.proposedOwnerName}</span>.
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -404,13 +404,13 @@ export function ChannelDangerZone({ channel }: Props) {
                     variant="outline"
                     onClick={handleCancelTransfer}
                     disabled={actionLoading}
-                    className="border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0 font-semibold text-xs"
+                    className="border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 shrink-0 font-semibold text-xs"
                   >
                     {actionLoading && <Loader2 size={14} className="animate-spin mr-1" />}
                     Cancel Request
                   </Button>
                 </div>
-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-red-200/80 dark:border-red-800/40 space-y-2.5 text-sm">
+                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2.5 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-500 dark:text-gray-400 font-medium">Proposed Owner:</span>
                     <span className="text-gray-900 dark:text-gray-100 font-bold">{transferRequest.proposedOwnerName}</span>
@@ -434,8 +434,8 @@ export function ChannelDangerZone({ channel }: Props) {
             // No active pending transfer request -> Show primary button to open modal
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
-                  <Crown size={18} className="text-red-600" />
+                <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
+                  <Crown size={18} className="text-amber-600" />
                   Transfer Ownership
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-xl">
@@ -446,7 +446,7 @@ export function ChannelDangerZone({ channel }: Props) {
                 type="button"
                 onClick={handleOpenTransferModal}
                 disabled={isSuspended}
-                className="border border-red-300 text-red-700 hover:bg-red-100/80 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/50 font-bold shrink-0 shadow-sm transition-all"
+                className="border border-amber-300 text-amber-800 hover:bg-amber-100/80 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/50 font-bold shrink-0 shadow-sm transition-all"
                 variant="outline"
               >
                 Transfer Ownership
@@ -458,7 +458,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Transfer Ownership Minimal Enterprise Desktop Modal */}
       <Dialog open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen}>
-        <DialogContent className="max-w-[760px] w-full p-6 overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl bg-white dark:bg-neutral-900">
+        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
           <DialogHeader className="p-0 pb-4 border-b border-slate-100 dark:border-neutral-800">
             <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
               Transfer Ownership
@@ -618,7 +618,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Final Confirmation Modal */}
       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
-        <DialogContent className="max-w-md w-full p-6 overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl bg-white dark:bg-neutral-900">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
           <DialogHeader className="p-0 pb-3 border-b border-slate-100 dark:border-neutral-800">
             <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
               Confirm Ownership Transfer
@@ -774,7 +774,7 @@ export function ChannelDangerZone({ channel }: Props) {
 
       {/* Delete Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="max-w-md p-6">
+        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
           <DialogHeader>
             <DialogTitle className="text-xl text-red-600 flex items-center gap-2">
               <AlertTriangle size={20} />

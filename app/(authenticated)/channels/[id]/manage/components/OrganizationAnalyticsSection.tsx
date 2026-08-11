@@ -74,6 +74,14 @@ const mockReviews: ReviewItem[] = [
   },
 ];
 
+const ratingDistribution = [
+  { stars: 5, percentage: 88, count: 3379 },
+  { stars: 4, percentage: 8, count: 307 },
+  { stars: 3, percentage: 2, count: 76 },
+  { stars: 2, percentage: 1, count: 48 },
+  { stars: 1, percentage: 1, count: 30 },
+];
+
 type TimeframeOption = '7D' | '30D' | '90D' | '1Y';
 
 interface TimeframeData {
@@ -293,11 +301,10 @@ export function OrganizationAnalyticsSection() {
                 setTimeframe(tf);
                 setHoverIdx(null);
               }}
-              className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${
-                timeframe === tf
+              className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${timeframe === tf
                   ? 'bg-indigo-600 text-white shadow-2xs font-extrabold scale-[1.02]'
                   : 'text-slate-500 hover:text-slate-900'
-              }`}
+                }`}
             >
               {tf}
             </button>
@@ -326,27 +333,15 @@ export function OrganizationAnalyticsSection() {
             </motion.span>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={triggerPoppers}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-700 hover:bg-emerald-500 hover:text-white transition-all duration-200 cursor-pointer shadow-2xs shrink-0"
-          title="Celebrate with Party Poppers!"
-        >
-          <span>Celebrate! 🎉</span>
-        </button>
       </div>
 
-
-
       {/* Analytics Chart & Category Breakdown Grid */}
-      <div className="rounded-[2.5rem] rounded-tr-lg border border-slate-200/90 bg-gradient-to-b from-white via-white to-slate-50/40 p-6 sm:p-7 shadow-[0_10px_35px_rgba(15,23,42,0.04)]">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Enrollment Trend Chart */}
-          <div className="lg:col-span-2 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
+        {/* Enrollment Trend Chart (Bare Content) */}
+        <div className="lg:col-span-2 space-y-3 flex flex-col justify-between py-1">
+          <div>
+            <div className="flex items-center justify-between pb-2">
+              <h3 className="text-sm font-bold text-slate-900">
                 Enrollment Trend • {activeData.timeframeLabel}
               </h3>
             </div>
@@ -448,11 +443,13 @@ export function OrganizationAnalyticsSection() {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Category Distribution (Glass-Tinted Sub-Panel) */}
-          <div className="rounded-2xl border border-indigo-100/80 bg-gradient-to-br from-indigo-50/50 via-purple-50/20 to-white p-5 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-extrabold text-[#14142b]">Category Breakdown</h3>
+        {/* Category Breakdown (Bare Content with Vertical Divider Separation) */}
+        <div className="space-y-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-200/80 pt-6 lg:pt-0 pl-0 lg:pl-6">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Category Breakdown</h3>
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-semibold text-slate-400 mr-1">
                   {categoryPage + 1}/{totalCategoryPages}
@@ -478,7 +475,7 @@ export function OrganizationAnalyticsSection() {
               </div>
             </div>
 
-            <div className="space-y-3.5 min-h-[160px]">
+            <div className="space-y-3.5 pt-3">
               {currentCategories.map((cat) => (
                 <div key={cat.name} className="space-y-1">
                   <div className="flex justify-between text-xs font-bold">
@@ -497,93 +494,94 @@ export function OrganizationAnalyticsSection() {
           </div>
         </div>
       </div>
+      {/* Learner Feedback Analytics Section - Production-Grade SaaS UI */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
+        {/* Rating Overview Card */}
+        <div className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.03)] transition-all duration-200 hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:border-slate-300">
+          <div>
+            {/* Header Row */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Star size={16} className="text-sky-500 fill-sky-500" />
+                <span>Rating Overview</span>
+              </h3>
+            </div>
 
-      {/* Reviews Sentiment Analysis & Topic Cloud Grid with Varied Shapes */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {/* Rating Distribution & Sentiment (Asymmetrical Card) */}
-        <div className="rounded-[2.5rem] rounded-tl-lg border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_8px_30px_rgba(15,23,42,0.03)] lg:col-span-2 space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
-              <Star size={16} className="text-amber-500 fill-amber-400" />
-              Rating Breakdown & Sentiment
-            </h3>
-            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200/60 shadow-2xs">
-              4.92 Overall Rating
-            </span>
-          </div>
-
-          <div className="space-y-2.5">
-            {ratingDistribution.map((dist) => (
-              <div key={dist.stars} className="flex items-center gap-3 text-xs font-bold">
-                <span className="w-12 text-slate-600 flex items-center gap-1">
-                  {dist.stars} <Star size={12} className="fill-amber-400 text-amber-400" />
+            {/* Content Body: Two-Column Internal Layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 pt-5 items-center">
+              {/* Left Column: Primary Rating Metric */}
+              <div className="sm:col-span-4 flex flex-col items-start pr-0 sm:pr-2">
+                <span className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none">
+                  4.92
                 </span>
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500"
-                    style={{ width: `${dist.percentage}%` }}
-                  />
+                <div className="flex items-center gap-1 text-sky-500 my-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={14} className="fill-sky-500 text-sky-500" />
+                  ))}
                 </div>
-                <span className="w-20 text-right text-slate-400 font-semibold">{dist.percentage}% ({dist.count})</span>
+                <span className="text-xs font-medium text-slate-500">
+                  3,972 ratings
+                </span>
               </div>
-            ))}
-          </div>
 
-          {/* Sentiment Ratios Capsules (Compact & Sleek) */}
-          <div className="grid grid-cols-3 gap-2.5 pt-1">
-            <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-r from-emerald-50 to-teal-50/70 p-2 sm:px-3 sm:py-2 text-center shadow-2xs">
-              <p className="text-[9.5px] font-extrabold text-emerald-700 uppercase flex items-center justify-center gap-1">
-                <ThumbsUp size={10} /> Positive
-              </p>
-              <p className="mt-0.5 text-base font-black text-emerald-600">92%</p>
-              <p className="text-[9px] font-semibold text-slate-400">3.5k reviews</p>
-            </div>
-            <div className="rounded-2xl border border-sky-200/80 bg-gradient-to-r from-sky-50 to-blue-50/70 p-2 sm:px-3 sm:py-2 text-center shadow-2xs">
-              <p className="text-[9.5px] font-extrabold text-sky-700 uppercase flex items-center justify-center gap-1">
-                <Meh size={10} /> Neutral
-              </p>
-              <p className="mt-0.5 text-base font-black text-sky-600">5%</p>
-              <p className="text-[9px] font-semibold text-slate-400">192 reviews</p>
-            </div>
-            <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-r from-rose-50 to-pink-50/70 p-2 sm:px-3 sm:py-2 text-center shadow-2xs">
-              <p className="text-[9.5px] font-extrabold text-rose-700 uppercase flex items-center justify-center gap-1">
-                <ThumbsDown size={10} /> Constructive
-              </p>
-              <p className="mt-0.5 text-base font-black text-rose-600">3%</p>
-              <p className="text-[9px] font-semibold text-slate-400">116 reviews</p>
+              {/* Right Column: 5-Star through 1-Star Progress Bars */}
+              <div className="sm:col-span-8 space-y-2">
+                {ratingDistribution.map((dist) => (
+                  <div key={dist.stars} className="flex items-center gap-2 text-xs">
+                    <div className="w-6 flex items-center gap-0.5 text-slate-600 font-semibold shrink-0">
+                      <span>{dist.stars}</span>
+                      <Star size={10} className="fill-sky-500 text-sky-500" />
+                    </div>
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full bg-sky-500 transition-all duration-500"
+                        style={{ width: `${dist.percentage}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-xs font-medium text-slate-400 tabular-nums shrink-0">
+                      {dist.percentage}%
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Most Mentioned Topics (Light Theme matching other cards) */}
-        <div className="rounded-[2.5rem] rounded-br-lg border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_8px_30px_rgba(15,23,42,0.03)] space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
-              <Tag size={16} className="text-indigo-600" />
-              Most Mentioned Topics
-            </h3>
-          </div>
+        {/* Most Mentioned Topics Card */}
+        <div className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.03)] transition-all duration-200 hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:border-slate-300">
+          <div>
+            {/* Header Row */}
+            <div className="pb-4 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Tag size={16} className="text-indigo-600" />
+                <span>Most Mentioned Topics</span>
+              </h3>
+              <p className="text-xs text-slate-500 font-medium mt-1">
+                Frequently cited keywords across recent learner feedback
+              </p>
+            </div>
 
-          <p className="text-xs text-slate-500 font-medium">
-            Frequently cited keywords across recent learner feedback
-          </p>
-
-          <div className="flex flex-wrap gap-2 pt-1">
-            {topics.map((topic) => (
-              <span
-                key={topic}
-                className="rounded-full border border-indigo-200/70 bg-indigo-50/70 px-4 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-600 hover:text-white transition-all duration-200 cursor-pointer shadow-2xs"
-              >
-                #{topic}
-              </span>
-            ))}
+            {/* Keyword Tag Collection */}
+            <div className="pt-5">
+              <div className="flex flex-wrap gap-2">
+                {topics.map((topic) => (
+                  <span
+                    key={topic}
+                    className="inline-flex items-center rounded-lg border border-sky-200/70 bg-sky-50/60 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100/80 hover:border-sky-300"
+                  >
+                    #{topic}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Container 3: Learner Reviews Feed with Instructor Response */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      {/* Learner Reviews Feed Section (Bare Content Header + Review Cards) */}
+      <div className="space-y-5 pt-2">
+        <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
           <div>
             <h3 className="text-base font-extrabold text-[#14142b] flex items-center gap-2">
               <MessageSquare size={18} className="text-indigo-600" />
@@ -633,9 +631,8 @@ export function OrganizationAnalyticsSection() {
             return (
               <div
                 key={rev.id}
-                className={`rounded-[2.25rem] rounded-tl-xs rounded-br-xs transition-all duration-200 flex flex-col justify-between p-5 cursor-pointer ${cardStyle} ${
-                  isWide ? 'md:col-span-2' : ''
-                }`}
+                className={`rounded-[2.25rem] rounded-tl-xs rounded-br-xs transition-all duration-200 flex flex-col justify-between p-5 cursor-pointer ${cardStyle} ${isWide ? 'md:col-span-2' : ''
+                  }`}
               >
                 <div className="space-y-2.5">
                   {/* Top Row: Learner Info & Rating */}
