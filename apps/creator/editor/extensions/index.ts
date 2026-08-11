@@ -135,7 +135,7 @@ const BaseKit = [
  * extension is dropped — Yjs owns undo/redo instead (mirrors the previous StarterKit
  * `undoRedo: false` behaviour).
  */
-export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
+export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, contentType?: string) {
   return [
     ...BaseKit,
     // `includeChildren` is deliberately omitted: combined with the extension's
@@ -208,7 +208,7 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc) {
         items: ({ query }: { query: string }) => searchUsersForMention(query),
       },
     }),
-    SlashCommand,
+    ...(contentType === "question-bank" ? [] : [SlashCommand]),
     CodeView,
     Callout,
 

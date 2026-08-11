@@ -5,13 +5,13 @@ import { QuestionBankCreatorView } from "./QuestionBankCreatorView";
 export const QuestionBankCreatorNode = Node.create({
   name: "question_bank_creator",
   group: "block",
-  atom: true,
+  content: "block+",
 
   addAttributes() {
     return {
       questionType: { default: "SINGLE" },
       difficulty: { default: "MEDIUM" },
-      prompt: { default: "" },
+      points: { default: 1 },
       options: {
         default: [
           { id: "1", text: "", isCorrect: false },
@@ -26,7 +26,7 @@ export const QuestionBankCreatorNode = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "question_bank_creator" })];
+    return ["div", mergeAttributes(HTMLAttributes, { "data-type": "question_bank_creator" }), 0];
   },
 
   addNodeView() {

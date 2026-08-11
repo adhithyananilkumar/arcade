@@ -86,7 +86,9 @@ interface ArcadeEditorProps {
    */
   chromeless?: boolean;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap";
+  contentType?: "course" | "workshop" | "roadmap" | "question-bank";
+  /** Callback for selection updates */
+  onSelectionUpdate?: (props: { editor: Editor }) => void;
 }
 
 // Memoized because the host is a large orchestrator: a keystroke in the course-title
@@ -95,7 +97,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType, onSelectionUpdate },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -134,6 +136,7 @@ export const ArcadeEditor = memo(
     ydoc,
     seedContent,
     contentType,
+    onSelectionUpdate,
   });
 
   useImperativeHandle(
@@ -158,6 +161,7 @@ export const ArcadeEditor = memo(
   }
 
   const isRoadmap = contentType === "roadmap";
+  const hideToolbar = isRoadmap || contentType === "question-bank";
 console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
 
 
@@ -170,7 +174,7 @@ console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", edi
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !isRoadmap && <RichTextToolbar editor={editor} />}
+        {!readOnly && !hideToolbar && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={

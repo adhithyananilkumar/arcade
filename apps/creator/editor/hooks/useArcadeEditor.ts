@@ -40,7 +40,9 @@ export interface UseArcadeEditorOptions {
    */
   seedContent?: TiptapDocument;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap";
+  contentType?: "course" | "workshop" | "roadmap" | "question-bank";
+  /** Selection update callback */
+  onSelectionUpdate?: (props: { editor: any }) => void;
 }
 
 const DEBOUNCE_MS = 2000;
@@ -62,6 +64,7 @@ export function useArcadeEditor({
   ydoc,
   seedContent,
   contentType,
+  onSelectionUpdate,
 }: UseArcadeEditorOptions = {}) {
   // The debounced function must be referentially stable (recreating it would drop
   // pending saves), but it must also call the *current* onSave. Reading through a
@@ -97,9 +100,9 @@ export function useArcadeEditor({
   // calls editor.setOptions(), which rebuilds the entire schema/plugin set —
   // expensive, and easy to trigger from state changes unrelated to typing.
   const extensions = useMemo(
-    () => buildExtensions(placeholder, ydoc),
+    () => buildExtensions(placeholder, ydoc, contentType),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ydoc] // placeholder changes shouldn't tear down the whole extension set
+    [ydoc, contentType] // placeholder changes shouldn't tear down the whole extension set
   );
 
   const editor = useEditor({
@@ -113,6 +116,7 @@ export function useArcadeEditor({
     onUpdate: ({ editor }) => {
       debouncedSave(editor);
     },
+    onSelectionUpdate: onSelectionUpdate,
   });
 
   if (editor) {

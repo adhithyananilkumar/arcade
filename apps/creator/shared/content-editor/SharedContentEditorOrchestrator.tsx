@@ -153,6 +153,7 @@ import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 import { QuestionBankAdapter } from "./adapters/QuestionBankAdapter";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
+import { QuestionBankBuilderLayout } from "./QuestionBankBuilderLayout";
 
 interface SharedContentEditorOrchestratorProps {
   contentType: "course" | "workshop" | "roadmap" | "question-bank";
@@ -1394,7 +1395,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       </header>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 flex flex-col">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
           <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
@@ -1668,7 +1669,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="absolute inset-0 z-0 overflow-y-auto">
+        <main className={`z-0 flex flex-col min-h-0 ${
+          activeLessonId && contentType === "question-bank"
+            ? "flex-1 pt-[49px]"
+            : "absolute inset-0 overflow-y-auto"
+        }`}>
           {status === "SUBMITTED" && (
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
               <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
@@ -1716,14 +1721,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 }}
               />
             </div>
+          ) : activeLessonId && contentType === "question-bank" ? (
+            <QuestionBankBuilderLayout
+              activeLessonId={activeLessonId}
+              activeYDoc={activeYDoc}
+              activeSeedContent={activeSeedContent}
+              status={status}
+              onSave={handleSave}
+            />
           ) : activeLessonId ? (
             <div
               className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
-              // Height of the top bar above — the editor toolbar sticks flush beneath it.
               style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
             >
-              {/* The lesson name lives in the top bar; renaming happens from the
-                  sidebar's pencil action. No second title on the canvas. */}
               <div>
                 {activeYDoc && (
                   <ArcadeEditor
@@ -1731,26 +1741,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     ref={editorRef}
                     ydoc={activeYDoc}
                     seedContent={activeSeedContent}
-                    placeholder={contentType === "question-bank" ? "Start building your question bank..." : "Start writing your lesson content…"}
+                    placeholder="Start writing your lesson content…"
                     onSave={handleSave}
                     chromeless
                     readOnly={status === "SUBMITTED"}
                   />
-                )}
-                {contentType === "question-bank" && status !== "SUBMITTED" && activeYDoc && (
-                  <div className="mt-8 flex justify-center">
-                    <button
-                      onClick={() => {
-                        const editor = editorRef.current?.editor;
-                        if (editor) {
-                          editor.chain().focus().insertContent({ type: "question_bank_creator" }).run();
-                        }
-                      }}
-                      className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
-                    >
-                      <Plus size={16} /> Add Question
-                    </button>
-                  </div>
                 )}
               </div>
             </div>
