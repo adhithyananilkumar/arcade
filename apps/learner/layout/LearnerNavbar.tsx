@@ -41,6 +41,13 @@ export default function LearnerNavbar() {
   const [lastY, setLastY] = useState(0);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
+    // Never hide on console routes because they have their own internal scroll or need the nav visible
+    if (pathname.startsWith('/console')) {
+      setHidden(false);
+      setLastY(latest);
+      return;
+    }
+    
     // Only hide after 150px of downward scroll to avoid triggering at the very top
     if (latest > 150 && latest > lastY) {
       setHidden(true);
@@ -214,6 +221,8 @@ export default function LearnerNavbar() {
     if (pathname.startsWith('/console/channels')) return 'Channels';
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
     if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
+    if (pathname.startsWith('/console/payments')) return 'Payments';
+    if (pathname.startsWith('/console/inbox')) return 'Inbox';
     if (pathname.startsWith('/console/iam')) return 'IAM';
     return null;
   })();

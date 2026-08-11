@@ -96,18 +96,10 @@ export default function PaymentsConsolePage() {
   }, [totalElements]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-[#14142b] text-white">
-          <Receipt size={18} />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold text-[#14142b]">Payments</h1>
-          <p className="text-[13px] text-slate-500">{totalLabel} · read-only ledger</p>
-        </div>
-      </div>
+    <div className="flex flex-col h-full space-y-6 pb-6">
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/90 p-3">
+
+      <div className="flex-none sticky top-0 z-20 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         <div className="relative">
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -161,9 +153,9 @@ export default function PaymentsConsolePage() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white/90">
-        <table className="w-full min-w-[900px] text-left text-[12.5px]">
-          <thead className="border-b border-slate-100 bg-slate-50/80 text-[11px] uppercase tracking-wide text-slate-400">
+      <div className="flex-1 min-h-0 overflow-auto rounded-2xl border border-slate-200 bg-white/90">
+        <table className="w-full min-w-[900px] text-left text-[12.5px] relative">
+          <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50/95 backdrop-blur text-[11px] uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3 font-semibold">Order ID</th>
               <th className="px-4 py-3 font-semibold">User</th>

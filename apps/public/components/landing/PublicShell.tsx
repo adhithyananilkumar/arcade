@@ -36,13 +36,15 @@ function ShellInner({ children }: { children: React.ReactNode }) {
 /** Outer shell — used for non-landing pages where no intro context exists */
 function ShellOuter({ children }: { children: React.ReactNode }) {
   const params = useParams();
+  const pathname = usePathname();
   const isProfile = !!params?.username;
+  const isExplore = pathname === "/explore";
 
   return (
     <>
       <HeroNav />
       {children}
-      {!isProfile && <Footer />}
+      {!isProfile && !isExplore && <Footer />}
     </>
   );
 }

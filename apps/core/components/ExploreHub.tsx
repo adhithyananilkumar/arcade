@@ -3,12 +3,14 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import Footer from "@/apps/public/components/landing/Footer";
 import GradientText from "@/apps/public/components/landing/GradientText";
 import Link from "next/link";
 import EventDiscoveryPage from "@/apps/public/components/explore/EventDiscoveryPage";
 import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
 import { roadmapService, roadmapProgressService, type RoadmapData } from "@/domains/roadmaps";
+import { CourseCard } from "@/components/explore/CategoryDetailedView";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -178,6 +180,42 @@ export const CATEGORY_DATA: Record<string, {
       { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
       { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
     ]
+  },
+  "Design & UI/UX": {
+    coursesCount: 8,
+    gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
+    colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
+    desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Data Science & AI": {
+    coursesCount: 15,
+    gradient: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)",
+    colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
+    desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Productivity Tools": {
+    coursesCount: 4,
+    gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+    colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
+    desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Marketing & SEO": {
+    coursesCount: 9,
+    gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
+    colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
+    desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
+    courses: [],
+    bootcamps: [],
+    resources: []
   }
 };
 
@@ -461,7 +499,30 @@ function CategoryIllustration({ category }: { category: string }) {
   }
 }
 
-function CategoryHeaderIllustration({ category }: { category: string }) {
+function CategoryHeaderIllustration({ category, activeTab }: { category: string; activeTab?: string }) {
+  let colors = {
+    light: "#BACDEB",
+    veryLight: "#E2ECF7",
+    medium: "#8C9CBF",
+    dark: "#4E608A"
+  };
+
+  if (activeTab === "bootcamps" || activeTab === "events") {
+    colors = {
+      light: "#D8B4E2",
+      veryLight: "#F3E8F9",
+      medium: "#B88CC5",
+      dark: "#7A4A91"
+    };
+  } else if (activeTab === "articles") {
+    colors = {
+      light: "#A7F3D0",
+      veryLight: "#ECFDF5",
+      medium: "#6EE7B7",
+      dark: "#059669"
+    };
+  }
+
   switch (category) {
     case "Computer Science":
       return (
@@ -471,35 +532,35 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 50,40 H 250 M 50,70 H 250" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="5 5" />
 
           {/* Plant on the left */}
-          <rect x="50" y="95" width="20" height="25" rx="3" fill="#BACDEB" />
-          <path d="M 60,95 Q 50,75 40,80 Q 50,90 60,95 Z" fill="#8C9CBF" />
-          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill="#4E608A" />
-          <path d="M 60,95 Q 70,75 80,82 Q 70,90 60,95 Z" fill="#8C9CBF" />
+          <rect x="50" y="95" width="20" height="25" rx="3" fill={colors.light} />
+          <path d="M 60,95 Q 50,75 40,80 Q 50,90 60,95 Z" fill={colors.medium} />
+          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill={colors.dark} />
+          <path d="M 60,95 Q 70,75 80,82 Q 70,90 60,95 Z" fill={colors.medium} />
 
           {/* Coffee cup */}
-          <rect x="220" y="100" width="18" height="20" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" />
-          <path d="M 238,104 Q 244,104 244,110 Q 244,116 238,116" stroke="#8C9CBF" strokeWidth="1.5" fill="none" />
+          <rect x="220" y="100" width="18" height="20" rx="2" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1.5" />
+          <path d="M 238,104 Q 244,104 244,110 Q 244,116 238,116" stroke={colors.medium} strokeWidth="1.5" fill="none" />
 
           {/* Code Window / Laptop */}
           {/* Base */}
-          <rect x="85" y="55" width="130" height="80" rx="8" fill="#4E608A" />
+          <rect x="85" y="55" width="130" height="80" rx="8" fill={colors.dark} />
           {/* Screen inside */}
-          <rect x="92" y="62" width="116" height="66" rx="4" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
+          <rect x="92" y="62" width="116" height="66" rx="4" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1" />
           {/* Laptop keyboard part */}
-          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-          <rect x="135" y="136" width="30" height="3" rx="1" fill="#4E608A" />
+          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+          <rect x="135" y="136" width="30" height="3" rx="1" fill={colors.dark} />
 
           {/* Code lines on screen */}
-          <rect x="100" y="70" width="40" height="4" rx="2" fill="#BACDEB" />
-          <rect x="100" y="80" width="60" height="4" rx="2" fill="#8C9CBF" />
-          <rect x="110" y="90" width="50" height="4" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1" />
-          <rect x="110" y="100" width="35" height="4" rx="2" fill="#BACDEB" />
-          <rect x="100" y="110" width="25" height="4" rx="2" fill="#4E608A" />
+          <rect x="100" y="70" width="40" height="4" rx="2" fill={colors.light} />
+          <rect x="100" y="80" width="60" height="4" rx="2" fill={colors.medium} />
+          <rect x="110" y="90" width="50" height="4" rx="2" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1" />
+          <rect x="110" y="100" width="35" height="4" rx="2" fill={colors.light} />
+          <rect x="100" y="110" width="25" height="4" rx="2" fill={colors.dark} />
 
           {/* Floating brackets */}
-          <text x="75" y="75" fill="#BACDEB" fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
-          <text x="210" y="110" fill="#BACDEB" fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
-          <text x="215" y="65" fill="#8C9CBF" fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
+          <text x="75" y="75" fill={colors.light} fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
+          <text x="210" y="110" fill={colors.light} fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
+          <text x="215" y="65" fill={colors.medium} fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
         </svg>
       );
     case "Artificial Intelligence":
@@ -517,14 +578,1525 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Robotic Profile / Head */}
           <g transform="translate(30, 0)">
             {/* Neck */}
-            <path d="M 105,100 L 105,130 L 125,130 L 125,112 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 105,100 L 105,130 L 125,130 L 125,112 Z" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
             {/* Face/Head profile */}
-            <path d="M 100,50 C 70,50 65,75 65,90 C 65,105 85,115 105,115 C 120,115 130,105 130,85 C 130,55 115,50 100,50 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 100,50 C 70,50 65,75 65,90 C 65,105 85,115 105,115 C 120,115 130,105 130,85 C 130,55 115,50 100,50 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
             {/* Ear piece */}
-            <circle cx="100" cy="85" r="12" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="100" cy="85" r="5" fill="#4E608A" />
+            <circle cx="100" cy="85" r="12" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="100" cy="85" r="5" fill={colors.dark} />
             {/* Eye / visor */}
-            <path d="M 66,75 H 85 L 82,85 H 66 Z" fill="#4E608A" rx="1" />
+            <path d="M 66,75 H 85 L 82,85 H 66 Z" fill={colors.dark} rx="1" />
+            {/* Head circuit lines/details */}
+            <path d="M 100,50 L 100,30" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="100" cy="30" r="3" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          </g>
+
+          {/* Network structure on the right */}
+          <g transform="translate(145, 20)">
+            {/* Lines */}
+            <path d="M 30,60 L 70,30 L 100,50 L 80,90 L 30,60 Z" stroke={colors.light} strokeWidth="1.5" />
+            <path d="M 70,30 L 80,90" stroke={colors.light} strokeWidth="1.5" />
+            <path d="M 30,60 L 100,50" stroke={colors.light} strokeWidth="1" strokeDasharray="2 2" />
+
+            {/* Nodes */}
+            <circle cx="30" cy="60" r="6" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1.5" />
+            <circle cx="70" cy="30" r="7" fill={colors.light} stroke="#FFFFFF" strokeWidth="1.5" />
+            <circle cx="100" cy="50" r="5" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="80" cy="90" r="6" fill={colors.light} stroke="#FFFFFF" strokeWidth="1.5" />
+          </g>
+
+          {/* Brain circuits floating */}
+          <path d="M 105,45 Q 120,35 130,45" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <path d="M 95,45 Q 85,35 75,50" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <circle cx="130" cy="45" r="2.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          <circle cx="75" cy="50" r="2.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+        </svg>
+      );
+    case "Information Technology":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Server rack on the left */}
+          <rect x="60" y="80" width="45" height="42" rx="4" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="68" y1="90" x2="97" y2="90" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="90" r="1.5" fill={colors.veryLight} />
+          <line x1="68" y1="100" x2="97" y2="100" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="100" r="1.5" fill={colors.veryLight} />
+          <line x1="68" y1="110" x2="97" y2="110" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="110" r="1.5" fill={colors.veryLight} />
+
+          {/* Database/Server rack on the right */}
+          <rect x="195" y="80" width="45" height="42" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="203" y1="90" x2="232" y2="90" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="90" r="1.5" fill={colors.light} />
+          <line x1="203" y1="100" x2="232" y2="100" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="100" r="1.5" fill={colors.light} />
+          <line x1="203" y1="110" x2="232" y2="110" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="110" r="1.5" fill={colors.light} />
+
+          {/* Big Cloud in the Center */}
+          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+
+          {/* Network Connections */}
+          {/* Cloud to Server Left */}
+          <path d="M 125,85 L 82,85 L 82,80" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          {/* Cloud to Server Right */}
+          <path d="M 175,85 L 217,85 L 217,80" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          {/* Cloud to Floor */}
+          <path d="M 150,94 L 150,130" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+
+          {/* Small laptop/pc at the bottom middle */}
+          <rect x="135" y="115" width="30" height="12" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          <line x1="140" y1="127" x2="160" y2="127" stroke={colors.dark} strokeWidth="2" />
+
+          {/* Arrows inside cloud or around */}
+          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "Business & Management":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Briefcase */}
+          <rect x="50" y="80" width="60" height="42" rx="6" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          {/* Handle */}
+          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke={colors.dark} strokeWidth="1.5" fill="none" />
+          {/* Lock */}
+          <rect x="74" y="92" width="12" height="8" rx="1" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1" />
+
+          {/* Pie Chart / Analytics */}
+          <circle cx="205" cy="75" r="28" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill={colors.dark} stroke={colors.dark} strokeWidth="1" />
+          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1" />
+
+          {/* Calculator or Folder at the bottom right */}
+          <rect x="215" y="105" width="22" height="22" rx="3" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          <circle cx="221" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="226" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="231" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="221" cy="116" r="1.5" fill={colors.dark} />
+          <circle cx="226" cy="116" r="1.5" fill={colors.dark} />
+          <circle cx="231" cy="116" r="1.5" fill={colors.dark} />
+
+          {/* Growing Trend Graph Arrow */}
+          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 195,60 H 205 V 70" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* Grid lines behind Graph */}
+          <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+        </svg>
+      );
+    case "Civil & Mechanical":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Blueprint background details */}
+          <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke="#F1F5F9" strokeWidth="1" />
+          <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
+
+          {/* Drafting Ruler / Triangle */}
+          <path d="M 50,120 L 110,60 L 110,120 Z" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1" />
+
+          {/* Hard Hat in the Center/Left */}
+          <g transform="translate(30, 0)">
+            {/* Hat cap */}
+            <path d="M 85,105 C 85,75 135,75 135,105 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1.5" />
+            {/* Brim */}
+            <path d="M 75,105 H 145" stroke="#CA8A04" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M 105,75 V 82" stroke="#CA8A04" strokeWidth="1.5" />
+          </g>
+
+          {/* Gears on the Right */}
+          <g transform="translate(195, 75)">
+            {/* Gear 1 */}
+            <circle cx="0" cy="0" r="18" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
+            {/* Teeth */}
+            {Array.from({ length: 8 }).map((_, idx) => {
+              const angle = (idx * 360) / 8;
+              return (
+                <rect
+                  key={idx}
+                  x="-3"
+                  y="-22"
+                  width="6"
+                  height="5"
+                  rx="1"
+                  fill={colors.dark}
+                  transform={`rotate(${angle})`}
+                />
+              );
+            })}
+          </g>
+
+          <g transform="translate(230, 100)">
+            {/* Gear 2 (Smaller, interlocking) */}
+            <circle cx="0" cy="0" r="12" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
+            {/* Teeth */}
+            {Array.from({ length: 6 }).map((_, idx) => {
+              const angle = (idx * 360) / 6;
+              return (
+                <rect
+                  key={idx}
+                  x="-2"
+                  y="-15"
+                  width="4"
+                  height="4"
+                  rx="1"
+                  fill={colors.dark}
+                  transform={`rotate(${angle})`}
+                />
+              );
+            })}
+          </g>
+
+          {/* Compass tool */}
+          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="140" cy="50" r="3.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+        </svg>
+      );
+    case "Basic Sciences":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Test Tubes Rack */}
+          <g transform="translate(45, 75)">
+            {/* Rack base & frame */}
+            <rect x="0" y="45" width="60" height="8" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <line x1="8" y1="20" x2="8" y2="45" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="52" y1="20" x2="52" y2="45" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="0" y1="20" x2="60" y2="20" stroke={colors.dark} strokeWidth="1.5" />
+
+            {/* Test Tube 1 (left) */}
+            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
+
+            {/* Test Tube 2 (right) */}
+            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
+          </g>
+
+          {/* Chemical Flask (Center/Right) */}
+          <g transform="translate(130, 50)">
+            {/* Flask body */}
+            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            {/* Flask liquid */}
+            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill={colors.light} />
+            {/* Bubbles */}
+            <circle cx="20" cy="35" r="2.5" fill={colors.dark} />
+            <circle cx="34" cy="22" r="3.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <circle cx="27" cy="12" r="2" fill={colors.dark} />
+          </g>
+
+          {/* Atom Symbol Floating on Right */}
+          <g transform="translate(225, 75)">
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={colors.light} strokeWidth="1" transform="rotate(30)" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={colors.light} strokeWidth="1" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="8" fill={colors.dark} stroke="#FFFFFF" strokeWidth="2" />
+
+            {/* Electrons */}
+            <circle cx="-26" cy="-6" r="3" fill={colors.dark} />
+            <circle cx="26" cy="6" r="3" fill={colors.light} />
+          </g>
+        </svg>
+      );
+    case "Humanities & Languages":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Column structure on Left */}
+          <g transform="translate(45, 45)">
+            <rect x="0" y="75" width="50" height="8" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="5" y="70" width="40" height="5" rx="1" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            {/* Pillars */}
+            <rect x="10" y="10" width="8" height="60" rx="1" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="32" y="10" width="8" height="60" rx="1" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            {/* Top */}
+            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+          </g>
+
+          {/* Stack of books in center */}
+          <g transform="translate(125, 75)">
+            {/* Bottom Book */}
+            <rect x="0" y="36" width="65" height="15" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
+            {/* Middle Book */}
+            <rect x="8" y="22" width="55" height="14" rx="2" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
+            {/* Top Leaning Book */}
+            <g transform="rotate(-15, 12, 10)">
+              <rect x="10" y="0" width="50" height="12" rx="2" fill={colors.dark} stroke={colors.dark} strokeWidth="1.5" />
+              <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
+            </g>
+          </g>
+
+          {/* Scroll and Quill on Right */}
+          <g transform="translate(205, 65)">
+            {/* Open Scroll / Document */}
+            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <path d="M 5,45 H 42" stroke={colors.dark} strokeWidth="1" />
+            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+
+            {/* Quill Pen */}
+            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <path d="M 28,21 L 43,2" stroke={colors.dark} strokeWidth="1" />
+          </g>
+        </svg>
+      );
+    case "Personal Development":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+
+          {/* Target with Dart on Left */}
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="28" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="8" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1.5" />
+
+            {/* Dart */}
+            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            {/* Dart flights */}
+            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill={colors.dark} />
+          </g>
+
+          {/* Staircase/Steps on Right */}
+          <g transform="translate(150, 45)">
+            {/* Steps outline */}
+            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke={colors.light} strokeWidth="1" />
+
+            {/* Person celebrating at the top step */}
+            <g transform="translate(25, -20)">
+              {/* Head */}
+              <circle cx="0" cy="-6" r="4.5" fill={colors.dark} />
+              {/* Body */}
+              <path d="M 0,-1 L 0,10" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" />
+              {/* Arms */}
+              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+              {/* Legs */}
+              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            </g>
+          </g>
+
+          {/* Sparkles / Stars in the sky */}
+          <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
+        </svg>
+      );
+
+
+    case "Design & UI/UX":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <rect x="60" y="40" width="120" height="80" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <rect x="70" y="50" width="100" height="20" rx="2" fill={colors.light} />
+          <rect x="70" y="80" width="45" height="30" rx="2" fill={colors.medium} />
+          <rect x="125" y="80" width="45" height="30" rx="2" fill={colors.medium} />
+          <g transform="translate(180, 60)">
+            <path d="M 10,60 C 20,20 60,10 80,40" fill="none" stroke={colors.dark} strokeWidth="1.5" strokeDasharray="4 4" />
+            <circle cx="10" cy="60" r="3" fill={colors.dark} />
+            <circle cx="80" cy="40" r="3" fill={colors.dark} />
+            <line x1="10" y1="60" x2="15" y2="35" stroke={colors.medium} strokeWidth="1" />
+            <circle cx="15" cy="35" r="1.5" fill={colors.medium} />
+            <line x1="80" y1="40" x2="65" y2="25" stroke={colors.medium} strokeWidth="1" />
+            <circle cx="65" cy="25" r="1.5" fill={colors.medium} />
+          </g>
+          <circle cx="210" cy="110" r="12" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <circle cx="205" cy="105" r="3" fill={colors.veryLight} />
+          <circle cx="215" cy="108" r="2" fill={colors.medium} />
+          <circle cx="208" cy="115" r="2.5" fill={colors.dark} />
+        </svg>
+      );
+
+    case "Data Science & AI":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(50, 45)">
+            <circle cx="10" cy="10" r="4" fill={colors.dark} />
+            <circle cx="10" cy="35" r="4" fill={colors.dark} />
+            <circle cx="10" cy="60" r="4" fill={colors.dark} />
+            <circle cx="45" cy="22" r="5" fill={colors.medium} />
+            <circle cx="45" cy="48" r="5" fill={colors.medium} />
+            <circle cx="80" cy="35" r="6" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="14" y1="10" x2="40" y2="22" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="35" x2="40" y2="22" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="35" x2="40" y2="48" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="60" x2="40" y2="48" stroke={colors.medium} strokeWidth="1" />
+            <line x1="50" y1="22" x2="74" y2="35" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="50" y1="48" x2="74" y2="35" stroke={colors.dark} strokeWidth="1.5" />
+          </g>
+          <g transform="translate(180, 50)">
+            <rect x="0" y="40" width="12" height="30" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <rect x="20" y="20" width="12" height="50" rx="2" fill={colors.medium} stroke={colors.dark} strokeWidth="1" />
+            <rect x="40" y="10" width="12" height="60" rx="2" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1" />
+            <rect x="60" y="30" width="12" height="40" rx="2" fill={colors.dark} />
+            <path d="M 6,35 L 26,15 L 46,5 L 66,20" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinejoin="round" />
+            <circle cx="66" cy="20" r="2.5" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+
+    case "Productivity Tools":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <rect x="50" y="40" width="120" height="80" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="90" y1="40" x2="90" y2="120" stroke={colors.dark} strokeWidth="1" />
+          <line x1="130" y1="40" x2="130" y2="120" stroke={colors.dark} strokeWidth="1" />
+          <rect x="58" y="50" width="24" height="12" rx="2" fill={colors.medium} />
+          <rect x="58" y="68" width="24" height="12" rx="2" fill={colors.light} />
+          <rect x="98" y="50" width="24" height="12" rx="2" fill={colors.dark} />
+          <rect x="138" y="50" width="24" height="12" rx="2" fill={colors.medium} />
+          <rect x="138" y="68" width="24" height="12" rx="2" fill={colors.light} />
+          <g transform="translate(195, 75)">
+            <circle cx="0" cy="0" r="24" fill={colors.veryLight} stroke={colors.dark} strokeWidth="2" />
+            <circle cx="0" cy="0" r="18" fill="none" stroke={colors.light} strokeWidth="1.5" strokeDasharray="2 4" />
+            <line x1="0" y1="0" x2="0" y2="-12" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="0" x2="8" y2="8" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <circle cx="0" cy="0" r="2.5" fill={colors.dark} />
+            <rect x="-4" y="-28" width="8" height="4" rx="1" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+
+    case "Marketing & SEO":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(60, 80)">
+            <path d="M 0,-10 L 40,-25 Q 45,-25 45,-20 L 45,20 Q 45,25 40,25 L 0,10 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 0,-10 L -10,-10 Q -15,-10 -15,-5 L -15,5 Q -15,10 -10,10 L 0,10 Z" fill={colors.medium} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M -5,10 L -5,25 Q -5,30 0,30 L 5,30 Q 10,30 10,25 L 10,14" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <path d="M 55,-15 Q 65,-5 65,0 Q 65,5 55,15" fill="none" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 65,-25 Q 80,-10 80,0 Q 80,10 65,25" fill="none" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+          </g>
+          <g transform="translate(190, 70)">
+            <circle cx="0" cy="0" r="22" fill={colors.veryLight} stroke={colors.dark} strokeWidth="2" />
+            <circle cx="0" cy="0" r="10" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="-22" y1="0" x2="-30" y2="0" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="0" x2="30" y2="0" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="-22" x2="0" y2="-30" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="22" x2="0" y2="30" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <path d="M 15,15 L 25,35 L 30,28 L 40,38 L 45,33 L 35,23 L 42,18 Z" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1" strokeLinejoin="round" />
+          </g>
+        </svg>
+      );
+    default:
+
+      return null;
+  }
+}
+
+function WebinarCardHeader({ title, status, duration, category }: { title: string; status: string; duration: string; category: string }) {
+  return (
+    <div style={{ position: "relative", width: "100%", height: "150px", overflow: "hidden", background: "#FAF8F5", borderBottom: "2px solid #1A1A1A" }}>
+      {/* Blueprint grid background */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 320 150">
+        <defs>
+          <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
+            <path d="M 16 0 L 0 0 0 16" fill="none" stroke="rgba(26,26,26,0.06)" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#gridPattern)" />
+      </svg>
+
+      {/* Visual illustration based on title */}
+      {title.includes("Generative AI") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          <line x1="60" y1="35" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
+          <line x1="260" y1="35" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
+          <line x1="80" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
+          <line x1="240" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
+          <line x1="60" y1="35" x2="30" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
+          <line x1="260" y1="35" x2="290" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
+
+          {/* Dotted concentric outer ring */}
+          <circle cx="160" cy="75" r="32" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+          <circle cx="160" cy="75" r="12" fill="#4B6189" />
+          <circle cx="160" cy="75" r="4" fill="#FFFFFF" />
+
+          {/* Nodes */}
+          <circle cx="60" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+          <circle cx="260" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+          <circle cx="80" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+          <circle cx="240" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+          <circle cx="30" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
+          <circle cx="290" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
+        </svg>
+      )}
+
+      {title.includes("React & Next.js") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          <g transform="translate(100, 75)">
+            <path d="M -35,15 A 35,35 0 0,1 35,15" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M -35,15 A 35,35 0 0,1 15,-30" stroke="#4B6189" strokeWidth="4" strokeLinecap="round" fill="none" />
+            <line x1="0" y1="10" x2="22" y2="-20" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="0" cy="10" r="4" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
+          </g>
+          <g transform="translate(220, 75)">
+            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#4B6189" strokeWidth="2" fill="none" transform="rotate(30)" />
+            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="3 3" fill="none" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="6" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
+          </g>
+        </svg>
+      )}
+
+      {title.includes("Secure & Resilient APIs") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          {/* Schematic backdrop */}
+          <text x="35" y="32" fill="#4B6189" fontSize="9.5" fontFamily="monospace" fontWeight="800" opacity="0.8" letterSpacing="0.02em">GET /api/v1/auth/session</text>
+          <line x1="35" y1="40" x2="160" y2="40" stroke="#4B6189" strokeWidth="1" strokeDasharray="2 2" />
+
+          <g transform="translate(160, 85)">
+            {/* Outline shield */}
+            <path d="M-18,-15 L18,-15 V5 C18,17 0,27 0,31 C0,27 -18,17 -18,5 Z" fill="none" stroke="#1A1A1A" strokeWidth="2.5" />
+            <path d="M-12,-10 L12,-10 V5 C12,14 0,22 0,25 C0,22 -12,14 -12,5 Z" fill="none" stroke="#4B6189" strokeWidth="1.5" />
+            <circle cx="0" cy="-2" r="3.5" fill="#1A1A1A" />
+            <polygon points="-2.5,-2 2.5,-2 3.5,10 -3.5,10" fill="#1A1A1A" />
+          </g>
+          <text x="160" y="132" fill="#1A1A1A" fontSize="9" fontFamily="monospace" fontWeight="800" textAnchor="middle" letterSpacing="0.08em">SECURE LAYER ACTIVE</text>
+        </svg>
+      )}
+
+      {title.includes("Cloud Computing") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          <g transform="translate(60, 40)">
+            <rect x="0" y="0" width="48" height="68" rx="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
+            <rect x="5" y="7" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
+            <circle cx="12" cy="13" r="2" fill="#1A1A1A" />
+            <rect x="5" y="27" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
+            <circle cx="12" cy="33" r="2" fill="#1A1A1A" />
+            <rect x="5" y="47" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
+            <circle cx="12" cy="53" r="2" fill="#1A1A1A" />
+          </g>
+
+          <path d="M 125,70 Q 140,60 155,70" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
+          <polygon points="155,70 149,66 153,74" fill="#1A1A1A" />
+          <path d="M 155,80 Q 140,90 125,80" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
+          <polygon points="125,80 131,84 127,76" fill="#1A1A1A" />
+
+          <g transform="translate(195, 45)">
+            <path d="M 10,35 A 11,11 0 0,1 18,16 A 17,17 0 0,1 48,13 A 13,13 0 0,1 60,35 Z" fill="none" stroke="#4B6189" strokeWidth="2.5" />
+            <line x1="10" y1="35" x2="60" y2="35" stroke="#4B6189" strokeWidth="2.5" />
+          </g>
+        </svg>
+      )}
+
+      {title.includes("Product Management") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          <g transform="translate(60, 45)">
+            <rect x="0" y="0" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(-6, 0, 0)" />
+            <line x1="3" y1="5" x2="15" y2="5" stroke="#4B6189" strokeWidth="1.5" transform="rotate(-6, 0, 0)" />
+            <rect x="25" y="2" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(8, 25, 2)" />
+            <line x1="28" y1="7" x2="40" y2="7" stroke="#4B6189" strokeWidth="1.5" transform="rotate(8, 25, 2)" />
+          </g>
+          <g transform="translate(210, 75)">
+            <circle cx="0" cy="0" r="28" fill="none" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" />
+            <circle cx="0" cy="0" r="18" fill="none" stroke="#1A1A1A" strokeWidth="2" />
+            <circle cx="0" cy="0" r="8" fill="#4B6189" />
+            <line x1="28" y1="-28" x2="5" y2="-5" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
+            <polygon points="3,-3 5,-10 10,-5" fill="#1A1A1A" />
+          </g>
+        </svg>
+      )}
+
+      {title.includes("Structural Analysis") && (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
+          <g transform="translate(0, 10)">
+            <line x1="50" y1="95" x2="270" y2="95" stroke="#1A1A1A" strokeWidth="2" />
+            <polyline points="50,95 105,35 160,95 215,35 270,95" fill="none" stroke="#4B6189" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="105" y1="35" x2="105" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
+            <line x1="160" y1="35" x2="160" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
+            <line x1="215" y1="35" x2="215" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
+
+            {/* Force load arrows */}
+            <line x1="105" y1="8" x2="105" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
+            <polygon points="105,31 101,24 109,24" fill="#1A1A1A" />
+
+            <line x1="215" y1="8" x2="215" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
+            <polygon points="215,31 211,24 219,24" fill="#1A1A1A" />
+          </g>
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function getRoadmapTheme(title: string) {
+  const t = title.toLowerCase();
+  if (t.includes('front') || t.includes('react') || t.includes('css')) return { primary: "#2563EB", gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)" };
+  if (t.includes('back') || t.includes('node') || t.includes('api')) return { primary: "#7C3AED", gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)" };
+  if (t.includes('ai') || t.includes('machine') || t.includes('data')) return { primary: "#EC4899", gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)" };
+  if (t.includes('cloud') || t.includes('aws') || t.includes('azure')) return { primary: "#06B6D4", gradient: "linear-gradient(135deg, #06B6D4 0%, #0369A1 100%)" };
+  if (t.includes('cyber') || t.includes('security')) return { primary: "#EF4444", gradient: "linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)" };
+  if (t.includes('devops') || t.includes('docker') || t.includes('k8s')) return { primary: "#F59E0B", gradient: "linear-gradient(135deg, #F59E0B 0%, #C2410C 100%)" };
+  if (t.includes('mobile') || t.includes('ios') || t.includes('android')) return { primary: "#10B981", gradient: "linear-gradient(135deg, #10B981 0%, #047857 100%)" };
+  return { primary: "#4B6189", gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)" };
+}
+
+function parseRoadmapMetadata(graphJson: string) {
+  try {
+    const raw = JSON.parse(graphJson);
+    const nodes = Array.isArray(raw.nodes) ? raw.nodes : [];
+    const totalTopics = nodes.length;
+    let duration = 0;
+    const diffCounts: Record<string, number> = {};
+    for (const node of nodes) {
+      if (node.data?.durationMinutes) duration += node.data.durationMinutes;
+      if (node.data?.difficulty) {
+        diffCounts[node.data.difficulty] = (diffCounts[node.data.difficulty] || 0) + 1;
+      }
+    }
+    const hours = Math.floor(duration / 60);
+    const mins = duration % 60;
+    const durationStr = duration > 0 ? `${hours > 0 ? `${hours}h ` : ''}${mins > 0 ? `${mins}m` : ''}`.trim() : null;
+
+    let difficulty = null;
+    if (Object.keys(diffCounts).length > 0) {
+      let max = 0;
+      let mostFreq = "";
+      for (const [k, v] of Object.entries(diffCounts)) {
+        if (v > max) { max = v; mostFreq = k; }
+      }
+      difficulty = mostFreq.charAt(0).toUpperCase() + mostFreq.slice(1);
+    }
+    return { totalTopics, durationStr, difficulty };
+  } catch (e) {
+    return { totalTopics: 0, durationStr: null, difficulty: null };
+  }
+}
+
+function CoursesContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
+  // Keep category detail inside the authenticated hub (/search), not the public /courses landing.
+  if (categoryParam) {
+    return <CategoryDetailedView hubBasePath="/search" />;
+  }
+
+  return <ExploreCatalog />;
+}
+
+function ExploreCatalog() {
+  const router = useRouter();
+
+  // Tab State
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+  const [roadmaps, setRoadmaps] = useState<RoadmapData[]>([]);
+  const [roadmapsProgress, setRoadmapsProgress] = useState<Record<string, boolean>>({});
+  const [isRoadmapsLoading, setIsRoadmapsLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "roadmaps") {
+      setIsRoadmapsLoading(true);
+      roadmapService.getPublishedRoadmaps()
+        .then(async (data) => {
+          const published = data.filter(r => r.status?.toLowerCase() === 'published');
+          setRoadmaps(published);
+
+          const progressMap: Record<string, boolean> = {};
+          try {
+            await Promise.all(published.map(async (r) => {
+              try {
+                const prog = await roadmapProgressService.getProgress(r.id);
+                const started = prog?.nodes?.some((n: any) => n.status === 'COMPLETED' || n.status === 'IN_PROGRESS');
+                progressMap[r.id] = started || false;
+              } catch (e) {
+                progressMap[r.id] = false;
+              }
+            }));
+          } catch (e) {
+            console.error("Failed to load progress for roadmaps catalog", e);
+          }
+          setRoadmapsProgress(progressMap);
+        })
+        .catch(console.error)
+        .finally(() => setIsRoadmapsLoading(false));
+    }
+  }, [activeTab]);
+
+  // Ref for the content section — used to auto-scroll into view on tab switch
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
+    setActiveTab(tab);
+    setSearchQuery("");
+    // Small delay lets React flush the state before scrolling
+    setTimeout(() => {
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
+  const handleCategorySwitch = (category: string) => {
+    const encodedCat = encodeURIComponent(category);
+    if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
+    else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
+    else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
+  };
+
+  // RENDER MAIN EXPLORE HUB DASHBOARD
+  return (
+    <div
+      style={{
+        background: `
+          radial-gradient(ellipse 55% 40% at 8% 12%, rgba(59, 130, 246, 0.16) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 35% at 92% 24%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 45% 35% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 35% at 6% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 35% at 94% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 30% at 48% 94%, rgba(249, 200, 70, 0.07) 0%, transparent 60%),
+          linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 25%, #FFFFFF 50%, #FFFFFF 100%)
+        `,
+        minHeight: "100%",
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: 1,
+        color: "#000000",
+        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
+      }}
+    >
+      <style>{`
+        .lp-category-card {
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .lp-category-card:hover {
+          border-color: var(--hover-color) !important;
+          box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
+        }
+        .lp-category-card:hover .lp-category-card-arrow {
+          stroke: var(--hover-color) !important;
+          transform: translateX(6px);
+        }
+        .lp-bootcamp-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 32px -8px rgba(75, 97, 137, 0.2);
+          border-left-color: #2563EB !important;
+        }
+        .lp-webinar-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+        }
+        @keyframes tabContentEnter {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content-panel {
+          animation: tabContentEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .lp-roadmap-premium-card {
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .lp-roadmap-premium-card:hover {
+          transform: translateY(-8px);
+          border-color: var(--hover-color) !important;
+          box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
+        }
+        .lp-roadmap-premium-card:hover .lp-roadmap-premium-banner {
+          transform: scale(1.05);
+        }
+        .lp-roadmap-premium-card:hover .lp-roadmap-arrow {
+          stroke: var(--hover-color) !important;
+          transform: translateX(6px);
+        }
+      `}</style>
+
+      {/* Content clears the floating navbar; page gradient runs underneath it */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "1400px",
+          margin: "0 auto",
+          padding: "88px 48px 24px",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
+        }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(2rem, 5vw, 3.2rem)",
+            fontWeight: 900,
+            color: "#1A1A1A",
+            letterSpacing: "-0.04em",
+            marginBottom: "12px",
+            lineHeight: "1.15",
+            fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
+          }}
+        >
+          EXPLORE{" "}
+          <span
+            style={{
+              position: "relative",
+              display: "inline-block",
+              padding: "4px 16px",
+              border: "2px solid #4B6189",
+              borderRadius: "6px",
+              marginLeft: "8px",
+              background: "#FFFFFF"
+            }}
+          >
+            <GradientText
+              colors={['#2563EB', '#0EA5E9', '#06B6D4', '#10B981', '#4F46E5', '#2563EB']}
+              animationSpeed={8}
+            >
+              Arcade Hub
+            </GradientText>
+            {/* Top-left handle stick and dot */}
+            <span style={{ position: "absolute", left: "-2px", top: "-14px", width: "2px", height: "14px", background: "#4B6189" }}>
+              <span style={{ position: "absolute", left: "-3px", top: "-6px", width: "8px", height: "8px", borderRadius: "50%", background: "#4B6189" }} />
+            </span>
+            {/* Bottom-right handle stick and dot */}
+            <span style={{ position: "absolute", right: "-2px", bottom: "-14px", width: "2px", height: "14px", background: "#4B6189" }}>
+              <span style={{ position: "absolute", right: "-3px", bottom: "-6px", width: "8px", height: "8px", borderRadius: "50%", background: "#4B6189" }} />
+            </span>
+            {/* Top-right corner handle */}
+            <span style={{ position: "absolute", right: "-4px", top: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
+            {/* Bottom-left corner handle */}
+            <span style={{ position: "absolute", left: "-4px", bottom: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
+          </span>
+        </h1>
+        <p
+          style={{
+            fontSize: "0.92rem",
+            color: "#4B5563",
+            maxWidth: "600px",
+            margin: "18px auto 0",
+            lineHeight: "1.6",
+            textAlign: "center",
+            fontWeight: 500
+          }}
+        >
+          Access self-paced categories, practical masterclass bootcamps, and live expert webinars, all customized in one unified interface.
+        </p>
+      </div>
+
+      <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px 0px" }}>
+
+        {/* Tab Selection Cards (Top 3 Choices) - Neobrutalist design */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "24px",
+            position: "relative",
+            zIndex: 2,
+            maxWidth: "1050px",
+            width: "100%",
+            margin: "32px auto 48px"
+          }}
+        >
+          {/* Card: Courses */}
+          <motion.div
+            onClick={() => handleTabSwitch("courses")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "courses" ? 1.03 : 0.97,
+              opacity: activeTab === "courses" ? 1 : 0.7,
+              rotate: activeTab === "courses" ? -1.5 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative",
+              background: activeTab === "courses" ? "#EFF6FF" : "#FFFFFF",
+              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === "courses" ? "8px 8px 0px #3B82F6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === "courses" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "courses" ? "#2563EB" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                01 // SELF-PACED
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "courses" ? "#1E40AF" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Self-Paced Courses
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Explore available categories and select department tracks to see individual courses.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === "courses" ? 1.15 : 1,
+                y: activeTab === "courses" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <rect x="36" y="36" width="88" height="48" rx="4" fill={activeTab === "courses" ? "rgba(59, 130, 246, 0.05)" : "none"} stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="44" x2="72" y2="44" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 4, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="52" x2="88" y2="52" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 6, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="44" y1="60" x2="64" y2="60" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -3, 3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="68" x2="96" y2="68" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 5, 0] } : {}} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.line x1="52" y1="76" x2="80" y2="76" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -2, 2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <path d="M 12,28 Q 20,20 18,12" stroke={activeTab === "courses" ? "#3B82F6" : "#4B6189"} strokeWidth="1.5" strokeLinecap="round" fill="none" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="140" cy="24" r="3" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.4, 1] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "fill 0.3s" }} />
+                <motion.circle cx="148" cy="40" r="1.5" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.6, 1] } : {}} transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "fill 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+
+          {/* Card: Events (Bootcamps + Webinars) */}
+          <motion.div
+            onClick={() => handleTabSwitch("bootcamps")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "bootcamps" ? 1.03 : 0.97,
+              opacity: activeTab === "bootcamps" ? 1 : 0.7,
+              rotate: activeTab === "bootcamps" ? 0.5 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative",
+              background: activeTab === "bootcamps" ? "#F5F3FF" : "#FFFFFF",
+              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === "bootcamps" ? "8px 8px 0px #8B5CF6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === "bootcamps" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "bootcamps" ? "#7C3AED" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                02 // INTERACTIVE
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "bootcamps" ? "#5B21B6" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Events
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === "bootcamps" ? 1.15 : 1,
+                y: activeTab === "bootcamps" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "bootcamps" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
+                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+
+          {/* Card: Articles */}
+          <motion.div
+            onClick={() => handleTabSwitch("articles")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "articles" ? 1.03 : 0.97,
+              opacity: activeTab === "articles" ? 1 : 0.7,
+              rotate: activeTab === "articles" ? 1.5 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative",
+              background: activeTab === "articles" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "articles" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === "articles" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === "articles" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "articles" ? "#1E3A8A" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                03 // ARTICLES
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "articles" ? "#0F172A" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Articles
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Read comprehensive articles, insightful guides, and technical documentation to deepen your knowledge.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === "articles" ? 1.15 : 1,
+                y: activeTab === "articles" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+
+          {/* Card: Roadmaps */}
+          <motion.div
+            onClick={() => handleTabSwitch("roadmaps")}
+            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
+            animate={{
+              scale: activeTab === "roadmaps" ? 1.03 : 0.97,
+              opacity: activeTab === "roadmaps" ? 1 : 0.7,
+              rotate: activeTab === "roadmaps" ? -0.5 : 0
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{
+              position: "relative",
+              background: activeTab === "roadmaps" ? "#ECFDF5" : "#FFFFFF",
+              border: activeTab === "roadmaps" ? "3px solid #10B981" : "2px solid #E5E7EB",
+              borderRadius: "20px",
+              padding: "24px 20px",
+              cursor: "pointer",
+              textAlign: "left",
+              boxShadow: activeTab === "roadmaps" ? "8px 8px 0px #10B981" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              minHeight: "260px",
+              zIndex: activeTab === "roadmaps" ? 3 : 1,
+              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: "0.68rem",
+                fontWeight: "800",
+                color: activeTab === "roadmaps" ? "#047857" : "#6B7280",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+                transition: "color 0.3s"
+              }}>
+                04 // GUIDED PATHS
+              </div>
+              <h3 style={{
+                fontSize: "1.15rem",
+                fontWeight: "800",
+                color: activeTab === "roadmaps" ? "#064E3B" : "#1A1A1A",
+                margin: "0 0 8px",
+                lineHeight: "1.2",
+                transition: "color 0.3s"
+              }}>
+                Learning Roadmaps
+              </h3>
+              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
+                Follow structured learning paths and visually track your progress.
+              </p>
+            </div>
+            {/* Minimalist Sketch Illustration */}
+            <motion.div
+              animate={{
+                scale: activeTab === "roadmaps" ? 1.15 : 1,
+                y: activeTab === "roadmaps" ? -5 : 0
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              style={{ width: "100%", height: "65px" }}
+            >
+              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
+                <path d="M 30,80 Q 80,40 130,80" fill="none" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="30" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.circle cx="80" cy="60" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.6 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <motion.circle cx="130" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 1.2 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 30,80 L 26,76 M 30,80 L 34,76 M 30,80 L 30,86" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+              </svg>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Full-Width Search and Filters Row */}
+        <div
+          style={{
+            display: "flex",
+            gap: "16px",
+            alignItems: "center",
+            width: "100%",
+            background: "#FFFFFF",
+            border: isSearchFocused ? "2px solid #4B6189" : "1px solid #E5E7EB",
+            borderRadius: "16px",
+            padding: isSearchFocused ? "14px 22px" : "15px 23px",
+            marginBottom: "40px",
+            boxShadow: isSearchFocused
+              ? "0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 0 4px rgba(59, 130, 246, 0.1)"
+              : "0 4px 12px rgba(0, 0, 0, 0.02)",
+            transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+            cursor: "text"
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={isSearchFocused ? "#4B6189" : "#9CA3AF"}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: "stroke 0.3s ease" }}
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder={`Search available ${activeTab}...`}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            suppressHydrationWarning
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              fontSize: "1rem",
+              fontWeight: "500",
+              color: "#111827",
+              background: "transparent"
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#9CA3AF",
+                borderRadius: "50%",
+                transition: "background 0.2s, color 0.2s"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#F3F4F6";
+                e.currentTarget.style.color = "#1F2937";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "none";
+                e.currentTarget.style.color = "#9CA3AF";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+        </div>
+        {/* Tab content panels — ref used for auto-scroll on tab switch */}
+        <div
+          ref={contentRef}
+          style={{ scrollMarginTop: "100px" }}
+        >
+          {(() => {
+            const query = searchQuery.toLowerCase();
+            const filteredCategories = searchQuery
+              ? categoriesList.filter(cat => cat.toLowerCase().includes(query) || CATEGORY_DATA[cat]?.desc.toLowerCase().includes(query))
+              : categoriesList;
+
+            const itemsPerPage = 8;
+            const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+            const currentCategories = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+            let searchResults: any[] = [];
+            if (searchQuery) {
+              categoriesList.forEach(cat => {
+
+                const data = CATEGORY_DATA[cat];
+                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                if (activeTab === "courses") {
+                  data.courses.forEach(course => {
+                    if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
+                      searchResults.push({ ...course, category: cat, type: 'Course' });
+                    }
+                  });
+                } else if (activeTab === "bootcamps") {
+                  data.bootcamps.forEach(bootcamp => {
+                    if (bootcamp.title.toLowerCase().includes(query) || bootcamp.desc.toLowerCase().includes(query)) {
+                      searchResults.push({ ...bootcamp, category: cat, type: 'Bootcamp' });
+                    }
+                  });
+                } else if (activeTab === "articles") {
+                  data.resources.forEach(resource => {
+                    if (resource.title.toLowerCase().includes(query)) {
+                      searchResults.push({ ...resource, category: cat, type: 'Article' });
+                    }
+                  });
+                }
+              });
+
+              if (activeTab === "bootcamps") {
+                WEBINARS_DATA.forEach(webinar => {
+                  if (webinar.title.toLowerCase().includes(query)) {
+                    searchResults.push({ ...webinar, type: 'Webinar' });
+                  }
+                });
+              }
+            }
+
+            return (
+              <div className="tab-content-panel">
+                {searchQuery && (
+                  <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "#4B5563" }}>
+                    Found {filteredCategories.length} department{filteredCategories.length === 1 ? '' : 's'} and {searchResults.length} item{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+                  </div>
+                )}
+
+                {(currentCategories.length > 0 || !searchQuery) && (
+                  <>
+                    {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Departments</h3>}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+                      {currentCategories
+                        .map((cat) => {
+
+                          const data = CATEGORY_DATA[cat];
+                          const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                          return (
+                            <div
+                              key={cat}
+                              onClick={() => handleCategorySwitch(cat)}
+                              style={{
+                                position: "relative",
+                                borderRadius: "16px",
+                                background: "#FFFFFF",
+                                border: "1px solid #E5E7EB",
+                                overflow: "hidden",
+                                minHeight: "380px",
+                                cursor: "pointer",
+                                display: "flex",
+                                flexDirection: "column",
+                                // Pass color parameters to static CSS variables for hover effects
+                                ["--hover-color" as any]: themeColor,
+                                ["--hover-shadow" as any]: `${themeColor}2A`, // with 16% opacity (Hex 2A)
+                              }}
+                              className="lp-category-card"
+                            >
+                              {/* Top Illustration Header */}
+                              <div
+                                style={{
+                                  height: "160px",
+                                  width: "100%",
+                                  background: "#F8FAFC", // soft light slate background for illustration
+                                  borderBottom: "1px solid #F1F5F9",
+                                  position: "relative",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  overflow: "hidden"
+                                }}
+                              >
+                                <CategoryHeaderIllustration category={cat} activeTab={activeTab} />
+                              </div>
+
+                              {/* Card Content Section */}
+                              <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                                <div>
+                                  {/* Title and Pill Row */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
+                                    <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
+                                      {cat}
+                                    </h3>
+                                  </div>
+
+                                  <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
+                                    {data.desc}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  {/* Card Bottom Row with Explore text and simple arrow */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: "0.85rem", fontWeight: "700", color: themeColor }}>
+                                      Explore Category
+                                    </span>
+                                    <svg
+                                      className="lp-category-card-arrow"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="#9CA3AF"
+                                      strokeWidth="2.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      style={{ transition: "all 0.3s ease" }}
+                                    >
+                                      <line x1="5" y1="12" x2="19" y2="12" />
+                                      <polyline points="12 5 19 12 12 19" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </>
+                )}
+
+                {/* Individual Items Grid */}
+                {searchQuery && searchResults.length > 0 && (
+                  <div style={{ marginTop: "40px" }}>
+                    <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : activeTab === "articles" ? "Articles" : "Bootcamps"}</h3>
+                    <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+                      {searchResults.map((item, idx) => {
+                        if (activeTab === "courses") {
+                          return (
+                            <CourseCard
+                              key={idx}
+                              course={item}
+                              index={idx}
+                              activeCategoryName={item.category}
+                              activeData={CATEGORY_DATA[item.category]}
+                              router={router}
+                              realRating={4.8}
+                              realReviewsCount={124}
+                            />
+                          );
+                        }
+
+                        const catColor = CATEGORY_DATA[item.category]?.colors?.primary || "#3B82F6";
+                        return (
+                          <div key={idx} style={{
+                            background: "#FFFFFF",
+                            border: "1px solid #E5E7EB",
+                            borderRadius: "16px",
+                            padding: "24px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "12px",
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                            transition: "transform 0.2s, box-shadow 0.2s",
+                            cursor: "pointer"
+                          }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "translateY(-4px)";
+                              e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "none";
+                              e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
+                            }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColor }} />
+                              <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>
+                                {item.category} • {item.type}
+                              </span>
+                            </div>
+                            <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{item.title}</h3>
+                            {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "#4B5563", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
+                            <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "#374151", flexWrap: "wrap" }}>
+                              {item.duration && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
+                              {item.level && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
+                              {item.date && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
+                              {item.readTime && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* No Results Fallback */}
+                {searchQuery && filteredCategories.length === 0 && searchResults.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E5E7EB", marginTop: "40px" }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "#111827" }}>No results found</h3>
+                    <p style={{ margin: 0, color: "#6B7280" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
+                  </div>
+                )}
+
+                {!searchQuery && totalPages > 1 && (
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #E5E7EB",
+                        background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
+                        color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                        fontWeight: "500",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      Previous
+                    </button>
+                    <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #E5E7EB",
+                        background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
+                        color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                        cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                        fontWeight: "500",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+        </div>{/* end contentRef wrapper */}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+
+function CategoryHeroIllustration({ category }: { category: string }) {
+  switch (category) {
+    case "Computer Science":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          {/* Monitor */}
+          <g transform="translate(40, 30)">
+            <rect x="0" y="0" width="120" height="90" rx="8" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="8" y="8" width="104" height="65" rx="4" fill="#FFFFFF" />
+            <path d="M 66,75 H 85 L 82,85 H 66 Z" fill="#4E608A" />
             {/* Head circuit lines/details */}
             <path d="M 100,50 L 100,30" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" />
             <circle cx="100" cy="30" r="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
@@ -837,1389 +2409,6 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
       );
     default:
       return null;
-  }
-}
-
-function WebinarCardHeader({ title, status, duration, category }: { title: string; status: string; duration: string; category: string }) {
-  return (
-    <div style={{ position: "relative", width: "100%", height: "150px", overflow: "hidden", background: "#FAF8F5", borderBottom: "2px solid #1A1A1A" }}>
-      {/* Blueprint grid background */}
-      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }} viewBox="0 0 320 150">
-        <defs>
-          <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
-            <path d="M 16 0 L 0 0 0 16" fill="none" stroke="rgba(26,26,26,0.06)" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#gridPattern)" />
-      </svg>
-
-      {/* Visual illustration based on title */}
-      {title.includes("Generative AI") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          <line x1="60" y1="35" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
-          <line x1="260" y1="35" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
-          <line x1="80" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
-          <line x1="240" y1="115" x2="160" y2="75" stroke="#4B6189" strokeWidth="1.5" />
-          <line x1="60" y1="35" x2="30" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
-          <line x1="260" y1="35" x2="290" y2="75" stroke="#1A1A1A" strokeWidth="1" strokeDasharray="2 2" />
-
-          {/* Dotted concentric outer ring */}
-          <circle cx="160" cy="75" r="32" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
-          <circle cx="160" cy="75" r="12" fill="#4B6189" />
-          <circle cx="160" cy="75" r="4" fill="#FFFFFF" />
-
-          {/* Nodes */}
-          <circle cx="60" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="260" cy="35" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="80" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="240" cy="115" r="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-          <circle cx="30" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
-          <circle cx="290" cy="75" r="4" fill="#FFFFFF" stroke="#4B6189" strokeWidth="1.5" />
-        </svg>
-      )}
-
-      {title.includes("React & Next.js") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          <g transform="translate(100, 75)">
-            <path d="M -35,15 A 35,35 0 0,1 35,15" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round" fill="none" />
-            <path d="M -35,15 A 35,35 0 0,1 15,-30" stroke="#4B6189" strokeWidth="4" strokeLinecap="round" fill="none" />
-            <line x1="0" y1="10" x2="22" y2="-20" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="0" cy="10" r="4" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
-          </g>
-          <g transform="translate(220, 75)">
-            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#4B6189" strokeWidth="2" fill="none" transform="rotate(30)" />
-            <ellipse cx="0" cy="0" rx="36" ry="13" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="3 3" fill="none" transform="rotate(-30)" />
-            <circle cx="0" cy="0" r="6" fill="#4B6189" stroke="#1A1A1A" strokeWidth="1.5" />
-          </g>
-        </svg>
-      )}
-
-      {title.includes("Secure & Resilient APIs") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          {/* Schematic backdrop */}
-          <text x="35" y="32" fill="#4B6189" fontSize="9.5" fontFamily="monospace" fontWeight="800" opacity="0.8" letterSpacing="0.02em">GET /api/v1/auth/session</text>
-          <line x1="35" y1="40" x2="160" y2="40" stroke="#4B6189" strokeWidth="1" strokeDasharray="2 2" />
-
-          <g transform="translate(160, 85)">
-            {/* Outline shield */}
-            <path d="M-18,-15 L18,-15 V5 C18,17 0,27 0,31 C0,27 -18,17 -18,5 Z" fill="none" stroke="#1A1A1A" strokeWidth="2.5" />
-            <path d="M-12,-10 L12,-10 V5 C12,14 0,22 0,25 C0,22 -12,14 -12,5 Z" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="0" cy="-2" r="3.5" fill="#1A1A1A" />
-            <polygon points="-2.5,-2 2.5,-2 3.5,10 -3.5,10" fill="#1A1A1A" />
-          </g>
-          <text x="160" y="132" fill="#1A1A1A" fontSize="9" fontFamily="monospace" fontWeight="800" textAnchor="middle" letterSpacing="0.08em">SECURE LAYER ACTIVE</text>
-        </svg>
-      )}
-
-      {title.includes("Cloud Computing") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          <g transform="translate(60, 40)">
-            <rect x="0" y="0" width="48" height="68" rx="6" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2" />
-            <rect x="5" y="7" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="13" r="2" fill="#1A1A1A" />
-            <rect x="5" y="27" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="33" r="2" fill="#1A1A1A" />
-            <rect x="5" y="47" width="38" height="12" rx="2.5" fill="none" stroke="#4B6189" strokeWidth="1.5" />
-            <circle cx="12" cy="53" r="2" fill="#1A1A1A" />
-          </g>
-
-          <path d="M 125,70 Q 140,60 155,70" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
-          <polygon points="155,70 149,66 153,74" fill="#1A1A1A" />
-          <path d="M 155,80 Q 140,90 125,80" fill="none" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" />
-          <polygon points="125,80 131,84 127,76" fill="#1A1A1A" />
-
-          <g transform="translate(195, 45)">
-            <path d="M 10,35 A 11,11 0 0,1 18,16 A 17,17 0 0,1 48,13 A 13,13 0 0,1 60,35 Z" fill="none" stroke="#4B6189" strokeWidth="2.5" />
-            <line x1="10" y1="35" x2="60" y2="35" stroke="#4B6189" strokeWidth="2.5" />
-          </g>
-        </svg>
-      )}
-
-      {title.includes("Product Management") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          <g transform="translate(60, 45)">
-            <rect x="0" y="0" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(-6, 0, 0)" />
-            <line x1="3" y1="5" x2="15" y2="5" stroke="#4B6189" strokeWidth="1.5" transform="rotate(-6, 0, 0)" />
-            <rect x="25" y="2" width="18" height="18" rx="1.5" fill="none" stroke="#1A1A1A" strokeWidth="2" transform="rotate(8, 25, 2)" />
-            <line x1="28" y1="7" x2="40" y2="7" stroke="#4B6189" strokeWidth="1.5" transform="rotate(8, 25, 2)" />
-          </g>
-          <g transform="translate(210, 75)">
-            <circle cx="0" cy="0" r="28" fill="none" stroke="#4B6189" strokeWidth="1.5" strokeDasharray="3 3" />
-            <circle cx="0" cy="0" r="18" fill="none" stroke="#1A1A1A" strokeWidth="2" />
-            <circle cx="0" cy="0" r="8" fill="#4B6189" />
-            <line x1="28" y1="-28" x2="5" y2="-5" stroke="#1A1A1A" strokeWidth="2.5" strokeLinecap="round" />
-            <polygon points="3,-3 5,-10 10,-5" fill="#1A1A1A" />
-          </g>
-        </svg>
-      )}
-
-      {title.includes("Structural Analysis") && (
-        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} viewBox="0 0 320 150">
-          <g transform="translate(0, 10)">
-            <line x1="50" y1="95" x2="270" y2="95" stroke="#1A1A1A" strokeWidth="2" />
-            <polyline points="50,95 105,35 160,95 215,35 270,95" fill="none" stroke="#4B6189" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="105" y1="35" x2="105" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
-            <line x1="160" y1="35" x2="160" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
-            <line x1="215" y1="35" x2="215" y2="95" stroke="#1A1A1A" strokeWidth="1.5" strokeDasharray="2 2" />
-
-            {/* Force load arrows */}
-            <line x1="105" y1="8" x2="105" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
-            <polygon points="105,31 101,24 109,24" fill="#1A1A1A" />
-
-            <line x1="215" y1="8" x2="215" y2="28" stroke="#1A1A1A" strokeWidth="2.5" />
-            <polygon points="215,31 211,24 219,24" fill="#1A1A1A" />
-          </g>
-        </svg>
-      )}
-    </div>
-  );
-}
-
-function getRoadmapTheme(title: string) {
-  const t = title.toLowerCase();
-  if (t.includes('front') || t.includes('react') || t.includes('css')) return { primary: "#2563EB", gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)" };
-  if (t.includes('back') || t.includes('node') || t.includes('api')) return { primary: "#7C3AED", gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)" };
-  if (t.includes('ai') || t.includes('machine') || t.includes('data')) return { primary: "#EC4899", gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)" };
-  if (t.includes('cloud') || t.includes('aws') || t.includes('azure')) return { primary: "#06B6D4", gradient: "linear-gradient(135deg, #06B6D4 0%, #0369A1 100%)" };
-  if (t.includes('cyber') || t.includes('security')) return { primary: "#EF4444", gradient: "linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)" };
-  if (t.includes('devops') || t.includes('docker') || t.includes('k8s')) return { primary: "#F59E0B", gradient: "linear-gradient(135deg, #F59E0B 0%, #C2410C 100%)" };
-  if (t.includes('mobile') || t.includes('ios') || t.includes('android')) return { primary: "#10B981", gradient: "linear-gradient(135deg, #10B981 0%, #047857 100%)" };
-  return { primary: "#4B6189", gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)" };
-}
-
-function parseRoadmapMetadata(graphJson: string) {
-  try {
-    const raw = JSON.parse(graphJson);
-    const nodes = Array.isArray(raw.nodes) ? raw.nodes : [];
-    const totalTopics = nodes.length;
-    let duration = 0;
-    const diffCounts: Record<string, number> = {};
-    for (const node of nodes) {
-      if (node.data?.durationMinutes) duration += node.data.durationMinutes;
-      if (node.data?.difficulty) {
-        diffCounts[node.data.difficulty] = (diffCounts[node.data.difficulty] || 0) + 1;
-      }
-    }
-    const hours = Math.floor(duration / 60);
-    const mins = duration % 60;
-    const durationStr = duration > 0 ? `${hours > 0 ? `${hours}h ` : ''}${mins > 0 ? `${mins}m` : ''}`.trim() : null;
-    
-    let difficulty = null;
-    if (Object.keys(diffCounts).length > 0) {
-      let max = 0;
-      let mostFreq = "";
-      for (const [k, v] of Object.entries(diffCounts)) {
-        if (v > max) { max = v; mostFreq = k; }
-      }
-      difficulty = mostFreq.charAt(0).toUpperCase() + mostFreq.slice(1);
-    }
-    return { totalTopics, durationStr, difficulty };
-  } catch (e) {
-    return { totalTopics: 0, durationStr: null, difficulty: null };
-  }
-}
-
-function CoursesContent() {
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category");
-
-  // Keep category detail inside the authenticated hub (/search), not the public /courses landing.
-  if (categoryParam) {
-    return <CategoryDetailedView hubBasePath="/search" />;
-  }
-
-  return <ExploreCatalog />;
-}
-
-function ExploreCatalog() {
-  const router = useRouter();
-
-  // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars" | "roadmaps">("courses");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [roadmaps, setRoadmaps] = useState<RoadmapData[]>([]);
-  const [roadmapsProgress, setRoadmapsProgress] = useState<Record<string, boolean>>({});
-  const [isRoadmapsLoading, setIsRoadmapsLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeTab === "roadmaps") {
-      setIsRoadmapsLoading(true);
-      roadmapService.getPublishedRoadmaps()
-        .then(async (data) => {
-          const published = data.filter(r => r.status?.toLowerCase() === 'published');
-          setRoadmaps(published);
-          
-          const progressMap: Record<string, boolean> = {};
-          try {
-            await Promise.all(published.map(async (r) => {
-              try {
-                const prog = await roadmapProgressService.getProgress(r.id);
-                const started = prog?.nodes?.some((n: any) => n.status === 'COMPLETED' || n.status === 'IN_PROGRESS');
-                progressMap[r.id] = started || false;
-              } catch (e) {
-                progressMap[r.id] = false;
-              }
-            }));
-          } catch (e) {
-            console.error("Failed to load progress for roadmaps catalog", e);
-          }
-          setRoadmapsProgress(progressMap);
-        })
-        .catch(console.error)
-        .finally(() => setIsRoadmapsLoading(false));
-    }
-  }, [activeTab]);
-
-  // Ref for the content section — used to auto-scroll into view on tab switch
-  const contentRef = React.useRef<HTMLDivElement>(null);
-
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "webinars" | "roadmaps") => {
-    setActiveTab(tab);
-    setSearchQuery("");
-    // Small delay lets React flush the state before scrolling
-    setTimeout(() => {
-      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
-  };
-
-  const handleCategorySwitch = (category: string) => {
-    router.push(`/search?category=${encodeURIComponent(category)}`);
-  };
-
-  // RENDER MAIN EXPLORE HUB DASHBOARD
-  return (
-    <div
-      style={{
-        background: `
-          radial-gradient(ellipse 55% 40% at 8% 12%, rgba(59, 130, 246, 0.16) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 35% at 92% 24%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
-          radial-gradient(ellipse 45% 35% at 5% 52%, rgba(155, 93, 229, 0.08) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 35% at 6% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 35% at 94% 76%, rgba(14, 165, 233, 0.11) 0%, transparent 60%),
-          radial-gradient(ellipse 40% 30% at 48% 94%, rgba(249, 200, 70, 0.07) 0%, transparent 60%),
-          linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 25%, #FFFFFF 50%, #FFFFFF 100%)
-        `,
-        minHeight: "100%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: 1,
-        color: "#000000",
-        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
-      }}
-    >
-      <style>{`
-        .lp-category-card {
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        .lp-category-card:hover {
-          transform: translateY(-8px);
-          border-color: var(--hover-color) !important;
-          box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
-        }
-        .lp-category-card:hover .lp-category-card-arrow {
-          stroke: var(--hover-color) !important;
-          transform: translateX(6px);
-        }
-        .lp-bootcamp-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 32px -8px rgba(75, 97, 137, 0.2);
-          border-left-color: #2563EB !important;
-        }
-        .lp-webinar-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
-        }
-        @keyframes tabContentEnter {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .tab-content-panel {
-          animation: tabContentEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .lp-roadmap-premium-card {
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        .lp-roadmap-premium-card:hover {
-          transform: translateY(-8px);
-          border-color: var(--hover-color) !important;
-          box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
-        }
-        .lp-roadmap-premium-card:hover .lp-roadmap-premium-banner {
-          transform: scale(1.05);
-        }
-        .lp-roadmap-premium-card:hover .lp-roadmap-arrow {
-          stroke: var(--hover-color) !important;
-          transform: translateX(6px);
-        }
-      `}</style>
-
-      {/* Content clears the floating navbar; page gradient runs underneath it */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1400px",
-          margin: "0 auto",
-          padding: "88px 48px 24px",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "clamp(2rem, 5vw, 3.2rem)",
-            fontWeight: 900,
-            color: "#1A1A1A",
-            letterSpacing: "-0.04em",
-            marginBottom: "12px",
-            lineHeight: "1.15",
-            fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
-          }}
-        >
-          EXPLORE{" "}
-          <span
-            style={{
-              position: "relative",
-              display: "inline-block",
-              padding: "4px 16px",
-              border: "2px solid #4B6189",
-              borderRadius: "6px",
-              marginLeft: "8px",
-              background: "#FFFFFF"
-            }}
-          >
-            <GradientText
-              colors={['#2563EB', '#0EA5E9', '#06B6D4', '#10B981', '#4F46E5', '#2563EB']}
-              animationSpeed={8}
-            >
-              Arcade Hub
-            </GradientText>
-            {/* Top-left handle stick and dot */}
-            <span style={{ position: "absolute", left: "-2px", top: "-14px", width: "2px", height: "14px", background: "#4B6189" }}>
-              <span style={{ position: "absolute", left: "-3px", top: "-6px", width: "8px", height: "8px", borderRadius: "50%", background: "#4B6189" }} />
-            </span>
-            {/* Bottom-right handle stick and dot */}
-            <span style={{ position: "absolute", right: "-2px", bottom: "-14px", width: "2px", height: "14px", background: "#4B6189" }}>
-              <span style={{ position: "absolute", right: "-3px", bottom: "-6px", width: "8px", height: "8px", borderRadius: "50%", background: "#4B6189" }} />
-            </span>
-            {/* Top-right corner handle */}
-            <span style={{ position: "absolute", right: "-4px", top: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
-            {/* Bottom-left corner handle */}
-            <span style={{ position: "absolute", left: "-4px", bottom: "-4px", width: "8px", height: "8px", border: "1px solid #FFFFFF", background: "#4B6189" }} />
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: "0.92rem",
-            color: "#4B5563",
-            maxWidth: "600px",
-            margin: "18px auto 0",
-            lineHeight: "1.6",
-            textAlign: "center",
-            fontWeight: 500
-          }}
-        >
-          Access self-paced categories, practical masterclass bootcamps, and live expert webinars, all customized in one unified interface.
-        </p>
-      </div>
-
-      <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px 0px" }}>
-
-        {/* Tab Selection Cards (Top 3 Choices) - Neobrutalist design */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "24px",
-            position: "relative",
-            zIndex: 2,
-            maxWidth: "1050px",
-            width: "100%",
-            margin: "32px auto 48px"
-          }}
-        >
-          {/* Card: Courses */}
-          <motion.div
-            onClick={() => handleTabSwitch("courses")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "courses" ? 1.03 : 0.97,
-              opacity: activeTab === "courses" ? 1 : 0.7,
-              rotate: activeTab === "courses" ? -1.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "courses" ? "#EFF6FF" : "#FFFFFF",
-              border: activeTab === "courses" ? "3px solid #3B82F6" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "courses" ? "8px 8px 0px #3B82F6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "courses" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "courses" ? "#2563EB" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                01 // SELF-PACED
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "courses" ? "#1E40AF" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Self-Paced Courses
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Explore available categories and select department tracks to see individual courses.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "courses" ? 1.15 : 1,
-                y: activeTab === "courses" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="30" y="30" width="100" height="60" rx="8" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
-                <rect x="36" y="36" width="88" height="48" rx="4" fill={activeTab === "courses" ? "rgba(59, 130, 246, 0.05)" : "none"} stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 16,98 L 144,98 L 132,106 L 28,106 Z" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <rect x="68" y="100" width="24" height="4" rx="1" fill="none" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="44" x2="72" y2="44" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 4, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="52" x2="88" y2="52" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 6, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="44" y1="60" x2="64" y2="60" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -3, 3, 0] } : {}} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="52" y1="68" x2="96" y2="68" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, 5, 0] } : {}} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.line x1="52" y1="76" x2="80" y2="76" stroke={activeTab === "courses" ? "#3B82F6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "courses" ? { x: [0, -2, 2, 0] } : {}} transition={{ repeat: Infinity, duration: 2.1, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <path d="M 12,28 Q 20,20 18,12" stroke={activeTab === "courses" ? "#3B82F6" : "#4B6189"} strokeWidth="1.5" strokeLinecap="round" fill="none" style={{ transition: "stroke 0.3s" }} />
-                <motion.circle cx="140" cy="24" r="3" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.4, 1] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "fill 0.3s" }} />
-                <motion.circle cx="148" cy="40" r="1.5" fill={activeTab === "courses" ? "#3B82F6" : "#4B6189"} animate={activeTab === "courses" ? { scale: [1, 1.6, 1] } : {}} transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "fill 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          {/* Card: Bootcamps */}
-          <motion.div
-            onClick={() => handleTabSwitch("bootcamps")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "bootcamps" ? 1.03 : 0.97,
-              opacity: activeTab === "bootcamps" ? 1 : 0.7,
-              rotate: activeTab === "bootcamps" ? 0.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "bootcamps" ? "#F5F3FF" : "#FFFFFF",
-              border: activeTab === "bootcamps" ? "3px solid #8B5CF6" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "bootcamps" ? "8px 8px 0px #8B5CF6" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "bootcamps" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#7C3AED" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                02 // INTERACTIVE
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "bootcamps" ? "#5B21B6" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Events & Bootcamps
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Join live, interactive, mentor-led programs designed for technical skill development.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "bootcamps" ? 1.15 : 1,
-                y: activeTab === "bootcamps" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <rect x="25" y="85" width="22" height="20" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="47" y="65" width="22" height="40" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <rect x="69" y="45" width="22" height="60" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.rect x="91" y="25" width="22" height="80" rx="3" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.05)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "bootcamps" ? { height: [80, 85, 80], y: [25, 20, 25] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.path d="M 125,25 L 128,31 L 135,32 L 130,36 L 132,43 L 125,39 L 118,43 L 120,36 L 115,32 L 122,31 Z" fill={activeTab === "bootcamps" ? "rgba(139, 92, 246, 0.2)" : "none"} stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#4B6189"} strokeWidth="1.5" strokeLinejoin="round" animate={activeTab === "bootcamps" ? { scale: [1, 1.25, 1], rotate: [0, 15, -15, 0] } : {}} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }} style={{ transformOrigin: "125px 34px", transition: "stroke 0.3s, fill 0.3s" }} />
-                <circle cx="58" cy="28" r="7" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 58,35 C 58,45 52,50 62,55" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 54,42 Q 68,36 82,30" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 82,30 L 102,15 Q 104,13 107,16 L 109,19 Q 111,22 108,24 L 88,39 Z" fill="none" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" strokeLinejoin="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 102,15 L 108,24" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="1.5" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 55,50 L 48,65" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 60,51 L 69,45" stroke={activeTab === "bootcamps" ? "#8B5CF6" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          {/* Card: Webinars */}
-          <motion.div
-            onClick={() => handleTabSwitch("webinars")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "webinars" ? 1.03 : 0.97,
-              opacity: activeTab === "webinars" ? 1 : 0.7,
-              rotate: activeTab === "webinars" ? 1.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "webinars" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "webinars" ? "3px solid #0A1931" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "webinars" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "webinars" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "webinars" ? "#1E3A8A" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                03 // EXPERT LED
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "webinars" ? "#0F172A" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Expert Webinars
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Watch recorded sessions or register for live-streamed presentations.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "webinars" ? 1.15 : 1,
-                y: activeTab === "webinars" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          {/* Card: Roadmaps */}
-          <motion.div
-            onClick={() => handleTabSwitch("roadmaps")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "roadmaps" ? 1.03 : 0.97,
-              opacity: activeTab === "roadmaps" ? 1 : 0.7,
-              rotate: activeTab === "roadmaps" ? -0.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "roadmaps" ? "#ECFDF5" : "#FFFFFF",
-              border: activeTab === "roadmaps" ? "3px solid #10B981" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "roadmaps" ? "8px 8px 0px #10B981" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "roadmaps" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "roadmaps" ? "#047857" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                04 // GUIDED PATHS
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "roadmaps" ? "#064E3B" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Learning Roadmaps
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Follow structured learning paths and visually track your progress.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "roadmaps" ? 1.15 : 1,
-                y: activeTab === "roadmaps" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <path d="M 30,80 Q 80,40 130,80" fill="none" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" style={{ transition: "stroke 0.3s" }} />
-                <motion.circle cx="30" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.circle cx="80" cy="60" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.6 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.circle cx="130" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 1.2 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 30,80 L 26,76 M 30,80 L 34,76 M 30,80 L 30,86" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
-        </div>
-
-        {/* Full-Width Search and Filters Row */}
-        <div
-          style={{
-            display: "flex",
-            gap: "16px",
-            alignItems: "center",
-            width: "100%",
-            background: "#FFFFFF",
-            border: isSearchFocused ? "2px solid #4B6189" : "1px solid #E5E7EB",
-            borderRadius: "16px",
-            padding: isSearchFocused ? "14px 22px" : "15px 23px",
-            marginBottom: "40px",
-            boxShadow: isSearchFocused
-              ? "0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 0 0 4px rgba(59, 130, 246, 0.1)"
-              : "0 4px 12px rgba(0, 0, 0, 0.02)",
-            transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-            cursor: "text"
-          }}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={isSearchFocused ? "#4B6189" : "#9CA3AF"}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ transition: "stroke 0.3s ease" }}
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder={`Search available ${activeTab}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-            suppressHydrationWarning
-            style={{
-              width: "100%",
-              border: "none",
-              outline: "none",
-              fontSize: "1rem",
-              fontWeight: "500",
-              color: "#111827",
-              background: "transparent"
-            }}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "4px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#9CA3AF",
-                borderRadius: "50%",
-                transition: "background 0.2s, color 0.2s"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#F3F4F6";
-                e.currentTarget.style.color = "#1F2937";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "none";
-                e.currentTarget.style.color = "#9CA3AF";
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* Tab content panels — ref used for auto-scroll on tab switch */}
-        <div
-          ref={contentRef}
-          style={{ scrollMarginTop: "100px" }}
-        >
-          {activeTab === "courses" && (
-            <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-                {categoriesList
-                  .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((cat) => {
-                    const data = CATEGORY_DATA[cat];
-                    return (
-                      <div
-                        key={cat}
-                        onClick={() => handleCategorySwitch(cat)}
-                        style={{
-                          position: "relative",
-                          borderRadius: "16px",
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
-                          overflow: "hidden",
-                          minHeight: "380px",
-                          cursor: "pointer",
-                          display: "flex",
-                          flexDirection: "column",
-                          // Pass color parameters to static CSS variables for hover effects
-                          ["--hover-color" as any]: data.colors.primary,
-                          ["--hover-shadow" as any]: `${data.colors.primary}2A`, // with 16% opacity (Hex 2A)
-                        }}
-                        className="lp-category-card"
-                      >
-                        {/* Top Illustration Header */}
-                        <div
-                          style={{
-                            height: "160px",
-                            width: "100%",
-                            background: "#F8FAFC", // soft light slate background for illustration
-                            borderBottom: "1px solid #F1F5F9",
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            overflow: "hidden"
-                          }}
-                        >
-                          <CategoryHeaderIllustration category={cat} />
-                        </div>
-
-                        {/* Card Content Section */}
-                        <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                          <div>
-                            {/* Title and Pill Row */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
-                                {cat}
-                              </h3>
-                            </div>
-
-                            <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 24px" }}>
-                              {data.desc}
-                            </p>
-                          </div>
-
-                          {/* Card Bottom Row with Explore text and simple arrow */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
-                              Explore Category
-                            </span>
-                            <svg
-                              className="lp-category-card-arrow"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#9CA3AF"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              style={{ transition: "all 0.3s ease" }}
-                            >
-                              <line x1="5" y1="12" x2="19" y2="12" />
-                              <polyline points="12 5 19 12 12 19" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* 2. BOOTCAMPS TAB CONTENT */}
-          {activeTab === "bootcamps" && (
-            <div className="tab-content-panel">
-              <EventDiscoveryPage 
-                typesFilter={['WORKSHOP', 'BOOTCAMP']} 
-                placeholder="Search workshops and bootcamps..." 
-                emptyStateTitle="No workshops or bootcamps found" 
-                emptyStateMessage="There are currently no published workshops or bootcamps in the system." 
-              />
-            </div>
-          )}
-
-          {/* 3. WEBINARS TAB CONTENT */}
-          {activeTab === "webinars" && (
-            <div className="tab-content-panel">
-              <EventDiscoveryPage 
-                typesFilter={['WEBINAR', 'MASTERCLASS', 'AMA']} 
-                placeholder="Search webinars, masterclasses and AMAs..." 
-                emptyStateTitle="No expert webinars found" 
-                emptyStateMessage="There are currently no published expert webinars in the system." 
-              />
-            </div>
-          )}
-
-          {/* 4. ROADMAPS TAB CONTENT */}
-          {activeTab === "roadmaps" && (
-            <div className="tab-content-panel">
-              {isRoadmapsLoading ? (
-                <div style={{ textAlign: "center", padding: "60px", color: "#6B7280" }}>
-                  <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4" />
-                  <p>Loading roadmaps...</p>
-                </div>
-              ) : roadmaps.length === 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 20px", color: "#6B7280", background: "#FFFFFF", borderRadius: "24px", border: "2px dashed #E5E7EB", margin: "0 auto", maxWidth: "800px" }}>
-                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: "24px" }}>
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                  <h3 style={{ fontSize: "1.35rem", fontWeight: "800", color: "#374151", marginBottom: "8px" }}>No Published Roadmaps</h3>
-                  <p style={{ fontSize: "0.95rem" }}>Curated learning roadmaps will appear here once published.</p>
-                </div>
-              ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" }}>
-                  {roadmaps
-                    .filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((roadmap) => {
-                      const theme = getRoadmapTheme(roadmap.title);
-                      const meta = parseRoadmapMetadata(roadmap.graphJson);
-                      return (
-                        <div
-                          key={roadmap.id}
-                          style={{
-                            position: "relative",
-                            borderRadius: "16px",
-                            background: "#FFFFFF",
-                            border: "1px solid #E5E7EB",
-                            overflow: "hidden",
-                            minHeight: "380px",
-                            cursor: "pointer",
-                            display: "flex",
-                            flexDirection: "column",
-                            ["--hover-color" as any]: theme.primary,
-                            ["--hover-shadow" as any]: `${theme.primary}2A`,
-                          }}
-                          className="lp-roadmap-premium-card"
-                          onClick={() => router.push(`/roadmap/${roadmap.id}`)}
-                        >
-                          {/* Top Banner */}
-                          <div
-                            className="lp-roadmap-premium-banner"
-                            style={{
-                              height: "140px",
-                              width: "100%",
-                              background: theme.gradient,
-                              position: "relative",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              overflow: "hidden",
-                              transition: "transform 0.4s ease"
-                            }}
-                          >
-                            <svg width="100%" height="100%" viewBox="0 0 400 140" style={{ position: "absolute", opacity: 0.15 }}>
-                                <pattern id={`pattern-${roadmap.id}`} x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                                  <circle cx="20" cy="20" r="1.5" fill="#FFFFFF" />
-                                </pattern>
-                                <rect x="0" y="0" width="100%" height="100%" fill={`url(#pattern-${roadmap.id})`} />
-                            </svg>
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
-                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                            </svg>
-                          </div>
-
-                          {/* Card Content Body */}
-                          <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                            <div>
-                              <h3 style={{ fontSize: "1.1rem", fontWeight: "800", color: "#1F2937", margin: "0 0 8px", lineHeight: "1.3" }}>
-                                {roadmap.title}
-                              </h3>
-                              <p style={{ fontSize: "0.82rem", color: "#4B5563", lineHeight: "1.5", margin: "0 0 16px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                                {roadmap.description || "Start learning the essentials of " + roadmap.title + "."}
-                              </p>
-                            </div>
-
-                            {/* Metadata Row */}
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "20px" }}>
-                              {meta.difficulty && (
-                                <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#4B5563", background: "#F3F4F6", padding: "4px 8px", borderRadius: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
-                                  <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: theme.primary }} />
-                                  {meta.difficulty}
-                                </span>
-                              )}
-                              {meta.durationStr && (
-                                <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#4B5563", background: "#F3F4F6", padding: "4px 8px", borderRadius: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                  {meta.durationStr}
-                                </span>
-                              )}
-                              {meta.totalTopics > 0 && (
-                                <span style={{ fontSize: "0.75rem", fontWeight: "600", color: "#4B5563", background: "#F3F4F6", padding: "4px 8px", borderRadius: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                                  {meta.totalTopics} Topics
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Bottom Action Row */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #F3F4F6", paddingTop: "16px" }}>
-                              <span style={{ fontSize: "0.85rem", fontWeight: "700", color: theme.primary }}>
-                                {roadmapsProgress[roadmap.id] ? "Continue Learning" : "Start Learning"}
-                              </span>
-                              <svg
-                                className="lp-roadmap-arrow"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#9CA3AF"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                style={{ transition: "all 0.3s ease" }}
-                              >
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                                <polyline points="12 5 19 12 12 19" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>{/* end contentRef wrapper */}
-      </main>
-    </div>
-  );
-}
-
-
-function CategoryHeroIllustration({ category }: { category: string }) {
-  switch (category) {
-    case "Computer Science":
-      return (
-        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Floor line */}
-          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-          {/* Monitor */}
-          <g transform="translate(40, 30)">
-            <rect x="0" y="0" width="120" height="90" rx="8" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <rect x="8" y="8" width="104" height="65" rx="4" fill="#FFFFFF" />
-            <path d="M 66,75 H 85 L 82,85 H 66 Z" fill="#4E608A" />
-            {/* Head circuit lines/details */}
-            <path d="M 100,50 L 100,30" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="100" cy="30" r="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          </g>
-
-          {/* Network structure on the right */}
-          <g transform="translate(145, 20)">
-            {/* Lines */}
-            <path d="M 30,60 L 70,30 L 100,50 L 80,90 L 30,60 Z" stroke="#BACDEB" strokeWidth="1.5" />
-            <path d="M 70,30 L 80,90" stroke="#BACDEB" strokeWidth="1.5" />
-            <path d="M 30,60 L 100,50" stroke="#BACDEB" strokeWidth="1" strokeDasharray="2 2" />
-
-            {/* Nodes */}
-            <circle cx="30" cy="60" r="6" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
-            <circle cx="70" cy="30" r="7" fill="#BACDEB" stroke="#FFFFFF" strokeWidth="1.5" />
-            <circle cx="100" cy="50" r="5" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="80" cy="90" r="6" fill="#BACDEB" stroke="#FFFFFF" strokeWidth="1.5" />
-          </g>
-
-          {/* Brain circuits floating */}
-          <path d="M 105,45 Q 120,35 130,45" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <path d="M 95,45 Q 85,35 75,50" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-          <circle cx="130" cy="45" r="2.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="75" cy="50" r="2.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-        </svg>
-      );
-    case "Information Technology":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Server rack on the left */}
-    <rect x="60" y="80" width="45" height="42" rx="4" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-    <line x1="68" y1="90" x2="97" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="90" r="1.5" fill="#E2ECF7" />
-    <line x1="68" y1="100" x2="97" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="100" r="1.5" fill="#E2ECF7" />
-    <line x1="68" y1="110" x2="97" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="110" r="1.5" fill="#E2ECF7" />
-
-    {/* Database/Server rack on the right */}
-    <rect x="195" y="80" width="45" height="42" rx="4" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-    <line x1="203" y1="90" x2="232" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="90" r="1.5" fill="#BACDEB" />
-    <line x1="203" y1="100" x2="232" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="100" r="1.5" fill="#BACDEB" />
-    <line x1="203" y1="110" x2="232" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="110" r="1.5" fill="#BACDEB" />
-
-    {/* Big Cloud in the Center */}
-    <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-
-    {/* Network Connections */}
-    {/* Cloud to Server Left */}
-    <path d="M 125,85 L 82,85 L 82,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
-    {/* Cloud to Server Right */}
-    <path d="M 175,85 L 217,85 L 217,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
-    {/* Cloud to Floor */}
-    <path d="M 150,94 L 150,130" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-
-    {/* Small laptop/pc at the bottom middle */}
-    <rect x="135" y="115" width="30" height="12" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-    <line x1="140" y1="127" x2="160" y2="127" stroke="#4E608A" strokeWidth="2" />
-
-    {/* Arrows inside cloud or around */}
-    <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-    case "Business & Management":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Briefcase */}
-    <rect x="50" y="80" width="60" height="42" rx="6" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-    {/* Handle */}
-    <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke="#4E608A" strokeWidth="1.5" fill="none" />
-    {/* Lock */}
-    <rect x="74" y="92" width="12" height="8" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1" />
-
-    {/* Pie Chart / Analytics */}
-    <circle cx="205" cy="75" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-    <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill="#4E608A" stroke="#4E608A" strokeWidth="1" />
-    <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1" />
-
-    {/* Calculator or Folder at the bottom right */}
-    <rect x="215" y="105" width="22" height="22" rx="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-    <circle cx="221" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="226" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="231" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="221" cy="116" r="1.5" fill="#4E608A" />
-    <circle cx="226" cy="116" r="1.5" fill="#4E608A" />
-    <circle cx="231" cy="116" r="1.5" fill="#4E608A" />
-
-    {/* Growing Trend Graph Arrow */}
-    <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 195,60 H 205 V 70" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-    {/* Grid lines behind Graph */}
-    <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-  </svg>
-);
-    case "Civil & Mechanical":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Blueprint background details */}
-    <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke="#F1F5F9" strokeWidth="1" />
-    <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
-
-    {/* Drafting Ruler / Triangle */}
-    <path d="M 50,120 L 110,60 L 110,120 Z" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
-
-    {/* Hard Hat in the Center/Left */}
-    <g transform="translate(30, 0)">
-      {/* Hat cap */}
-      <path d="M 85,105 C 85,75 135,75 135,105 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1.5" />
-      {/* Brim */}
-      <path d="M 75,105 H 145" stroke="#CA8A04" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M 105,75 V 82" stroke="#CA8A04" strokeWidth="1.5" />
-    </g>
-
-    {/* Gears on the Right */}
-    <g transform="translate(195, 75)">
-      {/* Gear 1 */}
-      <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Teeth */}
-      {Array.from({ length: 8 }).map((_, idx) => {
-        const angle = (idx * 360) / 8;
-        return (
-          <rect
-            key={idx}
-            x="-3"
-            y="-22"
-            width="6"
-            height="5"
-            rx="1"
-            fill="#4E608A"
-            transform={`rotate(${angle})`}
-          />
-        );
-      })}
-    </g>
-
-    <g transform="translate(230, 100)">
-      {/* Gear 2 (Smaller, interlocking) */}
-      <circle cx="0" cy="0" r="12" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Teeth */}
-      {Array.from({ length: 6 }).map((_, idx) => {
-        const angle = (idx * 360) / 6;
-        return (
-          <rect
-            key={idx}
-            x="-2"
-            y="-15"
-            width="4"
-            height="4"
-            rx="1"
-            fill="#4E608A"
-            transform={`rotate(${angle})`}
-          />
-        );
-      })}
-    </g>
-
-    {/* Compass tool */}
-    <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="140" cy="50" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-  </svg>
-);
-    case "Basic Sciences":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Test Tubes Rack */}
-    <g transform="translate(45, 75)">
-      {/* Rack base & frame */}
-      <rect x="0" y="45" width="60" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <line x1="8" y1="20" x2="8" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-      <line x1="52" y1="20" x2="52" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-      <line x1="0" y1="20" x2="60" y2="20" stroke="#4E608A" strokeWidth="1.5" />
-
-      {/* Test Tube 1 (left) */}
-      <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
-
-      {/* Test Tube 2 (right) */}
-      <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
-    </g>
-
-    {/* Chemical Flask (Center/Right) */}
-    <g transform="translate(130, 50)">
-      {/* Flask body */}
-      <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-      {/* Flask liquid */}
-      <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill="#BACDEB" />
-      {/* Bubbles */}
-      <circle cx="20" cy="35" r="2.5" fill="#4E608A" />
-      <circle cx="34" cy="22" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <circle cx="27" cy="12" r="2" fill="#4E608A" />
-    </g>
-
-    {/* Atom Symbol Floating on Right */}
-    <g transform="translate(225, 75)">
-      <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(30)" />
-      <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(-30)" />
-      <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="2" />
-
-      {/* Electrons */}
-      <circle cx="-26" cy="-6" r="3" fill="#4E608A" />
-      <circle cx="26" cy="6" r="3" fill="#BACDEB" />
-    </g>
-  </svg>
-);
-    case "Humanities & Languages":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Column structure on Left */}
-    <g transform="translate(45, 45)">
-      <rect x="0" y="75" width="50" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="5" y="70" width="40" height="5" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Pillars */}
-      <rect x="10" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="32" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Top */}
-      <path d="M 2,10 H 48 L 40,0 H 10 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-    </g>
-
-    {/* Stack of books in center */}
-    <g transform="translate(125, 75)">
-      {/* Bottom Book */}
-      <rect x="0" y="36" width="65" height="15" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
-      {/* Middle Book */}
-      <rect x="8" y="22" width="55" height="14" rx="2" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
-      {/* Top Leaning Book */}
-      <g transform="rotate(-15, 12, 10)">
-        <rect x="10" y="0" width="50" height="12" rx="2" fill="#4E608A" stroke="#4E608A" strokeWidth="1.5" />
-        <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
-      </g>
-    </g>
-
-    {/* Scroll and Quill on Right */}
-    <g transform="translate(205, 65)">
-      {/* Open Scroll / Document */}
-      <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <path d="M 5,45 H 42" stroke="#4E608A" strokeWidth="1" />
-      <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke="#BACDEB" strokeWidth="1.5" strokeLinecap="round" />
-
-      {/* Quill Pen */}
-      <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <path d="M 28,21 L 43,2" stroke="#4E608A" strokeWidth="1" />
-    </g>
-  </svg>
-);
-    case "Personal Development":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
-
-    {/* Target with Dart on Left */}
-    <g transform="translate(60, 80)">
-      <circle cx="0" cy="0" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
-
-      {/* Dart */}
-      <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-      {/* Dart flights */}
-      <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill="#4E608A" />
-    </g>
-
-    {/* Staircase/Steps on Right */}
-    <g transform="translate(150, 45)">
-      {/* Steps outline */}
-      <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke="#BACDEB" strokeWidth="1" />
-
-      {/* Person celebrating at the top step */}
-      <g transform="translate(25, -20)">
-        {/* Head */}
-        <circle cx="0" cy="-6" r="4.5" fill="#4E608A" />
-        {/* Body */}
-        <path d="M 0,-1 L 0,10" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" />
-        {/* Arms */}
-        <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-        {/* Legs */}
-        <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-      </g>
-    </g>
-
-    {/* Sparkles / Stars in the sky */}
-    <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
-  </svg>
-);
-    default:
-return null;
   }
 }
 export default function ExploreHubPage() {
