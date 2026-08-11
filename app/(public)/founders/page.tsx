@@ -251,7 +251,7 @@ export default function FoundersPage() {
           <section className="space-y-16 pt-6 pb-4">
             {/* Section Header */}
             <div className="text-center space-y-3 max-w-2xl mx-auto">
-              <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight font-sans">
+              <h2 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight font-['Dancing_Script']">
                 The Ones Who Make It Possible
               </h2>
               <p className="text-sm sm:text-base text-slate-500 font-normal leading-relaxed">
@@ -402,11 +402,8 @@ export default function FoundersPage() {
           {/* --- PLATFORM MILESTONES (HORIZONTAL CARDS) --- */}
           <section className="space-y-12 pt-4 pb-20 relative overflow-hidden">
             {/* Section Header */}
-            <div className="text-center space-y-3 max-w-2xl mx-auto relative z-20">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-100">
-                Our Evolution
-              </span>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight">
+            <div className="text-left space-y-3 max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+              <h2 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight font-['Dancing_Script']">
                 How Arcade Started ?
               </h2>
             </div>
