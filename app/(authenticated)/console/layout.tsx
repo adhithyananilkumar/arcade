@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar, Receipt } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -23,6 +23,7 @@ export default function ArcConsoleLayout({
     AuthorizationService.canManageUsers(user) ||
     AuthorizationService.canManageRoles(user) ||
     AuthorizationService.canManagePermissions(user);
+  const showInbox = AuthorizationService.canAccessConsole(user);
 
   const navItems = [
     ...(showAdminChannels
@@ -36,6 +37,9 @@ export default function ArcConsoleLayout({
       : []),
     ...(showPayments
       ? [{ name: 'Payments', href: '/console/payments', icon: Receipt, iconBg: 'bg-[#e9d5ff] text-[#4c1d95]' }]
+      : []),
+    ...(showInbox
+      ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox, iconBg: 'bg-[#dbeafe] text-[#1e40af]' }]
       : []),
     ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12]' }] : []),
   ];

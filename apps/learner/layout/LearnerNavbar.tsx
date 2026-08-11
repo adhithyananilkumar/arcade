@@ -27,7 +27,7 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
+  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
   const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
@@ -70,6 +70,15 @@ export default function LearnerNavbar() {
       })
       .catch(() => setHasChannels(false));
   }, []);
+
+  useEffect(() => {
+    const handleInboxUpdate = () => {
+      refresh();
+      fetchAdminTasks();
+    };
+    window.addEventListener('inbox-updated', handleInboxUpdate);
+    return () => window.removeEventListener('inbox-updated', handleInboxUpdate);
+  }, [refresh]);
 
   const fetchInvitations = async () => {
     try {
@@ -213,6 +222,7 @@ export default function LearnerNavbar() {
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
     if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
     if (pathname.startsWith('/console/payments')) return 'Payments';
+    if (pathname.startsWith('/console/inbox')) return 'Inbox';
     if (pathname.startsWith('/console/iam')) return 'IAM';
     return null;
   })();
@@ -281,7 +291,9 @@ export default function LearnerNavbar() {
               <Bell size={20} strokeWidth={2} />
               {(invitations.length + unreadCount + pendingAdminTasks.length) > 0 && (
                 <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-white dark:border-neutral-900 shadow-sm">
-                  {invitations.length + unreadCount + pendingAdminTasks.length > 99 ? '99+' : invitations.length + unreadCount + pendingAdminTasks.length}
+                  {(invitations.length + unreadCount + pendingAdminTasks.length) > 99
+                    ? '99+'
+                    : invitations.length + unreadCount + pendingAdminTasks.length}
                 </span>
               )}
             </button>
@@ -292,19 +304,19 @@ export default function LearnerNavbar() {
                   className="fixed inset-0 z-40 cursor-default"
                   onClick={() => setIsNotificationsOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 md:w-[420px] max-w-[90vw] flex flex-col max-h-[85vh] sm:max-h-[520px] rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/50 dark:bg-neutral-900/50">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
                       >
                         Mark all read
                       </button>
                     )}
                   </div>
-                  <div className="max-h-[420px] overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-black/5 dark:divide-white/5">
                     {invitations.length > 0 && (
                       <div className="border-b border-black/5 dark:border-white/5">
                         <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
@@ -366,12 +378,17 @@ export default function LearnerNavbar() {
                     )}
                     <NotificationList
                       notifications={notifications}
-                      onItemClick={() => setIsNotificationsOpen(false)}
+                      onItemClick={(notif) => {
+                        if (notif && !notif.read) {
+                          markRead(notif.id);
+                        }
+                        setIsNotificationsOpen(false);
+                      }}
                       onNotificationAction={refresh}
                       emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
                   </div>
-                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
+                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20 shrink-0">
                     <Link 
                       href="/notifications" 
                       onClick={() => setIsNotificationsOpen(false)}

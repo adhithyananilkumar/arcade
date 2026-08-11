@@ -21,7 +21,7 @@ export default async function SignPage({
   const initialMode = parseInitialMode(mode);
 
   return (
-    <AuthPageShell>
+    <AuthPageShell showLogo={true}>
       <Suspense
         fallback={
           <div className="flex justify-center py-16">
