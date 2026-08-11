@@ -70,7 +70,7 @@ export default function AdminChannelsPage() {
         </button>
       )}
 
-      <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/90 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
+      <div className="sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (

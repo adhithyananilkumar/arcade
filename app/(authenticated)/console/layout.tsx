@@ -45,14 +45,14 @@ export default function ArcConsoleLayout({
   // console sidebar links.
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative h-screen w-full flex flex-col overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
       }}
     >
-      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 pb-12 pt-28 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-32">
+      <div className="relative z-10 flex w-full flex-1 min-h-0 flex-col gap-5 px-4 pt-24 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-24 pb-0">
         {/* Mobile tabs */}
-        <nav className="flex gap-1.5 overflow-x-auto pb-1 md:hidden">
+        <nav className="flex gap-1.5 overflow-x-auto shrink-0 pb-1 md:hidden">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -80,8 +80,8 @@ export default function ArcConsoleLayout({
         </nav>
 
         {/* Desktop sidebar — nav only, no Platform/Console heading */}
-        <aside className="hidden w-[220px] shrink-0 md:block lg:w-[240px]">
-          <nav className="sticky top-28 flex flex-col gap-1.5">
+        <aside className="hidden w-[220px] shrink-0 md:flex flex-col overflow-y-auto lg:w-[240px] pb-12">
+          <nav className="flex flex-col gap-1.5">
             {navItems.map((item) => {
               const active = pathname.startsWith(item.href);
               const Icon = item.icon;
@@ -109,7 +109,7 @@ export default function ArcConsoleLayout({
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto pb-12 px-1 relative">{children}</main>
       </div>
     </div>
   );

@@ -166,7 +166,7 @@ export function PendingChannels() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-end border-b border-gray-200">
+      <div className="sticky top-[48px] z-10 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-end border-b border-gray-200 bg-white/80 backdrop-blur-md pt-2 -mx-4 px-4 sm:mx-0 sm:px-0">
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('PENDING')}
