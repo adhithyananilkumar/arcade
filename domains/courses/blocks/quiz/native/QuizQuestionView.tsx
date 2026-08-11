@@ -54,6 +54,16 @@ export function QuizQuestionView({ node, updateAttributes, deleteNode, getPos }:
           <option value="multiple">Multiple Answers</option>
         </select>
 
+        <select
+          value={node.attrs.difficulty || "MEDIUM"}
+          onChange={(e) => updateAttributes({ difficulty: e.target.value })}
+          className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:border-indigo-400"
+        >
+          <option value="EASY">Easy</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HARD">Hard</option>
+        </select>
+
         <div className="ml-auto flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-1.5 text-xs font-medium text-gray-500 whitespace-nowrap">
             Points

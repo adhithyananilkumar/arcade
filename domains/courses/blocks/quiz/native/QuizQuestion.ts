@@ -11,6 +11,7 @@ export const QuizQuestionNode = Node.create({
     return {
       questionType: { default: "text" },
       answerSelectionType: { default: "single" },
+      difficulty: { default: "MEDIUM" },
       point: { default: 10 },
       segment: { default: "" },
       explanation: { default: "" },

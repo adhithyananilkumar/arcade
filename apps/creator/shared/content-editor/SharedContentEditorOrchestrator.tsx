@@ -150,11 +150,12 @@ function scheduleIdle(fn: () => void) {
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
+import { QuestionBankAdapter } from "./adapters/QuestionBankAdapter";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop" | "roadmap";
+  contentType: "course" | "workshop" | "roadmap" | "question-bank";
   contentId?: string;
 }
 
@@ -518,9 +519,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const adapter = useMemo(() => {
     return contentType === "course"
       ? new CourseAdapter()
-      : contentType === "roadmap"
-      ? new RoadmapAdapter()
-      : new EventAdapter(contentId || "");
+      : contentType === "question-bank"
+        ? new QuestionBankAdapter()
+        : contentType === "roadmap"
+          ? new RoadmapAdapter()
+          : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -607,17 +610,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         // Flatten items to get their current order
         const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
           .sort((a, b) => a.node.position - b.node.position);
-        
+
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
 
         if (oldIndex === -1 || newIndex === -1) return m;
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         // Update positions
         const nextLessons = [...m.lessons];
-        
+
         const itemIds: string[] = [];
 
         newItems.forEach((item, index) => {
@@ -724,7 +727,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
         setContentChannelId(meta.raw?.channelId || null);
-        if (contentType === "course") {
+        if (contentType === "course" || contentType === "question-bank") {
           setCourseData(meta.raw);
         } else if (contentType === "roadmap") {
           setRoadmapData(meta.raw);
@@ -1112,7 +1115,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    router.push("/studio");
+    if (contentType === "question-bank" && contentId) {
+      router.push(`/studio/course/${contentId}/edit`);
+    } else {
+      router.push("/studio");
+    }
   }, [
     navigatingBack,
     contentId,
@@ -1128,7 +1135,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => {
-    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
+    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop" || contentType === "question-bank") {
       setSubmitDialogOpen(true);
       return;
     }
@@ -1152,9 +1159,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
     try {
-      if (contentType === "course") {
+      if (contentType === "course" || contentType === "question-bank") {
         if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
-           await api.patch(`/api/courses/${contentId}`, data);
+          await api.patch(`/api/courses/${contentId}`, data);
         }
         const updated = await api.post<any>(`/api/courses/${contentId}/submit`, { message: data.message });
         setStatus(updated.status);
@@ -1287,7 +1294,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : (contentType === "question-bank" ? "Course" : "Studio")}</span>
             </button>
           </div>
 
@@ -1332,11 +1339,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               type="button"
               onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
               title={`${adapter.terminology.root} Settings`}
-              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${
-                view === "settings"
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${view === "settings"
                   ? "bg-[#14142b] text-white"
                   : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
-              }`}
+                }`}
             >
               <Settings size={15} />
               <span className="hidden md:inline">Settings</span>
@@ -1435,63 +1441,65 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                     {modules.map((mod) => (
                       <div key={mod.id} className="mb-0.5">
-                        {/* Module row */}
-                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setModules((prev) =>
-                                prev.map((m) =>
-                                  m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                        {/* Module row (Hidden for question banks since it's section-focused) */}
+                        {contentType !== "question-bank" && (
+                          <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModules((prev) =>
+                                  prev.map((m) =>
+                                    m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                                  )
                                 )
-                              )
-                            }
-                            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                          >
-                            {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-
-                          {isEditing("module", mod.id) ? (
-                            renameInput("text-xs font-semibold text-gray-700")
-                          ) : (
-                            <span
-                              onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                              className="flex-1 truncate text-xs font-semibold text-gray-700"
-                              title={mod.title}
+                              }
+                              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
                             >
-                              {mod.title}
-                            </span>
-                          )}
+                              {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </button>
 
-                          {status !== "SUBMITTED" && (
-                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  title="Add lesson or quiz"
-                                  className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                                >
-                                  <Plus size={12} />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" sideOffset={4}>
-                                  <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                    <FileText size={13} />
-                                    Lesson
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                                <Pencil size={12} />
-                              </IconBtn>
-                              <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                                <Trash2 size={12} />
-                              </IconBtn>
-                            </div>
-                          )}
-                        </div>
+                            {isEditing("module", mod.id) ? (
+                              renameInput("text-xs font-semibold text-gray-700")
+                            ) : (
+                              <span
+                                onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                                className="flex-1 truncate text-xs font-semibold text-gray-700"
+                                title={mod.title}
+                              >
+                                {mod.title}
+                              </span>
+                            )}
+
+                            {status !== "SUBMITTED" && (
+                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    title="Add lesson or quiz"
+                                    className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                                  >
+                                    <Plus size={12} />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start" sideOffset={4}>
+                                    <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                      <FileText size={13} />
+                                      Lesson
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                                  <Pencil size={12} />
+                                </IconBtn>
+                                <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* Lessons and quizzes, interleaved by position */}
-                        {mod.expanded && (
-                          <div className="ml-3 border-l border-gray-200 pl-1.5">
+                        {(mod.expanded || contentType === "question-bank") && (
+                          <div className={contentType === "question-bank" ? "mt-1" : "ml-3 border-l border-gray-200 pl-1.5"}>
                             <DndContext
                               sensors={sensors}
                               collisionDetection={closestCenter}
@@ -1568,7 +1576,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             </DndContext>
 
                             {/* Add lesson to this Day/module */}
-                            {status !== "SUBMITTED" && (
+                            {status !== "SUBMITTED" && contentType !== "question-bank" && (
                               <div className="mt-0.5 flex items-center gap-3 pl-2">
                                 <button
                                   type="button"
@@ -1587,7 +1595,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   </div>
 
                   {/* Sidebar footer — settings also in top bar; keep quick access here */}
-                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
+                  <div className={`space-y-0.5 p-2 ${contentType === "question-bank" ? "" : "border-t border-slate-100 bg-slate-50/60"}`}>
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
@@ -1598,7 +1606,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Add Day
                       </button>
                     )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+                    {status !== "SUBMITTED" && contentType !== "workshop" && contentType !== "question-bank" && (
                       <button
                         type="button"
                         onClick={addModule}
@@ -1608,10 +1616,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Add {adapter.terminology.container}
                       </button>
                     )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
+
+                    {/* Add Section specifically for Question Bank since Module Add is hidden */}
+                    {status !== "SUBMITTED" && contentType === "question-bank" && modules.length > 0 && (
                       <button
                         type="button"
-                        onClick={() => setQbOpen(true)}
+                        onClick={() => addLesson(modules[0].id)}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
+                      >
+                        <Plus size={14} />
+                        Add {adapter.terminology.leafDocument}
+                      </button>
+                    )}
+
+                    {status !== "SUBMITTED" && contentType !== "workshop" && contentType !== "question-bank" && (
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
                         className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
                       >
                         <FileText size={13} />
@@ -1676,24 +1697,24 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           ) : contentType === "roadmap" && roadmapData ? (
             <div className="absolute inset-0 z-0 pt-[49px]">
-               <RoadmapCanvas 
-                 roadmap={roadmapData}
-                 readOnly={status === "SUBMITTED"}
-                 onGraphChange={async (graphJson) => {
-                   try {
-                     await roadmapService.updateRoadmap(contentId!, { graphJson });
-                     setHasDraftChanges(true);
-                   } catch (err: any) {
-                     // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
-                     // as a subsequent save will likely catch up if it's rapid typing.
-                     if (err?.status === 409 || err?.response?.status === 409) {
-                       console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
-                     } else {
-                       console.error("Failed to save roadmap graph", err);
-                     }
-                   }
-                 }}
-               />
+              <RoadmapCanvas
+                roadmap={roadmapData}
+                readOnly={status === "SUBMITTED"}
+                onGraphChange={async (graphJson) => {
+                  try {
+                    await roadmapService.updateRoadmap(contentId!, { graphJson });
+                    setHasDraftChanges(true);
+                  } catch (err: any) {
+                    // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
+                    // as a subsequent save will likely catch up if it's rapid typing.
+                    if (err?.status === 409 || err?.response?.status === 409) {
+                      console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
+                    } else {
+                      console.error("Failed to save roadmap graph", err);
+                    }
+                  }
+                }}
+              />
             </div>
           ) : activeLessonId ? (
             <div
@@ -1710,11 +1731,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     ref={editorRef}
                     ydoc={activeYDoc}
                     seedContent={activeSeedContent}
-                    placeholder="Start writing your lesson content…"
+                    placeholder={contentType === "question-bank" ? "Start building your question bank..." : "Start writing your lesson content…"}
                     onSave={handleSave}
                     chromeless
                     readOnly={status === "SUBMITTED"}
                   />
+                )}
+                {contentType === "question-bank" && status !== "SUBMITTED" && activeYDoc && (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      onClick={() => {
+                        const editor = editorRef.current?.editor;
+                        if (editor) {
+                          editor.chain().focus().insertContent({ type: "question_bank_creator" }).run();
+                        }
+                      }}
+                      className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+                    >
+                      <Plus size={16} /> Add Question
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

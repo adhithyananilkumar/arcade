@@ -2,6 +2,7 @@
 "use client";
 
 import { EditorContent } from "@tiptap/react";
+import { type Editor } from "@tiptap/core";
 import { RichTextProvider } from "reactjs-tiptap-editor";
 import dynamic from "next/dynamic";
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -57,6 +58,8 @@ export interface ArcadeEditorHandle {
   setContent: (doc: TiptapDocument) => void;
   /** Current document as JSON, or null before the editor is ready. */
   getJSON: () => TiptapDocument | null;
+  /** The raw Tiptap Editor instance. */
+  editor: Editor | null;
 }
 
 interface ArcadeEditorProps {
@@ -135,8 +138,8 @@ export const ArcadeEditor = memo(
 
   useImperativeHandle(
     ref,
-    () => ({ flush: flushSave, setContent, getJSON }),
-    [flushSave, setContent, getJSON]
+    () => ({ flush: flushSave, setContent, getJSON, editor }),
+    [flushSave, setContent, getJSON, editor]
   );
 
   // editor is null during SSR — show skeleton
