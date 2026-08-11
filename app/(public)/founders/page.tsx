@@ -219,8 +219,8 @@ export default function FoundersPage() {
   return (
     <main className="min-h-screen bg-white text-slate-900 font-sans">
       {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
-      <div className="w-full arcade-wash border-b border-slate-100">
-        <div className="mx-auto max-w-6xl px-5 pt-48 pb-24 sm:px-8 sm:pt-56 sm:pb-32">
+      <div className="w-full arcade-wash border-b border-slate-100 min-h-[95vh] flex flex-col items-center justify-center pt-16">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
             {/* Title with BlurText Animation from React Bits */}
             <BlurText
@@ -240,13 +240,15 @@ export default function FoundersPage() {
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
               Meet the 10 engineers, educators, and creators who designed Arcade at Amal Jyothi College of Engineering—building verifiable digital credentials, interactive workshops, and modern outcome-based learning.
             </p>
+
+
           </div>
         </div>
       </div>
 
       {/* ── MAIN BODY (PURE WHITE BACKGROUND) ── */}
       <div className="w-full bg-white">
-        <div className="mx-auto max-w-6xl px-5 pt-20 sm:pt-28 pb-20 sm:px-8 space-y-28">
+        <div className="mx-auto max-w-6xl px-5 pt-10 sm:pt-12 pb-20 sm:px-8 space-y-28">
           {/* --- FOUNDERS CIRCULAR GRID SECTION (MATCHING REFERENCE IMAGE) --- */}
           <section className="space-y-16 pt-6 pb-4">
             {/* Section Header */}
@@ -408,46 +410,109 @@ export default function FoundersPage() {
               </h2>
             </div>
 
-            <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
-                {TIMELINE_MILESTONES.map((m, idx) => {
-                  const cardColors = [
-                    { text: "text-blue-600", bg: "bg-blue-600", cardBg: "bg-blue-50/80", border: "border-blue-100" },
-                    { text: "text-amber-600", bg: "bg-amber-600", cardBg: "bg-amber-50/80", border: "border-amber-100" },
-                    { text: "text-purple-500", bg: "bg-purple-500", cardBg: "bg-purple-50/80", border: "border-purple-100" },
-                    { text: "text-emerald-500", bg: "bg-emerald-500", cardBg: "bg-emerald-50/80", border: "border-emerald-100" },
-                  ];
-                  const theme = cardColors[idx % cardColors.length];
-
-                  return (
-                    <motion.div 
-                      key={m.year}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: 0.5, delay: idx * 0.1 }}
-                      className={`${theme.cardBg} ${theme.border} rounded-[20px] p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group border`}
-                    >
-                      {/* Prominent Top Border Highlight on Hover */}
-                      <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.bg} rounded-t-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                      
-                      <div className="mb-3">
-                        <span className={`text-[11px] font-bold uppercase tracking-[0.15em] ${theme.text} mb-1.5 block`}>
-                          {m.badge}
-                        </span>
-                        <h4 className="font-serif text-[18px] sm:text-[20px] font-bold text-slate-900 leading-snug tracking-tight">
-                          {m.title}
-                        </h4>
-                    </div>
+            <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+                <div className="lg:col-span-7 text-left space-y-6">
+                  {TIMELINE_MILESTONES[0].description.split("\n\n").map((para, idx) => (
+                    <p key={idx} className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+                <div className="lg:col-span-5">
+                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-white to-slate-50/80 rounded-[2rem] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] relative overflow-hidden flex items-center justify-center">
+                    {/* Soft grid background */}
+                    <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
                     
-                    <div className="flex-grow flex flex-col justify-start">
-                      <p className="text-[13px] sm:text-[14px] text-slate-500 leading-[1.6] font-sans">
-                        {m.description.split("\n\n")[0]}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                    {/* The Path and Nodes */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="gradient-path" x1="0" y1="1" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.4" />
+                          <stop offset="50%" stopColor="#64748b" stopOpacity="0.8" />
+                          <stop offset="100%" stopColor="#0f172a" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Timeline Curve */}
+                      <motion.path 
+                        d="M -20 250 Q 100 250, 200 150 T 420 50"
+                        stroke="url(#gradient-path)" 
+                        strokeWidth="3.5" 
+                        strokeDasharray="6 6"
+                        fill="none" 
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        whileInView={{ pathLength: 1, opacity: 1 }}
+                        transition={{ duration: 2.5, ease: "easeOut" }}
+                        viewport={{ once: true }}
+                      />
+                      
+                      {/* Node 1: Origin */}
+                      <motion.g 
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                        viewport={{ once: true }}
+                      >
+                        <circle cx="95" cy="225" r="7" fill="#cbd5e1" stroke="white" strokeWidth="3" />
+                      </motion.g>
+                      
+                      {/* Node 2: Infrastructure */}
+                      <motion.g 
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 1.2 }}
+                        viewport={{ once: true }}
+                      >
+                        <circle cx="200" cy="150" r="10" fill="#475569" stroke="white" strokeWidth="4" />
+                        <circle cx="200" cy="150" r="3" fill="white" />
+                      </motion.g>
+
+                      {/* Node 3: The Future */}
+                      <motion.g 
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 1.8 }}
+                        viewport={{ once: true }}
+                      >
+                        <circle cx="305" cy="75" r="13" fill="#0f172a" stroke="white" strokeWidth="4" />
+                        <circle cx="305" cy="75" r="4.5" fill="white" />
+                        {/* Glow effect for final node */}
+                        <circle cx="305" cy="75" r="24" fill="#0f172a" opacity="0.08" className="animate-pulse" />
+                      </motion.g>
+                    </svg>
+
+                    {/* Floating UI Elements (representing Arcade platform) */}
+                    <motion.div 
+                      className="absolute bottom-[10%] right-[10%] bg-white backdrop-blur-md border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3.5 shadow-[0_12px_40px_rgb(0,0,0,0.06)]"
+                      animate={{ y: [0, -12, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200/60">
+                        <Code2 className="w-5 h-5 text-slate-800" />
+                      </div>
+                      <div className="space-y-2 hidden sm:block">
+                        <div className="w-16 h-1.5 bg-slate-200 rounded-full" />
+                        <div className="w-10 h-1.5 bg-slate-100 rounded-full" />
+                      </div>
+                    </motion.div>
+
+                    <motion.div 
+                      className="absolute top-[12%] left-[8%] bg-white backdrop-blur-md border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3.5 shadow-[0_12px_40px_rgb(0,0,0,0.06)]"
+                      animate={{ y: [0, 12, 0] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200/60">
+                        <Users className="w-5 h-5 text-slate-800" />
+                      </div>
+                      <div className="space-y-2 hidden sm:block">
+                        <div className="w-20 h-1.5 bg-slate-200 rounded-full" />
+                        <div className="w-12 h-1.5 bg-slate-100 rounded-full" />
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
