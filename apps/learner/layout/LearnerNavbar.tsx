@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -420,10 +420,10 @@ export default function LearnerNavbar() {
                 Content Studio
               </MenuItem>
             )}
-            {collaboratedEventId && (
+            {(showStudio || collaboratedEventId !== null || hasMultipleCollabs) && (
               <MenuItem 
-                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
-                onClick={() => router.push('/studio/events')}
+                icon={<Calendar className="text-indigo-600" strokeWidth={2} />} 
+                onClick={() => router.push('/events')}
               >
                 Events
               </MenuItem>
