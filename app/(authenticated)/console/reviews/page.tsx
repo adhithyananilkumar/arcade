@@ -107,8 +107,8 @@ export default function PlatformReviewsPage() {
   ];
 
   return (
-    <div className="flex w-full flex-col space-y-5">
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+    <div className="flex w-full flex-col h-full space-y-5 pb-6">
+      <div className="flex-none grid grid-cols-3 gap-2 sm:gap-3">
         {kpis.map((kpi) => {
           const active = statusFilter === kpi.id;
           return (
@@ -138,7 +138,7 @@ export default function PlatformReviewsPage() {
         })}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex-none flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
           <input
@@ -189,7 +189,8 @@ export default function PlatformReviewsPage() {
           <p className="mt-1 text-sm text-slate-400">Submitted content will appear here.</p>
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-12">
+          <ul className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
           {filtered.map((item, i) => (
             <li
               key={item.id}
@@ -231,7 +232,8 @@ export default function PlatformReviewsPage() {
               </Link>
             </li>
           ))}
-        </ul>
+          </ul>
+        </div>
       )}
     </div>
   );

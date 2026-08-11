@@ -109,7 +109,7 @@ export default function ArcConsoleLayout({
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 overflow-y-auto pb-12 px-1 relative">{children}</main>
+        <main className="min-w-0 flex-1 flex flex-col min-h-0 relative px-1">{children}</main>
       </div>
     </div>
   );

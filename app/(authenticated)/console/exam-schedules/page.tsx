@@ -115,8 +115,8 @@ export default function ExamSchedulesPage() {
   };
 
   return (
-    <div className="flex w-full flex-col space-y-5">
-      <div className="relative max-w-md">
+    <div className="flex w-full flex-col h-full space-y-5 pb-6">
+      <div className="flex-none relative max-w-md">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
@@ -137,7 +137,8 @@ export default function ExamSchedulesPage() {
           <p className="text-sm font-semibold text-[#14142b]">No published courses found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        <div className="flex-1 min-h-0 overflow-y-auto pr-2 pb-12">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           {filteredCourses.map((course) => {
             const slots = parseSlots(course.examSchedule);
             const avatar = getAvatarUrl(course.authorAvatarUrl);
@@ -319,6 +320,7 @@ export default function ExamSchedulesPage() {
               </article>
             );
           })}
+          </div>
         </div>
       )}
     </div>

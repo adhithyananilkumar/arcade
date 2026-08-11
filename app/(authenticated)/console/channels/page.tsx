@@ -49,28 +49,30 @@ export default function AdminChannelsPage() {
   ];
 
   return (
-    <div className="w-full space-y-5">
+    <div className="flex w-full flex-col h-full space-y-5 pb-6">
       {!!deletionRequestCount && activeTab !== 'DELETION_REQUESTS' && (
-        <button
-          type="button"
-          onClick={() => setActiveTab('DELETION_REQUESTS')}
-          className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-left transition-colors hover:bg-rose-100/80"
-        >
-          <span className="grid size-10 place-items-center rounded-lg bg-rose-100 text-rose-600">
-            <AlertTriangle size={18} />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-lg font-bold tabular-nums text-rose-700">
-              {deletionRequestCount}
+        <div className="flex-none">
+          <button
+            type="button"
+            onClick={() => setActiveTab('DELETION_REQUESTS')}
+            className="flex w-full items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-left transition-colors hover:bg-rose-100/80"
+          >
+            <span className="grid size-10 place-items-center rounded-lg bg-rose-100 text-rose-600">
+              <AlertTriangle size={18} />
             </span>
-            <span className="text-[12px] font-medium text-rose-700/80">
-              deletion {deletionRequestCount === 1 ? 'request' : 'requests'} awaiting review
+            <span className="min-w-0 flex-1">
+              <span className="block text-lg font-bold tabular-nums text-rose-700">
+                {deletionRequestCount}
+              </span>
+              <span className="text-[12px] font-medium text-rose-700/80">
+                deletion {deletionRequestCount === 1 ? 'request' : 'requests'} awaiting review
+              </span>
             </span>
-          </span>
-        </button>
+          </button>
+        </div>
       )}
 
-      <div className="sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         {tabs.map((tab) => {
           const active = activeTab === tab.id;
           return (
@@ -104,13 +106,13 @@ export default function AdminChannelsPage() {
         })}
       </div>
 
-      <div className={activeTab === 'CHANNELS' ? 'block' : 'hidden'}>
+      <div className={activeTab === 'CHANNELS' ? 'flex-1 min-h-0 overflow-y-auto pr-2 relative' : 'hidden'}>
         <PendingChannels />
       </div>
-      <div className={activeTab === 'DELETION_REQUESTS' ? 'block' : 'hidden'}>
+      <div className={activeTab === 'DELETION_REQUESTS' ? 'flex-1 min-h-0 overflow-y-auto pr-2 relative' : 'hidden'}>
         <DeletionRequests />
       </div>
-      <div className={activeTab === 'AUDIT_LOG' ? 'block' : 'hidden'}>
+      <div className={activeTab === 'AUDIT_LOG' ? 'flex-1 min-h-0 overflow-y-auto pr-2 relative' : 'hidden'}>
         <ChannelAuditLog />
       </div>
     </div>
