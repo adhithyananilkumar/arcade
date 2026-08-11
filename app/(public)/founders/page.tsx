@@ -252,7 +252,7 @@ export default function FoundersPage() {
             {/* Section Header */}
             <div className="text-center space-y-3 max-w-2xl mx-auto">
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight font-sans">
-                Our Exceptional Team
+                The Ones Who Make It Possible
               </h2>
               <p className="text-sm sm:text-base text-slate-500 font-normal leading-relaxed">
                 Meet our outstanding team — a synergy of talent, creativity, and dedication, crafting success together.
