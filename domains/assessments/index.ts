@@ -20,8 +20,8 @@
 export { QuizEditor } from "./components/QuizEditor";
 export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
-export { QuestionBankPanel } from "./components/QuestionBankPanel";
-export { getQuizStats } from "./api";
+export { QuestionBankEditor } from "./components/QuestionBankEditor";
+export { getQuizStats, getOrCreateCourseQuestionBank } from "./api";
 export type {
   QuestionType,
   QuestionResponse,
@@ -31,4 +31,8 @@ export type {
   QuizQuestionsRequest,
   QuizAttemptResponse,
   QuizStatsResponse,
+  Difficulty,
+  BankQuestionType,
+  QuestionBankSummary,
+  SectionResponse,
 } from "./types";

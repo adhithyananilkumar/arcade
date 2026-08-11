@@ -40,7 +40,7 @@ export interface UseArcadeEditorOptions {
    */
   seedContent?: TiptapDocument;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap" | "question-bank";
+  contentType?: "course" | "workshop" | "roadmap";
   /** Selection update callback */
   onSelectionUpdate?: (props: { editor: any }) => void;
 }

@@ -1,492 +1,364 @@
-// features/assessment/components/QuestionBankEditor.tsx
+// domains/assessments/components/QuestionBankEditor.tsx
+// Sidebar shell for the question bank: sections (topics) on the left — like HTML/CSS/JS inside
+// a fullstack course's bank — each holding its own set of questions, editable and (eventually)
+// queryable independently. Mirrors the course editor's sidebar interaction pattern (create,
+// rename, delete, drag-to-reorder) without depending on it.
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Plus, Trash2, Check, Loader2, CircleCheck, Upload, Eye } from "lucide-react";
-import { getBankQuestions, saveBankQuestions } from "../api";
-import type { BankQuestionType, QuestionBankQuestionsRequest } from "../types";
-import { QuestionBankImportDialog } from "./QuestionBankImportDialog";
-import { QuestionBankPreview } from "./QuestionBankPreview";
-
-/** Debounce for autosaving question edits. */
-const SAVE_DEBOUNCE_MS = 1200;
-
-// ── Local model (client keys for stable React identity while editing) ──────────
-
-interface LocalOption {
-  key: string;
-  text: string;
-  correct: boolean;
-}
-
-interface LocalQuestion {
-  key: string;
-  type: BankQuestionType;
-  prompt: string;
-  points: number;
-  options: LocalOption[];
-  sampleAnswer: string;
-}
-
-type SaveState = "idle" | "saving" | "saved" | "error";
-
-const newKey = () =>
-  typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
-
-function blankOption(text = "", correct = false): LocalOption {
-  return { key: newKey(), text, correct };
-}
-
-function trueFalseOptions(): LocalOption[] {
-  return [blankOption("True", true), blankOption("False", false)];
-}
-
-function newQuestion(): LocalQuestion {
-  return {
-    key: newKey(),
-    type: "SINGLE",
-    prompt: "",
-    points: 1,
-    options: [blankOption("", true), blankOption()],
-    sampleAnswer: "",
-  };
-}
-
-function toRequest(questions: LocalQuestion[]): QuestionBankQuestionsRequest {
-  return {
-    questions: questions.map((q) => ({
-      type: q.type,
-      prompt: q.prompt,
-      points: q.points,
-      options:
-        q.type === "SENTENCE" ? [] : q.options.map((o) => ({ text: o.text, correct: o.correct })),
-      sampleAnswer: q.type === "SENTENCE" ? q.sampleAnswer : "",
-    })),
-  };
-}
-
-const TYPE_LABELS: Record<BankQuestionType, string> = {
-  SINGLE: "Single answer",
-  MULTIPLE: "Multiple select",
-  TRUE_FALSE: "True / False",
-  SENTENCE: "Sentence answer",
-};
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  GripVertical,
+  Layers,
+  Loader2,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import {
+  createSection,
+  deleteSection,
+  listSections,
+  renameSection,
+  reorderSections,
+} from "../api";
+import type { SectionResponse } from "../types";
+import { SectionQuestionsEditor } from "./SectionQuestionsEditor";
 
 interface QuestionBankEditorProps {
   bankId: string;
   className?: string;
 }
 
-export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEditorProps) {
-  const [questions, setQuestions] = useState<LocalQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [importOpen, setImportOpen] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
+function SortableSectionRow({
+  section,
+  active,
+  onSelect,
+  onRename,
+  onDelete,
+}: {
+  section: SectionResponse;
+  active: boolean;
+  onSelect: () => void;
+  onRename: (title: string) => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: section.id,
+  });
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(section.title);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingRef = useRef<LocalQuestion[] | null>(null);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
-  const fromServer = useCallback(
-    (server: Awaited<ReturnType<typeof getBankQuestions>>): LocalQuestion[] =>
-      server.map((q) => ({
-        key: newKey(),
-        type: q.type,
-        prompt: q.prompt,
-        points: q.points,
-        options: q.options.map((o) => ({
-          key: newKey(),
-          text: o.text,
-          correct: o.correct,
-        })),
-        sampleAnswer: q.sampleAnswer ?? "",
-      })),
-    []
-  );
-
-  // ── Load ────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    (async () => {
-      try {
-        const server = await getBankQuestions(bankId);
-        if (cancelled) return;
-        setQuestions(fromServer(server));
-      } catch (e) {
-        console.warn("Failed to load question bank", e);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [bankId, fromServer]);
-
-  // ── Save (debounced) ──────────────────────────────────────────────────────────
-  const flushSave = useCallback(async () => {
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    const pending = pendingRef.current;
-    if (!pending) return;
-    pendingRef.current = null;
-    setSaveState("saving");
-    try {
-      await saveBankQuestions(bankId, toRequest(pending));
-      setSaveState("saved");
-    } catch (e) {
-      console.warn("Question bank save failed", e);
-      setSaveState("error");
-    }
-  }, [bankId]);
-
-  const scheduleSave = useCallback(
-    (next: LocalQuestion[]) => {
-      pendingRef.current = next;
-      setSaveState("saving");
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS);
-    },
-    [flushSave]
-  );
-
-  // Flush any pending edit when unmounting (e.g. switching to another item).
-  useEffect(() => {
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      const pending = pendingRef.current;
-      if (pending) {
-        pendingRef.current = null;
-        saveBankQuestions(bankId, toRequest(pending)).catch(() => {});
-      }
-    };
-  }, [bankId]);
-
-  /** Apply a change and schedule a save. */
-  const commit = useCallback(
-    (next: LocalQuestion[]) => {
-      setQuestions(next);
-      scheduleSave(next);
-    },
-    [scheduleSave]
-  );
-
-  const mapQuestion = useCallback(
-    (qKey: string, fn: (q: LocalQuestion) => LocalQuestion) => {
-      commit(questions.map((q) => (q.key === qKey ? fn(q) : q)));
-    },
-    [questions, commit]
-  );
-
-  // ── Mutations ─────────────────────────────────────────────────────────────────
-  const addQuestion = () => commit([...questions, newQuestion()]);
-
-  const removeQuestion = (qKey: string) =>
-    commit(questions.filter((q) => q.key !== qKey));
-
-  const setPrompt = (qKey: string, prompt: string) =>
-    mapQuestion(qKey, (q) => ({ ...q, prompt }));
-
-  const setPoints = (qKey: string, points: number) =>
-    mapQuestion(qKey, (q) => ({ ...q, points: Number.isFinite(points) ? Math.max(0, points) : 0 }));
-
-  const setSampleAnswer = (qKey: string, sampleAnswer: string) =>
-    mapQuestion(qKey, (q) => ({ ...q, sampleAnswer }));
-
-  const setType = (qKey: string, type: BankQuestionType) =>
-    mapQuestion(qKey, (q) => {
-      if (type === q.type) return q;
-      if (type === "TRUE_FALSE") return { ...q, type, options: trueFalseOptions() };
-      if (type === "SENTENCE") return { ...q, type };
-      // Leaving TRUE_FALSE/SENTENCE — start from two fresh options.
-      let options =
-        q.type === "TRUE_FALSE" || q.type === "SENTENCE"
-          ? [blankOption("", true), blankOption()]
-          : q.options;
-      // SINGLE requires exactly one correct option.
-      if (type === "SINGLE" && options.filter((o) => o.correct).length !== 1) {
-        options = options.map((o, i) => ({ ...o, correct: i === 0 }));
-      }
-      return { ...q, type, options };
-    });
-
-  const addOption = (qKey: string) =>
-    mapQuestion(qKey, (q) => ({ ...q, options: [...q.options, blankOption()] }));
-
-  const removeOption = (qKey: string, oKey: string) =>
-    mapQuestion(qKey, (q) => {
-      const options = q.options.filter((o) => o.key !== oKey);
-      // SINGLE must always have one correct option.
-      if (q.type === "SINGLE" && !options.some((o) => o.correct) && options.length) {
-        options[0] = { ...options[0], correct: true };
-      }
-      return { ...q, options };
-    });
-
-  const setOptionText = (qKey: string, oKey: string, text: string) =>
-    mapQuestion(qKey, (q) => ({
-      ...q,
-      options: q.options.map((o) => (o.key === oKey ? { ...o, text } : o)),
-    }));
-
-  const toggleCorrect = (qKey: string, oKey: string) =>
-    mapQuestion(qKey, (q) => {
-      const single = q.type === "SINGLE" || q.type === "TRUE_FALSE";
-      return {
-        ...q,
-        options: q.options.map((o) =>
-          single
-            ? { ...o, correct: o.key === oKey }
-            : o.key === oKey
-              ? { ...o, correct: !o.correct }
-              : o
-        ),
-      };
-    });
-
-  // Called by the import dialog once it has fetched+saved questions server-side.
-  const handleImported = useCallback(
-    async () => {
-      setLoading(true);
-      try {
-        const server = await getBankQuestions(bankId);
-        setQuestions(fromServer(server));
-      } finally {
-        setLoading(false);
-      }
-    },
-    [bankId, fromServer]
-  );
-
-  // ── Render ──────────────────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className={`flex items-center justify-center ${className}`}>
-        <Loader2 className="animate-spin text-indigo-400" size={22} />
-      </div>
-    );
-  }
+  const commitRename = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== section.title) onRename(trimmed);
+    else setDraft(section.title);
+  };
 
   return (
-    <div className={`flex min-h-0 flex-col ${className}`}>
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span className="font-medium text-gray-700">
-            {questions.length} {questions.length === 1 ? "question" : "questions"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <SaveIndicator state={saveState} />
-          <button
-            type="button"
-            onClick={() => setPreviewOpen(true)}
-            disabled={questions.length === 0}
-            title="Preview"
-            className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-indigo-300 hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Eye size={13} />
-            Preview
-          </button>
-          <button
-            type="button"
-            onClick={() => setImportOpen(true)}
-            className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-indigo-300 hover:text-indigo-600"
-          >
-            <Upload size={13} />
-            Import from JSON
-          </button>
-        </div>
-      </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-1 rounded-xl px-2 py-1.5 transition-colors ${
+        active ? "bg-[#14142b] text-white shadow-sm" : "text-slate-600 hover:bg-slate-100"
+      }`}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className={`flex-shrink-0 cursor-grab opacity-0 transition-opacity group-hover:opacity-100 ${
+          active ? "text-white/60" : "text-slate-400"
+        }`}
+      >
+        <GripVertical size={13} />
+      </button>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-8">
-        {questions.length === 0 && (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-white px-4 py-12 text-center">
-            <CircleCheck size={26} className="text-gray-300" />
-            <p className="text-sm text-gray-400">
-              No questions yet. Add your first question below, or import a bank as JSON.
-            </p>
-          </div>
-        )}
-
-        {questions.map((q, qi) => (
-          <div
-            key={q.key}
-            className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
-          >
-            {/* Question header */}
-            <div className="mb-3 flex items-center gap-2">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600">
-                {qi + 1}
-              </span>
-              <select
-                value={q.type}
-                onChange={(e) => setType(q.key, e.target.value as BankQuestionType)}
-                className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 outline-none focus:ring-1 focus:ring-indigo-200"
-              >
-                {(Object.keys(TYPE_LABELS) as BankQuestionType[]).map((t) => (
-                  <option key={t} value={t}>
-                    {TYPE_LABELS[t]}
-                  </option>
-                ))}
-              </select>
-              <div className="ml-auto flex items-center gap-1.5">
-                <label className="flex items-center gap-1 text-xs text-gray-400">
-                  Points
-                  <input
-                    type="number"
-                    min={0}
-                    value={q.points}
-                    onChange={(e) => setPoints(q.key, parseInt(e.target.value, 10))}
-                    className="w-14 rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-700 outline-none focus:ring-1 focus:ring-indigo-200"
-                  />
-                </label>
-                <button
-                  type="button"
-                  title="Delete question"
-                  onClick={() => removeQuestion(q.key)}
-                  className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Prompt */}
-            <textarea
-              value={q.prompt}
-              onChange={(e) => setPrompt(q.key, e.target.value)}
-              placeholder="Enter your question…"
-              rows={2}
-              className="mb-3 w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
-            />
-
-            {q.type === "SENTENCE" ? (
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">
-                  Model answer (shown to learners as a self-check reference)
-                </label>
-                <textarea
-                  value={q.sampleAnswer}
-                  onChange={(e) => setSampleAnswer(q.key, e.target.value)}
-                  placeholder="Expected answer…"
-                  rows={2}
-                  className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200"
-                />
-              </div>
-            ) : (
-              <>
-                {/* Options */}
-                <div className="space-y-1.5">
-                  {q.options.map((o) => {
-                    const single = q.type === "SINGLE" || q.type === "TRUE_FALSE";
-                    const readOnlyText = q.type === "TRUE_FALSE";
-                    return (
-                      <div key={o.key} className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          title={o.correct ? "Correct answer" : "Mark as correct"}
-                          onClick={() => toggleCorrect(q.key, o.key)}
-                          className={`flex h-5 w-5 flex-shrink-0 items-center justify-center border transition-colors ${
-                            single ? "rounded-full" : "rounded"
-                          } ${
-                            o.correct
-                              ? "border-emerald-500 bg-emerald-500 text-white"
-                              : "border-gray-300 bg-white text-transparent hover:border-emerald-400"
-                          }`}
-                        >
-                          <Check size={12} />
-                        </button>
-                        <input
-                          type="text"
-                          value={o.text}
-                          readOnly={readOnlyText}
-                          onChange={(e) => setOptionText(q.key, o.key, e.target.value)}
-                          placeholder="Answer option"
-                          className={`flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-800 outline-none placeholder:text-gray-300 focus:ring-1 focus:ring-indigo-200 ${
-                            readOnlyText ? "bg-gray-50 text-gray-500" : ""
-                          }`}
-                        />
-                        {!readOnlyText && (
-                          <button
-                            type="button"
-                            title="Remove option"
-                            onClick={() => removeOption(q.key, o.key)}
-                            className="rounded-md p-1.5 text-gray-300 transition-colors hover:bg-gray-100 hover:text-gray-500"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {q.type !== "TRUE_FALSE" && (
-                  <button
-                    type="button"
-                    onClick={() => addOption(q.key)}
-                    className="mt-2 flex items-center gap-1 text-xs font-medium text-gray-400 hover:text-indigo-600"
-                  >
-                    <Plus size={12} />
-                    Add option
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        ))}
-
-        {/* Add question */}
+      {editing ? (
+        <input
+          ref={inputRef}
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commitRename}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commitRename();
+            if (e.key === "Escape") {
+              setDraft(section.title);
+              setEditing(false);
+            }
+          }}
+          className="min-w-0 flex-1 rounded-md border border-indigo-300 bg-white px-1.5 py-0.5 text-xs text-gray-800 outline-none"
+        />
+      ) : (
         <button
           type="button"
-          onClick={addQuestion}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 bg-white py-3 text-sm font-medium text-gray-500 transition-colors hover:border-indigo-300 hover:text-indigo-600"
+          onClick={onSelect}
+          onDoubleClick={() => setEditing(true)}
+          className="min-w-0 flex-1 truncate text-left text-xs font-semibold"
+          title={section.title}
         >
-          <Plus size={16} />
-          Add question
+          {section.title}
+        </button>
+      )}
+
+      <span
+        className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+          active ? "bg-white/15 text-white/80" : "bg-gray-100 text-gray-400"
+        }`}
+      >
+        {section.questionCount}
+      </span>
+
+      <div
+        className={`flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100`}
+      >
+        <button
+          type="button"
+          title="Rename section"
+          onClick={() => setEditing(true)}
+          className={`rounded p-1 transition-colors ${
+            active ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-gray-400 hover:bg-gray-200 hover:text-gray-700"
+          }`}
+        >
+          <Pencil size={11} />
+        </button>
+        <button
+          type="button"
+          title="Delete section"
+          onClick={onDelete}
+          className={`rounded p-1 transition-colors ${
+            active ? "text-white/70 hover:bg-rose-500/80 hover:text-white" : "text-gray-400 hover:bg-red-50 hover:text-red-600"
+          }`}
+        >
+          <Trash2 size={11} />
         </button>
       </div>
-
-      {importOpen && (
-        <QuestionBankImportDialog
-          bankId={bankId}
-          hasExistingQuestions={questions.length > 0}
-          onClose={() => setImportOpen(false)}
-          onImported={() => {
-            setImportOpen(false);
-            handleImported();
-          }}
-        />
-      )}
-
-      {previewOpen && (
-        <QuestionBankPreview bankId={bankId} onClose={() => setPreviewOpen(false)} />
-      )}
     </div>
   );
 }
 
-function SaveIndicator({ state }: { state: SaveState }) {
-  if (state === "saving")
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-gray-400">
-        <Loader2 size={12} className="animate-spin" />
-        Saving…
-      </span>
-    );
-  if (state === "saved")
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-emerald-600">
-        <Check size={12} />
-        Saved
-      </span>
-    );
-  if (state === "error")
-    return <span className="text-xs text-red-500">Save failed — retrying on next edit</span>;
-  return null;
+export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEditorProps) {
+  const [sections, setSections] = useState<SectionResponse[]>([]);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await listSections(bankId);
+      setSections(list);
+      setActiveSectionId((current) =>
+        current && list.some((s) => s.id === current) ? current : (list[0]?.id ?? null)
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [bankId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleCreateSection = async () => {
+    setCreating(true);
+    try {
+      const section = await createSection(bankId, {
+        title: `Section ${sections.length + 1}`,
+      });
+      setSections((prev) => [...prev, section]);
+      setActiveSectionId(section.id);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleRename = async (sectionId: string, title: string) => {
+    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, title } : s)));
+    try {
+      await renameSection(sectionId, title);
+    } catch (e) {
+      console.warn("Failed to rename section", e);
+    }
+  };
+
+  const handleDelete = async (sectionId: string) => {
+    const section = sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    if (
+      !window.confirm(
+        `Delete "${section.title}"? This removes all ${section.questionCount} question(s) in it. This can't be undone.`
+      )
+    ) {
+      return;
+    }
+    const next = sections.filter((s) => s.id !== sectionId);
+    setSections(next);
+    if (activeSectionId === sectionId) setActiveSectionId(next[0]?.id ?? null);
+    try {
+      await deleteSection(sectionId);
+    } catch (e) {
+      console.warn("Failed to delete section", e);
+      load();
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(sections, oldIndex, newIndex);
+    setSections(reordered);
+    try {
+      await reorderSections(bankId, { sectionIds: reordered.map((s) => s.id) });
+    } catch (e) {
+      console.warn("Failed to reorder sections", e);
+      load();
+    }
+  };
+
+  const activeSection = sections.find((s) => s.id === activeSectionId) ?? null;
+
+  return (
+    <div className={className}>
+      {/* ── Canvas: full-bleed, scrolls under the floating chrome ── */}
+      <div
+        className={`absolute inset-0 overflow-y-auto pt-20 pb-10 pr-6 transition-[padding] ${
+          sidebarOpen ? "pl-[300px]" : "pl-16"
+        }`}
+      >
+        {loading ? null : activeSection ? (
+          <SectionQuestionsEditor
+            key={activeSection.id}
+            bankId={bankId}
+            sectionId={activeSection.id}
+            sectionTitle={activeSection.title}
+            className="max-w-[900px]"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+            <Layers size={28} className="text-gray-300" />
+            <p className="max-w-xs text-sm text-gray-400">
+              Create a section to start adding questions — sections split this bank into topics
+              like HTML, CSS, or JS.
+            </p>
+            <button
+              type="button"
+              onClick={handleCreateSection}
+              className="mt-2 flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            >
+              <Plus size={15} />
+              Create Section
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Floating collapsible sidebar: sections ── */}
+      <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
+        {!sidebarOpen ? (
+          <button
+            type="button"
+            title="Expand sidebar"
+            onClick={() => setSidebarOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-400 shadow-[0_6px_18px_rgba(20,20,43,0.08)] transition-colors hover:text-[#14142b]"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        ) : (
+          <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
+            {/* ── Sidebar header ───────────────── */}
+            <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
+              <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                Sections
+              </span>
+              <button
+                type="button"
+                title="Collapse sidebar"
+                onClick={() => setSidebarOpen(false)}
+                className="flex flex-shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              >
+                <PanelLeftClose size={16} />
+              </button>
+            </div>
+
+            {/* ── Section list ──────────────────── */}
+            <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto p-2">
+              {loading ? (
+                <div className="flex items-center justify-center py-10">
+                  <Loader2 className="animate-spin text-indigo-400" size={18} />
+                </div>
+              ) : sections.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+                  <Layers size={26} className="text-gray-300" />
+                  <p className="text-xs leading-relaxed text-slate-400">
+                    No sections yet. Sections group questions by topic — e.g. HTML, CSS, JS.
+                  </p>
+                </div>
+              ) : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                    {sections.map((section) => (
+                      <SortableSectionRow
+                        key={section.id}
+                        section={section}
+                        active={section.id === activeSectionId}
+                        onSelect={() => setActiveSectionId(section.id)}
+                        onRename={(title) => handleRename(section.id, title)}
+                        onDelete={() => handleDelete(section.id)}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              )}
+            </div>
+
+            {/* ── Footer ────────────────────────── */}
+            <div className="flex-shrink-0 border-t border-slate-100 bg-slate-50/60 p-2">
+              <button
+                type="button"
+                onClick={handleCreateSection}
+                disabled={creating}
+                className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white disabled:opacity-50"
+              >
+                {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                Create Section
+              </button>
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
+  );
 }

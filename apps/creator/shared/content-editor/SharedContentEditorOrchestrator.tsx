@@ -72,7 +72,7 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
+import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
@@ -113,6 +113,7 @@ import {
   Lock,
   Eye,
   GripVertical,
+  FileQuestion,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -150,13 +151,11 @@ function scheduleIdle(fn: () => void) {
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
-import { QuestionBankAdapter } from "./adapters/QuestionBankAdapter";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
-import { QuestionBankBuilderLayout } from "./QuestionBankBuilderLayout";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop" | "roadmap" | "question-bank";
+  contentType: "course" | "workshop" | "roadmap";
   contentId?: string;
 }
 
@@ -253,41 +252,6 @@ function ConfirmDialog({
               }`}
           >
             {busy ? "Working…" : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Question Bank placeholder dialog ─────────────────────────────────────────
-
-function QuestionBankDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          <X size={18} />
-        </button>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
-            <FileText size={22} className="text-indigo-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Question Bank</h3>
-          <p className="text-sm leading-relaxed text-gray-500">
-            The Question Bank editor is coming in the next phase. You&apos;ll be able to
-            create MCQ, short answer, and coding questions linked to this course.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Got it
           </button>
         </div>
       </div>
@@ -520,11 +484,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const adapter = useMemo(() => {
     return contentType === "course"
       ? new CourseAdapter()
-      : contentType === "question-bank"
-        ? new QuestionBankAdapter()
-        : contentType === "roadmap"
-          ? new RoadmapAdapter()
-          : new EventAdapter(contentId || "");
+      : contentType === "roadmap"
+        ? new RoadmapAdapter()
+        : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -565,7 +527,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
-  const [qbOpen, setQbOpen] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [navigatingBack, setNavigatingBack] = useState(false);
 
@@ -728,7 +689,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
         setContentChannelId(meta.raw?.channelId || null);
-        if (contentType === "course" || contentType === "question-bank") {
+        if (contentType === "course") {
           setCourseData(meta.raw);
         } else if (contentType === "roadmap") {
           setRoadmapData(meta.raw);
@@ -1116,11 +1077,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    if (contentType === "question-bank" && contentId) {
-      router.push(`/studio/course/${contentId}/edit`);
-    } else {
-      router.push("/studio");
-    }
+    router.push("/studio");
   }, [
     navigatingBack,
     contentId,
@@ -1136,7 +1093,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => {
-    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop" || contentType === "question-bank") {
+    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
       setSubmitDialogOpen(true);
       return;
     }
@@ -1160,7 +1117,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
     try {
-      if (contentType === "course" || contentType === "question-bank") {
+      if (contentType === "course") {
         if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
           await api.patch(`/api/courses/${contentId}`, data);
         }
@@ -1228,11 +1185,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   return (
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      {contentType === "course" && contentId ? (
-        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
-      ) : (
-        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
-      )}
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
@@ -1295,7 +1247,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : (contentType === "question-bank" ? "Course" : "Studio")}</span>
+              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
           </div>
 
@@ -1442,9 +1394,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                     {modules.map((mod) => (
                       <div key={mod.id} className="mb-0.5">
-                        {/* Module row (Hidden for question banks since it's section-focused) */}
-                        {contentType !== "question-bank" && (
-                          <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                        {/* Module row */}
+                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
                             <button
                               type="button"
                               onClick={() =>
@@ -1496,11 +1447,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               </div>
                             )}
                           </div>
-                        )}
 
                         {/* Lessons and quizzes, interleaved by position */}
-                        {(mod.expanded || contentType === "question-bank") && (
-                          <div className={contentType === "question-bank" ? "mt-1" : "ml-3 border-l border-gray-200 pl-1.5"}>
+                        {mod.expanded && (
+                          <div className="ml-3 border-l border-gray-200 pl-1.5">
                             <DndContext
                               sensors={sensors}
                               collisionDetection={closestCenter}
@@ -1577,7 +1527,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             </DndContext>
 
                             {/* Add lesson to this Day/module */}
-                            {status !== "SUBMITTED" && contentType !== "question-bank" && (
+                            {status !== "SUBMITTED" && (
                               <div className="mt-0.5 flex items-center gap-3 pl-2">
                                 <button
                                   type="button"
@@ -1596,7 +1546,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   </div>
 
                   {/* Sidebar footer — settings also in top bar; keep quick access here */}
-                  <div className={`space-y-0.5 p-2 ${contentType === "question-bank" ? "" : "border-t border-slate-100 bg-slate-50/60"}`}>
+                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
@@ -1607,7 +1557,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Add Day
                       </button>
                     )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && contentType !== "question-bank" && (
+                    {status !== "SUBMITTED" && contentType !== "workshop" && (
                       <button
                         type="button"
                         onClick={addModule}
@@ -1618,28 +1568,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       </button>
                     )}
 
-                    {/* Add Section specifically for Question Bank since Module Add is hidden */}
-                    {status !== "SUBMITTED" && contentType === "question-bank" && modules.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => addLesson(modules[0].id)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
-                      >
-                        <Plus size={14} />
-                        Add {adapter.terminology.leafDocument}
-                      </button>
-                    )}
-
-                    {status !== "SUBMITTED" && contentType !== "workshop" && contentType !== "question-bank" && (
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
-                      >
-                        <FileText size={13} />
-                        Question Bank
-                      </button>
-                    )}
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
@@ -1648,6 +1576,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       >
                         <FileText size={13} />
                         Resources
+                      </button>
+                    )}
+                    {contentType === "course" && (
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
+                      >
+                        <FileQuestion size={13} />
+                        Question Bank
                       </button>
                     )}
                     <button
@@ -1669,11 +1607,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className={`z-0 flex flex-col min-h-0 ${
-          activeLessonId && contentType === "question-bank"
-            ? "flex-1 pt-[49px]"
-            : "absolute inset-0 overflow-y-auto"
-        }`}>
+        <main className="z-0 flex flex-col min-h-0 absolute inset-0 overflow-y-auto">
           {status === "SUBMITTED" && (
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
               <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
@@ -1721,14 +1655,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 }}
               />
             </div>
-          ) : activeLessonId && contentType === "question-bank" ? (
-            <QuestionBankBuilderLayout
-              activeLessonId={activeLessonId}
-              activeYDoc={activeYDoc}
-              activeSeedContent={activeSeedContent}
-              status={status}
-              onSave={handleSave}
-            />
           ) : activeLessonId ? (
             <div
               className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"

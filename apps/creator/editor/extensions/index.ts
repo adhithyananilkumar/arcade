@@ -208,7 +208,7 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, contentType?
         items: ({ query }: { query: string }) => searchUsersForMention(query),
       },
     }),
-    ...(contentType === "question-bank" ? [] : [SlashCommand]),
+    SlashCommand,
     CodeView,
     Callout,
 

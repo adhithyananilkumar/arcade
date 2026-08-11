@@ -86,7 +86,7 @@ interface ArcadeEditorProps {
    */
   chromeless?: boolean;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap" | "question-bank";
+  contentType?: "course" | "workshop" | "roadmap";
   /** Callback for selection updates */
   onSelectionUpdate?: (props: { editor: Editor }) => void;
 }
@@ -161,9 +161,7 @@ export const ArcadeEditor = memo(
   }
 
   const isRoadmap = contentType === "roadmap";
-  const hideToolbar = isRoadmap || contentType === "question-bank";
-console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
-
+  const hideToolbar = isRoadmap;
 
   return (
     <div
