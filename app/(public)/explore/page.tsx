@@ -1306,7 +1306,7 @@ function CoursesContent() {
             </motion.div>
           </motion.div>
 
-          {/* Card: Bootcamps */}
+          {/* Card: Events */}
           <motion.div
             onClick={() => handleTabSwitch("bootcamps")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1343,7 +1343,7 @@ function CoursesContent() {
                 marginBottom: "10px",
                 transition: "color 0.3s"
               }}>
-                02 // INTERACTIVE
+                02 // EVENTS
               </div>
               <h3 style={{
                 fontSize: "1.15rem",
@@ -1353,7 +1353,7 @@ function CoursesContent() {
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Live Learning
+                Events
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.

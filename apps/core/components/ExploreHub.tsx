@@ -896,8 +896,8 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
           <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
         </svg>
       );
-    
-    
+
+
     case "Design & UI/UX":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -921,7 +921,7 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
           <circle cx="208" cy="115" r="2.5" fill={colors.dark} />
         </svg>
       );
-    
+
     case "Data Science & AI":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -950,7 +950,7 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
           </g>
         </svg>
       );
-    
+
     case "Productivity Tools":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -973,7 +973,7 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
           </g>
         </svg>
       );
-    
+
     case "Marketing & SEO":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1165,7 +1165,7 @@ function parseRoadmapMetadata(graphJson: string) {
     const hours = Math.floor(duration / 60);
     const mins = duration % 60;
     const durationStr = duration > 0 ? `${hours > 0 ? `${hours}h ` : ''}${mins > 0 ? `${mins}m` : ''}`.trim() : null;
-    
+
     let difficulty = null;
     if (Object.keys(diffCounts).length > 0) {
       let max = 0;
@@ -1216,7 +1216,7 @@ function ExploreCatalog() {
         .then(async (data) => {
           const published = data.filter(r => r.status?.toLowerCase() === 'published');
           setRoadmaps(published);
-          
+
           const progressMap: Record<string, boolean> = {};
           try {
             await Promise.all(published.map(async (r) => {
@@ -1489,7 +1489,7 @@ function ExploreCatalog() {
             </motion.div>
           </motion.div>
 
-          {/* Card: Live Learning (Bootcamps + Webinars) */}
+          {/* Card: Events (Bootcamps + Webinars) */}
           <motion.div
             onClick={() => handleTabSwitch("bootcamps")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1536,7 +1536,7 @@ function ExploreCatalog() {
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Live Learning
+                Events
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
                 Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.
@@ -1814,10 +1814,10 @@ function ExploreCatalog() {
         >
           {(() => {
             const query = searchQuery.toLowerCase();
-            const filteredCategories = searchQuery 
+            const filteredCategories = searchQuery
               ? categoriesList.filter(cat => cat.toLowerCase().includes(query) || CATEGORY_DATA[cat]?.desc.toLowerCase().includes(query))
               : categoriesList;
-              
+
             const itemsPerPage = 8;
             const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
             const currentCategories = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -1825,9 +1825,9 @@ function ExploreCatalog() {
             let searchResults: any[] = [];
             if (searchQuery) {
               categoriesList.forEach(cat => {
-                
-                        const data = CATEGORY_DATA[cat];
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+
+                const data = CATEGORY_DATA[cat];
+                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
                 if (activeTab === "courses") {
                   data.courses.forEach(course => {
                     if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
@@ -1859,172 +1859,172 @@ function ExploreCatalog() {
             }
 
             return (
-            <div className="tab-content-panel">
-              {searchQuery && (
-                 <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "#4B5563" }}>
-                  Found {filteredCategories.length} department{filteredCategories.length === 1 ? '' : 's'} and {searchResults.length} item{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
-                 </div>
-              )}
-              
-              {(currentCategories.length > 0 || !searchQuery) && (
-                <>
-                  {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Departments</h3>}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-                    {currentCategories
-                      .map((cat) => {
-                        
-                        const data = CATEGORY_DATA[cat];
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
-                        return (
-                          <div
-                            key={cat}
-                            onClick={() => handleCategorySwitch(cat)}
-                            style={{
-                              position: "relative",
-                              borderRadius: "16px",
-                              background: "#FFFFFF",
-                              border: "1px solid #E5E7EB",
-                              overflow: "hidden",
-                              minHeight: "380px",
-                              cursor: "pointer",
-                              display: "flex",
-                              flexDirection: "column",
-                              // Pass color parameters to static CSS variables for hover effects
-                              ["--hover-color" as any]: themeColor,
-                              ["--hover-shadow" as any]: `${themeColor}2A`, // with 16% opacity (Hex 2A)
-                            }}
-                            className="lp-category-card"
-                          >
-                            {/* Top Illustration Header */}
+              <div className="tab-content-panel">
+                {searchQuery && (
+                  <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "#4B5563" }}>
+                    Found {filteredCategories.length} department{filteredCategories.length === 1 ? '' : 's'} and {searchResults.length} item{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+                  </div>
+                )}
+
+                {(currentCategories.length > 0 || !searchQuery) && (
+                  <>
+                    {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Departments</h3>}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+                      {currentCategories
+                        .map((cat) => {
+
+                          const data = CATEGORY_DATA[cat];
+                          const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                          return (
                             <div
+                              key={cat}
+                              onClick={() => handleCategorySwitch(cat)}
                               style={{
-                                height: "160px",
-                                width: "100%",
-                                background: "#F8FAFC", // soft light slate background for illustration
-                                borderBottom: "1px solid #F1F5F9",
                                 position: "relative",
+                                borderRadius: "16px",
+                                background: "#FFFFFF",
+                                border: "1px solid #E5E7EB",
+                                overflow: "hidden",
+                                minHeight: "380px",
+                                cursor: "pointer",
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                overflow: "hidden"
+                                flexDirection: "column",
+                                // Pass color parameters to static CSS variables for hover effects
+                                ["--hover-color" as any]: themeColor,
+                                ["--hover-shadow" as any]: `${themeColor}2A`, // with 16% opacity (Hex 2A)
                               }}
+                              className="lp-category-card"
                             >
-                              <CategoryHeaderIllustration category={cat} activeTab={activeTab} />
+                              {/* Top Illustration Header */}
+                              <div
+                                style={{
+                                  height: "160px",
+                                  width: "100%",
+                                  background: "#F8FAFC", // soft light slate background for illustration
+                                  borderBottom: "1px solid #F1F5F9",
+                                  position: "relative",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  overflow: "hidden"
+                                }}
+                              >
+                                <CategoryHeaderIllustration category={cat} activeTab={activeTab} />
+                              </div>
+
+                              {/* Card Content Section */}
+                              <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                                <div>
+                                  {/* Title and Pill Row */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
+                                    <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
+                                      {cat}
+                                    </h3>
+                                  </div>
+
+                                  <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
+                                    {data.desc}
+                                  </p>
+                                </div>
+
+                                <div>
+                                  {/* Card Bottom Row with Explore text and simple arrow */}
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: "0.85rem", fontWeight: "700", color: themeColor }}>
+                                      Explore Category
+                                    </span>
+                                    <svg
+                                      className="lp-category-card-arrow"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="#9CA3AF"
+                                      strokeWidth="2.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      style={{ transition: "all 0.3s ease" }}
+                                    >
+                                      <line x1="5" y1="12" x2="19" y2="12" />
+                                      <polyline points="12 5 19 12 12 19" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
+                          );
+                        })}
+                    </div>
+                  </>
+                )}
 
-                            {/* Card Content Section */}
-                            <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                              <div>
-                                {/* Title and Pill Row */}
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                                  <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
-                                    {cat}
-                                  </h3>
-                                </div>
+                {/* Individual Items Grid */}
+                {searchQuery && searchResults.length > 0 && (
+                  <div style={{ marginTop: "40px" }}>
+                    <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : activeTab === "articles" ? "Articles" : "Bootcamps"}</h3>
+                    <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+                      {searchResults.map((item, idx) => {
+                        if (activeTab === "courses") {
+                          return (
+                            <CourseCard
+                              key={idx}
+                              course={item}
+                              index={idx}
+                              activeCategoryName={item.category}
+                              activeData={CATEGORY_DATA[item.category]}
+                              router={router}
+                              realRating={4.8}
+                              realReviewsCount={124}
+                            />
+                          );
+                        }
 
-                                <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
-                                  {data.desc}
-                                </p>
-                              </div>
-
-                              <div>
-                                {/* Card Bottom Row with Explore text and simple arrow */}
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                  <span style={{ fontSize: "0.85rem", fontWeight: "700", color: themeColor }}>
-                                    Explore Category
-                                  </span>
-                                  <svg
-                                    className="lp-category-card-arrow"
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="#9CA3AF"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    style={{ transition: "all 0.3s ease" }}
-                                  >
-                                    <line x1="5" y1="12" x2="19" y2="12" />
-                                    <polyline points="12 5 19 12 12 19" />
-                                  </svg>
-                                </div>
-                              </div>
+                        const catColor = CATEGORY_DATA[item.category]?.colors?.primary || "#3B82F6";
+                        return (
+                          <div key={idx} style={{
+                            background: "#FFFFFF",
+                            border: "1px solid #E5E7EB",
+                            borderRadius: "16px",
+                            padding: "24px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "12px",
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                            transition: "transform 0.2s, box-shadow 0.2s",
+                            cursor: "pointer"
+                          }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "translateY(-4px)";
+                              e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "none";
+                              e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
+                            }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColor }} />
+                              <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>
+                                {item.category} • {item.type}
+                              </span>
+                            </div>
+                            <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{item.title}</h3>
+                            {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "#4B5563", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
+                            <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "#374151", flexWrap: "wrap" }}>
+                              {item.duration && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
+                              {item.level && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
+                              {item.date && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
+                              {item.readTime && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
                             </div>
                           </div>
                         );
                       })}
+                    </div>
                   </div>
-                </>
-              )}
-              
-              {/* Individual Items Grid */}
-              {searchQuery && searchResults.length > 0 && (
-                <div style={{ marginTop: "40px" }}>
-                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : activeTab === "articles" ? "Articles" : "Bootcamps"}</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-                    {searchResults.map((item, idx) => {
-                       if (activeTab === "courses") {
-                          return (
-                             <CourseCard
-                                key={idx}
-                                course={item}
-                                index={idx}
-                                activeCategoryName={item.category}
-                                activeData={CATEGORY_DATA[item.category]}
-                                router={router}
-                                realRating={4.8}
-                                realReviewsCount={124}
-                             />
-                          );
-                       }
-                       
-                       const catColor = CATEGORY_DATA[item.category]?.colors?.primary || "#3B82F6";
-                       return (
-                        <div key={idx} style={{
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
-                          borderRadius: "16px",
-                          padding: "24px",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "12px",
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
-                          transition: "transform 0.2s, box-shadow 0.2s",
-                          cursor: "pointer"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-4px)";
-                          e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "none";
-                          e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
-                        }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColor }} />
-                            <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>
-                              {item.category} • {item.type}
-                            </span>
-                          </div>
-                          <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{item.title}</h3>
-                          {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "#4B5563", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
-                          <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "#374151", flexWrap: "wrap" }}>
-                            {item.duration && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
-                            {item.level && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
-                            {item.date && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
-                            {item.readTime && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {/* No Results Fallback */}
-              {searchQuery && filteredCategories.length === 0 && searchResults.length === 0 && (
-                 <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E5E7EB", marginTop: "40px" }}>
+                )}
+
+                {/* No Results Fallback */}
+                {searchQuery && filteredCategories.length === 0 && searchResults.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E5E7EB", marginTop: "40px" }}>
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
                       <circle cx="11" cy="11" r="8" />
                       <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2032,50 +2032,50 @@ function ExploreCatalog() {
                     <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "#111827" }}>No results found</h3>
                     <p style={{ margin: 0, color: "#6B7280" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
                   </div>
-              )}
+                )}
 
-              {!searchQuery && totalPages > 1 && (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      border: "1px solid #E5E7EB",
-                      background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
-                      color: currentPage === 1 ? "#9CA3AF" : "#374151",
-                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                      fontWeight: "500",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    Previous
-                  </button>
-                  <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      border: "1px solid #E5E7EB",
-                      background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
-                      color: currentPage === totalPages ? "#9CA3AF" : "#374151",
-                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                      fontWeight: "500",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </div>
+                {!searchQuery && totalPages > 1 && (
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #E5E7EB",
+                        background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
+                        color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                        fontWeight: "500",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      Previous
+                    </button>
+                    <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #E5E7EB",
+                        background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
+                        color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                        cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                        fontWeight: "500",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
             );
-            })()}
+          })()}
 
         </div>{/* end contentRef wrapper */}
       </main>
@@ -2124,291 +2124,291 @@ function CategoryHeroIllustration({ category }: { category: string }) {
         </svg>
       );
     case "Information Technology":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Server rack on the left */}
-    <rect x="60" y="80" width="45" height="42" rx="4" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-    <line x1="68" y1="90" x2="97" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="90" r="1.5" fill="#E2ECF7" />
-    <line x1="68" y1="100" x2="97" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="100" r="1.5" fill="#E2ECF7" />
-    <line x1="68" y1="110" x2="97" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="72" cy="110" r="1.5" fill="#E2ECF7" />
+          {/* Server rack on the left */}
+          <rect x="60" y="80" width="45" height="42" rx="4" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+          <line x1="68" y1="90" x2="97" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="90" r="1.5" fill="#E2ECF7" />
+          <line x1="68" y1="100" x2="97" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="100" r="1.5" fill="#E2ECF7" />
+          <line x1="68" y1="110" x2="97" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="110" r="1.5" fill="#E2ECF7" />
 
-    {/* Database/Server rack on the right */}
-    <rect x="195" y="80" width="45" height="42" rx="4" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-    <line x1="203" y1="90" x2="232" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="90" r="1.5" fill="#BACDEB" />
-    <line x1="203" y1="100" x2="232" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="100" r="1.5" fill="#BACDEB" />
-    <line x1="203" y1="110" x2="232" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="207" cy="110" r="1.5" fill="#BACDEB" />
+          {/* Database/Server rack on the right */}
+          <rect x="195" y="80" width="45" height="42" rx="4" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+          <line x1="203" y1="90" x2="232" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="90" r="1.5" fill="#BACDEB" />
+          <line x1="203" y1="100" x2="232" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="100" r="1.5" fill="#BACDEB" />
+          <line x1="203" y1="110" x2="232" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="110" r="1.5" fill="#BACDEB" />
 
-    {/* Big Cloud in the Center */}
-    <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+          {/* Big Cloud in the Center */}
+          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
 
-    {/* Network Connections */}
-    {/* Cloud to Server Left */}
-    <path d="M 125,85 L 82,85 L 82,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
-    {/* Cloud to Server Right */}
-    <path d="M 175,85 L 217,85 L 217,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
-    {/* Cloud to Floor */}
-    <path d="M 150,94 L 150,130" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          {/* Network Connections */}
+          {/* Cloud to Server Left */}
+          <path d="M 125,85 L 82,85 L 82,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          {/* Cloud to Server Right */}
+          <path d="M 175,85 L 217,85 L 217,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          {/* Cloud to Floor */}
+          <path d="M 150,94 L 150,130" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
 
-    {/* Small laptop/pc at the bottom middle */}
-    <rect x="135" y="115" width="30" height="12" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-    <line x1="140" y1="127" x2="160" y2="127" stroke="#4E608A" strokeWidth="2" />
+          {/* Small laptop/pc at the bottom middle */}
+          <rect x="135" y="115" width="30" height="12" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+          <line x1="140" y1="127" x2="160" y2="127" stroke="#4E608A" strokeWidth="2" />
 
-    {/* Arrows inside cloud or around */}
-    <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+          {/* Arrows inside cloud or around */}
+          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
     case "Business & Management":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Briefcase */}
-    <rect x="50" y="80" width="60" height="42" rx="6" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-    {/* Handle */}
-    <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke="#4E608A" strokeWidth="1.5" fill="none" />
-    {/* Lock */}
-    <rect x="74" y="92" width="12" height="8" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1" />
+          {/* Briefcase */}
+          <rect x="50" y="80" width="60" height="42" rx="6" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+          {/* Handle */}
+          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke="#4E608A" strokeWidth="1.5" fill="none" />
+          {/* Lock */}
+          <rect x="74" y="92" width="12" height="8" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1" />
 
-    {/* Pie Chart / Analytics */}
-    <circle cx="205" cy="75" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-    <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill="#4E608A" stroke="#4E608A" strokeWidth="1" />
-    <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1" />
+          {/* Pie Chart / Analytics */}
+          <circle cx="205" cy="75" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill="#4E608A" stroke="#4E608A" strokeWidth="1" />
+          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1" />
 
-    {/* Calculator or Folder at the bottom right */}
-    <rect x="215" y="105" width="22" height="22" rx="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-    <circle cx="221" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="226" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="231" cy="111" r="1.5" fill="#4E608A" />
-    <circle cx="221" cy="116" r="1.5" fill="#4E608A" />
-    <circle cx="226" cy="116" r="1.5" fill="#4E608A" />
-    <circle cx="231" cy="116" r="1.5" fill="#4E608A" />
+          {/* Calculator or Folder at the bottom right */}
+          <rect x="215" y="105" width="22" height="22" rx="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+          <circle cx="221" cy="111" r="1.5" fill="#4E608A" />
+          <circle cx="226" cy="111" r="1.5" fill="#4E608A" />
+          <circle cx="231" cy="111" r="1.5" fill="#4E608A" />
+          <circle cx="221" cy="116" r="1.5" fill="#4E608A" />
+          <circle cx="226" cy="116" r="1.5" fill="#4E608A" />
+          <circle cx="231" cy="116" r="1.5" fill="#4E608A" />
 
-    {/* Growing Trend Graph Arrow */}
-    <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M 195,60 H 205 V 70" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Growing Trend Graph Arrow */}
+          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 195,60 H 205 V 70" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-    {/* Grid lines behind Graph */}
-    <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
-  </svg>
-);
+          {/* Grid lines behind Graph */}
+          <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
+        </svg>
+      );
     case "Civil & Mechanical":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Blueprint background details */}
-    <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke="#F1F5F9" strokeWidth="1" />
-    <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
+          {/* Blueprint background details */}
+          <path d="M 40,40 V 120 M 80,40 V 120 M 120,40 V 120 M 160,40 V 120 M 200,40 V 120 M 240,40 V 120" stroke="#F1F5F9" strokeWidth="1" />
+          <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
 
-    {/* Drafting Ruler / Triangle */}
-    <path d="M 50,120 L 110,60 L 110,120 Z" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
-    <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
+          {/* Drafting Ruler / Triangle */}
+          <path d="M 50,120 L 110,60 L 110,120 Z" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
 
-    {/* Hard Hat in the Center/Left */}
-    <g transform="translate(30, 0)">
-      {/* Hat cap */}
-      <path d="M 85,105 C 85,75 135,75 135,105 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1.5" />
-      {/* Brim */}
-      <path d="M 75,105 H 145" stroke="#CA8A04" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M 105,75 V 82" stroke="#CA8A04" strokeWidth="1.5" />
-    </g>
+          {/* Hard Hat in the Center/Left */}
+          <g transform="translate(30, 0)">
+            {/* Hat cap */}
+            <path d="M 85,105 C 85,75 135,75 135,105 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1.5" />
+            {/* Brim */}
+            <path d="M 75,105 H 145" stroke="#CA8A04" strokeWidth="2.5" strokeLinecap="round" />
+            <path d="M 105,75 V 82" stroke="#CA8A04" strokeWidth="1.5" />
+          </g>
 
-    {/* Gears on the Right */}
-    <g transform="translate(195, 75)">
-      {/* Gear 1 */}
-      <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Teeth */}
-      {Array.from({ length: 8 }).map((_, idx) => {
-        const angle = (idx * 360) / 8;
-        return (
-          <rect
-            key={idx}
-            x="-3"
-            y="-22"
-            width="6"
-            height="5"
-            rx="1"
-            fill="#4E608A"
-            transform={`rotate(${angle})`}
-          />
-        );
-      })}
-    </g>
+          {/* Gears on the Right */}
+          <g transform="translate(195, 75)">
+            {/* Gear 1 */}
+            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            {/* Teeth */}
+            {Array.from({ length: 8 }).map((_, idx) => {
+              const angle = (idx * 360) / 8;
+              return (
+                <rect
+                  key={idx}
+                  x="-3"
+                  y="-22"
+                  width="6"
+                  height="5"
+                  rx="1"
+                  fill="#4E608A"
+                  transform={`rotate(${angle})`}
+                />
+              );
+            })}
+          </g>
 
-    <g transform="translate(230, 100)">
-      {/* Gear 2 (Smaller, interlocking) */}
-      <circle cx="0" cy="0" r="12" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Teeth */}
-      {Array.from({ length: 6 }).map((_, idx) => {
-        const angle = (idx * 360) / 6;
-        return (
-          <rect
-            key={idx}
-            x="-2"
-            y="-15"
-            width="4"
-            height="4"
-            rx="1"
-            fill="#4E608A"
-            transform={`rotate(${angle})`}
-          />
-        );
-      })}
-    </g>
+          <g transform="translate(230, 100)">
+            {/* Gear 2 (Smaller, interlocking) */}
+            <circle cx="0" cy="0" r="12" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            {/* Teeth */}
+            {Array.from({ length: 6 }).map((_, idx) => {
+              const angle = (idx * 360) / 6;
+              return (
+                <rect
+                  key={idx}
+                  x="-2"
+                  y="-15"
+                  width="4"
+                  height="4"
+                  rx="1"
+                  fill="#4E608A"
+                  transform={`rotate(${angle})`}
+                />
+              );
+            })}
+          </g>
 
-    {/* Compass tool */}
-    <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="140" cy="50" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-  </svg>
-);
+          {/* Compass tool */}
+          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="140" cy="50" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+        </svg>
+      );
     case "Basic Sciences":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Test Tubes Rack */}
-    <g transform="translate(45, 75)">
-      {/* Rack base & frame */}
-      <rect x="0" y="45" width="60" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <line x1="8" y1="20" x2="8" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-      <line x1="52" y1="20" x2="52" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-      <line x1="0" y1="20" x2="60" y2="20" stroke="#4E608A" strokeWidth="1.5" />
+          {/* Test Tubes Rack */}
+          <g transform="translate(45, 75)">
+            {/* Rack base & frame */}
+            <rect x="0" y="45" width="60" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+            <line x1="8" y1="20" x2="8" y2="45" stroke="#4E608A" strokeWidth="1.5" />
+            <line x1="52" y1="20" x2="52" y2="45" stroke="#4E608A" strokeWidth="1.5" />
+            <line x1="0" y1="20" x2="60" y2="20" stroke="#4E608A" strokeWidth="1.5" />
 
-      {/* Test Tube 1 (left) */}
-      <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
+            {/* Test Tube 1 (left) */}
+            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
 
-      {/* Test Tube 2 (right) */}
-      <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
-    </g>
+            {/* Test Tube 2 (right) */}
+            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
+          </g>
 
-    {/* Chemical Flask (Center/Right) */}
-    <g transform="translate(130, 50)">
-      {/* Flask body */}
-      <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-      {/* Flask liquid */}
-      <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill="#BACDEB" />
-      {/* Bubbles */}
-      <circle cx="20" cy="35" r="2.5" fill="#4E608A" />
-      <circle cx="34" cy="22" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <circle cx="27" cy="12" r="2" fill="#4E608A" />
-    </g>
+          {/* Chemical Flask (Center/Right) */}
+          <g transform="translate(130, 50)">
+            {/* Flask body */}
+            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            {/* Flask liquid */}
+            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill="#BACDEB" />
+            {/* Bubbles */}
+            <circle cx="20" cy="35" r="2.5" fill="#4E608A" />
+            <circle cx="34" cy="22" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+            <circle cx="27" cy="12" r="2" fill="#4E608A" />
+          </g>
 
-    {/* Atom Symbol Floating on Right */}
-    <g transform="translate(225, 75)">
-      <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(30)" />
-      <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(-30)" />
-      <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="2" />
+          {/* Atom Symbol Floating on Right */}
+          <g transform="translate(225, 75)">
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(30)" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="2" />
 
-      {/* Electrons */}
-      <circle cx="-26" cy="-6" r="3" fill="#4E608A" />
-      <circle cx="26" cy="6" r="3" fill="#BACDEB" />
-    </g>
-  </svg>
-);
+            {/* Electrons */}
+            <circle cx="-26" cy="-6" r="3" fill="#4E608A" />
+            <circle cx="26" cy="6" r="3" fill="#BACDEB" />
+          </g>
+        </svg>
+      );
     case "Humanities & Languages":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Column structure on Left */}
-    <g transform="translate(45, 45)">
-      <rect x="0" y="75" width="50" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="5" y="70" width="40" height="5" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Pillars */}
-      <rect x="10" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="32" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      {/* Top */}
-      <path d="M 2,10 H 48 L 40,0 H 10 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-    </g>
+          {/* Column structure on Left */}
+          <g transform="translate(45, 45)">
+            <rect x="0" y="75" width="50" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="5" y="70" width="40" height="5" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            {/* Pillars */}
+            <rect x="10" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="32" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            {/* Top */}
+            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+          </g>
 
-    {/* Stack of books in center */}
-    <g transform="translate(125, 75)">
-      {/* Bottom Book */}
-      <rect x="0" y="36" width="65" height="15" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
-      {/* Middle Book */}
-      <rect x="8" y="22" width="55" height="14" rx="2" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
-      {/* Top Leaning Book */}
-      <g transform="rotate(-15, 12, 10)">
-        <rect x="10" y="0" width="50" height="12" rx="2" fill="#4E608A" stroke="#4E608A" strokeWidth="1.5" />
-        <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
-      </g>
-    </g>
+          {/* Stack of books in center */}
+          <g transform="translate(125, 75)">
+            {/* Bottom Book */}
+            <rect x="0" y="36" width="65" height="15" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
+            {/* Middle Book */}
+            <rect x="8" y="22" width="55" height="14" rx="2" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
+            {/* Top Leaning Book */}
+            <g transform="rotate(-15, 12, 10)">
+              <rect x="10" y="0" width="50" height="12" rx="2" fill="#4E608A" stroke="#4E608A" strokeWidth="1.5" />
+              <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
+            </g>
+          </g>
 
-    {/* Scroll and Quill on Right */}
-    <g transform="translate(205, 65)">
-      {/* Open Scroll / Document */}
-      <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <path d="M 5,45 H 42" stroke="#4E608A" strokeWidth="1" />
-      <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke="#BACDEB" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Scroll and Quill on Right */}
+          <g transform="translate(205, 65)">
+            {/* Open Scroll / Document */}
+            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 5,45 H 42" stroke="#4E608A" strokeWidth="1" />
+            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke="#BACDEB" strokeWidth="1.5" strokeLinecap="round" />
 
-      {/* Quill Pen */}
-      <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-      <path d="M 28,21 L 43,2" stroke="#4E608A" strokeWidth="1" />
-    </g>
-  </svg>
-);
+            {/* Quill Pen */}
+            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+            <path d="M 28,21 L 43,2" stroke="#4E608A" strokeWidth="1" />
+          </g>
+        </svg>
+      );
     case "Personal Development":
-return (
-  <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Floor line */}
-    <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Floor line */}
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
-    {/* Target with Dart on Left */}
-    <g transform="translate(60, 80)">
-      <circle cx="0" cy="0" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-      <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
+          {/* Target with Dart on Left */}
+          <g transform="translate(60, 80)">
+            <circle cx="0" cy="0" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
 
-      {/* Dart */}
-      <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-      {/* Dart flights */}
-      <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill="#4E608A" />
-    </g>
+            {/* Dart */}
+            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+            {/* Dart flights */}
+            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill="#4E608A" />
+          </g>
 
-    {/* Staircase/Steps on Right */}
-    <g transform="translate(150, 45)">
-      {/* Steps outline */}
-      <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-      <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke="#BACDEB" strokeWidth="1" />
+          {/* Staircase/Steps on Right */}
+          <g transform="translate(150, 45)">
+            {/* Steps outline */}
+            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke="#BACDEB" strokeWidth="1" />
 
-      {/* Person celebrating at the top step */}
-      <g transform="translate(25, -20)">
-        {/* Head */}
-        <circle cx="0" cy="-6" r="4.5" fill="#4E608A" />
-        {/* Body */}
-        <path d="M 0,-1 L 0,10" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" />
-        {/* Arms */}
-        <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-        {/* Legs */}
-        <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-      </g>
-    </g>
+            {/* Person celebrating at the top step */}
+            <g transform="translate(25, -20)">
+              {/* Head */}
+              <circle cx="0" cy="-6" r="4.5" fill="#4E608A" />
+              {/* Body */}
+              <path d="M 0,-1 L 0,10" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Arms */}
+              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+              {/* Legs */}
+              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+            </g>
+          </g>
 
-    {/* Sparkles / Stars in the sky */}
-    <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
-  </svg>
-);
+          {/* Sparkles / Stars in the sky */}
+          <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
+        </svg>
+      );
     default:
-return null;
+      return null;
   }
 }
 export default function ExploreHubPage() {

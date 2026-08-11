@@ -2193,13 +2193,14 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     <div
       className="landing-root"
       style={{
-        background: mode === "events" ? "linear-gradient(to bottom right, #fdf4ff, #fae8ff)" :
-                    mode === "articles" ? "linear-gradient(to bottom right, #f0fdf4, #dcfce7)" :
+        background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
+                    mode === "articles" ? "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #ECFDF5 100%)" : // Fresh mint-emerald garden mix
                     "#f8fafc",
         // Authenticated hub already clears the dock via LearnerShell pb-28.
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
         paddingBottom: isEmbeddedHub ? "8px" : "100px",
+        color: "inherit"
       }}
     >
       <style>{`
@@ -2547,14 +2548,14 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               ) : mode === "events" ? (
                 <>
                   Live Sessions & Events for <br />
-                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                  <GradientText colors={["#8B5CF6", "#6D28D9", "#3B82F6", "#1D4ED8", "#8B5CF6"]} animationSpeed={8} showBorder={false}>
                     {activeCategoryName}
                   </GradientText>
                 </>
               ) : (
                 <>
                   Latest Research & Articles in <br />
-                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                  <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
                     {activeCategoryName}
                   </GradientText>
                 </>
