@@ -26,6 +26,7 @@ import {
 
 import BlurText from "@/components/BlurText";
 import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
+import OrbitImages from "@/components/ui/OrbitImages";
 
 import {
   FOUNDERS_DATA,
@@ -396,72 +397,12 @@ export default function FoundersPage() {
             </div>
           </section>
 
-          {/* --- PLATFORM PHILOSOPHY HIGHLIGHTS (MATCHING REFERENCE IMAGE) --- */}
-          <section className="space-y-12 pt-6">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50/80 px-3.5 py-1.5 rounded-full border border-indigo-100/80">
-                Guiding Principles
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-medium text-slate-900">
-                Our Core Philosophy
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Arcade was architected around foundational values designed to give every student real-world engineering mastery.
-              </p>
-            </div>
 
-            <MagicBento
-              enableStars={true}
-              enableSpotlight={true}
-              enableBorderGlow={true}
-              enableTilt={true}
-              enableMagnetism={true}
-              clickEffect={true}
-              spotlightRadius={300}
-              particleCount={10}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
-            >
-              {PHILOSOPHY_CARDS.map((card, i) => {
-                const theme = PHILOSOPHY_THEMES[i % PHILOSOPHY_THEMES.length];
-                const baseClassName = `magic-bento-card magic-bento-card--border-glow rounded-[28px] border bg-white p-7 sm:p-8 shadow-[0_2px_20px_-4px_rgba(0,0,0,0.03),0_8px_16px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col justify-start min-h-[300px] sm:min-h-[320px] ${theme.border}`;
 
-                return (
-                  <ParticleCard
-                    key={i}
-                    className={baseClassName}
-                    style={{ '--glow-color': theme.glowColor } as React.CSSProperties}
-                    particleCount={10}
-                    glowColor={theme.glowColor}
-                    enableTilt={true}
-                    clickEffect={true}
-                    enableMagnetism={true}
-                  >
-                    <div className="space-y-6 relative z-10">
-                      {/* Number Badge with Matching Theme Color */}
-                      <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center font-bold text-sm shadow-2xs ${theme.badge}`}>
-                        {i + 1}
-                      </div>
-
-                      {/* Heading with Matching Theme Color */}
-                      <h3 className={`font-serif text-2xl font-normal leading-[1.25] tracking-tight ${theme.heading}`}>
-                        {card.title}
-                      </h3>
-
-                      {/* Clean Body Text */}
-                      <p className="text-xs sm:text-[13px] text-slate-500 leading-relaxed font-sans">
-                        {card.description}
-                      </p>
-                    </div>
-                  </ParticleCard>
-                );
-              })}
-            </MagicBento>
-          </section>
-
-          {/* --- PLATFORM MILESTONES TIMELINE (MATCHING REFERENCE DESIGN) --- */}
-          <section className="space-y-8 pt-4">
+          {/* --- PLATFORM MILESTONES (HORIZONTAL CARDS) --- */}
+          <section className="space-y-12 pt-4 pb-20 relative overflow-hidden">
             {/* Section Header */}
-            <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <div className="text-center space-y-3 max-w-2xl mx-auto relative z-20">
               <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1.5 rounded-full border border-indigo-100">
                 Our Evolution
               </span>
@@ -470,130 +411,49 @@ export default function FoundersPage() {
               </h2>
             </div>
 
-            {/* Top Centered Era Navigation Pills */}
-            <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 pt-2">
-              {TIMELINE_MILESTONES.map((m, idx) => {
-                const isActive = activeEraIndex === idx;
-                const numberLabels = ["1", "2", "3", "4"];
-                const eraTitles = ["Origin", "Architecture", "Beta Launch", "Future Vision"];
+            <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+                {TIMELINE_MILESTONES.map((m, idx) => {
+                  const cardColors = [
+                    { text: "text-blue-600", bg: "bg-blue-600", cardBg: "bg-blue-50/80", border: "border-blue-100" },
+                    { text: "text-amber-600", bg: "bg-amber-600", cardBg: "bg-amber-50/80", border: "border-amber-100" },
+                    { text: "text-purple-500", bg: "bg-purple-500", cardBg: "bg-purple-50/80", border: "border-purple-100" },
+                    { text: "text-emerald-500", bg: "bg-emerald-500", cardBg: "bg-emerald-50/80", border: "border-emerald-100" },
+                  ];
+                  const theme = cardColors[idx % cardColors.length];
 
-                return (
-                  <button
-                    key={m.year}
-                    onClick={() => setActiveEraIndex(idx)}
-                    className={`flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs font-bold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-[#0B132B] text-white shadow-md"
-                        : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/80 shadow-2xs"
-                    }`}
-                  >
-                    <span
-                      className={`flex items-center justify-center w-4.5 h-4.5 rounded-full text-[11px] font-bold ${
-                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
-                      }`}
+                  return (
+                    <motion.div 
+                      key={m.year}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, amount: 0.2 }}
+                      transition={{ duration: 0.5, delay: idx * 0.1 }}
+                      className={`${theme.cardBg} ${theme.border} rounded-[20px] p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative group border`}
                     >
-                      {numberLabels[idx]}
-                    </span>
-                    <span>{eraTitles[idx]}</span>
-                  </button>
+                      {/* Prominent Top Border Highlight on Hover */}
+                      <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.bg} rounded-t-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                      
+                      <div className="mb-3">
+                        <span className={`text-[11px] font-bold uppercase tracking-[0.15em] ${theme.text} mb-1.5 block`}>
+                          {m.badge}
+                        </span>
+                        <h4 className="font-serif text-[18px] sm:text-[20px] font-bold text-slate-900 leading-snug tracking-tight">
+                          {m.title}
+                        </h4>
+                    </div>
+                    
+                    <div className="flex-grow flex flex-col justify-start">
+                      <p className="text-[13px] sm:text-[14px] text-slate-500 leading-[1.6] font-sans">
+                        {m.description.split("\n\n")[0]}
+                      </p>
+                    </div>
+                  </motion.div>
                 );
               })}
-            </div>
-
-            {/* Main Milestone Detail Card */}
-            {(() => {
-              const outerTheme = ERA_OUTER_THEMES[activeEraIndex] || ERA_OUTER_THEMES[0];
-
-              return (
-                <div className={`rounded-[28px] border p-8 sm:p-12 shadow-sm transition-all duration-500 ${outerTheme.mainCard}`}>
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                    {/* Left Detail Content */}
-                    <div className="lg:col-span-7 space-y-4">
-
-                      {/* Heading */}
-                      <h3 className={`font-serif text-3xl sm:text-4xl font-bold tracking-tight leading-tight transition-colors duration-300 ${ERA_TITLE_COLORS[activeEraIndex] || "text-slate-900"}`}>
-                        {activeMilestone.title}
-                      </h3>
-
-                      {/* Subtitle */}
-                      <p className="text-sm font-semibold text-slate-900 font-sans">
-                        {activeMilestone.subtitle}
-                      </p>
-
-                      {/* Description */}
-                      <div className="space-y-3">
-                        {activeMilestone.description.split("\n\n").map((para, pIdx) => (
-                          <p key={pIdx} className="text-sm text-slate-500 leading-relaxed font-normal">
-                            {para}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right Standards Card */}
-                    <div className={`lg:col-span-5 rounded-2xl border p-6 shadow-xs space-y-4 transition-all duration-500 ${outerTheme.rightCard}`}>
-                      <div className="text-[11px] font-bold uppercase tracking-widest border-b border-slate-200/60 pb-3">
-                        <span className="text-slate-500">{ERA_HEADERS[activeEraIndex] || "ERA ARCHITECTURE"}</span>
-                      </div>
-
-                  <div className="space-y-0 pt-1">
-                    {ERA_STANDARDS[activeEraIndex]?.map((standardText, sIdx) => {
-                      const theme = PLACARD_THEMES[sIdx % PLACARD_THEMES.length];
-
-                      return (
-                        <motion.div
-                          key={`${activeEraIndex}-${sIdx}`}
-                          initial={{ opacity: 0, y: 16, scale: 0.97 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          transition={{
-                            duration: 0.4,
-                            delay: sIdx * 0.12,
-                            ease: [0.25, 0.1, 0.25, 1]
-                          }}
-                          className="relative flex flex-col items-center group w-full"
-                        >
-                          {/* If first board: Top Triangle Rope & Peg Pin */}
-                          {sIdx === 0 ? (
-                            <div className="flex justify-center -mb-1 z-10">
-                              <svg className="w-16 h-5 overflow-visible" viewBox="0 0 60 20">
-                                {/* Wall Pin / Peg */}
-                                <circle cx="30" cy="3" r="3.5" fill="#475569" stroke="#334155" strokeWidth="1" />
-                                <circle cx="30" cy="3" r="1.5" fill="#94A3B8" />
-                                {/* Left & Right Hanging Strings */}
-                                <line x1="30" y1="3" x2="16" y2="19" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 1.5" />
-                                <line x1="30" y1="3" x2="44" y2="19" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 1.5" />
-                              </svg>
-                            </div>
-                          ) : (
-                            /* Connecting Vertical Left & Right Ropes (Centered Inward) */
-                            <div className="h-4 w-full flex justify-between px-24 -my-0.5 z-10">
-                              <div className="w-1.5 h-full bg-slate-300 rounded-sm border-x border-slate-400/60 shadow-2xs" />
-                              <div className="w-1.5 h-full bg-slate-300 rounded-sm border-x border-slate-400/60 shadow-2xs" />
-                            </div>
-                          )}
-
-                          {/* Reference Color Module Box */}
-                          <div className={`w-full rounded-2xl ${theme.boxBg} border ${theme.border} p-4 ${theme.shadow} flex items-center gap-3.5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 cursor-pointer z-20`}>
-                            {/* White Round Circle Container for Number */}
-                            <div className={`w-7 h-7 rounded-full bg-white/90 border ${theme.border} flex items-center justify-center text-xs font-bold ${theme.numberColor} shrink-0 shadow-2xs`}>
-                              {sIdx + 1}
-                            </div>
-
-                            {/* Text Content Aligned Left */}
-                            <span className={`text-xs font-bold ${theme.text} leading-snug tracking-wide`}>
-                              {standardText}
-                            </span>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             </div>
-          );
-        })()}
-      </section>
+          </section>
         </div>
       </div>
 

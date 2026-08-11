@@ -2021,7 +2021,13 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
       >
 
         {/* Breadcrumb back into explore hub (authenticated) or public explore */}
-        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          viewport={{ once: false, amount: 0.5 }}
+          style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}
+        >
           <div
             style={{
               display: "flex",
@@ -2059,10 +2065,14 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Hero Section Container (No background card, border, or shadow) */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          viewport={{ once: false, amount: 0.15 }}
           style={{
             position: "relative",
             marginBottom: isEmbeddedHub ? "20px" : "56px",
@@ -2165,11 +2175,17 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
           >
             <HoneycombIllustration />
           </div>
-        </div>
+        </motion.div>
 
         {/* Section A: Popular / Available Courses */}
         <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
+            viewport={{ once: false, amount: 0.5 }}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
               <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
@@ -2179,7 +2195,7 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
             <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
               Showing {filteredCourses.length} of {activeData.courses.length} courses
             </span>
-          </div>
+          </motion.div>
 
           {/* Professional Horizontal Filters Bar */}
           <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
@@ -2264,16 +2280,23 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
                 const slug = slugify(course.title);
                 const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
                 return (
-                  <CourseCard
+                  <motion.div
                     key={course.title}
-                    course={course}
-                    index={index}
-                    activeCategoryName={activeCategoryName}
-                    activeData={activeData}
-                    router={router}
-                    realRating={stats.averageRating}
-                    realReviewsCount={stats.reviewsCount}
-                  />
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: (index % 3) * 0.1, ease: "easeOut" }}
+                    viewport={{ once: false, amount: 0.15 }}
+                  >
+                    <CourseCard
+                      course={course}
+                      index={index}
+                      activeCategoryName={activeCategoryName}
+                      activeData={activeData}
+                      router={router}
+                      realRating={stats.averageRating}
+                      realReviewsCount={stats.reviewsCount}
+                    />
+                  </motion.div>
                 );
               })}
             </div>
@@ -2281,7 +2304,13 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
         </section>
 
         {/* Section B: Bootcamps ("Trending Now" Layout) */}
-        <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+          viewport={{ once: false, amount: 0.15 }}
+          style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
@@ -2354,10 +2383,15 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* Section C: Resources */}
-        <section>
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
+          viewport={{ once: false, amount: 0.1 }}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
@@ -2430,7 +2464,7 @@ export default function CategoryDetailedView({ hubBasePath }: CategoryDetailedVi
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
       </main>
     </div>
