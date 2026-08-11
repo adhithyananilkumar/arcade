@@ -26,6 +26,12 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const MAX_SIZE_MB = 10;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        toast.error(`Icon file size must be less than ${MAX_SIZE_MB}MB`);
+        e.target.value = '';
+        return;
+      }
       setIconFile(file);
       setIconPreview(URL.createObjectURL(file));
     }

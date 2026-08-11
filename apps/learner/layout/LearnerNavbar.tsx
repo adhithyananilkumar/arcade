@@ -199,10 +199,10 @@ export default function LearnerNavbar() {
       });
   }, []);
 
-  const isConsole = pathname.startsWith('/console');
+  const isConsoleOrChannels = pathname.startsWith('/console') || pathname.startsWith('/manage-channels') || pathname.startsWith('/channels');
   const consoleCrumb = (() => {
-    if (!isConsole) return null;
-    if (pathname.startsWith('/console/channels')) return 'Channels';
+    if (!isConsoleOrChannels) return null;
+    if (pathname.startsWith('/console/channels') || pathname === '/manage-channels' || pathname.startsWith('/channels')) return 'Channels';
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
     if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
     if (pathname.startsWith('/console/iam')) return 'IAM';
@@ -236,19 +236,19 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Center: small Console breadcrumbs */}
-      {isConsole && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
+      {/* Center: floating navigation capsule */}
+      {isConsoleOrChannels && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 sm:gap-2 rounded-full bg-white px-4 py-1.5 sm:px-5 sm:py-2 shadow-[0_4px_20px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)] border border-slate-100/90 transition-all duration-200">
           <Link
-            href="/console"
-            className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+            href="/"
+            className="text-[12px] sm:text-[13px] font-medium text-slate-400 transition-colors duration-150 hover:text-slate-700"
           >
-            Console
+            Home
           </Link>
           {consoleCrumb && (
             <>
-              <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb}</span>
+              <span className="text-[12px] sm:text-[13px] font-normal text-slate-300 select-none">/</span>
+              <span className="text-[12px] sm:text-[13px] font-bold text-slate-900">{consoleCrumb}</span>
             </>
           )}
         </div>
@@ -383,7 +383,7 @@ export default function LearnerNavbar() {
           <MenuContainer>
             {/* Trigger (Profile Picture and Name) */}
             <div className="flex h-full w-full items-center justify-between gap-2">
-              <span className="max-w-[100px] truncate text-sm font-bold text-[#14142b]">
+              <span className="hidden max-w-[100px] truncate text-sm font-bold text-[#14142b] sm:inline">
                 {user?.username || user?.firstName || 'user'}
               </span>
               <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black/5 shadow-xs">
