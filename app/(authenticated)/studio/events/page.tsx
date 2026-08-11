@@ -156,20 +156,20 @@ export default function UnifiedManagePage() {
           </div>
           <div className="min-w-0">
             <h1 className="text-[30px] font-extrabold leading-tight tracking-tight text-slate-900">
-              Manage Workspaces
+              Manage Events
             </h1>
             <p className="mt-1 text-sm text-slate-500 leading-relaxed max-w-[600px]">
-              Create and edit workshops or webinars you own, or coordinate on projects you have been invited to co-manage.
+              Create and edit events or webinars you own, or coordinate on projects you have been invited to co-manage.
             </p>
           </div>
         </div>
         {/* Right: primary action */}
         {canCreate && (
           <Link
-            href="/studio/workshop/new"
+            href="/studio/events/new"
             className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 py-2.5 text-sm font-semibold text-white transition-all self-start sm:self-center"
           >
-            <Plus size={15} /> New Workspace
+            <Plus size={15} /> New Event
           </Link>
         )}
       </div>
@@ -177,7 +177,7 @@ export default function UnifiedManagePage() {
       {/* ── Compact stats row ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-y-4 sm:flex sm:flex-row sm:items-center sm:justify-between py-2 border-b border-slate-100 pb-5">
         {[
-          { label: 'Workspaces',      value: stats.total    },
+          { label: 'Events',      value: stats.total    },
           { label: 'Created by me',   value: stats.owned    },
           { label: 'Collaborations',  value: stats.collab   },
           { label: 'Active sessions', value: stats.sessions },
@@ -225,7 +225,7 @@ export default function UnifiedManagePage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
           <input
             type="text"
-            placeholder="Search workspaces..."
+            placeholder="Search events..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 bg-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
@@ -246,19 +246,19 @@ export default function UnifiedManagePage() {
               <FolderOpen size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">No workspaces yet</p>
+              <p className="text-lg font-bold text-slate-900">No events yet</p>
               <p className="mt-1.5 text-sm text-slate-400 max-w-sm leading-relaxed">
                 {searchQuery || activeFilter !== 'ALL'
                   ? 'Try adjusting your filters or search criteria.'
-                  : 'Create your first workshop or webinar to start managing your workspace.'}
+                  : 'Create your first event or webinar to start managing your events.'}
               </p>
             </div>
             {!searchQuery && activeFilter === 'ALL' && (
               <Link
-                href="/studio/workshop/new"
+                href="/studio/events/new"
                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
               >
-                <Plus size={16} /> New Workspace
+                <Plus size={16} /> New Event
               </Link>
             )}
           </motion.div>
@@ -357,7 +357,7 @@ export default function UnifiedManagePage() {
                     {/* Manage Link button */}
                     <div className="shrink-0 self-start sm:self-center">
                       <Link
-                        href={`/studio/workshop/${item.id}`}
+                        href={`/studio/events/${item.id}`}
                         className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all shadow-sm active:scale-98"
                       >
                         Manage {isWebinar ? 'Webinar' : 'Event'} <ArrowRight size={13} />

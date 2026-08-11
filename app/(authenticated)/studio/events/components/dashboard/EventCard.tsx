@@ -73,7 +73,7 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
           
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Link 
-              href={`/studio/workshop/${workshop.id}`}
+              href={`/studio/events/${workshop.id}`}
               className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:text-zinc-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
               title="Dashboard"
             >
@@ -83,7 +83,7 @@ export default function EventCard({ workshop, onDuplicate, onArchive, onDelete }
               </svg>
             </Link>
             <Link 
-              href={`/studio/workshop/${workshop.id}/edit`}
+              href={`/studio/events/${workshop.id}/edit`}
               className="p-1.5 text-zinc-600 hover:text-blue-600 hover:bg-blue-50 dark:text-zinc-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded"
               title="Edit Event"
             >

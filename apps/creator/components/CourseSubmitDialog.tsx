@@ -9,6 +9,7 @@ import { RoadmapData } from "@/domains/roadmaps/types";
 import { X, Plus, Clock, CalendarDays, IndianRupee, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
+import { toMinorUnits, fromMinorUnits } from "@/shared/utils/money";
 
 interface ExamScheduleSlot {
   dayOfWeek: string;
@@ -28,7 +29,10 @@ interface CourseSubmitDialogProps {
 export function CourseSubmitDialog({ course, roadmap, contentType = 'course', open, onClose, onSubmit }: CourseSubmitDialogProps) {
   const [coverImageUrl, setCoverImageUrl] = useState(course?.coverImageUrl || "");
   const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course?.pricingModel || 'FREE');
-  const [priceAmount, setPriceAmount] = useState<number | "">(course?.priceAmount || "");
+  // Displayed/edited as a decimal amount; converted to minor units at the API boundary.
+  const [priceAmount, setPriceAmount] = useState<number | "">(
+    course?.priceAmount ? fromMinorUnits(course.priceAmount) : ""
+  );
   const [message, setMessage] = useState("");
   
   const [schedule, setSchedule] = useState<ExamScheduleSlot[]>(() => {
@@ -99,7 +103,7 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
       await onSubmit({
         coverImageUrl: coverImageUrl || undefined,
         pricingModel,
-        priceAmount: pricingModel === 'PAID' ? Number(priceAmount) : undefined,
+        priceAmount: pricingModel === 'PAID' ? toMinorUnits(Number(priceAmount)) : undefined,
         message
       });
       onClose();

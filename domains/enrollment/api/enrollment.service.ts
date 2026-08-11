@@ -26,4 +26,13 @@ export class EnrollmentService {
     const data = await api.post<EnrollmentResult>(`/api/v1/enrollments/resource/${resourceType}/${resourceId}/revoke`);
     return data;
   }
+
+  /**
+   * Re-evaluates a PENDING enrollment (e.g. after a payment requirement is satisfied). Idempotent
+   * if already GRANTED.
+   */
+  static async resume(enrollmentId: string): Promise<EnrollmentResult> {
+    const data = await api.post<EnrollmentResult>(`/api/v1/enrollments/${enrollmentId}/resume`);
+    return data;
+  }
 }

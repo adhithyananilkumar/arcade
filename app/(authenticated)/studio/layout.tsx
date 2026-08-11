@@ -22,7 +22,7 @@ export default function ContentStudioLayout({
   const [hasEventAccess, setHasEventAccess] = useState<boolean | null>(null);
   const [checkingEvent, setCheckingEvent] = useState(false);
 
-  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/manage');
+  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/events');
   const isPublishedPreview = pathname.startsWith('/studio/published/');
   const [hasCollabs, setHasCollabs] = useState<boolean | null>(null);
 

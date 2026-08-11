@@ -27,6 +27,7 @@ import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
+import { formatMoney } from "@/shared/utils/money"
 import { UserService } from "@/domains/identity"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
 import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
@@ -512,8 +513,7 @@ function CourseHero({
             <div className="flex items-baseline gap-2 pr-1">
               {pricingModel === "PAID" ? (
                 <>
-                  <span className="font-serif text-3xl font-medium text-ink">${priceAmount}</span>
-                  {/* <span className="text-sm text-subtle line-through">${(priceAmount || 0) * 2}</span> */}
+                  <span className="font-serif text-3xl font-medium text-ink">{formatMoney(priceAmount ?? 0, "USD")}</span>
                 </>
               ) : (
                 <span className="font-serif text-3xl font-medium text-ink">Free</span>

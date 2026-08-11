@@ -46,7 +46,9 @@ export interface CourseResponse {
   description?: string;
   coverImageUrl?: string;
   pricingModel: PricingModel;
+  /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
+  currency?: string;
   examSchedule?: string;
   status: ContentStatus;
   rejectionReason?: string;
@@ -61,7 +63,9 @@ export interface CreateCourseRequest {
   title: string;
   description?: string;
   pricingModel?: PricingModel;
+  /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
+  currency?: string;
   examSchedule?: string;
 }
 
@@ -69,7 +73,9 @@ export interface PatchCourseRequest {
   title?: string;
   description?: string;
   pricingModel?: PricingModel;
+  /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
+  currency?: string;
   examSchedule?: string;
 }
 
@@ -157,7 +163,9 @@ export interface CourseRenderResponse {
   coverImageUrl?: string;
   status: ContentStatus;
   pricingModel: PricingModel;
+  /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
+  currency?: string;
   examSchedule?: string;
   modules: ModuleRenderResponse[];
 }
