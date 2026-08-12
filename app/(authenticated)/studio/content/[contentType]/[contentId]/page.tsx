@@ -183,11 +183,13 @@ export default function ContentOverviewPage() {
         : [];
 
   return (
-    <div
-      className="relative flex min-h-screen flex-1 flex-col"
-      style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)" }}
-    >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 pb-28 sm:px-6">
+    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-[#fafafa]">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
+        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
+        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] animate-pulse rounded-full bg-emerald-500/15 blur-[120px] duration-10000" />
+      </div>
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-28 pb-28 sm:px-6">
         <ContentOverviewHeader
           segment={segment!}
           contentId={contentId}
@@ -220,8 +222,8 @@ export default function ContentOverviewPage() {
               />
             </div>
             <div className="flex flex-col gap-6">
-              <div className="rounded-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
-                <div className="mb-3 flex items-center justify-between">
+              <div className="group rounded-2xl border border-white/40 bg-white/40 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#14142b]">
                     <Users size={14} /> People
                   </h2>
@@ -248,8 +250,8 @@ export default function ContentOverviewPage() {
                 )}
               </div>
 
-              <div className="rounded-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
-                <div className="mb-3 flex items-center justify-between">
+              <div className="group rounded-2xl border border-white/40 bg-white/40 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#14142b]">
                     <Clock size={14} /> Recent activity
                   </h2>

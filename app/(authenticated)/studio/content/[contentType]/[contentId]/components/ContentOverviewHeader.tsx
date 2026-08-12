@@ -190,12 +190,7 @@ export function ContentOverviewHeader({
 
   return (
     <div className="flex flex-col gap-4">
-      <Link
-        href="/studio"
-        className="inline-flex w-fit items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
-      >
-        <ArrowLeft size={14} /> Content Studio
-      </Link>
+
 
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex items-start gap-4">
