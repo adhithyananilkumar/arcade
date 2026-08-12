@@ -1546,7 +1546,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-4 top-36 z-20 flex flex-col h-[calc(100vh-10rem)] w-[268px] pointer-events-none">
+          <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-8rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
               {/* ── Sidebar header ───────────────── */}
               <div className="flex flex-shrink-0 items-center justify-between mb-3">
