@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
 export default function StudioEventsPageRedirect() {
-  redirect('/events');
+  redirect('/my-events');
 }
+
