@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { api } from '@/infrastructure/http/api';
 import { SessionForm } from '@/app/(authenticated)/studio/events/components/wizard/schedule/SessionForm';
 import { EventSession } from '@/app/(authenticated)/studio/events/types';
@@ -60,8 +61,10 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, eventId,
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-3xl rounded-xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 bg-gray-50/50 px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-900">Day Schedule & Settings</h2>
@@ -105,6 +108,7 @@ export const SessionSettingsDialog: React.FC<Props> = ({ open, onClose, eventId,
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

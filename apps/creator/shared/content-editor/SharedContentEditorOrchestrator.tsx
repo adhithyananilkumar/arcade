@@ -37,6 +37,7 @@
 // features/content/course/components/CourseEditorShell.tsx
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -218,8 +219,10 @@ function ConfirmDialog({
   if (!options) return null;
   const { title, message, confirmLabel, danger } = options;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md"
         onClick={() => !busy && onClose()}
@@ -270,7 +273,8 @@ function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -304,19 +308,18 @@ function IconBtn({
 }
 
 function StatusPill({ status }: { status: string }) {
-  const styles: Record<string, { badge: string; dot: string }> = {
-    DRAFT: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-400" },
-    SUBMITTED: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
-    APPROVED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    PUBLISHED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
+  const styles: Record<string, string> = {
+    DRAFT: "text-gray-500",
+    SUBMITTED: "text-blue-600",
+    APPROVED: "text-green-600",
+    PUBLISHED: "text-[#14142b]/60",
+    ARCHIVED: "text-gray-400",
   };
-  const s = styles[status] ?? styles.ARCHIVED;
+  const color = styles[status] ?? styles.ARCHIVED;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.badge}`}
+      className={`inline-flex items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm backdrop-blur-md ${color}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {status}
     </span>
   );
@@ -691,7 +694,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [view, setView] = useState<"tree">("tree");
 
   // Sidebar collapse state
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
 
   // Inline rename + confirm dialog state
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
@@ -852,7 +855,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             title: m.title,
             position: m.position,
             expanded: false,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "lesson" || !l.type),
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document" || l.type === "lesson" || l.type === "quiz" || !l.type),
           }))
         );
         const firstLeaf = containers[0]?.leaves?.[0];
@@ -1418,14 +1421,28 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </button>
           </div>
 
-          {/* Center: Title */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3">
-            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
-              <span className="block max-w-[40vw] truncate">
-                  {activeLessonId
-                  ? activeLessonTitle
-                  : title || adapter.terminology.root}
-              </span>
+          {/* Center: Title and Status */}
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
+            <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
+              {activeLessonId ? (
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+                    <>
+                      <span className="block max-w-[15vw] truncate font-medium">
+                        {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
+                      </span>
+                      <span className="text-gray-400">/</span>
+                    </>
+                  )}
+                  <span className="block max-w-[20vw] truncate text-[#14142b]">
+                    {activeLessonTitle}
+                  </span>
+                </div>
+              ) : (
+                <span className="block max-w-[40vw] truncate text-[#14142b]">
+                  {title || adapter.terminology.root}
+                </span>
+              )}
             </div>
           </div>
 
@@ -1779,66 +1796,40 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         }
       />
 
-    {/* Floating Status & Save State (Bottom Right) */}
-    <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex flex-col items-end gap-2">
-      {status !== "SUBMITTED" && (
-        <div className="pointer-events-auto flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-          {hasDraftChanges ? "Unsaved changes" : "Saved"}
-        </div>
-      )}
-      <div className="pointer-events-auto rounded-full shadow-lg bg-white/60 backdrop-blur-md p-1 border border-white/40 transition-colors hover:bg-white">
-        <StatusPill status={status} />
-      </div>
-    </div>
-
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-4 top-36 z-20 flex flex-col h-[calc(100vh-10rem)] w-[268px] pointer-events-none">
-            <div className="pointer-events-auto flex flex-col w-full h-full">
-              {!sidebarOpen ? (
-                <button
-                  type="button"
-                  title="Expand sidebar"
-                  onClick={() => setSidebarOpen(true)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-lg backdrop-blur-xl transition-all hover:bg-white/60 hover:shadow-xl"
-                >
-                  <PanelLeftOpen size={18} />
-                </button>
-              ) : (
-                <div className="flex w-full flex-col h-full overflow-hidden">
-                  {/* ── Sidebar header ───────────────── */}
-                  <div className="flex flex-shrink-0 items-center justify-between mb-2">
-                    <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
-                      {adapter.terminology.root} structure
-                    </span>
-                    <button
-                      type="button"
-                      title="Collapse sidebar"
-                      onClick={() => setSidebarOpen(false)}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-sm backdrop-blur-xl transition-all hover:bg-white/60"
-                    >
-                      <PanelLeftClose size={14} />
-                    </button>
+          <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
+            <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
+              {/* ── Sidebar header ───────────────── */}
+              <div className="flex flex-shrink-0 items-center justify-between mb-3">
+                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+                  {adapter.terminology.root} structure
+                </span>
+              </div>
+
+              {/* ── Sidebar actions ───────────────── */}
+
+              {/* ── Body ──────────────────────────────── */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
+                {modules.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+                    <Layers size={24} className="text-[#14142b]/40" />
+                    <p className="text-xs font-medium text-[#14142b]/60">
+                      {contentType === "workshop"
+                        ? "Create your first workshop day."
+                        : "No modules yet. Add a module to get started."}
+                    </p>
                   </div>
+                )}
 
-                  {/* ── Body ──────────────────────────────── */}
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
-                    {modules.length === 0 && (
-                      <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
-                        <Layers size={24} className="text-[#14142b]/40" />
-                        <p className="text-xs font-medium text-[#14142b]/60">
-                          {contentType === "workshop"
-                            ? "Create your first workshop day."
-                            : "No modules yet. Add a module to get started."}
-                        </p>
-                      </div>
-                    )}
-
-                    {modules.map((mod) => (
-                      <div key={mod.id} className="mb-2 flex flex-col gap-1">
-                        {/* Module pill row */}
+                {modules.map((mod) => {
+                  const isModuleActive = mod.lessons.some((l) => l.id === activeLessonId);
+                  const isExpanded = mod.expanded || isModuleActive;
+                  return (
+                  <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                    {/* Module pill row */}
                         <div className="group flex items-center gap-2 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-white/60 hover:bg-white/80">
                             <button
                               type="button"
@@ -1851,7 +1842,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               }
                               className="flex-shrink-0 text-[#14142b]/50 hover:text-[#14142b]"
                             >
-                              {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                             </button>
 
                             {isEditing("module", mod.id) ? (
@@ -1893,7 +1884,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </div>
 
                         {/* Lessons and quizzes, interleaved by position */}
-                        {mod.expanded && (
+                        {isExpanded && (
                           <div className="ml-5 flex flex-col gap-1 border-l border-[#14142b]/10 pl-3 pt-1">
                             <DndContext
                               sensors={sensors}
@@ -1986,55 +1977,45 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
+              </div>
 
-                  {/* Sidebar footer — settings also in top bar; keep quick access here */}
-                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
-                    {status !== "SUBMITTED" && contentType === "workshop" && (
-                      <button
-                        type="button"
-                        onClick={addEventDay}
-                        className="mb-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
-                      >
-                        <Plus size={14} />
-                        Add Day
-                      </button>
-                    )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
-                      <button
-                        type="button"
-                        onClick={addModule}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
-                      >
-                        <Plus size={14} />
-                        Add {adapter.terminology.container}
-                      </button>
-                    )}
-
-                    {status !== "SUBMITTED" && contentType === "workshop" && (
-                      <button
-                        type="button"
-                        className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-400 opacity-60"
-                        title="Resources (Coming soon)"
-                      >
-                        <FileText size={13} />
-                        Resources
-                      </button>
-                    )}
-                    {contentType === "course" && (
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
-                      >
-                        <FileQuestion size={13} />
-                        Question Bank
-                      </button>
-                    )}
-                  </div>
+              {/* ── Sidebar actions (Fixed at bottom) ───────────────── */}
+              {status !== "SUBMITTED" && (
+                <div className="flex shrink-0 flex-col gap-2 mt-auto pt-4 pb-2 px-1 border-t border-slate-100/50">
+                  {contentType === "workshop" ? (
+                    <button
+                      type="button"
+                      onClick={addEventDay}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add Day
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={addModule}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add {adapter.terminology.container}
+                    </button>
+                  )}
+                  {contentType === "course" && (
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow hover:text-[#14142b]"
+                    >
+                      <FileQuestion size={14} />
+                      Question Bank
+                    </button>
+                  )}
                 </div>
               )}
+
             </div>
           </aside>
         )}
@@ -2082,14 +2063,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             // content inside it does, and the scrollbar that produces sits at the
             // panel's own right edge, not the window's.
             <div
-              className="w-full max-w-[860px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
+              className="w-full max-w-[1024px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
               style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
             >
               {/* No border/shadow — reads as the page itself, not a boxed panel
                   floating on top of it. Plain translucent white (no backdrop-blur):
                   blur + rounded corners over the page's own blurred background blobs
                   was producing a doubled/seamed edge at the corners. */}
-              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-editor-scrollbar">
+              <div className="h-full overflow-y-auto rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-8 arcade-scrollbar-mini">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
