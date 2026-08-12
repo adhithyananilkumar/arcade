@@ -23,8 +23,8 @@ export default function IamPage() {
   const [activeTab, setActiveTab] = useState<'USERS' | 'POLICIES'>('USERS');
 
   return (
-    <div className="w-full space-y-5">
-      <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/90 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
+    <div className="flex w-full flex-col h-full space-y-5 pb-6">
+      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         <button
           type="button"
           onClick={() => setActiveTab('USERS')}
@@ -51,10 +51,10 @@ export default function IamPage() {
         </button>
       </div>
 
-      <div className={activeTab === 'USERS' ? 'block' : 'hidden'}>
+      <div className={activeTab === 'USERS' ? 'flex-1 min-h-0 overflow-y-auto pr-2' : 'hidden'}>
         <UsersList />
       </div>
-      <div className={activeTab === 'POLICIES' ? 'block' : 'hidden'}>
+      <div className={activeTab === 'POLICIES' ? 'flex-1 min-h-0 overflow-y-auto pr-2' : 'hidden'}>
         <PolicyManager />
       </div>
     </div>

@@ -15,6 +15,7 @@ import { Text } from "@tiptap/extension-text";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { CharacterCount, Dropcursor, Gapcursor, Placeholder, TrailingNode } from "@tiptap/extensions";
 import Collaboration from "@tiptap/extension-collaboration";
+import { CollaborationCursor } from "./collaborationCursor";
 import { createLowlight, common } from "lowlight";
 import type * as Y from "yjs";
 
@@ -135,19 +136,36 @@ const BaseKit = [
  * extension is dropped — Yjs owns undo/redo instead (mirrors the previous StarterKit
  * `undoRedo: false` behaviour).
  */
-export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, contentType?: string) {
+/** Helper for deterministic color generation for user cursors */
+function getRandomColor(id?: string) {
+  const colors = ["#f43f5e", "#ec4899", "#d946ef", "#a855f7", "#8b5cf6", "#6366f1", "#3b82f6", "#0ea5e9", "#06b6d4", "#14b8a6", "#10b981", "#84cc16", "#eab308", "#f97316"];
+  if (!id) return colors[Math.floor(Math.random() * colors.length)];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: any, user?: { id?: string; name?: string; avatar?: string }, contentType?: string) {
+  const effectiveYDoc = ydoc || provider?.document;
+
   return [
     ...BaseKit,
-    // `includeChildren` is deliberately omitted: combined with the extension's
-    // default `showOnlyCurrent`, it routes decorations through the incremental
-    // state-field path, which was leaving stale "empty" decorations on every
-    // paragraph the caret had previously visited instead of just the current one.
-    // The default (single current empty block) is what we want here.
     Placeholder.configure({
       placeholder: placeholder ?? "Press '/' for commands",
     }),
     CharacterCount,
-    ...(ydoc ? [Collaboration.configure({ document: ydoc })] : [History]),
+    ...(effectiveYDoc ? [Collaboration.configure({ document: effectiveYDoc })] : [History]),
+    ...(provider && effectiveYDoc ? [
+      CollaborationCursor.configure({
+        provider,
+        user: {
+          name: user?.name || "Anonymous Author",
+          color: getRandomColor(user?.id),
+        },
+      })
+    ] : []),
 
     SearchAndReplace,
     Clear,

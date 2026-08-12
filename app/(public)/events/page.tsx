@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
-import { EventDiscoveryPage } from "./EventDiscoveryPage";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Events — Arcade",
-  description: "Discover workshops, webinars, bootcamps, and more.",
-};
+import React, { Suspense } from "react";
+import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 
 export default function EventsPage() {
-  return <EventDiscoveryPage />;
+  return (
+    <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading category...</div>}>
+      <CategoryDetailedView mode="events" />
+    </Suspense>
+  );
 }

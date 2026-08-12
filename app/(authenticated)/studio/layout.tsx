@@ -14,7 +14,7 @@ export default function ContentStudioLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const { user, status: authStatus } = useAuthStore();
   const { hasAccess, loading } = useStudioAccess();
   
   const eventIdMatch = pathname.match(/^\/studio\/workshop\/([a-f0-9-]+)/i);
@@ -22,7 +22,7 @@ export default function ContentStudioLayout({
   const [hasEventAccess, setHasEventAccess] = useState<boolean | null>(null);
   const [checkingEvent, setCheckingEvent] = useState(false);
 
-  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/manage');
+  const isCollaborationsPage = pathname.startsWith('/studio/my-collaborations') || pathname.startsWith('/studio/collaborator-dashboard') || pathname.startsWith('/studio/events');
   const isPublishedPreview = pathname.startsWith('/studio/published/');
   const [hasCollabs, setHasCollabs] = useState<boolean | null>(null);
 
@@ -63,7 +63,7 @@ export default function ContentStudioLayout({
   const isAuthorized = hasAdminAccess || isPublishedPreview ||
     (eventId ? hasEventAccess === true : (isCollaborationsPage ? true : hasAccess));
 
-  const isLayoutLoading = loading || 
+  const isLayoutLoading = loading || authStatus === 'loading' ||
     (eventId !== null && hasEventAccess === null);
 
   useEffect(() => {

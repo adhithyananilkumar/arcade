@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -17,23 +17,31 @@ export default function ArcConsoleLayout({
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviews = AuthorizationService.canReviewContent(user);
   const showPlatformReviews = AuthorizationService.canReviewPlatformContent(user);
+  const showPayments = AuthorizationService.canViewPayments(user);
   const showIam =
     AuthorizationService.canManageSettings(user) ||
     AuthorizationService.canManageUsers(user) ||
     AuthorizationService.canManageRoles(user) ||
     AuthorizationService.canManagePermissions(user);
+  const showInbox = AuthorizationService.canAccessConsole(user);
 
   const navItems = [
     ...(showAdminChannels
-      ? [{ name: 'Channels', href: '/console/channels', icon: Tv }]
+      ? [{ name: 'Channels', href: '/console/channels', icon: Tv, iconBg: 'bg-[#bae6fd] text-[#0c4a6e]' }]
       : []),
     ...(showReviews
-      ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck }]
+      ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck, iconBg: 'bg-[#fef08a] text-[#854d0e]' }]
       : []),
     ...(showPlatformReviews
-      ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar }]
+      ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
       : []),
-    ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield }] : []),
+    ...(showPayments
+      ? [{ name: 'Payments', href: '/console/payments', icon: Receipt, iconBg: 'bg-[#e9d5ff] text-[#4c1d95]' }]
+      : []),
+    ...(showInbox
+      ? [{ name: 'Inbox', href: '/console/inbox', icon: Inbox, iconBg: 'bg-[#dbeafe] text-[#1e40af]' }]
+      : []),
+    ...(showIam ? [{ name: 'IAM', href: '/console/iam', icon: Shield, iconBg: 'bg-[#fed7aa] text-[#7c2d12]' }] : []),
   ];
 
   // Removed notFound() when navItems is empty. This allows Org staff to access 
@@ -41,14 +49,14 @@ export default function ArcConsoleLayout({
   // console sidebar links.
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative h-screen w-full flex flex-col overflow-hidden"
       style={{
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
       }}
     >
-      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 pb-12 pt-28 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-32">
+      <div className="relative z-10 flex w-full flex-1 min-h-0 flex-col gap-5 px-4 pt-24 sm:px-6 md:flex-row md:gap-5 md:px-8 md:pt-24 pb-0">
         {/* Mobile tabs */}
-        <nav className="flex gap-1.5 overflow-x-auto pb-1 md:hidden">
+        <nav className="flex gap-1.5 overflow-x-auto shrink-0 pb-1 md:hidden">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -57,13 +65,18 @@ export default function ArcConsoleLayout({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-colors',
+                  'inline-flex shrink-0 items-center gap-2 rounded-full pr-4 pl-2 py-1.5 text-[12px] font-semibold transition-colors',
                   active
-                    ? 'bg-[#14142b] text-white'
-                    : 'border border-slate-200 bg-white/90 text-slate-500 hover:text-[#14142b]',
+                    ? "bg-sky-100/90 text-sky-950 border border-sky-200 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800/60" 
+                    : "border border-slate-200 bg-white/90 text-slate-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-slate-300"
                 )}
               >
-                <Icon size={14} />
+                <div className={cn(
+                  "flex items-center justify-center w-6 h-6 rounded-full shrink-0 shadow-2xs",
+                  item.iconBg
+                )}>
+                  <Icon size={12} strokeWidth={2} />
+                </div>
                 {item.name}
               </Link>
             );
@@ -71,8 +84,8 @@ export default function ArcConsoleLayout({
         </nav>
 
         {/* Desktop sidebar — nav only, no Platform/Console heading */}
-        <aside className="hidden w-[180px] shrink-0 md:block lg:w-[200px]">
-          <nav className="sticky top-28 flex flex-col gap-1">
+        <aside className="hidden w-[220px] shrink-0 md:flex flex-col overflow-y-auto lg:w-[240px] pb-12">
+          <nav className="flex flex-col gap-1.5">
             {navItems.map((item) => {
               const active = pathname.startsWith(item.href);
               const Icon = item.icon;
@@ -81,21 +94,26 @@ export default function ArcConsoleLayout({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-colors',
-                    active
-                      ? 'bg-[#14142b] text-white shadow-[0_8px_18px_rgba(20,20,43,0.16)]'
-                      : 'text-slate-500 hover:bg-white/80 hover:text-[#14142b]',
+                    "flex items-center gap-3.5 px-4 py-3 rounded-full transition-all duration-200 text-sm font-semibold",
+                    active 
+                      ? "bg-sky-100/90 text-sky-950 border border-sky-200 dark:bg-sky-950/70 dark:text-sky-200 dark:border-sky-800/60 font-bold shadow-xs" 
+                      : "hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-700 dark:text-slate-300"
                   )}
                 >
-                  <Icon size={16} strokeWidth={active ? 2.4 : 2} />
-                  {item.name}
+                  <div className={cn(
+                    "flex items-center justify-center w-8 h-8 rounded-full shrink-0 shadow-2xs",
+                    item.iconBg
+                  )}>
+                    <Icon size={16} strokeWidth={2} />
+                  </div>
+                  <span className="truncate text-xs font-semibold">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1 flex flex-col min-h-0 relative px-1">{children}</main>
       </div>
     </div>
   );

@@ -37,6 +37,10 @@ function typeLabel(type: string): string | null {
     case 'CHANNEL_APPROVED':
     case 'CHANNEL_REJECTED':
       return 'Channel';
+    case 'REACH_US':
+      return 'Reach Us';
+    case 'CONTENT_REPORTED':
+      return 'Content Report';
     default:
       return null;
   }
@@ -57,9 +61,56 @@ function typeTone(type: string): string {
       return 'bg-amber-50 text-amber-700 border-amber-200';
     case 'CONTENT_SUBMITTED':
       return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'REACH_US':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'CONTENT_REPORTED':
+      return 'bg-amber-50 text-amber-700 border-amber-200';
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200';
   }
+}
+
+function getNotificationTargetUrl(n: NotificationDto): string | null {
+  let metadataObj: any = null;
+  if (n.metadata) {
+    try {
+      metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
+    } catch {
+      metadataObj = null;
+    }
+  }
+
+  const messageId = metadataObj?.contactMessageId || metadataObj?.messageId || metadataObj?.reportId || metadataObj?.id;
+
+  if (n.type === 'REACH_US') {
+    return messageId ? `/console/inbox?tab=reach-us&messageId=${messageId}` : '/console/inbox?tab=reach-us';
+  }
+
+  if (n.type === 'CONTENT_REPORTED') {
+    return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
+  }
+
+  const lowerTitle = (n.title || '').toLowerCase();
+  const lowerMessage = (n.message || '').toLowerCase();
+
+  if (lowerTitle.includes('reach us') || lowerMessage.includes('reach us')) {
+    return messageId ? `/console/inbox?tab=reach-us&messageId=${messageId}` : '/console/inbox?tab=reach-us';
+  }
+
+  if (lowerTitle.includes('report') || lowerMessage.includes('report')) {
+    return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
+  }
+
+  if (n.linkUrl) {
+    if (n.linkUrl === '/console/inbox') {
+      if (messageId) {
+        return `/console/inbox?messageId=${messageId}`;
+      }
+    }
+    return n.linkUrl;
+  }
+
+  return null;
 }
 
 export function NotificationList({
@@ -475,7 +526,7 @@ export function NotificationList({
               </div>
               {!n.read && <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{n.message}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 break-words">{n.message}</p>
             {n.actorName && (
               <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                 by {n.actorName}
@@ -496,8 +547,10 @@ export function NotificationList({
           </div>
         );
 
-        return n.linkUrl ? (
-          <Link key={n.id} href={n.linkUrl} className="block cursor-pointer">
+        const targetUrl = getNotificationTargetUrl(n);
+
+        return targetUrl ? (
+          <Link key={n.id} href={targetUrl} className="block cursor-pointer">
             {content}
           </Link>
         ) : (

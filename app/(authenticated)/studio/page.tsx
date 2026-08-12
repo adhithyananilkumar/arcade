@@ -543,8 +543,8 @@ function CreateEventModal({
         deliveryMode: "ONLINE",
         difficulty: "BEGINNER",
         language: "en",
-        price: 0,
-        currency: "USD",
+        priceAmount: 0,
+        currency: "INR",
         visibility: "PRIVATE",
         channelId,
       });
@@ -864,12 +864,12 @@ function ContentCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isRoadmap = item.type === "ROADMAP";
-  const isEvent = item.type === "WORKSHOP";
+  const isEvent = ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type);
   const isQuiz = item.type === "QUIZ";
   const editHref = isRoadmap
     ? `/studio/roadmap/${item.id}/edit`
     : isEvent
-      ? `/studio/workshop/${item.id}`
+      ? `/studio/events/${item.id}/edit`
       : isQuiz
         ? `/studio/quiz/${item.id}`
         : `/studio/course/${item.id}/edit`;
@@ -1049,8 +1049,14 @@ export default function DashboardPage() {
     return counts;
   }, [items]);
 
+  const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
+
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      // Content Studio strictly displays content owned/authored by channels the user has authority over
+      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
+        return false;
+      }
       const statusOk =
         statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
       const typeOk =
@@ -1059,7 +1065,7 @@ export default function DashboardPage() {
       const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
       return statusOk && typeOk && channelOk;
     });
-  }, [items, statusFilter, typeFilter, channelFilter]);
+  }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
 
   const CHANNEL_CHIPS = useMemo(() => {
     const base = [{ id: "ALL", label: "All channels" }];

@@ -111,7 +111,7 @@ export default function MyCollaborationsPage() {
 
               <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <Link
-                  href={`/studio/workshop/${workshop.id}`}
+                  href={`/studio/events/${workshop.id}`}
                   className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold rounded-xl transition-all"
                 >
                   Manage Event <ArrowRight size={13} />

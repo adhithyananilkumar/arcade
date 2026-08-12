@@ -3,7 +3,9 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import Footer from "@/apps/public/components/landing/Footer";
 import GradientText from "@/components/landing/GradientText";
+import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
 
@@ -169,6 +171,42 @@ export const CATEGORY_DATA: Record<string, {
       { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
       { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
     ]
+  },
+  "Design & UI/UX": {
+    coursesCount: 8,
+    gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
+    colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
+    desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Data Science & AI": {
+    coursesCount: 15,
+    gradient: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)",
+    colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
+    desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Productivity Tools": {
+    coursesCount: 4,
+    gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+    colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
+    desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
+  "Marketing & SEO": {
+    coursesCount: 9,
+    gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
+    colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
+    desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
+    courses: [],
+    bootcamps: [],
+    resources: []
   }
 };
 
@@ -411,7 +449,30 @@ function CategoryIllustration({ category }: { category: string }) {
   }
 }
 
-function CategoryHeaderIllustration({ category }: { category: string }) {
+function CategoryHeaderIllustration({ category, activeTab }: { category: string; activeTab?: string }) {
+  let colors = {
+    light: "#BACDEB",
+    veryLight: "#E2ECF7",
+    medium: "#8C9CBF",
+    dark: "#4E608A"
+  };
+
+  if (activeTab === "bootcamps" || activeTab === "events") {
+    colors = {
+      light: "#D8B4E2",
+      veryLight: "#F3E8F9",
+      medium: "#B88CC5",
+      dark: "#7A4A91"
+    };
+  } else if (activeTab === "articles") {
+    colors = {
+      light: "#A7F3D0",
+      veryLight: "#ECFDF5",
+      medium: "#6EE7B7",
+      dark: "#059669"
+    };
+  }
+
   switch (category) {
     case "Computer Science":
       return (
@@ -421,35 +482,35 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 50,40 H 250 M 50,70 H 250" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="5 5" />
 
           {/* Plant on the left */}
-          <rect x="50" y="95" width="20" height="25" rx="3" fill="#BACDEB" />
-          <path d="M 60,95 Q 50,75 40,80 Q 50,90 60,95 Z" fill="#8C9CBF" />
-          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill="#4E608A" />
-          <path d="M 60,95 Q 70,75 80,82 Q 70,90 60,95 Z" fill="#8C9CBF" />
+          <rect x="50" y="95" width="20" height="25" rx="3" fill={colors.light} />
+          <path d="M 60,95 Q 50,75 40,80 Q 50,90 60,95 Z" fill={colors.medium} />
+          <path d="M 60,95 Q 60,70 65,75 Q 70,85 60,95 Z" fill={colors.dark} />
+          <path d="M 60,95 Q 70,75 80,82 Q 70,90 60,95 Z" fill={colors.medium} />
 
           {/* Coffee cup */}
-          <rect x="220" y="100" width="18" height="20" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" />
-          <path d="M 238,104 Q 244,104 244,110 Q 244,116 238,116" stroke="#8C9CBF" strokeWidth="1.5" fill="none" />
+          <rect x="220" y="100" width="18" height="20" rx="2" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1.5" />
+          <path d="M 238,104 Q 244,104 244,110 Q 244,116 238,116" stroke={colors.medium} strokeWidth="1.5" fill="none" />
 
           {/* Code Window / Laptop */}
           {/* Base */}
-          <rect x="85" y="55" width="130" height="80" rx="8" fill="#4E608A" />
+          <rect x="85" y="55" width="130" height="80" rx="8" fill={colors.dark} />
           {/* Screen inside */}
-          <rect x="92" y="62" width="116" height="66" rx="4" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
+          <rect x="92" y="62" width="116" height="66" rx="4" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1" />
           {/* Laptop keyboard part */}
-          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-          <rect x="135" y="136" width="30" height="3" rx="1" fill="#4E608A" />
+          <path d="M 70,135 H 230 L 220,140 H 80 Z" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+          <rect x="135" y="136" width="30" height="3" rx="1" fill={colors.dark} />
 
           {/* Code lines on screen */}
-          <rect x="100" y="70" width="40" height="4" rx="2" fill="#BACDEB" />
-          <rect x="100" y="80" width="60" height="4" rx="2" fill="#8C9CBF" />
-          <rect x="110" y="90" width="50" height="4" rx="2" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1" />
-          <rect x="110" y="100" width="35" height="4" rx="2" fill="#BACDEB" />
-          <rect x="100" y="110" width="25" height="4" rx="2" fill="#4E608A" />
+          <rect x="100" y="70" width="40" height="4" rx="2" fill={colors.light} />
+          <rect x="100" y="80" width="60" height="4" rx="2" fill={colors.medium} />
+          <rect x="110" y="90" width="50" height="4" rx="2" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1" />
+          <rect x="110" y="100" width="35" height="4" rx="2" fill={colors.light} />
+          <rect x="100" y="110" width="25" height="4" rx="2" fill={colors.dark} />
 
           {/* Floating brackets */}
-          <text x="75" y="75" fill="#BACDEB" fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
-          <text x="210" y="110" fill="#BACDEB" fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
-          <text x="215" y="65" fill="#8C9CBF" fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
+          <text x="75" y="75" fill={colors.light} fontSize="20" fontWeight="bold" fontFamily="monospace">{"{"}</text>
+          <text x="210" y="110" fill={colors.light} fontSize="18" fontWeight="bold" fontFamily="monospace">{"}"}</text>
+          <text x="215" y="65" fill={colors.medium} fontSize="14" fontWeight="bold" fontFamily="monospace">{"</>"}</text>
         </svg>
       );
     case "Information Technology":
@@ -459,40 +520,40 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
           {/* Server rack on the left */}
-          <rect x="60" y="80" width="45" height="42" rx="4" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-          <line x1="68" y1="90" x2="97" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="90" r="1.5" fill="#E2ECF7" />
-          <line x1="68" y1="100" x2="97" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="100" r="1.5" fill="#E2ECF7" />
-          <line x1="68" y1="110" x2="97" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="72" cy="110" r="1.5" fill="#E2ECF7" />
+          <rect x="60" y="80" width="45" height="42" rx="4" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="68" y1="90" x2="97" y2="90" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="90" r="1.5" fill={colors.veryLight} />
+          <line x1="68" y1="100" x2="97" y2="100" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="100" r="1.5" fill={colors.veryLight} />
+          <line x1="68" y1="110" x2="97" y2="110" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="72" cy="110" r="1.5" fill={colors.veryLight} />
 
           {/* Database/Server rack on the right */}
-          <rect x="195" y="80" width="45" height="42" rx="4" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-          <line x1="203" y1="90" x2="232" y2="90" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="90" r="1.5" fill="#BACDEB" />
-          <line x1="203" y1="100" x2="232" y2="100" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="100" r="1.5" fill="#BACDEB" />
-          <line x1="203" y1="110" x2="232" y2="110" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="207" cy="110" r="1.5" fill="#BACDEB" />
+          <rect x="195" y="80" width="45" height="42" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="203" y1="90" x2="232" y2="90" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="90" r="1.5" fill={colors.light} />
+          <line x1="203" y1="100" x2="232" y2="100" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="100" r="1.5" fill={colors.light} />
+          <line x1="203" y1="110" x2="232" y2="110" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="207" cy="110" r="1.5" fill={colors.light} />
 
           {/* Big Cloud in the Center */}
-          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 150,35 C 135,35 125,45 125,58 C 115,58 107,66 107,76 C 107,86 115,94 125,94 H 175 C 185,94 193,86 193,76 C 193,66 185,58 175,58 C 175,45 165,35 150,35 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
 
           {/* Network Connections */}
           {/* Cloud to Server Left */}
-          <path d="M 125,85 L 82,85 L 82,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          <path d="M 125,85 L 82,85 L 82,80" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
           {/* Cloud to Server Right */}
-          <path d="M 175,85 L 217,85 L 217,80" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
+          <path d="M 175,85 L 217,85 L 217,80" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="3 3" />
           {/* Cloud to Floor */}
-          <path d="M 150,94 L 150,130" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          <path d="M 150,94 L 150,130" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" fill="none" />
 
           {/* Small laptop/pc at the bottom middle */}
-          <rect x="135" y="115" width="30" height="12" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <line x1="140" y1="127" x2="160" y2="127" stroke="#4E608A" strokeWidth="2" />
+          <rect x="135" y="115" width="30" height="12" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          <line x1="140" y1="127" x2="160" y2="127" stroke={colors.dark} strokeWidth="2" />
 
           {/* Arrows inside cloud or around */}
-          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke="#4E608A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 145,55 L 150,50 L 155,55 M 150,50 L 150,68 M 155,73 L 150,78 L 145,73 M 150,78 L 150,60" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "Business & Management":
@@ -502,29 +563,29 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
 
           {/* Briefcase */}
-          <rect x="50" y="80" width="60" height="42" rx="6" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+          <rect x="50" y="80" width="60" height="42" rx="6" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
           {/* Handle */}
-          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke="#4E608A" strokeWidth="1.5" fill="none" />
+          <path d="M 68,80 V 73 C 68,70 72,68 76,68 H 84 C 88,68 92,70 92,73 V 80" stroke={colors.dark} strokeWidth="1.5" fill="none" />
           {/* Lock */}
-          <rect x="74" y="92" width="12" height="8" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1" />
+          <rect x="74" y="92" width="12" height="8" rx="1" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1" />
 
           {/* Pie Chart / Analytics */}
-          <circle cx="205" cy="75" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill="#4E608A" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1" />
+          <circle cx="205" cy="75" r="28" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <path d="M 205,75 L 205,47 A 28,28 0 0,1 231.5,84 Z" fill={colors.dark} stroke={colors.dark} strokeWidth="1" />
+          <circle cx="205" cy="75" r="10" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1" />
 
           {/* Calculator or Folder at the bottom right */}
-          <rect x="215" y="105" width="22" height="22" rx="3" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-          <circle cx="221" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="226" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="231" cy="111" r="1.5" fill="#4E608A" />
-          <circle cx="221" cy="116" r="1.5" fill="#4E608A" />
-          <circle cx="226" cy="116" r="1.5" fill="#4E608A" />
-          <circle cx="231" cy="116" r="1.5" fill="#4E608A" />
+          <rect x="215" y="105" width="22" height="22" rx="3" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+          <circle cx="221" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="226" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="231" cy="111" r="1.5" fill={colors.dark} />
+          <circle cx="221" cy="116" r="1.5" fill={colors.dark} />
+          <circle cx="226" cy="116" r="1.5" fill={colors.dark} />
+          <circle cx="231" cy="116" r="1.5" fill={colors.dark} />
 
           {/* Growing Trend Graph Arrow */}
-          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M 195,60 H 205 V 70" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 125,120 L 145,95 L 165,105 L 205,60" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M 195,60 H 205 V 70" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
           {/* Grid lines behind Graph */}
           <path d="M 125,120 H 205 M 125,100 H 205 M 125,80 H 205" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3 3" />
@@ -541,8 +602,8 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 40,40 H 260 M 40,80 H 260 M 40,120 H 260" stroke="#F1F5F9" strokeWidth="1" />
 
           {/* Drafting Ruler / Triangle */}
-          <path d="M 50,120 L 110,60 L 110,120 Z" fill="#E2ECF7" stroke="#8C9CBF" strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke="#8C9CBF" strokeWidth="1" />
+          <path d="M 50,120 L 110,60 L 110,120 Z" fill={colors.veryLight} stroke={colors.medium} strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M 65,112 L 95,82 L 95,112 Z" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1" />
 
           {/* Hard Hat in the Center/Left */}
           <g transform="translate(30, 0)">
@@ -556,8 +617,8 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Gears on the Right */}
           <g transform="translate(195, 75)">
             {/* Gear 1 */}
-            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="6" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
             {/* Teeth */}
             {Array.from({ length: 8 }).map((_, idx) => {
               const angle = (idx * 360) / 8;
@@ -569,7 +630,7 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
                   width="6"
                   height="5"
                   rx="1"
-                  fill="#4E608A"
+                  fill={colors.dark}
                   transform={`rotate(${angle})`}
                 />
               );
@@ -578,8 +639,8 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
 
           <g transform="translate(230, 100)">
             {/* Gear 2 (Smaller, interlocking) */}
-            <circle cx="0" cy="0" r="12" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke="#4E608A" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="12" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="4" fill="#FFFFFF" stroke={colors.dark} strokeWidth="1.5" />
             {/* Teeth */}
             {Array.from({ length: 6 }).map((_, idx) => {
               const angle = (idx * 360) / 6;
@@ -591,7 +652,7 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
                   width="4"
                   height="4"
                   rx="1"
-                  fill="#4E608A"
+                  fill={colors.dark}
                   transform={`rotate(${angle})`}
                 />
               );
@@ -599,8 +660,8 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           </g>
 
           {/* Compass tool */}
-          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="140" cy="50" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
+          <path d="M 140,50 L 150,85 M 140,50 L 130,85" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+          <circle cx="140" cy="50" r="3.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
         </svg>
       );
     case "Basic Sciences":
@@ -612,41 +673,41 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Test Tubes Rack */}
           <g transform="translate(45, 75)">
             {/* Rack base & frame */}
-            <rect x="0" y="45" width="60" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <line x1="8" y1="20" x2="8" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-            <line x1="52" y1="20" x2="52" y2="45" stroke="#4E608A" strokeWidth="1.5" />
-            <line x1="0" y1="20" x2="60" y2="20" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="45" width="60" height="8" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <line x1="8" y1="20" x2="8" y2="45" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="52" y1="20" x2="52" y2="45" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="0" y1="20" x2="60" y2="20" stroke={colors.dark} strokeWidth="1.5" />
 
             {/* Test Tube 1 (left) */}
-            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 16,10 V 40 C 16,44 24,44 24,40 V 10" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
             <rect x="18" y="24" width="6" height="15" rx="2" fill="#93C5FD" />
 
             {/* Test Tube 2 (right) */}
-            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <path d="M 36,10 V 40 C 36,44 44,44 44,40 V 10" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
             <rect x="38" y="18" width="6" height="21" rx="2" fill="#FCA5A5" />
           </g>
 
           {/* Chemical Flask (Center/Right) */}
           <g transform="translate(130, 50)">
             {/* Flask body */}
-            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 22,10 H 32 V 30 L 52,65 C 55,70 51,75 45,75 H 9 C 3,75 -1,70 2,65 L 22,30 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
             {/* Flask liquid */}
-            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill="#BACDEB" />
+            <path d="M 5,68 L 19,45 H 35 L 49,68 C 50,70 48,73 45,73 H 9 C 6,73 4,70 5,68 Z" fill={colors.light} />
             {/* Bubbles */}
-            <circle cx="20" cy="35" r="2.5" fill="#4E608A" />
-            <circle cx="34" cy="22" r="3.5" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <circle cx="27" cy="12" r="2" fill="#4E608A" />
+            <circle cx="20" cy="35" r="2.5" fill={colors.dark} />
+            <circle cx="34" cy="22" r="3.5" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <circle cx="27" cy="12" r="2" fill={colors.dark} />
           </g>
 
           {/* Atom Symbol Floating on Right */}
           <g transform="translate(225, 75)">
-            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(30)" />
-            <ellipse cx="0" cy="0" rx="30" ry="10" stroke="#BACDEB" strokeWidth="1" transform="rotate(-30)" />
-            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="2" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={colors.light} strokeWidth="1" transform="rotate(30)" />
+            <ellipse cx="0" cy="0" rx="30" ry="10" stroke={colors.light} strokeWidth="1" transform="rotate(-30)" />
+            <circle cx="0" cy="0" r="8" fill={colors.dark} stroke="#FFFFFF" strokeWidth="2" />
 
             {/* Electrons */}
-            <circle cx="-26" cy="-6" r="3" fill="#4E608A" />
-            <circle cx="26" cy="6" r="3" fill="#BACDEB" />
+            <circle cx="-26" cy="-6" r="3" fill={colors.dark} />
+            <circle cx="26" cy="6" r="3" fill={colors.light} />
           </g>
         </svg>
       );
@@ -658,26 +719,26 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
 
           {/* Column structure on Left */}
           <g transform="translate(45, 45)">
-            <rect x="0" y="75" width="50" height="8" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <rect x="5" y="70" width="40" height="5" rx="1" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="75" width="50" height="8" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="5" y="70" width="40" height="5" rx="1" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
             {/* Pillars */}
-            <rect x="10" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <rect x="32" y="10" width="8" height="60" rx="1" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="10" y="10" width="8" height="60" rx="1" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <rect x="32" y="10" width="8" height="60" rx="1" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
             {/* Top */}
-            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 2,10 H 48 L 40,0 H 10 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
           </g>
 
           {/* Stack of books in center */}
           <g transform="translate(125, 75)">
             {/* Bottom Book */}
-            <rect x="0" y="36" width="65" height="15" rx="2" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="0" y="36" width="65" height="15" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
             <rect x="60" y="39" width="5" height="9" fill="#FFFFFF" />
             {/* Middle Book */}
-            <rect x="8" y="22" width="55" height="14" rx="2" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
+            <rect x="8" y="22" width="55" height="14" rx="2" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
             <rect x="58" y="25" width="5" height="8" fill="#FFFFFF" />
             {/* Top Leaning Book */}
             <g transform="rotate(-15, 12, 10)">
-              <rect x="10" y="0" width="50" height="12" rx="2" fill="#4E608A" stroke="#4E608A" strokeWidth="1.5" />
+              <rect x="10" y="0" width="50" height="12" rx="2" fill={colors.dark} stroke={colors.dark} strokeWidth="1.5" />
               <rect x="55" y="3" width="5" height="6" fill="#FFFFFF" />
             </g>
           </g>
@@ -685,13 +746,13 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           {/* Scroll and Quill on Right */}
           <g transform="translate(205, 65)">
             {/* Open Scroll / Document */}
-            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <path d="M 5,45 H 42" stroke="#4E608A" strokeWidth="1" />
-            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke="#BACDEB" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 5,20 C 5,10 15,10 25,10 H 50 C 50,10 50,55 50,55 H 20 C 10,55 5,45 5,45 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <path d="M 5,45 H 42" stroke={colors.dark} strokeWidth="1" />
+            <path d="M 12,20 H 40 M 12,30 H 40 M 12,40 H 30" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
 
             {/* Quill Pen */}
-            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill="#BACDEB" stroke="#4E608A" strokeWidth="1" />
-            <path d="M 28,21 L 43,2" stroke="#4E608A" strokeWidth="1" />
+            <path d="M 38,3 L 26,25 L 24,30 L 29,28 L 48,-2 Z" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <path d="M 28,21 L 43,2" stroke={colors.dark} strokeWidth="1" />
           </g>
         </svg>
       );
@@ -703,32 +764,32 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
 
           {/* Target with Dart on Left */}
           <g transform="translate(60, 80)">
-            <circle cx="0" cy="0" r="28" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="18" fill="#BACDEB" stroke="#4E608A" strokeWidth="1.5" />
-            <circle cx="0" cy="0" r="8" fill="#4E608A" stroke="#FFFFFF" strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="28" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="18" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="0" cy="0" r="8" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1.5" />
 
             {/* Dart */}
-            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+            <path d="M -8,-8 L -24,-24 M -22,-24 L -24,-24 L -24,-22" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
             {/* Dart flights */}
-            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill="#4E608A" />
+            <path d="M -20,-24 L -26,-26 L -24,-20 Z" fill={colors.dark} />
           </g>
 
           {/* Staircase/Steps on Right */}
           <g transform="translate(150, 45)">
             {/* Steps outline */}
-            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill="#E2ECF7" stroke="#4E608A" strokeWidth="1.5" strokeLinejoin="round" />
-            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke="#BACDEB" strokeWidth="1" />
+            <path d="M 0,85 H 90 V 45 H 65 V 25 H 40 V 5 H 15 V 85 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 15,85 V 5 H 40 V 25 H 65 V 45 H 90 V 85" stroke={colors.light} strokeWidth="1" />
 
             {/* Person celebrating at the top step */}
             <g transform="translate(25, -20)">
               {/* Head */}
-              <circle cx="0" cy="-6" r="4.5" fill="#4E608A" />
+              <circle cx="0" cy="-6" r="4.5" fill={colors.dark} />
               {/* Body */}
-              <path d="M 0,-1 L 0,10" stroke="#4E608A" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 0,-1 L 0,10" stroke={colors.dark} strokeWidth="2.5" strokeLinecap="round" />
               {/* Arms */}
-              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+              <path d="M -8,-5 Q 0,-8 8,-5" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
               {/* Legs */}
-              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke="#4E608A" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 0,10 L -4,20 M 0,10 L 4,20" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
             </g>
           </g>
 
@@ -736,7 +797,108 @@ function CategoryHeaderIllustration({ category }: { category: string }) {
           <path d="M 140,25 L 142,29 L 147,30 L 143,32 L 144,37 L 140,34 L 136,37 L 137,32 L 133,30 L 138,29 Z" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
         </svg>
       );
+    
+    
+    case "Design & UI/UX":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <rect x="60" y="40" width="120" height="80" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <rect x="70" y="50" width="100" height="20" rx="2" fill={colors.light} />
+          <rect x="70" y="80" width="45" height="30" rx="2" fill={colors.medium} />
+          <rect x="125" y="80" width="45" height="30" rx="2" fill={colors.medium} />
+          <g transform="translate(180, 60)">
+            <path d="M 10,60 C 20,20 60,10 80,40" fill="none" stroke={colors.dark} strokeWidth="1.5" strokeDasharray="4 4" />
+            <circle cx="10" cy="60" r="3" fill={colors.dark} />
+            <circle cx="80" cy="40" r="3" fill={colors.dark} />
+            <line x1="10" y1="60" x2="15" y2="35" stroke={colors.medium} strokeWidth="1" />
+            <circle cx="15" cy="35" r="1.5" fill={colors.medium} />
+            <line x1="80" y1="40" x2="65" y2="25" stroke={colors.medium} strokeWidth="1" />
+            <circle cx="65" cy="25" r="1.5" fill={colors.medium} />
+          </g>
+          <circle cx="210" cy="110" r="12" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <circle cx="205" cy="105" r="3" fill={colors.veryLight} />
+          <circle cx="215" cy="108" r="2" fill={colors.medium} />
+          <circle cx="208" cy="115" r="2.5" fill={colors.dark} />
+        </svg>
+      );
+    
+    case "Data Science & AI":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(50, 45)">
+            <circle cx="10" cy="10" r="4" fill={colors.dark} />
+            <circle cx="10" cy="35" r="4" fill={colors.dark} />
+            <circle cx="10" cy="60" r="4" fill={colors.dark} />
+            <circle cx="45" cy="22" r="5" fill={colors.medium} />
+            <circle cx="45" cy="48" r="5" fill={colors.medium} />
+            <circle cx="80" cy="35" r="6" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="14" y1="10" x2="40" y2="22" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="35" x2="40" y2="22" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="35" x2="40" y2="48" stroke={colors.medium} strokeWidth="1" />
+            <line x1="14" y1="60" x2="40" y2="48" stroke={colors.medium} strokeWidth="1" />
+            <line x1="50" y1="22" x2="74" y2="35" stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="50" y1="48" x2="74" y2="35" stroke={colors.dark} strokeWidth="1.5" />
+          </g>
+          <g transform="translate(180, 50)">
+            <rect x="0" y="40" width="12" height="30" rx="2" fill={colors.light} stroke={colors.dark} strokeWidth="1" />
+            <rect x="20" y="20" width="12" height="50" rx="2" fill={colors.medium} stroke={colors.dark} strokeWidth="1" />
+            <rect x="40" y="10" width="12" height="60" rx="2" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1" />
+            <rect x="60" y="30" width="12" height="40" rx="2" fill={colors.dark} />
+            <path d="M 6,35 L 26,15 L 46,5 L 66,20" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinejoin="round" />
+            <circle cx="66" cy="20" r="2.5" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+    
+    case "Productivity Tools":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <rect x="50" y="40" width="120" height="80" rx="4" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" />
+          <line x1="90" y1="40" x2="90" y2="120" stroke={colors.dark} strokeWidth="1" />
+          <line x1="130" y1="40" x2="130" y2="120" stroke={colors.dark} strokeWidth="1" />
+          <rect x="58" y="50" width="24" height="12" rx="2" fill={colors.medium} />
+          <rect x="58" y="68" width="24" height="12" rx="2" fill={colors.light} />
+          <rect x="98" y="50" width="24" height="12" rx="2" fill={colors.dark} />
+          <rect x="138" y="50" width="24" height="12" rx="2" fill={colors.medium} />
+          <rect x="138" y="68" width="24" height="12" rx="2" fill={colors.light} />
+          <g transform="translate(195, 75)">
+            <circle cx="0" cy="0" r="24" fill={colors.veryLight} stroke={colors.dark} strokeWidth="2" />
+            <circle cx="0" cy="0" r="18" fill="none" stroke={colors.light} strokeWidth="1.5" strokeDasharray="2 4" />
+            <line x1="0" y1="0" x2="0" y2="-12" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="0" x2="8" y2="8" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <circle cx="0" cy="0" r="2.5" fill={colors.dark} />
+            <rect x="-4" y="-28" width="8" height="4" rx="1" fill={colors.dark} />
+          </g>
+        </svg>
+      );
+    
+    case "Marketing & SEO":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(60, 80)">
+            <path d="M 0,-10 L 40,-25 Q 45,-25 45,-20 L 45,20 Q 45,25 40,25 L 0,10 Z" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M 0,-10 L -10,-10 Q -15,-10 -15,-5 L -15,5 Q -15,10 -10,10 L 0,10 Z" fill={colors.medium} stroke={colors.dark} strokeWidth="1.5" strokeLinejoin="round" />
+            <path d="M -5,10 L -5,25 Q -5,30 0,30 L 5,30 Q 10,30 10,25 L 10,14" fill="none" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <path d="M 55,-15 Q 65,-5 65,0 Q 65,5 55,15" fill="none" stroke={colors.dark} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M 65,-25 Q 80,-10 80,0 Q 80,10 65,25" fill="none" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+          </g>
+          <g transform="translate(190, 70)">
+            <circle cx="0" cy="0" r="22" fill={colors.veryLight} stroke={colors.dark} strokeWidth="2" />
+            <circle cx="0" cy="0" r="10" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+            <line x1="-22" y1="0" x2="-30" y2="0" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="0" x2="30" y2="0" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="-22" x2="0" y2="-30" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <line x1="0" y1="22" x2="0" y2="30" stroke={colors.medium} strokeWidth="2" strokeLinecap="round" />
+            <path d="M 15,15 L 25,35 L 30,28 L 40,38 L 45,33 L 35,23 L 42,18 Z" fill={colors.dark} stroke="#FFFFFF" strokeWidth="1" strokeLinejoin="round" />
+          </g>
+        </svg>
+      );
     default:
+
       return null;
   }
 }
@@ -885,14 +1047,19 @@ function CoursesContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "webinars">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "webinars") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -911,7 +1078,11 @@ function CoursesContent() {
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
-    router.push(`/courses?category=${encodeURIComponent(category)}`);
+    const encodedCat = encodeURIComponent(category);
+    if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
+    else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
+    else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
   };
 
   const handleGoBackToExplore = () => {
@@ -942,7 +1113,6 @@ function CoursesContent() {
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
         .lp-category-card:hover {
-          transform: translateY(-8px);
           border-color: var(--hover-color) !important;
           box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
         }
@@ -1136,7 +1306,7 @@ function CoursesContent() {
             </motion.div>
           </motion.div>
 
-          {/* Card: Bootcamps */}
+          {/* Card: Events */}
           <motion.div
             onClick={() => handleTabSwitch("bootcamps")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
@@ -1173,7 +1343,7 @@ function CoursesContent() {
                 marginBottom: "10px",
                 transition: "color 0.3s"
               }}>
-                02 // INTERACTIVE
+                02 // EVENTS
               </div>
               <h3 style={{
                 fontSize: "1.15rem",
@@ -1183,10 +1353,10 @@ function CoursesContent() {
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Events & Bootcamps
+                Events
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Join live, interactive, mentor-led programs designed for technical skill development.
+                Join live mentor-led programs, interactive bootcamps, and expert webinars designed for technical skill development.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
@@ -1214,31 +1384,30 @@ function CoursesContent() {
               </svg>
             </motion.div>
           </motion.div>
-
-          {/* Card: Webinars */}
+          {/* Card: Articles */}
           <motion.div
-            onClick={() => handleTabSwitch("webinars")}
+            onClick={() => handleTabSwitch("articles")}
             whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
             animate={{
-              scale: activeTab === "webinars" ? 1.03 : 0.97,
-              opacity: activeTab === "webinars" ? 1 : 0.7,
-              rotate: activeTab === "webinars" ? 1.5 : 0
+              scale: activeTab === "articles" ? 1.03 : 0.97,
+              opacity: activeTab === "articles" ? 1 : 0.7,
+              rotate: activeTab === "articles" ? 1.5 : 0
             }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
             style={{
               position: "relative",
-              background: activeTab === "webinars" ? "#EFF4FC" : "#FFFFFF",
-              border: activeTab === "webinars" ? "3px solid #0A1931" : "2px solid #E5E7EB",
+              background: activeTab === "articles" ? "#EFF4FC" : "#FFFFFF",
+              border: activeTab === "articles" ? "3px solid #0A1931" : "2px solid #E5E7EB",
               borderRadius: "20px",
               padding: "24px 20px",
               cursor: "pointer",
               textAlign: "left",
-              boxShadow: activeTab === "webinars" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
+              boxShadow: activeTab === "articles" ? "8px 8px 0px #0A1931" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               minHeight: "260px",
-              zIndex: activeTab === "webinars" ? 3 : 1,
+              zIndex: activeTab === "articles" ? 3 : 1,
               transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
             }}
           >
@@ -1246,55 +1415,55 @@ function CoursesContent() {
               <div style={{
                 fontSize: "0.68rem",
                 fontWeight: "800",
-                color: activeTab === "webinars" ? "#1E3A8A" : "#6B7280",
+                color: activeTab === "articles" ? "#1E3A8A" : "#6B7280",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 marginBottom: "10px",
                 transition: "color 0.3s"
               }}>
-                03 // EXPERT LED
+                03 // ARTICLES
               </div>
               <h3 style={{
                 fontSize: "1.15rem",
                 fontWeight: "800",
-                color: activeTab === "webinars" ? "#0F172A" : "#1A1A1A",
+                color: activeTab === "articles" ? "#0F172A" : "#1A1A1A",
                 margin: "0 0 8px",
                 lineHeight: "1.2",
                 transition: "color 0.3s"
               }}>
-                Expert Webinars
+                Articles
               </h3>
               <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Watch recorded sessions or register for live-streamed presentations.
+                Read comprehensive articles, insightful guides, and technical documentation to deepen your knowledge.
               </p>
             </div>
             {/* Minimalist Sketch Illustration */}
             <motion.div
               animate={{
-                scale: activeTab === "webinars" ? 1.15 : 1,
-                y: activeTab === "webinars" ? -5 : 0
+                scale: activeTab === "articles" ? 1.15 : 1,
+                y: activeTab === "articles" ? -5 : 0
               }}
               transition={{ type: "spring", stiffness: 300, damping: 15 }}
               style={{ width: "100%", height: "65px" }}
             >
               <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 45,47 L 45,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,55 L 30,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,52 L 65,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 35,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 45,75 L 55,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="45" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 45,47 L 45,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,55 L 30,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,52 L 65,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 35,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 45,75 L 55,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "webinars" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "webinars" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 115,47 L 115,75" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,52 L 95,38" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,55 L 130,65" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 105,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-                <path d="M 115,75 L 125,95" stroke={activeTab === "webinars" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <motion.circle cx="115" cy="40" r="7" fill={activeTab === "articles" ? "rgba(10, 25, 49, 0.05)" : "none"} stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "articles" ? { y: [0, -3, 0] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.3 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
+                <path d="M 115,47 L 115,75" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,52 L 95,38" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,55 L 130,65" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 105,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
+                <path d="M 115,75 L 125,95" stroke={activeTab === "articles" ? "#0A1931" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
 
-                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
-                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
-                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "webinars" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "webinars" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 80,30 L 80,24" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { scaleY: [1, 1.5, 1], y: [0, -2, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transformOrigin: "80px 30px", transition: "stroke 0.3s" }} />
+                <motion.path d="M 75,34 L 69,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, -2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
+                <motion.path d="M 85,34 L 91,30" stroke={activeTab === "articles" ? "#0A1931" : "#4B6189"} strokeWidth="2" strokeLinecap="round" animate={activeTab === "articles" ? { x: [0, 2, 0], y: [0, -1, 0] } : {}} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} style={{ transition: "stroke 0.3s" }} />
               </svg>
             </motion.div>
           </motion.div>
@@ -1388,284 +1557,273 @@ function CoursesContent() {
           ref={contentRef}
           style={{ scrollMarginTop: "100px" }}
         >
-          {activeTab === "courses" && (
+          {(() => {
+            const query = searchQuery.toLowerCase();
+            const filteredCategories = searchQuery 
+              ? categoriesList.filter(cat => cat.toLowerCase().includes(query) || CATEGORY_DATA[cat]?.desc.toLowerCase().includes(query))
+              : categoriesList;
+              
+            const itemsPerPage = 8;
+            const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+            const currentCategories = filteredCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+            let searchResults: any[] = [];
+            if (searchQuery) {
+              categoriesList.forEach(cat => {
+                
+                        const data = CATEGORY_DATA[cat];
+                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                if (activeTab === "courses") {
+                  data.courses.forEach(course => {
+                    if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
+                      searchResults.push({ ...course, category: cat, type: 'Course' });
+                    }
+                  });
+                } else if (activeTab === "bootcamps") {
+                  data.bootcamps.forEach(bootcamp => {
+                    if (bootcamp.title.toLowerCase().includes(query) || bootcamp.desc.toLowerCase().includes(query)) {
+                      searchResults.push({ ...bootcamp, category: cat, type: 'Bootcamp' });
+                    }
+                  });
+                } else if (activeTab === "articles") {
+                  data.resources.forEach(resource => {
+                    if (resource.title.toLowerCase().includes(query)) {
+                      searchResults.push({ ...resource, category: cat, type: 'Article' });
+                    }
+                  });
+                }
+              });
+
+              if (activeTab === "bootcamps") {
+                WEBINARS_DATA.forEach(webinar => {
+                  if (webinar.title.toLowerCase().includes(query)) {
+                    searchResults.push({ ...webinar, type: 'Webinar' });
+                  }
+                });
+              }
+            }
+
+            return (
             <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-                {categoriesList
-                  .filter(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((cat) => {
-                    const data = CATEGORY_DATA[cat];
-                    return (
-                      <div
-                        key={cat}
-                        onClick={() => handleCategorySwitch(cat)}
-                        style={{
-                          position: "relative",
-                          borderRadius: "16px",
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
-                          overflow: "hidden",
-                          minHeight: "380px",
-                          cursor: "pointer",
-                          display: "flex",
-                          flexDirection: "column",
-                          // Pass color parameters to static CSS variables for hover effects
-                          ["--hover-color" as any]: data.colors.primary,
-                          ["--hover-shadow" as any]: `${data.colors.primary}2A`, // with 16% opacity (Hex 2A)
-                        }}
-                        className="lp-category-card"
-                      >
-                        {/* Top Illustration Header */}
-                        <div
-                          style={{
-                            height: "160px",
-                            width: "100%",
-                            background: "#F8FAFC", // soft light slate background for illustration
-                            borderBottom: "1px solid #F1F5F9",
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            overflow: "hidden"
-                          }}
-                        >
-                          <CategoryHeaderIllustration category={cat} />
-                        </div>
-
-                        {/* Card Content Section */}
-                        <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                          <div>
-                            {/* Title and Pill Row */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
-                              <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
-                                {cat}
-                              </h3>
-                            </div>
-
-                            <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 24px" }}>
-                              {data.desc}
-                            </p>
-                          </div>
-
-                          {/* Card Bottom Row with Explore text and simple arrow */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: data.colors.primary }}>
-                              Explore Category
-                            </span>
-                            <svg
-                              className="lp-category-card-arrow"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#9CA3AF"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              style={{ transition: "all 0.3s ease" }}
-                            >
-                              <line x1="5" y1="12" x2="19" y2="12" />
-                              <polyline points="12 5 19 12 12 19" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* 2. BOOTCAMPS TAB CONTENT */}
-          {activeTab === "bootcamps" && (
-            <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-                {categoriesList.flatMap(cat => {
-                  const data = CATEGORY_DATA[cat];
-                  return data.bootcamps.map(bootcamp => ({ ...bootcamp, cat, colors: data.colors }));
-                })
-                  .filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .slice(0, 6)
-                  .map((b, i) => {
-                    const cardColorPattern = [
-                      { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" }, // Purple (CS)
-                      { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },  // Blue (IT/Maths)
-                      { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },  // Green (Pers. Dev)
-                      { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },  // Amber/Orange (Business)
-                      { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" }   // Teal (Sciences)
-                    ];
-                    const cardColors = cardColorPattern[i % cardColorPattern.length];
-
-                    const watermarkCat = [
-                      "Computer Science",
-                      "Information Technology",
-                      "Basic Sciences",
-                      "Business & Management",
-                      "Personal Development"
-                    ][i % 5];
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          background: `linear-gradient(135deg, #FFFFFF 60%, ${cardColors.secondary} 100%)`,
-                          border: "1px solid #E5E7EB",
-                          borderLeft: `6px solid ${cardColors.primary}`,
-                          borderRadius: "16px",
-                          padding: "28px",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "space-between",
-                          minHeight: "220px",
-                          cursor: "default",
-                          position: "relative",
-                          overflow: "hidden"
-                        }}
-                      >
-                        <CategoryWatermark category={watermarkCat} color={cardColors.primary} />
-                        <div style={{ position: "relative", zIndex: 1 }}>
-                          <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "14px" }}>
-                            <span style={{ fontSize: "0.75rem", color: "#6B7280", fontWeight: "600" }}>{b.duration}</span>
-                          </div>
-                          <h3 style={{ fontSize: "1.05rem", fontWeight: "700", color: "#000000", marginBottom: "8px" }}>
-                            {b.title}
-                          </h3>
-                          <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.5", margin: "0 0 16px" }}>
-                            {b.desc}
-                          </p>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", paddingTop: "14px", position: "relative", zIndex: 1 }}>
-                          <Link
-                            href="/login"
-                            className="explore-register-btn"
+              {searchQuery && (
+                 <div style={{ marginBottom: "24px", fontSize: "1.1rem", fontWeight: "600", color: "#4B5563" }}>
+                  Found {filteredCategories.length} department{filteredCategories.length === 1 ? '' : 's'} and {searchResults.length} item{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+                 </div>
+              )}
+              
+              {(currentCategories.length > 0 || !searchQuery) && (
+                <>
+                  {searchQuery && <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Departments</h3>}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+                    {currentCategories
+                      .map((cat) => {
+                        
+                        const data = CATEGORY_DATA[cat];
+                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                        return (
+                          <div
+                            key={cat}
+                            onClick={() => handleCategorySwitch(cat)}
                             style={{
-                              "--btn-primary": cardColors.primary,
-                              "--btn-secondary": cardColors.secondary
-                            } as React.CSSProperties}
+                              position: "relative",
+                              borderRadius: "16px",
+                              background: "#FFFFFF",
+                              border: "1px solid #E5E7EB",
+                              overflow: "hidden",
+                              minHeight: "380px",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              // Pass color parameters to static CSS variables for hover effects
+                              ["--hover-color" as any]: themeColor,
+                              ["--hover-shadow" as any]: `${themeColor}2A`, // with 16% opacity (Hex 2A)
+                            }}
+                            className="lp-category-card"
                           >
-                            Register
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-
-          {/* 3. WEBINARS TAB CONTENT */}
-          {activeTab === "webinars" && (
-            <div className="tab-content-panel">
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-                {WEBINARS_DATA
-                  .filter(w => w.title.toLowerCase().includes(searchQuery.toLowerCase()) || w.category.toLowerCase().includes(searchQuery.toLowerCase()))
-                  .map((w, i) => {
-                    const isLive = w.status === "Live Today";
-                    const isUpcoming = w.status === "Upcoming";
-                    const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
-                    const ctaColor = "#FFFFFF";
-                    const ctaHoverBg = isLive ? "#DC2626" : (isUpcoming ? "#D97706" : "#15305B");
-                    const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
-
-                    const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
-                    const statusBg = isLive ? "#FEE2E2" : (isUpcoming ? "#FEF3C7" : "#EFF4FC");
-                    const statusText = isLive ? "LIVE TODAY" : (isUpcoming ? "UPCOMING" : "RECORDED");
-
-                    const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          background: "#FFFFFF",
-                          border: "1px solid #E5E7EB",
-                          borderRadius: "20px",
-                          display: "flex",
-                          flexDirection: "column",
-                          position: "relative",
-                          overflow: "hidden",
-                          boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
-                        }}
-                        className="lp-webinar-card"
-                      >
-                        {/* Custom Topic Themed Header Graphic */}
-                        <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
-
-                        {/* Card Content Body */}
-                        <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                          <div>
-                            {/* Upper category and status row */}
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                              <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                                {w.category} • {w.duration.toUpperCase()}
-                              </span>
-                            </div>
-
-                            {/* Webinar Title */}
-                            <h3
+                            {/* Top Illustration Header */}
+                            <div
                               style={{
-                                fontSize: "1.1rem",
-                                fontWeight: "800",
-                                color: titleColor,
-                                marginBottom: "16px",
-                                lineHeight: "1.4",
-                                minHeight: "56px",
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                letterSpacing: "-0.01em"
+                                height: "160px",
+                                width: "100%",
+                                background: "#F8FAFC", // soft light slate background for illustration
+                                borderBottom: "1px solid #F1F5F9",
+                                position: "relative",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                overflow: "hidden"
                               }}
                             >
-                              {w.title}
-                            </h3>
-
-                            {/* Host Details */}
-                            <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                              </svg>
-                              <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
+                              <CategoryHeaderIllustration category={cat} activeTab={activeTab} />
                             </div>
-                          </div>
 
-                          {/* Calendar timeline and Button row */}
-                          <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                  <line x1="16" y1="2" x2="16" y2="6" />
-                                  <line x1="8" y1="2" x2="8" y2="6" />
-                                  <line x1="3" y1="10" x2="21" y2="10" />
-                                </svg>
-                                <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
-                                  {w.date}
-                                </span>
+                            {/* Card Content Section */}
+                            <div style={{ padding: "24px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                              <div>
+                                {/* Title and Pill Row */}
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "12px" }}>
+                                  <h3 style={{ fontSize: "1.15rem", fontWeight: "800", color: "#1F2937", margin: 0, letterSpacing: "-0.01em", lineHeight: "1.3" }}>
+                                    {cat}
+                                  </h3>
+                                </div>
+
+                                <p style={{ fontSize: "0.85rem", color: "#4B5563", lineHeight: "1.6", margin: "0 0 16px" }}>
+                                  {data.desc}
+                                </p>
                               </div>
 
-                              <Link
-                                href="/sign"
-                                className="lp-webinar-btn"
-                                style={{
-                                  "--cta-bg": ctaBg,
-                                  "--cta-shadow": ctaShadow
-                                } as React.CSSProperties}
-                              >
-                                {isLive ? "Join Broadcast" : (isUpcoming ? "Save Seat" : "Watch Video")}
-                              </Link>
+                              <div>
+                                {/* Card Bottom Row with Explore text and simple arrow */}
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <span style={{ fontSize: "0.85rem", fontWeight: "700", color: themeColor }}>
+                                    Explore Category
+                                  </span>
+                                  <svg
+                                    className="lp-category-card-arrow"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#9CA3AF"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    style={{ transition: "all 0.3s ease" }}
+                                  >
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                    <polyline points="12 5 19 12 12 19" />
+                                  </svg>
+                                </div>
+                              </div>
                             </div>
                           </div>
+                        );
+                      })}
+                  </div>
+                </>
+              )}
+              
+              {/* Individual Items Grid */}
+              {searchQuery && searchResults.length > 0 && (
+                <div style={{ marginTop: "40px" }}>
+                  <h3 style={{ marginBottom: "16px", fontSize: "1.25rem", color: "#111827" }}>Individual {activeTab === "courses" ? "Courses" : activeTab === "articles" ? "Articles" : "Bootcamps"}</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: activeTab === "courses" ? "repeat(auto-fill, minmax(350px, 1fr))" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
+                    {searchResults.map((item, idx) => {
+                       if (activeTab === "courses") {
+                          return (
+                             <CourseCard
+                                key={idx}
+                                course={item}
+                                index={idx}
+                                activeCategoryName={item.category}
+                                activeData={CATEGORY_DATA[item.category]}
+                                router={router}
+                                realRating={4.8}
+                                realReviewsCount={124}
+                             />
+                          );
+                       }
+                       
+                       const catColor = CATEGORY_DATA[item.category]?.colors?.primary || "#3B82F6";
+                       return (
+                        <div key={idx} style={{
+                          background: "#FFFFFF",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "16px",
+                          padding: "24px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "12px",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                          transition: "transform 0.2s, box-shadow 0.2s",
+                          cursor: "pointer"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                          e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "none";
+                          e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: catColor }} />
+                            <span style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.05em", color: "#6B7280" }}>
+                              {item.category} • {item.type}
+                            </span>
+                          </div>
+                          <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{item.title}</h3>
+                          {item.desc && <p style={{ margin: 0, fontSize: "0.875rem", color: "#4B5563", lineHeight: 1.5, flexGrow: 1 }}>{item.desc}</p>}
+                          <div style={{ marginTop: "8px", display: "flex", gap: "12px", fontSize: "0.8rem", fontWeight: "600", color: "#374151", flexWrap: "wrap" }}>
+                            {item.duration && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>⏱ {item.duration}</span>}
+                            {item.level && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📊 {item.level}</span>}
+                            {item.date && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📅 {item.date}</span>}
+                            {item.readTime && <span style={{ background: "#F3F4F6", padding: "4px 8px", borderRadius: "4px" }}>📖 {item.readTime}</span>}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {/* No Results Fallback */}
+              {searchQuery && filteredCategories.length === 0 && searchResults.length === 0 && (
+                 <div style={{ textAlign: "center", padding: "64px 24px", background: "#FFFFFF", borderRadius: "16px", border: "1px dashed #E5E7EB", marginTop: "40px" }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 auto 16px" }}>
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: "1.25rem", color: "#111827" }}>No results found</h3>
+                    <p style={{ margin: 0, color: "#6B7280" }}>We couldn't find any departments or items matching "{searchQuery}".</p>
+                  </div>
+              )}
+
+              {!searchQuery && totalPages > 1 && (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", marginTop: "32px" }}>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      background: currentPage === 1 ? "#F9FAFB" : "#FFFFFF",
+                      color: currentPage === 1 ? "#9CA3AF" : "#374151",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      fontWeight: "500",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ fontSize: "0.9rem", color: "#6B7280", fontWeight: "500" }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      border: "1px solid #E5E7EB",
+                      background: currentPage === totalPages ? "#F9FAFB" : "#FFFFFF",
+                      color: currentPage === totalPages ? "#9CA3AF" : "#374151",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      fontWeight: "500",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+            );
+            })()}
         </div>{/* end contentRef wrapper */}
       </main>
+      <Footer />
     </div>
   );
 }

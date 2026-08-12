@@ -19,7 +19,8 @@ export interface EventDto {
   deliveryMode: DeliveryMode;
   difficulty: string;
   language: string;
-  price: number;
+  /** Minor currency units (e.g. cents/paise). */
+  priceAmount: number;
   currency: string;
   capacity?: number;
   visibility: string;

@@ -45,12 +45,29 @@ async function refreshTokens(): Promise<boolean> {
   return refreshPromise;
 }
 
+function getAccessToken(): string | null {
+  const storeToken = useAuthStore.getState().accessToken;
+  if (storeToken) return storeToken;
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("arcade-auth-storage");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed.state?.accessToken || null;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
 async function request<T>(
   path: string,
   options?: RequestInit,
   isRetry = false
 ): Promise<T> {
-  const token = useAuthStore.getState().accessToken;
+  const token = getAccessToken();
   const isFormData = options?.body instanceof FormData;
   
   const headers: Record<string, string> = {

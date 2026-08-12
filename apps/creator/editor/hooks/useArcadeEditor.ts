@@ -2,11 +2,24 @@
 "use client";
 
 import { useEditor } from "@tiptap/react";
+import { HocuspocusProvider } from "@hocuspocus/provider";
 import debounce from "lodash.debounce";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
+
+export type CollabStatus = "disabled" | "connecting" | "connected" | "disconnected";
+
+export interface ActiveCollaborator {
+  clientId: number;
+  user?: {
+    id?: string;
+    name?: string;
+    color?: string;
+  };
+}
 
 export interface UseArcadeEditorOptions {
   /**
@@ -39,23 +52,16 @@ export interface UseArcadeEditorOptions {
    * mount; the resulting edit persists the migrated content on the next auto-save.
    */
   seedContent?: TiptapDocument;
-  /** Content type of the editor. */
+  documentId?: string;
   contentType?: "course" | "workshop" | "roadmap";
   /** Selection update callback */
   onSelectionUpdate?: (props: { editor: any }) => void;
+  /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */
+  documentName?: string;
 }
 
 const DEBOUNCE_MS = 2000;
 
-/**
- * Abstraction over Tiptap's useEditor.
- *
- * Handles:
- * - SSR-safe rendering (immediatelyRender: false — mandatory for Next.js)
- * - Optional Yjs collaborative binding (version-history substrate)
- * - Debounced auto-save via onSave prop
- * - Memory-leak-safe cleanup (debouncedSave.cancel on unmount)
- */
 export function useArcadeEditor({
   initialContent,
   placeholder,
@@ -63,46 +69,96 @@ export function useArcadeEditor({
   onSave,
   ydoc,
   seedContent,
+  documentId,
   contentType,
   onSelectionUpdate,
+  documentName,
 }: UseArcadeEditorOptions = {}) {
-  // The debounced function must be referentially stable (recreating it would drop
-  // pending saves), but it must also call the *current* onSave. Reading through a
-  // ref gives us both — capturing `onSave` in the closure instead would pin the
-  // callback from first render and silently save against a stale lesson id.
+  const { user, accessToken } = useAuthStore();
+
+  const effectiveDocumentName = documentName || (documentId ? `lesson:${documentId}` : undefined);
+
+  const provider = useMemo(() => {
+    if (!effectiveDocumentName || typeof window === "undefined") return null;
+
+    const wsUrl = process.env.NEXT_PUBLIC_COLLABORATION_URL || process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";
+    const p = new HocuspocusProvider({
+      url: wsUrl,
+      name: effectiveDocumentName,
+      token: accessToken || undefined,
+      document: ydoc,
+      onAuthenticationFailed: (data) => {
+        console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
+      },
+    });
+    return p;
+  }, [effectiveDocumentName, accessToken, ydoc]);
+
+  const [statusState, setStatusState] = useState<CollabStatus>(effectiveDocumentName ? "connecting" : "disabled");
+  const [collaborators, setCollaborators] = useState<ActiveCollaborator[]>([]);
+
+  useEffect(() => {
+    if (!provider) {
+      setStatusState("disabled");
+      setCollaborators([]);
+      return;
+    }
+
+    const updateStatus = ({ status }: { status: string }) => {
+      setStatusState(status as CollabStatus);
+    };
+
+    const updateAwareness = () => {
+      if (!provider.awareness) return;
+      const states = provider.awareness.getStates();
+      const users: ActiveCollaborator[] = [];
+      states.forEach((state: any, clientId: number) => {
+        if (state.user) {
+          users.push({ clientId, user: state.user });
+        }
+      });
+      setCollaborators(users);
+    };
+
+    provider.on("status", updateStatus);
+    if (provider.awareness) {
+      provider.awareness.on("change", updateAwareness);
+      updateAwareness();
+    }
+
+    return () => {
+      provider.off("status", updateStatus);
+      if (provider.awareness) {
+        provider.awareness.off("change", updateAwareness);
+      }
+      provider.destroy();
+    };
+  }, [provider]);
   const onSaveRef = useRef(onSave);
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  // Defer editor.getJSON() until the debounce actually fires — it's an
-  // O(document size) full-tree serialization, too expensive to run synchronously
-  // on every keystroke via onUpdate.
   const runSave = useCallback((editorInstance: { getJSON: () => unknown }) => {
+    // When connected to Hocuspocus, Hocuspocus handles server-side CRDT persistence.
+    // We still notify onSave if provided (for instance, to update title/metadata or UI status).
     onSaveRef.current?.(editorInstance.getJSON() as TiptapDocument);
   }, []);
 
-  // `runSave` reads onSaveRef, but only when the debounce timer fires — never during
-  // render. The lint rule can't see through the debounce wrapper, hence the exemption.
-  // eslint-disable-next-line react-hooks/refs
   const debouncedSave = useMemo(() => debounce(runSave, DEBOUNCE_MS), [runSave]);
 
-  // Cancel pending debounce on unmount to prevent state updates after unmount
   useEffect(() => {
     return () => {
       debouncedSave.cancel();
     };
   }, [debouncedSave]);
 
-  // buildExtensions() instantiates 50+ Tiptap extensions (each `.configure()` call
-  // produces a new object). Without memoizing, useEditor's internal option-diffing
-  // sees a "changed" extensions array on every re-render of this component and
-  // calls editor.setOptions(), which rebuilds the entire schema/plugin set —
-  // expensive, and easy to trigger from state changes unrelated to typing.
+  const effectiveYDoc = ydoc || provider?.document;
+
   const extensions = useMemo(
-    () => buildExtensions(placeholder, ydoc, contentType),
+    () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined, contentType),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ydoc, contentType] // placeholder changes shouldn't tear down the whole extension set
+    [effectiveYDoc, contentType, provider, user] // placeholder changes shouldn't tear down the whole extension set
   );
 
   const editor = useEditor({
@@ -111,7 +167,7 @@ export function useArcadeEditor({
     extensions,
     // In collaborative mode the Y.Doc supplies content; passing `content` too would
     // duplicate it. Only seed `content` in the non-collaborative path.
-    content: ydoc ? undefined : initialContent ?? null,
+    content: effectiveYDoc ? undefined : initialContent ?? null,
     editable: !readOnly,
     onUpdate: ({ editor }) => {
       debouncedSave(editor);
@@ -166,5 +222,5 @@ export function useArcadeEditor({
     [editor]
   );
 
-  return { editor, flushSave, setContent, getJSON };
+  return { editor, flushSave, setContent, getJSON, provider, collabStatus: statusState, collaborators };
 }
