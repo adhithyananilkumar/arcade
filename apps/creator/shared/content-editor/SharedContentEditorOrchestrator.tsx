@@ -72,6 +72,7 @@ import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/Version
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
 import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
+import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -121,7 +122,10 @@ import {
   Eye,
   GripVertical,
   Users,
+<<<<<<< HEAD
   UserPlus,
+=======
+>>>>>>> main
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -543,6 +547,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -1452,6 +1457,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <span className="hidden md:inline">Settings</span>
             </button>
 
+            {contentId && (
+              <button
+                type="button"
+                onClick={() => setCollaboratorsModalOpen(true)}
+                title="Manage Collaborators"
+                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+              >
+                <Users size={15} />
+                <span className="hidden sm:inline">Collaborators</span>
+              </button>
+            )}
+
             {activeLessonId && contentType === "workshop" && activeModuleId && (
               <button
                 type="button"
@@ -1487,7 +1504,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             {contentType === "workshop" && contentId && (
               <button
                 type="button"
-                onClick={() => router.push(`/studio/workshop/${contentId}`)}
+                onClick={() => router.push(`/studio/events/${contentId}`)}
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
               >
                 <span className="hidden sm:inline">Manage</span>
@@ -2051,7 +2068,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     key={activeLessonId}
                     ref={editorRef}
                     ydoc={activeYDoc}
-                    documentName={`lesson:${activeLessonId}`}
+                    documentId={activeLessonId}
                     seedContent={activeSeedContent}
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}
@@ -2095,6 +2112,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         open={statusHistoryOpen}
         onClose={() => setStatusHistoryOpen(false)}
       />
+      {contentId && (
+        <ContentCollaboratorsModal
+          isOpen={collaboratorsModalOpen}
+          onClose={() => setCollaboratorsModalOpen(false)}
+          contentId={contentId}
+          contentType={contentType}
+        />
+      )}
     </div>
   );
 }

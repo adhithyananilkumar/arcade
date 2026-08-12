@@ -190,7 +190,7 @@ export function EnrollmentButton({
       return;
     }
     if (resourceType === 'COURSE') {
-      router.push(`/learn/${resourceId}`);
+      router.push(`/learn/${resourceId}/learn`);
     } else if (resourceType === 'EVENT') {
       router.push(`/events/${resourceId}`);
     } else if (resourceType === 'WORKSHOP') {

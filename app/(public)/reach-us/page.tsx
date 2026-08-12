@@ -5,6 +5,9 @@ import { motion, useReducedMotion, Variants } from "framer-motion";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import "@/apps/public/landing.css";
 
+import { api } from "@/infrastructure/http/api";
+import { toast } from "sonner";
+
 // Subtle stagger reveal variants
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -41,15 +44,19 @@ export default function ReachUsPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await api.post("/api/v1/public/contact", formState);
       setIsSubmitted(true);
       setFormState({ name: "", email: "", subject: "", message: "" });
-    }, 800);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

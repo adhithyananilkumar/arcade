@@ -52,49 +52,35 @@ export interface UseArcadeEditorOptions {
    * mount; the resulting edit persists the migrated content on the next auto-save.
    */
   seedContent?: TiptapDocument;
+  /** ID of the lesson/document for WebSocket real-time collaboration. */
+  documentId?: string;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
   /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */
   documentName?: string;
 }
 
-const DEBOUNCE_MS = 2000;
-
-/**
- * Abstraction over Tiptap's useEditor.
- *
- * Handles:
- * - SSR-safe rendering (immediatelyRender: false — mandatory for Next.js)
- * - Optional Yjs collaborative binding (version-history substrate)
- * - Debounced auto-save via onSave prop
- * - Memory-leak-safe cleanup (debouncedSave.cancel on unmount)
- */
-export function useArcadeEditor({
-  initialContent,
-  placeholder,
-  readOnly = false,
-  onSave,
-  ydoc,
-  seedContent,
-  contentType,
-  documentName,
-}: UseArcadeEditorOptions = {}) {
   const { user, accessToken } = useAuthStore();
 
-  const provider = useMemo(() => {
-    if (!documentName || !accessToken || typeof window === "undefined") return null;
+  const effectiveDocumentName = documentName || (documentId ? `lesson:${documentId}` : undefined);
 
-    const wsUrl = process.env.NEXT_PUBLIC_COLLABORATION_URL || "ws://localhost:1234";
+  const provider = useMemo(() => {
+    if (!effectiveDocumentName || typeof window === "undefined") return null;
+
+    const wsUrl = process.env.NEXT_PUBLIC_COLLABORATION_URL || process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";
     const p = new HocuspocusProvider({
       url: wsUrl,
-      name: documentName,
-      token: accessToken,
+      name: effectiveDocumentName,
+      token: accessToken || undefined,
       document: ydoc,
+      onAuthenticationFailed: (data) => {
+        console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
+      },
     });
     return p;
-  }, [documentName, accessToken, ydoc]);
+  }, [effectiveDocumentName, accessToken, ydoc]);
 
-  const [statusState, setStatusState] = useState<CollabStatus>(documentName ? "connecting" : "disabled");
+  const [statusState, setStatusState] = useState<CollabStatus>(effectiveDocumentName ? "connecting" : "disabled");
   const [collaborators, setCollaborators] = useState<ActiveCollaborator[]>([]);
 
   useEffect(() => {
@@ -134,7 +120,6 @@ export function useArcadeEditor({
       provider.destroy();
     };
   }, [provider]);
-
   const onSaveRef = useRef(onSave);
   useEffect(() => {
     onSaveRef.current = onSave;

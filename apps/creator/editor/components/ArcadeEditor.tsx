@@ -75,6 +75,8 @@ interface ArcadeEditorProps {
   ydoc?: Y.Doc;
   /** Legacy JSON to seed into an empty Y.Doc (migration for pre-history lessons). */
   seedContent?: TiptapDocument;
+  /** Document / Lesson ID for WebSocket real-time collaboration. */
+  documentId?: string;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
   /**
@@ -96,7 +98,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType, documentName, onCollabStateChange },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -134,6 +136,7 @@ export const ArcadeEditor = memo(
     onSave: handleSave,
     ydoc,
     seedContent,
+    documentId,
     contentType,
     documentName,
   });
