@@ -64,8 +64,8 @@ export default function ContributorsPage() {
       </div>
 
       {/* --- CONTRIBUTORS GRID --- */}
-      <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-5xl mx-auto w-full z-10">
-        <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-12">
+      <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-5xl mx-auto w-full z-10 -mt-10">
+        <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-10">
           {CONTRIBUTORS_DATA.map((contributor, idx) => (
             <motion.div
               key={contributor.id}
@@ -73,14 +73,14 @@ export default function ContributorsPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.7, delay: idx * 0.2, ease: "easeOut" }}
-              className={`relative w-72 h-[480px] rounded-full flex flex-col items-center pt-14 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-default ${contributor.color} ${idx % 2 === 1 ? 'md:mt-24' : 'md:mt-0'}`}
+              className={`relative w-60 sm:w-64 h-[380px] sm:h-[400px] rounded-full flex flex-col items-center pt-10 sm:pt-12 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-default ${contributor.color} ${idx % 2 === 1 ? 'md:mt-16' : 'md:mt-0'}`}
             >
-              <div className="text-center z-10 px-6">
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-widest leading-tight">{contributor.name}</h3>
-                <p className="text-sm font-semibold text-slate-800/80 mt-2">{contributor.role}</p>
+              <div className="text-center z-10 px-5">
+                <h3 className="text-[1.05rem] sm:text-lg font-black text-slate-900 uppercase tracking-widest leading-tight">{contributor.name}</h3>
+                <p className="text-xs sm:text-sm font-semibold text-slate-800/80 mt-1.5">{contributor.role}</p>
               </div>
               
-              <div className="absolute bottom-0 w-full h-[360px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_100%)]">
+              <div className="absolute bottom-0 w-full h-[280px] sm:h-[300px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_100%)]">
                 <Image
                    src={contributor.avatar}
                    alt={contributor.name}
