@@ -9,7 +9,7 @@ import {
   Clock,
   Loader2,
   Bookmark,
-  Zap,
+  Save,
   GitCommitVertical,
   CheckCircle,
   XCircle,
@@ -91,12 +91,12 @@ function formatRelative(iso: string): string {
 
 const KIND_META: Record<
   VersionSummary["kind"],
-  { icon: typeof Zap; label: string; chip: string }
+  { icon: typeof Save; label: string; chip: string }
 > = {
   AUTO: {
-    icon: Zap,
-    label: "Auto-saved",
-    chip: "bg-slate-100 text-slate-500",
+    icon: Save,
+    label: "Auto save",
+    chip: "bg-slate-100 text-slate-600",
   },
   MANUAL: {
     icon: Bookmark,
@@ -222,7 +222,7 @@ export function VersionHistoryPanel({
         )}
 
         {/* Body */}
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {isSuView && tab === "comment" ? (
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-2 pb-6">
               {statusHistoryLoading ? (
@@ -369,15 +369,15 @@ export function VersionHistoryPanel({
           )}
         </div>
 
-        {/* Preview + restore footer */}
+        {/* Preview + restore floating side-panel */}
         {selected && (!isSuView || tab === "log") && (
-          <div className="flex max-h-[52%] shrink-0 flex-col border-t border-slate-100 bg-slate-50/90">
-            <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="absolute right-[calc(100%+16px)] top-0 bottom-16 z-50 flex w-[440px] flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/50 px-5 py-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Preview
                 </p>
-                <p className="text-[12px] font-semibold text-[#14142b]">
+                <p className="text-[13px] font-semibold text-[#14142b]">
                   {formatAbsolute(selected.createdAt)}
                 </p>
               </div>
@@ -386,28 +386,30 @@ export function VersionHistoryPanel({
                   type="button"
                   onClick={handleRestore}
                   disabled={restoring || !previewDoc}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition-all hover:bg-[#232735] hover:shadow-md disabled:opacity-50"
                 >
                   {restoring ? (
-                    <Loader2 size={13} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                   ) : (
-                    <RotateCcw size={13} />
+                    <RotateCcw size={14} />
                   )}
                   {restoring ? "Restoring…" : "Restore"}
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto border-t border-slate-100 bg-white px-4 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6">
               {previewLoading ? (
-                <div className="flex items-center justify-center py-8 text-slate-400">
-                  <Loader2 size={18} className="animate-spin" />
+                <div className="flex h-full items-center justify-center text-slate-400">
+                  <Loader2 size={24} className="animate-spin" />
                 </div>
               ) : previewDoc ? (
                 renderEditor(previewDoc, selected.id)
               ) : (
-                <p className="py-6 text-center text-[12px] text-slate-400">
-                  This version has no previewable content.
-                </p>
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-center text-[13px] text-slate-400">
+                    This version has no previewable content.
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -416,7 +418,7 @@ export function VersionHistoryPanel({
   );
 
   if (embedded) {
-    return <div className="flex h-full min-h-0 flex-1 flex-col">{panelInner}</div>;
+    return <div className="relative flex h-full min-h-0 flex-1 flex-col">{panelInner}</div>;
   }
 
   return (

@@ -110,7 +110,7 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
   if (!open) return null;
 
   return (
-    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/70 shadow-xl backdrop-blur-xl">
+    <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col rounded-3xl border border-white/40 bg-white/70 shadow-xl backdrop-blur-xl">
       {/* Pill tab switcher — same rounded-full language as the toolbar's own
           controls. No close button here: the hamburger button that opened
           this panel (in the top bar) is the single toggle that closes it too. */}
