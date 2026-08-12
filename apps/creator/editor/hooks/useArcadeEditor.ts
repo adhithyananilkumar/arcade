@@ -39,9 +39,14 @@ export interface UseArcadeEditorOptions {
    * mount; the resulting edit persists the migrated content on the next auto-save.
    */
   seedContent?: TiptapDocument;
+  /** ID of the lesson/document for WebSocket real-time collaboration. */
+  documentId?: string;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
 }
+
+import { HocuspocusProvider } from "@hocuspocus/provider";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
 
 const DEBOUNCE_MS = 2000;
 
@@ -51,6 +56,7 @@ const DEBOUNCE_MS = 2000;
  * Handles:
  * - SSR-safe rendering (immediatelyRender: false — mandatory for Next.js)
  * - Optional Yjs collaborative binding (version-history substrate)
+ * - Real-time WebSocket sync via HocuspocusProvider when documentId is provided
  * - Debounced auto-save via onSave prop
  * - Memory-leak-safe cleanup (debouncedSave.cancel on unmount)
  */
@@ -61,8 +67,32 @@ export function useArcadeEditor({
   onSave,
   ydoc,
   seedContent,
+  documentId,
   contentType,
 }: UseArcadeEditorOptions = {}) {
+  const { accessToken } = useAuthStore();
+
+  // ── Real-time WebSocket collaboration sync provider ──────────────────────────
+  useEffect(() => {
+    if (!ydoc || !documentId) return;
+
+    const wsUrl = process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";
+
+    const provider = new HocuspocusProvider({
+      url: wsUrl,
+      name: `lesson:${documentId}`,
+      document: ydoc,
+      token: accessToken || undefined,
+      onAuthenticationFailed: (data) => {
+        console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
+      },
+    });
+
+    return () => {
+      provider.destroy();
+    };
+  }, [ydoc, documentId, accessToken]);
+
   // The debounced function must be referentially stable (recreating it would drop
   // pending saves), but it must also call the *current* onSave. Reading through a
   // ref gives us both — capturing `onSave` in the closure instead would pin the
