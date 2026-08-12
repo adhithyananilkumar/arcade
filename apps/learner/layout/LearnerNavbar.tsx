@@ -442,7 +442,7 @@ export default function LearnerNavbar() {
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
-                Content Studio
+                Studio
               </MenuItem>
             )}
             {(showStudio || collaboratedEventId !== null || hasMultipleCollabs) && (

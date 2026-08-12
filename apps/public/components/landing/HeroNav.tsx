@@ -11,9 +11,11 @@ const navLinks = [
   { label: "For creators", href: "/creators" },
 ];
 
+import { usePathname } from "next/navigation";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 export default function HeroNav() {
+  const pathname = usePathname();
   const { status } = useAuthStore();
   const shouldReduceMotion = useReducedMotion();
   const [isHidden, setIsHidden] = useState(false);
@@ -99,13 +101,19 @@ export default function HeroNav() {
 
       {/* Center-right links */}
       <ul className="l-nav__links" role="list">
-        {navLinks.map((link) => (
-          <li key={link.label}>
-            <Link href={link.href} className="l-nav__link">
-              {link.label}
-            </Link>
-          </li>
-        ))}
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href || (link.href !== "/" && pathname?.startsWith(link.href));
+          return (
+            <li key={link.label}>
+              <Link
+                href={link.href}
+                className={`l-nav__link ${isActive ? "l-nav__link--active" : ""}`}
+              >
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
       {/* Right actions */}

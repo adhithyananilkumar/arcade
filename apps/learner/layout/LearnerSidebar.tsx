@@ -46,7 +46,7 @@ export default function LearnerSidebar() {
   const dynamicNavItems = [
     ...baseNavItems,
     ...(showStudio ? [
-      { name: 'Content Studio', href: '/studio', icon: BookOpen },
+      { name: 'Studio', href: '/studio', icon: BookOpen },
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
     ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),

@@ -105,11 +105,23 @@
   font-weight: 500;
   color: #3A3D46;
   text-decoration: none;
-  transition: color 0.2s ease;
+  display: inline-block;
+  transition: color 180ms ease, transform 180ms ease, font-weight 180ms ease;
 }
 
 .l-nav__link:hover {
-  color: #12141C;
+  color: #000000;
+  font-weight: 550;
+  transform: translateY(-1.5px);
+}
+
+.l-nav__link--active {
+  color: #000000;
+  font-weight: 600;
+}
+
+.l-nav__link--active:hover {
+  transform: translateY(-1.5px);
 }
 
 .l-nav__actions {

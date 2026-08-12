@@ -1,15 +1,17 @@
 // app/(authenticated)/studio/page.tsx
-// Post-login dashboard home — Create Content + unified content grid (courses + roadmaps).
+// Studio dashboard matching reference design exactly.
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
-import { EventType } from "@/app/(authenticated)/studio/events/types";
+import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import {
   BookOpen,
   Calendar,
@@ -17,7 +19,7 @@ import {
   Plus,
   ChevronDown,
   Clock,
-  GraduationCap,
+  CheckCircle2,
   Trash2,
   X,
   Map,
@@ -25,17 +27,19 @@ import {
   MoreVertical,
   Pencil,
   Copy,
-  Lock,
   User,
-  FileQuestion,
   HelpCircle,
+  Search,
+  Bell,
+  FileQuestion,
+  Lock,
 } from "lucide-react";
 
-// ── Unified content summary (backing GET /api/content) ─────────────────────────
+// ── Content Summary Type ───────────────────────────────────────────────────────
 
 interface ContentSummary {
   id: string;
-  type: "COURSE" | "ROADMAP" | string;
+  type: "COURSE" | "ROADMAP" | "WORKSHOP" | "EVENT" | "QUIZ" | "ARTICLE" | string;
   title: string;
   description?: string | null;
   coverImageUrl?: string | null;
@@ -51,7 +55,7 @@ interface ContentSummary {
   authorName?: string | null;
 }
 
-// ── Content type menu items ─────────────────────────────────────────────────────
+// ── Content Creation Menu Items ────────────────────────────────────────────────
 
 const CONTENT_TYPES = [
   {
@@ -60,8 +64,7 @@ const CONTENT_TYPES = [
     label: "Course",
     desc: "Structured learning path with modules & lessons",
     href: "/studio/course/new",
-    color: "text-indigo-600",
-    bg: "bg-indigo-50",
+    accentColor: "text-[#2563EB]",
   },
   {
     id: "roadmap",
@@ -69,8 +72,7 @@ const CONTENT_TYPES = [
     label: "Roadmap",
     desc: "Visual learning path with nodes & connections",
     href: "",
-    color: "text-[#14142b]",
-    bg: "bg-fuchsia-50",
+    accentColor: "text-[#059669]",
   },
   {
     id: "event",
@@ -78,8 +80,7 @@ const CONTENT_TYPES = [
     label: "Event",
     desc: "Events, webinars, bootcamps & live sessions",
     href: "/studio/events/new",
-    color: "text-violet-600",
-    bg: "bg-violet-50",
+    accentColor: "text-[#D97706]",
   },
   {
     id: "article",
@@ -87,8 +88,7 @@ const CONTENT_TYPES = [
     label: "Article",
     desc: "Standalone rich document authored with the editor",
     href: "/studio/article/new",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
+    accentColor: "text-[#9333EA]",
   },
   {
     id: "quiz",
@@ -96,8 +96,7 @@ const CONTENT_TYPES = [
     label: "Quiz",
     desc: "Standalone question bank with automated grading",
     href: "/studio/quiz/new",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
+    accentColor: "text-[#0D9488]",
   },
   {
     id: "exam",
@@ -105,59 +104,11 @@ const CONTENT_TYPES = [
     label: "Exam",
     desc: "Standalone exam or quiz",
     href: "/studio/exam/new",
-    color: "text-orange-600",
-    bg: "bg-orange-50",
+    accentColor: "text-[#E11D48]",
   },
 ] as const;
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    DRAFT: "bg-amber-50 text-amber-700 border-amber-200",
-    SUBMITTED: "bg-orange-50 text-orange-700 border-orange-200",
-    PUBLISHED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    ARCHIVED: "bg-slate-100 text-slate-500 border-slate-200",
-  };
-  const key = status.toUpperCase();
-  return (
-    <span
-      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${map[key] ?? "bg-slate-100 text-slate-500 border-slate-200"
-        }`}
-    >
-      {key}
-    </span>
-  );
-}
-
-function TypeBadge({ type }: { type: string }) {
-  if (type === "ROADMAP") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200">
-        <Map size={10} /> Roadmap
-      </span>
-    );
-  }
-  if (type === "WORKSHOP" || type === "EVENT") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
-        <Calendar size={10} /> Event
-      </span>
-    );
-  }
-  if (type === "QUIZ") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
-        <FileQuestion size={10} /> Quiz
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-      <BookOpen size={10} /> Course
-    </span>
-  );
-}
-
-// ── New Course creation modal ───────────────────────────────────────────────────
+// ── Modals ────────────────────────────────────────────────────────────────────
 
 function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -196,7 +147,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -206,11 +157,11 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
         </button>
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <BookOpen size={20} className="text-[#14142b]" />
+            <BookOpen size={20} className="text-[#183B73]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Course</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">New Course</h3>
+            <p className="text-[12px] font-medium text-[#52627A]">Give it a name to get started.</p>
           </div>
         </div>
 
@@ -222,7 +173,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Course name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -233,11 +184,11 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Intro to Spring Boot"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           <div>
-            <label htmlFor="course-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="course-desc" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
@@ -246,7 +197,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners get out of this course?"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
@@ -261,14 +212,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#111827]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -278,8 +229,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
-// ── New Quiz creation modal ──────────────────────────────────────────────────
 
 function CreateQuizModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -316,7 +265,7 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -326,11 +275,11 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
         </button>
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <HelpCircle size={20} className="text-[#14142b]" />
+            <HelpCircle size={20} className="text-[#183B73]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">New Quiz</h3>
+            <p className="text-[12px] font-medium text-[#52627A]">Give it a name to get started.</p>
           </div>
         </div>
 
@@ -342,7 +291,7 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Quiz name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -353,7 +302,7 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Chapter 1 Quiz"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
@@ -368,14 +317,14 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#111827]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Quiz"}
             </button>
@@ -385,8 +334,6 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
-// ── New Roadmap creation modal ──────────────────────────────────────────────────
 
 function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
@@ -425,7 +372,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -435,11 +382,11 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
         </button>
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Map size={20} className="text-[#14142b]" />
+            <Map size={20} className="text-[#183B73]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Roadmap</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">New Roadmap</h3>
+            <p className="text-[12px] font-medium text-[#52627A]">Give it a title to get started.</p>
           </div>
         </div>
 
@@ -451,7 +398,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
 
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Roadmap Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -462,11 +409,11 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Java Backend Path"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           <div>
-            <label htmlFor="roadmap-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label htmlFor="roadmap-desc" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Description <span className="font-medium text-slate-400">(optional)</span>
             </label>
             <textarea
@@ -475,7 +422,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
@@ -490,14 +437,14 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#111827]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-50"
             >
               {creating ? "Creating..." : "Create roadmap"}
             </button>
@@ -508,11 +455,7 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function CreateEventModal({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
+function CreateEventModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [step, setStep] = useState<"SELECT_TYPE" | "DETAILS">("SELECT_TYPE");
   const [title, setTitle] = useState("");
@@ -537,7 +480,7 @@ function CreateEventModal({
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
         description: description.trim() || undefined,
-        eventType: eventType,
+        eventType,
         category: "uncategorized",
         tags: [],
         deliveryMode: "ONLINE",
@@ -573,42 +516,44 @@ function CreateEventModal({
       id: "BOOTCAMP",
       label: "Bootcamp",
       desc: "Structured multi-session intensive learning event.",
-    }
+    },
   ];
 
   if (step === "SELECT_TYPE") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-        <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-          <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+        <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          >
             <X size={18} />
           </button>
-          
+
           <div className="mb-8 text-center">
-            <h3 className="text-xl font-bold tracking-tight text-[#14142b] uppercase">Select Event Type</h3>
-            <p className="mt-2 text-sm text-slate-500">Choose the format that best fits your content delivery.</p>
+            <h3 className="text-xl font-bold tracking-tight text-[#183B73] uppercase">Select Event Type</h3>
+            <p className="mt-2 text-sm text-[#52627A]">Choose the format that best fits your content delivery.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {EVENT_TYPES.map(type => (
+            {EVENT_TYPES.map((type) => (
               <button
                 key={type.id}
                 onClick={() => {
                   setEventType(type.id);
                   setStep("DETAILS");
                 }}
-                className="flex flex-col items-start p-5 text-left border-2 border-slate-100 rounded-xl hover:border-violet-500 hover:bg-violet-50 transition-all group"
+                className="flex flex-col items-start p-5 text-left border-2 border-slate-100 rounded-xl hover:border-[#2563EB] hover:bg-blue-50/50 transition-all group"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-violet-100 text-violet-600 group-hover:bg-violet-200">
+                  <div className="p-2 rounded-lg bg-blue-100 text-[#2563EB] group-hover:bg-blue-200">
                     <Calendar size={18} />
                   </div>
-                  <span className="font-bold text-[#14142b]">{type.label}</span>
+                  <span className="font-bold text-[#183B73]">{type.label}</span>
                 </div>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {type.desc}
-                </p>
+                <p className="text-sm text-[#52627A] leading-relaxed">{type.desc}</p>
               </button>
             ))}
           </div>
@@ -617,55 +562,75 @@ function CreateEventModal({
     );
   }
 
-  const typeLabel = EVENT_TYPES.find(t => t.id === eventType)?.label || "Event";
+  const typeLabel = EVENT_TYPES.find((t) => t.id === eventType)?.label || "Event";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button type="button" onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+        >
           <X size={18} />
         </button>
-        <button type="button" onClick={() => setStep("SELECT_TYPE")}
-          className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+        <button
+          type="button"
+          onClick={() => setStep("SELECT_TYPE")}
+          className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+        >
           <span className="text-xs font-semibold uppercase">Back</span>
         </button>
         <div className="mb-6 mt-4 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
-            <Calendar size={20} className="text-violet-600" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
+            <Calendar size={20} className="text-[#2563EB]" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">New {typeLabel}</h3>
+            <p className="text-[12px] font-medium text-[#52627A]">Give it a name to get started.</p>
           </div>
         </div>
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {error}
+          </div>
         )}
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Title <span className="text-red-500">*</span>
             </label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Full-Stack Event" maxLength={120}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Full-Stack Event"
+              maxLength={120}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm"
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description..." rows={2}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#111827]">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description..."
+              rows={2}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm"
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
               Channel <span className="text-red-500">*</span>
             </label>
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           </div>
-          <button type="submit" disabled={!title.trim() || !channelId || creating}
-            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={!title.trim() || !channelId || creating}
+            className="w-full rounded-xl bg-[#2563EB] py-2.5 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          >
             {creating ? "Creating..." : "Create Event"}
           </button>
         </form>
@@ -674,10 +639,7 @@ function CreateEventModal({
   );
 }
 
-
-// ── Rename roadmap modal (title/description only — ported from the old /roadmaps list) ─
-
-function RenameRoadmapModal({
+function RenameContentModal({
   item,
   onClose,
   onUpdated,
@@ -687,7 +649,6 @@ function RenameRoadmapModal({
   onUpdated: () => void;
 }) {
   const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(item.description || "");
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -697,13 +658,19 @@ function RenameRoadmapModal({
     setUpdating(true);
     setError(null);
     try {
-      await roadmapService.updateRoadmap(item.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-      });
+      if (item.type === "ROADMAP") {
+        await roadmapService.updateRoadmap(item.id, { title: title.trim() });
+      } else if (["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type)) {
+        await api.patch(`/api/v1/events/${item.id}`, { title: title.trim() });
+      } else if (item.type === "QUIZ") {
+        await api.patch(`/api/quizzes/${item.id}`, { title: title.trim() });
+      } else {
+        await api.patch(`/api/courses/${item.id}`, { title: title.trim() });
+      }
+      toast.success("Content renamed successfully");
       onUpdated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update roadmap");
+      setError(err instanceof Error ? err.message : "Could not rename content");
       setUpdating(false);
     }
   }
@@ -711,7 +678,7 @@ function RenameRoadmapModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
         <button
           type="button"
           onClick={onClose}
@@ -721,9 +688,9 @@ function RenameRoadmapModal({
         </button>
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Pencil size={20} className="text-[#14142b]" />
+            <Pencil size={20} className="text-[#183B73]" />
           </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Rename Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">Rename Content</h3>
         </div>
 
         {error && (
@@ -734,8 +701,8 @@ function RenameRoadmapModal({
 
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
-            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Roadmap Title <span className="text-red-500">*</span>
+            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-[#111827]">
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               id="rename-title"
@@ -744,33 +711,21 @@ function RenameRoadmapModal({
               autoFocus
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          <div>
-            <label htmlFor="rename-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Description <span className="font-medium text-slate-400">(optional)</span>
-            </label>
-            <textarea
-              id="rename-desc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#111827] outline-none transition-colors placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#111827]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!title.trim() || updating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60"
             >
               {updating ? "Saving…" : "Save Changes"}
             </button>
@@ -781,7 +736,7 @@ function RenameRoadmapModal({
   );
 }
 
-function DeleteRoadmapModal({
+function DeleteContentModal({
   item,
   onClose,
   onDeleted,
@@ -797,10 +752,19 @@ function DeleteRoadmapModal({
     setDeleting(true);
     setError(null);
     try {
-      await roadmapService.deleteRoadmap(item.id);
+      if (item.type === "ROADMAP") {
+        await roadmapService.deleteRoadmap(item.id);
+      } else if (["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type)) {
+        await api.delete(`/api/v1/events/${item.id}`);
+      } else if (item.type === "QUIZ") {
+        await api.delete(`/api/quizzes/${item.id}`);
+      } else {
+        await api.delete(`/api/courses/${item.id}`);
+      }
+      toast.success(`"${item.title}" deleted`);
       onDeleted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete roadmap");
+      setError(err instanceof Error ? err.message : "Could not delete content");
       setDeleting(false);
     }
   }
@@ -813,11 +777,10 @@ function DeleteRoadmapModal({
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
             <Trash2 size={20} className="text-red-600" />
           </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Delete Roadmap</h3>
+          <h3 className="text-[15px] font-bold tracking-tight text-[#183B73]">Delete content?</h3>
         </div>
-        <p className="text-sm text-gray-600 mb-6">
-          Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
-          undone.
+        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be undone.
         </p>
 
         {error && (
@@ -831,7 +794,7 @@ function DeleteRoadmapModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#111827]"
           >
             Cancel
           </button>
@@ -849,157 +812,151 @@ function DeleteRoadmapModal({
   );
 }
 
-// ── Content card ─────────────────────────────────────────────────────────────
+// ── Educational Thumbnail Component ──────────────────────────────────────────
 
-function ContentCard({
-  item,
-  onRename,
-  onDelete,
-  onDuplicate,
-}: {
-  item: ContentSummary;
-  onRename: (item: ContentSummary) => void;
-  onDelete: (item: ContentSummary) => void;
-  onDuplicate: (item: ContentSummary) => void;
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const isRoadmap = item.type === "ROADMAP";
-  const isEvent = ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type);
-  const isQuiz = item.type === "QUIZ";
-  const editHref = isRoadmap
-    ? `/studio/roadmap/${item.id}/edit`
-    : isEvent
-      ? `/studio/events/${item.id}/edit`
-      : isQuiz
-        ? `/studio/quiz/${item.id}`
-        : `/studio/course/${item.id}/edit`;
-  const channelSuspended = item.channelStatus === "SUSPENDED";
-  const unlistDate =
-    channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
-      ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
-      : null;
+function EducationalThumbnail({ item, index }: { item: ContentSummary; index: number }) {
+  if (item.coverImageUrl) {
+    return (
+      <img
+        src={item.coverImageUrl}
+        alt={item.title}
+        className="w-full h-full object-cover rounded-lg"
+      />
+    );
+  }
+
+  const titleLower = item.title.toLowerCase();
+
+  // Style 1: C Programming / Navy
+  if (titleLower.includes("c ") || titleLower.includes("c programming")) {
+    return (
+      <div className="w-full h-full bg-[#0F172A] rounded-lg p-2.5 flex flex-col justify-between relative overflow-hidden select-none">
+        <div className="absolute -right-1 -bottom-3 text-[56px] font-black text-white/5 leading-none pointer-events-none">
+          C
+        </div>
+        <div className="flex items-center justify-between z-10">
+          <span className="text-[18px] font-black text-white leading-none">C</span>
+        </div>
+        <div className="z-10 mt-auto">
+          <p className="text-[10px] font-black tracking-wider text-blue-400 uppercase leading-tight">
+            C PROGRAMMING
+          </p>
+          <p className="text-[8px] font-extrabold tracking-widest text-slate-300 uppercase leading-tight">
+            FUNDAMENTALS
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Style 2: Frontend / Roadmap / Green
+  if (titleLower.includes("frontend") || titleLower.includes("roadmap")) {
+    return (
+      <div className="w-full h-full bg-[#064E3B] rounded-lg p-2.5 flex flex-col justify-between relative overflow-hidden select-none">
+        <svg className="absolute inset-0 w-full h-full text-emerald-400/20 pointer-events-none" viewBox="0 0 160 80">
+          <path d="M 10 70 Q 40 10, 80 40 T 150 20" stroke="currentColor" strokeWidth="3" fill="none" />
+          <circle cx="10" cy="70" r="4" fill="currentColor" />
+          <circle cx="80" cy="40" r="4" fill="currentColor" />
+          <circle cx="150" cy="20" r="4" fill="currentColor" />
+        </svg>
+        <div className="z-10">
+          <span className="text-[8px] font-black tracking-widest text-emerald-300 uppercase">
+            ROADMAP
+          </span>
+        </div>
+        <div className="z-10 mt-auto">
+          <p className="text-[10px] font-black tracking-wide text-white uppercase leading-snug">
+            {item.title}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Style 3: Design / Event / Workshop / Cream
+  if (
+    titleLower.includes("design") ||
+    titleLower.includes("workshop") ||
+    item.type === "WORKSHOP" ||
+    item.type === "EVENT"
+  ) {
+    return (
+      <div className="w-full h-full bg-[#FEF3C7] rounded-lg p-2.5 flex flex-col justify-between relative overflow-hidden select-none">
+        <div className="flex items-center justify-between z-10">
+          <div className="bg-[#78350F] text-amber-100 text-[8px] font-extrabold px-1.5 py-0.5 rounded leading-none">
+            AUG 22
+          </div>
+        </div>
+        <div className="z-10 mt-auto">
+          <p className="text-[10px] font-black text-[#78350F] uppercase leading-tight line-clamp-2">
+            {item.title}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Style 4: Python / Blue
+  if (titleLower.includes("python")) {
+    return (
+      <div className="w-full h-full bg-[#1D4ED8] rounded-lg p-2.5 flex flex-col justify-between relative overflow-hidden select-none">
+        <div className="z-10">
+          <span className="text-[8px] font-black tracking-widest text-blue-200 uppercase bg-blue-900/40 px-1.5 py-0.5 rounded">
+            PYTHON
+          </span>
+        </div>
+        <div className="z-10 mt-auto">
+          <p className="text-[10px] font-black text-white uppercase leading-tight line-clamp-2">
+            {item.title}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback themes based on index
+  const themes = [
+    { bg: "bg-[#0F172A]", text: "text-white", tag: "text-blue-300" },
+    { bg: "bg-[#1E1B4B]", text: "text-white", tag: "text-indigo-300" },
+    { bg: "bg-[#064E3B]", text: "text-white", tag: "text-emerald-300" },
+    { bg: "bg-[#701A75]", text: "text-white", tag: "text-fuchsia-300" },
+  ];
+  const t = themes[index % themes.length];
 
   return (
-    <div className="group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)]">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
-          {item.title}
-        </h3>
-        {isRoadmap && (
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-            >
-              <MoreVertical size={16} />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-36 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onRename(item);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <Pencil size={14} /> Rename
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDuplicate(item);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <Copy size={14} /> Duplicate
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDelete(item);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
-                  >
-                    <Trash2 size={14} /> Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-      {item.description && (
-        <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
-      )}
-      {item.authorName && (
-        <div className="flex items-center gap-1 text-xs text-slate-500">
-          <User size={11} className="text-slate-400" />
-          <span className="truncate">{item.authorName}</span>
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        <TypeBadge type={item.type} />
-        <StatusBadge status={item.status} />
-        {channelSuspended && (
-          <span
-            className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
-            title={
-              item.channelForcedSuspension
-                ? "Channel suspended — already unlisted from public discovery"
-                : unlistDate
-                  ? `Channel suspended — will be unlisted on ${unlistDate.toLocaleDateString()}`
-                  : "Channel suspended"
-            }
-          >
-            <Lock size={10} /> Channel Suspended
-          </span>
-        )}
-      </div>
-      <div className="mt-auto flex items-center gap-1.5 text-xs text-slate-400">
-        <Clock size={11} />
-        Last edited:{" "}
-        {new Date(item.updatedAt).toLocaleString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })}
-      </div>
-      {channelSuspended ? (
-        <span
-          className="cursor-not-allowed rounded-lg bg-slate-50 py-2 text-center text-xs font-semibold text-slate-400"
-          title="This channel is suspended — editing is disabled until it's reactivated"
-        >
-          Editing Disabled
+    <div className={`w-full h-full ${t.bg} rounded-lg p-2.5 flex flex-col justify-between relative overflow-hidden select-none`}>
+      <div className="z-10">
+        <span className={`text-[8px] font-black tracking-widest ${t.tag} uppercase`}>
+          {item.type}
         </span>
-      ) : (
-        <Link
-          href={editHref}
-          className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
-        >
-          {isRoadmap ? "Open Studio" : (item.status === "SUBMITTED" ? "View (Under Review)" : "Continue Editing")}
-        </Link>
-      )}
+      </div>
+      <div className="z-10 mt-auto">
+        <p className={`text-[10px] font-extrabold ${t.text} uppercase leading-tight line-clamp-2`}>
+          {item.title}
+        </p>
+      </div>
     </div>
   );
 }
 
-// ── Dashboard page ───────────────────────────────────────────────────────────
+// ── Main Dashboard Page ───────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { user } = useAuthStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
-  const [channelFilter, setChannelFilter] = useState<string>("ALL");
+  const [typeFilter, setTypeFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"latest" | "title">("latest");
+  const [activeRowMenu, setActiveRowMenu] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
 
-  const { channels } = useEligibleChannels();
+  const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1011,9 +968,6 @@ export default function DashboardPage() {
       setCreateOpen(create);
     }
   }, []);
-
-  const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
 
   const fetchContent = () => {
     setLoadingItems(true);
@@ -1032,79 +986,92 @@ export default function DashboardPage() {
     try {
       await roadmapService.duplicateRoadmap(item.id);
       fetchContent();
+      toast.success(`"${item.title}" duplicated`);
     } catch {
-      alert("Failed to duplicate roadmap");
+      toast.error("Failed to duplicate roadmap");
     }
   };
 
-  const statusCounts = useMemo(() => {
-    const counts = { ALL: items.length, DRAFT: 0, SUBMITTED: 0, PUBLISHED: 0, ARCHIVED: 0 };
-    for (const item of items) {
-      const key = item.status?.toUpperCase();
-      if (key === "DRAFT") counts.DRAFT += 1;
-      else if (key === "SUBMITTED") counts.SUBMITTED += 1;
-      else if (key === "PUBLISHED") counts.PUBLISHED += 1;
-      else if (key === "ARCHIVED") counts.ARCHIVED += 1;
-    }
-    return counts;
-  }, [items]);
-
-  const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
-
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      // Content Studio strictly displays content owned/authored by channels the user has authority over
-      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
-        return false;
+    let result = items.filter((item) => {
+      // Type Filter
+      if (typeFilter !== "All") {
+        const tf = typeFilter.toLowerCase();
+        const it = item.type.toLowerCase();
+        if (tf === "courses" && it !== "course") return false;
+        if (tf === "roadmaps" && it !== "roadmap") return false;
+        if (tf === "events" && !["workshop", "event", "webinar", "bootcamp"].includes(it)) return false;
+        if (tf === "quizzes" && it !== "quiz") return false;
+        if (tf === "articles" && it !== "article") return false;
       }
-      const statusOk =
-        statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
-      const typeOk =
-        typeFilter === "ALL" ||
-        item.type?.toUpperCase() === typeFilter;
-      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
-      return statusOk && typeOk && channelOk;
+
+      // Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const titleMatch = item.title.toLowerCase().includes(q);
+        const descMatch = item.description?.toLowerCase().includes(q);
+        if (!titleMatch && !descMatch) return false;
+      }
+
+      return true;
     });
-  }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
 
-  const CHANNEL_CHIPS = useMemo(() => {
-    const base = [{ id: "ALL", label: "All channels" }];
-    return base.concat(
-      channels.map(c => ({
-        id: c.id,
-        label: c.isPersonal ? "Personal" : c.name
-      }))
-    );
-  }, [channels]);
+    // Sorting
+    if (sortBy === "latest") {
+      result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } else if (sortBy === "title") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    }
 
-  const STATUS_TABS = [
-    { id: "ALL" as const, label: "All" },
-    { id: "DRAFT" as const, label: "Drafts" },
-    { id: "SUBMITTED" as const, label: "In review" },
-    { id: "PUBLISHED" as const, label: "Published" },
-    { id: "ARCHIVED" as const, label: "Archived" },
+    return result;
+  }, [items, typeFilter, searchQuery, sortBy]);
+
+  const FILTER_TABS = [
+    { id: "All", label: "All" },
+    { id: "Courses", label: "Courses" },
+    { id: "Roadmaps", label: "Roadmaps" },
+    { id: "Events", label: "Events" },
+    { id: "Quizzes", label: "Quizzes" },
+    { id: "Articles", label: "Articles" },
   ];
 
-  const TYPE_CHIPS = [
-    { id: "ALL" as const, label: "All types" },
-    { id: "COURSE" as const, label: "Courses" },
-    { id: "ROADMAP" as const, label: "Roadmaps" },
-    { id: "EVENT" as const, label: "Events" },
-  ];
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getActionLink = (item: ContentSummary) => {
+    const isRoadmap = item.type === "ROADMAP";
+    const isEvent = ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type);
+    const isQuiz = item.type === "QUIZ";
+    const editHref = isRoadmap
+      ? `/studio/roadmap/${item.id}/edit`
+      : isEvent
+      ? `/studio/events/${item.id}/edit`
+      : isQuiz
+      ? `/studio/quiz/${item.id}`
+      : `/studio/course/${item.id}/edit`;
+
+    return { href: editHref, text: "Continue editing" };
+  };
 
   return (
-    <div
-      className="relative flex min-h-screen flex-1 flex-col"
-      style={{
-        background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)",
-      }}
-    >
+    <div className="min-h-screen bg-[#F5F8FC] flex flex-col font-sans text-[#111827]">
+      {/* ── Modals ── */}
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
-        <RenameRoadmapModal
+        <RenameContentModal
           item={renameTarget}
           onClose={() => setRenameTarget(null)}
           onUpdated={() => {
@@ -1114,7 +1081,7 @@ export default function DashboardPage() {
         />
       )}
       {deleteTarget && (
-        <DeleteRoadmapModal
+        <DeleteContentModal
           item={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onDeleted={() => {
@@ -1124,233 +1091,485 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-12 pt-28 sm:px-8 sm:pt-32">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
+
+      {/* ── MAIN CONTENT AREA ── */}
+      <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 pt-16 sm:pt-20 pb-6 flex-1">
+        {/* ── 3. STUDIO HEADER ── */}
+        <div className="relative z-30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] md:text-[2rem]">
-              Content Studio
-            </h1>
-            <p className="mt-1 text-[14px] font-medium text-slate-500">
-              Create and manage your educational content
+            <div className="relative inline-flex items-center">
+              <h1 className="text-3xl sm:text-[34px] font-bold text-[#183B73] tracking-tight">
+                Studio
+              </h1>
+              {/* 3-blue-stroke decorative graphic asset */}
+              <img
+                src="/assets/studio-decorative-mark.png"
+                alt=""
+                className="absolute -top-2 -right-3 w-5.5 h-5.5 object-contain mix-blend-multiply pointer-events-none"
+              />
+            </div>
+            <p
+              className="mt-1.5 text-[19px] font-normal text-[#52627A] leading-snug"
+              style={{ fontFamily: "'Caveat', 'Marck Script', 'Satisfy', cursive" }}
+            >
+              Create, structure, and publish your learning experiences.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {channels.length > 0 && (
-              <div className="relative">
-                <select
-                  value={channelFilter}
-                  onChange={(e) => setChannelFilter(e.target.value)}
-                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-3.5 pr-8 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b] outline-none cursor-pointer focus:ring-2 focus:ring-slate-200"
-                >
-                  {CHANNEL_CHIPS.map((chip) => (
-                    <option key={chip.id} value={chip.id}>
-                      {chip.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <ChevronDown size={14} className="text-slate-400" />
-                </div>
-              </div>
-            )}
-            <Link
-              href="/studio/review"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
-            >
-              <ClipboardCheck size={14} />
-              Review
-            </Link>
-            <Link
-              href="/trash"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
-            >
-              <Trash2 size={14} />
-              Trash
-            </Link>
-
-            <div className="relative">
+          {/* ── 4. CREATE CONTENT BUTTON ── */}
+          <div className="relative z-40 flex items-center mr-10 sm:mr-12">
+            <div className="relative -translate-x-[40px]">
               <button
                 id="create-content-btn"
-                onClick={() => setDropdownOpen((v) => !v)}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735]"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="group inline-flex items-center gap-2 rounded-full bg-[#2563EB] hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors duration-150 ease-out motion-reduce:transform-none motion-reduce:transition-none cursor-pointer"
               >
-                <Plus size={16} />
-                Create Content
+                <Plus size={16} className="transition-transform duration-300 ease-out group-hover:rotate-90 motion-reduce:transform-none" />
+                <span>Create Content</span>
                 <ChevronDown
                   size={14}
-                  className={`transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  className={`text-white/80 transition-transform duration-200 ease-out ${
+                    dropdownOpen ? "rotate-180" : ""
+                  }`}
                 />
               </button>
 
-              {dropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
-                  <div
-                    className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
-                    role="menu"
-                  >
-                    <div className="border-b border-slate-100 px-4 py-2.5">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Select content type
-                      </p>
-                    </div>
-                    {CONTENT_TYPES.map((type) => {
-                      const inner = (
-                        <>
-                          <div
-                            className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${type.bg}`}
-                          >
-                            <type.icon size={17} className={type.color} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-[#14142b]">{type.label}</p>
-                            <p className="mt-0.5 text-xs leading-relaxed text-slate-400">
-                              {type.desc}
-                            </p>
-                          </div>
-                        </>
-                      );
-                      const cls =
-                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50";
-                      return type.id === "course" || type.id === "roadmap" || type.id === "event" || type.id === "quiz" ? (
-                        <button
-                          key={type.id}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            setCreateOpen(type.id);
-                          }}
-                          className={cls}
-                        >
-                          {inner}
-                        </button>
-                      ) : (
-                        <Link
-                          key={type.id}
-                          href={type.href}
-                          role="menuitem"
-                          onClick={() => setDropdownOpen(false)}
-                          className={cls}
-                        >
-                          {inner}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+              <AnimatePresence>
+                {dropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-50" onClick={() => setDropdownOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute right-0 top-full z-50 mt-2 w-[380px] overflow-hidden rounded-2xl border border-[#E5EAF2] bg-white shadow-2xl"
+                    >
+                      <div className="border-b border-[#E5EAF2] px-5 py-3 bg-slate-50/50">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8492A6]">
+                          SELECT CONTENT TYPE
+                        </p>
+                      </div>
+                      <div className="p-2 space-y-1">
+                        {CONTENT_TYPES.map((type) => {
+                          const inner = (
+                            <>
+                              <type.icon size={20} className={`mt-0.5 shrink-0 ${type.accentColor}`} />
+                              <div>
+                                <p className={`text-[15px] font-semibold ${type.accentColor} group-hover:text-[#111827] transition-colors duration-150`}>
+                                  {type.label}
+                                </p>
+                                <p className="mt-0.5 text-[13px] leading-[1.4] text-[#52627A] group-hover:text-[#111827] transition-colors duration-150">
+                                  {type.desc}
+                                </p>
+                              </div>
+                            </>
+                          );
+                          const cls = "group flex w-full items-start gap-3.5 px-3.5 py-3 text-left rounded-[10px] transition-colors duration-150 ease-out hover:bg-slate-50/80 cursor-pointer select-none";
+                          return type.id === "course" || type.id === "roadmap" || type.id === "event" || type.id === "quiz" ? (
+                            <button
+                              key={type.id}
+                              type="button"
+                              onClick={() => {
+                                setDropdownOpen(false);
+                                setCreateOpen(type.id);
+                              }}
+                              className={cls}
+                            >
+                              {inner}
+                            </button>
+                          ) : (
+                            <Link
+                              key={type.id}
+                              href={type.href}
+                              onClick={() => setDropdownOpen(false)}
+                              className={cls}
+                            >
+                              {inner}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
 
-        {/* Status segments */}
-        <div className="mb-4 flex flex-wrap gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
-          {STATUS_TABS.map((tab) => {
-            const count = statusCounts[tab.id];
-            const active = statusFilter === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setStatusFilter(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${active
-                    ? "bg-[#14142b] text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
+        {/* ── 6. CONTENT FILTER BAR & 7. SEARCH + SORT ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[#E5EAF2] pb-0 mb-6 gap-4">
+          {/* Options: All, Courses, Roadmaps, Events, Quizzes, Articles */}
+          <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+            {FILTER_TABS.map((tab) => {
+              const isActive = typeFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setTypeFilter(tab.id)}
+                  className={`pb-3 pt-1 text-sm font-semibold transition-colors duration-200 relative whitespace-nowrap px-1 rounded-sm hover:text-[#2563EB] cursor-pointer focus-visible:outline-2 focus-visible:outline-[#2563EB] ${
+                    isActive ? "text-[#2563EB]" : "text-[#52627A]"
                   }`}
-              >
-                {tab.label}
-                <span
-                  className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"
-                    }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <span>{tab.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="studio-active-tab-underline"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#2563EB] rounded-t"
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-        {/* Type chips */}
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          {TYPE_CHIPS.map((chip) => {
-            const active = typeFilter === chip.id;
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => setTypeFilter(chip.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${active
-                    ? "border-[#FF6B4A]/35 bg-[#FF6B4A]/10 text-[#D94F32]"
-                    : "border-slate-200 bg-white/80 text-slate-500 hover:border-slate-300 hover:text-[#14142b]"
-                  }`}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content grid */}
-        {loadingItems ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5">
-                <div className="mb-3 h-4 w-2/3 rounded bg-slate-100" />
-                <div className="mb-2 h-3 w-full rounded bg-slate-50" />
-                <div className="mb-4 h-3 w-3/4 rounded bg-slate-50" />
-                <div className="flex items-center justify-between">
-                  <div className="h-5 w-14 rounded-full bg-slate-100" />
-                  <div className="h-7 w-24 rounded-lg bg-slate-100" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-white/70 py-20 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-              <BookOpen size={24} className="text-slate-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
-              <p className="mt-1 text-xs text-slate-400">
-                Click &quot;Create Content&quot; to build your first course or roadmap.
-              </p>
-            </div>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200/80 bg-white/80 py-16 text-center">
-            <GraduationCap size={28} className="text-slate-300" />
-            <p className="text-sm font-semibold text-[#14142b]">Nothing in this segment</p>
-            <p className="text-xs text-slate-400">Try another filter.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setStatusFilter("ALL");
-                setTypeFilter("ALL");
-                setChannelFilter("ALL");
-              }}
-              className="mt-1 text-[12px] font-semibold text-[#FF6B4A] hover:underline"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredItems.map((item) => (
-              <ContentCard
-                key={item.id}
-                item={item}
-                onRename={setRenameTarget}
-                onDelete={setDeleteTarget}
-                onDuplicate={handleDuplicate}
+          {/* Search + Sort */}
+          <div className="flex items-center gap-3 self-end md:self-auto mb-3 md:mb-0">
+            {/* Search content... with small smooth width expansion (+20px) on hover/focus */}
+            <div className="relative group">
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8492A6] group-focus-within:text-[#2563EB] transition-colors duration-200 pointer-events-none"
               />
-            ))}
+              <input
+                type="text"
+                placeholder="Search content..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#E5EAF2] bg-white text-[#111827] placeholder:text-[#8492A6] transition-[width,border-color,box-shadow] duration-200 ease-out hover:border-slate-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100/80 motion-reduce:transform-none motion-reduce:transition-none w-[192px] hover:w-[212px] focus:w-[212px] sm:w-[224px] sm:hover:w-[244px] sm:focus:w-[244px]"
+              />
+            </div>
+
+            {/* Custom Animated Sort Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setSortOpen(!sortOpen)}
+                className="inline-flex items-center gap-2 pl-3 pr-8 py-1.5 text-xs font-medium rounded-lg border border-[#E5EAF2] bg-white hover:border-slate-300 hover:bg-slate-50/80 text-[#111827] focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100/80 transition-all duration-150 ease-out cursor-pointer relative"
+              >
+                <span>Sort: {sortBy === "latest" ? "Latest updated" : "Title"}</span>
+                <ChevronDown
+                  size={14}
+                  className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8492A6] transition-transform duration-200 ease-out ${
+                    sortOpen ? "rotate-180 text-[#2563EB]" : ""
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {sortOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setSortOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                      className="absolute right-0 z-40 mt-1.5 w-44 overflow-hidden rounded-xl border border-[#E5EAF2] bg-white py-1 shadow-lg"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSortBy("latest");
+                          setSortOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-xs transition-colors duration-150 hover:bg-slate-50 cursor-pointer ${
+                          sortBy === "latest" ? "font-semibold text-[#2563EB] bg-blue-50/50" : "text-[#111827]"
+                        }`}
+                      >
+                        <span>Latest updated</span>
+                        {sortBy === "latest" && <CheckCircle2 size={13} className="text-[#2563EB]" />}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSortBy("title");
+                          setSortOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between px-3 py-2 text-xs transition-colors duration-150 hover:bg-slate-50 cursor-pointer ${
+                          sortBy === "title" ? "font-semibold text-[#2563EB] bg-blue-50/50" : "text-[#111827]"
+                        }`}
+                      >
+                        <span>Title</span>
+                        {sortBy === "title" && <CheckCircle2 size={13} className="text-[#2563EB]" />}
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* ── 9. CONTENT TABLE ── */}
+        <div className="w-full bg-white rounded-xl border border-[#E5EAF2] shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[840px]">
+              <thead>
+                <tr className="border-b border-[#E5EAF2] bg-white">
+                  <th className="py-3 px-5 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[43%]">
+                    CONTENT
+                  </th>
+                  <th className="py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[11%]">
+                    TYPE
+                  </th>
+                  <th className="py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[11%]">
+                    STATUS
+                  </th>
+                  <th className="py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[11%]">
+                    AUTHOR
+                  </th>
+                  <th className="py-3 px-4 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[10%]">
+                    UPDATED
+                  </th>
+                  <th className="py-3 px-5 text-[11px] font-bold uppercase tracking-wider text-[#8492A6] w-[14%] text-right">
+                    ACTIONS
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E5EAF2]">
+                {loadingItems ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <tr key={i} className="animate-pulse h-[92px]">
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-[160px] h-[80px] rounded-lg bg-slate-100 shrink-0" />
+                          <div className="space-y-2 flex-1">
+                            <div className="h-4 bg-slate-100 rounded w-1/2" />
+                            <div className="h-3 bg-slate-50 rounded w-3/4" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4"><div className="h-4 w-16 bg-slate-100 rounded" /></td>
+                      <td className="py-3.5 px-4"><div className="h-4 w-20 bg-slate-100 rounded" /></td>
+                      <td className="py-3.5 px-4"><div className="h-4 w-24 bg-slate-100 rounded" /></td>
+                      <td className="py-3.5 px-4"><div className="h-4 w-20 bg-slate-100 rounded" /></td>
+                      <td className="py-3.5 px-5 text-right"><div className="h-4 w-24 bg-slate-100 rounded ml-auto" /></td>
+                    </tr>
+                  ))
+                ) : filteredItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-16 text-center text-slate-400 text-sm">
+                      <div className="flex flex-col items-center gap-2">
+                        <BookOpen size={28} className="text-slate-300" />
+                        <p className="font-semibold text-[#111827]">No content found</p>
+                        <p className="text-xs text-[#52627A]">
+                          {searchQuery || typeFilter !== "All"
+                            ? "Try adjusting your filters or search terms."
+                            : "Click '+ Create Content' to build your first learning experience."}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredItems.map((item, idx) => {
+                    const action = getActionLink(item);
+                    const isRoadmap = item.type === "ROADMAP";
+                    const isChannelSuspended = item.channelStatus === "SUSPENDED";
+
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-[#F8FAFC] transition-colors duration-150 group h-[92px]"
+                      >
+                        {/* ── 10. CONTENT COLUMN ── */}
+                        <td className="py-3.5 px-5">
+                          <div className="flex items-center gap-4">
+                            {/* Landscape Thumbnail */}
+                            <div className="w-[160px] h-[80px] rounded-lg overflow-hidden shrink-0 transition-transform duration-150 group-hover:scale-[1.01]">
+                              <EducationalThumbnail item={item} index={idx} />
+                            </div>
+                            {/* Title & Description */}
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm font-bold text-[#111827] line-clamp-1 group-hover:text-[#2563EB] transition-colors">
+                                {item.title}
+                              </h3>
+                              {item.description && (
+                                <p className="text-xs text-[#52627A] line-clamp-2 mt-0.5 leading-relaxed">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* ── 16. TYPE COLUMN ── */}
+                        <td className="py-3.5 px-4 text-xs font-medium text-[#183B73]">
+                          <div className="flex items-center gap-1.5 whitespace-nowrap">
+                            {item.type === "ROADMAP" ? (
+                              <>
+                                <Map size={14} className="text-[#183B73]" />
+                                <span>Roadmap</span>
+                              </>
+                            ) : ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type) ? (
+                              <>
+                                <Calendar size={14} className="text-[#183B73]" />
+                                <span>Event</span>
+                              </>
+                            ) : item.type === "QUIZ" ? (
+                              <>
+                                <HelpCircle size={14} className="text-[#183B73]" />
+                                <span>Quiz</span>
+                              </>
+                            ) : item.type === "ARTICLE" ? (
+                              <>
+                                <FileText size={14} className="text-[#183B73]" />
+                                <span>Article</span>
+                              </>
+                            ) : (
+                              <>
+                                <BookOpen size={14} className="text-[#183B73]" />
+                                <span>Course</span>
+                              </>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* ── 17. STATUS COLUMN ── */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          {item.status?.toUpperCase() === "PUBLISHED" ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#168A5B]">
+                              <CheckCircle2 size={14} className="text-[#168A5B]" />
+                              Published
+                            </span>
+                          ) : item.status?.toUpperCase() === "SUBMITTED" || item.status?.toUpperCase() === "IN_REVIEW" ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D97706]">
+                              <Clock size={14} className="text-[#D97706]" />
+                              In Review
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
+                              <Clock size={14} className="text-[#64748B]" />
+                              Draft
+                            </span>
+                          )}
+                        </td>
+
+                        {/* ── 18. AUTHOR COLUMN ── */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2 text-xs font-medium text-[#111827]">
+                            <div className="w-6 h-6 rounded-full bg-[#183B73] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                              {item.authorName ? item.authorName.charAt(0).toUpperCase() : "N"}
+                            </div>
+                            <span className="truncate max-w-[100px]">
+                              {item.authorName || user?.fullName || "Neeraj V V"}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* ── 19. UPDATED COLUMN ── */}
+                        <td className="py-3.5 px-4 text-xs text-[#8492A6] font-medium whitespace-nowrap">
+                          {formatDate(item.updatedAt)}
+                        </td>
+
+                        {/* ── 20. ACTIONS COLUMN ── */}
+                        <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-3 pr-1">
+                            {isChannelSuspended ? (
+                              <span className="text-xs font-semibold text-slate-400 cursor-not-allowed">
+                                Suspended
+                              </span>
+                            ) : (
+                              <Link
+                                href={action.href}
+                                className="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1 group/btn"
+                              >
+                                <span>{action.text}</span>
+                                <span className="transition-transform duration-150 group-hover/btn:translate-x-0.5">
+                                  →
+                                </span>
+                              </Link>
+                            )}
+
+                            {/* 3-dot dropdown menu */}
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (activeRowMenu === item.id) {
+                                    setActiveRowMenu(null);
+                                    setMenuPosition(null);
+                                  } else {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const spaceBelow = window.innerHeight - rect.bottom;
+                                    const showAbove = spaceBelow < 100;
+                                    setMenuPosition({
+                                      top: showAbove ? rect.top - 84 : rect.bottom + 4,
+                                      right: window.innerWidth - rect.right,
+                                    });
+                                    setActiveRowMenu(item.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-[#52627A] hover:bg-slate-100 hover:text-[#111827] transition-colors duration-150 cursor-pointer"
+                              >
+                                <MoreVertical size={16} />
+                              </button>
+                              <AnimatePresence>
+                                {activeRowMenu === item.id && menuPosition && (
+                                  <>
+                                    <div
+                                      className="fixed inset-0 z-[90]"
+                                      onClick={() => {
+                                        setActiveRowMenu(null);
+                                        setMenuPosition(null);
+                                      }}
+                                    />
+                                    <motion.div
+                                      initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                                      exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                                      transition={{ duration: 0.15, ease: "easeOut" }}
+                                      style={{
+                                        position: "fixed",
+                                        top: menuPosition.top,
+                                        right: menuPosition.right,
+                                      }}
+                                      className="z-[100] w-32 rounded-xl border border-[#E5EAF2] bg-white py-1 shadow-xl text-left overflow-hidden"
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveRowMenu(null);
+                                          setMenuPosition(null);
+                                          setRenameTarget(item);
+                                        }}
+                                        className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#111827] hover:bg-slate-50 transition-colors duration-150 cursor-pointer"
+                                      >
+                                        <Pencil size={13} className="text-[#52627A]" />
+                                        <span>Rename</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveRowMenu(null);
+                                          setMenuPosition(null);
+                                          setDeleteTarget(item);
+                                        }}
+                                        className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors duration-150 cursor-pointer"
+                                      >
+                                        <Trash2 size={13} className="text-rose-600" />
+                                        <span>Delete</span>
+                                      </button>
+                                    </motion.div>
+                                  </>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
