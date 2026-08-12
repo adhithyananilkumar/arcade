@@ -8,7 +8,19 @@ import {
   Code2,
   Terminal,
   Cpu,
-  ArrowRight
+  ArrowRight,
+  Award,
+  GraduationCap,
+  MonitorPlay,
+  Lightbulb,
+  Laptop,
+  Headset,
+  Presentation,
+  Library,
+  Brain,
+  PencilRuler,
+  BookOpen,
+  Video
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 
@@ -35,8 +47,39 @@ export default function ContributorsPage() {
     <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative overflow-hidden">
       
       {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
-      <div className="w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 w-full">
+      <div className="relative w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center overflow-hidden">
+        
+        {/* Floating Decorative Icons (Educational Theme) */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0 }} className="absolute top-[20%] left-[10%] sm:left-[15%] text-slate-400/20">
+            <GraduationCap size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 15, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[5%] sm:left-[10%] text-slate-400/20">
+            <Laptop size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[15%] left-[20%] sm:left-[25%] text-slate-400/20">
+            <BookOpen size={48} strokeWidth={1.5} />
+          </motion.div>
+          
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute top-[15%] right-[15%] sm:right-[20%] text-slate-400/20">
+            <Lightbulb size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} className="absolute top-[50%] right-[5%] sm:right-[10%] text-slate-400/20">
+            <Brain size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }} className="absolute bottom-[20%] right-[20%] sm:right-[25%] text-slate-400/20">
+            <Award size={48} strokeWidth={1.5} />
+          </motion.div>
+
+          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[30%] left-[25%] sm:left-[30%] text-slate-400/15">
+            <Presentation size={40} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[35%] right-[30%] sm:right-[35%] text-slate-400/15">
+            <MonitorPlay size={40} strokeWidth={1.5} />
+          </motion.div>
+        </div>
+
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 w-full relative z-10">
           <div className="max-w-4xl mx-auto space-y-8 text-center -mt-16">
             <BlurText
               text="Made Better Together."
@@ -64,7 +107,7 @@ export default function ContributorsPage() {
       </div>
 
       {/* --- CONTRIBUTORS GRID --- */}
-      <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-5xl mx-auto w-full z-10 -mt-10">
+      <section className="relative px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-32 max-w-5xl mx-auto w-full z-10">
         <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-8 md:gap-10">
           {CONTRIBUTORS_DATA.map((contributor, idx) => (
             <motion.div
@@ -73,10 +116,10 @@ export default function ContributorsPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.7, delay: idx * 0.2, ease: "easeOut" }}
-              className={`relative w-60 sm:w-64 h-[380px] sm:h-[400px] rounded-full flex flex-col items-center pt-10 sm:pt-12 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-default ${contributor.color} ${idx % 2 === 1 ? 'md:mt-16' : 'md:mt-0'}`}
+              className={`group relative w-60 sm:w-64 h-[380px] sm:h-[400px] rounded-full flex flex-col items-center pt-10 sm:pt-12 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-default ${contributor.color} ${idx % 2 === 1 ? 'md:mt-16' : 'md:mt-0'}`}
             >
               <div className="text-center z-10 px-5">
-                <h3 className="text-[1.05rem] sm:text-lg font-black text-slate-900 uppercase tracking-widest leading-tight">{contributor.name}</h3>
+                <h3 className="text-[1.05rem] sm:text-lg font-black text-slate-900 uppercase tracking-widest leading-tight group-hover:text-slate-800 transition-colors">{contributor.name}</h3>
                 <p className="text-xs sm:text-sm font-semibold text-slate-800/80 mt-1.5">{contributor.role}</p>
               </div>
               
@@ -85,7 +128,7 @@ export default function ContributorsPage() {
                    src={contributor.avatar}
                    alt={contributor.name}
                    fill
-                   className="object-cover object-top grayscale contrast-[1.1] brightness-[1.05] drop-shadow-2xl mix-blend-multiply opacity-90"
+                   className="object-cover object-top grayscale group-hover:grayscale-0 contrast-[1.1] group-hover:contrast-100 brightness-[1.05] group-hover:brightness-100 drop-shadow-2xl mix-blend-multiply group-hover:mix-blend-normal opacity-90 group-hover:opacity-100 transition-all duration-500"
                    unoptimized
                 />
               </div>

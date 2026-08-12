@@ -13,21 +13,21 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
     id: "contributor-1",
     name: "Fr. Rubin Tottupuram",
     role: "Visionary & Leader",
-    avatar: "/team/fr_rubin.png",
+    avatar: "/team/fr_rubin.png?v=2",
     color: "bg-[#ef5350]" // Lighter Red
   },
   {
     id: "contributor-2",
     name: "Lisha Varghese",
     role: "Project Manager",
-    avatar: "/team/lisha_varghese.png",
+    avatar: "/team/lisha_varghese.png?v=2",
     color: "bg-[#f0f0f0]" // Lighter Gray
   },
   {
     id: "contributor-3",
     name: "Amal K Jose",
     role: "Lead Developer",
-    avatar: "/team/amal_jose.png",
+    avatar: "/team/amal_jose.png?v=2",
     color: "bg-[#ffca28]" // Lighter Yellow
   }
 ];
