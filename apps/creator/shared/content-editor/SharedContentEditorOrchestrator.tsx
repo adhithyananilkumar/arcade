@@ -306,19 +306,18 @@ function IconBtn({
 }
 
 function StatusPill({ status }: { status: string }) {
-  const styles: Record<string, { badge: string; dot: string }> = {
-    DRAFT: { badge: "bg-yellow-50 text-yellow-700 border-yellow-200", dot: "bg-yellow-400" },
-    SUBMITTED: { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-400" },
-    APPROVED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    PUBLISHED: { badge: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-400" },
-    ARCHIVED: { badge: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
+  const styles: Record<string, string> = {
+    DRAFT: "text-gray-500",
+    SUBMITTED: "text-blue-600",
+    APPROVED: "text-green-600",
+    PUBLISHED: "text-[#14142b]/60",
+    ARCHIVED: "text-gray-400",
   };
-  const s = styles[status] ?? styles.ARCHIVED;
+  const color = styles[status] ?? styles.ARCHIVED;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${s.badge}`}
+      className={`inline-flex items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm backdrop-blur-md ${color}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {status}
     </span>
   );
@@ -1412,8 +1411,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </button>
           </div>
 
-          {/* Center: Title */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3">
+          {/* Center: Title and Status */}
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               {activeLessonId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
@@ -1543,18 +1542,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           ) : null
         }
       />
-
-    {/* Floating Status & Save State (Bottom Right) */}
-    <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex flex-col items-end gap-2">
-      {status !== "SUBMITTED" && (
-        <div className="pointer-events-auto flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
-          {hasDraftChanges ? "Unsaved changes" : "Saved"}
-        </div>
-      )}
-      <div className="pointer-events-auto rounded-full shadow-lg bg-white/60 backdrop-blur-md p-1 border border-white/40 transition-colors hover:bg-white">
-        <StatusPill status={status} />
-      </div>
-    </div>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
