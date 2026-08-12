@@ -142,8 +142,17 @@ export default function ContributorsPage() {
             </motion.p>
           </div>
         </div>
+        
+        {/* Decorative Center Icon */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="absolute bottom-12 sm:bottom-16 left-1/2 -translate-x-1/2 text-slate-300/30 z-10 pointer-events-none"
+        >
+          <GraduationCap size={120} strokeWidth={1} />
+        </motion.div>
       </div>
-
       {/* --- CONTRIBUTORS GRID --- */}
       <section className="relative px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-32 max-w-6xl mx-auto w-full z-10">
         
