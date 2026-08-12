@@ -76,7 +76,6 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
 import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
 import { EditorRightSidebar, type RightSidebarTab } from "./EditorRightSidebar";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
@@ -1889,18 +1888,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
-      <ContentStatusHistoryModal
-        contentId={contentId!}
-        contentType={
-          contentType === "roadmap"
-            ? "roadmap"
-            : contentType === "workshop"
-              ? "workshop"
-              : "course"
-        }
-        open={statusHistoryOpen}
-        onClose={() => setStatusHistoryOpen(false)}
-      />
+
       {contentId && (
         <ContentCollaboratorsModal
           isOpen={collaboratorsModalOpen}
