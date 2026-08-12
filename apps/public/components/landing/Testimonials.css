@@ -1,6 +1,6 @@
 /* ─── Testimonials Section ───────────────────────────────────────────── */
 .l-testimonials {
-  padding: 6rem clamp(1.5rem, 7vw, 8rem);
+  padding: 2.25rem clamp(1.5rem, 7vw, 8rem) 5rem;
   background: transparent;
   display: flex;
   justify-content: center;
@@ -18,7 +18,7 @@
 /* Header */
 .l-testimonials__header {
   text-align: center;
-  margin-bottom: 4rem;
+  margin-bottom: 3.25rem;
 }
 
 .l-testimonials__title {

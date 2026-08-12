@@ -16,9 +16,10 @@ export default function CourseShowcase() {
       <div className="l-showcase__card">
         {/* Left Column: Info & Details */}
         <div className="l-showcase__info">
-          <div className="l-showcase__badge">
-            <div className="l-showcase__badge-icon" />
-            <span>The Arcade Story</span>
+          {/* Editorial Label: Inside arcade */}
+          <div className="l-showcase__editorial-label">
+            <span className="l-showcase__inside-text">Inside</span>
+            <span className="l-showcase__arcade-cursive">arcade</span>
           </div>
 
           <h2 className="l-showcase__title">

@@ -485,36 +485,6 @@ export default function HeroSection() {
             />
           </span>
         </h1>
-
-
-        {/* ── CTAs ── */}
-        <div className="l-ctas">
-          <motion.div
-            variants={fadeRise(shouldReduceMotion ? 0.05 : 1.15)}
-            initial="hidden"
-            animate="visible"
-          >
-            {status === 'authenticated' ? (
-              <Link
-                href="/"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Continue Learning
-              </Link>
-            ) : (
-              <Link
-                href="/sign"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Get Started
-              </Link>
-            )}
-          </motion.div>
-
-
-        </div>
       </div>
     </section>
   );

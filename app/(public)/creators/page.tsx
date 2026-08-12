@@ -8,7 +8,6 @@ import JourneyToWorkflowTransition from "@/apps/public/components/landing/creato
 import CreatorEverythingInOnePlace from "@/apps/public/components/landing/creators/CreatorEverythingInOnePlace";
 import CreatorPublishingInfographic from "@/apps/public/components/landing/creators/CreatorPublishingInfographic";
 import CreatorFormats from "@/apps/public/components/landing/creators/CreatorFormats";
-import CreatorEducators from "@/apps/public/components/landing/creators/CreatorEducators";
 import CreatorFAQ from "@/apps/public/components/landing/creators/CreatorFAQ";
 import CreatorEnquiry from "@/apps/public/components/landing/creators/CreatorEnquiry";
 
@@ -24,9 +23,9 @@ export default function CreatorsPage() {
       <CreatorEverythingInOnePlace />
       <CreatorPublishingInfographic />
       <CreatorFormats />
-      <CreatorEducators />
-      <CreatorEnquiry />
       <CreatorFAQ />
+      <CreatorEnquiry />
     </div>
   );
 }
+

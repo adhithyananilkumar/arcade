@@ -86,6 +86,24 @@ export default function CreatorsBackground() {
             ease: "easeInOut",
           }}
         />
+        <motion.div
+          className="creators-blob blob-5"
+          animate={
+            shouldReduceMotion
+              ? {}
+              : {
+                  x: [0, 30, -30, 0],
+                  y: [0, -25, 25, 0],
+                  scale: [1, 1.05, 0.95, 1],
+                }
+          }
+          transition={{
+            duration: 28,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+        />
       </div>
 
       {/* Subtle Soft Floating Particles / Noise Texture */}

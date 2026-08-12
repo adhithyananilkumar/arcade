@@ -48,7 +48,7 @@ export default function CreatorEverythingInOnePlace() {
   ];
 
   return (
-    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-12 md:pt-16 pb-16 space-y-10 relative z-10">
+    <section className="max-w-[1200px] mx-auto w-full px-6 md:px-12 pt-12 md:pt-16 pb-16 space-y-10 relative z-10 border-none shadow-none bg-transparent" id="everything">
 
       {/* Section Header */}
       <div ref={section2HeaderRef} className="text-center space-y-4 max-w-xl mx-auto" style={{ position: 'relative' }}>
@@ -69,11 +69,11 @@ export default function CreatorEverythingInOnePlace() {
       </div>
 
       {/* Workflow Wave Timeline */}
-      <div ref={timelineScrollRef} className="w-screen relative left-1/2 right-1/2 -translate-x-1/2 overflow-x-auto pb-12 scrollbar-hide select-none my-8">
+      <div ref={timelineScrollRef} className="w-screen relative left-1/2 right-1/2 -translate-x-1/2 overflow-x-auto pb-12 scrollbar-hide select-none my-8 border-none shadow-none bg-transparent">
         <div key={animKey} className="relative min-w-[1200px] h-[360px] w-full">
 
           {/* Background blobs */}
-          <div className="pointer-events-none absolute -top-12 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl" />
+          <div className="pointer-events-none absolute top-0 left-1/4 w-72 h-72 rounded-full opacity-10 bg-indigo-300 blur-3xl" />
           <div className="pointer-events-none absolute bottom-0 right-1/4 w-72 h-72 rounded-full opacity-10 bg-emerald-300 blur-3xl" />
 
           {/* SVG Wave Line */}

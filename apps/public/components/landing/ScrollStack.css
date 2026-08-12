@@ -1,0 +1,52 @@
+/* ScrollStack CSS for Deck Stacking Animation */
+.scroll-stack-container {
+  position: relative;
+  width: min(92vw, 1180px);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.scroll-stack-sticky-frame {
+  position: sticky;
+  top: 18%;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scroll-stack-card-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  will-change: transform, opacity;
+  transform-origin: center top;
+  box-sizing: border-box;
+}
+
+.scroll-stack-card-inner {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .scroll-stack-sticky-frame {
+    top: 14%;
+    max-width: 100%;
+  }
+
+  .scroll-stack-container {
+    width: 100%;
+    max-width: 100%;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+}

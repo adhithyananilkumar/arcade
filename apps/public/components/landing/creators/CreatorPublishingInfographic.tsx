@@ -50,10 +50,10 @@ export default function CreatorPublishingInfographic() {
       title: "Creative Control",
       desc: "Structure lessons, customize layouts, and configure browser terminals your way.",
       hoverTitle: "group-hover:text-[#E8368F]",
-      nodeBorder: "border-[#FFC8D8]",
-      nodeShadow: "shadow-[0_4px_16px_rgba(255,200,216,0.35)]",
-      badgeBg: "bg-[#FFF0F4]",
-      badgeText: "text-[#E8368F]"
+      nodeBorder: "border-[#CDB8FF]",
+      nodeShadow: "shadow-[0_4px_16px_rgba(205,184,255,0.35)]",
+      badgeBg: "bg-[#F6F4FF]",
+      badgeText: "text-[#7A5AF8]"
     },
     {
       num: "03",
@@ -84,10 +84,10 @@ export default function CreatorPublishingInfographic() {
       title: "Shared Authors",
       desc: "Invite teammates, manage writer permissions, and review draft edits collaboratively.",
       hoverTitle: "group-hover:text-[#E8368F]",
-      nodeBorder: "border-[#FFC8D8]",
-      nodeShadow: "shadow-[0_4px_16px_rgba(255,200,216,0.35)]",
-      badgeBg: "bg-[#FFF0F4]",
-      badgeText: "text-[#E8368F]"
+      nodeBorder: "border-[#CDB8FF]",
+      nodeShadow: "shadow-[0_4px_16px_rgba(205,184,255,0.35)]",
+      badgeBg: "bg-[#F6F4FF]",
+      badgeText: "text-[#7A5AF8]"
     },
     {
       num: "03",

@@ -204,7 +204,7 @@ export default function CreatorFormats() {
   const headingWords = headingText.split(" ");
 
   return (
-    <section className="format-sec py-16 lg:py-24 relative overflow-hidden bg-transparent" id="formats">
+    <section className="format-sec pt-16 pb-6 lg:pt-24 lg:pb-8 relative overflow-hidden bg-transparent" id="formats">
       <div className="wrap max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Section Header */}
@@ -368,7 +368,7 @@ export default function CreatorFormats() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full pt-10 pb-20 mt-8 bg-transparent overflow-hidden"
+          className="relative w-full pt-10 pb-4 mt-8 bg-transparent overflow-hidden"
         >
           {/* Soft Drifting Radial Ambient Glow (< 4% Opacity) */}
           <motion.div
