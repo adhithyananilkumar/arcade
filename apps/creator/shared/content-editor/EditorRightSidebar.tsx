@@ -26,6 +26,8 @@ import {
   RefreshCw,
   Trash2,
   MoreVertical,
+  User,
+  Shield,
 } from "lucide-react";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 import type { Collaborator } from "@/app/(authenticated)/studio/events/api/collaboration";
@@ -353,7 +355,6 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
                         >
                           {member.role}
                         </span>
-                        {member.role !== "OWNER" && (
                           <div className="relative">
                             <button
                               type="button"
@@ -367,23 +368,49 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
                               <MoreVertical size={14} />
                             </button>
                             {openMenuId === member.userId && (
-                              <div className="absolute right-0 top-full mt-1 w-32 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                              <div className="absolute right-0 top-full mt-1 w-36 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg z-50">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setOpenMenuId(null);
-                                    props.onRemoveCollaborator(member.userId, member.name || member.email);
+                                    // TODO: Implement View Profile
                                   }}
-                                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-rose-600 transition-colors hover:bg-rose-50"
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-700 transition-colors hover:bg-slate-50"
                                 >
-                                  <Trash2 size={13} />
-                                  Remove
+                                  <User size={13} />
+                                  View Profile
                                 </button>
+                                {member.role === "OWNER" ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuId(null);
+                                      // TODO: Implement Transfer Ownership
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-purple-700 transition-colors hover:bg-purple-50 border-t border-slate-100"
+                                  >
+                                    <Shield size={13} />
+                                    Transfer Ownership
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuId(null);
+                                      props.onRemoveCollaborator(member.userId, member.name || member.email);
+                                    }}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-rose-600 transition-colors hover:bg-rose-50 border-t border-slate-100"
+                                  >
+                                    <Trash2 size={13} />
+                                    Remove
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
                       </div>
                     </div>
                   ))}
