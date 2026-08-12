@@ -44,41 +44,40 @@ function GithubIcon({ className }: { className?: string }) {
 
 export default function ContributorsPage() {
   return (
-    <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative overflow-hidden">
+    <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative">
       
-      {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
-      <div className="relative w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* Floating Decorative Icons (Educational Theme) - Fixed to viewport */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0 }} className="absolute top-[20%] left-[10%] sm:left-[15%] text-slate-400/20">
+          <GraduationCap size={64} strokeWidth={1.5} />
+        </motion.div>
+        <motion.div animate={{ y: [0, 15, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[5%] sm:left-[10%] text-slate-400/20">
+          <Laptop size={56} strokeWidth={1.5} />
+        </motion.div>
+        <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[15%] left-[20%] sm:left-[25%] text-slate-400/20">
+          <BookOpen size={48} strokeWidth={1.5} />
+        </motion.div>
         
-        {/* Floating Decorative Icons (Educational Theme) */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0 }} className="absolute top-[20%] left-[10%] sm:left-[15%] text-slate-400/20">
-            <GraduationCap size={64} strokeWidth={1.5} />
-          </motion.div>
-          <motion.div animate={{ y: [0, 15, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[5%] sm:left-[10%] text-slate-400/20">
-            <Laptop size={56} strokeWidth={1.5} />
-          </motion.div>
-          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[15%] left-[20%] sm:left-[25%] text-slate-400/20">
-            <BookOpen size={48} strokeWidth={1.5} />
-          </motion.div>
-          
-          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute top-[15%] right-[15%] sm:right-[20%] text-slate-400/20">
-            <Lightbulb size={56} strokeWidth={1.5} />
-          </motion.div>
-          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} className="absolute top-[50%] right-[5%] sm:right-[10%] text-slate-400/20">
-            <Brain size={64} strokeWidth={1.5} />
-          </motion.div>
-          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }} className="absolute bottom-[20%] right-[20%] sm:right-[25%] text-slate-400/20">
-            <Award size={48} strokeWidth={1.5} />
-          </motion.div>
+        <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute top-[15%] right-[15%] sm:right-[20%] text-slate-400/20">
+          <Lightbulb size={56} strokeWidth={1.5} />
+        </motion.div>
+        <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} className="absolute top-[50%] right-[5%] sm:right-[10%] text-slate-400/20">
+          <Brain size={64} strokeWidth={1.5} />
+        </motion.div>
+        <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }} className="absolute bottom-[20%] right-[20%] sm:right-[25%] text-slate-400/20">
+          <Award size={48} strokeWidth={1.5} />
+        </motion.div>
 
-          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[30%] left-[25%] sm:left-[30%] text-slate-400/15">
-            <Presentation size={40} strokeWidth={1.5} />
-          </motion.div>
-          <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[35%] right-[30%] sm:right-[35%] text-slate-400/15">
-            <MonitorPlay size={40} strokeWidth={1.5} />
-          </motion.div>
-        </div>
+        <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[30%] left-[25%] sm:left-[30%] text-slate-400/15">
+          <Presentation size={40} strokeWidth={1.5} />
+        </motion.div>
+        <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[35%] right-[30%] sm:right-[35%] text-slate-400/15">
+          <MonitorPlay size={40} strokeWidth={1.5} />
+        </motion.div>
+      </div>
 
+      {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
+      <div className="relative w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 w-full relative z-10">
           <div className="max-w-4xl mx-auto space-y-8 text-center -mt-16">
             <BlurText
