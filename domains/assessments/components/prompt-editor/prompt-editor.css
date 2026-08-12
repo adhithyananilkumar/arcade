@@ -1,0 +1,12 @@
+/* domains/assessments/components/prompt-editor/prompt-editor.css
+   Tiptap always stamps the editable node with a plain `.ProseMirror` class, and the content
+   engine's global stylesheet (apps/creator/editor/styles/editor.css) targets that same bare
+   class with `min-height: 300px`. Since both rules have equal specificity, whichever loads
+   last wins — fragile, and it was winning against our own `min-h-[64px]` Tailwind utility,
+   ballooning this editor into an empty ~300px box. Scoping under `.qb-prompt` (specificity
+   0,2,0) reliably beats the bare `.ProseMirror` rule (0,1,0) regardless of load order. */
+
+.qb-prompt .ProseMirror {
+  min-height: 64px;
+  padding: 0;
+}

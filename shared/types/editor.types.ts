@@ -43,6 +43,7 @@ export type TiptapNodeType =
 export type TiptapMarkType =
   | "bold"
   | "italic"
+  | "underline"
   | "strike"
   | "code"
   | "link"

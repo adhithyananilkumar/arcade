@@ -2,10 +2,11 @@
 // Typed calls to the assessment domain's quiz-authoring endpoints.
 
 import { api } from "@/infrastructure/http/api";
+import type { TiptapDocument } from "@/shared/types/editor.types";
 import type {
+  BankQuestionRequest,
   BankQuestionResponse,
   QuestionBankQuestionsRequest,
-  QuestionBankRequest,
   QuestionBankSummary,
   QuestionResponse,
   QuizAttemptResponse,
@@ -14,6 +15,9 @@ import type {
   QuizStatsResponse,
   QuizSubmitAnswers,
   QuizTakeResponse,
+  ReorderSectionsRequest,
+  SectionRequest,
+  SectionResponse,
 } from "./types";
 
 /** Load the full question set for a quiz (authoring). */
@@ -50,42 +54,81 @@ export function getQuizStats(quizIds: string[]) {
   return api.get<QuizStatsResponse[]>(`/api/quizzes/stats?${params}`);
 }
 
-// ── Question banks ────────────────────────────────────────────────────────────
+// ── Question banks (one per course) ───────────────────────────────────────────
 
-/**
- * List all of the caller's question banks. Pass a courseId to also get each bank's
- * enabledForCourse flag for that course; omit it when there's no course context.
- */
-export function listQuestionBanks(courseId?: string) {
-  const qs = courseId ? `?courseId=${encodeURIComponent(courseId)}` : "";
-  return api.get<QuestionBankSummary[]>(`/api/question-banks${qs}`);
+const EMPTY_DOC: TiptapDocument = { type: "doc", content: [] };
+
+/** The backend stores `prompt` as a JSON string column; the domain works with parsed TiptapDocument. */
+type WireBankQuestionResponse = Omit<BankQuestionResponse, "prompt"> & { prompt: string };
+type WireBankQuestionRequest = Omit<BankQuestionRequest, "prompt"> & { prompt: string };
+
+function parsePrompt(raw: string): TiptapDocument {
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as TiptapDocument) : EMPTY_DOC;
+  } catch {
+    return EMPTY_DOC;
+  }
 }
 
-export function createQuestionBank(req: QuestionBankRequest) {
-  return api.post<QuestionBankSummary>(`/api/question-banks`, req);
+function fromWire(q: WireBankQuestionResponse): BankQuestionResponse {
+  return { ...q, prompt: parsePrompt(q.prompt) };
 }
 
-export function renameQuestionBank(bankId: string, title: string) {
-  return api.patch<QuestionBankSummary>(`/api/question-banks/${bankId}`, { title });
+function toWire(q: BankQuestionRequest): WireBankQuestionRequest {
+  return { ...q, prompt: JSON.stringify(q.prompt ?? EMPTY_DOC) };
 }
 
-export function deleteQuestionBank(bankId: string) {
-  return api.delete<void>(`/api/question-banks/${bankId}`);
+/** Get (or auto-create) the question bank belonging to a course. */
+export function getOrCreateCourseQuestionBank(courseId: string) {
+  return api.get<QuestionBankSummary>(`/api/courses/${courseId}/question-bank`);
 }
 
-/** Enable a bank for a course — requires owning both the bank and the course. */
-export function enableQuestionBankForCourse(bankId: string, courseId: string) {
-  return api.post<void>(`/api/question-banks/${bankId}/courses/${courseId}`, {});
+/** Every question in the bank across all sections, in section-then-position order (used by preview). */
+export async function getAllBankQuestions(bankId: string): Promise<BankQuestionResponse[]> {
+  const wire = await api.get<WireBankQuestionResponse[]>(`/api/question-banks/${bankId}/questions`);
+  return wire.map(fromWire);
 }
 
-export function disableQuestionBankForCourse(bankId: string, courseId: string) {
-  return api.delete<void>(`/api/question-banks/${bankId}/courses/${courseId}`);
+// ── Sections ───────────────────────────────────────────────────────────────────
+
+export function listSections(bankId: string) {
+  return api.get<SectionResponse[]>(`/api/question-banks/${bankId}/sections`);
 }
 
-export function getBankQuestions(bankId: string) {
-  return api.get<BankQuestionResponse[]>(`/api/question-banks/${bankId}/questions`);
+export function createSection(bankId: string, req: SectionRequest = {}) {
+  return api.post<SectionResponse>(`/api/question-banks/${bankId}/sections`, req);
 }
 
-export function saveBankQuestions(bankId: string, body: QuestionBankQuestionsRequest) {
-  return api.put<BankQuestionResponse[]>(`/api/question-banks/${bankId}/questions`, body);
+export function renameSection(sectionId: string, title: string) {
+  return api.patch<SectionResponse>(`/api/question-banks/sections/${sectionId}`, { title });
+}
+
+export function deleteSection(sectionId: string) {
+  return api.delete<void>(`/api/question-banks/sections/${sectionId}`);
+}
+
+export function reorderSections(bankId: string, req: ReorderSectionsRequest) {
+  return api.patch<SectionResponse[]>(`/api/question-banks/${bankId}/sections/reorder`, req);
+}
+
+// ── Section-scoped questions ──────────────────────────────────────────────────
+
+export async function getSectionQuestions(sectionId: string): Promise<BankQuestionResponse[]> {
+  const wire = await api.get<WireBankQuestionResponse[]>(
+    `/api/question-banks/sections/${sectionId}/questions`
+  );
+  return wire.map(fromWire);
+}
+
+export async function saveSectionQuestions(
+  sectionId: string,
+  body: QuestionBankQuestionsRequest
+): Promise<BankQuestionResponse[]> {
+  const wireBody = { questions: body.questions.map(toWire) };
+  const wire = await api.put<WireBankQuestionResponse[]>(
+    `/api/question-banks/sections/${sectionId}/questions`,
+    wireBody
+  );
+  return wire.map(fromWire);
 }

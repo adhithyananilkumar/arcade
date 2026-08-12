@@ -2,6 +2,7 @@
 "use client";
 
 import { EditorContent } from "@tiptap/react";
+import { type Editor } from "@tiptap/core";
 import { RichTextProvider } from "reactjs-tiptap-editor";
 import dynamic from "next/dynamic";
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -57,6 +58,8 @@ export interface ArcadeEditorHandle {
   setContent: (doc: TiptapDocument) => void;
   /** Current document as JSON, or null before the editor is ready. */
   getJSON: () => TiptapDocument | null;
+  /** The raw Tiptap Editor instance. */
+  editor: Editor | null;
 }
 
 interface ArcadeEditorProps {
@@ -86,6 +89,8 @@ interface ArcadeEditorProps {
   chromeless?: boolean;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
+  /** Callback for selection updates */
+  onSelectionUpdate?: (props: { editor: Editor }) => void;
   /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
   documentName?: string;
   /** Callback fired when collaboration connection status or active user list changes */
@@ -98,7 +103,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, documentName, onCollabStateChange },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, onSelectionUpdate, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -138,6 +143,7 @@ export const ArcadeEditor = memo(
     seedContent,
     documentId,
     contentType,
+    onSelectionUpdate,
     documentName,
   });
 
@@ -147,8 +153,8 @@ export const ArcadeEditor = memo(
 
   useImperativeHandle(
     ref,
-    () => ({ flush: flushSave, setContent, getJSON }),
-    [flushSave, setContent, getJSON]
+    () => ({ flush: flushSave, setContent, getJSON, editor }),
+    [flushSave, setContent, getJSON, editor]
   );
 
   // editor is null during SSR — show skeleton
@@ -167,8 +173,7 @@ export const ArcadeEditor = memo(
   }
 
   const isRoadmap = contentType === "roadmap";
-console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
-
+  const hideToolbar = isRoadmap;
 
   return (
     <div
@@ -179,7 +184,7 @@ console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", edi
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !isRoadmap && <RichTextToolbar editor={editor} />}
+        {!readOnly && !hideToolbar && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={

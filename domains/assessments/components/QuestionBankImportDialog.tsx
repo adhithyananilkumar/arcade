@@ -3,14 +3,22 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Check, Copy, Loader2, UploadCloud, X } from "lucide-react";
-import { getBankQuestions, saveBankQuestions } from "../api";
+import { getSectionQuestions, saveSectionQuestions } from "../api";
 import type {
   BankQuestionRequest,
   QuestionBankQuestionsRequest,
   BankQuestionType,
+  Difficulty,
 } from "../types";
+import type { TiptapDocument } from "@/shared/types/editor.types";
 
 const VALID_TYPES: BankQuestionType[] = ["SINGLE", "MULTIPLE", "TRUE_FALSE", "SENTENCE"];
+const VALID_DIFFICULTIES: Difficulty[] = ["EASY", "MEDIUM", "HARD"];
+
+/** Wrap plain imported text as a single-paragraph Tiptap document. */
+function textToDoc(text: string): TiptapDocument {
+  return { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text }] }] };
+}
 
 const AI_PROMPT = `You are converting a question bank document into a strict JSON format for an import tool.
 
@@ -20,6 +28,7 @@ Read the attached document and extract every question. Output ONLY raw JSON — 
   "questions": [
     {
       "type": "SINGLE" | "MULTIPLE" | "TRUE_FALSE" | "SENTENCE",
+      "difficulty": "EASY" | "MEDIUM" | "HARD",
       "prompt": "the question text",
       "points": 1,
       "options": [
@@ -32,6 +41,7 @@ Read the attached document and extract every question. Output ONLY raw JSON — 
 
 Rules:
 - "type": "SINGLE" = exactly one correct option (radio button). "MULTIPLE" = one or more correct options (checkboxes). "TRUE_FALSE" = exactly two options, "True" and "False", exactly one marked correct. "SENTENCE" = a free-text short-answer question with no options.
+- "difficulty": your best judgment of the question's difficulty; default to "MEDIUM" if unclear.
 - For SINGLE, MULTIPLE, and TRUE_FALSE questions: include "options" (omit "sampleAnswer" or set it to an empty string).
 - For SENTENCE questions: omit "options" (or set it to an empty array) and include "sampleAnswer" with the expected answer.
 - "points" is a positive integer; default to 1 if the source doesn't specify a point value.
@@ -41,6 +51,7 @@ Rules:
 
 interface ParsedQuestion {
   type: BankQuestionType;
+  difficulty: Difficulty;
   prompt: string;
   points: number;
   options: { text: string; correct: boolean }[];
@@ -66,7 +77,7 @@ function validate(raw: unknown): { questions: ParsedQuestion[] } | { error: stri
     if (typeof q !== "object" || q === null) {
       return { error: `Question ${idx} is not an object.` };
     }
-    const { type, prompt, points, options, sampleAnswer } = q as Record<string, unknown>;
+    const { type, difficulty, prompt, points, options, sampleAnswer } = q as Record<string, unknown>;
 
     if (typeof type !== "string" || !VALID_TYPES.includes(type as BankQuestionType)) {
       return {
@@ -79,13 +90,19 @@ function validate(raw: unknown): { questions: ParsedQuestion[] } | { error: stri
     if (points !== undefined && (typeof points !== "number" || !Number.isFinite(points))) {
       return { error: `Question ${idx}: "points" must be a number.` };
     }
+    if (difficulty !== undefined && !VALID_DIFFICULTIES.includes(difficulty as Difficulty)) {
+      return {
+        error: `Question ${idx}: "difficulty" must be one of ${VALID_DIFFICULTIES.join(", ")}.`,
+      };
+    }
+    const d = (difficulty as Difficulty | undefined) ?? "MEDIUM";
 
     const t = type as BankQuestionType;
     if (t === "SENTENCE") {
       if (typeof sampleAnswer !== "string" || sampleAnswer.trim() === "") {
         return { error: `Question ${idx}: SENTENCE questions require a non-empty "sampleAnswer".` };
       }
-      parsed.push({ type: t, prompt, points: points ?? 1, options: [], sampleAnswer });
+      parsed.push({ type: t, difficulty: d, prompt, points: points ?? 1, options: [], sampleAnswer });
       continue;
     }
 
@@ -117,21 +134,28 @@ function validate(raw: unknown): { questions: ParsedQuestion[] } | { error: stri
       return { error: `Question ${idx}: TRUE_FALSE questions must have exactly two options.` };
     }
 
-    parsed.push({ type: t, prompt, points: points ?? 1, options: parsedOptions, sampleAnswer: "" });
+    parsed.push({
+      type: t,
+      difficulty: d,
+      prompt,
+      points: points ?? 1,
+      options: parsedOptions,
+      sampleAnswer: "",
+    });
   }
 
   return { questions: parsed };
 }
 
 interface QuestionBankImportDialogProps {
-  bankId: string;
+  sectionId: string;
   hasExistingQuestions: boolean;
   onClose: () => void;
   onImported: () => void;
 }
 
 export function QuestionBankImportDialog({
-  bankId,
+  sectionId,
   hasExistingQuestions,
   onClose,
   onImported,
@@ -181,13 +205,21 @@ export function QuestionBankImportDialog({
 
     setSaving(true);
     try {
-      const imported: BankQuestionRequest[] = result.questions;
+      const imported: BankQuestionRequest[] = result.questions.map((q) => ({
+        type: q.type,
+        difficulty: q.difficulty,
+        prompt: textToDoc(q.prompt),
+        points: q.points,
+        options: q.options,
+        sampleAnswer: q.sampleAnswer,
+      }));
       let finalQuestions: BankQuestionRequest[] = imported;
       if (mode === "append") {
-        const existing = await getBankQuestions(bankId);
+        const existing = await getSectionQuestions(sectionId);
         finalQuestions = [
           ...existing.map((q) => ({
             type: q.type,
+            difficulty: q.difficulty,
             prompt: q.prompt,
             points: q.points,
             options: q.options.map((o) => ({ text: o.text, correct: o.correct })),
@@ -197,14 +229,14 @@ export function QuestionBankImportDialog({
         ];
       }
       const payload: QuestionBankQuestionsRequest = { questions: finalQuestions };
-      await saveBankQuestions(bankId, payload);
+      await saveSectionQuestions(sectionId, payload);
       onImported();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Import failed.");
     } finally {
       setSaving(false);
     }
-  }, [jsonText, mode, bankId, onImported]);
+  }, [jsonText, mode, sectionId, onImported]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

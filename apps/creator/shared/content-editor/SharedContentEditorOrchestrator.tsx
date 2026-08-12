@@ -81,7 +81,7 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
+import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
@@ -121,6 +121,7 @@ import {
   Lock,
   Eye,
   GripVertical,
+  FileQuestion,
   Users,
   UserPlus,
 } from "lucide-react";
@@ -261,41 +262,6 @@ function ConfirmDialog({
               }`}
           >
             {busy ? "Working…" : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Question Bank placeholder dialog ─────────────────────────────────────────
-
-function QuestionBankDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          <X size={18} />
-        </button>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
-            <FileText size={22} className="text-indigo-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Question Bank</h3>
-          <p className="text-sm leading-relaxed text-gray-500">
-            The Question Bank editor is coming in the next phase. You&apos;ll be able to
-            create MCQ, short answer, and coding questions linked to this course.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Got it
           </button>
         </div>
       </div>
@@ -529,8 +495,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     return contentType === "course"
       ? new CourseAdapter()
       : contentType === "roadmap"
-      ? new RoadmapAdapter()
-      : new EventAdapter(contentId || "");
+        ? new RoadmapAdapter()
+        : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -710,17 +676,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         // Flatten items to get their current order
         const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
           .sort((a, b) => a.node.position - b.node.position);
-        
+
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
 
         if (oldIndex === -1 || newIndex === -1) return m;
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         // Update positions
         const nextLessons = [...m.lessons];
-        
+
         const itemIds: string[] = [];
 
         newItems.forEach((item, index) => {
@@ -1266,7 +1232,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     try {
       if (contentType === "course") {
         if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
-           await api.patch(`/api/courses/${contentId}`, data);
+          await api.patch(`/api/courses/${contentId}`, data);
         }
         const updated = await api.post<any>(`/api/courses/${contentId}/submit`, { message: data.message });
         setStatus(updated.status);
@@ -1332,11 +1298,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   return (
     <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      {contentType === "course" && contentId ? (
-        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
-      ) : (
-        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
-      )}
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
@@ -1444,11 +1405,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               type="button"
               onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
               title={`${adapter.terminology.root} Settings`}
-              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${
-                view === "settings"
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${view === "settings"
                   ? "bg-[#14142b] text-white"
                   : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
-              }`}
+                }`}
             >
               <Settings size={15} />
               <span className="hidden md:inline">Settings</span>
@@ -1744,7 +1704,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       </header>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 flex flex-col">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
           <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
@@ -1793,57 +1753,57 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       <div key={mod.id} className="mb-0.5">
                         {/* Module row */}
                         <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setModules((prev) =>
-                                prev.map((m) =>
-                                  m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModules((prev) =>
+                                  prev.map((m) =>
+                                    m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                                  )
                                 )
-                              )
-                            }
-                            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                          >
-                            {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-
-                          {isEditing("module", mod.id) ? (
-                            renameInput("text-xs font-semibold text-gray-700")
-                          ) : (
-                            <span
-                              onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                              className="flex-1 truncate text-xs font-semibold text-gray-700"
-                              title={mod.title}
+                              }
+                              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
                             >
-                              {mod.title}
-                            </span>
-                          )}
+                              {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </button>
 
-                          {status !== "SUBMITTED" && (
-                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  title="Add lesson or quiz"
-                                  className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                                >
-                                  <Plus size={12} />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" sideOffset={4}>
-                                  <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                    <FileText size={13} />
-                                    Lesson
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                                <Pencil size={12} />
-                              </IconBtn>
-                              <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                                <Trash2 size={12} />
-                              </IconBtn>
-                            </div>
-                          )}
-                        </div>
+                            {isEditing("module", mod.id) ? (
+                              renameInput("text-xs font-semibold text-gray-700")
+                            ) : (
+                              <span
+                                onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                                className="flex-1 truncate text-xs font-semibold text-gray-700"
+                                title={mod.title}
+                              >
+                                {mod.title}
+                              </span>
+                            )}
+
+                            {status !== "SUBMITTED" && (
+                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    title="Add lesson or quiz"
+                                    className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                                  >
+                                    <Plus size={12} />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start" sideOffset={4}>
+                                    <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                      <FileText size={13} />
+                                      Lesson
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                                  <Pencil size={12} />
+                                </IconBtn>
+                                <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            )}
+                          </div>
 
                         {/* Lessons and quizzes, interleaved by position */}
                         {mod.expanded && (
@@ -1964,16 +1924,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Add {adapter.terminology.container}
                       </button>
                     )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
-                      <button
-                        type="button"
-                        onClick={() => setQbOpen(true)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
-                      >
-                        <FileText size={13} />
-                        Question Bank
-                      </button>
-                    )}
+
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
@@ -1982,6 +1933,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       >
                         <FileText size={13} />
                         Resources
+                      </button>
+                    )}
+                    {contentType === "course" && (
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
+                      >
+                        <FileQuestion size={13} />
+                        Question Bank
                       </button>
                     )}
                     <button
@@ -2003,7 +1964,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="absolute inset-0 z-0 overflow-y-auto">
+        <main className="z-0 flex flex-col min-h-0 absolute inset-0 overflow-y-auto">
           {status === "SUBMITTED" && (
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
               <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
@@ -2032,33 +1993,30 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           ) : contentType === "roadmap" && roadmapData ? (
             <div className="absolute inset-0 z-0 pt-[49px]">
-               <RoadmapCanvas 
-                 roadmap={roadmapData}
-                 readOnly={status === "SUBMITTED"}
-                 onGraphChange={async (graphJson) => {
-                   try {
-                     await roadmapService.updateRoadmap(contentId!, { graphJson });
-                     setHasDraftChanges(true);
-                   } catch (err: any) {
-                     // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
-                     // as a subsequent save will likely catch up if it's rapid typing.
-                     if (err?.status === 409 || err?.response?.status === 409) {
-                       console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
-                     } else {
-                       console.error("Failed to save roadmap graph", err);
-                     }
-                   }
-                 }}
-               />
+              <RoadmapCanvas
+                roadmap={roadmapData}
+                readOnly={status === "SUBMITTED"}
+                onGraphChange={async (graphJson) => {
+                  try {
+                    await roadmapService.updateRoadmap(contentId!, { graphJson });
+                    setHasDraftChanges(true);
+                  } catch (err: any) {
+                    // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
+                    // as a subsequent save will likely catch up if it's rapid typing.
+                    if (err?.status === 409 || err?.response?.status === 409) {
+                      console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
+                    } else {
+                      console.error("Failed to save roadmap graph", err);
+                    }
+                  }
+                }}
+              />
             </div>
           ) : activeLessonId ? (
             <div
               className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
-              // Height of the top bar above — the editor toolbar sticks flush beneath it.
               style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
             >
-              {/* The lesson name lives in the top bar; renaming happens from the
-                  sidebar's pencil action. No second title on the canvas. */}
               <div>
                 {activeYDoc && (
                   <ArcadeEditor

@@ -54,6 +54,8 @@ export interface UseArcadeEditorOptions {
   seedContent?: TiptapDocument;
   documentId?: string;
   contentType?: "course" | "workshop" | "roadmap";
+  /** Selection update callback */
+  onSelectionUpdate?: (props: { editor: any }) => void;
   /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */
   documentName?: string;
 }
@@ -69,6 +71,7 @@ export function useArcadeEditor({
   seedContent,
   documentId,
   contentType,
+  onSelectionUpdate,
   documentName,
 }: UseArcadeEditorOptions = {}) {
   const { user, accessToken } = useAuthStore();
@@ -153,9 +156,9 @@ export function useArcadeEditor({
   const effectiveYDoc = ydoc || provider?.document;
 
   const extensions = useMemo(
-    () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined),
+    () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined, contentType),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [placeholder, effectiveYDoc, provider, user]
+    [effectiveYDoc, contentType, provider, user] // placeholder changes shouldn't tear down the whole extension set
   );
 
   const editor = useEditor({
@@ -169,6 +172,7 @@ export function useArcadeEditor({
     onUpdate: ({ editor }) => {
       debouncedSave(editor);
     },
+    onSelectionUpdate: onSelectionUpdate,
   });
 
   if (editor) {

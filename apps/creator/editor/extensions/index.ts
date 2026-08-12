@@ -147,7 +147,7 @@ function getRandomColor(id?: string) {
   return colors[Math.abs(hash) % colors.length];
 }
 
-export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: any, user?: { id?: string; name?: string; avatar?: string }) {
+export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: any, user?: { id?: string; name?: string; avatar?: string }, contentType?: string) {
   const effectiveYDoc = ydoc || provider?.document;
 
   return [

@@ -3,14 +3,21 @@
 
 import { useEffect, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
-import { getBankQuestions } from "../api";
-import type { BankQuestionResponse, BankQuestionType } from "../types";
+import { getAllBankQuestions, listSections } from "../api";
+import type { BankQuestionResponse, BankQuestionType, Difficulty, SectionResponse } from "../types";
+import { PromptView } from "./prompt-editor/PromptView";
 
 const TYPE_LABELS: Record<BankQuestionType, string> = {
   SINGLE: "Single answer",
   MULTIPLE: "Multiple select",
   TRUE_FALSE: "True / False",
   SENTENCE: "Sentence answer",
+};
+
+const DIFFICULTY_STYLES: Record<Difficulty, string> = {
+  EASY: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
+  HARD: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
 interface QuestionBankPreviewProps {
@@ -25,6 +32,7 @@ interface QuestionBankPreviewProps {
  */
 export function QuestionBankPreview({ bankId, onClose }: QuestionBankPreviewProps) {
   const [questions, setQuestions] = useState<BankQuestionResponse[] | null>(null);
+  const [sections, setSections] = useState<SectionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selections, setSelections] = useState<Record<string, Set<string>>>({});
@@ -34,9 +42,12 @@ export function QuestionBankPreview({ bankId, onClose }: QuestionBankPreviewProp
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getBankQuestions(bankId)
-      .then((qs) => {
-        if (!cancelled) setQuestions(qs);
+    Promise.all([getAllBankQuestions(bankId), listSections(bankId)])
+      .then(([qs, secs]) => {
+        if (!cancelled) {
+          setQuestions(qs);
+          setSections(secs);
+        }
       })
       .catch((e) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Could not load bank");
@@ -89,18 +100,30 @@ export function QuestionBankPreview({ bankId, onClose }: QuestionBankPreviewProp
 
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        {questions && (
-          <div className="space-y-4 pb-10">
-            {questions.map((q, qi) => (
-              <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600">
-                    {qi + 1}
+        {questions && sections.map((section) => {
+          const sectionQuestions = questions.filter((q) => q.sectionId === section.id);
+          if (sectionQuestions.length === 0) return null;
+          return (
+            <div key={section.id} className="mb-8">
+              <h4 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">
+                {section.title}
+              </h4>
+              <div className="space-y-4">
+                {sectionQuestions.map((q, qi) => (
+                  <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-semibold text-indigo-600">
+                        {qi + 1}
+                      </span>
+                      <span className="text-xs font-medium text-gray-400">{TYPE_LABELS[q.type]}</span>
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize ${DIFFICULTY_STYLES[q.difficulty]}`}
+                  >
+                    {q.difficulty.toLowerCase()}
                   </span>
-                  <span className="text-xs font-medium text-gray-400">{TYPE_LABELS[q.type]}</span>
                 </div>
 
-                <p className="mb-3 text-sm text-gray-800">{q.prompt}</p>
+                <PromptView doc={q.prompt} className="mb-3" />
 
                 {q.type === "SENTENCE" ? (
                   <div className="space-y-2">
@@ -175,15 +198,17 @@ export function QuestionBankPreview({ bankId, onClose }: QuestionBankPreviewProp
                     )}
                   </div>
                 )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          );
+        })}
 
-            {questions.length === 0 && (
-              <p className="py-12 text-center text-sm text-gray-400">
-                This bank has no questions yet.
-              </p>
-            )}
-          </div>
+        {questions && questions.length === 0 && (
+          <p className="py-12 text-center text-sm text-gray-400">
+            This bank has no questions yet.
+          </p>
         )}
       </div>
     </div>
