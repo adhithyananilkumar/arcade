@@ -37,6 +37,8 @@ export interface OtherContributor {
   name: string;
   role: string;
   avatar: string;
+  github?: string;
+  linkedin?: string;
 }
 
 export const OTHER_CONTRIBUTORS_DATA: OtherContributor[] = [
@@ -44,30 +46,40 @@ export const OTHER_CONTRIBUTORS_DATA: OtherContributor[] = [
     id: "other-1",
     name: "Aibal Anil",
     role: "Core Contributor",
-    avatar: "/team/aibal_anil.png"
+    avatar: "/team/aibal_anil.png",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com"
   },
   {
     id: "other-2",
     name: "Anna Christina Jhony",
     role: "Core Contributor",
-    avatar: "/team/anna_christina.png"
+    avatar: "/team/anna_christina.png",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com"
   },
   {
     id: "other-3",
     name: "Neeraj V V",
     role: "Core Contributor",
-    avatar: "/team/neeraj_vv.png"
+    avatar: "/team/neeraj_vv.png",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com"
   },
   {
     id: "other-4",
     name: "Theresa Rose Mathew",
     role: "Core Contributor",
-    avatar: "/team/theresa_mathew.png"
+    avatar: "/team/theresa_mathew.png",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com"
   },
   {
     id: "other-5",
     name: "Ann Mary Mathew",
     role: "Core Contributor",
-    avatar: "/team/ann_mary.png"
+    avatar: "/team/ann_mary.png",
+    github: "https://github.com",
+    linkedin: "https://linkedin.com"
   }
 ];

@@ -34,27 +34,34 @@ export default function ContributorsPage() {
   return (
     <main className="min-h-screen arcade-wash selection:bg-blue-100 selection:text-[#205ca8] flex flex-col relative overflow-hidden">
       
-      {/* --- HERO SECTION --- */}
-      <section className="relative pt-32 pb-16 lg:pt-48 lg:pb-24 px-4 sm:px-6 lg:px-8 max-w-[100rem] mx-auto w-full flex flex-col items-center justify-center text-center">
-        {/* Decorative elements */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#205ca8]/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400/10 rounded-full blur-[120px] pointer-events-none" />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 space-y-8"
-        >
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold text-slate-900 font-['Dancing_Script'] tracking-normal pt-4 mb-4">
-            The Ones Who Built With Us
-          </h1>
-          
-          <p className="max-w-2xl mx-auto text-lg sm:text-xl text-slate-600 leading-relaxed font-medium">
-            Meet the developers, designers, and visionaries who contribute their time and expertise to make Arcade the ultimate learning ecosystem.
-          </p>
-        </motion.div>
-      </section>
+      {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
+      <div className="w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 w-full">
+          <div className="max-w-4xl mx-auto space-y-8 text-center -mt-16">
+            <BlurText
+              text="Made Better Together."
+              delay={150}
+              animateBy="words"
+              direction="top"
+              stepDuration={0.35}
+              className="text-7xl sm:text-8xl lg:text-[9rem] tracking-normal text-slate-900 leading-[1.1] justify-center"
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
+              wordClasses={{
+                "Together.": "bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-2"
+              }}
+            />
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto"
+            >
+              Meet the developers, designers, and visionaries who contribute their time and expertise to make Arcade the ultimate learning ecosystem.
+            </motion.p>
+          </div>
+        </div>
+      </div>
 
       {/* --- CONTRIBUTORS GRID --- */}
       <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-5xl mx-auto w-full z-10">
@@ -89,27 +96,57 @@ export default function ContributorsPage() {
 
       {/* --- OTHER CONTRIBUTORS GRID --- */}
       <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-7xl mx-auto w-full z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-10 justify-items-center">
           {OTHER_CONTRIBUTORS_DATA.map((contributor, idx) => (
             <motion.div
               key={contributor.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="bg-white rounded-xl p-8 flex flex-col items-center justify-center shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] transition-all duration-300 border border-slate-100/50"
+              transition={{ duration: 0.4, delay: idx * 0.1 }}
+              className="group flex flex-col items-center text-center max-w-[240px]"
             >
-              <div className="relative w-28 h-28 rounded-full overflow-hidden mb-5 bg-slate-100">
+              <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
                 <Image
                   src={contributor.avatar}
                   alt={contributor.name}
                   fill
-                  className="object-cover"
+                  className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
+                  sizes="200px"
                   unoptimized
                 />
               </div>
-              <h4 className="text-[1.1rem] font-bold text-slate-800 text-center leading-tight mb-1">{contributor.name}</h4>
-              <p className="text-sm font-semibold text-[#205ca8] text-center">{contributor.role}</p>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                {contributor.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                {contributor.role}
+              </p>
+              
+              <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
+                {contributor.linkedin && (
+                  <a
+                    href={contributor.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 transition-colors p-1"
+                    title="LinkedIn"
+                  >
+                    <LinkedinIcon className="w-4 h-4" />
+                  </a>
+                )}
+                {contributor.github && (
+                  <a
+                    href={contributor.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 transition-colors p-1"
+                    title="GitHub"
+                  >
+                    <GithubIcon className="w-4 h-4" />
+                  </a>
+                )}
+              </div>
             </motion.div>
           ))}
         </div>
