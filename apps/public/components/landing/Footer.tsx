@@ -71,6 +71,7 @@ export default function Footer() {
               <li><Link href="/reach-us">Reach Us</Link></li>
               <li><Link href="/docs">Developer API</Link></li>
               <li><Link href="/status">Network Status</Link></li>
+              <li><Link href="/contributors">Contributors</Link></li>
             </ul>
           </div>
 
