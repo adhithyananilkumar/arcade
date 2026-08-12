@@ -11,6 +11,14 @@ import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
+  contentOverviewHref,
+  toContentTypeSegment,
+  editorHref,
+  previewHref,
+} from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentTypeRouting";
+import { DUPLICATE_ACTION, archiveContent, deleteContent, SUPPORTS_TITLE_CONFIRM_DELETE } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
+import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
+import {
   BookOpen,
   Calendar,
   FileText,
@@ -29,6 +37,8 @@ import {
   User,
   FileQuestion,
   HelpCircle,
+  Eye,
+  Archive,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -162,7 +172,6 @@ function TypeBadge({ type }: { type: string }) {
 function CreateCourseModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -180,7 +189,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
     try {
       const course = await api.post<{ id: string }>("/api/courses", {
         title: name.trim(),
-        description: description.trim() || undefined,
         channelId,
       });
       toast.success(`"${name.trim()}" created`);
@@ -234,19 +242,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Intro to Spring Boot"
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          <div>
-            <label htmlFor="course-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Description <span className="font-medium text-slate-400">(optional)</span>
-            </label>
-            <textarea
-              id="course-desc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What will learners get out of this course?"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
           {!channelsLoading && channels.length > 0 && (
@@ -391,7 +386,6 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
 function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -409,7 +403,6 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
     try {
       const roadmap = await roadmapService.createRoadmap({
         title: title.trim(),
-        description: description.trim() || undefined,
         channelId,
       });
       toast.success(`"${title.trim()}" created`);
@@ -465,19 +458,6 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
             />
           </div>
-          <div>
-            <label htmlFor="roadmap-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Description <span className="font-medium text-slate-400">(optional)</span>
-            </label>
-            <textarea
-              id="roadmap-desc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="What will learners achieve?"
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
           {!channelsLoading && channels.length > 0 && (
             <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
           )}
@@ -514,10 +494,7 @@ function CreateEventModal({
   onClose: () => void;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState<"SELECT_TYPE" | "DETAILS">("SELECT_TYPE");
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [eventType, setEventType] = useState<string>("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -534,10 +511,11 @@ function CreateEventModal({
     setError(null);
 
     try {
+      // Event type and the rest of the details default here and stay editable
+      // afterwards from the Event editor/overview — the create modal only asks for a name.
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
-        description: description.trim() || undefined,
-        eventType: eventType,
+        eventType: "WORKSHOP",
         category: "uncategorized",
         tags: [],
         deliveryMode: "ONLINE",
@@ -558,67 +536,6 @@ function CreateEventModal({
     }
   }
 
-  const EVENT_TYPES = [
-    {
-      id: "WORKSHOP",
-      label: "Workshop",
-      desc: "Flexible interactive sessions, activities and resources.",
-    },
-    {
-      id: "WEBINAR",
-      label: "Webinar",
-      desc: "Live online event with scheduled date/time and meeting details.",
-    },
-    {
-      id: "BOOTCAMP",
-      label: "Bootcamp",
-      desc: "Structured multi-session intensive learning event.",
-    }
-  ];
-
-  if (step === "SELECT_TYPE") {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-        <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-          <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
-            <X size={18} />
-          </button>
-          
-          <div className="mb-8 text-center">
-            <h3 className="text-xl font-bold tracking-tight text-[#14142b] uppercase">Select Event Type</h3>
-            <p className="mt-2 text-sm text-slate-500">Choose the format that best fits your content delivery.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {EVENT_TYPES.map(type => (
-              <button
-                key={type.id}
-                onClick={() => {
-                  setEventType(type.id);
-                  setStep("DETAILS");
-                }}
-                className="flex flex-col items-start p-5 text-left border-2 border-slate-100 rounded-xl hover:border-violet-500 hover:bg-violet-50 transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 rounded-lg bg-violet-100 text-violet-600 group-hover:bg-violet-200">
-                    <Calendar size={18} />
-                  </div>
-                  <span className="font-bold text-[#14142b]">{type.label}</span>
-                </div>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {type.desc}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const typeLabel = EVENT_TYPES.find(t => t.id === eventType)?.label || "Event";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
@@ -627,16 +544,12 @@ function CreateEventModal({
           className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
           <X size={18} />
         </button>
-        <button type="button" onClick={() => setStep("SELECT_TYPE")}
-          className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
-          <span className="text-xs font-semibold uppercase">Back</span>
-        </button>
-        <div className="mb-6 mt-4 flex items-center gap-3">
+        <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
             <Calendar size={20} className="text-violet-600" />
           </div>
           <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New {typeLabel}</h3>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
             <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
           </div>
         </div>
@@ -649,13 +562,7 @@ function CreateEventModal({
               Title <span className="text-red-500">*</span>
             </label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Full-Stack Event" maxLength={120}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description..." rows={2}
+              placeholder="e.g. Full-Stack Event" maxLength={120} autoFocus
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
           </div>
           <div>
@@ -856,69 +763,166 @@ function ContentCard({
   onRename,
   onDelete,
   onDuplicate,
+  onChanged,
 }: {
   item: ContentSummary;
   onRename: (item: ContentSummary) => void;
   onDelete: (item: ContentSummary) => void;
   onDuplicate: (item: ContentSummary) => void;
+  onChanged: () => void;
 }) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
-  const isEvent = ["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"].includes(item.type);
   const isQuiz = item.type === "QUIZ";
-  const editHref = isRoadmap
-    ? `/studio/roadmap/${item.id}/edit`
-    : isEvent
-      ? `/studio/events/${item.id}/edit`
-      : isQuiz
-        ? `/studio/quiz/${item.id}`
-        : `/studio/course/${item.id}/edit`;
+  const segment = toContentTypeSegment(item.type);
+  // Quiz has no split overview/editor yet — its "editor" is the detail page itself.
+  // Every other type opens the Content Overview, not a direct editor route.
+  const openHref = isQuiz
+    ? `/studio/quiz/${item.id}`
+    : contentOverviewHref(item.type, item.id) ?? `/studio/course/${item.id}/edit`;
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
+  const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
+  const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
+  const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
+  const hasSecondaryMenu = isRoadmap || (!isQuiz && segment != null);
+
+  async function handleDuplicateSegmentAware() {
+    setMenuOpen(false);
+    if (isRoadmap) {
+      onDuplicate(item);
+      return;
+    }
+    if (!segment || !duplicate) return;
+    try {
+      const created = await duplicate.run(item.id);
+      toast.success("Duplicated");
+      router.push(`/studio/content/${segment}/${created.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not duplicate");
+    }
+  }
+
+  async function handleConfirmed() {
+    if (!segment) return;
+    if (confirmAction === "archive") {
+      const result = archiveContent(segment, item.id);
+      if (result) await result;
+      toast.success("Archived");
+    } else if (confirmAction === "delete") {
+      await deleteContent(segment, item.id, item.title);
+      toast.success("Deleted");
+    }
+    setConfirmAction(null);
+    onChanged();
+  }
+
+  function handleCardActivate(e: React.MouseEvent) {
+    // Ignore clicks that originated on an interactive descendant (kebab menu, its
+    // items, the explicit Open link) — they handle their own navigation/actions.
+    if ((e.target as HTMLElement).closest("[data-card-interactive]")) return;
+    router.push(openHref);
+  }
+
   return (
-    <div className="group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)]">
+    <div
+      onClick={channelSuspended ? undefined : handleCardActivate}
+      className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
+        channelSuspended ? "" : "cursor-pointer"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
           {item.title}
         </h3>
-        {isRoadmap && (
-          <div className="relative">
+        {hasSecondaryMenu && (
+          <div className="relative" data-card-interactive>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="rounded-md p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+              aria-label="More actions"
             >
               <MoreVertical size={16} />
             </button>
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-36 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
+                <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      onRename(item);
+                      router.push(openHref);
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                   >
-                    <Pencil size={14} /> Rename
+                    <MoreVertical size={14} /> Open
                   </button>
+                  {segment && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        router.push(editorHref(segment, item.id));
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Pencil size={14} /> Edit
+                    </button>
+                  )}
+                  {preview && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        router.push(preview);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Eye size={14} /> Preview
+                    </button>
+                  )}
+                  {isRoadmap && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onRename(item);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Pencil size={14} /> Rename
+                    </button>
+                  )}
+                  {(isRoadmap || duplicate) && (
+                    <button
+                      onClick={handleDuplicateSegmentAware}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Copy size={14} /> Duplicate
+                    </button>
+                  )}
+                  {canArchive && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setConfirmAction("archive");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Archive size={14} /> Archive
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      onDuplicate(item);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <Copy size={14} /> Duplicate
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDelete(item);
+                      if (isRoadmap) {
+                        onDelete(item);
+                      } else {
+                        setConfirmAction("delete");
+                      }
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                   >
@@ -978,11 +982,42 @@ function ContentCard({
         </span>
       ) : (
         <Link
-          href={editHref}
+          href={openHref}
+          data-card-interactive
+          onClick={(e) => e.stopPropagation()}
           className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {isRoadmap ? "Open Studio" : (item.status === "SUBMITTED" ? "View (Under Review)" : "Continue Editing")}
+          {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
         </Link>
+      )}
+
+      {confirmAction === "archive" && (
+        <div data-card-interactive>
+          <ConfirmActionModal
+            title="Archive this content?"
+            description={`"${item.title}" will be archived and no longer visible to learners.`}
+            confirmLabel="Archive"
+            onClose={() => setConfirmAction(null)}
+            onConfirm={handleConfirmed}
+          />
+        </div>
+      )}
+      {confirmAction === "delete" && segment && (
+        <div data-card-interactive>
+          <ConfirmActionModal
+            title="Delete this content?"
+            description={
+              SUPPORTS_TITLE_CONFIRM_DELETE[segment]
+                ? `Type the title to confirm. This moves "${item.title}" to Trash.`
+                : `This permanently deletes "${item.title}". This action cannot be undone.`
+            }
+            confirmLabel="Delete"
+            danger
+            requireTitleMatch={SUPPORTS_TITLE_CONFIRM_DELETE[segment] ? item.title : undefined}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={handleConfirmed}
+          />
+        </div>
       )}
     </div>
   );
@@ -1049,8 +1084,14 @@ export default function DashboardPage() {
     return counts;
   }, [items]);
 
+  const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
+
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      // Content Studio strictly displays content owned/authored by channels the user has authority over
+      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
+        return false;
+      }
       const statusOk =
         statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
       const typeOk =
@@ -1059,7 +1100,7 @@ export default function DashboardPage() {
       const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
       return statusOk && typeOk && channelOk;
     });
-  }, [items, statusFilter, typeFilter, channelFilter]);
+  }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
 
   const CHANNEL_CHIPS = useMemo(() => {
     const base = [{ id: "ALL", label: "All channels" }];
@@ -1118,7 +1159,7 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-12 pt-28 sm:px-8 sm:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -1340,6 +1381,7 @@ export default function DashboardPage() {
                 onRename={setRenameTarget}
                 onDelete={setDeleteTarget}
                 onDuplicate={handleDuplicate}
+                onChanged={fetchContent}
               />
             ))}
           </div>

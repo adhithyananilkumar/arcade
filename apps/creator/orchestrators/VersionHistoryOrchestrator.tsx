@@ -28,6 +28,7 @@ interface VersionHistoryOrchestratorProps {
   renderEditor: (previewDoc: TiptapDocument, selectedId: string) => React.ReactNode;
   courseId?: string;
   isSuView?: boolean;
+  embedded?: boolean;
 }
 
 export function VersionHistoryOrchestrator({
@@ -39,6 +40,7 @@ export function VersionHistoryOrchestrator({
   renderEditor,
   courseId,
   isSuView,
+  embedded,
 }: VersionHistoryOrchestratorProps) {
   const [versions, setVersions] = useState<VersionSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -134,6 +136,7 @@ export function VersionHistoryOrchestrator({
       isSuView={isSuView}
       statusHistory={statusHistory}
       statusHistoryLoading={statusHistoryLoading}
+      embedded={embedded}
     />
   );
 }
