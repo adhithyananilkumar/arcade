@@ -681,7 +681,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [view, setView] = useState<"tree">("tree");
 
   // Sidebar collapse state
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
 
   // Inline rename + confirm dialog state
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
@@ -842,7 +842,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             title: m.title,
             position: m.position,
             expanded: false,
-            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "lesson" || !l.type),
+            lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document" || l.type === "lesson" || l.type === "quiz" || !l.type),
           }))
         );
         const firstLeaf = containers[0]?.leaves?.[0];
@@ -1543,49 +1543,35 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
           <aside className="absolute left-4 top-36 z-20 flex flex-col h-[calc(100vh-10rem)] w-[268px] pointer-events-none">
-            <div className="pointer-events-auto flex flex-col w-full h-full">
-              {!sidebarOpen ? (
-                <button
-                  type="button"
-                  title="Expand sidebar"
-                  onClick={() => setSidebarOpen(true)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-lg backdrop-blur-xl transition-all hover:bg-white/60 hover:shadow-xl"
-                >
-                  <PanelLeftOpen size={18} />
-                </button>
-              ) : (
-                <div className="flex w-full flex-col h-full overflow-hidden">
-                  {/* ── Sidebar header ───────────────── */}
-                  <div className="flex flex-shrink-0 items-center justify-between mb-2">
-                    <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
-                      {adapter.terminology.root} structure
-                    </span>
-                    <button
-                      type="button"
-                      title="Collapse sidebar"
-                      onClick={() => setSidebarOpen(false)}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-sm backdrop-blur-xl transition-all hover:bg-white/60"
-                    >
-                      <PanelLeftClose size={14} />
-                    </button>
+            <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
+              {/* ── Sidebar header ───────────────── */}
+              <div className="flex flex-shrink-0 items-center justify-between mb-3">
+                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+                  {adapter.terminology.root} structure
+                </span>
+              </div>
+
+              {/* ── Sidebar actions ───────────────── */}
+
+              {/* ── Body ──────────────────────────────── */}
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
+                {modules.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+                    <Layers size={24} className="text-[#14142b]/40" />
+                    <p className="text-xs font-medium text-[#14142b]/60">
+                      {contentType === "workshop"
+                        ? "Create your first workshop day."
+                        : "No modules yet. Add a module to get started."}
+                    </p>
                   </div>
+                )}
 
-                  {/* ── Body ──────────────────────────────── */}
-                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
-                    {modules.length === 0 && (
-                      <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
-                        <Layers size={24} className="text-[#14142b]/40" />
-                        <p className="text-xs font-medium text-[#14142b]/60">
-                          {contentType === "workshop"
-                            ? "Create your first workshop day."
-                            : "No modules yet. Add a module to get started."}
-                        </p>
-                      </div>
-                    )}
-
-                    {modules.map((mod) => (
-                      <div key={mod.id} className="mb-2 flex flex-col gap-1">
-                        {/* Module pill row */}
+                {modules.map((mod) => {
+                  const isModuleActive = mod.lessons.some((l) => l.id === activeLessonId);
+                  const isExpanded = mod.expanded || isModuleActive;
+                  return (
+                  <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                    {/* Module pill row */}
                         <div className="group flex items-center gap-2 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-white/60 hover:bg-white/80">
                             <button
                               type="button"
@@ -1598,7 +1584,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               }
                               className="flex-shrink-0 text-[#14142b]/50 hover:text-[#14142b]"
                             >
-                              {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                             </button>
 
                             {isEditing("module", mod.id) ? (
@@ -1640,7 +1626,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </div>
 
                         {/* Lessons and quizzes, interleaved by position */}
-                        {mod.expanded && (
+                        {isExpanded && (
                           <div className="ml-5 flex flex-col gap-1 border-l border-[#14142b]/10 pl-3 pt-1">
                             <DndContext
                               sensors={sensors}
@@ -1733,55 +1719,45 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
+              </div>
 
-                  {/* Sidebar footer — settings also in top bar; keep quick access here */}
-                  <div className="space-y-0.5 border-t border-slate-100 bg-slate-50/60 p-2">
-                    {status !== "SUBMITTED" && contentType === "workshop" && (
-                      <button
-                        type="button"
-                        onClick={addEventDay}
-                        className="mb-1 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
-                      >
-                        <Plus size={14} />
-                        Add Day
-                      </button>
-                    )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
-                      <button
-                        type="button"
-                        onClick={addModule}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-[#14142b] transition-colors hover:bg-white"
-                      >
-                        <Plus size={14} />
-                        Add {adapter.terminology.container}
-                      </button>
-                    )}
-
-                    {status !== "SUBMITTED" && contentType === "workshop" && (
-                      <button
-                        type="button"
-                        className="flex w-full cursor-not-allowed items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-400 opacity-60"
-                        title="Resources (Coming soon)"
-                      >
-                        <FileText size={13} />
-                        Resources
-                      </button>
-                    )}
-                    {contentType === "course" && (
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
-                      >
-                        <FileQuestion size={13} />
-                        Question Bank
-                      </button>
-                    )}
-                  </div>
+              {/* ── Sidebar actions (Fixed at bottom) ───────────────── */}
+              {status !== "SUBMITTED" && (
+                <div className="flex shrink-0 flex-col gap-2 mt-auto pt-4 pb-2 px-1 border-t border-slate-100/50">
+                  {contentType === "workshop" ? (
+                    <button
+                      type="button"
+                      onClick={addEventDay}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add Day
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={addModule}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add {adapter.terminology.container}
+                    </button>
+                  )}
+                  {contentType === "course" && (
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow hover:text-[#14142b]"
+                    >
+                      <FileQuestion size={14} />
+                      Question Bank
+                    </button>
+                  )}
                 </div>
               )}
+
             </div>
           </aside>
         )}
