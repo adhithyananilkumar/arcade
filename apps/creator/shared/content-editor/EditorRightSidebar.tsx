@@ -13,7 +13,7 @@
  * SharedContentEditorOrchestrator; this only renders what it's given.
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   History,
   MessageSquare,
@@ -25,6 +25,7 @@ import {
   AlertCircle,
   RefreshCw,
   Trash2,
+  MoreVertical,
 } from "lucide-react";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 import type { Collaborator } from "@/app/(authenticated)/studio/events/api/collaboration";
@@ -95,6 +96,15 @@ const TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
 
 export function EditorRightSidebar(props: EditorRightSidebarProps) {
   const { open, tab, onTabChange, onClose } = props;
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Close menu when clicking anywhere outside
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = () => setOpenMenuId(null);
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, [openMenuId]);
 
   // No visible close button — the hamburger button that opens this panel is
   // the toggle that closes it too — but Escape should still dismiss it.
@@ -329,7 +339,7 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
                           <p className="truncate text-[10px] text-slate-400">{member.email}</p>
                         </div>
                       </div>
-                      <div className="flex flex-shrink-0 items-center gap-1.5">
+                      <div className="flex flex-shrink-0 items-center gap-0.5">
                         <span
                           className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
                             member.role === "OWNER"
@@ -344,14 +354,35 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
                           {member.role}
                         </span>
                         {member.role !== "OWNER" && (
-                          <button
-                            type="button"
-                            onClick={() => props.onRemoveCollaborator(member.userId, member.name || member.email)}
-                            className="p-0.5 text-slate-400 transition-colors hover:text-rose-600"
-                            title="Remove collaborator"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          <div className="relative">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenMenuId(openMenuId === member.userId ? null : member.userId);
+                              }}
+                              className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                              title="More actions"
+                            >
+                              <MoreVertical size={14} />
+                            </button>
+                            {openMenuId === member.userId && (
+                              <div className="absolute right-0 top-full mt-1 w-32 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(null);
+                                    props.onRemoveCollaborator(member.userId, member.name || member.email);
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-rose-600 transition-colors hover:bg-rose-50"
+                                >
+                                  <Trash2 size={13} />
+                                  Remove
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -359,15 +390,18 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
                 </div>
               )}
             </div>
-
-            <div className="flex items-center justify-between border-t border-white/50 pt-2.5 text-[11px] text-slate-400">
-              <span>Document ID</span>
-              <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-                {props.activeLessonId ? `lesson:${props.activeLessonId}` : "None"}
-              </span>
-            </div>
           </div>
         )}
+      </div>
+
+      {/* Footer: Document ID */}
+      <div className="mt-auto px-4 pb-4">
+        <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
+          <span>Document ID</span>
+          <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+            {props.activeLessonId ? `lesson:${props.activeLessonId}` : "None"}
+          </span>
+        </div>
       </div>
     </div>
   );
