@@ -192,6 +192,9 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-[#14142b]">{c.name || c.email}</span>
+                            {c.status === 'PENDING' && (
+                              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200">Pending Invite</span>
+                            )}
                             {isSelf && (
                               <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">You</span>
                             )}

@@ -126,6 +126,7 @@ import {
   Lock,
   Eye,
   GripVertical,
+  Users,
   UserPlus,
   FileQuestion,
 } from "lucide-react";
@@ -587,6 +588,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
   }, [contentId, collabApiBasePath]);
 
+  useEffect(() => {
     if (collabPopoverOpen && contentId) {
       loadCollaborators();
     }

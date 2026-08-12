@@ -18,14 +18,17 @@ interface EventCollaboratorDto {
   resourcesCount: number;
   createdAt: string;
   updatedAt: string;
+  collaborationStatus?: string;
 }
 
 export default function MyCollaborationsPage() {
   const router = useRouter();
   const [workshops, setEvents] = useState<EventCollaboratorDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchCollaborations = () => {
+    setLoading(true);
     api.get<EventCollaboratorDto[]>('/api/v1/events/my-collaborations')
       .then(res => {
         setEvents(res || []);
@@ -35,7 +38,37 @@ export default function MyCollaborationsPage() {
         toast.error('Failed to load collaborated workshops');
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchCollaborations();
   }, []);
+
+  const handleAcceptInvite = async (eventId: string) => {
+    setProcessingId(eventId);
+    try {
+      await api.post(`/api/v1/events/${eventId}/collaborators/accept`, {});
+      toast.success('Invitation accepted!');
+      fetchCollaborations();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to accept invitation');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDeclineInvite = async (eventId: string) => {
+    setProcessingId(eventId);
+    try {
+      await api.post(`/api/v1/events/${eventId}/collaborators/decline`, {});
+      toast.success('Invitation declined');
+      fetchCollaborations();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to decline invitation');
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -110,12 +143,31 @@ export default function MyCollaborationsPage() {
               </div>
 
               <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                <Link
-                  href={`/studio/events/${workshop.id}`}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold rounded-xl transition-all"
-                >
-                  Manage Event <ArrowRight size={13} />
-                </Link>
+                {workshop.collaborationStatus === 'PENDING' ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAcceptInvite(workshop.id)}
+                      disabled={processingId === workshop.id}
+                      className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl transition-all disabled:opacity-50"
+                    >
+                      Accept Invite
+                    </button>
+                    <button
+                      onClick={() => handleDeclineInvite(workshop.id)}
+                      disabled={processingId === workshop.id}
+                      className="flex-1 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold rounded-xl transition-all disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href={`/studio/events/${workshop.id}`}
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold rounded-xl transition-all"
+                  >
+                    Manage Event <ArrowRight size={13} />
+                  </Link>
+                )}
               </div>
             </div>
           ))}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { channelService } from '../api/channel.service';
+import { api } from '@/infrastructure/http/api';
 
 export interface StudioAccessState {
   hasAccess: boolean;
@@ -11,8 +12,7 @@ export interface StudioAccessState {
 /**
  * Whether the current user should see/reach Content Studio.
  *
- * Owning a channel always qualifies. Being a staff member of an org channel with content-authoring
- * permissions qualifies. Event-only collaborators do NOT get general studio access.
+ * Owning a channel, workspace content permissions, or being a collaborator on content qualifies.
  */
 export function useStudioAccess(): StudioAccessState {
   const [state, setState] = useState<StudioAccessState>({ hasAccess: false, loading: true });
@@ -20,11 +20,15 @@ export function useStudioAccess(): StudioAccessState {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([channelService.getMyChannels(), channelService.getMyWorkspaces()])
-      .then(async ([channels, workspaces]) => {
+    Promise.all([
+      channelService.getMyChannels(),
+      channelService.getMyWorkspaces(),
+      api.get<any[]>('/api/v1/events/my-collaborations').catch(() => [])
+    ])
+      .then(async ([channels, workspaces, collabs]) => {
         if (cancelled) return;
 
-        if (channels.length > 0) {
+        if (channels.length > 0 || (collabs && collabs.length > 0)) {
           setState({ hasAccess: true, loading: false });
           return;
         }

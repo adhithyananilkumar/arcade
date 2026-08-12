@@ -61,6 +61,19 @@ interface ContentSummary {
   authorName?: string | null;
 }
 
+interface PendingInvitation {
+  id: string;
+  contentId: string;
+  contentType: string;
+  title: string;
+  description?: string | null;
+  coverImageUrl?: string | null;
+  inviterName: string;
+  role: string;
+  status: string;
+  createdAt: string;
+}
+
 // ── Content type menu items ─────────────────────────────────────────────────────
 
 const CONTENT_TYPES = [
@@ -1049,6 +1062,14 @@ export default function DashboardPage() {
 
   const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([]);
+  const [processingReqId, setProcessingReqId] = useState<string | null>(null);
+
+  const fetchPendingInvitations = () => {
+    api.get<PendingInvitation[]>("/api/content/pending-invitations")
+      .then((res) => setPendingInvitations(res || []))
+      .catch(() => setPendingInvitations([]));
+  };
 
   const fetchContent = () => {
     setLoadingItems(true);
@@ -1057,6 +1078,7 @@ export default function DashboardPage() {
       .then(setItems)
       .catch(() => setItems([]))
       .finally(() => setLoadingItems(false));
+    fetchPendingInvitations();
   };
 
   useEffect(() => {
@@ -1072,8 +1094,48 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAcceptRequest = async (req: PendingInvitation) => {
+    setProcessingReqId(req.id);
+    try {
+      const type = req.contentType?.toUpperCase();
+      let endpoint = `/api/v1/courses/${req.contentId}/collaborators/accept`;
+      if (type === "EVENT" || type === "WORKSHOP") {
+        endpoint = `/api/v1/events/${req.contentId}/collaborators/accept`;
+      } else if (type === "ROADMAP") {
+        endpoint = `/api/roadmaps/${req.contentId}/collaborators/accept`;
+      }
+      await api.post(endpoint, {});
+      toast.success(`Accepted invitation for "${req.title}"`);
+      fetchContent();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to accept invitation");
+    } finally {
+      setProcessingReqId(null);
+    }
+  };
+
+  const handleDeclineRequest = async (req: PendingInvitation) => {
+    setProcessingReqId(req.id);
+    try {
+      const type = req.contentType?.toUpperCase();
+      let endpoint = `/api/v1/courses/${req.contentId}/collaborators/decline`;
+      if (type === "EVENT" || type === "WORKSHOP") {
+        endpoint = `/api/v1/events/${req.contentId}/collaborators/decline`;
+      } else if (type === "ROADMAP") {
+        endpoint = `/api/roadmaps/${req.contentId}/collaborators/decline`;
+      }
+      await api.post(endpoint, {});
+      toast.success(`Declined invitation for "${req.title}"`);
+      fetchContent();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to decline invitation");
+    } finally {
+      setProcessingReqId(null);
+    }
+  };
+
   const statusCounts = useMemo(() => {
-    const counts = { ALL: items.length, DRAFT: 0, SUBMITTED: 0, PUBLISHED: 0, ARCHIVED: 0 };
+    const counts = { ALL: items.length, DRAFT: 0, SUBMITTED: 0, PUBLISHED: 0, ARCHIVED: 0, REQUESTS: pendingInvitations.length };
     for (const item of items) {
       const key = item.status?.toUpperCase();
       if (key === "DRAFT") counts.DRAFT += 1;
@@ -1082,7 +1144,7 @@ export default function DashboardPage() {
       else if (key === "ARCHIVED") counts.ARCHIVED += 1;
     }
     return counts;
-  }, [items]);
+  }, [items, pendingInvitations]);
 
   const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
 
@@ -1118,6 +1180,7 @@ export default function DashboardPage() {
     { id: "SUBMITTED" as const, label: "In review" },
     { id: "PUBLISHED" as const, label: "Published" },
     { id: "ARCHIVED" as const, label: "Archived" },
+    { id: "REQUESTS" as const, label: "Requests" },
   ];
 
   const TYPE_CHIPS = [
@@ -1329,7 +1392,65 @@ export default function DashboardPage() {
         </div>
 
         {/* Content grid */}
-        {loadingItems ? (
+        {statusFilter === "REQUESTS" ? (
+          pendingInvitations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white/70 py-20 text-center">
+              <User size={32} className="text-slate-300" />
+              <p className="text-sm font-semibold text-[#14142b]">No pending collaboration requests</p>
+              <p className="text-xs text-slate-400">When someone invites you to collaborate on a course, roadmap, or event, it will show up here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {pendingInvitations.map((req) => (
+                <div
+                  key={req.id}
+                  className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:border-slate-300 hover:shadow-md"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <TypeBadge type={req.contentType?.toUpperCase()} />
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                        Pending Invite
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-[#14142b]">
+                        {req.title}
+                      </h3>
+                      {req.description && (
+                        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                          {req.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <User size={13} className="text-slate-400" />
+                      <span>Invited by <strong className="text-slate-700">{req.inviterName}</strong> as <span className="font-bold text-indigo-600 uppercase">{req.role}</span></span>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-center gap-2.5 pt-3.5 border-t border-slate-100">
+                    <button
+                      type="button"
+                      disabled={processingReqId === req.id}
+                      onClick={() => handleAcceptRequest(req)}
+                      className="flex-1 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      disabled={processingReqId === req.id}
+                      onClick={() => handleDeclineRequest(req)}
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : loadingItems ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5">
