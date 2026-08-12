@@ -39,6 +39,8 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import type * as Y from "yjs";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 import {
@@ -72,7 +74,7 @@ import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/Version
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
 import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
-import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
+
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -510,7 +512,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
-  const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
+
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -1352,22 +1354,39 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         />
       )}
 
-      {/* ── Floating Editor Top Bar ───── */}
-      <div className="absolute inset-x-0 top-4 z-30 pointer-events-none">
-        <div className="mx-auto flex max-w-[1400px] items-start justify-between px-4 sm:px-6">
-          {/* Left: Back → Content Studio & Title */}
+      {/* ── Floating Editor Top Bar (Invisible Wrapper) ───── */}
+      <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
+        <div className="relative flex w-full items-center justify-between">
+          {/* Left: Logo & Back Button */}
           <div className="pointer-events-auto flex items-center gap-2">
+            {/* Logo Island */}
+            <div className="flex h-10 shrink-0 items-center rounded-full px-5 bg-white/60 shadow-sm border border-white/40 backdrop-blur-md">
+              <Link href="/" className="group flex cursor-pointer items-center">
+                <Image
+                  src="/arcade.svg"
+                  alt="Arcade"
+                  width={85}
+                  height={24}
+                  className="h-5 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+                />
+              </Link>
+            </div>
+            
+            {/* Back Button */}
             <button
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
               title="Save and return to Content Studio"
-              className="flex h-10 flex-shrink-0 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/40 px-4 py-2 text-sm font-bold text-[#14142b] shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl disabled:opacity-60"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/60 text-[#14142b] shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md disabled:opacity-60 backdrop-blur-md"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
-            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/40 px-4 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-lg backdrop-blur-xl">
+          </div>
+
+          {/* Center: Title */}
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center">
+            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               <span className="block max-w-[40vw] truncate">
                   {activeLessonId
                   ? activeLessonTitle
@@ -1377,75 +1396,53 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Right actions */}
-          <div className="pointer-events-auto flex flex-shrink-0 items-center gap-2">
-            <StatusPill status={status} />
-
+          <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-2">
             {activeLessonId && (
               <button
                 type="button"
                 onClick={() => setHistoryOpen(true)}
-                title="Lesson version history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+                title="History"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
               >
-                <History size={15} />
-                <span className="hidden md:inline">History</span>
+                <History size={16} />
               </button>
             )}
 
             <button
               type="button"
               onClick={() => setStatusHistoryOpen(true)}
-              title="Course status & reviewer comments"
-              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              title="Status"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
             >
-              <MessageSquare size={15} />
-              <span className="hidden md:inline">Status</span>
+              <MessageSquare size={16} />
             </button>
-
-            {contentId && (
-              <button
-                type="button"
-                onClick={() => setCollaboratorsModalOpen(true)}
-                title="Manage Collaborators"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
-              >
-                <Users size={15} />
-                <span className="hidden sm:inline">Collaborators</span>
-              </button>
-            )}
 
             {activeLessonId && contentType === "workshop" && activeModuleId && (
               <button
                 type="button"
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
               >
-                <Settings size={15} />
-                <span className="hidden lg:inline">Day</span>
+                <Settings size={16} />
               </button>
             )}
 
             {status !== "SUBMITTED" && (
-              <div className="flex items-center gap-2">
-                <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/40 px-4 text-xs font-bold text-slate-500 shadow-lg backdrop-blur-xl">
-                  {hasDraftChanges ? "Unsaved changes" : "Saved"}
-                </div>
-                <button
-                  type="button"
-                  onClick={askSubmit}
-                  className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-5 py-2 text-sm font-bold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-all hover:scale-105 hover:bg-[#232735] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Send size={14} />
-                  <span className="hidden sm:inline">
-                    {status === "PUBLISHED" || status === "APPROVED"
-                      ? "Submit Updates"
-                      : status === "REJECTED"
-                        ? "Resubmit"
-                        : "Submit"}
-                  </span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={askSubmit}
+                className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-5 py-2 text-sm font-bold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-all hover:scale-105 hover:bg-[#232735] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Send size={14} />
+                <span className="hidden sm:inline">
+                  {status === "PUBLISHED" || status === "APPROVED"
+                    ? "Submit Updates"
+                    : status === "REJECTED"
+                      ? "Resubmit"
+                      : "Submit"}
+                </span>
+              </button>
             )}
 
             {contentType === "workshop" && contentId && (
@@ -1462,29 +1459,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={() => setCollabPopoverOpen((prev) => !prev)}
-                className="inline-flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 shadow-sm"
-                title="Real-time Collaboration"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
+                title="Share"
               >
-                <span className="relative flex h-2 w-2">
+                <span className="absolute top-0 right-0 flex h-2.5 w-2.5">
                   {collabState.status === "connected" ? (
                     <>
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
                     </>
                   ) : collabState.status === "connecting" ? (
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500 animate-pulse"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white animate-pulse"></span>
                   ) : (
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-300"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-300 border border-white"></span>
                   )}
                 </span>
-                <Users size={14} className="text-slate-600" />
-                <span className="hidden sm:inline">
-                  {collabState.status === "connected"
-                    ? `Collab (${collabState.collaborators.length})`
-                    : collabState.status === "connecting"
-                    ? "Connecting..."
-                    : "Collab"}
-                </span>
+                <Users size={16} />
               </button>
 
               {collabPopoverOpen && (
@@ -1693,11 +1683,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         </div>
       </div>
 
+    {/* Floating Status & Save State (Bottom Right) */}
+    <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex flex-col items-end gap-2">
+      {status !== "SUBMITTED" && (
+        <div className="pointer-events-auto flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+          {hasDraftChanges ? "Unsaved changes" : "Saved"}
+        </div>
+      )}
+      <div className="pointer-events-auto rounded-full shadow-lg bg-white/60 backdrop-blur-md p-1 border border-white/40 transition-colors hover:bg-white">
+        <StatusPill status={status} />
+      </div>
+    </div>
+
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1 flex flex-col pt-16">
+      <div className="relative min-h-0 flex-1 flex flex-col pt-24">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-4 top-4 z-20 flex flex-col h-[calc(100vh-6rem)] w-[268px] pointer-events-none">
+          <aside className="absolute left-4 top-20 z-20 flex flex-col h-[calc(100vh-7rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full">
               {!sidebarOpen ? (
                 <button
@@ -2024,14 +2026,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         open={statusHistoryOpen}
         onClose={() => setStatusHistoryOpen(false)}
       />
-      {contentId && (
-        <ContentCollaboratorsModal
-          isOpen={collaboratorsModalOpen}
-          onClose={() => setCollaboratorsModalOpen(false)}
-          contentId={contentId}
-          contentType={contentType}
-        />
-      )}
     </div>
   );
 }
