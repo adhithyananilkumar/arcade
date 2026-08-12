@@ -1299,7 +1299,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }
 
   return (
-    <div className="relative flex flex-1 min-h-screen flex-col overflow-hidden bg-[#fafafa]">
+    // `fixed inset-0` rather than `h-screen` — a height utility still lets this box
+    // contribute to the document's scrollable area if any ancestor's height
+    // resolution is off (e.g. the immersive-route check in LearnerShell misses this
+    // path), which is what produced the page-wide scrollbar on top of the canvas's
+    // own. Taking it out of flow entirely removes that possibility outright: the
+    // canvas's `overflow-y-auto` below is the only scroll container left.
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#fafafa]">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
         <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
@@ -1943,11 +1949,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </aside>
         )}
 
-        {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="z-0 flex flex-col min-h-0 absolute inset-0 overflow-y-auto">
+        {/* ── Canvas: wide, centered pane. Fixed in place — only its own inner
+             content scrolls, so the panel itself never shifts and the scrollbar
+             sits at the panel's own edge instead of the browser window's. ── */}
+        <main className="z-0 flex flex-col min-h-0 absolute inset-0 items-center">
           {status === "SUBMITTED" && (
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
-              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
+            <div className="flex justify-center pointer-events-none fixed top-20 inset-x-0 z-[70]">
+              <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-5 py-2 rounded-full bg-white border border-slate-200 shadow-md">
+                <span className="text-sm font-medium text-amber-600 flex items-center gap-2">
+                  <span>🔒</span> This content has been submitted for review and is currently locked for editing until a decision is made.
+                </span>
+              </div>
             </div>
           )}
           {contentType === "roadmap" && roadmapData ? (
@@ -1972,11 +1984,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               />
             </div>
           ) : activeLessonId ? (
+            // This outer wrapper is NOT scrollable — it just reserves a fixed box
+            // (flex-1 inside the `main` column) below the floating toolbar. The
+            // toolbar is fixed at top-[70px] and ~50px tall (bottom edge ~120px), so
+            // pt-36 (144px) clears it with a real gap. The panel inside is what
+            // actually scrolls, so its own border never moves — only the document
+            // content inside it does, and the scrollbar that produces sits at the
+            // panel's own right edge, not the window's.
             <div
-              className="mx-auto w-full max-w-[860px] px-6 pb-44 pt-16 sm:px-12"
+              className="w-full max-w-[860px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
               style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
             >
-              <div className="rounded-3xl border border-white/40 bg-white/60 p-8 shadow-xl backdrop-blur-md min-h-[calc(100vh-12rem)]">
+              {/* No border/shadow — reads as the page itself, not a boxed panel
+                  floating on top of it. Plain translucent white (no backdrop-blur):
+                  blur + rounded corners over the page's own blurred background blobs
+                  was producing a doubled/seamed edge at the corners. */}
+              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-editor-scrollbar">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}

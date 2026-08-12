@@ -125,7 +125,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
   // pill (which sits ~28px–68px from the top) regardless of where in the DOM tree
   // the editor itself lives.
   return createPortal(
-    <div className="flex justify-center pointer-events-none fixed top-20 inset-x-0 z-[70]">
+    <div className="flex justify-center pointer-events-none fixed top-[70px] inset-x-0 z-[70]">
       <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white border border-slate-200 shadow-md">
         {/* Groups are borderless and tightly packed — hairline separators carry the
             grouping instead, so the whole strip fits on one row without scrolling. */}

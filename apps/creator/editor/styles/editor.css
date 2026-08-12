@@ -723,3 +723,22 @@
 .richtext-z-50 {
   z-index: 100 !important;
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+   Editor Canvas Scrollbar
+   Custom transparent and small scrollbar for the main editor surface.
+   ────────────────────────────────────────────────────────────────────── */
+.arcade-editor-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.arcade-editor-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.arcade-editor-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2); /* slate-400 at 20% */
+  border-radius: 10px;
+}
+.arcade-editor-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
