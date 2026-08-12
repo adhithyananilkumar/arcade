@@ -37,6 +37,7 @@
 // features/content/course/components/CourseEditorShell.tsx
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -216,8 +217,10 @@ function ConfirmDialog({
   if (!options) return null;
   const { title, message, confirmLabel, danger } = options;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md"
         onClick={() => !busy && onClose()}
@@ -268,7 +271,8 @@ function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
