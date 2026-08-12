@@ -13,6 +13,7 @@ import { api } from "@/infrastructure/http/api";
 import CoursesView, { CourseCard } from "./CoursesView";
 import EventsView from "./EventsView";
 import ArticlesView from "./ArticlesView";
+import WindmillAnimation from "./WindmillAnimation";
 
 export { CourseCard };
 
@@ -685,209 +686,6 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
   );
 };
 
-const FarmanScroll: React.FC<{ activeColor: string; progress: MotionValue<number> }> = ({ activeColor, progress }) => {
-  const t = progress;
-
-  // Height of the unwound parchment. Max height ~280
-  const scrollHeight = useTransform(t, [0, 1], [15, 300]);
-
-  // Top roller stays fixed at the top, bottom roller moves down
-  const topRollerY = 0;
-  const bottomRollerY = useTransform(t, [0, 1], [15, 300]);
-
-  // Opacities for staggered elements
-  // 0% -> sealed
-  const goldenSealOp = useTransform(t, [0, 0.15], [1, 0]);
-
-  // ~20% -> top opens, logo appears
-  const logoOp = useTransform(t, [0.15, 0.3], [0, 1]);
-  const logoY = useTransform(t, [0.15, 0.3], [10, 0]);
-
-  // ~50% -> headline appears
-  const headlineOp = useTransform(t, [0.35, 0.55], [0, 1]);
-  const headlineY = useTransform(t, [0.35, 0.55], [10, 0]);
-
-  // ~75% -> 3 sections appear stagger
-  const exploreOp = useTransform(t, [0.55, 0.7], [0, 1]);
-  const learnOp = useTransform(t, [0.65, 0.8], [0, 1]);
-  const buildOp = useTransform(t, [0.75, 0.9], [0, 1]);
-
-  const exploreY = useTransform(t, [0.55, 0.7], [10, 0]);
-  const learnY = useTransform(t, [0.65, 0.8], [10, 0]);
-  const buildY = useTransform(t, [0.75, 0.9], [10, 0]);
-
-  // 100% -> red wax seal
-  const redSealOp = useTransform(t, [0.9, 1.0], [0, 1]);
-  const redSealScale = useTransform(t, [0.9, 1.0], [0.5, 1]);
-
-  return (
-    <div style={{ position: "relative", width: "100%", height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <svg viewBox="0 0 300 360" width="100%" height="100%" style={{ overflow: "visible", transform: "scale(1.15)" }}>
-        <defs>
-          <linearGradient id="parchmentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#d9b978" />
-            <stop offset="4%" stopColor="#f4dfad" />
-            <stop offset="10%" stopColor="#fff4d6" />
-            <stop offset="50%" stopColor="#fdf6e3" />
-            <stop offset="90%" stopColor="#fff4d6" />
-            <stop offset="96%" stopColor="#f4dfad" />
-            <stop offset="100%" stopColor="#d9b978" />
-          </linearGradient>
-          <linearGradient id="rollerWoodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#4a3018" />
-            <stop offset="20%" stopColor="#6e4221" />
-            <stop offset="50%" stopColor="#8b5a2b" />
-            <stop offset="80%" stopColor="#5c3a21" />
-            <stop offset="100%" stopColor="#2e1a0b" />
-          </linearGradient>
-          <linearGradient id="rollerHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
-            <stop offset="40%" stopColor="rgba(255,255,255,0.05)" />
-            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-          </linearGradient>
-          <linearGradient id="goldSealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fcd34d" />
-            <stop offset="50%" stopColor="#d97706" />
-            <stop offset="100%" stopColor="#78350f" />
-          </linearGradient>
-          <linearGradient id="waxBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ef4444" />
-            <stop offset="40%" stopColor="#dc2626" />
-            <stop offset="100%" stopColor="#7f1d1d" />
-          </linearGradient>
-          <filter id="farmanShadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.2" />
-          </filter>
-          <filter id="sealEmboss">
-            <feDropShadow dx="0.5" dy="1" stdDeviation="0.5" floodColor="#000" floodOpacity="0.4" />
-            <feDropShadow dx="-0.5" dy="-1" stdDeviation="0.5" floodColor="#ffffff" floodOpacity="0.25" />
-          </filter>
-          <clipPath id="scrollClip">
-            <motion.rect x="10" y="0" width="180" style={{ height: scrollHeight }} />
-          </clipPath>
-        </defs>
-
-        <g transform="translate(50, 30)">
-
-          {/* Parchment Body */}
-          <motion.rect
-            x="10"
-            y="0"
-            width="180"
-            rx="1"
-            style={{ height: scrollHeight }}
-            fill="url(#parchmentGrad)"
-            stroke="#c8a55b"
-            strokeWidth="0.5"
-            filter="url(#farmanShadow)"
-          />
-
-          {/* Content Group - Clipped */}
-          <g clipPath="url(#scrollClip)">
-            <g transform="translate(20, 20)">
-
-              {/* Logo */}
-              <motion.g style={{ opacity: logoOp, y: logoY }}>
-                <text x="80" y="15" textAnchor="middle" fontSize="22" fontWeight="900" fill="#1e293b" fontFamily="'Space Grotesk', sans-serif">arcade.</text>
-                <line x1="40" y1="28" x2="120" y2="28" stroke="#cbd5e1" strokeWidth="1" />
-              </motion.g>
-
-              {/* Headline */}
-              <motion.g style={{ opacity: headlineOp, y: headlineY }}>
-                <text x="80" y="55" textAnchor="middle" fontSize="14" fontWeight="800" fill={activeColor}>Learn. Build. Connect.</text>
-                <text x="80" y="75" textAnchor="middle" fontSize="10" fill="#475569">A place to explore ideas,</text>
-                <text x="80" y="89" textAnchor="middle" fontSize="10" fill="#475569">discover knowledge, and</text>
-                <text x="80" y="103" textAnchor="middle" fontSize="10" fill="#475569">build what comes next.</text>
-              </motion.g>
-
-              {/* Stanza 1 */}
-              <g transform="translate(0, 130)">
-                <motion.g style={{ opacity: exploreOp, y: exploreY }}>
-                  <line x1="25" y1="0" x2="135" y2="0" stroke="#c8a55b" strokeWidth="0.5" />
-                  <text x="80" y="16" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">We believe knowledge has</text>
-                  <text x="80" y="28" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">no borders. Every idea is</text>
-                  <text x="80" y="40" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">a seed, every question a</text>
-                  <text x="80" y="52" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">doorway to something greater.</text>
-                  <line x1="25" y1="60" x2="135" y2="60" stroke="#c8a55b" strokeWidth="0.5" />
-                </motion.g>
-              </g>
-
-              {/* Stanza 2 */}
-              <g transform="translate(0, 198)">
-                <motion.g style={{ opacity: learnOp, y: learnY }}>
-                  <text x="80" y="14" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">Here, the curious find their craft.</text>
-                  <text x="80" y="27" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">The builder finds their stage.</text>
-                  <text x="80" y="40" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">The thinker finds their tribe.</text>
-                </motion.g>
-              </g>
-            </g>
-          </g>
-
-          {/* Top Roller */}
-          <motion.g style={{ y: topRollerY }}>
-              {/* Main wooden cylinder */}
-              <rect x="-2" y="-11" width="204" height="14" rx="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Left Finial */}
-              <rect x="-4" y="-9" width="2" height="10" fill="url(#rollerWoodGrad)" />
-              <ellipse cx="-9" cy="-4" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
-              <circle cx="-15" cy="-4" r="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Right Finial */}
-              <rect x="202" y="-9" width="2" height="10" fill="url(#rollerWoodGrad)" />
-              <ellipse cx="209" cy="-4" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
-              <circle cx="215" cy="-4" r="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Decorative brass rings */}
-              <rect x="-4" y="-12" width="2" height="16" rx="1" fill="#d4af37" />
-              <rect x="202" y="-12" width="2" height="16" rx="1" fill="#d4af37" />
-          </motion.g>
-
-          {/* Bottom Roller */}
-          <motion.g style={{ y: bottomRollerY }}>
-              {/* Main wooden cylinder */}
-              <rect x="-2" y="-2" width="204" height="14" rx="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Left Finial */}
-              <rect x="-4" y="0" width="2" height="10" fill="url(#rollerWoodGrad)" />
-              <ellipse cx="-9" cy="5" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
-              <circle cx="-15" cy="5" r="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Right Finial */}
-              <rect x="202" y="0" width="2" height="10" fill="url(#rollerWoodGrad)" />
-              <ellipse cx="209" cy="5" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
-              <circle cx="215" cy="5" r="3" fill="url(#rollerWoodGrad)" />
-              
-              {/* Decorative brass rings */}
-              <rect x="-4" y="-3" width="2" height="16" rx="1" fill="#d4af37" />
-              <rect x="202" y="-3" width="2" height="16" rx="1" fill="#d4af37" />
-          </motion.g>
-
-          {/* Golden Seal (visible when closed) */}
-          <g transform="translate(100, 7)">
-            <motion.g style={{ opacity: goldenSealOp }}>
-              <circle cx="0" cy="0" r="15" fill="url(#goldSealGrad)" filter="url(#farmanShadow)" />
-              <circle cx="0" cy="0" r="13" fill="none" stroke="#78350f" strokeWidth="0.5" />
-              <circle cx="0" cy="0" r="10" fill="none" stroke="#a16207" strokeWidth="1" strokeDasharray="2 2" />
-              <text x="0" y="4" textAnchor="middle" fontSize="12" fontWeight="900" fill="#78350f" filter="url(#sealEmboss)">A</text>
-            </motion.g>
-          </g>
-
-          {/* Red Wax Seal (visible when fully open) */}
-          <g transform="translate(165, 290)">
-            <motion.g style={{ opacity: redSealOp, scale: redSealScale, originX: "0.5", originY: "0.5" }}>
-              <circle cx="0" cy="0" r="18" fill="url(#waxBaseGrad)" filter="url(#farmanShadow)" />
-              <path d="M 0,-18 C 10,-19 19,-10 18,0 C 19,10 10,17 0,18 C -10,17 -19,10 -18,0 C -17,-10 -10,-19 0,-18 Z" fill="url(#waxBaseGrad)" />
-              <circle cx="0" cy="0" r="13" fill="none" stroke="#7f1d1d" strokeWidth="1.5" opacity="0.6" />
-              <text x="0" y="4" textAnchor="middle" fontSize="13" fontWeight="900" fill="#450a0a" filter="url(#sealEmboss)">a.</text>
-            </motion.g>
-          </g>
-
-        </g>
-      </svg>
-    </div>
-  );
-};
 
 function hexToHslStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -1632,7 +1430,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   }, [activeCategory, progressValue]);
 
   useEffect(() => {
-    if (mode !== "events" && mode !== "articles") return;
+    if (mode !== "events") return;
 
     if (journeyCompleted) {
       progressValue.set(1);
@@ -2412,7 +2210,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               }}
             >
               {mode === "articles" ? (
-                <FarmanScroll activeColor={activeData.colors.primary} progress={progressValue} />
+                <WindmillAnimation />
               ) : (
                 <HoneycombIllustration />
               )}
