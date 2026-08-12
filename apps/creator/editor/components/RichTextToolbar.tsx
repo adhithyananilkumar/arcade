@@ -1,6 +1,7 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/react";
 import { localeActions } from "reactjs-tiptap-editor/locale-bundle";
 import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
@@ -56,10 +57,76 @@ interface RichTextToolbarProps {
   editor: Editor | null;
 }
 
+// The library's own icon buttons (RichTextBold, RichTextColor, …) render a Radix
+// Tooltip with no way to pass `side="bottom"` in — they take zero props. Radix's own
+// collision-flip only kicks in when "top" genuinely doesn't fit, which it does here
+// since the toolbar sits with room above it. So instead of fighting the component
+// API, we watch for the tooltip's portal node landing in <body> and shove it below
+// the trigger ourselves: `translate` is a distinct CSS property from `transform`
+// (which Radix's positioning already occupies), so it composes with Radix's own
+// placement instead of clobbering it.
+//
+// The delta is computed from real geometry, not a guessed button height: Radix
+// links the tooltip to its trigger via `aria-describedby`, so we look the trigger
+// up and re-derive the wrapper's target top from the trigger's actual bottom edge.
+// That stays correct regardless of which button/dropdown is hovered or how tall
+// its tooltip content is (a one-line "Bold" vs. a wider colour/line-spacing preview).
+const TOOLTIP_SIDE_OFFSET = 4; // library's default Tooltip.Content sideOffset
+
+function useForceTooltipsBelowToolbar() {
+  useEffect(() => {
+    const flip = (wrapper: HTMLElement) => {
+      const content = wrapper.querySelector<HTMLElement>('[role="tooltip"][data-side="top"]');
+      if (!content) return;
+      const trigger = content.id
+        ? document.querySelector<HTMLElement>(`[aria-describedby~="${content.id}"]`)
+        : null;
+      const currentTop = wrapper.getBoundingClientRect().top;
+      const desiredTop = trigger
+        ? trigger.getBoundingClientRect().bottom + TOOLTIP_SIDE_OFFSET
+        : currentTop + content.offsetHeight + TOOLTIP_SIDE_OFFSET * 2;
+      wrapper.style.translate = `0px ${desiredTop - currentTop}px`;
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          const wrappers = node.matches("[data-radix-popper-content-wrapper]")
+            ? [node]
+            : Array.from(node.querySelectorAll<HTMLElement>("[data-radix-popper-content-wrapper]"));
+          // Radix sometimes inserts the wrapper and its tooltip content in separate
+          // mutation records — cover the case where the content lands on its own by
+          // walking up from it too.
+          const wrapperFromContent = node.matches('[role="tooltip"]')
+            ? node.closest<HTMLElement>("[data-radix-popper-content-wrapper]")
+            : null;
+          if (wrapperFromContent) wrappers.push(wrapperFromContent);
+          wrappers.forEach(flip);
+        });
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+}
+
 export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
-  return (
-    <div className="flex justify-center mt-4 mb-2 pointer-events-none sticky top-16 z-10">
-      <div className="pointer-events-auto flex items-center px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(20,20,43,0.12)]">
+  useForceTooltipsBelowToolbar();
+
+  // Portalled to <body> — mounted inside the lesson card, whose backdrop-blur
+  // establishes a new containing block for `position: fixed` descendants (same
+  // reason UploadQueuePanel below is portalled). Left in place, `fixed` here
+  // resolves against that card instead of the viewport: the toolbar scrolls with
+  // the card instead of staying pinned, and ends up visually "inside" it, clipped
+  // by whatever paints on top of the card at that scroll position. Escaping to
+  // <body> makes it a true floating island, positioned just under the lesson-name
+  // pill (which sits ~28px–68px from the top) regardless of where in the DOM tree
+  // the editor itself lives.
+  return createPortal(
+    <div className="flex justify-center pointer-events-none fixed top-20 inset-x-0 z-[70]">
+      <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white border border-slate-200 shadow-md">
         {/* Groups are borderless and tightly packed — hairline separators carry the
             grouping instead, so the whole strip fits on one row without scrolling. */}
         <div className="flex items-center">
@@ -152,11 +219,13 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
         </Popover>
       </div>
 
-      {/* Portalled to <body> — tracks background uploads queued from ImageUploadButton /
-          VideoUploadButton above, independent of where this toolbar sits on the page. */}
+      {/* Also portalled to <body> — tracks background uploads queued from
+          ImageUploadButton / VideoUploadButton above. Nesting it here is harmless
+          now that this whole toolbar is itself body-portalled. */}
       <UploadQueuePanel />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 });
 

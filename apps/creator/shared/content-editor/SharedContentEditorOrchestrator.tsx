@@ -1385,7 +1385,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Center: Title */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center">
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3">
             <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               <span className="block max-w-[40vw] truncate">
                   {activeLessonId
@@ -1696,10 +1696,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     </div>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1 flex flex-col pt-24">
+      <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-4 top-20 z-20 flex flex-col h-[calc(100vh-7rem)] w-[268px] pointer-events-none">
+          <aside className="absolute left-4 top-36 z-20 flex flex-col h-[calc(100vh-10rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full">
               {!sidebarOpen ? (
                 <button

@@ -710,6 +710,10 @@
    Tooltips
    Ensure editor tooltips (portalled to body) overlap the Studio header (z-30).
    reactjs-tiptap-editor uses its own Radix UI instance without our z-50 class.
+   The "always show below the trigger" behavior itself is handled in JS
+   (RichTextToolbar's useForceTooltipsBelowToolbar), which measures each
+   tooltip's real height and offsets it via the `translate` property — a fixed
+   CSS margin can't do that correctly across labels of different heights.
    ══════════════════════════════════════════════════════════════════════ */
 [data-radix-popper-content-wrapper],
 [data-radix-portal],
@@ -718,9 +722,4 @@
 .tippy-box,
 .richtext-z-50 {
   z-index: 100 !important;
-}
-
-/* Force top-positioned tooltips to appear below the toolbar icon instead, avoiding the navbar entirely */
-[data-richtext-portal] .richtext-z-50[role="tooltip"][data-side="top"] {
-  margin-top: 65px !important;
 }
