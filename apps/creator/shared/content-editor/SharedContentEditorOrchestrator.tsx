@@ -1546,7 +1546,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-8rem)] w-[268px] pointer-events-none">
+          <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
               {/* ── Sidebar header ───────────────── */}
               <div className="flex flex-shrink-0 items-center justify-between mb-3">
@@ -1558,7 +1558,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               {/* ── Sidebar actions ───────────────── */}
 
               {/* ── Body ──────────────────────────────── */}
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
                 {modules.length === 0 && (
                   <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
                     <Layers size={24} className="text-[#14142b]/40" />
@@ -1816,7 +1816,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   floating on top of it. Plain translucent white (no backdrop-blur):
                   blur + rounded corners over the page's own blurred background blobs
                   was producing a doubled/seamed edge at the corners. */}
-              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-editor-scrollbar">
+              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-scrollbar-mini">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}

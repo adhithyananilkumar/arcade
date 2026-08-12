@@ -742,3 +742,19 @@
 .arcade-editor-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.4);
 }
+
+.arcade-scrollbar-mini::-webkit-scrollbar {
+  width: 4.5px;
+  height: 4.5px;
+}
+.arcade-scrollbar-mini::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 12px;
+}
+.arcade-scrollbar-mini::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+}
+.arcade-scrollbar-mini::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
