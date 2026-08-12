@@ -642,8 +642,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // Imperative handle to force-save the open lesson before navigating away.
   const editorRef = useRef<ArcadeEditorHandle>(null);
 
-  // Main-panel view: the lesson editor ("tree") or the course Settings screen.
-  const [view, setView] = useState<"tree" | "settings">("tree");
+  // Main-panel view: the lesson editor ("tree").
+  const [view, setView] = useState<"tree">("tree");
 
   // Sidebar collapse state
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -1297,7 +1297,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }
 
   return (
-    <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
+    <div className="relative flex flex-1 min-h-screen flex-col overflow-hidden bg-[#fafafa]">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
+        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
+        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] animate-pulse rounded-full bg-emerald-500/15 blur-[120px] duration-10000" />
+      </div>
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
@@ -1347,36 +1352,32 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         />
       )}
 
-      {/* ── Editor top bar — uniform across course / workshop / roadmap ───── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 sm:px-6">
-          {/* Left: Back → Content Studio */}
-          <div className="justify-self-start">
+      {/* ── Floating Editor Top Bar ───── */}
+      <div className="absolute inset-x-0 top-4 z-30 pointer-events-none">
+        <div className="mx-auto flex max-w-[1400px] items-start justify-between px-4 sm:px-6">
+          {/* Left: Back → Content Studio & Title */}
+          <div className="pointer-events-auto flex items-center gap-2">
             <button
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
               title="Save and return to Content Studio"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
+              className="flex h-10 flex-shrink-0 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/40 px-4 py-2 text-sm font-bold text-[#14142b] shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl disabled:opacity-60"
             >
               <ArrowLeft size={16} />
               <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
-          </div>
-
-          {/* Center title */}
-          <div className="min-w-0 justify-self-center">
-            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-bold tracking-tight text-[#14142b] sm:max-w-md">
-              {view === "settings"
-                ? `${adapter.terminology.root} Settings`
-                : activeLessonId
+            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/40 px-4 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-lg backdrop-blur-xl">
+              <span className="block max-w-[40vw] truncate">
+                  {activeLessonId
                   ? activeLessonTitle
                   : title || adapter.terminology.root}
-            </span>
+              </span>
+            </div>
           </div>
 
           {/* Right actions */}
-          <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
+          <div className="pointer-events-auto flex flex-shrink-0 items-center gap-2">
             <StatusPill status={status} />
 
             {activeLessonId && (
@@ -1399,19 +1400,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             >
               <MessageSquare size={15} />
               <span className="hidden md:inline">Status</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-              title={`${adapter.terminology.root} Settings`}
-              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${view === "settings"
-                  ? "bg-[#14142b] text-white"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
-                }`}
-            >
-              <Settings size={15} />
-              <span className="hidden md:inline">Settings</span>
             </button>
 
             {contentId && (
@@ -1439,12 +1427,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             )}
 
             {status !== "SUBMITTED" && (
-              <div className="flex items-center gap-3">
-                <span className="hidden sm:inline text-xs font-medium text-slate-400">All changes saved</span>
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/40 px-4 text-xs font-bold text-slate-500 shadow-lg backdrop-blur-xl">
+                  {hasDraftChanges ? "Unsaved changes" : "Saved"}
+                </div>
                 <button
                   type="button"
                   onClick={askSubmit}
-                  className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-5 py-2 text-sm font-bold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-all hover:scale-105 hover:bg-[#232735] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send size={14} />
                   <span className="hidden sm:inline">
@@ -1701,58 +1691,57 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1 flex flex-col">
+      <div className="relative min-h-0 flex-1 flex flex-col pt-16">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
-            {!sidebarOpen ? (
-              <button
-                type="button"
-                title="Expand sidebar"
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-400 shadow-[0_6px_18px_rgba(20,20,43,0.08)] transition-colors hover:text-[#14142b]"
-              >
-                <PanelLeftOpen size={18} />
-              </button>
-            ) : (
-              <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
-                {/* ── Sidebar header ───────────────── */}
-                <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
-                  <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    {adapter.terminology.root} structure
-                  </span>
-                  <button
-                    type="button"
-                    title="Collapse sidebar"
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex flex-shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-                  >
-                    <PanelLeftClose size={16} />
-                  </button>
-                </div>
+          <aside className="absolute left-4 top-4 z-20 flex flex-col h-[calc(100vh-6rem)] w-[268px] pointer-events-none">
+            <div className="pointer-events-auto flex flex-col w-full h-full">
+              {!sidebarOpen ? (
+                <button
+                  type="button"
+                  title="Expand sidebar"
+                  onClick={() => setSidebarOpen(true)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-lg backdrop-blur-xl transition-all hover:bg-white/60 hover:shadow-xl"
+                >
+                  <PanelLeftOpen size={18} />
+                </button>
+              ) : (
+                <div className="flex w-full flex-col h-full overflow-hidden">
+                  {/* ── Sidebar header ───────────────── */}
+                  <div className="flex flex-shrink-0 items-center justify-between mb-2">
+                    <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+                      {adapter.terminology.root} structure
+                    </span>
+                    <button
+                      type="button"
+                      title="Collapse sidebar"
+                      onClick={() => setSidebarOpen(false)}
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-sm backdrop-blur-xl transition-all hover:bg-white/60"
+                    >
+                      <PanelLeftClose size={14} />
+                    </button>
+                  </div>
 
-                {/* ── Body ──────────────────────────────── */}
-                <div className="flex min-h-0 flex-1 flex-col">
-                  {/* Tree scroll area */}
-                  <div className="flex-1 overflow-y-auto p-2">
+                  {/* ── Body ──────────────────────────────── */}
+                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
                     {modules.length === 0 && (
-                      <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                        <Layers size={28} className="text-gray-300" />
-                        <p className="text-xs text-gray-400">
+                      <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+                        <Layers size={24} className="text-[#14142b]/40" />
+                        <p className="text-xs font-medium text-[#14142b]/60">
                           {contentType === "workshop"
-                            ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                            ? "Create your first workshop day."
                             : "No modules yet. Add a module to get started."}
                         </p>
                       </div>
                     )}
 
                     {modules.map((mod) => (
-                      <div key={mod.id} className="mb-0.5">
-                        {/* Module row */}
-                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
+                      <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                        {/* Module pill row */}
+                        <div className="group flex items-center gap-2 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-white/60 hover:bg-white/80">
                             <button
                               type="button"
                               onClick={() =>
@@ -1762,17 +1751,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                   )
                                 )
                               }
-                              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                              className="flex-shrink-0 text-[#14142b]/50 hover:text-[#14142b]"
                             >
                               {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                             </button>
 
                             {isEditing("module", mod.id) ? (
-                              renameInput("text-xs font-semibold text-gray-700")
+                              renameInput("text-xs font-bold text-[#14142b]")
                             ) : (
                               <span
                                 onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                                className="flex-1 truncate text-xs font-semibold text-gray-700"
+                                className="flex-1 truncate text-xs font-bold text-[#14142b]"
                                 title={mod.title}
                               >
                                 {mod.title}
@@ -1780,11 +1769,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                             )}
 
                             {status !== "SUBMITTED" && (
-                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                              <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger
                                     title="Add lesson or quiz"
-                                    className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+                                    className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]"
                                   >
                                     <Plus size={12} />
                                   </DropdownMenuTrigger>
@@ -1807,7 +1796,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
                         {/* Lessons and quizzes, interleaved by position */}
                         {mod.expanded && (
-                          <div className="ml-3 border-l border-gray-200 pl-1.5">
+                          <div className="ml-5 flex flex-col gap-1 border-l border-[#14142b]/10 pl-3 pt-1">
                             <DndContext
                               sensors={sensors}
                               collisionDetection={closestCenter}
@@ -1825,7 +1814,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                       <SortableRow
                                         key={item.node.id}
                                         id={item.node.id}
-                                        className={`group flex items-center gap-1 rounded-lg pl-2 pr-1.5 ${isActive ? "bg-[#14142b] shadow-sm" : "hover:bg-slate-50"
+                                        className={`group flex items-center gap-2 rounded-full px-3 transition-all ${isActive ? "bg-[#14142b] shadow-md" : "hover:bg-white/40"
                                           }`}
                                       >
                                         {(dragHandleProps) => (
@@ -1945,17 +1934,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Question Bank
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${view === "settings"
-                        ? "bg-[#14142b] text-white"
-                        : "text-slate-500 hover:bg-white hover:text-[#14142b]"
-                        }`}
-                    >
-                      <Settings size={13} />
-                      {adapter.terminology.root} Settings
-                    </button>
                   </div>
                 </div>
               </div>
@@ -1970,28 +1948,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
             </div>
           )}
-          {view === "settings" ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div className="overflow-hidden rounded-2xl border border-gray-100">
-                <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
-                  <ContentSettingsPanel terminology={adapter.terminology}
-                    contentId={contentId}
-                    title={title}
-                    description={description}
-                    status={status}
-                    pricingModel={pricingModel}
-                    createdAt={createdAt}
-                    updatedAt={updatedAt}
-                    onDeleted={() => router.push("/studio")}
-                    onDescriptionChange={(desc) => {
-                      setDescription(desc);
-                      scheduleCourseMetaSave({ description: desc });
-                    }}
-                  />
-                </div>
-              </div>
+          {status === "SUBMITTED" && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
+              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
             </div>
-          ) : contentType === "roadmap" && roadmapData ? (
+          )}
+          {contentType === "roadmap" && roadmapData ? (
             <div className="absolute inset-0 z-0 pt-[49px]">
               <RoadmapCanvas
                 roadmap={roadmapData}
@@ -2014,10 +1976,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           ) : activeLessonId ? (
             <div
-              className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
-              style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
+              className="mx-auto w-full max-w-[860px] px-6 pb-44 pt-16 sm:px-12"
+              style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
             >
-              <div>
+              <div className="rounded-3xl border border-white/40 bg-white/60 p-8 shadow-xl backdrop-blur-md min-h-[calc(100vh-12rem)]">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}

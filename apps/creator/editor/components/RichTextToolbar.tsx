@@ -58,12 +58,11 @@ interface RichTextToolbarProps {
 
 export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
   return (
-    // Surface colour, bottom rule and separator colour live in editor.css —
-    // the design-system utilities for them don't resolve inside this tree.
-    <div className="arcade-toolbar flex items-center px-2 py-1.5 overflow-x-auto whitespace-nowrap">
-      {/* Groups are borderless and tightly packed — hairline separators carry the
-          grouping instead, so the whole strip fits on one row without scrolling. */}
-      <div className="flex items-center">
+    <div className="flex justify-center mt-4 mb-2 pointer-events-none sticky top-16 z-10">
+      <div className="pointer-events-auto flex items-center px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(20,20,43,0.12)]">
+        {/* Groups are borderless and tightly packed — hairline separators carry the
+            grouping instead, so the whole strip fits on one row without scrolling. */}
+        <div className="flex items-center">
         <RichTextUndo />
         <RichTextRedo />
       </div>
@@ -156,6 +155,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
       {/* Portalled to <body> — tracks background uploads queued from ImageUploadButton /
           VideoUploadButton above, independent of where this toolbar sits on the page. */}
       <UploadQueuePanel />
+      </div>
     </div>
   );
 });
