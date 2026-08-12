@@ -38,3 +38,9 @@ export const CONTENT_TYPE_LABEL: Record<ContentTypeSegment, string> = {
   roadmap: "Roadmap",
   event: "Event",
 };
+
+/** Real learner-facing preview route, or null when the type has none — never link to a route that doesn't exist. */
+export function previewHref(segment: ContentTypeSegment, id: string): string | null {
+  if (segment === "course") return `/studio/course/${id}/preview`;
+  return null;
+}

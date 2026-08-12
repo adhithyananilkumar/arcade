@@ -10,7 +10,14 @@ import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { EventType } from "@/app/(authenticated)/studio/events/types";
-import { contentOverviewHref } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentTypeRouting";
+import {
+  contentOverviewHref,
+  toContentTypeSegment,
+  editorHref,
+  previewHref,
+} from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentTypeRouting";
+import { DUPLICATE_ACTION, archiveContent, deleteContent, SUPPORTS_TITLE_CONFIRM_DELETE } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
+import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
 import {
   BookOpen,
   Calendar,
@@ -30,6 +37,8 @@ import {
   User,
   FileQuestion,
   HelpCircle,
+  Eye,
+  Archive,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -754,15 +763,20 @@ function ContentCard({
   onRename,
   onDelete,
   onDuplicate,
+  onChanged,
 }: {
   item: ContentSummary;
   onRename: (item: ContentSummary) => void;
   onDelete: (item: ContentSummary) => void;
   onDuplicate: (item: ContentSummary) => void;
+  onChanged: () => void;
 }) {
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
   const isQuiz = item.type === "QUIZ";
+  const segment = toContentTypeSegment(item.type);
   // Quiz has no split overview/editor yet — its "editor" is the detail page itself.
   // Every other type opens the Content Overview, not a direct editor route.
   const openHref = isQuiz
@@ -774,46 +788,141 @@ function ContentCard({
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
+  const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
+  const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
+  const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
+  const hasSecondaryMenu = isRoadmap || (!isQuiz && segment != null);
+
+  async function handleDuplicateSegmentAware() {
+    setMenuOpen(false);
+    if (isRoadmap) {
+      onDuplicate(item);
+      return;
+    }
+    if (!segment || !duplicate) return;
+    try {
+      const created = await duplicate.run(item.id);
+      toast.success("Duplicated");
+      router.push(`/studio/content/${segment}/${created.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not duplicate");
+    }
+  }
+
+  async function handleConfirmed() {
+    if (!segment) return;
+    if (confirmAction === "archive") {
+      const result = archiveContent(segment, item.id);
+      if (result) await result;
+      toast.success("Archived");
+    } else if (confirmAction === "delete") {
+      await deleteContent(segment, item.id, item.title);
+      toast.success("Deleted");
+    }
+    setConfirmAction(null);
+    onChanged();
+  }
+
+  function handleCardActivate(e: React.MouseEvent) {
+    // Ignore clicks that originated on an interactive descendant (kebab menu, its
+    // items, the explicit Open link) — they handle their own navigation/actions.
+    if ((e.target as HTMLElement).closest("[data-card-interactive]")) return;
+    router.push(openHref);
+  }
+
   return (
-    <div className="group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)]">
+    <div
+      onClick={channelSuspended ? undefined : handleCardActivate}
+      className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
+        channelSuspended ? "" : "cursor-pointer"
+      }`}
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
           {item.title}
         </h3>
-        {isRoadmap && (
-          <div className="relative">
+        {hasSecondaryMenu && (
+          <div className="relative" data-card-interactive>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="rounded-md p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+              aria-label="More actions"
             >
               <MoreVertical size={16} />
             </button>
             {menuOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-36 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
+                <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      onRename(item);
+                      router.push(openHref);
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
                   >
-                    <Pencil size={14} /> Rename
+                    <MoreVertical size={14} /> Open
                   </button>
+                  {segment && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        router.push(editorHref(segment, item.id));
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Pencil size={14} /> Edit
+                    </button>
+                  )}
+                  {preview && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        router.push(preview);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Eye size={14} /> Preview
+                    </button>
+                  )}
+                  {isRoadmap && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onRename(item);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Pencil size={14} /> Rename
+                    </button>
+                  )}
+                  {(isRoadmap || duplicate) && (
+                    <button
+                      onClick={handleDuplicateSegmentAware}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Copy size={14} /> Duplicate
+                    </button>
+                  )}
+                  {canArchive && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setConfirmAction("archive");
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                    >
+                      <Archive size={14} /> Archive
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      onDuplicate(item);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <Copy size={14} /> Duplicate
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      onDelete(item);
+                      if (isRoadmap) {
+                        onDelete(item);
+                      } else {
+                        setConfirmAction("delete");
+                      }
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                   >
@@ -874,10 +983,41 @@ function ContentCard({
       ) : (
         <Link
           href={openHref}
+          data-card-interactive
+          onClick={(e) => e.stopPropagation()}
           className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
           {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
         </Link>
+      )}
+
+      {confirmAction === "archive" && (
+        <div data-card-interactive>
+          <ConfirmActionModal
+            title="Archive this content?"
+            description={`"${item.title}" will be archived and no longer visible to learners.`}
+            confirmLabel="Archive"
+            onClose={() => setConfirmAction(null)}
+            onConfirm={handleConfirmed}
+          />
+        </div>
+      )}
+      {confirmAction === "delete" && segment && (
+        <div data-card-interactive>
+          <ConfirmActionModal
+            title="Delete this content?"
+            description={
+              SUPPORTS_TITLE_CONFIRM_DELETE[segment]
+                ? `Type the title to confirm. This moves "${item.title}" to Trash.`
+                : `This permanently deletes "${item.title}". This action cannot be undone.`
+            }
+            confirmLabel="Delete"
+            danger
+            requireTitleMatch={SUPPORTS_TITLE_CONFIRM_DELETE[segment] ? item.title : undefined}
+            onClose={() => setConfirmAction(null)}
+            onConfirm={handleConfirmed}
+          />
+        </div>
       )}
     </div>
   );
@@ -1019,7 +1159,7 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-12 pt-28 sm:px-8 sm:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -1241,6 +1381,7 @@ export default function DashboardPage() {
                 onRename={setRenameTarget}
                 onDelete={setDeleteTarget}
                 onDuplicate={handleDuplicate}
+                onChanged={fetchContent}
               />
             ))}
           </div>

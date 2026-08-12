@@ -1,12 +1,13 @@
 'use client';
 
-import { usePathname, useRouter, useParams } from 'next/navigation';
-import { useMemo, useState, useEffect } from 'react';
-import { Home, Compass, BookOpen, Crown, Trophy, Waypoints, ClipboardList, LayoutDashboard } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useMemo } from 'react';
+import { Home, Compass, BookOpen, Crown, Trophy, Waypoints, LayoutDashboard, ShieldAlert } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 import { useStudioAccess } from '@/domains/channels';
-import { api } from '@/infrastructure/http/api';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 const dockItems = [
@@ -58,14 +59,6 @@ const dockItems = [
     activeColor: 'text-cyan-600 dark:text-cyan-400',
     exact: false,
   },
-  {
-    id: 'exam',
-    label: 'Exam',
-    href: '/exam',
-    icon: ClipboardList,
-    activeColor: 'text-rose-600 dark:text-rose-400',
-    exact: false,
-  }
 ] as const;
 
 interface DockNavItem {
@@ -81,50 +74,41 @@ interface DockNavItem {
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
-  const params = useParams();
   const { hasAccess: hasStudioAccess } = useStudioAccess();
-  const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
-  const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
-
-  useEffect(() => {
-    api.get<any[]>('/api/v1/events/my-collaborations')
-      .then(res => {
-        if (res && res.length > 0) {
-          setCollaboratedEventId(res[0].id);
-          setHasMultipleCollabs(res.length > 1);
-        } else {
-          setCollaboratedEventId(null);
-          setHasMultipleCollabs(false);
-        }
-      })
-      .catch(() => {
-        setCollaboratedEventId(null);
-        setHasMultipleCollabs(false);
-      });
-  }, []);
+  const user = useAuthStore((s) => s.user);
+  const canAccessConsole = AuthorizationService.canAccessConsole(user);
 
   const items = useMemo(() => {
     const list: DockNavItem[] = [...dockItems];
-    const isCollaborator = !!collaboratedEventId;
-    
-    if (hasStudioAccess || isCollaborator) {
+    if (hasStudioAccess) {
+      // "Studio" is the single entry point into Content Studio/Overview/Editor —
+      // no separate Courses/Events/Roadmaps/Reviews dock destinations, those live inside it.
       list.push({
         id: 'studio',
-        label: 'Events',
-        href: '/studio/events',
+        label: 'Studio',
+        href: '/studio',
         icon: LayoutDashboard,
         activeColor: 'text-indigo-600 dark:text-indigo-400',
         exact: false,
       });
     }
+    if (canAccessConsole) {
+      list.push({
+        id: 'console',
+        label: 'Console',
+        href: '/console',
+        icon: ShieldAlert,
+        activeColor: 'text-rose-600 dark:text-rose-400',
+        exact: false,
+      });
+    }
     return list;
-  }, [hasStudioAccess, collaboratedEventId]);
-  
-  // If we are viewing a specific course, point the exam button to that course's exam.
-  // Otherwise, point to a default test course for demonstration.
-  const currentCourseId = params?.courseId || 'default';
+  }, [hasStudioAccess, canAccessConsole]);
 
-  // Hide the dock on content studio, settings, and active proctored exams
+  // Hide the dock on content studio, settings, and active proctored exams.
+  // /studio itself and the Content Workspace are handled by LearnerShell's
+  // HIDE_DOCK_ROUTES exception instead — this guard is for legacy `/content`
+  // paths only.
   if (
     pathname.startsWith('/content') ||
     pathname.startsWith('/settings') ||
@@ -133,6 +117,9 @@ export default function LearnerDock() {
     return null;
   }
 
+  // Prefix match (not exact-pathname) so "Studio" stays active across the whole
+  // family of routes: /studio, /studio/content/course/123,
+  // /studio/content/course/123/edit, etc. — route-hierarchy aware, not exact-match.
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href) && href !== '/';
 
@@ -155,13 +142,7 @@ export default function LearnerDock() {
               <DockItem
                 key={item.id}
                 className="cursor-pointer"
-                onClick={() => {
-                  if (item.id === 'exam') {
-                    router.push('/exam');
-                  } else {
-                    router.push(item.href);
-                  }
-                }}
+                onClick={() => router.push(item.href)}
               >
                 <DockLabel>{item.label}</DockLabel>
                 <DockIcon>
@@ -174,6 +155,7 @@ export default function LearnerDock() {
                         : 'text-slate-500/75 dark:text-neutral-400/80'
                     )}
                     strokeWidth={active ? 2.3 : 1.7}
+                    aria-label={item.label}
                   />
                 </DockIcon>
               </DockItem>

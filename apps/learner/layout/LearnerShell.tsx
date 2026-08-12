@@ -44,9 +44,12 @@ export default function LearnerShell({
   const [mounted, setMounted] = useState(false);
 
   const immersive = IMMERSIVE_ROUTES.some((r) => r.test(pathname ?? ''));
-  const hideDock =
-    immersive || 
-    (HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? '')) && pathname !== '/studio/events');
+  // The global Dock is hidden everywhere under /studio, including the
+  // Content Studio listing and the Content Workspace — the workspace has
+  // its own page-local floating dock instead (ContentWorkspaceDock),
+  // reflecting that specific content item's own sections rather than the
+  // app-wide destinations.
+  const hideDock = immersive || HIDE_DOCK_ROUTES.some((r) => r.test(pathname ?? ''));
 
   // Prevent hydration mismatch
   useEffect(() => {

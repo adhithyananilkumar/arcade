@@ -1,4 +1,5 @@
-import { Clock } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
+import { EmptyState } from "./EmptyState";
 
 export interface TimelineEntry {
   id: string;
@@ -9,17 +10,25 @@ export interface TimelineEntry {
 
 export function ActivitySection({
   entries,
-  emptyLabel = "No activity yet.",
+  unavailable,
+  emptyTitle = "No activity yet",
+  emptyDescription = "Changes and publishing events will appear here.",
 }: {
   entries?: TimelineEntry[];
-  emptyLabel?: string;
+  unavailable?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }) {
-  if (!entries || entries.length === 0) {
+  if (unavailable) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-white/60 p-8 text-center text-sm text-slate-500">
-        {emptyLabel}
+      <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+        <AlertTriangle size={14} /> Temporarily unavailable — try again shortly.
       </div>
     );
+  }
+
+  if (!entries || entries.length === 0) {
+    return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
   return (
