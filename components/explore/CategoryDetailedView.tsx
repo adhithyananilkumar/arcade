@@ -83,166 +83,257 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
 const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<number> }> = ({ activeColor, progress }) => {
   const t = progress;
 
-  // Bezier Control points:
-  const P0 = { x: 50, y: 380 };
-  const P1 = { x: 120, y: 220 };
-  const P2 = { x: 260, y: 150 };
-  const P3 = { x: 410, y: 80 };
+  const P0 = { x: 350, y: 400 }; // Bottom-right start
+  const P1 = { x: 150, y: 300 }; // Curve up and left
+  const P2 = { x: 150, y: 150 }; // High arc
+  const P3 = { x: 320, y: 150 }; // Land on moon surface
 
-  // Calculate coordinates:
-  const x = useTransform(t, (val) => {
+  const bezierX = (val: number) => {
     const mt = 1 - val;
-    return mt * mt * mt * P0.x + 3 * mt * mt * val * P1.x + 3 * mt * val * val * P2.x + val * val * val * P3.x;
-  });
-
-  const y = useTransform(t, (val) => {
+    return mt*mt*mt*P0.x + 3*mt*mt*val*P1.x + 3*mt*val*val*P2.x + val*val*val*P3.x;
+  };
+  const bezierY = (val: number) => {
     const mt = 1 - val;
-    return mt * mt * mt * P0.y + 3 * mt * mt * val * P1.y + 3 * mt * val * val * P2.y + val * val * val * P3.y;
-  });
+    return mt*mt*mt*P0.y + 3*mt*mt*val*P1.y + 3*mt*val*val*P2.y + val*val*val*P3.y;
+  };
 
-  // Tangent derivative for angle calculation:
-  const angle = useTransform(t, (val) => {
+  const tRocket = useTransform(t, [0, 0.85], [0, 1]);
+  const x     = useTransform(tRocket, bezierX);
+  const y     = useTransform(tRocket, bezierY);
+  const angle = useTransform(tRocket, (val) => {
     const mt = 1 - val;
-    const dx = 3 * mt * mt * (P1.x - P0.x) + 6 * mt * val * (P2.x - P1.x) + 3 * val * val * (P3.x - P2.x);
-    const dy = 3 * mt * mt * (P1.y - P0.y) + 6 * mt * val * (P2.y - P1.y) + 3 * val * val * (P3.y - P2.y);
-    return (Math.atan2(dy, dx) * 180) / Math.PI + 90; // +90 deg offset because the rocket SVG points upwards
+    const dx = 3*mt*mt*(P1.x-P0.x) + 6*mt*val*(P2.x-P1.x) + 3*val*val*(P3.x-P2.x);
+    const dy = 3*mt*mt*(P1.y-P0.y) + 6*mt*val*(P2.y-P1.y) + 3*val*val*(P3.y-P2.y);
+    const targetAngle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+    
+    // Start upright (0 in SVG rotation is pointing straight up) 
+    // and smoothly tilt into the flight path as it lifts off
+    if (val < 0.02) {
+      return 0;
+    } else if (val < 0.15) {
+      const p = (val - 0.02) / 0.13;
+      return 0 * (1 - p) + targetAngle * p;
+    }
+    return targetAngle;
   });
 
-  // Astronaut walks when t > 0.9.
-  const astronautX = useTransform(t, (val) => {
-    if (val < 0.9) return P3.x;
-    const progress = Math.min((val - 0.9) / 0.08, 1);
-    return P3.x + progress * 40;
-  });
-  
-  const astronautOpacity = useTransform(t, (val) => {
-    if (val < 0.85) return 0;
-    if (val < 0.9) return (val - 0.85) / 0.05; // Fade in after landing
-    return 1;
-  });
-
-  const flagScale = useTransform(t, (val) => {
-    if (val < 0.94) return 0;
-    return Math.min((val - 0.94) / 0.06, 1); // flag extends
-  });
-
-  const flameOpacity = useTransform(t, (val) => {
-    if (val === 0) return 0.2;
-    if (val >= 0.88) return 0;
-    return 1;
-  });
+  const flameOpacity = useTransform(t, [0, 0.03, 0.85, 0.92], [0, 1, 1, 0]);
+  const flameLen     = useTransform(t, (v) => (v <= 0 || v >= 0.88) ? 0 : 0.7 + Math.abs(Math.sin(v * 60)) * 0.45);
+  const rocketFade   = useTransform(t, [0.84, 0.91], [1, 0]);
+  const astronautX   = useTransform(t, (v) => v < 0.85 ? P3.x - 4 : P3.x - 4 + Math.min((v-0.85)/0.08, 1) * 60);
+  const astronautOp  = useTransform(t, [0.82, 0.88], [0, 1]);
+  const flagScale    = useTransform(t, [0.90, 1.0], [0, 1]);
+  const trailOp      = useTransform(t, [0, 0.06, 0.82, 1], [0, 0.5, 0.5, 0]);
+  const dustOp       = useTransform(t, [0.82, 0.88, 0.95, 1], [0, 0.85, 0.3, 0]);
+  const dustSc       = useTransform(t, [0.82, 1], [0.2, 2.8]);
+  const moonScale    = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 2.8]);
+  const moonX        = useTransform(t, [0, 0.6, 1], [380, 350, P3.x + 30]);
+  const moonY        = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 148]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "450px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <svg
-        viewBox="0 0 500 450"
-        width="100%"
-        height="100%"
-        style={{ overflow: "visible", display: "block" }}
-      >
+    <div style={{ position: "relative", width: "100%", height: "460px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <svg viewBox="35 30 430 400" width="100%" height="100%" style={{ overflow: "visible", display: "block" }}>
         <defs>
-          <linearGradient id="traj-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={`${activeColor}22`} />
-            <stop offset="50%" stopColor={`${activeColor}77`} />
-            <stop offset="100%" stopColor={activeColor} />
+
+          {/* Trajectory gradient */}
+          <linearGradient id="traj" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%"   stopColor={activeColor} stopOpacity="0.04" />
+            <stop offset="100%" stopColor={activeColor} stopOpacity="0.55"  />
           </linearGradient>
-          <linearGradient id="flame-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#FBBF24" />
-            <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
-          </linearGradient>
+
+          {/* Dust plume */}
+          <radialGradient id="dustg" cx="50%" cy="60%" r="50%">
+            <stop offset="0%"   stopColor="#e2e8f0" stopOpacity="0.8" />
+            <stop offset="55%"  stopColor="#cbd5e1" stopOpacity="0.4"  />
+            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0"    />
+          </radialGradient>
+
+          {/* Glow bloom filters */}
+          <filter id="bloom" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="5" result="b1"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b2"/>
+            <feMerge>
+              <feMergeNode in="b1"/>
+              <feMergeNode in="b2"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5"/>
+          </filter>
+          <filter id="ao" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.5"/>
+          </filter>
         </defs>
 
-        {/* 1. Trajectory line */}
+        <style>{`
+          @keyframes twinkle { 0%,100%{opacity:0.15;} 50%{opacity:0.9;} }
+          @keyframes flagWave {
+            0%  { d: path("M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z"); }
+            30% { d: path("M 0,0 Q 18,5 40,1 L 40,22 Q 18,17 0,22 Z"); }
+            65% { d: path("M 0,0 Q 22,-5 40,0 L 40,22 Q 22,27 0,22 Z"); }
+            100%{ d: path("M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z"); }
+          }
+          .fw { animation: flagWave 2.8s ease-in-out infinite; }
+          .st-a { animation: twinkle 2.3s ease-in-out infinite; }
+          .st-b { animation: twinkle 3.2s ease-in-out infinite 0.7s; }
+          .st-c { animation: twinkle 2.8s ease-in-out infinite 1.2s; }
+          .st-d { animation: twinkle 1.9s ease-in-out infinite 0.4s; }
+        `}</style>
+
+        {/* ── Stars — soft circular dots, photographic ── */}
+        {([
+          [42,35,1.6,"st-a"], [120,20,1.1,"st-b"], [225,50,1.9,"st-c"],
+          [315,18,1.3,"st-d"], [405,44,1.7,"st-a"], [470,14,1.0,"st-b"],
+          [492,95,1.4,"st-c"], [25,175,1.6,"st-d"], [488,295,1.2,"st-a"],
+          [172,84,1.0,"st-b"], [335,375,1.5,"st-c"], [478,355,1.3,"st-d"],
+          [88,135,0.9,"st-a"], [448,210,1.1,"st-b"], [265,310,0.8,"st-c"],
+        ] as [number,number,number,string][]).map(([cx,cy,r,cls], i) => (
+          <circle key={i} className={cls} cx={cx} cy={cy} r={r} fill="white" opacity="0.7"/>
+        ))}
+
+        {/* ── Launch Cloud ── */}
+        <motion.g style={{ opacity: useTransform(t, [0, 0.15], [1, 0]) }}>
+          <path d="M 320,410 Q 330,380 350,380 Q 370,380 380,400 Q 400,400 400,420 Q 400,440 370,440 L 320,440 Q 290,440 290,420 Q 290,400 320,410 Z" fill="#ffffff" filter="url(#shadow)" opacity="0.4" />
+          <path d="M 325,415 Q 335,390 350,390 Q 365,390 375,405 Q 390,405 390,420 Q 390,435 365,435 L 320,435 Q 300,435 300,420 Q 300,405 325,415 Z" fill="#f8fafc" />
+        </motion.g>
+
+        {/* ── Trajectory ── */}
         <path
           d={`M ${P0.x},${P0.y} C ${P1.x},${P1.y} ${P2.x},${P2.y} ${P3.x},${P3.y}`}
-          fill="none"
-          stroke="url(#traj-grad)"
-          strokeWidth="3"
-          strokeDasharray="6 6"
-          opacity="0.8"
+          fill="none" stroke="url(#traj)" strokeWidth="1" strokeDasharray="4 9" opacity="0.45"
         />
 
-        {/* 2. Moon (Flat Minimal) */}
-        <g transform={`translate(${P3.x}, ${P3.y})`}>
-          <circle cx="0" cy="0" r="55" fill={activeColor} opacity="0.08" style={{ filter: "blur(8px)" }} />
-          <circle cx="0" cy="0" r="45" fill="#F1F5F9" stroke="#94A3B8" strokeWidth="2.5" />
-          <circle cx="-15" cy="-15" r="8" fill="#E2E8F0" />
-          <circle cx="15" cy="15" r="10" fill="#E2E8F0" />
-          <circle cx="-10" cy="15" r="5" fill="#E2E8F0" />
-          <circle cx="20" cy="-10" r="6" fill="#E2E8F0" />
-        </g>
+        {/* ── Exhaust trail (volumetric smoke puffs) ── */}
+        <motion.g style={{ opacity: trailOp }}>
+          {[0.10, 0.22, 0.36, 0.50, 0.63].map((frac, i) => (
+            <ellipse key={i}
+              cx={bezierX(frac)} cy={bezierY(frac)}
+              rx={4 + i * 2.2} ry={3 + i * 1.4}
+              fill="url(#exhg)"
+            />
+          ))}
+        </motion.g>
 
-        {/* 3. Flag */}
-        <motion.g
-          style={{
-            x: P3.x + 40,
-            y: P3.y - 10,
-            scale: flagScale,
-            originX: 0,
-            originY: 1
-          }}
-        >
-          <style>{`
-            @keyframes wave {
-              0%, 100% { transform: skewY(0deg); }
-              50% { transform: skewY(3deg); }
-            }
-            .waving-flag {
-              animation: wave 2s ease-in-out infinite;
-            }
-          `}</style>
-          <line x1="0" y1="0" x2="0" y2="-45" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
-          <g className="waving-flag" transform="translate(0, -45)">
-            <rect x="0" y="0" width="40" height="24" fill={activeColor} rx="2" />
-            <text x="6" y="16" fill="#FFFFFF" fontSize="9" fontWeight="900" fontFamily="sans-serif">a.</text>
+        {/* ── Moon ── */}
+        <motion.g style={{ x: moonX, y: moonY, scale: moonScale }}>
+          <circle cx="0" cy="0" r="53" fill="#f8fafc" filter="url(#shadow)"/>
+          <circle cx="0" cy="0" r="53" fill="#f1f5f9"/>
+          
+          {/* Soft cute craters */}
+          <circle cx="-15" cy="-10" r="8" fill="#e2e8f0" opacity="0.8"/>
+          <circle cx="20" cy="-5" r="12" fill="#e2e8f0" opacity="0.8"/>
+          <circle cx="-5" cy="22" r="10" fill="#e2e8f0" opacity="0.8"/>
+          <circle cx="-25" cy="15" r="4" fill="#e2e8f0" opacity="0.8"/>
+          <circle cx="15" cy="20" r="5" fill="#e2e8f0" opacity="0.8"/>
+        </motion.g>
+
+        {/* ── Landing dust cloud (photographic dusty haze) ── */}
+        <motion.g style={{ opacity: dustOp, scale: dustSc, originX:`${P3.x}px`, originY:`${P3.y+18}px` }}>
+          <ellipse cx={P3.x}    cy={P3.y+15} rx="35" ry="9"   fill="url(#dustg)"/>
+          <ellipse cx={P3.x-20} cy={P3.y+17} rx="16" ry="6"   fill="url(#dustg)" opacity="0.7"/>
+          <ellipse cx={P3.x+20} cy={P3.y+17} rx="16" ry="6"   fill="url(#dustg)" opacity="0.7"/>
+          <ellipse cx={P3.x}    cy={P3.y+12} rx="12" ry="4"   fill="url(#dustg)" opacity="0.45"/>
+        </motion.g>
+
+        {/* ── Flag ── */}
+        <motion.g style={{ x: P3.x+82, y: P3.y, scale: flagScale, originX:"0px", originY:"0px" }}>
+          <g transform="scale(1.8)">
+            {/* Pole — metallic cylinder suggestion */}
+            <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round"/>
+            <line x1="0"   y1="2" x2="0"   y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5"/>
+            {/* Flag fabric with wave */}
+            <g transform="translate(0,-58)">
+              <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor}/>
+              {/* Lighting fold */}
+              <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12"/>
+              {/* Right shadow */}
+              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="#000" opacity="0.15"/>
+              <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
+                fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
+            </g>
           </g>
         </motion.g>
 
-        {/* 4. Astronaut (Walks after landing) */}
-        <motion.g
-          style={{
-            x: astronautX,
-            y: P3.y + 15,
-            opacity: astronautOpacity
-          }}
-        >
-          <circle cx="0" cy="-16" r="6" fill="#475569" stroke="#F1F5F9" strokeWidth="1.5" />
-          <circle cx="1" cy="-16" r="3.5" fill="#38BDF8" />
-          <rect x="-6" y="-10" width="12" height="15" rx="3" fill="#F1F5F9" stroke="#475569" strokeWidth="1.5" />
-          <rect x="-9" y="-8" width="3" height="11" rx="1" fill="#94A3B8" />
-          <line x1="-3" y1="5" x2="-3" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="3" y1="5" x2="3" y2="10" stroke="#475569" strokeWidth="2.5" strokeLinecap="round" />
-        </motion.g>
+        {/* ── Astronaut — cute cartoon style ── */}
+        <motion.g style={{ x: astronautX, y: P3.y + 26, opacity: astronautOp }}>
+          <g transform="scale(1.8) translate(0, -9)">
+          <ellipse cx="0" cy="16" rx="8" ry="2" fill="#94a3b8" opacity="0.3"/>
 
-        {/* 5. Rocket & Flame */}
-        <motion.g
-          style={{
-            x: x,
-            y: y,
-            rotate: angle,
-            originX: 0.5,
-            originY: 0.5
-          }}
-        >
-          <motion.path
-            d="M -6,18 Q 0,40 6,18 Z"
-            fill="url(#flame-grad)"
-            style={{ opacity: flameOpacity }}
-          />
-          <g transform="translate(0, -5)">
-            <path d="M -12,12 L -18,22 L -8,22 Z" fill="#EF4444" />
-            <path d="M 12,12 L 18,22 L 8,22 Z" fill="#EF4444" />
-            <path d="M 0,-25 C -10,-10 -10,22 0,22 C 10,22 10,-10 0,-25 Z" fill="#F8FAFC" stroke="#475569" strokeWidth="2" />
-            <path d="M 0,-25 C -5,-18 -8,-10 0,-10 C 8,-10 5,-18 0,-25 Z" fill="#EF4444" />
-            <circle cx="0" cy="-2" r="4.5" fill="#38BDF8" stroke="#475569" strokeWidth="1.5" />
-            <circle cx="-1" cy="-3" r="1.5" fill="#FFFFFF" opacity="0.7" />
+          {/* Legs */}
+          <path d="M -3,6 L -5,14 Q -6,16 -3,15 Z" fill="#ffffff"/>
+          <path d="M 3,6 L 5,14 Q 6,16 3,15 Z" fill="#ffffff"/>
+
+          {/* Torso */}
+          <rect x="-6" y="-2" width="12" height="10" rx="4" fill="#ffffff"/>
+          <rect x="-4" y="0" width="8" height="6" rx="2" fill="#f1f5f9"/>
+          
+          {/* Backpack */}
+          <rect x="5" y="-3" width="4" height="10" rx="2" fill="#e2e8f0"/>
+
+          {/* Arms */}
+          <path d="M -5,0 Q -9,4 -7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+          <path d="M 5,0 Q 9,4 7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+
+          {/* Helmet */}
+          <circle cx="0" cy="-8" r="7" fill="#ffffff"/>
+          <circle cx="0" cy="-8" r="5" fill={activeColor}/>
+          {/* Visor shine */}
+          <ellipse cx="-2" cy="-10" rx="2" ry="1" fill="#ffffff" opacity="0.4" transform="rotate(-30,-2,-10)"/>
           </g>
         </motion.g>
+
+
+        {/* ── Rocket ── */}
+        <motion.g style={{ x, y, rotate: angle, opacity: rocketFade, originX:"0.5", originY:"0.5" }}>
+          <g transform="scale(1.2)">
+
+          {/* ── Cute Cartoon Flame ── */}
+          <motion.g style={{ opacity: flameOpacity, scaleY: flameLen, originX:"0.5", originY:"0" }} transform="translate(0,18)">
+            <path d="M -8,0 Q -12,15 0,35 Q 12,15 8,0 Z" fill="#f59e0b" filter="url(#bloom)"/>
+            <path d="M -4,0 Q -6,10 0,22 Q 6,10 4,0 Z" fill="#fbbf24" />
+            <path d="M -2,0 Q -3,5 0,12 Q 3,5 2,0 Z" fill="#fef08a" />
+          </motion.g>
+
+          {/* Rocket body group */}
+          <g transform="translate(0,-8)">
+            
+            {/* ── Left fin ── */}
+            <path d="M -12,12 Q -22,25 -22,32 Q -22,35 -16,35 L -10,25 Z" fill={activeColor}/>
+            {/* ── Right fin ── */}
+            <path d="M 12,12 Q 22,25 22,32 Q 22,35 16,35 L 10,25 Z" fill={activeColor}/>
+
+            {/* Engine nozzle */}
+            <path d="M -8,22 L -10,28 L 10,28 L 8,22 Z" fill="#64748b"/>
+
+            {/* ── Main body — glossy white capsule ── */}
+            <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#ffffff" filter="url(#shadow)"/>
+            <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#f8fafc"/>
+            
+            {/* Soft inner shadow/gloss */}
+            <path d="M -8,-10 C -10,5 -8,15 -2,20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>
+
+            {/* ── Nose cone ── */}
+            <path d="M 0,-30 C -9,-15 -11,-5 -12,0 L 12,0 C 11,-5 9,-15 0,-30 Z" fill={activeColor}/>
+            <path d="M -4,-25 C -6,-15 -6,-5 -5,0" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+
+            {/* ── Porthole window ── */}
+            <circle cx="0" cy="5" r="7" fill="#cbd5e1"/>
+            <circle cx="0" cy="5" r="5" fill="#ffffff" filter="url(#softglow)"/>
+            <circle cx="0" cy="5" r="5" fill="#f1f5f9"/>
+            <path d="M -2,2 Q 0,4 2,2" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round"/>
+          </g>
+          </g>
+        </motion.g>
+
       </svg>
     </div>
   );
 };
-
 const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true }) => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
