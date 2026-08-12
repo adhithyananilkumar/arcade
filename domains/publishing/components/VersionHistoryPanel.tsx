@@ -58,6 +58,13 @@ interface VersionHistoryPanelProps {
   isSuView?: boolean;
   statusHistory?: ContentStatusHistoryResponse[];
   statusHistoryLoading?: boolean;
+  /**
+   * Renders as inline content sized to fill its parent instead of its own
+   * fixed-position, screen-docked overlay — for dropping into a host panel
+   * (EditorRightSidebar's "History" tab) that already provides the backdrop,
+   * header, and close button.
+   */
+  embedded?: boolean;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -154,6 +161,7 @@ export function VersionHistoryPanel({
   isSuView,
   statusHistory,
   statusHistoryLoading,
+  embedded,
 }: VersionHistoryPanelProps) {
   const [restoring, setRestoring] = useState(false);
   const [tab, setTab] = useState<"log" | "comment">("log");
@@ -179,36 +187,9 @@ export function VersionHistoryPanel({
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
-
-      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
-              <History size={17} />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
-                {isSuView ? "History" : "Version history"}
-              </h2>
-              <p className="text-[11px] font-medium text-slate-400">
-                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Tabs — SU review */}
+  const panelInner = (
+    <>
+      {/* Tabs — SU review */}
         {isSuView && (
           <div className="shrink-0 px-5 pt-3 pb-3">
             <div className="flex gap-1 rounded-full border border-slate-200/80 bg-slate-50 p-1">
@@ -431,6 +412,43 @@ export function VersionHistoryPanel({
             </div>
           </div>
         )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex h-full min-h-0 flex-1 flex-col">{panelInner}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex justify-end">
+      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
+
+      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
+              <History size={17} />
+            </span>
+            <div>
+              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
+                {isSuView ? "History" : "Version history"}
+              </h2>
+              <p className="text-[11px] font-medium text-slate-400">
+                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {panelInner}
       </aside>
     </div>
   );

@@ -41,6 +41,7 @@ import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import type * as Y from "yjs";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 import {
@@ -58,6 +59,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -66,6 +68,7 @@ import {
   verticalListSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
@@ -73,7 +76,8 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
+import { EditorRightSidebar, type RightSidebarTab } from "./EditorRightSidebar";
+import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
@@ -118,14 +122,11 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
-  History,
-  MessageSquare,
+  Menu,
   Lock,
   Eye,
   GripVertical,
   FileQuestion,
-  Users,
-  UserPlus,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -535,16 +536,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // a CRDT encode and a network round-trip. Reset whenever the open lesson changes.
   const lastSavedBodyRef = useRef<string | null>(null);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
+  // Status history, version history, and collaborators share one floating
+  // right-side panel (EditorRightSidebar): a single hamburger button opens/
+  // closes it, and its own internal pill tabs pick which of the three shows.
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState<RightSidebarTab>("status");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
+  const [statusHistoryLoading, setStatusHistoryLoading] = useState(false);
+  const [statusHistoryError, setStatusHistoryError] = useState<string | null>(null);
 
   const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
     status: "disabled",
     collaborators: [],
   });
-  const [collabPopoverOpen, setCollabPopoverOpen] = useState(false);
 
   const handleCollabStateChange = useCallback((state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => {
     setCollabState(state);
@@ -578,10 +585,36 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }, [contentId, collabApiBasePath]);
 
   useEffect(() => {
-    if (collabPopoverOpen && contentId) {
+    if (rightPanelOpen && rightPanelTab === "collab" && contentId) {
       loadCollaborators();
     }
-  }, [collabPopoverOpen, contentId, loadCollaborators]);
+  }, [rightPanelOpen, rightPanelTab, contentId, loadCollaborators]);
+
+  const statusHistoryApiPath = useMemo(() => {
+    if (contentType === "roadmap") return `/api/roadmaps/${contentId}/status-history`;
+    if (contentType === "workshop") return `/api/v1/events/${contentId}/status-history`;
+    return `/api/courses/${contentId}/status-history`;
+  }, [contentType, contentId]);
+
+  const loadStatusHistory = useCallback(async () => {
+    if (!contentId) return;
+    setStatusHistoryLoading(true);
+    setStatusHistoryError(null);
+    try {
+      const data = await api.get<ContentStatusHistoryResponse[]>(statusHistoryApiPath);
+      setStatusHistory(data ?? []);
+    } catch (e) {
+      setStatusHistoryError(e instanceof Error ? e.message : "Failed to load status history");
+    } finally {
+      setStatusHistoryLoading(false);
+    }
+  }, [contentId, statusHistoryApiPath]);
+
+  useEffect(() => {
+    if (rightPanelOpen && rightPanelTab === "status" && contentId) {
+      loadStatusHistory();
+    }
+  }, [rightPanelOpen, rightPanelTab, contentId, loadStatusHistory]);
 
   useEffect(() => {
     if (!inviteEmail || inviteEmail.length < 2) {
@@ -736,7 +769,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const openLesson = useCallback(
     async (lesson: LessonNode) => {
       setView("tree");
-      setHistoryOpen(false);
+      // Version history is per-lesson — close the panel on a lesson switch if
+      // it's what's showing. Status/collaborators aren't lesson-scoped, so
+      // leave the panel open (on whichever tab) otherwise.
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
 
       const flushPending = editorRef.current
         ? Promise.resolve(editorRef.current.flush()).catch(() => {
@@ -774,7 +810,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
     },
-    [adapter, resolveLegacyContent]
+    [adapter, resolveLegacyContent, rightPanelTab]
   );
 
   // ── Bootstrap: create or load content on mount ───────────────────────────
@@ -1063,7 +1099,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       activeYDocRef.current = null;
       setActiveYDoc(null);
       setActiveSeedContent(undefined);
-      setHistoryOpen(false);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
     }
     try {
       await adapter.deleteContainer(mod.id);
@@ -1083,7 +1119,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       activeYDocRef.current = null;
       setActiveYDoc(null);
       setActiveSeedContent(undefined);
-      setHistoryOpen(false);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
     }
     try {
       await adapter.deleteLeaf(lessonId, "document");
@@ -1341,24 +1377,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           // Dialog closes itself via its own onClose prop after calling onSaved.
         }}
       />
-      {activeLessonId && (
-        <VersionHistoryOrchestrator
-          lessonId={activeLessonId}
-          open={historyOpen}
-          onClose={() => setHistoryOpen(false)}
-          refreshKey={historyRefreshKey}
-          onRestore={handleRestore}
-          // Version previews are read-only, so they go through the JSON -> React
-          // renderer instead of a second full Tiptap instance. Mounting ArcadeEditor
-          // here spun up the entire extension set and bubble layer just to display a
-          // snapshot, and it pulled the heavy editor chunk into the history panel.
-          renderEditor={(previewDoc, selectedId) => (
-            <div key={selectedId} className="bg-white">
-              <TiptapContentView body={JSON.stringify(previewDoc)} />
-            </div>
-          )}
-        />
-      )}
 
       {/* ── Floating Editor Top Bar (Invisible Wrapper) ───── */}
       <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
@@ -1403,24 +1421,21 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
           {/* Right actions */}
           <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-2">
-            {activeLessonId && (
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                title="History"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
-              >
-                <History size={16} />
-              </button>
-            )}
-
+            {/* Single entry point into EditorRightSidebar — its own pill tabs
+                (Status / History / Team) switch what's shown inside; this just
+                toggles the panel open/closed, mirroring a standard hamburger menu. */}
             <button
               type="button"
-              onClick={() => setStatusHistoryOpen(true)}
-              title="Status"
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
+              onClick={() => setRightPanelOpen((prev: boolean) => !prev)}
+              title={rightPanelOpen ? "Close panel" : "Open panel"}
+              aria-expanded={rightPanelOpen}
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm border transition-all duration-300 ease-in-out ${
+                rightPanelOpen
+                  ? "bg-[#14142b] text-white border-[#14142b]"
+                  : "bg-white/60 text-[#14142b] border-white/40 backdrop-blur-md hover:bg-[#14142b] hover:text-white hover:border-[#14142b]"
+              }`}
             >
-              <MessageSquare size={16} />
+              <Menu size={16} />
             </button>
 
             {activeLessonId && contentType === "workshop" && activeModuleId && (
@@ -1438,7 +1453,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               <button
                 type="button"
                 onClick={askSubmit}
-                className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-5 py-2 text-sm font-bold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-all hover:scale-105 hover:bg-[#232735] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all duration-300 ease-in-out hover:bg-[#14142b] hover:text-white hover:border-[#14142b] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={14} />
                 <span className="hidden sm:inline">
@@ -1461,233 +1476,55 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </button>
             )}
 
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCollabPopoverOpen((prev) => !prev)}
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
-                title="Share"
-              >
-                <span className="absolute top-0 right-0 flex h-2.5 w-2.5">
-                  {collabState.status === "connected" ? (
-                    <>
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
-                    </>
-                  ) : collabState.status === "connecting" ? (
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 border border-white animate-pulse"></span>
-                  ) : (
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-300 border border-white"></span>
-                  )}
-                </span>
-                <Users size={16} />
-              </button>
-
-              {collabPopoverOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <Users size={16} className="text-[#14142b]" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#14142b]">
-                        Real-Time Collaboration
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        collabState.status === "connected"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : collabState.status === "connecting"
-                          ? "bg-amber-50 text-amber-600"
-                          : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {collabState.status}
-                    </span>
-                  </div>
-
-                  {/* Section 1: ACTIVE EDITORS (Hocuspocus Real-time Awareness) */}
-                  <div className="mt-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Active Editors ({collabState.collaborators.length})
-                      </span>
-                    </div>
-                    {collabState.collaborators.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic py-0.5">No other active editors</p>
-                    ) : (
-                      <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1">
-                        {collabState.collaborators.map((c) => (
-                          <div
-                            key={c.clientId}
-                            className="flex items-center justify-between rounded-lg bg-emerald-50/60 border border-emerald-100 p-2 text-xs"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white shadow-sm"
-                                style={{ backgroundColor: c.user?.color || "#10b981" }}
-                              >
-                                {(c.user?.name || "A")[0].toUpperCase()}
-                              </div>
-                              <span className="font-semibold text-slate-800">
-                                {c.user?.name || `User ${c.clientId}`}
-                              </span>
-                            </div>
-                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" title="Editing now" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Section 2: COLLABORATORS (Access Control) */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Collaborators ({eventCollaborators.length})
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowAddForm((prev) => !prev)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
-                      >
-                        <UserPlus size={13} />
-                        <span>Add</span>
-                      </button>
-                    </div>
-
-                    {/* Inline Add Collaborator Form */}
-                    {showAddForm && (
-                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs animate-in fade-in duration-150">
-                        <div className="relative">
-                          <input
-                            type="text"
-                            placeholder="User email or name..."
-                            value={inviteEmail}
-                            onChange={(e) => setInviteEmail(e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
-                          />
-                          {userSearchResults.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full mt-1 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg z-50">
-                              {userSearchResults.map((u) => (
-                                <button
-                                  key={u.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setInviteEmail(u.label);
-                                    setUserSearchResults([]);
-                                  }}
-                                  className="w-full text-left px-2.5 py-1.5 text-xs hover:bg-indigo-50 flex items-center justify-between"
-                                >
-                                  <span className="font-medium text-slate-800">{u.label}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2">
-                          <select
-                            value={inviteRole}
-                            onChange={(e) => setInviteRole(e.target.value as any)}
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700 bg-white font-medium focus:outline-none"
-                          >
-                            <option value="EDITOR">Editor</option>
-                            <option value="MANAGER">Manager</option>
-                            <option value="VIEWER">Viewer</option>
-                          </select>
-
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowAddForm(false);
-                                setInviteEmail("");
-                                setUserSearchResults([]);
-                              }}
-                              className="px-2 py-1 text-xs text-slate-500 hover:text-slate-700"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              disabled={inviting || !inviteEmail.trim()}
-                              onClick={() => handleAddCollaborator()}
-                              className="rounded-lg bg-[#14142b] px-3 py-1 text-xs font-semibold text-white hover:bg-[#232735] disabled:opacity-50 transition-colors"
-                            >
-                              {inviting ? "Adding..." : "Add"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Collaborators List */}
-                    {loadingCollaborators ? (
-                      <p className="text-xs text-slate-400 py-1">Loading collaborators...</p>
-                    ) : eventCollaborators.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic py-1">No collaborators added</p>
-                    ) : (
-                      <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
-                        {eventCollaborators.map((member) => (
-                          <div
-                            key={member.userId}
-                            className="flex items-center justify-between rounded-lg bg-slate-50 p-2 text-xs"
-                          >
-                            <div className="flex items-center gap-2 truncate">
-                              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-600">
-                                {(member.name || member.email || "U")[0].toUpperCase()}
-                              </div>
-                              <div className="truncate">
-                                <p className="font-medium text-slate-800 truncate">{member.name || member.email}</p>
-                                <p className="text-[10px] text-slate-400 truncate">{member.email}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <span
-                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                                  member.role === "OWNER"
-                                    ? "bg-purple-100 text-purple-700"
-                                    : member.role === "MANAGER"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : member.role === "EDITOR"
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-slate-100 text-slate-600"
-                                }`}
-                              >
-                                {member.role}
-                              </span>
-
-                              {member.role !== "OWNER" && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveCollaborator(member.userId, member.name || member.email)}
-                                  className="text-slate-400 hover:text-rose-600 p-0.5 transition-colors"
-                                  title="Remove collaborator"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-                    <span>Document ID:</span>
-                    <span className="font-mono text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded truncate max-w-[140px]">
-                      {activeLessonId ? `lesson:${activeLessonId}` : "None"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
+
+      <EditorRightSidebar
+        open={rightPanelOpen}
+        tab={rightPanelTab}
+        onTabChange={setRightPanelTab}
+        onClose={() => setRightPanelOpen(false)}
+        statusHistory={statusHistory}
+        statusHistoryLoading={statusHistoryLoading}
+        statusHistoryError={statusHistoryError}
+        onRetryStatusHistory={loadStatusHistory}
+        activeLessonId={activeLessonId}
+        collabState={collabState}
+        eventCollaborators={eventCollaborators}
+        loadingCollaborators={loadingCollaborators}
+        showAddForm={showAddForm}
+        onShowAddFormChange={setShowAddForm}
+        inviteEmail={inviteEmail}
+        onInviteEmailChange={setInviteEmail}
+        inviteRole={inviteRole}
+        onInviteRoleChange={setInviteRole}
+        userSearchResults={userSearchResults}
+        inviting={inviting}
+        onAddCollaborator={handleAddCollaborator}
+        onRemoveCollaborator={handleRemoveCollaborator}
+        historyContent={
+          activeLessonId ? (
+            <VersionHistoryOrchestrator
+              lessonId={activeLessonId}
+              open={rightPanelOpen && rightPanelTab === "history"}
+              onClose={() => setRightPanelOpen(false)}
+              refreshKey={historyRefreshKey}
+              onRestore={handleRestore}
+              embedded
+              // Version previews are read-only, so they go through the JSON -> React
+              // renderer instead of a second full Tiptap instance. Mounting ArcadeEditor
+              // here spun up the entire extension set and bubble layer just to display a
+              // snapshot, and it pulled the heavy editor chunk into the history panel.
+              renderEditor={(previewDoc, selectedId) => (
+                <div key={selectedId} className="bg-white">
+                  <TiptapContentView body={JSON.stringify(previewDoc)} />
+                </div>
+              )}
+            />
+          ) : null
+        }
+      />
 
     {/* Floating Status & Save State (Bottom Right) */}
     <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex flex-col items-end gap-2">
@@ -2037,18 +1874,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
-      <ContentStatusHistoryModal
-        contentId={contentId!}
-        contentType={
-          contentType === "roadmap"
-            ? "roadmap"
-            : contentType === "workshop"
-              ? "workshop"
-              : "course"
-        }
-        open={statusHistoryOpen}
-        onClose={() => setStatusHistoryOpen(false)}
-      />
     </div>
   );
 }
