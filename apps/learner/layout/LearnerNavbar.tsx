@@ -227,6 +227,13 @@ export default function LearnerNavbar() {
     return null;
   })();
 
+  const isStudio = pathname.startsWith('/studio');
+  const studioCrumb = (() => {
+    if (!isStudio) return null;
+    if (pathname.startsWith('/studio/content')) return 'Content';
+    return null;
+  })();
+
   if (/\/learn\/[^/]+\/exam\/(start|terminated)\/?$/.test(pathname)) {
     return null;
   }
@@ -254,19 +261,19 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Center: small Console breadcrumbs */}
-      {isConsole && (
+      {/* Center: small Console & Studio breadcrumbs */}
+      {(isConsole || isStudio) && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
           <Link
-            href="/console"
+            href={isConsole ? "/console" : "/studio"}
             className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
           >
-            Console
+            {isConsole ? "Console" : "Studio"}
           </Link>
-          {consoleCrumb && (
+          {(consoleCrumb || studioCrumb) && (
             <>
               <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb}</span>
+              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb || studioCrumb}</span>
             </>
           )}
         </div>

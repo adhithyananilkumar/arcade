@@ -39,6 +39,9 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
 import type * as Y from "yjs";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 import {
@@ -56,6 +59,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -64,6 +68,7 @@ import {
   verticalListSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
@@ -71,8 +76,9 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { ContentStatusHistoryModal } from "@/domains/publishing/components/ContentStatusHistoryModal";
 import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
+import { EditorRightSidebar, type RightSidebarTab } from "./EditorRightSidebar";
+import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
 import { DebouncedTitleInput } from "@/apps/creator/components/DebouncedTitleInput";
 
@@ -81,7 +87,7 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor, QuestionBankPanel } from "@/domains/assessments";
+import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
@@ -116,13 +122,12 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
-  History,
-  MessageSquare,
+  Menu,
   Lock,
   Eye,
   GripVertical,
-  Users,
   UserPlus,
+  FileQuestion,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -261,41 +266,6 @@ function ConfirmDialog({
               }`}
           >
             {busy ? "Working…" : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Question Bank placeholder dialog ─────────────────────────────────────────
-
-function QuestionBankDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          <X size={18} />
-        </button>
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50">
-            <FileText size={22} className="text-indigo-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Question Bank</h3>
-          <p className="text-sm leading-relaxed text-gray-500">
-            The Question Bank editor is coming in the next phase. You&apos;ll be able to
-            create MCQ, short answer, and coding questions linked to this course.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-          >
-            Got it
           </button>
         </div>
       </div>
@@ -529,8 +499,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     return contentType === "course"
       ? new CourseAdapter()
       : contentType === "roadmap"
-      ? new RoadmapAdapter()
-      : new EventAdapter(contentId || "");
+        ? new RoadmapAdapter()
+        : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -545,6 +515,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
+
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
@@ -567,10 +538,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // a CRDT encode and a network round-trip. Reset whenever the open lesson changes.
   const lastSavedBodyRef = useRef<string | null>(null);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [statusHistoryOpen, setStatusHistoryOpen] = useState(false);
+  // Status history, version history, and collaborators share one floating
+  // right-side panel (EditorRightSidebar): a single hamburger button opens/
+  // closes it, and its own internal pill tabs pick which of the three shows.
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [rightPanelTab, setRightPanelTab] = useState<RightSidebarTab>("status");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+
+  const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
+  const [statusHistoryLoading, setStatusHistoryLoading] = useState(false);
+  const [statusHistoryError, setStatusHistoryError] = useState<string | null>(null);
 
   const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
     status: "disabled",
@@ -609,11 +587,42 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
   }, [contentId, collabApiBasePath]);
 
-  useEffect(() => {
     if (collabPopoverOpen && contentId) {
       loadCollaborators();
     }
   }, [collabPopoverOpen, contentId, loadCollaborators]);
+
+  useEffect(() => {
+    if (rightPanelOpen && rightPanelTab === "collab" && contentId) {
+      loadCollaborators();
+    }
+  }, [rightPanelOpen, rightPanelTab, contentId, loadCollaborators]);
+
+  const statusHistoryApiPath = useMemo(() => {
+    if (contentType === "roadmap") return `/api/roadmaps/${contentId}/status-history`;
+    if (contentType === "workshop") return `/api/v1/events/${contentId}/status-history`;
+    return `/api/courses/${contentId}/status-history`;
+  }, [contentType, contentId]);
+
+  const loadStatusHistory = useCallback(async () => {
+    if (!contentId) return;
+    setStatusHistoryLoading(true);
+    setStatusHistoryError(null);
+    try {
+      const data = await api.get<ContentStatusHistoryResponse[]>(statusHistoryApiPath);
+      setStatusHistory(data ?? []);
+    } catch (e) {
+      setStatusHistoryError(e instanceof Error ? e.message : "Failed to load status history");
+    } finally {
+      setStatusHistoryLoading(false);
+    }
+  }, [contentId, statusHistoryApiPath]);
+
+  useEffect(() => {
+    if (rightPanelOpen && rightPanelTab === "status" && contentId) {
+      loadStatusHistory();
+    }
+  }, [rightPanelOpen, rightPanelTab, contentId, loadStatusHistory]);
 
   useEffect(() => {
     if (!inviteEmail || inviteEmail.length < 2) {
@@ -676,8 +685,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // Imperative handle to force-save the open lesson before navigating away.
   const editorRef = useRef<ArcadeEditorHandle>(null);
 
-  // Main-panel view: the lesson editor ("tree") or the course Settings screen.
-  const [view, setView] = useState<"tree" | "settings">("tree");
+  // Main-panel view: the lesson editor ("tree").
+  const [view, setView] = useState<"tree">("tree");
 
   // Sidebar collapse state
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -710,17 +719,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         // Flatten items to get their current order
         const items = [...m.lessons.map(l => ({ id: l.id, type: 'lesson' as const, node: l }))]
           .sort((a, b) => a.node.position - b.node.position);
-        
+
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
 
         if (oldIndex === -1 || newIndex === -1) return m;
 
         const newItems = arrayMove(items, oldIndex, newIndex);
-        
+
         // Update positions
         const nextLessons = [...m.lessons];
-        
+
         const itemIds: string[] = [];
 
         newItems.forEach((item, index) => {
@@ -768,7 +777,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const openLesson = useCallback(
     async (lesson: LessonNode) => {
       setView("tree");
-      setHistoryOpen(false);
+      // Version history is per-lesson — close the panel on a lesson switch if
+      // it's what's showing. Status/collaborators aren't lesson-scoped, so
+      // leave the panel open (on whichever tab) otherwise.
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
 
       const flushPending = editorRef.current
         ? Promise.resolve(editorRef.current.flush()).catch(() => {
@@ -806,7 +818,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
     },
-    [adapter, resolveLegacyContent]
+    [adapter, resolveLegacyContent, rightPanelTab]
   );
 
   // ── Bootstrap: create or load content on mount ───────────────────────────
@@ -1095,7 +1107,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       activeYDocRef.current = null;
       setActiveYDoc(null);
       setActiveSeedContent(undefined);
-      setHistoryOpen(false);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
     }
     try {
       await adapter.deleteContainer(mod.id);
@@ -1115,7 +1127,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       activeYDocRef.current = null;
       setActiveYDoc(null);
       setActiveSeedContent(undefined);
-      setHistoryOpen(false);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
     }
     try {
       await adapter.deleteLeaf(lessonId, "document");
@@ -1266,7 +1278,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     try {
       if (contentType === "course") {
         if (data.coverImageUrl !== undefined || data.pricingModel !== undefined || data.priceAmount !== undefined) {
-           await api.patch(`/api/courses/${contentId}`, data);
+          await api.patch(`/api/courses/${contentId}`, data);
         }
         const updated = await api.post<any>(`/api/courses/${contentId}/submit`, { message: data.message });
         setStatus(updated.status);
@@ -1331,12 +1343,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }
 
   return (
-    <div className="relative flex flex-1 min-h-[calc(100vh-64px)] flex-col overflow-hidden bg-white">
-      {contentType === "course" && contentId ? (
-        <QuestionBankPanel open={qbOpen} courseId={contentId} onClose={() => setQbOpen(false)} />
-      ) : (
-        <QuestionBankDialog open={qbOpen} onClose={() => setQbOpen(false)} />
-      )}
+    // `fixed inset-0` rather than `h-screen` — a height utility still lets this box
+    // contribute to the document's scrollable area if any ancestor's height
+    // resolution is off (e.g. the immersive-route check in LearnerShell misses this
+    // path), which is what produced the page-wide scrollbar on top of the canvas's
+    // own. Taking it out of flow entirely removes that possibility outright: the
+    // canvas's `overflow-y-auto` below is the only scroll container left.
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#fafafa]">
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
+        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
+        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] animate-pulse rounded-full bg-emerald-500/15 blur-[120px] duration-10000" />
+      </div>
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
@@ -1367,91 +1385,65 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           // Dialog closes itself via its own onClose prop after calling onSaved.
         }}
       />
-      {activeLessonId && (
-        <VersionHistoryOrchestrator
-          lessonId={activeLessonId}
-          open={historyOpen}
-          onClose={() => setHistoryOpen(false)}
-          refreshKey={historyRefreshKey}
-          onRestore={handleRestore}
-          // Version previews are read-only, so they go through the JSON -> React
-          // renderer instead of a second full Tiptap instance. Mounting ArcadeEditor
-          // here spun up the entire extension set and bubble layer just to display a
-          // snapshot, and it pulled the heavy editor chunk into the history panel.
-          renderEditor={(previewDoc, selectedId) => (
-            <div key={selectedId} className="bg-white">
-              <TiptapContentView body={JSON.stringify(previewDoc)} />
-            </div>
-          )}
-        />
-      )}
 
-      {/* ── Editor top bar — uniform across course / workshop / roadmap ───── */}
-      <header className="absolute inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-[1200px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2 sm:px-6">
-          {/* Left: Back → Content Studio */}
-          <div className="justify-self-start">
+      {/* ── Floating Editor Top Bar (Invisible Wrapper) ───── */}
+      <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
+        <div className="relative flex w-full items-center justify-between">
+          {/* Left: Logo & Back Button */}
+          <div className="pointer-events-auto flex items-center gap-2">
+            {/* Logo Island */}
+            <div className="flex h-10 shrink-0 items-center rounded-full px-5 bg-white/60 shadow-sm border border-white/40 backdrop-blur-md">
+              <Link href="/" className="group flex cursor-pointer items-center">
+                <Image
+                  src="/arcade.svg"
+                  alt="Arcade"
+                  width={85}
+                  height={24}
+                  className="h-5 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+                />
+              </Link>
+            </div>
+            
+            {/* Back Button */}
             <button
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
               title="Save and return to Content Studio"
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-60"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/60 text-[#14142b] shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md disabled:opacity-60 backdrop-blur-md"
             >
               <ArrowLeft size={16} />
-              <span className="hidden sm:inline">{navigatingBack ? "Saving…" : "Studio"}</span>
             </button>
           </div>
 
-          {/* Center title */}
-          <div className="min-w-0 justify-self-center">
-            <span className="block max-w-[60vw] truncate px-1.5 py-1 text-center text-sm font-bold tracking-tight text-[#14142b] sm:max-w-md">
-              {view === "settings"
-                ? `${adapter.terminology.root} Settings`
-                : activeLessonId
+          {/* Center: Title */}
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3">
+            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
+              <span className="block max-w-[40vw] truncate">
+                  {activeLessonId
                   ? activeLessonTitle
                   : title || adapter.terminology.root}
-            </span>
+              </span>
+            </div>
           </div>
 
           {/* Right actions */}
-          <div className="flex flex-shrink-0 items-center justify-self-end gap-1.5">
-            <StatusPill status={status} />
-
-            {activeLessonId && (
-              <button
-                type="button"
-                onClick={() => setHistoryOpen(true)}
-                title="Lesson version history"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-              >
-                <History size={15} />
-                <span className="hidden md:inline">History</span>
-              </button>
-            )}
-
+          <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-2">
+            {/* Single entry point into EditorRightSidebar — its own pill tabs
+                (Status / History / Team) switch what's shown inside; this just
+                toggles the panel open/closed, mirroring a standard hamburger menu. */}
             <button
               type="button"
-              onClick={() => setStatusHistoryOpen(true)}
-              title="Course status & reviewer comments"
-              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              <MessageSquare size={15} />
-              <span className="hidden md:inline">Status</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-              title={`${adapter.terminology.root} Settings`}
-              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold transition-colors ${
-                view === "settings"
-                  ? "bg-[#14142b] text-white"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-[#14142b]"
+              onClick={() => setRightPanelOpen((prev: boolean) => !prev)}
+              title={rightPanelOpen ? "Close panel" : "Open panel"}
+              aria-expanded={rightPanelOpen}
+              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm border transition-all duration-300 ease-in-out ${
+                rightPanelOpen
+                  ? "bg-[#14142b] text-white border-[#14142b]"
+                  : "bg-white/60 text-[#14142b] border-white/40 backdrop-blur-md hover:bg-[#14142b] hover:text-white hover:border-[#14142b]"
               }`}
             >
-              <Settings size={15} />
-              <span className="hidden md:inline">Settings</span>
+              <Menu size={16} />
             </button>
 
             {contentId && (
@@ -1471,31 +1463,27 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 type="button"
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
               >
-                <Settings size={15} />
-                <span className="hidden lg:inline">Day</span>
+                <Settings size={16} />
               </button>
             )}
 
             {status !== "SUBMITTED" && (
-              <div className="flex items-center gap-3">
-                <span className="hidden sm:inline text-xs font-medium text-slate-400">All changes saved</span>
-                <button
-                  type="button"
-                  onClick={askSubmit}
-                  className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#14142b] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Send size={14} />
-                  <span className="hidden sm:inline">
-                    {status === "PUBLISHED" || status === "APPROVED"
-                      ? "Submit Updates"
-                      : status === "REJECTED"
-                        ? "Resubmit"
-                        : "Submit"}
-                  </span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={askSubmit}
+                className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all duration-300 ease-in-out hover:bg-[#14142b] hover:text-white hover:border-[#14142b] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Send size={14} />
+                <span className="hidden sm:inline">
+                  {status === "PUBLISHED" || status === "APPROVED"
+                    ? "Submit Updates"
+                    : status === "REJECTED"
+                      ? "Resubmit"
+                      : "Submit"}
+                </span>
+              </button>
             )}
 
             {contentType === "workshop" && contentId && (
@@ -1741,113 +1729,170 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           </div>
         </div>
-      </header>
+      </div>
+
+      <EditorRightSidebar
+        open={rightPanelOpen}
+        tab={rightPanelTab}
+        onTabChange={setRightPanelTab}
+        onClose={() => setRightPanelOpen(false)}
+        statusHistory={statusHistory}
+        statusHistoryLoading={statusHistoryLoading}
+        statusHistoryError={statusHistoryError}
+        onRetryStatusHistory={loadStatusHistory}
+        activeLessonId={activeLessonId}
+        collabState={collabState}
+        eventCollaborators={eventCollaborators}
+        loadingCollaborators={loadingCollaborators}
+        showAddForm={showAddForm}
+        onShowAddFormChange={setShowAddForm}
+        inviteEmail={inviteEmail}
+        onInviteEmailChange={setInviteEmail}
+        inviteRole={inviteRole}
+        onInviteRoleChange={setInviteRole}
+        userSearchResults={userSearchResults}
+        inviting={inviting}
+        onAddCollaborator={handleAddCollaborator}
+        onRemoveCollaborator={handleRemoveCollaborator}
+        historyContent={
+          activeLessonId ? (
+            <VersionHistoryOrchestrator
+              lessonId={activeLessonId}
+              open={rightPanelOpen && rightPanelTab === "history"}
+              onClose={() => setRightPanelOpen(false)}
+              refreshKey={historyRefreshKey}
+              onRestore={handleRestore}
+              embedded
+              // Version previews are read-only, so they go through the JSON -> React
+              // renderer instead of a second full Tiptap instance. Mounting ArcadeEditor
+              // here spun up the entire extension set and bubble layer just to display a
+              // snapshot, and it pulled the heavy editor chunk into the history panel.
+              renderEditor={(previewDoc, selectedId) => (
+                <div key={selectedId} className="bg-white">
+                  <TiptapContentView body={JSON.stringify(previewDoc)} />
+                </div>
+              )}
+            />
+          ) : null
+        }
+      />
+
+    {/* Floating Status & Save State (Bottom Right) */}
+    <div className="absolute bottom-6 right-6 z-30 pointer-events-none flex flex-col items-end gap-2">
+      {status !== "SUBMITTED" && (
+        <div className="pointer-events-auto flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-3 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-colors hover:bg-white">
+          {hasDraftChanges ? "Unsaved changes" : "Saved"}
+        </div>
+      )}
+      <div className="pointer-events-auto rounded-full shadow-lg bg-white/60 backdrop-blur-md p-1 border border-white/40 transition-colors hover:bg-white">
+        <StatusPill status={status} />
+      </div>
+    </div>
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
         {contentType !== "roadmap" && (
-          <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
-            {!sidebarOpen ? (
-              <button
-                type="button"
-                title="Expand sidebar"
-                onClick={() => setSidebarOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white/95 text-slate-400 shadow-[0_6px_18px_rgba(20,20,43,0.08)] transition-colors hover:text-[#14142b]"
-              >
-                <PanelLeftOpen size={18} />
-              </button>
-            ) : (
-              <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
-                {/* ── Sidebar header ───────────────── */}
-                <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
-                  <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    {adapter.terminology.root} structure
-                  </span>
-                  <button
-                    type="button"
-                    title="Collapse sidebar"
-                    onClick={() => setSidebarOpen(false)}
-                    className="flex flex-shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-                  >
-                    <PanelLeftClose size={16} />
-                  </button>
-                </div>
+          <aside className="absolute left-4 top-36 z-20 flex flex-col h-[calc(100vh-10rem)] w-[268px] pointer-events-none">
+            <div className="pointer-events-auto flex flex-col w-full h-full">
+              {!sidebarOpen ? (
+                <button
+                  type="button"
+                  title="Expand sidebar"
+                  onClick={() => setSidebarOpen(true)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-lg backdrop-blur-xl transition-all hover:bg-white/60 hover:shadow-xl"
+                >
+                  <PanelLeftOpen size={18} />
+                </button>
+              ) : (
+                <div className="flex w-full flex-col h-full overflow-hidden">
+                  {/* ── Sidebar header ───────────────── */}
+                  <div className="flex flex-shrink-0 items-center justify-between mb-2">
+                    <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
+                      {adapter.terminology.root} structure
+                    </span>
+                    <button
+                      type="button"
+                      title="Collapse sidebar"
+                      onClick={() => setSidebarOpen(false)}
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/40 text-[#14142b] shadow-sm backdrop-blur-xl transition-all hover:bg-white/60"
+                    >
+                      <PanelLeftClose size={14} />
+                    </button>
+                  </div>
 
-                {/* ── Body ──────────────────────────────── */}
-                <div className="flex min-h-0 flex-1 flex-col">
-                  {/* Tree scroll area */}
-                  <div className="flex-1 overflow-y-auto p-2">
+                  {/* ── Body ──────────────────────────────── */}
+                  <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 scrollbar-hide">
                     {modules.length === 0 && (
-                      <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-                        <Layers size={28} className="text-gray-300" />
-                        <p className="text-xs text-gray-400">
+                      <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+                        <Layers size={24} className="text-[#14142b]/40" />
+                        <p className="text-xs font-medium text-[#14142b]/60">
                           {contentType === "workshop"
-                            ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
+                            ? "Create your first workshop day."
                             : "No modules yet. Add a module to get started."}
                         </p>
                       </div>
                     )}
 
                     {modules.map((mod) => (
-                      <div key={mod.id} className="mb-0.5">
-                        {/* Module row */}
-                        <div className="group flex items-center gap-1 rounded-md px-1.5 py-1 hover:bg-gray-100">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setModules((prev) =>
-                                prev.map((m) =>
-                                  m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                      <div key={mod.id} className="mb-2 flex flex-col gap-1">
+                        {/* Module pill row */}
+                        <div className="group flex items-center gap-2 rounded-2xl border border-white/40 bg-white/60 backdrop-blur-md px-3 py-2 shadow-sm transition-all hover:border-white/60 hover:bg-white/80">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setModules((prev) =>
+                                  prev.map((m) =>
+                                    m.id === mod.id ? { ...m, expanded: !m.expanded } : m
+                                  )
                                 )
-                              )
-                            }
-                            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-                          >
-                            {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-
-                          {isEditing("module", mod.id) ? (
-                            renameInput("text-xs font-semibold text-gray-700")
-                          ) : (
-                            <span
-                              onDoubleClick={() => startEdit("module", mod.id, mod.title)}
-                              className="flex-1 truncate text-xs font-semibold text-gray-700"
-                              title={mod.title}
+                              }
+                              className="flex-shrink-0 text-[#14142b]/50 hover:text-[#14142b]"
                             >
-                              {mod.title}
-                            </span>
-                          )}
+                              {mod.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </button>
 
-                          {status !== "SUBMITTED" && (
-                            <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger
-                                  title="Add lesson or quiz"
-                                  className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
-                                >
-                                  <Plus size={12} />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" sideOffset={4}>
-                                  <DropdownMenuItem onClick={() => addLesson(mod.id)}>
-                                    <FileText size={13} />
-                                    Lesson
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
-                                <Pencil size={12} />
-                              </IconBtn>
-                              <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
-                                <Trash2 size={12} />
-                              </IconBtn>
-                            </div>
-                          )}
-                        </div>
+                            {isEditing("module", mod.id) ? (
+                              renameInput("text-xs font-bold text-[#14142b]")
+                            ) : (
+                              <span
+                                onDoubleClick={() => startEdit("module", mod.id, mod.title)}
+                                className="flex-1 truncate text-xs font-bold text-[#14142b]"
+                                title={mod.title}
+                              >
+                                {mod.title}
+                              </span>
+                            )}
+
+                            {status !== "SUBMITTED" && (
+                              <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    title="Add lesson or quiz"
+                                    className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]"
+                                  >
+                                    <Plus size={12} />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start" sideOffset={4}>
+                                    <DropdownMenuItem onClick={() => addLesson(mod.id)}>
+                                      <FileText size={13} />
+                                      Lesson
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                                <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
+                                  <Pencil size={12} />
+                                </IconBtn>
+                                <IconBtn title="Delete module" danger onClick={() => askDeleteModule(mod)}>
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            )}
+                          </div>
 
                         {/* Lessons and quizzes, interleaved by position */}
                         {mod.expanded && (
-                          <div className="ml-3 border-l border-gray-200 pl-1.5">
+                          <div className="ml-5 flex flex-col gap-1 border-l border-[#14142b]/10 pl-3 pt-1">
                             <DndContext
                               sensors={sensors}
                               collisionDetection={closestCenter}
@@ -1865,7 +1910,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                       <SortableRow
                                         key={item.node.id}
                                         id={item.node.id}
-                                        className={`group flex items-center gap-1 rounded-lg pl-2 pr-1.5 ${isActive ? "bg-[#14142b] shadow-sm" : "hover:bg-slate-50"
+                                        className={`group flex items-center gap-2 rounded-full px-3 transition-all ${isActive ? "bg-[#14142b] shadow-md" : "hover:bg-white/40"
                                           }`}
                                       >
                                         {(dragHandleProps) => (
@@ -1964,16 +2009,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Add {adapter.terminology.container}
                       </button>
                     )}
-                    {status !== "SUBMITTED" && contentType !== "workshop" && (
-                      <button
-                        type="button"
-                        onClick={() => setQbOpen(true)}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
-                      >
-                        <FileText size={13} />
-                        Question Bank
-                      </button>
-                    )}
+
                     {status !== "SUBMITTED" && contentType === "workshop" && (
                       <button
                         type="button"
@@ -1984,82 +2020,74 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         Resources
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setView((v) => (v === "settings" ? "tree" : "settings"))}
-                      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold transition-colors ${view === "settings"
-                        ? "bg-[#14142b] text-white"
-                        : "text-slate-500 hover:bg-white hover:text-[#14142b]"
-                        }`}
-                    >
-                      <Settings size={13} />
-                      {adapter.terminology.root} Settings
-                    </button>
+                    {contentType === "course" && (
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white hover:text-[#14142b]"
+                      >
+                        <FileQuestion size={13} />
+                        Question Bank
+                      </button>
+                    )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </aside>
         )}
 
-        {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
-        <main className="absolute inset-0 z-0 overflow-y-auto">
+        {/* ── Canvas: wide, centered pane. Fixed in place — only its own inner
+             content scrolls, so the panel itself never shifts and the scrollbar
+             sits at the panel's own edge instead of the browser window's. ── */}
+        <main className="z-0 flex flex-col min-h-0 absolute inset-0 items-center">
           {status === "SUBMITTED" && (
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
-              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
-            </div>
-          )}
-          {view === "settings" ? (
-            <div className="mx-auto max-w-[860px] px-6 pb-40 pt-24 sm:px-12">
-              <div className="overflow-hidden rounded-2xl border border-gray-100">
-                <div className={status === "SUBMITTED" ? "pointer-events-none opacity-75" : ""}>
-                  <ContentSettingsPanel terminology={adapter.terminology}
-                    contentId={contentId}
-                    title={title}
-                    description={description}
-                    status={status}
-                    pricingModel={pricingModel}
-                    createdAt={createdAt}
-                    updatedAt={updatedAt}
-                    onDeleted={() => router.push("/studio")}
-                    onDescriptionChange={(desc) => {
-                      setDescription(desc);
-                      scheduleCourseMetaSave({ description: desc });
-                    }}
-                  />
-                </div>
+            <div className="flex justify-center pointer-events-none fixed top-20 inset-x-0 z-[70]">
+              <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-5 py-2 rounded-full bg-white border border-slate-200 shadow-md">
+                <span className="text-sm font-medium text-amber-600 flex items-center gap-2">
+                  <span>🔒</span> This content has been submitted for review and is currently locked for editing until a decision is made.
+                </span>
               </div>
             </div>
-          ) : contentType === "roadmap" && roadmapData ? (
+          )}
+          {contentType === "roadmap" && roadmapData ? (
             <div className="absolute inset-0 z-0 pt-[49px]">
-               <RoadmapCanvas 
-                 roadmap={roadmapData}
-                 readOnly={status === "SUBMITTED"}
-                 onGraphChange={async (graphJson) => {
-                   try {
-                     await roadmapService.updateRoadmap(contentId!, { graphJson });
-                     setHasDraftChanges(true);
-                   } catch (err: any) {
-                     // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
-                     // as a subsequent save will likely catch up if it's rapid typing.
-                     if (err?.status === 409 || err?.response?.status === 409) {
-                       console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
-                     } else {
-                       console.error("Failed to save roadmap graph", err);
-                     }
-                   }
-                 }}
-               />
+              <RoadmapCanvas
+                roadmap={roadmapData}
+                readOnly={status === "SUBMITTED"}
+                onGraphChange={async (graphJson) => {
+                  try {
+                    await roadmapService.updateRoadmap(contentId!, { graphJson });
+                    setHasDraftChanges(true);
+                  } catch (err: any) {
+                    // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
+                    // as a subsequent save will likely catch up if it's rapid typing.
+                    if (err?.status === 409 || err?.response?.status === 409) {
+                      console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
+                    } else {
+                      console.error("Failed to save roadmap graph", err);
+                    }
+                  }
+                }}
+              />
             </div>
           ) : activeLessonId ? (
+            // This outer wrapper is NOT scrollable — it just reserves a fixed box
+            // (flex-1 inside the `main` column) below the floating toolbar. The
+            // toolbar is fixed at top-[70px] and ~50px tall (bottom edge ~120px), so
+            // pt-36 (144px) clears it with a real gap. The panel inside is what
+            // actually scrolls, so its own border never moves — only the document
+            // content inside it does, and the scrollbar that produces sits at the
+            // panel's own right edge, not the window's.
             <div
-              className="mx-auto max-w-[860px] px-6 pb-44 pt-[49px] sm:px-12"
-              // Height of the top bar above — the editor toolbar sticks flush beneath it.
-              style={{ "--arcade-toolbar-top": "49px" } as CSSProperties}
+              className="w-full max-w-[860px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
+              style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
             >
-              {/* The lesson name lives in the top bar; renaming happens from the
-                  sidebar's pencil action. No second title on the canvas. */}
-              <div>
+              {/* No border/shadow — reads as the page itself, not a boxed panel
+                  floating on top of it. Plain translucent white (no backdrop-blur):
+                  blur + rounded corners over the page's own blurred background blobs
+                  was producing a doubled/seamed edge at the corners. */}
+              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-editor-scrollbar">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
@@ -2097,18 +2125,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           )}
         </main>
       </div>
-      <ContentStatusHistoryModal
-        contentId={contentId!}
-        contentType={
-          contentType === "roadmap"
-            ? "roadmap"
-            : contentType === "workshop"
-              ? "workshop"
-              : "course"
-        }
-        open={statusHistoryOpen}
-        onClose={() => setStatusHistoryOpen(false)}
-      />
+
       {contentId && (
         <ContentCollaboratorsModal
           isOpen={collaboratorsModalOpen}
