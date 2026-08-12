@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import { Home, Compass, BookOpen, Crown, Trophy, Waypoints, LayoutDashboard, ShieldAlert } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
-import { useStudioAccess } from '@/domains/channels';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 
@@ -74,24 +73,11 @@ interface DockNavItem {
 export default function LearnerDock() {
   const pathname = usePathname();
   const router = useRouter();
-  const { hasAccess: hasStudioAccess } = useStudioAccess();
   const user = useAuthStore((s) => s.user);
   const canAccessConsole = AuthorizationService.canAccessConsole(user);
 
   const items = useMemo(() => {
     const list: DockNavItem[] = [...dockItems];
-    if (hasStudioAccess) {
-      // "Studio" is the single entry point into Content Studio/Overview/Editor —
-      // no separate Courses/Events/Roadmaps/Reviews dock destinations, those live inside it.
-      list.push({
-        id: 'studio',
-        label: 'Studio',
-        href: '/studio',
-        icon: LayoutDashboard,
-        activeColor: 'text-indigo-600 dark:text-indigo-400',
-        exact: false,
-      });
-    }
     if (canAccessConsole) {
       list.push({
         id: 'console',
@@ -103,7 +89,7 @@ export default function LearnerDock() {
       });
     }
     return list;
-  }, [hasStudioAccess, canAccessConsole]);
+  }, [canAccessConsole]);
 
   // Hide the dock on content studio, settings, and active proctored exams.
   // /studio itself and the Content Workspace are handled by LearnerShell's
