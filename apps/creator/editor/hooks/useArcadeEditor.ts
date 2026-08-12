@@ -52,14 +52,25 @@ export interface UseArcadeEditorOptions {
    * mount; the resulting edit persists the migrated content on the next auto-save.
    */
   seedContent?: TiptapDocument;
-  /** ID of the lesson/document for WebSocket real-time collaboration. */
   documentId?: string;
-  /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
   /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */
   documentName?: string;
 }
 
+const DEBOUNCE_MS = 2000;
+
+export function useArcadeEditor({
+  initialContent,
+  placeholder,
+  readOnly = false,
+  onSave,
+  ydoc,
+  seedContent,
+  documentId,
+  contentType,
+  documentName,
+}: UseArcadeEditorOptions = {}) {
   const { user, accessToken } = useAuthStore();
 
   const effectiveDocumentName = documentName || (documentId ? `lesson:${documentId}` : undefined);

@@ -122,10 +122,7 @@ import {
   Eye,
   GripVertical,
   Users,
-<<<<<<< HEAD
   UserPlus,
-=======
->>>>>>> main
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
