@@ -1414,12 +1414,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
           {/* Center: Title */}
           <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3">
-            <div className="flex h-10 items-center justify-center rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
-              <span className="block max-w-[40vw] truncate">
-                  {activeLessonId
-                  ? activeLessonTitle
-                  : title || adapter.terminology.root}
-              </span>
+            <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
+              {activeLessonId ? (
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+                    <>
+                      <span className="block max-w-[15vw] truncate font-medium">
+                        {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
+                      </span>
+                      <span className="text-gray-400">/</span>
+                    </>
+                  )}
+                  <span className="block max-w-[20vw] truncate text-[#14142b]">
+                    {activeLessonTitle}
+                  </span>
+                </div>
+              ) : (
+                <span className="block max-w-[40vw] truncate text-[#14142b]">
+                  {title || adapter.terminology.root}
+                </span>
+              )}
             </div>
           </div>
 
@@ -1809,14 +1823,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             // content inside it does, and the scrollbar that produces sits at the
             // panel's own right edge, not the window's.
             <div
-              className="w-full max-w-[860px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
+              className="w-full max-w-[1024px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
               style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
             >
               {/* No border/shadow — reads as the page itself, not a boxed panel
                   floating on top of it. Plain translucent white (no backdrop-blur):
                   blur + rounded corners over the page's own blurred background blobs
                   was producing a doubled/seamed edge at the corners. */}
-              <div className="h-full overflow-y-auto rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 shadow-sm p-8 arcade-scrollbar-mini">
+              <div className="h-full overflow-y-auto rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-8 arcade-scrollbar-mini">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
