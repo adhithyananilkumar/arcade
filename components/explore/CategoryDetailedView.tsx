@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
@@ -90,22 +91,22 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
 
   const bezierX = (val: number) => {
     const mt = 1 - val;
-    return mt*mt*mt*P0.x + 3*mt*mt*val*P1.x + 3*mt*val*val*P2.x + val*val*val*P3.x;
+    return mt * mt * mt * P0.x + 3 * mt * mt * val * P1.x + 3 * mt * val * val * P2.x + val * val * val * P3.x;
   };
   const bezierY = (val: number) => {
     const mt = 1 - val;
-    return mt*mt*mt*P0.y + 3*mt*mt*val*P1.y + 3*mt*val*val*P2.y + val*val*val*P3.y;
+    return mt * mt * mt * P0.y + 3 * mt * mt * val * P1.y + 3 * mt * val * val * P2.y + val * val * val * P3.y;
   };
 
   const tRocket = useTransform(t, [0, 0.85], [0, 1]);
-  const x     = useTransform(tRocket, bezierX);
-  const y     = useTransform(tRocket, bezierY);
+  const x = useTransform(tRocket, bezierX);
+  const y = useTransform(tRocket, bezierY);
   const angle = useTransform(tRocket, (val) => {
     const mt = 1 - val;
-    const dx = 3*mt*mt*(P1.x-P0.x) + 6*mt*val*(P2.x-P1.x) + 3*val*val*(P3.x-P2.x);
-    const dy = 3*mt*mt*(P1.y-P0.y) + 6*mt*val*(P2.y-P1.y) + 3*val*val*(P3.y-P2.y);
+    const dx = 3 * mt * mt * (P1.x - P0.x) + 6 * mt * val * (P2.x - P1.x) + 3 * val * val * (P3.x - P2.x);
+    const dy = 3 * mt * mt * (P1.y - P0.y) + 6 * mt * val * (P2.y - P1.y) + 3 * val * val * (P3.y - P2.y);
     const targetAngle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
-    
+
     // Start upright (0 in SVG rotation is pointing straight up) 
     // and smoothly tilt into the flight path as it lifts off
     if (val < 0.02) {
@@ -118,17 +119,17 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
   });
 
   const flameOpacity = useTransform(t, [0, 0.03, 0.85, 0.92], [0, 1, 1, 0]);
-  const flameLen     = useTransform(t, (v) => (v <= 0 || v >= 0.88) ? 0 : 0.7 + Math.abs(Math.sin(v * 60)) * 0.45);
-  const rocketFade   = useTransform(t, [0.84, 0.91], [1, 0]);
-  const astronautX   = useTransform(t, (v) => v < 0.85 ? P3.x - 4 : P3.x - 4 + Math.min((v-0.85)/0.08, 1) * 60);
-  const astronautOp  = useTransform(t, [0.82, 0.88], [0, 1]);
-  const flagScale    = useTransform(t, [0.90, 1.0], [0, 1]);
-  const trailOp      = useTransform(t, [0, 0.06, 0.82, 1], [0, 0.5, 0.5, 0]);
-  const dustOp       = useTransform(t, [0.82, 0.88, 0.95, 1], [0, 0.85, 0.3, 0]);
-  const dustSc       = useTransform(t, [0.82, 1], [0.2, 2.8]);
-  const moonScale    = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 2.8]);
-  const moonX        = useTransform(t, [0, 0.6, 1], [380, 350, P3.x + 30]);
-  const moonY        = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 148]);
+  const flameLen = useTransform(t, (v) => (v <= 0 || v >= 0.88) ? 0 : 0.7 + Math.abs(Math.sin(v * 60)) * 0.45);
+  const rocketFade = useTransform(t, [0.84, 0.91], [1, 0]);
+  const astronautX = useTransform(t, (v) => v < 0.85 ? P3.x - 4 : P3.x - 4 + Math.min((v - 0.85) / 0.08, 1) * 60);
+  const astronautOp = useTransform(t, [0.82, 0.88], [0, 1]);
+  const flagScale = useTransform(t, [0.90, 1.0], [0, 1]);
+  const trailOp = useTransform(t, [0, 0.06, 0.82, 1], [0, 0.5, 0.5, 0]);
+  const dustOp = useTransform(t, [0.82, 0.88, 0.95, 1], [0, 0.85, 0.3, 0]);
+  const dustSc = useTransform(t, [0.82, 1], [0.2, 2.8]);
+  const moonScale = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 2.8]);
+  const moonX = useTransform(t, [0, 0.6, 1], [380, 350, P3.x + 30]);
+  const moonY = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 148]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "460px", display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -137,36 +138,36 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
 
           {/* Trajectory gradient */}
           <linearGradient id="traj" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%"   stopColor={activeColor} stopOpacity="0.04" />
-            <stop offset="100%" stopColor={activeColor} stopOpacity="0.55"  />
+            <stop offset="0%" stopColor={activeColor} stopOpacity="0.04" />
+            <stop offset="100%" stopColor={activeColor} stopOpacity="0.55" />
           </linearGradient>
 
           {/* Dust plume */}
           <radialGradient id="dustg" cx="50%" cy="60%" r="50%">
-            <stop offset="0%"   stopColor="#e2e8f0" stopOpacity="0.8" />
-            <stop offset="55%"  stopColor="#cbd5e1" stopOpacity="0.4"  />
-            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0"    />
+            <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.8" />
+            <stop offset="55%" stopColor="#cbd5e1" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0" />
           </radialGradient>
 
           {/* Glow bloom filters */}
           <filter id="bloom" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="5" result="b1"/>
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b2"/>
+            <feGaussianBlur stdDeviation="5" result="b1" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b2" />
             <feMerge>
-              <feMergeNode in="b1"/>
-              <feMergeNode in="b2"/>
-              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="b1" />
+              <feMergeNode in="b2" />
+              <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="4" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
           <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.5"/>
+            <feGaussianBlur stdDeviation="2.5" />
           </filter>
           <filter id="ao" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.5"/>
+            <feGaussianBlur stdDeviation="1.5" />
           </filter>
         </defs>
 
@@ -187,13 +188,13 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
 
         {/* ── Stars — soft circular dots, photographic ── */}
         {([
-          [42,35,1.6,"st-a"], [120,20,1.1,"st-b"], [225,50,1.9,"st-c"],
-          [315,18,1.3,"st-d"], [405,44,1.7,"st-a"], [470,14,1.0,"st-b"],
-          [492,95,1.4,"st-c"], [25,175,1.6,"st-d"], [488,295,1.2,"st-a"],
-          [172,84,1.0,"st-b"], [335,375,1.5,"st-c"], [478,355,1.3,"st-d"],
-          [88,135,0.9,"st-a"], [448,210,1.1,"st-b"], [265,310,0.8,"st-c"],
-        ] as [number,number,number,string][]).map(([cx,cy,r,cls], i) => (
-          <circle key={i} className={cls} cx={cx} cy={cy} r={r} fill="white" opacity="0.7"/>
+          [42, 35, 1.6, "st-a"], [120, 20, 1.1, "st-b"], [225, 50, 1.9, "st-c"],
+          [315, 18, 1.3, "st-d"], [405, 44, 1.7, "st-a"], [470, 14, 1.0, "st-b"],
+          [492, 95, 1.4, "st-c"], [25, 175, 1.6, "st-d"], [488, 295, 1.2, "st-a"],
+          [172, 84, 1.0, "st-b"], [335, 375, 1.5, "st-c"], [478, 355, 1.3, "st-d"],
+          [88, 135, 0.9, "st-a"], [448, 210, 1.1, "st-b"], [265, 310, 0.8, "st-c"],
+        ] as [number, number, number, string][]).map(([cx, cy, r, cls], i) => (
+          <circle key={i} className={cls} cx={cx} cy={cy} r={r} fill="white" opacity="0.7" />
         ))}
 
         {/* ── Launch Cloud ── */}
@@ -221,38 +222,38 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
 
         {/* ── Moon ── */}
         <motion.g style={{ x: moonX, y: moonY, scale: moonScale }}>
-          <circle cx="0" cy="0" r="53" fill="#f8fafc" filter="url(#shadow)"/>
-          <circle cx="0" cy="0" r="53" fill="#f1f5f9"/>
-          
+          <circle cx="0" cy="0" r="53" fill="#f8fafc" filter="url(#shadow)" />
+          <circle cx="0" cy="0" r="53" fill="#f1f5f9" />
+
           {/* Soft cute craters */}
-          <circle cx="-15" cy="-10" r="8" fill="#e2e8f0" opacity="0.8"/>
-          <circle cx="20" cy="-5" r="12" fill="#e2e8f0" opacity="0.8"/>
-          <circle cx="-5" cy="22" r="10" fill="#e2e8f0" opacity="0.8"/>
-          <circle cx="-25" cy="15" r="4" fill="#e2e8f0" opacity="0.8"/>
-          <circle cx="15" cy="20" r="5" fill="#e2e8f0" opacity="0.8"/>
+          <circle cx="-15" cy="-10" r="8" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="20" cy="-5" r="12" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="-5" cy="22" r="10" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="-25" cy="15" r="4" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="15" cy="20" r="5" fill="#e2e8f0" opacity="0.8" />
         </motion.g>
 
         {/* ── Landing dust cloud (photographic dusty haze) ── */}
-        <motion.g style={{ opacity: dustOp, scale: dustSc, originX:`${P3.x}px`, originY:`${P3.y+18}px` }}>
-          <ellipse cx={P3.x}    cy={P3.y+15} rx="35" ry="9"   fill="url(#dustg)"/>
-          <ellipse cx={P3.x-20} cy={P3.y+17} rx="16" ry="6"   fill="url(#dustg)" opacity="0.7"/>
-          <ellipse cx={P3.x+20} cy={P3.y+17} rx="16" ry="6"   fill="url(#dustg)" opacity="0.7"/>
-          <ellipse cx={P3.x}    cy={P3.y+12} rx="12" ry="4"   fill="url(#dustg)" opacity="0.45"/>
+        <motion.g style={{ opacity: dustOp, scale: dustSc, originX: `${P3.x}px`, originY: `${P3.y + 18}px` }}>
+          <ellipse cx={P3.x} cy={P3.y + 15} rx="35" ry="9" fill="url(#dustg)" />
+          <ellipse cx={P3.x - 20} cy={P3.y + 17} rx="16" ry="6" fill="url(#dustg)" opacity="0.7" />
+          <ellipse cx={P3.x + 20} cy={P3.y + 17} rx="16" ry="6" fill="url(#dustg)" opacity="0.7" />
+          <ellipse cx={P3.x} cy={P3.y + 12} rx="12" ry="4" fill="url(#dustg)" opacity="0.45" />
         </motion.g>
 
         {/* ── Flag ── */}
-        <motion.g style={{ x: P3.x+82, y: P3.y, scale: flagScale, originX:"0px", originY:"0px" }}>
+        <motion.g style={{ x: P3.x + 82, y: P3.y, scale: flagScale, originX: "0px", originY: "0px" }}>
           <g transform="scale(1.8)">
             {/* Pole — metallic cylinder suggestion */}
-            <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round"/>
-            <line x1="0"   y1="2" x2="0"   y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5"/>
+            <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round" />
+            <line x1="0" y1="2" x2="0" y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5" />
             {/* Flag fabric with wave */}
             <g transform="translate(0,-58)">
-              <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor}/>
+              <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor} />
               {/* Lighting fold */}
-              <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12"/>
+              <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12" />
               {/* Right shadow */}
-              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="#000" opacity="0.15"/>
+              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="#000" opacity="0.15" />
               <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
                 fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
             </g>
@@ -262,71 +263,71 @@ const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<numbe
         {/* ── Astronaut — cute cartoon style ── */}
         <motion.g style={{ x: astronautX, y: P3.y + 26, opacity: astronautOp }}>
           <g transform="scale(1.8) translate(0, -9)">
-          <ellipse cx="0" cy="16" rx="8" ry="2" fill="#94a3b8" opacity="0.3"/>
+            <ellipse cx="0" cy="16" rx="8" ry="2" fill="#94a3b8" opacity="0.3" />
 
-          {/* Legs */}
-          <path d="M -3,6 L -5,14 Q -6,16 -3,15 Z" fill="#ffffff"/>
-          <path d="M 3,6 L 5,14 Q 6,16 3,15 Z" fill="#ffffff"/>
+            {/* Legs */}
+            <path d="M -3,6 L -5,14 Q -6,16 -3,15 Z" fill="#ffffff" />
+            <path d="M 3,6 L 5,14 Q 6,16 3,15 Z" fill="#ffffff" />
 
-          {/* Torso */}
-          <rect x="-6" y="-2" width="12" height="10" rx="4" fill="#ffffff"/>
-          <rect x="-4" y="0" width="8" height="6" rx="2" fill="#f1f5f9"/>
-          
-          {/* Backpack */}
-          <rect x="5" y="-3" width="4" height="10" rx="2" fill="#e2e8f0"/>
+            {/* Torso */}
+            <rect x="-6" y="-2" width="12" height="10" rx="4" fill="#ffffff" />
+            <rect x="-4" y="0" width="8" height="6" rx="2" fill="#f1f5f9" />
 
-          {/* Arms */}
-          <path d="M -5,0 Q -9,4 -7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
-          <path d="M 5,0 Q 9,4 7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+            {/* Backpack */}
+            <rect x="5" y="-3" width="4" height="10" rx="2" fill="#e2e8f0" />
 
-          {/* Helmet */}
-          <circle cx="0" cy="-8" r="7" fill="#ffffff"/>
-          <circle cx="0" cy="-8" r="5" fill={activeColor}/>
-          {/* Visor shine */}
-          <ellipse cx="-2" cy="-10" rx="2" ry="1" fill="#ffffff" opacity="0.4" transform="rotate(-30,-2,-10)"/>
+            {/* Arms */}
+            <path d="M -5,0 Q -9,4 -7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 5,0 Q 9,4 7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+
+            {/* Helmet */}
+            <circle cx="0" cy="-8" r="7" fill="#ffffff" />
+            <circle cx="0" cy="-8" r="5" fill={activeColor} />
+            {/* Visor shine */}
+            <ellipse cx="-2" cy="-10" rx="2" ry="1" fill="#ffffff" opacity="0.4" transform="rotate(-30,-2,-10)" />
           </g>
         </motion.g>
 
 
         {/* ── Rocket ── */}
-        <motion.g style={{ x, y, rotate: angle, opacity: rocketFade, originX:"0.5", originY:"0.5" }}>
+        <motion.g style={{ x, y, rotate: angle, opacity: rocketFade, originX: "0.5", originY: "0.5" }}>
           <g transform="scale(1.2)">
 
-          {/* ── Cute Cartoon Flame ── */}
-          <motion.g style={{ opacity: flameOpacity, scaleY: flameLen, originX:"0.5", originY:"0" }} transform="translate(0,18)">
-            <path d="M -8,0 Q -12,15 0,35 Q 12,15 8,0 Z" fill="#f59e0b" filter="url(#bloom)"/>
-            <path d="M -4,0 Q -6,10 0,22 Q 6,10 4,0 Z" fill="#fbbf24" />
-            <path d="M -2,0 Q -3,5 0,12 Q 3,5 2,0 Z" fill="#fef08a" />
-          </motion.g>
+            {/* ── Cute Cartoon Flame ── */}
+            <motion.g style={{ opacity: flameOpacity, scaleY: flameLen, originX: "0.5", originY: "0" }} transform="translate(0,18)">
+              <path d="M -8,0 Q -12,15 0,35 Q 12,15 8,0 Z" fill="#f59e0b" filter="url(#bloom)" />
+              <path d="M -4,0 Q -6,10 0,22 Q 6,10 4,0 Z" fill="#fbbf24" />
+              <path d="M -2,0 Q -3,5 0,12 Q 3,5 2,0 Z" fill="#fef08a" />
+            </motion.g>
 
-          {/* Rocket body group */}
-          <g transform="translate(0,-8)">
-            
-            {/* ── Left fin ── */}
-            <path d="M -12,12 Q -22,25 -22,32 Q -22,35 -16,35 L -10,25 Z" fill={activeColor}/>
-            {/* ── Right fin ── */}
-            <path d="M 12,12 Q 22,25 22,32 Q 22,35 16,35 L 10,25 Z" fill={activeColor}/>
+            {/* Rocket body group */}
+            <g transform="translate(0,-8)">
 
-            {/* Engine nozzle */}
-            <path d="M -8,22 L -10,28 L 10,28 L 8,22 Z" fill="#64748b"/>
+              {/* ── Left fin ── */}
+              <path d="M -12,12 Q -22,25 -22,32 Q -22,35 -16,35 L -10,25 Z" fill={activeColor} />
+              {/* ── Right fin ── */}
+              <path d="M 12,12 Q 22,25 22,32 Q 22,35 16,35 L 10,25 Z" fill={activeColor} />
 
-            {/* ── Main body — glossy white capsule ── */}
-            <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#ffffff" filter="url(#shadow)"/>
-            <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#f8fafc"/>
-            
-            {/* Soft inner shadow/gloss */}
-            <path d="M -8,-10 C -10,5 -8,15 -2,20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.7"/>
+              {/* Engine nozzle */}
+              <path d="M -8,22 L -10,28 L 10,28 L 8,22 Z" fill="#64748b" />
 
-            {/* ── Nose cone ── */}
-            <path d="M 0,-30 C -9,-15 -11,-5 -12,0 L 12,0 C 11,-5 9,-15 0,-30 Z" fill={activeColor}/>
-            <path d="M -4,-25 C -6,-15 -6,-5 -5,0" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+              {/* ── Main body — glossy white capsule ── */}
+              <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#ffffff" filter="url(#shadow)" />
+              <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#f8fafc" />
 
-            {/* ── Porthole window ── */}
-            <circle cx="0" cy="5" r="7" fill="#cbd5e1"/>
-            <circle cx="0" cy="5" r="5" fill="#ffffff" filter="url(#softglow)"/>
-            <circle cx="0" cy="5" r="5" fill="#f1f5f9"/>
-            <path d="M -2,2 Q 0,4 2,2" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round"/>
-          </g>
+              {/* Soft inner shadow/gloss */}
+              <path d="M -8,-10 C -10,5 -8,15 -2,20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+
+              {/* ── Nose cone ── */}
+              <path d="M 0,-30 C -9,-15 -11,-5 -12,0 L 12,0 C 11,-5 9,-15 0,-30 Z" fill={activeColor} />
+              <path d="M -4,-25 C -6,-15 -6,-5 -5,0" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
+
+              {/* ── Porthole window ── */}
+              <circle cx="0" cy="5" r="7" fill="#cbd5e1" />
+              <circle cx="0" cy="5" r="5" fill="#ffffff" filter="url(#softglow)" />
+              <circle cx="0" cy="5" r="5" fill="#f1f5f9" />
+              <path d="M -2,2 Q 0,4 2,2" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" />
+            </g>
           </g>
         </motion.g>
 
@@ -678,6 +679,210 @@ const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true
           <line x1="8" y1="8" x2="3" y2="3" />
           <line x1="0" y1="-10" x2="0" y2="-4" />
           <line x1="0" y1="10" x2="0" y2="4" />
+        </g>
+      </svg>
+    </div>
+  );
+};
+
+const FarmanScroll: React.FC<{ activeColor: string; progress: MotionValue<number> }> = ({ activeColor, progress }) => {
+  const t = progress;
+
+  // Height of the unwound parchment. Max height ~280
+  const scrollHeight = useTransform(t, [0, 1], [15, 300]);
+
+  // Top roller stays fixed at the top, bottom roller moves down
+  const topRollerY = 0;
+  const bottomRollerY = useTransform(t, [0, 1], [15, 300]);
+
+  // Opacities for staggered elements
+  // 0% -> sealed
+  const goldenSealOp = useTransform(t, [0, 0.15], [1, 0]);
+
+  // ~20% -> top opens, logo appears
+  const logoOp = useTransform(t, [0.15, 0.3], [0, 1]);
+  const logoY = useTransform(t, [0.15, 0.3], [10, 0]);
+
+  // ~50% -> headline appears
+  const headlineOp = useTransform(t, [0.35, 0.55], [0, 1]);
+  const headlineY = useTransform(t, [0.35, 0.55], [10, 0]);
+
+  // ~75% -> 3 sections appear stagger
+  const exploreOp = useTransform(t, [0.55, 0.7], [0, 1]);
+  const learnOp = useTransform(t, [0.65, 0.8], [0, 1]);
+  const buildOp = useTransform(t, [0.75, 0.9], [0, 1]);
+
+  const exploreY = useTransform(t, [0.55, 0.7], [10, 0]);
+  const learnY = useTransform(t, [0.65, 0.8], [10, 0]);
+  const buildY = useTransform(t, [0.75, 0.9], [10, 0]);
+
+  // 100% -> red wax seal
+  const redSealOp = useTransform(t, [0.9, 1.0], [0, 1]);
+  const redSealScale = useTransform(t, [0.9, 1.0], [0.5, 1]);
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: "400px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <svg viewBox="0 0 300 360" width="100%" height="100%" style={{ overflow: "visible", transform: "scale(1.15)" }}>
+        <defs>
+          <linearGradient id="parchmentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#d9b978" />
+            <stop offset="4%" stopColor="#f4dfad" />
+            <stop offset="10%" stopColor="#fff4d6" />
+            <stop offset="50%" stopColor="#fdf6e3" />
+            <stop offset="90%" stopColor="#fff4d6" />
+            <stop offset="96%" stopColor="#f4dfad" />
+            <stop offset="100%" stopColor="#d9b978" />
+          </linearGradient>
+          <linearGradient id="rollerWoodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#4a3018" />
+            <stop offset="20%" stopColor="#6e4221" />
+            <stop offset="50%" stopColor="#8b5a2b" />
+            <stop offset="80%" stopColor="#5c3a21" />
+            <stop offset="100%" stopColor="#2e1a0b" />
+          </linearGradient>
+          <linearGradient id="rollerHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
+            <stop offset="40%" stopColor="rgba(255,255,255,0.05)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </linearGradient>
+          <linearGradient id="goldSealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fcd34d" />
+            <stop offset="50%" stopColor="#d97706" />
+            <stop offset="100%" stopColor="#78350f" />
+          </linearGradient>
+          <linearGradient id="waxBaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ef4444" />
+            <stop offset="40%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#7f1d1d" />
+          </linearGradient>
+          <filter id="farmanShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000" floodOpacity="0.2" />
+          </filter>
+          <filter id="sealEmboss">
+            <feDropShadow dx="0.5" dy="1" stdDeviation="0.5" floodColor="#000" floodOpacity="0.4" />
+            <feDropShadow dx="-0.5" dy="-1" stdDeviation="0.5" floodColor="#ffffff" floodOpacity="0.25" />
+          </filter>
+          <clipPath id="scrollClip">
+            <motion.rect x="10" y="0" width="180" style={{ height: scrollHeight }} />
+          </clipPath>
+        </defs>
+
+        <g transform="translate(50, 30)">
+
+          {/* Parchment Body */}
+          <motion.rect
+            x="10"
+            y="0"
+            width="180"
+            rx="1"
+            style={{ height: scrollHeight }}
+            fill="url(#parchmentGrad)"
+            stroke="#c8a55b"
+            strokeWidth="0.5"
+            filter="url(#farmanShadow)"
+          />
+
+          {/* Content Group - Clipped */}
+          <g clipPath="url(#scrollClip)">
+            <g transform="translate(20, 20)">
+
+              {/* Logo */}
+              <motion.g style={{ opacity: logoOp, y: logoY }}>
+                <text x="80" y="15" textAnchor="middle" fontSize="22" fontWeight="900" fill="#1e293b" fontFamily="'Space Grotesk', sans-serif">arcade.</text>
+                <line x1="40" y1="28" x2="120" y2="28" stroke="#cbd5e1" strokeWidth="1" />
+              </motion.g>
+
+              {/* Headline */}
+              <motion.g style={{ opacity: headlineOp, y: headlineY }}>
+                <text x="80" y="55" textAnchor="middle" fontSize="14" fontWeight="800" fill={activeColor}>Learn. Build. Connect.</text>
+                <text x="80" y="75" textAnchor="middle" fontSize="10" fill="#475569">A place to explore ideas,</text>
+                <text x="80" y="89" textAnchor="middle" fontSize="10" fill="#475569">discover knowledge, and</text>
+                <text x="80" y="103" textAnchor="middle" fontSize="10" fill="#475569">build what comes next.</text>
+              </motion.g>
+
+              {/* Stanza 1 */}
+              <g transform="translate(0, 130)">
+                <motion.g style={{ opacity: exploreOp, y: exploreY }}>
+                  <line x1="25" y1="0" x2="135" y2="0" stroke="#c8a55b" strokeWidth="0.5" />
+                  <text x="80" y="16" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">We believe knowledge has</text>
+                  <text x="80" y="28" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">no borders. Every idea is</text>
+                  <text x="80" y="40" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">a seed, every question a</text>
+                  <text x="80" y="52" textAnchor="middle" fontSize="8.5" fill="#78350f" fontStyle="italic">doorway to something greater.</text>
+                  <line x1="25" y1="60" x2="135" y2="60" stroke="#c8a55b" strokeWidth="0.5" />
+                </motion.g>
+              </g>
+
+              {/* Stanza 2 */}
+              <g transform="translate(0, 198)">
+                <motion.g style={{ opacity: learnOp, y: learnY }}>
+                  <text x="80" y="14" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">Here, the curious find their craft.</text>
+                  <text x="80" y="27" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">The builder finds their stage.</text>
+                  <text x="80" y="40" textAnchor="middle" fontSize="8.5" fill="#475569" fontStyle="italic">The thinker finds their tribe.</text>
+                </motion.g>
+              </g>
+            </g>
+          </g>
+
+          {/* Top Roller */}
+          <motion.g style={{ y: topRollerY }}>
+              {/* Main wooden cylinder */}
+              <rect x="-2" y="-11" width="204" height="14" rx="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Left Finial */}
+              <rect x="-4" y="-9" width="2" height="10" fill="url(#rollerWoodGrad)" />
+              <ellipse cx="-9" cy="-4" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
+              <circle cx="-15" cy="-4" r="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Right Finial */}
+              <rect x="202" y="-9" width="2" height="10" fill="url(#rollerWoodGrad)" />
+              <ellipse cx="209" cy="-4" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
+              <circle cx="215" cy="-4" r="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Decorative brass rings */}
+              <rect x="-4" y="-12" width="2" height="16" rx="1" fill="#d4af37" />
+              <rect x="202" y="-12" width="2" height="16" rx="1" fill="#d4af37" />
+          </motion.g>
+
+          {/* Bottom Roller */}
+          <motion.g style={{ y: bottomRollerY }}>
+              {/* Main wooden cylinder */}
+              <rect x="-2" y="-2" width="204" height="14" rx="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Left Finial */}
+              <rect x="-4" y="0" width="2" height="10" fill="url(#rollerWoodGrad)" />
+              <ellipse cx="-9" cy="5" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
+              <circle cx="-15" cy="5" r="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Right Finial */}
+              <rect x="202" y="0" width="2" height="10" fill="url(#rollerWoodGrad)" />
+              <ellipse cx="209" cy="5" rx="5" ry="9" fill="url(#rollerWoodGrad)" />
+              <circle cx="215" cy="5" r="3" fill="url(#rollerWoodGrad)" />
+              
+              {/* Decorative brass rings */}
+              <rect x="-4" y="-3" width="2" height="16" rx="1" fill="#d4af37" />
+              <rect x="202" y="-3" width="2" height="16" rx="1" fill="#d4af37" />
+          </motion.g>
+
+          {/* Golden Seal (visible when closed) */}
+          <g transform="translate(100, 7)">
+            <motion.g style={{ opacity: goldenSealOp }}>
+              <circle cx="0" cy="0" r="15" fill="url(#goldSealGrad)" filter="url(#farmanShadow)" />
+              <circle cx="0" cy="0" r="13" fill="none" stroke="#78350f" strokeWidth="0.5" />
+              <circle cx="0" cy="0" r="10" fill="none" stroke="#a16207" strokeWidth="1" strokeDasharray="2 2" />
+              <text x="0" y="4" textAnchor="middle" fontSize="12" fontWeight="900" fill="#78350f" filter="url(#sealEmboss)">A</text>
+            </motion.g>
+          </g>
+
+          {/* Red Wax Seal (visible when fully open) */}
+          <g transform="translate(165, 290)">
+            <motion.g style={{ opacity: redSealOp, scale: redSealScale, originX: "0.5", originY: "0.5" }}>
+              <circle cx="0" cy="0" r="18" fill="url(#waxBaseGrad)" filter="url(#farmanShadow)" />
+              <path d="M 0,-18 C 10,-19 19,-10 18,0 C 19,10 10,17 0,18 C -10,17 -19,10 -18,0 C -17,-10 -10,-19 0,-18 Z" fill="url(#waxBaseGrad)" />
+              <circle cx="0" cy="0" r="13" fill="none" stroke="#7f1d1d" strokeWidth="1.5" opacity="0.6" />
+              <text x="0" y="4" textAnchor="middle" fontSize="13" fontWeight="900" fill="#450a0a" filter="url(#sealEmboss)">a.</text>
+            </motion.g>
+          </g>
+
         </g>
       </svg>
     </div>
@@ -1427,7 +1632,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   }, [activeCategory, progressValue]);
 
   useEffect(() => {
-    if (mode !== "events") return;
+    if (mode !== "events" && mode !== "articles") return;
 
     if (journeyCompleted) {
       progressValue.set(1);
@@ -1499,7 +1704,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
       window.removeEventListener("touchmove", handleTouchMove);
     };
   }, [mode, progressValue, journeyCompleted]);
-  
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -1520,6 +1725,33 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     }
   }, [initialCategory]);
 
+  const activeCategoryName = activeCategory || "Computer Science";
+  const activeData = CATEGORY_DATA[activeCategoryName];
+
+  // Sync body background so the footer (rendered outside this component) blends seamlessly.
+  // Only active on articles mode — cleans up on unmount so other pages are unaffected.
+  useEffect(() => {
+    if (mode !== "articles") return;
+
+    const ARTICLES_BODY_BG: Record<string, string> = {
+      "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)",
+      "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)",
+      "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)",
+      "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)",
+      "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)",
+      "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)",
+      "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
+    };
+
+    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["Computer Science"];
+    const prev = document.body.style.background;
+    document.body.style.background = bg;
+
+    return () => {
+      document.body.style.background = prev;
+    };
+  }, [mode, activeCategoryName]);
+
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     setCourseSearchQuery("");
@@ -1533,15 +1765,24 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     router.push(exploreHome);
   };
 
-  const activeCategoryName = activeCategory || "Computer Science";
-  const activeData = CATEGORY_DATA[activeCategoryName];
+  const ARTICLES_BG: Record<string, string> = {
+    "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)", // warm antique parchment
+    "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)", // soft amber scroll
+    "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)", // golden honey
+    "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)", // earthy sage parchment
+    "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)", // warm cream linen
+    "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)", // warm terracotta scroll
+    "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)", // old vellum yellow
+  };
+
+  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
 
   return (
     <div
       className="landing-root"
       style={{
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
-          mode === "articles" ? "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #ECFDF5 100%)" : // Fresh mint-emerald garden mix
+          mode === "articles" ? articlesBackground : // Dynamic per-category gradient
             "#f8fafc",
         // Authenticated hub already clears the dock via LearnerShell pb-28.
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
@@ -1836,23 +2077,23 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
             }}
           >
-            <span
-              onClick={goToExploreHome}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
+            <a
+              href="/explore"
+              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Explore
-            </span>
+            </a>
             <span>/</span>
-            <span
-              onClick={goToExploreHome}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
+            <a
+              href="/explore"
+              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Departments
-            </span>
+            </a>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
           </div>
@@ -1875,38 +2116,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           >
             {/* Banner Left Info */}
             <div style={{ position: "relative", zIndex: 2 }}>
-              {/* 1. EYEBROW / LABEL */}
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: `${activeData.colors.secondary}`,
-                  border: `1.5px solid ${activeData.colors.primary}33`,
-                  padding: "6px 14px",
-                  borderRadius: "100px",
-                  marginBottom: "18px",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)"
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={activeData.colors.primary} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                  <polyline points="2 17 12 22 22 17" />
-                  <polyline points="2 12 12 17 22 12" />
-                </svg>
-                <span
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: "800",
-                    color: activeData.colors.primary,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    fontFamily: "'Space Grotesk', sans-serif"
-                  }}
-                >
-                  Learn • Connect • Grow
-                </span>
-              </div>
+              {/* Removed Eyebrow Label as requested */}
 
               {/* 2. MAIN HEADING */}
               <h1
@@ -2201,7 +2411,11 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
                 zIndex: 2,
               }}
             >
-              <HoneycombIllustration />
+              {mode === "articles" ? (
+                <FarmanScroll activeColor={activeData.colors.primary} progress={progressValue} />
+              ) : (
+                <HoneycombIllustration />
+              )}
             </div>
           </div>
         )}

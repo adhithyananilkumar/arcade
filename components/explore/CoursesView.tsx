@@ -821,28 +821,7 @@ export default function CoursesView({
           </div>
         </div>
 
-        <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-          <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Course Type
-          </label>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {topics.map((topic: any) => {
-              const isActive = selectedTopic === topic;
-              return (
-                <FilterPillButton
-                  key={topic}
-                  isActive={isActive}
-                  activeData={activeData}
-                  onClick={() => setSelectedTopic(topic)}
-                >
-                  {topic}
-                </FilterPillButton>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {filteredCourses.length === 0 ? (
