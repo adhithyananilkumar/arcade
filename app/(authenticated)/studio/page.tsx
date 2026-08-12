@@ -1049,8 +1049,14 @@ export default function DashboardPage() {
     return counts;
   }, [items]);
 
+  const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
+
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      // Content Studio strictly displays content owned/authored by channels the user has authority over
+      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
+        return false;
+      }
       const statusOk =
         statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
       const typeOk =
@@ -1059,7 +1065,7 @@ export default function DashboardPage() {
       const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
       return statusOk && typeOk && channelOk;
     });
-  }, [items, statusFilter, typeFilter, channelFilter]);
+  }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
 
   const CHANNEL_CHIPS = useMemo(() => {
     const base = [{ id: "ALL", label: "All channels" }];

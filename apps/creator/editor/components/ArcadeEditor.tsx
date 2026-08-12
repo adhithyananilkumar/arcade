@@ -25,7 +25,7 @@ import {
   SaveStatusFooter,
   type SaveStatusStore,
 } from "./SaveStatusFooter";
-import { useArcadeEditor } from "../hooks/useArcadeEditor";
+import { useArcadeEditor, type CollabStatus, type ActiveCollaborator } from "../hooks/useArcadeEditor";
 import "reactjs-tiptap-editor/style.css";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/shared/types/editor.types";
@@ -75,6 +75,8 @@ interface ArcadeEditorProps {
   ydoc?: Y.Doc;
   /** Legacy JSON to seed into an empty Y.Doc (migration for pre-history lessons). */
   seedContent?: TiptapDocument;
+  /** Document / Lesson ID for WebSocket real-time collaboration. */
+  documentId?: string;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
   /**
@@ -84,6 +86,10 @@ interface ArcadeEditorProps {
   chromeless?: boolean;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
+  /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
+  documentName?: string;
+  /** Callback fired when collaboration connection status or active user list changes */
+  onCollabStateChange?: (state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => void;
 }
 
 // Memoized because the host is a large orchestrator: a keystroke in the course-title
@@ -92,7 +98,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -123,15 +129,21 @@ export const ArcadeEditor = memo(
     [onSave, statusStore]
   );
 
-  const { editor, flushSave, setContent, getJSON } = useArcadeEditor({
+  const { editor, flushSave, setContent, getJSON, collabStatus, collaborators } = useArcadeEditor({
     initialContent,
     placeholder,
     readOnly,
     onSave: handleSave,
     ydoc,
     seedContent,
+    documentId,
     contentType,
+    documentName,
   });
+
+  useEffect(() => {
+    onCollabStateChange?.({ status: collabStatus, collaborators });
+  }, [collabStatus, collaborators, onCollabStateChange]);
 
   useImperativeHandle(
     ref,
