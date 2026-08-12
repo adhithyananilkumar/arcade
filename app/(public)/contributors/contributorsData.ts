@@ -14,20 +14,60 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
     name: "Fr. Rubin Tottupuram",
     role: "Visionary & Leader",
     avatar: "/team/fr_rubin.png",
-    color: "bg-[#e53935]" // Red
+    color: "bg-[#ef5350]" // Lighter Red
   },
   {
     id: "contributor-2",
     name: "Lisha Varghese",
     role: "Project Manager",
     avatar: "/team/lisha_varghese.png",
-    color: "bg-[#e0e0e0]" // Light Gray
+    color: "bg-[#f0f0f0]" // Lighter Gray
   },
   {
     id: "contributor-3",
     name: "Amal K Jose",
     role: "Lead Developer",
     avatar: "/team/amal_jose.png",
-    color: "bg-[#ffb300]" // Yellow
+    color: "bg-[#ffca28]" // Lighter Yellow
+  }
+];
+
+export interface OtherContributor {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+}
+
+export const OTHER_CONTRIBUTORS_DATA: OtherContributor[] = [
+  {
+    id: "other-1",
+    name: "Aibal Anil",
+    role: "Core Contributor",
+    avatar: "/team/aibal_anil.png"
+  },
+  {
+    id: "other-2",
+    name: "Anna Christina Jhony",
+    role: "Core Contributor",
+    avatar: "/team/anna_christina.png"
+  },
+  {
+    id: "other-3",
+    name: "Neeraj V V",
+    role: "Core Contributor",
+    avatar: "/team/neeraj_vv.png"
+  },
+  {
+    id: "other-4",
+    name: "Theresa Rose Mathew",
+    role: "Core Contributor",
+    avatar: "/team/theresa_mathew.png"
+  },
+  {
+    id: "other-5",
+    name: "Ann Mary Mathew",
+    role: "Core Contributor",
+    avatar: "/team/ann_mary.png"
   }
 ];

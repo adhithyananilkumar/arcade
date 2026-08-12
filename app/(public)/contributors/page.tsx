@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import BlurText from "@/components/BlurText";
 
-import { CONTRIBUTORS_DATA } from "./contributorsData";
+import { CONTRIBUTORS_DATA, OTHER_CONTRIBUTORS_DATA } from "./contributorsData";
 
 function LinkedinIcon({ className }: { className?: string }) {
   return (
@@ -73,7 +73,7 @@ export default function ContributorsPage() {
                 <p className="text-sm font-semibold text-slate-800/80 mt-2">{contributor.role}</p>
               </div>
               
-              <div className="absolute bottom-0 w-full h-[360px]">
+              <div className="absolute bottom-0 w-full h-[360px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_100%)]">
                 <Image
                    src={contributor.avatar}
                    alt={contributor.name}
@@ -87,41 +87,32 @@ export default function ContributorsPage() {
         </div>
       </section>
 
-      {/* --- JOIN THE MISSION CTA --- */}
-      <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-5xl mx-auto w-full z-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="bg-slate-900 rounded-[2.5rem] p-12 sm:p-20 relative overflow-hidden shadow-2xl"
-        >
-          {/* Ambient Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[#205ca8]/30 blur-[120px] pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col items-center">
-            <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center mb-8 border border-white/20 backdrop-blur-xl shadow-inner">
-              <Code2 className="w-10 h-10 text-white" />
-            </div>
-            
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tight">
-              Shape the Future of Learning
-            </h2>
-            <p className="text-slate-300 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-              Arcade is constantly evolving. Whether you're a frontend wizard, a backend architect, or a design enthusiast, there's a place for you to make an impact.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Link href="https://github.com/arcade-platform" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 hover:shadow-xl hover:shadow-white/20 transition-all duration-300 w-full sm:w-auto">
-                <GithubIcon className="w-5 h-5" />
-                View Repository
-              </Link>
-              <Link href="/docs" className="flex items-center justify-center gap-2 bg-white/10 text-white border border-white/20 px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 hover:scale-105 transition-all duration-300 w-full sm:w-auto backdrop-blur-sm">
-                Developer API <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
-        </motion.div>
+      {/* --- OTHER CONTRIBUTORS GRID --- */}
+      <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-7xl mx-auto w-full z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {OTHER_CONTRIBUTORS_DATA.map((contributor, idx) => (
+            <motion.div
+              key={contributor.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
+              className="bg-white rounded-xl p-8 flex flex-col items-center justify-center shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] transition-all duration-300 border border-slate-100/50"
+            >
+              <div className="relative w-28 h-28 rounded-full overflow-hidden mb-5 bg-slate-100">
+                <Image
+                  src={contributor.avatar}
+                  alt={contributor.name}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+              <h4 className="text-[1.1rem] font-bold text-slate-800 text-center leading-tight mb-1">{contributor.name}</h4>
+              <p className="text-sm font-semibold text-[#205ca8] text-center">{contributor.role}</p>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
     </main>
