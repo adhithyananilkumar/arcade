@@ -2,12 +2,16 @@
 /* Scoped to .ProseMirror — prevents Tailwind preflight from stripping
    list markers, heading sizes, and blockquote styles inside the editor. */
 
-.ProseMirror {
+.ProseMirror,
+.tiptap {
   outline: none;
   min-height: 300px;
   padding: 0;
   word-break: break-word;
   -webkit-font-smoothing: antialiased;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
   caret-color: black;
   cursor: text;
   /* Matches `body` in app/globals.css and the toolbar's "Geist" / "16px" default
@@ -18,6 +22,18 @@
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   font-size: 1rem;
 }
+
+/* Force all reactjs-tiptap-editor wrappers to be transparent when chromeless */
+.arcade-chromeless-editor .reactjs-tiptap-editor,
+.arcade-chromeless-editor .tiptap-editor,
+.arcade-chromeless-editor .rich-text-provider,
+.arcade-chromeless-editor > div,
+.arcade-chromeless-editor > div > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 
 /* ── Typography ── */
 .ProseMirror h1 {

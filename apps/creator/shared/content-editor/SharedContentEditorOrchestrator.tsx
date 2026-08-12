@@ -1816,7 +1816,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   floating on top of it. Plain translucent white (no backdrop-blur):
                   blur + rounded corners over the page's own blurred background blobs
                   was producing a doubled/seamed edge at the corners. */}
-              <div className="h-full overflow-y-auto rounded-2xl bg-white/70 p-8 arcade-scrollbar-mini">
+              <div className="h-full overflow-y-auto rounded-2xl bg-white/60 backdrop-blur-md border border-white/40 shadow-sm p-8 arcade-scrollbar-mini">
                 {activeYDoc && (
                   <ArcadeEditor
                     key={activeLessonId}
