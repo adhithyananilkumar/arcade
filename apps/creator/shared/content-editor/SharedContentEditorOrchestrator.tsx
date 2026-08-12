@@ -1936,18 +1936,13 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </aside>
         )}
 
         {/* ── Canvas: wide, centered, scrolls under the floating chrome ── */}
         <main className="z-0 flex flex-col min-h-0 absolute inset-0 overflow-y-auto">
-          {status === "SUBMITTED" && (
-            <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
-              <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
-            </div>
-          )}
           {status === "SUBMITTED" && (
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-2.5 text-xs text-amber-800 flex items-center justify-center gap-2 font-medium sticky top-12 z-20 shadow-sm">
               <span>🔒 This content has been submitted for review and is currently locked for editing until a decision is made.</span>
