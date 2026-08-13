@@ -59,6 +59,8 @@ interface ContentSummary {
   channelForcedSuspension: boolean;
   authorId?: string | null;
   authorName?: string | null;
+  collaborationStatus?: string | null;
+  collaborationRole?: string | null;
 }
 
 // ── Content type menu items ─────────────────────────────────────────────────────
@@ -790,8 +792,8 @@ function ContentCard({
 
   const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
-  const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
-  const hasSecondaryMenu = isRoadmap || (!isQuiz && segment != null);
+  const isPendingInvitation = item.collaborationStatus === "PENDING";
+  const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -832,9 +834,9 @@ function ContentCard({
 
   return (
     <div
-      onClick={channelSuspended ? undefined : handleCardActivate}
+      onClick={channelSuspended || isPendingInvitation ? undefined : handleCardActivate}
       className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
-        channelSuspended ? "" : "cursor-pointer"
+        channelSuspended || isPendingInvitation ? "" : "cursor-pointer"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -946,6 +948,11 @@ function ContentCard({
       <div className="flex flex-wrap items-center gap-2">
         <TypeBadge type={item.type} />
         <StatusBadge status={item.status} />
+        {item.collaborationStatus === "PENDING" && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            Invitation Pending
+          </span>
+        )}
         {channelSuspended && (
           <span
             className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
@@ -980,6 +987,41 @@ function ContentCard({
         >
           Editing Disabled
         </span>
+      ) : item.collaborationStatus === "PENDING" ? (
+        <div className="flex items-center gap-2" data-card-interactive onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                toast.success("Accepted collaboration invitation!");
+                onChanged();
+              } catch {
+                toast.error("Failed to accept invitation");
+              }
+            }}
+            className="flex-1 rounded-lg bg-indigo-600 py-2 text-center text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            Accept
+          </button>
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                toast.info("Declined invitation");
+                onChanged();
+              } catch {
+                toast.error("Failed to decline invitation");
+              }
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            Decline
+          </button>
+        </div>
       ) : (
         <Link
           href={openHref}
@@ -1088,8 +1130,8 @@ export default function DashboardPage() {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // Content Studio strictly displays content owned/authored by channels the user has authority over
-      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
+      // Content Studio strictly displays content owned/authored by channels the user has authority over, or collaborated items
+      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId) && !item.collaborationStatus) {
         return false;
       }
       const statusOk =
@@ -1097,7 +1139,7 @@ export default function DashboardPage() {
       const typeOk =
         typeFilter === "ALL" ||
         item.type?.toUpperCase() === typeFilter;
-      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
+      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter || !!item.collaborationStatus;
       return statusOk && typeOk && channelOk;
     });
   }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
