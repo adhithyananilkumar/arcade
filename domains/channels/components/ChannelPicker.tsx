@@ -24,7 +24,7 @@ interface ChannelPickerProps {
 export function ChannelPicker({ channels, value, onChange, label = 'Channel' }: ChannelPickerProps) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">
+      <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
         {label} <span className="text-red-500">*</span>
       </label>
       <Select value={value} onValueChange={(v) => onChange(v ?? '')}>

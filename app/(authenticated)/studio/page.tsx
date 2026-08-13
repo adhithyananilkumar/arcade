@@ -41,6 +41,7 @@ import {
   Tv,
   Loader2,
   HelpCircle,
+  Check,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -499,6 +500,7 @@ function CreateEventModal({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [eventType, setEventType] = useState<"WORKSHOP" | "WEBINAR">("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -515,11 +517,9 @@ function CreateEventModal({
     setError(null);
 
     try {
-      // Event type and the rest of the details default here and stay editable
-      // afterwards from the Event editor/overview — the create modal only asks for a name.
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
-        eventType: "WORKSHOP",
+        eventType,
         category: "uncategorized",
         tags: [],
         deliveryMode: "ONLINE",
@@ -544,40 +544,98 @@ function CreateEventModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button type="button" onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+        >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
+
+        <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
             <Calendar size={20} className="text-violet-600" />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <p className="text-[12px] font-medium text-slate-500">Choose event type and give it a title.</p>
           </div>
         </div>
+
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {error}
+          </div>
         )}
+
         <form onSubmit={handleCreate} className="space-y-4">
+          {/* Event Type Choice (Workshop vs Webinar) */}
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Event Type <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setEventType("WORKSHOP")}
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  eventType === "WORKSHOP"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
+                }`}
+              >
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-xs font-bold text-[#14142b]">Workshop</span>
+                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600" />}
+                </div>
+                <p className="mt-1 text-[11px] leading-tight text-slate-500">
+                  Interactive sessions with agenda & modules
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEventType("WEBINAR")}
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  eventType === "WEBINAR"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
+                }`}
+              >
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-xs font-bold text-[#14142b]">Webinar</span>
+                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600" />}
+                </div>
+                <p className="mt-1 text-[11px] leading-tight text-slate-500">
+                  Live presentation or Q&A stream session
+                </p>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Title <span className="text-red-500">*</span>
             </label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Full-Stack Event" maxLength={120} autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
+              maxLength={120}
+              autoFocus
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-white focus:ring-2 focus:ring-violet-600/20"
+            />
           </div>
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Channel <span className="text-red-500">*</span>
-            </label>
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          </div>
-          <button type="submit" disabled={!title.trim() || !channelId || creating}
-            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
-            {creating ? "Creating..." : "Create Event"}
+
+          <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+
+          <button
+            type="submit"
+            disabled={!title.trim() || !channelId || creating}
+            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
+          >
+            {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
           </button>
         </form>
       </div>
