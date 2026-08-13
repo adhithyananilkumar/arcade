@@ -22,11 +22,7 @@ const TIMELINE_DATA: TimelineItem[] = [
     num: "01",
     title: "It Began With a Question",
     subtitle: "What can a department give back to the world?",
-    desc: "And somewhere between curiosity and possibility, the first page of Arcade began to unfold.",
-    profiles: [
-      { name: "Adhithyan Anilkumar", avatar: "/team/amal_jose.png" }, // temporary placeholder
-      { name: "Lisha Varghese", avatar: "/team/lisha_varghese.png" }
-    ]
+    desc: "And somewhere between curiosity and possibility, the first page of Arcade began to unfold."
   },
   {
     num: "02",
@@ -34,10 +30,8 @@ const TIMELINE_DATA: TimelineItem[] = [
     subtitle: "March 10",
     desc: "Adhithyan envisioned a content marketplace where students could learn through classes offered as part of the Silver Jubilee, helping them build new skills and discover new possibilities. He named it Arcade and shared the vision with Lisha Varghese, Faculty In-Charge and guide of the platform. A simple idea had found its name—and the wheels began to turn.",
     profiles: [
-      { name: "Anadhulal C V", avatar: "/team/aibal_anil.png" },
-      { name: "Deepthi C D", avatar: "/team/ann_mary.png" },
-      { name: "Athira Biju", avatar: "/team/anna_christina.png" },
-      { name: "Kalyany S Nair", avatar: "/team/theresa_mathew.png" }
+      { name: "Adhithyan Anilkumar", avatar: "/team/amal_jose.png" }, // temporary placeholder
+      { name: "Lisha Varghese", avatar: "/team/lisha_varghese.png" }
     ]
   },
   {
@@ -46,11 +40,10 @@ const TIMELINE_DATA: TimelineItem[] = [
     subtitle: "March 12",
     desc: "The team began by looking at what already existed, studying existing systems, their strengths, their shortcomings, and their relevance. From these observations, a basic case study took shape, giving the idea its first sense of direction.",
     profiles: [
-      { name: "Anandhu Pradeep", avatar: "/team/aibal_anil.png" },
-      { name: "Akash A", avatar: "/team/ann_mary.png" },
-      { name: "Jaganath Syam", avatar: "/team/anna_christina.png" },
-      { name: "Anjali Sunil", avatar: "/team/theresa_mathew.png" },
-      { name: "Aloshy Antony", avatar: "/team/amal_jose.png" }
+      { name: "Anandhulal C V", avatar: "/team/aibal_anil.png" },
+      { name: "Deepthi C D", avatar: "/team/ann_mary.png" },
+      { name: "Athira Biju", avatar: "/team/anna_christina.png" },
+      { name: "Kalyany S Nair", avatar: "/team/theresa_mathew.png" }
     ]
   },
   {
@@ -59,8 +52,11 @@ const TIMELINE_DATA: TimelineItem[] = [
     subtitle: "March 14",
     desc: "As more information gathered, so did the team. Ideas that once lived only in conversations slowly found their place on paper, and the first basic architecture of Arcade began to emerge. The vision was no longer just imagined—it could now be seen.",
     profiles: [
-      { name: "Mercedes Benz", avatar: "https://ui-avatars.com/api/?name=Mercedes+Benz&background=ffffff&color=0f172a&font-size=0.33" },
-      { name: "YAG", avatar: "https://ui-avatars.com/api/?name=YAG&background=ffffff&color=0f172a&font-size=0.33" }
+      { name: "Anandhu Pradeep", avatar: "/team/aibal_anil.png" },
+      { name: "Akash A", avatar: "/team/ann_mary.png" },
+      { name: "Jaganath Syam", avatar: "/team/anna_christina.png" },
+      { name: "Aloshy Antony", avatar: "/team/amal_jose.png" },
+      { name: "Anjali Sunil", avatar: "/team/theresa_mathew.png" }
     ]
   },
   {
@@ -69,41 +65,56 @@ const TIMELINE_DATA: TimelineItem[] = [
     subtitle: "March 16",
     desc: "We carried the vision beyond our own walls, sharing it with Mercedes Benz and YAG for industrial guidance. Their insights challenged us to look again, rethink what we had designed, and refine the architecture into something stronger.",
     profiles: [
-      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin.png" }
+      { name: "Mercedes Benz", avatar: "https://ui-avatars.com/api/?name=Mercedes+Benz&background=ffffff&color=0f172a&font-size=0.33" },
+      { name: "YAG", avatar: "https://ui-avatars.com/api/?name=YAG&background=ffffff&color=0f172a&font-size=0.33" }
     ]
   },
   {
     num: "06",
     title: "A Door Opened",
     subtitle: "March 17",
-    desc: "With the architecture and setup plan ready, we approached the college administration seeking support. Their encouragement came with the infrastructure we needed, giving Arcade not just an idea to follow, but a place in which that idea could grow."
+    desc: "With the architecture and setup plan ready, we approached the college administration seeking support. Their encouragement came with the infrastructure we needed, giving Arcade not just an idea to follow, but a place in which that idea could grow.",
+    profiles: [
+      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin.png" }
+    ]
   },
   {
     num: "07",
     title: "The Idea Came Alive",
     subtitle: "April 3",
-    desc: "Development began with design, slowly moving into UI while the backend took shape alongside it. Screen by screen and step by step, what once lived in sketches and discussions began becoming something real. Arcade was learning how to take its first breath.",
-    profiles: [
-      { name: "Anna Christina Johny", avatar: "/team/anna_christina.png" }
-    ]
+    desc: "Development began with design, slowly moving into UI while the backend took shape alongside it. Screen by screen and step by step, what once lived in sketches and discussions began becoming something real. Arcade was learning how to take its first breath."
   },
   {
     num: "08",
     title: "Another Voice Joined",
     subtitle: "July 20",
-    desc: "As the UI team expanded, Anna Christina Johny joined the journey. With another mind, another perspective, and another pair of hands, the story grew a little richer—and the road ahead a little wider."
+    desc: "As the UI team expanded, Anna Christina Johny joined the journey. With another mind, another perspective, and another pair of hands, the story grew a little richer—and the road ahead a little wider.",
+    profiles: [
+      { name: "Anna Christina Johny", avatar: "/team/anna_christina.png" }
+    ]
   },
   {
     num: "09",
     title: "The First Chapter Became Real",
     subtitle: "July 25",
-    desc: "Phase 1 reached its first milestone with the completion of the MVP, reviewed by Merin Chacko, Amal K Jose, and Binumon Joseph, our Faculty In-Charges. The sketches had become screens, the conversations had become creation, and Arcade had finally become something we could hold in our hands."
+    desc: "Phase 1 reached its first milestone with the completion of the MVP, reviewed by Merin Chacko, Amal K Jose, and Binumon Joseph, our Faculty In-Charges. The sketches had become screens, the conversations had become creation, and Arcade had finally become something we could hold in our hands.",
+    profiles: [
+      { name: "Merin Chacko", avatar: "/team/anna_christina.png" },
+      { name: "Amal K Jose", avatar: "/team/amal_jose.png" },
+      { name: "Binumon Joseph", avatar: "/team/neeraj_vv.png" }
+    ]
   },
   {
     num: "10",
     title: "And Then, We Grew",
     subtitle: "The Next Chapter",
-    desc: "As Arcade grew, so did the work—and the team grew with it. New members joined to share the workload, bringing fresh hands, ideas, and energy into the journey. What began with a few minds was slowly becoming something built by many."
+    desc: "As Arcade grew, so did the work—and the team grew with it. New members joined to share the workload, bringing fresh hands, ideas, and energy into the journey. What began with a few minds was slowly becoming something built by many.",
+    profiles: [
+      { name: "Abel Anil", avatar: "/team/aibal_anil.png" },
+      { name: "Neeraj V V", avatar: "/team/neeraj_vv.png" },
+      { name: "Theresa Rose\nMathew", avatar: "/team/theresa_mathew.png" },
+      { name: "Ann Mary\nMathew", avatar: "/team/ann_mary.png" }
+    ]
   },
   {
     num: "11",
@@ -175,7 +186,7 @@ export default function FlowingTimeline() {
                       <Image src={profile.avatar} alt={profile.name} fill className="object-cover" unoptimized />
                     </div>
                     <div className="text-center">
-                      <p className="text-[10px] md:text-[11px] font-semibold text-slate-500 leading-tight tracking-wide whitespace-nowrap">{profile.name}</p>
+                      <p className="text-[10px] md:text-[11px] font-semibold text-slate-500 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
                     </div>
                   </div>
                 ))}
