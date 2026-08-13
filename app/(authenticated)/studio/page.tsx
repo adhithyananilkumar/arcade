@@ -36,9 +36,11 @@ import {
   Lock,
   User,
   FileQuestion,
-  HelpCircle,
   Eye,
   Archive,
+  Tv,
+  Loader2,
+  HelpCircle,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -1066,9 +1068,70 @@ function ContentCard({
   );
 }
 
+// ── Feature Locked Modal (shown when user has no channels) ───────────────────
+
+function ChannelRequiredModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal Surface */}
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
+        {/* Icon & Close */}
+        <div className="flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <Lock size={24} />
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="mt-4">
+          <h3 className="text-lg font-bold tracking-tight text-[#14142b]">
+            Feature Locked
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            Content creation is not currently available for your account. Contact your administrator to unlock this feature.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-6 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full bg-[#14142b] px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-[#232735] cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
@@ -1077,18 +1140,46 @@ export default function DashboardPage() {
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
 
-  const { channels } = useEligibleChannels();
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelRequiredModalOpen, setChannelRequiredModalOpen] = useState(false);
+
+  const handleCreateContentClick = () => {
+    if (channelsLoading) return;
+    if (channels.length === 0) {
+      setChannelRequiredModalOpen(true);
+      setDropdownOpen(false);
+    } else {
+      setDropdownOpen((v) => !v);
+    }
+  };
+
+  const handleSelectContentType = (typeId: string, href?: string) => {
+    setDropdownOpen(false);
+    if (channels.length === 0) {
+      setChannelRequiredModalOpen(true);
+      return;
+    }
+    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz") {
+      setCreateOpen(typeId as any);
+    } else if (href) {
+      router.push(href);
+    }
+  };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || channelsLoading) return;
     const params = new URLSearchParams(window.location.search);
     const create = params.get("create");
-    if (create === "webinar" || create === "workshop" || create === "event") {
-      setCreateOpen("event");
-    } else if (create === "course" || create === "roadmap" || create === "quiz") {
-      setCreateOpen(create);
+    if (create) {
+      if (channels.length === 0) {
+        setChannelRequiredModalOpen(true);
+      } else if (create === "webinar" || create === "workshop" || create === "event") {
+        setCreateOpen("event");
+      } else if (create === "course" || create === "roadmap" || create === "quiz") {
+        setCreateOpen(create as any);
+      }
     }
-  }, []);
+  }, [channelsLoading, channels.length]);
 
   const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
@@ -1177,6 +1268,10 @@ export default function DashboardPage() {
         background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)",
       }}
     >
+      <ChannelRequiredModal
+        isOpen={channelRequiredModalOpen}
+        onClose={() => setChannelRequiredModalOpen(false)}
+      />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
@@ -1251,10 +1346,14 @@ export default function DashboardPage() {
             <div className="relative">
               <button
                 id="create-content-btn"
-                onClick={() => setDropdownOpen((v) => !v)}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735]"
+                onClick={handleCreateContentClick}
+                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-75 cursor-pointer"
               >
-                <Plus size={16} />
+                {channelsLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
                 Create Content
                 <ChevronDown
                   size={14}
@@ -1291,30 +1390,17 @@ export default function DashboardPage() {
                         </>
                       );
                       const cls =
-                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50";
-                      return type.id === "course" || type.id === "roadmap" || type.id === "event" || type.id === "quiz" ? (
+                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 cursor-pointer";
+                      return (
                         <button
                           key={type.id}
                           type="button"
                           role="menuitem"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            setCreateOpen(type.id);
-                          }}
+                          onClick={() => handleSelectContentType(type.id, type.href)}
                           className={cls}
                         >
                           {inner}
                         </button>
-                      ) : (
-                        <Link
-                          key={type.id}
-                          href={type.href}
-                          role="menuitem"
-                          onClick={() => setDropdownOpen(false)}
-                          className={cls}
-                        >
-                          {inner}
-                        </Link>
                       );
                     })}
                   </div>
