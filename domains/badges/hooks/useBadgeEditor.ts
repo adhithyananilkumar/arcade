@@ -21,11 +21,14 @@ export type BadgeSaveState = "idle" | "saving" | "saved" | "error";
  * badgeId may be null (no badge currently open) so this can be called unconditionally
  * from the orchestrator regardless of which editor is active.
  */
+export type BadgeEditorPanel = "design" | "properties" | "layers";
+
 export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
   const [doc, setDoc] = useState<BadgeDocument | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<BadgeSaveState>("idle");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activePanel, setActivePanel] = useState<BadgeEditorPanel>("design");
   const [previewMode, setPreviewMode] = useState(false);
   const lastSavedRef = useRef<string | null>(null);
 
@@ -86,6 +89,11 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
 
   const handleSelect = useCallback((id: string | null) => {
     setSelectedId(id);
+    if (id) {
+      setActivePanel("properties");
+    } else {
+      setActivePanel((prev) => (prev === "layers" ? "layers" : "design"));
+    }
   }, []);
 
   const addTextObject = useCallback(() => {
@@ -164,6 +172,8 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     selectedId,
     selectedObject,
     shape,
+    activePanel,
+    setActivePanel,
     previewMode,
     setPreviewMode,
     readOnly,

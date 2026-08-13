@@ -1,7 +1,7 @@
 "use client";
 
-import { Eye, EyeOff, Trash2, Lock } from "lucide-react";
-import type { BadgeEditorState } from "../hooks/useBadgeEditor";
+import { Eye, EyeOff, Trash2, Lock, Palette, SlidersHorizontal, Layers as LayersIcon } from "lucide-react";
+import type { BadgeEditorPanel, BadgeEditorState } from "../hooks/useBadgeEditor";
 
 /**
  * Content for the "Design" / "Properties" / "Layers" tabs of the shared Studio
@@ -145,3 +145,50 @@ export function BadgeLayersPanel({ editor }: { editor: BadgeEditorState }) {
     </div>
   );
 }
+
+const CONTEXT_TABS: { id: BadgeEditorPanel; label: string; icon: typeof LayersIcon }[] = [
+  { id: "design", label: "Design", icon: Palette },
+  { id: "properties", label: "Properties", icon: SlidersHorizontal },
+  { id: "layers", label: "Layers", icon: LayersIcon },
+];
+
+/**
+ * Everything the sidebar shows while a Badge is the active editor: a small tab
+ * strip (Design/Properties/Layers) plus the selected tab's content — self-
+ * contained so EditorRightSidebar itself stays generic (it just renders
+ * whatever `editorContextNode` it's given, same as it already did for the
+ * Lesson-only Status/History/Team tabs before this existed). Layers lives here
+ * rather than behind a toolbar toggle, so it's reachable directly from the
+ * sidebar the same way Design/Properties are.
+ */
+export function BadgeEditorContextPanel({ editor }: { editor: BadgeEditorState }) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="mb-3 flex items-center gap-1 rounded-full border border-white/40 bg-white/60 p-1">
+        {CONTEXT_TABS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => editor.setActivePanel(id)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-xs font-semibold transition-colors ${
+              editor.activePanel === id ? "bg-[#14142b] text-white shadow-sm" : "text-slate-500 hover:text-[#14142b]"
+            }`}
+          >
+            <Icon size={13} />
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="min-h-0 flex-1">
+        {editor.activePanel === "properties" ? (
+          <BadgePropertiesPanel editor={editor} />
+        ) : editor.activePanel === "layers" ? (
+          <BadgeLayersPanel editor={editor} />
+        ) : (
+          <BadgeDesignPanel editor={editor} />
+        )}
+      </div>
+    </div>
+  );
+}
+

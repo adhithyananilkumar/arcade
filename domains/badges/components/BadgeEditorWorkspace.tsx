@@ -13,10 +13,10 @@ const BadgeCanvas = dynamic(() => import("./BadgeCanvas").then((m) => m.BadgeCan
   ),
 });
 
-const MIN_CANVAS_SIZE = 320;
-const MAX_CANVAS_SIZE = 780;
-/** The badge should read as the dominant element — target ~70% of the available height. */
-const TARGET_FRACTION_OF_HEIGHT = 0.7;
+const MIN_CANVAS_SIZE = 360;
+const MAX_CANVAS_SIZE = 860;
+/** The badge should read as the dominant element — target ~65% of the viewport height. */
+const TARGET_FRACTION_OF_VIEWPORT_HEIGHT = 0.65;
 
 /**
  * The main-workspace half of the Badge Editor: the floating toolbar (portalled,
@@ -34,15 +34,32 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
+
+    // Width comes from the host's own measured box (reliably constrained by the
+    // surrounding flex/max-w layout). Height is derived from the viewport rather
+    // than the host's measured height: this host sits inside several nested flex
+    // containers whose ancestor chain doesn't always resolve to a definite pixel
+    // height, so trusting a possibly-collapsed contentRect.height was the reason
+    // the badge kept landing on MIN_CANVAS_SIZE instead of dominating the
+    // workspace the way it should.
+    const recompute = (width: number) => {
+      const target = Math.min(width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
+      setCanvasSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
+    };
+
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (!entry) return;
-      const { width, height } = entry.contentRect;
-      const target = Math.min(width, height * TARGET_FRACTION_OF_HEIGHT);
-      setCanvasSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
+      recompute(entry.contentRect.width);
     });
     observer.observe(host);
-    return () => observer.disconnect();
+
+    const onWindowResize = () => recompute(host.getBoundingClientRect().width);
+    window.addEventListener("resize", onWindowResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", onWindowResize);
+    };
   }, []);
 
   if (editor.loadError) {

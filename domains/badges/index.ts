@@ -37,5 +37,5 @@ export { migrateBadgeDocument, BadgeDocumentMigrationError } from "./lib/migrati
 export { useBadgeEditor } from "./hooks/useBadgeEditor";
 export type { BadgeEditorState, BadgeSaveState } from "./hooks/useBadgeEditor";
 export { BadgeEditorWorkspace } from "./components/BadgeEditorWorkspace";
-export { BadgeDesignPanel, BadgePropertiesPanel, BadgeLayersPanel } from "./components/BadgePanels";
+export { BadgeEditorContextPanel } from "./components/BadgePanels";
 export * from "./api";

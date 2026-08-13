@@ -90,7 +90,7 @@ import {
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
-import { useBadgeEditor, BadgeEditorWorkspace, BadgeDesignPanel, BadgePropertiesPanel, BadgeLayersPanel } from "@/domains/badges";
+import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
@@ -1596,7 +1596,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       </div>
 
       <EditorRightSidebar
-        open={rightPanelOpen}
+        mode={rightPanelOpen ? "workflow" : activeBadgeId ? "editor" : "closed"}
         tab={rightPanelTab}
         onTabChange={setRightPanelTab}
         onClose={() => setRightPanelOpen(false)}
@@ -1618,20 +1618,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         inviting={inviting}
         onAddCollaborator={handleAddCollaborator}
         onRemoveCollaborator={handleRemoveCollaborator}
-        extraPanels={
-          activeBadgeId
-            ? ([
-                { id: "design", label: "Design", icon: Palette, content: <BadgeDesignPanel editor={badgeEditor} /> },
-                {
-                  id: "properties",
-                  label: "Properties",
-                  icon: SlidersHorizontal,
-                  content: <BadgePropertiesPanel editor={badgeEditor} />,
-                },
-                { id: "layers", label: "Layers", icon: Layers, content: <BadgeLayersPanel editor={badgeEditor} /> },
-              ] satisfies SidebarExtraPanel[])
-            : undefined
-        }
+        editorContextNode={activeBadgeId ? <BadgeEditorContextPanel editor={badgeEditor} /> : undefined}
         footerOverride={activeBadgeId ? { label: "Badge ID", value: activeBadgeId } : null}
         historyContent={
           activeLessonId ? (
@@ -1978,7 +1965,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             // rendered directly against the Studio workspace background. The toolbar is the
             // same floating shell as the Lesson editor's (FloatingToolbar); Design/Properties/
             // Layers render in the shared right sidebar below, not here.
-            <div className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12">
+            <div 
+              className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12 transition-all duration-300"
+              style={{ paddingRight: (rightPanelOpen || activeBadgeId) ? "356px" : undefined }}
+            >
               <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
             </div>
           ) : activeLessonId ? (
