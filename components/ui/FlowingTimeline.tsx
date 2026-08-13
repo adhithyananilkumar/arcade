@@ -108,6 +108,14 @@ export default function FlowingTimeline() {
         {TIMELINE_DATA.map((item, index) => {
           const isEven = index % 2 === 0;
           
+          const COLORS = [
+            { bg: "#2563eb", text: "text-blue-600", ring: "border-blue-400/30" },
+            { bg: "#ea580c", text: "text-orange-600", ring: "border-orange-400/30" },
+            { bg: "#9333ea", text: "text-purple-600", ring: "border-purple-400/30" },
+            { bg: "#059669", text: "text-emerald-600", ring: "border-emerald-400/30" }
+          ];
+          const color = COLORS[index % COLORS.length];
+          
           return (
             <motion.div 
               key={item.num}
@@ -155,7 +163,7 @@ export default function FlowingTimeline() {
                     {item.title}
                   </h3>
                   {item.subtitle && (
-                    <div className="text-indigo-500 font-semibold text-sm mb-3">
+                    <div className={`${color.text} font-semibold text-sm mb-3`}>
                       {item.subtitle}
                     </div>
                   )}
