@@ -1520,7 +1520,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Center: Title and Status */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               {activeLessonId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
