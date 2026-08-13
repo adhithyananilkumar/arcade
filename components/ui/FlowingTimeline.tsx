@@ -82,7 +82,10 @@ const TIMELINE_DATA: TimelineItem[] = [
     num: "07",
     title: "The Idea Came Alive",
     subtitle: "April 3",
-    desc: "Development began with design, slowly moving into UI while the backend took shape alongside it. Screen by screen and step by step, what once lived in sketches and discussions began becoming something real. Arcade was learning how to take its first breath."
+    desc: "Development began with design, slowly moving into UI while the backend took shape alongside it. Screen by screen and step by step, what once lived in sketches and discussions began becoming something real. Arcade was learning how to take its first breath.",
+    profiles: [
+      { name: "Anna Christina Johny", avatar: "/team/anna_christina.png" }
+    ]
   },
   {
     num: "08",
