@@ -112,7 +112,7 @@ export class CourseAdapter implements ContentDataAdapter {
   }
 
   // ── Root-level badges ────────────────────────────────────────────────────────
-  // Badge documents are structured JSON (BadgeDocument), not Tiptap/Yjs — StandaloneBadgeEditor
+  // Badge documents are structured JSON (BadgeDocument), not Tiptap/Yjs — useBadgeEditor
   // talks to domains/badges/api.ts directly (getBadge/saveBadgeDocument) for document read/write.
   // These three cover only the course-tree placement lifecycle (create/rename/delete).
 

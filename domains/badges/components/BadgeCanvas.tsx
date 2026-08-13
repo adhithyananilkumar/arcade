@@ -31,7 +31,8 @@ interface BadgeCanvasProps {
  * Pure rendering surface — the badge geometry IS the canvas. No background card, no border, no
  * chrome of its own: this renders directly against whatever it's placed on (the Studio
  * workspace), matching the "hexagon is the product" rule. Layout, toolbar, and panels live in
- * StandaloneBadgeEditor; this component only knows how to draw and edit a BadgeDocument.
+ * BadgeEditorWorkspace/BadgePanels; this component only knows how to draw and edit a
+ * BadgeDocument.
  */
 export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, size, showGuides, readOnly }: BadgeCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);

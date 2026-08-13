@@ -34,5 +34,8 @@ export { ARCADE_HEX_SHAPE, getBadgeShapeDefinition } from "./types/badgeShape.ty
 export { badgeDocumentSchema, parseBadgeDocument, BadgeDocumentValidationError } from "./lib/badgeDocumentSchema";
 export { migrateBadgeDocument, BadgeDocumentMigrationError } from "./lib/migrations";
 
-export { StandaloneBadgeEditor } from "./components/StandaloneBadgeEditor";
+export { useBadgeEditor } from "./hooks/useBadgeEditor";
+export type { BadgeEditorState, BadgeSaveState } from "./hooks/useBadgeEditor";
+export { BadgeEditorWorkspace } from "./components/BadgeEditorWorkspace";
+export { BadgeDesignPanel, BadgePropertiesPanel, BadgeLayersPanel } from "./components/BadgePanels";
 export * from "./api";

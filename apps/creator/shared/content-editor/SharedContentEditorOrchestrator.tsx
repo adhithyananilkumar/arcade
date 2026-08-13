@@ -77,7 +77,7 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { EditorRightSidebar, type RightSidebarTab } from "./EditorRightSidebar";
+import { EditorRightSidebar, type SidebarExtraPanel } from "./EditorRightSidebar";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
@@ -90,7 +90,7 @@ import {
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
-import { StandaloneBadgeEditor } from "@/domains/badges";
+import { useBadgeEditor, BadgeEditorWorkspace, BadgeDesignPanel, BadgePropertiesPanel, BadgeLayersPanel } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
@@ -112,6 +112,8 @@ import {
   FileText,
   ListChecks,
   Layers,
+  Palette,
+  SlidersHorizontal,
   X,
   GraduationCap,
   Pencil,
@@ -533,9 +535,21 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
   // A badge design is open in the main panel — mutually exclusive with a lesson
-  // (StandaloneBadgeEditor replaces ArcadeEditor entirely; it doesn't share the
+  // (BadgeEditorWorkspace replaces ArcadeEditor entirely; it doesn't share the
   // Yjs/Tiptap document state below, since BadgeDocument isn't ProseMirror content).
   const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
+  // Owns the active badge's full editing state (load/autosave/selection/mutations) — shared
+  // between BadgeEditorWorkspace (main content) and BadgeDesignPanel/PropertiesPanel/LayersPanel
+  // (right sidebar tabs), since both need the same live state. See useBadgeEditor docs.
+  const badgeEditor = useBadgeEditor(activeBadgeId, status === "SUBMITTED");
+  const BADGE_PANEL_IDS = ["design", "properties", "layers"];
+  useEffect(() => {
+    if (activeBadgeId) {
+      setRightPanelTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? prev : "design"));
+    } else {
+      setRightPanelTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? "status" : prev));
+    }
+  }, [activeBadgeId]);
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
@@ -559,7 +573,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // right-side panel (EditorRightSidebar): a single hamburger button opens/
   // closes it, and its own internal pill tabs pick which of the three shows.
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelTab, setRightPanelTab] = useState<RightSidebarTab>("status");
+  const [rightPanelTab, setRightPanelTab] = useState<string>("status");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
@@ -1604,6 +1618,21 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         inviting={inviting}
         onAddCollaborator={handleAddCollaborator}
         onRemoveCollaborator={handleRemoveCollaborator}
+        extraPanels={
+          activeBadgeId
+            ? ([
+                { id: "design", label: "Design", icon: Palette, content: <BadgeDesignPanel editor={badgeEditor} /> },
+                {
+                  id: "properties",
+                  label: "Properties",
+                  icon: SlidersHorizontal,
+                  content: <BadgePropertiesPanel editor={badgeEditor} />,
+                },
+                { id: "layers", label: "Layers", icon: Layers, content: <BadgeLayersPanel editor={badgeEditor} /> },
+              ] satisfies SidebarExtraPanel[])
+            : undefined
+        }
+        footerOverride={activeBadgeId ? { label: "Badge ID", value: activeBadgeId } : null}
         historyContent={
           activeLessonId ? (
             <VersionHistoryOrchestrator
@@ -1946,10 +1975,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             </div>
           ) : activeBadgeId ? (
             // No glass card, no dark canvas card — the badge geometry itself is the canvas,
-            // rendered directly against the Studio workspace background. Only the toolbar and
-            // the contextual side panel (inside StandaloneBadgeEditor) have their own chrome.
+            // rendered directly against the Studio workspace background. The toolbar is the
+            // same floating shell as the Lesson editor's (FloatingToolbar); Design/Properties/
+            // Layers render in the shared right sidebar below, not here.
             <div className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12">
-              <StandaloneBadgeEditor key={activeBadgeId} badgeId={activeBadgeId} readOnly={status === "SUBMITTED"} />
+              <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
             </div>
           ) : activeLessonId ? (
             // This outer wrapper is NOT scrollable — it just reserves a fixed box

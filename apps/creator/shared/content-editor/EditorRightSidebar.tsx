@@ -58,10 +58,24 @@ function statusIcon(label: string) {
 
 export type RightSidebarTab = "status" | "collab" | "history";
 
+/**
+ * A panel contributed by whichever editor is currently active (Badge's Design/
+ * Properties/Layers, and eventually others) — plugs into this same shell/tab-bar
+ * alongside the always-present workflow tabs (Status/History/Team), rather than
+ * each editor building its own separate sidebar. See BadgeDesignPanel etc. in
+ * domains/badges for the current consumer.
+ */
+export interface SidebarExtraPanel {
+  id: string;
+  label: string;
+  icon: typeof History;
+  content: React.ReactNode;
+}
+
 interface EditorRightSidebarProps {
   open: boolean;
-  tab: RightSidebarTab;
-  onTabChange: (tab: RightSidebarTab) => void;
+  tab: string;
+  onTabChange: (tab: string) => void;
   onClose: () => void;
 
   statusHistory: ContentStatusHistoryResponse[];
@@ -88,16 +102,22 @@ interface EditorRightSidebarProps {
   inviting: boolean;
   onAddCollaborator: (email?: string) => void;
   onRemoveCollaborator: (userId: string, name: string) => void;
+
+  /** Extra tabs contributed by the active non-lesson editor (e.g. Badge's Design/Properties/Layers). */
+  extraPanels?: SidebarExtraPanel[];
+  /** Overrides the footer's "Document ID" row — e.g. a Badge ID instead of a lesson ID. */
+  footerOverride?: { label: string; value: string } | null;
 }
 
-const TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
+const BASE_TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
   { id: "status", label: "Status", icon: MessageSquare },
   { id: "history", label: "History", icon: History },
   { id: "collab", label: "Team", icon: Users },
 ];
 
 export function EditorRightSidebar(props: EditorRightSidebarProps) {
-  const { open, tab, onTabChange, onClose } = props;
+  const { open, tab, onTabChange, onClose, extraPanels } = props;
+  const TABS = [...BASE_TABS, ...(extraPanels ?? [])];
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // Close menu when clicking anywhere outside
@@ -155,6 +175,8 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
       >
         {tab === "history" ? (
           props.historyContent
+        ) : tab !== "status" && tab !== "collab" ? (
+          extraPanels?.find((p) => p.id === tab)?.content
         ) : tab === "status" ? (
           props.statusHistoryLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400">
@@ -424,9 +446,9 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
       {/* Footer: Document ID */}
       <div className="mt-auto px-4 pb-4">
         <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
-          <span>Document ID</span>
+          <span>{props.footerOverride?.label ?? "Document ID"}</span>
           <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-            {props.activeLessonId ? `lesson:${props.activeLessonId}` : "None"}
+            {props.footerOverride?.value ?? (props.activeLessonId ? `lesson:${props.activeLessonId}` : "None")}
           </span>
         </div>
       </div>
