@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
+import FoldText from "./FoldText";
 
 type TimelineProfile = {
   name: string;
@@ -142,7 +143,20 @@ export default function FlowingTimeline() {
           className="text-5xl sm:text-6xl lg:text-7xl text-slate-900 tracking-normal"
           style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
         >
-          Arcade — A Story Still Unfolding
+          <FoldText
+            text="Arcade — A Story Still Unfolding"
+            splitBy="char"
+            hinge="top"
+            trigger="scroll"
+            duration={0.65}
+            stagger={0.045}
+            ease="power3.out"
+            perspective={700}
+            creaseShading={0.55}
+            fontSize="inherit"
+            fontWeight="inherit"
+            color="currentColor"
+          />
         </h2>
       </div>
 
