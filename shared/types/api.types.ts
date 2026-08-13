@@ -54,6 +54,7 @@ export interface CourseResponse {
   rejectionReason?: string;
   wasPublished?: boolean;
   modules: ModuleResponse[];
+  badges: BadgeSummaryResponse[];
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
@@ -87,10 +88,9 @@ export interface ModuleResponse {
   position: number;
   lessons: LessonResponse[];
   quizzes: QuizResponse[];
-  badges: BadgeSummaryResponse[];
 }
 
-// ── Badge (a module item — sibling of a lesson/quiz; owned by the badges domain) ─
+// ── Badge (a course-level content item — sibling of Module; owned by the badges domain) ─
 export interface BadgeSummaryResponse {
   id: string;
   title: string;

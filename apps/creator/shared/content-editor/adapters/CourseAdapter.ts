@@ -1,6 +1,6 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, Terminology } from "../types";
-import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse } from "@/shared/types/api.types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, RootBadgeNode, Terminology } from "../types";
+import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, BadgeSummaryResponse } from "@/shared/types/api.types";
 
 export class CourseAdapter implements ContentDataAdapter {
   terminology: Terminology = {
@@ -11,9 +11,9 @@ export class CourseAdapter implements ContentDataAdapter {
     leafBadge: "Badge",
   };
 
-  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[] }> {
+  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }> {
     const course = await api.get<CourseResponse>(`/api/courses/${id}`);
-    
+
     return {
       meta: {
         id: course.id,
@@ -33,8 +33,13 @@ export class CourseAdapter implements ContentDataAdapter {
         leaves: [
           ...m.lessons.map((l) => ({ ...l, type: "document" as const })),
           ...(m.quizzes ?? []).map((q) => ({ ...q, type: "quiz" as const })),
-          ...(m.badges ?? []).map((b) => ({ ...b, type: "badge" as const })),
         ],
+      })),
+      // Badge is a course-level content item — a sibling of modules, never nested inside one.
+      badges: (course.badges ?? []).map((b: BadgeSummaryResponse) => ({
+        id: b.id,
+        title: b.title,
+        position: b.position,
       })),
     };
   }
@@ -70,12 +75,6 @@ export class CourseAdapter implements ContentDataAdapter {
     if (type === "document") {
       const l = await api.post<LessonResponse>(`/api/modules/${containerId}/lessons`, { title });
       return { ...l, type: "document" };
-    } else if (type === "badge") {
-      const b = await api.post<{ id: string; title: string; position: number }>(
-        `/api/modules/${containerId}/badges`,
-        { title }
-      );
-      return { ...b, type: "badge" };
     } else {
       const q = await api.post<QuizResponse>(`/api/modules/${containerId}/quizzes`, { title });
       return { ...q, type: "quiz" };
@@ -85,8 +84,6 @@ export class CourseAdapter implements ContentDataAdapter {
   async deleteLeaf(leafId: string, type: LeafNode["type"]): Promise<void> {
     if (type === "document") {
       await api.delete(`/api/lessons/${leafId}`);
-    } else if (type === "badge") {
-      await api.delete(`/api/badges/${leafId}`);
     } else {
       await api.delete(`/api/quizzes/${leafId}`);
     }
@@ -95,8 +92,6 @@ export class CourseAdapter implements ContentDataAdapter {
   async renameLeaf(leafId: string, title: string, type: LeafNode["type"]): Promise<void> {
     if (type === "document") {
       await api.patch(`/api/lessons/${leafId}`, { title });
-    } else if (type === "badge") {
-      await api.patch(`/api/badges/${leafId}`, { title });
     } else {
       await api.patch(`/api/quizzes/${leafId}`, { title });
     }
@@ -112,13 +107,28 @@ export class CourseAdapter implements ContentDataAdapter {
     await api.put(`/api/lessons/${leafId}/document`, payload);
   }
 
-  // ── Badge-specific document access ──────────────────────────────────────────
-  // Badge documents are structured JSON (BadgeDocument), not Tiptap/Yjs — they don't fit
-  // getLeafDocument/saveLeafDocument's ydocState-shaped contract, so StandaloneBadgeEditor talks
-  // to domains/badges/api.ts directly (getBadge/saveBadgeDocument) instead of going through this
-  // adapter. See domains/badges/index.ts.
-
   async saveLeafVersion(leafId: string, payload: { snapshot?: string; body: string; kind: string; label?: string }): Promise<void> {
     await api.post(`/api/lessons/${leafId}/document/versions`, payload);
+  }
+
+  // ── Root-level badges ────────────────────────────────────────────────────────
+  // Badge documents are structured JSON (BadgeDocument), not Tiptap/Yjs — StandaloneBadgeEditor
+  // talks to domains/badges/api.ts directly (getBadge/saveBadgeDocument) for document read/write.
+  // These three cover only the course-tree placement lifecycle (create/rename/delete).
+
+  async addBadge(contentId: string, title: string): Promise<RootBadgeNode> {
+    const b = await api.post<{ id: string; title: string; position: number }>(
+      `/api/courses/${contentId}/badges`,
+      { title }
+    );
+    return { id: b.id, title: b.title, position: b.position };
+  }
+
+  async deleteBadge(badgeId: string): Promise<void> {
+    await api.delete(`/api/badges/${badgeId}`);
+  }
+
+  async renameBadge(badgeId: string, title: string): Promise<void> {
+    await api.patch(`/api/badges/${badgeId}`, { title });
   }
 }
