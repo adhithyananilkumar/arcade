@@ -25,6 +25,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import StrokeText from "@/components/StrokeText";
+import FlowingTimeline from "@/components/ui/FlowingTimeline";
 
 import { CONTRIBUTORS_DATA, OTHER_CONTRIBUTORS_DATA } from "./contributorsData";
 
@@ -90,9 +91,9 @@ export default function ContributorsPage() {
       </div>
 
       {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
-      <div className="relative w-full border-b border-slate-100/50 min-h-screen flex flex-col items-center justify-center">
+      <div className="relative w-full border-b border-slate-100/50 min-h-[70vh] flex flex-col items-center justify-center pt-32 pb-16">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 w-full relative z-10">
-          <div className="max-w-4xl mx-auto space-y-8 text-center -mt-16">
+          <div className="max-w-4xl mx-auto space-y-8 text-center">
             <div className="flex flex-col items-center justify-center w-full">
               <StrokeText
                 text="Made Better"
@@ -142,17 +143,8 @@ export default function ContributorsPage() {
             </motion.p>
           </div>
         </div>
-        
-        {/* Decorative Center Icon */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="absolute bottom-12 sm:bottom-16 left-1/2 -translate-x-1/2 text-slate-300/30 z-10 pointer-events-none"
-        >
-          <GraduationCap size={120} strokeWidth={1} />
-        </motion.div>
       </div>
+
       {/* --- CONTRIBUTORS GRID --- */}
       <section className="relative px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-32 max-w-6xl mx-auto w-full z-10">
         
@@ -250,6 +242,11 @@ export default function ContributorsPage() {
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* --- ARCADE TIMELINE --- */}
+      <section className="relative w-full z-10 bg-white border-t border-slate-100">
+        <FlowingTimeline />
       </section>
 
       {/* Contributor Details Modal */}
