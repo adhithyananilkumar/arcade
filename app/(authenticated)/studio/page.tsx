@@ -792,6 +792,7 @@ function ContentCard({
 
   const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
+  const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
   const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
 
