@@ -248,15 +248,15 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
         <BadgeBorder
           border={doc.border}
           borderPoints={borderPoints}
-          innerBorderPoints={innerBorderPoints}
+          width={doc.canvas.width}
+          height={doc.canvas.height}
         />
       </Layer>
 
       {/* Guides layer — not clipped, editor-only, hidden in Preview and never exported. */}
       {!readOnly && showGuides && (
         <Layer listening={false}>
-          <PolygonOutline points={safeAreaPoints} stroke="rgba(255,255,255,0.35)" dash={[6, 6]} />
-          <PolygonOutline points={outerPoints} stroke="rgba(255,255,255,0.6)" />
+          {/* Guide outline line removed */}
         </Layer>
       )}
     </Stage>
@@ -419,37 +419,38 @@ function QrPlaceholderInner({ width, height }: { width: number; height: number }
 function BadgeBorder({
   border,
   borderPoints,
-  innerBorderPoints,
+  width,
+  height,
 }: {
   border: BadgeDocument["border"];
   borderPoints: number[];
-  innerBorderPoints: number[];
+  width: number;
+  height: number;
 }) {
-  if (border.style === "none") return null;
-  const dash = border.style === "dashed" ? [border.width * 2, border.width] : undefined;
-
-  return (
-    <>
+  if (border.type === "gradient") {
+    const angleRad = (border.angle * Math.PI) / 180;
+    const dx = (Math.cos(angleRad) * width) / 2;
+    const dy = (Math.sin(angleRad) * height) / 2;
+    return (
       <Line
         points={borderPoints}
         closed
-        stroke={border.color}
         strokeWidth={border.width}
         opacity={border.opacity}
-        dash={dash}
-        shadowColor={border.glow ? border.glowColor : undefined}
-        shadowBlur={border.glow ? border.width * 4 : undefined}
-        shadowOpacity={border.glow ? 0.8 : undefined}
+        strokeLinearGradientStartPoint={{ x: width / 2 - dx, y: height / 2 - dy }}
+        strokeLinearGradientEndPoint={{ x: width / 2 + dx, y: height / 2 + dy }}
+        strokeLinearGradientColorStops={border.stops.flatMap((s) => [s.offset, s.color])}
       />
-      {(border.style === "double" || border.inner) && (
-        <Line
-          points={innerBorderPoints}
-          closed
-          stroke={border.inner ? border.innerColor : border.color}
-          strokeWidth={border.inner ? border.innerWidth : Math.max(1, border.width / 2)}
-          opacity={border.opacity}
-        />
-      )}
-    </>
+    );
+  }
+
+  return (
+    <Line
+      points={borderPoints}
+      closed
+      stroke={border.color}
+      strokeWidth={border.width}
+      opacity={border.opacity}
+    />
   );
 }

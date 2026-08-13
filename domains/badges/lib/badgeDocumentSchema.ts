@@ -137,15 +137,12 @@ const backgroundSchema = z.discriminatedUnion("type", [
 ]);
 
 const borderSchema = z.object({
-  style: z.enum(["none", "solid", "dashed", "double"]),
+  type: z.enum(["solid", "gradient"]),
   color: z.string(),
   width: z.number().nonnegative(),
   opacity: z.number().min(0).max(1),
-  inner: z.boolean(),
-  innerColor: z.string(),
-  innerWidth: z.number().nonnegative(),
-  glow: z.boolean(),
-  glowColor: z.string(),
+  angle: z.number(),
+  stops: z.array(gradientStopSchema),
 });
 
 const effectSchema = z.object({

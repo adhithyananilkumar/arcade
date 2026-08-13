@@ -73,11 +73,11 @@ export const ARCADE_HEX_SHAPE: BadgeShapeDefinition = {
   height: 1024,
   aspectRatio: SHIELD_ASPECT_RATIO,
   outerGeometry: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
-  clipGeometry: shieldPath(HALF_WIDTH - 8, HALF_HEIGHT - 8, SHIELD_CORNER_FRACTION),
+  clipGeometry: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
   safeArea: shieldPath(HALF_WIDTH * 0.8, HALF_HEIGHT * 0.8, SHIELD_CORNER_FRACTION),
   bleedArea: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
-  borderGeometry: shieldPath(HALF_WIDTH - 4, HALF_HEIGHT - 4, SHIELD_CORNER_FRACTION),
-  innerBorderGeometry: shieldPath(HALF_WIDTH - 20, HALF_HEIGHT - 20, SHIELD_CORNER_FRACTION),
+  borderGeometry: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
+  innerBorderGeometry: "",
 };
 
 const BADGE_SHAPES: Record<BadgeShapeId, BadgeShapeDefinition> = {

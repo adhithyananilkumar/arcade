@@ -8,7 +8,7 @@ import {
   Type,
   Image as ImageIcon,
   Shapes,
-  Sparkles,
+  Smile,
   QrCode,
   Eye,
   EyeOff,
@@ -118,36 +118,12 @@ export function BadgeToolbar({ editor, centerX }: { editor: BadgeEditorState; ce
         <PopoverTrigger
           render={
             <button type="button" title="Icon" className={toolButtonClass(false, false, false)}>
-              <Sparkles size={15} />
+              <Smile size={15} />
             </button>
           }
         />
-        <PopoverContent className="w-72" align="start">
-          <div className="flex max-h-80 flex-col gap-3 overflow-y-auto">
-            {BADGE_ICON_CATEGORIES.map((category) => (
-              <div key={category.label}>
-                <div className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {category.label}
-                </div>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {category.icons.map(({ id, label }) => {
-                    const Icon = getBadgeIconComponent(id);
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        title={label}
-                        onClick={() => editor.addIconObject(id)}
-                        className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground/70 hover:bg-muted hover:text-foreground"
-                      >
-                        <Icon size={18} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+        <PopoverContent className="w-80 p-0" align="start">
+          <IconPicker onSelect={editor.addIconObject} />
         </PopoverContent>
       </Popover>
 
@@ -171,6 +147,57 @@ export function BadgeToolbar({ editor, centerX }: { editor: BadgeEditorState; ce
         onClick={() => editor.setPreviewMode((v) => !v)}
       />
     </FloatingToolbar>
+  );
+}
+
+// ─── Icon Picker ─────────────────────────────────────────────────────────────
+function IconPicker({ onSelect }: { onSelect: (id: string) => void }) {
+  const [activeTab, setActiveTab] = useState(0);
+  const category = BADGE_ICON_CATEGORIES[activeTab];
+
+  return (
+    <div className="flex flex-col">
+      {/* Category tab pills — horizontally scrollable */}
+      <div className="flex gap-1 overflow-x-auto border-b border-border px-2 py-1.5 scrollbar-none">
+        {BADGE_ICON_CATEGORIES.map((cat, i) => (
+          <button
+            key={cat.label}
+            type="button"
+            onClick={() => setActiveTab(i)}
+            className={`flex-shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors ${
+              i === activeTab
+                ? "bg-[#14142b] text-white"
+                : "text-[#14142b]/60 hover:bg-[#14142b]/8 hover:text-[#14142b]"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Icon grid for active category */}
+      <div className="grid max-h-56 grid-cols-6 gap-0.5 overflow-y-auto p-2">
+        {category.icons.map(({ id, label }) => {
+          const Icon = getBadgeIconComponent(id);
+          return (
+            <button
+              key={id}
+              type="button"
+              title={label}
+              onClick={() => onSelect(id)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Icon size={17} />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Footer label */}
+      <div className="border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
+        {category.label} · {category.icons.length} icons
+      </div>
+    </div>
   );
 }
 

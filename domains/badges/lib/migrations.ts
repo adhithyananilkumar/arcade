@@ -34,21 +34,38 @@ function migrateV1ToV2(doc: Record<string, unknown>): Record<string, unknown> {
     return v;
   };
 
-  const objects = Array.isArray(doc.objects) ? doc.objects.map(migrateImageLike) : [];
-  const background = migrateImageLike(doc.background) ?? doc.background;
+  const objects = Array.isArray(doc.objects) ? doc.objects.map(migrateImageLike) : doc.objects;
+  const background = migrateImageLike(doc.background);
 
   return {
     ...doc,
     schemaVersion: 2,
     objects,
     background,
-    border: doc.border ?? DEFAULT_BADGE_BORDER,
+    border: doc.border ?? { color: "#16C7A3", width: 6, opacity: 1 },
+  };
+}
+
+function migrateV2ToV3(doc: Record<string, unknown>): Record<string, unknown> {
+  const oldBorder = (doc.border as Record<string, unknown>) ?? {};
+  return {
+    ...doc,
+    schemaVersion: 3,
+    border: {
+      type: oldBorder.type ?? "solid",
+      color: oldBorder.color ?? DEFAULT_BADGE_BORDER.color,
+      width: oldBorder.width ?? DEFAULT_BADGE_BORDER.width,
+      opacity: oldBorder.opacity ?? DEFAULT_BADGE_BORDER.opacity,
+      angle: oldBorder.angle ?? DEFAULT_BADGE_BORDER.angle,
+      stops: oldBorder.stops ?? DEFAULT_BADGE_BORDER.stops,
+    },
   };
 }
 
 // Keyed by the version being migrated FROM.
 const MIGRATIONS: Record<number, Migration> = {
   1: migrateV1ToV2,
+  2: migrateV2ToV3,
 };
 
 export class BadgeDocumentMigrationError extends Error {}

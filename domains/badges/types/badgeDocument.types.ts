@@ -16,7 +16,7 @@
  * ------------------------------------------------------------------
  */
 
-export const BADGE_DOCUMENT_SCHEMA_VERSION = 2 as const;
+export const BADGE_DOCUMENT_SCHEMA_VERSION = 3 as const;
 
 /**
  * "ARCADE_HEX" is a historical id (kept for compatibility with already-persisted
@@ -61,28 +61,21 @@ export type BadgeBorderStyle = "none" | "solid" | "dashed" | "double";
  * fields.
  */
 export interface BadgeBorderConfig {
-  style: BadgeBorderStyle;
+  type: "solid" | "gradient";
   color: string;
   width: number;
   opacity: number;
-  /** Renders a second, thinner border just inside the outer one. */
-  inner: boolean;
-  innerColor: string;
-  innerWidth: number;
-  glow: boolean;
-  glowColor: string;
+  angle: number;
+  stops: BadgeGradientStop[];
 }
 
 export const DEFAULT_BADGE_BORDER: BadgeBorderConfig = {
-  style: "solid",
-  color: "#FFFFFF",
-  width: 4,
-  opacity: 0.6,
-  inner: false,
-  innerColor: "#FFFFFF",
-  innerWidth: 1,
-  glow: false,
-  glowColor: "#FFFFFF",
+  type: "solid",
+  color: "#16C7A3",
+  width: 6,
+  opacity: 1,
+  angle: 45,
+  stops: [{ offset: 0, color: "#00C2A8" }, { offset: 1, color: "#7C3AED" }],
 };
 
 export interface BadgeVariableBinding {
@@ -233,7 +226,7 @@ export function createEmptyBadgeDocument(title: string): BadgeDocument {
     schemaVersion: BADGE_DOCUMENT_SCHEMA_VERSION,
     canvas: { width: 1024, height: 1024 },
     shape: { type: "ARCADE_HEX" },
-    background: { type: "solid", value: "#0B3D36" },
+    background: { type: "solid", value: "#063D36" },
     border: DEFAULT_BADGE_BORDER,
     objects: [],
     effects: [],

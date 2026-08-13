@@ -181,47 +181,76 @@ function BackgroundSection({ editor }: { editor: BadgeEditorState }) {
   );
 }
 
-const BORDER_STYLES: BadgeBorderStyle[] = ["none", "solid", "dashed", "double"];
+const BORDER_TYPES = ["solid", "gradient"] as const;
 
 function FrameSection({ editor }: { editor: BadgeEditorState }) {
   const border = editor.doc!.border;
+  
+  const switchType = (type: "solid" | "gradient") => {
+    if (type === "solid") {
+      editor.updateBorder({ type: "solid", color: border.color || "#16C7A3" });
+    } else {
+      editor.updateBorder({ 
+        type: "gradient", 
+        angle: border.angle || 45, 
+        stops: border.stops?.length ? border.stops : [{ offset: 0, color: "#00C2A8" }, { offset: 1, color: "#7C3AED" }] 
+      });
+    }
+  };
+
   return (
     <PanelSection title="Frame">
       <div className="space-y-2.5">
-        <div>
-          <p className="mb-1 text-[11px] text-slate-500">Border style</p>
-          <SegmentedField value={border.style} options={BORDER_STYLES} onChange={(style) => editor.updateBorder({ style })} />
+        <div className="mb-2 flex flex-wrap gap-1">
+          {BORDER_TYPES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => switchType(t)}
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-medium capitalize ${
+                border.type === t ? "bg-[#14142b] text-white" : "bg-white/60 text-slate-500 hover:bg-white"
+              }`}
+            >
+              {t === "gradient" ? "Linear" : "Solid"}
+            </button>
+          ))}
         </div>
-        {border.style !== "none" && (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="w-16 text-[11px] text-slate-500">Color</span>
-              <ColorField value={border.color} onChange={(color) => editor.updateBorder({ color })} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-16 text-[11px] text-slate-500">Width</span>
-              <NumberField value={border.width} onChange={(width) => editor.updateBorder({ width })} min={1} max={24} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-16 text-[11px] text-slate-500">Opacity</span>
-              <NumberField value={Math.round(border.opacity * 100)} onChange={(v) => editor.updateBorder({ opacity: v / 100 })} min={0} max={100} />
-            </div>
-            <label className="flex items-center gap-2 text-[11px] text-slate-500">
-              <input type="checkbox" checked={border.inner} onChange={(e) => editor.updateBorder({ inner: e.target.checked })} />
-              Inner border
-            </label>
-            {border.inner && (
-              <div className="flex items-center gap-2 pl-5">
-                <span className="w-11 text-[11px] text-slate-500">Color</span>
-                <ColorField value={border.innerColor} onChange={(innerColor) => editor.updateBorder({ innerColor })} />
-              </div>
-            )}
-            <label className="flex items-center gap-2 text-[11px] text-slate-500">
-              <input type="checkbox" checked={border.glow} onChange={(e) => editor.updateBorder({ glow: e.target.checked })} />
-              Glow
-            </label>
-          </>
+
+        {border.type === "solid" && (
+          <div className="flex items-center gap-2">
+            <span className="w-16 text-[11px] text-slate-500">Color</span>
+            <ColorField value={border.color} onChange={(color) => editor.updateBorder({ color })} />
+          </div>
         )}
+
+        {border.type === "gradient" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-16 text-[11px] text-slate-500">Angle</span>
+              <NumberField value={border.angle} onChange={(angle) => editor.updateBorder({ angle })} min={0} max={360} />
+            </div>
+            {border.stops.map((stop, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="w-16 text-[11px] text-slate-500">Stop {i + 1}</span>
+                <ColorField
+                  value={stop.color}
+                  onChange={(color) =>
+                    editor.updateBorder({ stops: border.stops.map((s, si) => (si === i ? { ...s, color } : s)) })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          <span className="w-16 text-[11px] text-slate-500">Width</span>
+          <NumberField value={border.width} onChange={(width) => editor.updateBorder({ width })} min={1} max={24} />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-16 text-[11px] text-slate-500">Opacity</span>
+          <NumberField value={Math.round(border.opacity * 100)} onChange={(v) => editor.updateBorder({ opacity: v / 100 })} min={0} max={100} />
+        </div>
       </div>
     </PanelSection>
   );

@@ -18,20 +18,18 @@ import AchievementsHero from './AchievementsHero';
 
 // ─── SVG Hexagonal Badge Graphic ─────────────────────────────────────────────
 function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) {
-  const outerHex = "50,5 95,30 95,100 50,125 5,100 5,30";
-  const leftBevel = "50,5 50,125 5,100 5,30";
-  const innerHex = "50,15 85,35 85,95 50,115 15,95 15,35";
-  const innerShadow = "50,15 85,35 85,95 50,115";
+  const outerHex = "50,8 92,30 92,100 50,122 8,100 8,30";
+  const innerHex = "50,17 84,35 84,95 50,113 16,95 16,35";
+  const innerShadow = "50,17 84,35 84,95 50,113";
 
   return (
     <svg
       viewBox="0 0 100 130"
-      className={`w-full h-full drop-shadow-xl transition-all duration-300 ${!unlocked ? 'grayscale opacity-50' : 'group-hover:scale-105'}`}
+      className={`w-full h-full drop-shadow-xl overflow-visible transition-all duration-300 ${!unlocked ? 'grayscale opacity-50' : 'group-hover:scale-105'}`}
     >
       {type === 'sword-crown' && (
         <g>
           <polygon points={outerHex} fill="#b8860b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#0a2a43" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 50,25 L 50,105 M 25,50 L 75,80 M 25,80 L 75,50" stroke="#4682b4" strokeWidth="2" opacity="0.4" />
@@ -45,7 +43,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'potion' && (
         <g>
           <polygon points={outerHex} fill="#2980b9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#0d1f2d" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 30,75 C 30,95 70,95 70,75 C 70,65 60,60 60,50 L 60,40 L 40,40 L 40,50 C 40,60 30,65 30,75 Z" fill="#81ecec" />
@@ -59,7 +56,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'mountain' && (
         <g>
           <polygon points={outerHex} fill="#b2bec3" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#2d3436" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 35,50 L 42,60 L 50,45 L 58,60 L 65,50 L 60,65 L 40,65 Z" fill="#f1c40f" />
@@ -73,7 +69,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'flower' && (
         <g>
           <polygon points={outerHex} fill="#00b894" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#004d40" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <circle cx="50" cy="70" r="12" fill="#55efc4" />
@@ -87,7 +82,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'skull-arrows' && (
         <g>
           <polygon points={outerHex} fill="#6c5ce7" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#1e152a" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 30,55 L 70,85 M 70,55 L 30,85" stroke="#a29bfe" strokeWidth="4" />
@@ -101,7 +95,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'star' && (
         <g>
           <polygon points={outerHex} fill="#fdcb6e" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#2d1d00" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 50,35 L 54,48 L 68,48 L 57,56 L 61,70 L 50,61 L 39,70 L 43,56 L 32,48 L 46,48 Z" fill="#ffeaa7" />
@@ -112,7 +105,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'shield-book' && (
         <g>
           <polygon points={outerHex} fill="#e17055" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#2b0900" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <path d="M 30,45 C 30,45 50,35 50,35 C 50,35 70,45 70,45 C 70,75 50,90 50,90 C 50,90 30,75 30,45 Z" fill="#fab1a0" />
@@ -123,7 +115,6 @@ function BadgeGraphic({ type, unlocked }: { type: string; unlocked?: boolean }) 
       {type === 'lightning' && (
         <g>
           <polygon points={outerHex} fill="#00cec9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.2" />
           <polygon points={innerHex} fill="#002b2a" />
           <polygon points={innerShadow} fill="#000000" opacity="0.3" />
           <polygon points="55,30 35,65 50,65 45,100 65,60 50,60" fill="#74b9ff" />
@@ -759,18 +750,12 @@ export default function AchievementsPage() {
                         <svg
                           viewBox="0 0 400 130"
                           fill="none"
-                          className="w-full h-auto text-white dark:text-neutral-900 drop-shadow-md"
+                          className="w-full h-auto text-white dark:text-neutral-900 drop-shadow-md overflow-visible"
                           preserveAspectRatio="none"
                         >
                           <path
-                            d="M 0 0 Q 50 35 100 65 Q 150 95 200 120 Q 250 95 300 65 Q 350 35 400 0 L 400 130 L 0 130 Z"
+                            d="M 0 0 Q 100 45 200 115 Q 300 45 400 0 L 400 130 L 0 130 Z"
                             fill="currentColor"
-                          />
-                          <path
-                            d="M 0 0 Q 50 35 100 65 Q 150 95 200 120 Q 250 95 300 65 Q 350 35 400 0"
-                            stroke="#E2E8F0"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
                           />
                         </svg>
                       </div>
