@@ -26,8 +26,14 @@ export interface BadgeVersionSummary {
   createdByName: string | null;
 }
 
-export function addBadge(moduleId: string, title: string) {
-  return api.post<BadgeResponse>(`/api/modules/${moduleId}/badges`, { title });
+/**
+ * Badge is a course-level Studio item (see Badge.java class docs) — not currently called from
+ * anywhere in the UI, since CourseAdapter.addBadge talks to this same endpoint directly (it only
+ * needs the lightweight RootBadgeNode shape for the course tree, not the full BadgeResponse).
+ * Kept here for any future caller that needs the full response back from creation.
+ */
+export function addBadge(courseId: string, title: string) {
+  return api.post<BadgeResponse>(`/api/courses/${courseId}/badges`, { title });
 }
 
 export function getBadge(badgeId: string) {

@@ -10,13 +10,46 @@
  * new schema version means adding one entry here, never mutating an
  * existing one.
  */
-import { BADGE_DOCUMENT_SCHEMA_VERSION, type BadgeDocument } from "../types/badgeDocument.types";
+import { BADGE_DOCUMENT_SCHEMA_VERSION, DEFAULT_BADGE_BORDER, type BadgeDocument } from "../types/badgeDocument.types";
 import { parseBadgeDocument, BadgeDocumentValidationError } from "./badgeDocumentSchema";
 
 type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
 
-// Keyed by the version being migrated FROM. Empty until schemaVersion 2 exists.
-const MIGRATIONS: Record<number, Migration> = {};
+/**
+ * v1 -> v2: adds `border` (defaulted to DEFAULT_BADGE_BORDER — a visible but
+ * unobtrusive border, matching what the badge looked like implicitly before
+ * this field existed) and renames image-bearing fields from `assetId` to
+ * `src`, since the actual resolved value has always been a public URL (see
+ * MediaAsset's own convention) — `assetId` was a v1 naming mismatch, not a
+ * different value.
+ */
+function migrateV1ToV2(doc: Record<string, unknown>): Record<string, unknown> {
+  const migrateImageLike = (value: unknown): unknown => {
+    if (typeof value !== "object" || value === null) return value;
+    const v = value as Record<string, unknown>;
+    if (v.type === "image" && typeof v.assetId === "string" && typeof v.src !== "string") {
+      const { assetId, ...rest } = v;
+      return { ...rest, src: assetId };
+    }
+    return v;
+  };
+
+  const objects = Array.isArray(doc.objects) ? doc.objects.map(migrateImageLike) : [];
+  const background = migrateImageLike(doc.background) ?? doc.background;
+
+  return {
+    ...doc,
+    schemaVersion: 2,
+    objects,
+    background,
+    border: doc.border ?? DEFAULT_BADGE_BORDER,
+  };
+}
+
+// Keyed by the version being migrated FROM.
+const MIGRATIONS: Record<number, Migration> = {
+  1: migrateV1ToV2,
+};
 
 export class BadgeDocumentMigrationError extends Error {}
 

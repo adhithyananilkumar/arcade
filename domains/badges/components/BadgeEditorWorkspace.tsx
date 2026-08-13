@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { BadgeToolbar } from "./BadgeToolbar";
+import { BadgeZoomControls, MIN_ZOOM, MAX_ZOOM, type ZoomState } from "./BadgeZoomControls";
 import type { BadgeEditorState } from "../hooks/useBadgeEditor";
 
 // Konva touches the canvas/DOM at import time — must never run during SSR.
@@ -15,21 +16,23 @@ const BadgeCanvas = dynamic(() => import("./BadgeCanvas").then((m) => m.BadgeCan
 
 const MIN_CANVAS_SIZE = 360;
 const MAX_CANVAS_SIZE = 860;
-/** The badge should read as the dominant element — target ~65% of the viewport height. */
+/** Fit mode targets ~65% of the viewport height — the badge should read as the dominant element. */
 const TARGET_FRACTION_OF_VIEWPORT_HEIGHT = 0.65;
 
 /**
  * The main-workspace half of the Badge Editor: the floating toolbar (portalled,
- * anchored the same way as the Lesson editor's) plus the badge itself, sized to
- * dominate the available space and centered in it. No card, no border, no
- * background of its own — the badge geometry is the only thing that reads as a
- * canvas. Design/Properties/Layers render separately, inside the shared Studio
- * right sidebar (see EditorRightSidebar + BadgeDesignPanel/BadgePropertiesPanel/
- * BadgeLayersPanel) — this component only owns the toolbar + the badge itself.
+ * anchored the same way as the Lesson editor's), the badge itself sized to
+ * dominate the available space and centered in it, and a bottom zoom control
+ * bar. No card, no border, no background of its own — the badge geometry is
+ * the only thing that reads as a canvas. Design/Properties/Layers render
+ * separately, inside the shared Studio right sidebar (see EditorRightSidebar +
+ * BadgeEditorContextPanel) — this component only owns the toolbar, the badge,
+ * and the zoom control.
  */
 export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState(MIN_CANVAS_SIZE);
+  const [fitSize, setFitSize] = useState(MIN_CANVAS_SIZE);
+  const [zoom, setZoom] = useState<ZoomState>("fit");
 
   useEffect(() => {
     const host = hostRef.current;
@@ -44,7 +47,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
     // workspace the way it should.
     const recompute = (width: number) => {
       const target = Math.min(width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
-      setCanvasSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
+      setFitSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
     };
 
     const observer = new ResizeObserver((entries) => {
@@ -61,6 +64,10 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
       window.removeEventListener("resize", onWindowResize);
     };
   }, []);
+
+  const documentWidth = editor.doc?.canvas.width || 1024;
+  const fitPercent = (fitSize / documentWidth) * 100;
+  const canvasSize = zoom === "fit" ? fitSize : (documentWidth * Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom))) / 100;
 
   if (editor.loadError) {
     return (
@@ -82,7 +89,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
     <div className="flex h-full w-full flex-col items-center">
       {!editor.readOnly && <BadgeToolbar editor={editor} />}
 
-      <div ref={hostRef} className="flex min-h-0 w-full flex-1 items-center justify-center">
+      <div ref={hostRef} className="flex min-h-0 w-full flex-1 items-center justify-center overflow-auto">
         <BadgeCanvas
           document={editor.doc}
           onChange={editor.handleChange}
@@ -94,12 +101,15 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
         />
       </div>
 
-      <div className="h-4 text-[11px] text-[#14142b]/40">
-        {!editor.readOnly && editor.saveState === "saving" && "Saving…"}
-        {!editor.readOnly && editor.saveState === "saved" && "Saved"}
-        {!editor.readOnly && editor.saveState === "error" && (
-          <span className="text-red-500">Failed to save — retrying on next edit</span>
-        )}
+      <div className="flex w-full flex-shrink-0 flex-col items-center gap-2 pb-2 pt-1">
+        <div className="h-4 text-[11px] text-[#14142b]/40">
+          {!editor.readOnly && editor.saveState === "saving" && "Saving…"}
+          {!editor.readOnly && editor.saveState === "saved" && "Saved"}
+          {!editor.readOnly && editor.saveState === "error" && (
+            <span className="text-red-500">Failed to save — retrying on next edit</span>
+          )}
+        </div>
+        <BadgeZoomControls zoom={zoom} fitPercent={fitPercent} onZoomChange={setZoom} />
       </div>
     </div>
   );

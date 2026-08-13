@@ -3,7 +3,7 @@
  * fixed outer geometry. The badge IS the canvas; the user never
  * resizes this boundary. Every consumer (editor clip mask, safe-area
  * guide overlay, export clip, learner-facing display) must read the
- * path data from here rather than re-deriving hex/shield coordinates
+ * path data from here rather than re-deriving shield coordinates
  * locally.
  *
  * Paths are expressed as SVG path `d` strings in the badge's logical
@@ -30,33 +30,54 @@ export interface BadgeShapeDefinition {
   bleedArea: string;
   /** Decorative border stroke path, rendered above content. */
   borderGeometry: string;
+  /** A second, slightly-inset border path — used when BadgeBorderConfig.inner is on. */
+  innerBorderGeometry: string;
+  /** width / height of the shape itself (not the 1024x1024 canvas it sits on). */
+  aspectRatio: number;
 }
 
-const HEX_R = 512;
-const HEX_CX = 512;
-const HEX_CY = 512;
+const CX = 512;
+const CY = 512;
 
-function hexPath(radius: number): string {
-  const points: string[] = [];
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 180) * (60 * i - 90);
-    const x = HEX_CX + radius * Math.cos(angle);
-    const y = HEX_CY + radius * Math.sin(angle);
-    points.push(`${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`);
-  }
-  return `${points.join(" ")} Z`;
+/**
+ * Six-point elongated shield: a pointed top and bottom apex with long, straight
+ * vertical sides in between — a credential/shield silhouette, not a regular
+ * hexagon (whose six sides are all equal). `cornerFraction` controls how much
+ * of the half-height the angled top/bottom sections occupy before the straight
+ * vertical edge begins; the reference badge reads as tall and shield-like at
+ * roughly 0.28 (the vertical sides are clearly the dominant edge, not the
+ * points).
+ */
+function shieldPath(halfWidth: number, halfHeight: number, cornerFraction: number): string {
+  const cornerHeight = halfHeight * cornerFraction;
+  const points: Array<[number, number]> = [
+    [CX, CY - halfHeight], // top apex
+    [CX + halfWidth, CY - halfHeight + cornerHeight], // upper right
+    [CX + halfWidth, CY + halfHeight - cornerHeight], // lower right
+    [CX, CY + halfHeight], // bottom apex
+    [CX - halfWidth, CY + halfHeight - cornerHeight], // lower left
+    [CX - halfWidth, CY - halfHeight + cornerHeight], // upper left
+  ];
+  return points.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ") + " Z";
 }
+
+const SHIELD_ASPECT_RATIO = 0.82; // width / height — tall, credential-like proportion
+const SHIELD_CORNER_FRACTION = 0.28;
+const HALF_HEIGHT = 500;
+const HALF_WIDTH = HALF_HEIGHT * SHIELD_ASPECT_RATIO;
 
 export const ARCADE_HEX_SHAPE: BadgeShapeDefinition = {
   id: "ARCADE_HEX",
-  name: "Arcade Hexagon",
+  name: "Arcade Shield",
   width: 1024,
   height: 1024,
-  outerGeometry: hexPath(HEX_R),
-  clipGeometry: hexPath(HEX_R - 8),
-  safeArea: hexPath(HEX_R * 0.82),
-  bleedArea: hexPath(HEX_R),
-  borderGeometry: hexPath(HEX_R - 4),
+  aspectRatio: SHIELD_ASPECT_RATIO,
+  outerGeometry: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
+  clipGeometry: shieldPath(HALF_WIDTH - 8, HALF_HEIGHT - 8, SHIELD_CORNER_FRACTION),
+  safeArea: shieldPath(HALF_WIDTH * 0.8, HALF_HEIGHT * 0.8, SHIELD_CORNER_FRACTION),
+  bleedArea: shieldPath(HALF_WIDTH, HALF_HEIGHT, SHIELD_CORNER_FRACTION),
+  borderGeometry: shieldPath(HALF_WIDTH - 4, HALF_HEIGHT - 4, SHIELD_CORNER_FRACTION),
+  innerBorderGeometry: shieldPath(HALF_WIDTH - 20, HALF_HEIGHT - 20, SHIELD_CORNER_FRACTION),
 };
 
 const BADGE_SHAPES: Record<BadgeShapeId, BadgeShapeDefinition> = {

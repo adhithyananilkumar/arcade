@@ -3,7 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import debounce from "lodash.debounce";
 import { getBadge, saveBadgeDocument } from "../api";
-import { migrateBadgeDocument, getBadgeShapeDefinition, type BadgeDocument, type BadgeTextObject } from "..";
+import {
+  migrateBadgeDocument,
+  getBadgeShapeDefinition,
+  DEFAULT_BADGE_BORDER,
+  type BadgeDocument,
+  type BadgeObject,
+  type BadgeBackground,
+  type BadgeBorderConfig,
+  type BadgeTextObject,
+  type BadgeShapeObject,
+  type BadgeShapeKind,
+  type BadgeImageObject,
+  type BadgeIconObject,
+} from "..";
 
 const AUTOSAVE_DEBOUNCE_MS = 2000;
 
@@ -22,6 +35,19 @@ export type BadgeSaveState = "idle" | "saving" | "saved" | "error";
  * from the orchestrator regardless of which editor is active.
  */
 export type BadgeEditorPanel = "design" | "properties" | "layers";
+
+let objectCounter = 0;
+function nextObjectId(): string {
+  objectCounter += 1;
+  return `obj-${Date.now().toString(36)}-${objectCounter}`;
+}
+
+const OBJECT_BASE_DEFAULTS = {
+  rotation: 0,
+  opacity: 1,
+  visible: true,
+  locked: false,
+};
 
 export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
   const [doc, setDoc] = useState<BadgeDocument | null>(null);
@@ -96,20 +122,25 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     }
   }, []);
 
+  const addObject = useCallback(
+    (object: BadgeObject) => {
+      if (!doc || readOnly) return;
+      handleChange({ ...doc, objects: [...doc.objects, object] });
+      handleSelect(object.id);
+    },
+    [doc, readOnly, handleChange, handleSelect]
+  );
+
   const addTextObject = useCallback(() => {
-    if (!doc || readOnly) return;
-    const id = `obj-${crypto.randomUUID()}`;
+    if (!doc) return;
     const next: BadgeTextObject = {
-      id,
+      ...OBJECT_BASE_DEFAULTS,
+      id: nextObjectId(),
       type: "text",
       x: doc.canvas.width / 2 - 150,
       y: doc.canvas.height / 2 - 20,
       width: 300,
       height: 40,
-      rotation: 0,
-      opacity: 1,
-      visible: true,
-      locked: false,
       zIndex: doc.objects.length,
       text: "New Text",
       fontFamily: "Geist",
@@ -121,25 +152,98 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
       letterSpacing: 0,
       wrap: true,
     };
-    handleChange({ ...doc, objects: [...doc.objects, next] });
-    handleSelect(id);
-  }, [doc, readOnly, handleChange, handleSelect]);
+    addObject(next);
+  }, [doc, addObject]);
+
+  const addShapeObject = useCallback(
+    (kind: BadgeShapeKind) => {
+      if (!doc) return;
+      const size = 160;
+      const next: BadgeShapeObject = {
+        ...OBJECT_BASE_DEFAULTS,
+        id: nextObjectId(),
+        type: "shape",
+        shape: kind,
+        x: doc.canvas.width / 2 - size / 2,
+        y: doc.canvas.height / 2 - size / 2,
+        width: size,
+        height: kind === "line" ? 4 : size,
+        zIndex: doc.objects.length,
+        fill: kind === "line" ? undefined : "#FFFFFF",
+        stroke: kind === "line" ? "#FFFFFF" : undefined,
+        strokeWidth: kind === "line" ? 4 : 0,
+      };
+      addObject(next);
+    },
+    [doc, addObject]
+  );
+
+  const addIconObject = useCallback(
+    (iconId: string) => {
+      if (!doc) return;
+      const size = 96;
+      const next: BadgeIconObject = {
+        ...OBJECT_BASE_DEFAULTS,
+        id: nextObjectId(),
+        type: "icon",
+        iconId,
+        x: doc.canvas.width / 2 - size / 2,
+        y: doc.canvas.height / 2 - size / 2,
+        width: size,
+        height: size,
+        zIndex: doc.objects.length,
+        color: "#FFFFFF",
+        strokeWidth: 2,
+      };
+      addObject(next);
+    },
+    [doc, addObject]
+  );
+
+  const addImageObject = useCallback(
+    (src: string) => {
+      if (!doc) return;
+      const size = 240;
+      const next: BadgeImageObject = {
+        ...OBJECT_BASE_DEFAULTS,
+        id: nextObjectId(),
+        type: "image",
+        src,
+        fit: "cover",
+        x: doc.canvas.width / 2 - size / 2,
+        y: doc.canvas.height / 2 - size / 2,
+        width: size,
+        height: size,
+        zIndex: doc.objects.length,
+      };
+      addObject(next);
+    },
+    [doc, addObject]
+  );
 
   const updateSelected = useCallback(
-    (patch: Partial<BadgeTextObject>) => {
+    (patch: Record<string, unknown>) => {
       if (!doc || !selectedId) return;
       handleChange({
         ...doc,
-        objects: doc.objects.map((o) => (o.id === selectedId ? ({ ...o, ...patch } as BadgeTextObject) : o)),
+        objects: doc.objects.map((o) => (o.id === selectedId ? ({ ...o, ...patch } as BadgeObject) : o)),
       });
     },
     [doc, selectedId, handleChange]
   );
 
   const updateBackground = useCallback(
-    (value: string) => {
+    (background: BadgeBackground) => {
       if (!doc) return;
-      handleChange({ ...doc, background: { type: "solid", value } });
+      handleChange({ ...doc, background });
+    },
+    [doc, handleChange]
+  );
+
+  const updateBorder = useCallback(
+    (patch: Partial<BadgeBorderConfig>) => {
+      if (!doc) return;
+      handleChange({ ...doc, border: { ...(doc.border ?? DEFAULT_BADGE_BORDER), ...patch } });
     },
     [doc, handleChange]
   );
@@ -180,8 +284,12 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     handleChange,
     handleSelect,
     addTextObject,
+    addShapeObject,
+    addIconObject,
+    addImageObject,
     updateSelected,
     updateBackground,
+    updateBorder,
     toggleVisibility,
     deleteObject,
   };
