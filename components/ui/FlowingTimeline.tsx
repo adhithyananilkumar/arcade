@@ -83,7 +83,7 @@ export default function FlowingTimeline() {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-24 px-4 sm:px-6 relative" ref={containerRef}>
+    <div className="w-full max-w-5xl mx-auto py-24 px-4 sm:px-6">
       
       <div className="text-center mb-16 md:mb-24 relative z-10">
         <h2 
@@ -94,14 +94,15 @@ export default function FlowingTimeline() {
         </h2>
       </div>
 
-      {/* Center Line Container (Desktop) / Left Line Container (Mobile) */}
-      <div className="absolute left-[30px] md:left-1/2 top-24 bottom-24 w-[2px] bg-slate-200/50 -translate-x-1/2 overflow-hidden rounded-full">
-        {/* Animated Glowing Line */}
-        <motion.div 
-          className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-400 via-indigo-500 to-teal-400"
-          style={{ height: lineHeight }}
-        />
-      </div>
+      <div className="relative" ref={containerRef}>
+        {/* Center Line Container (Desktop) / Left Line Container (Mobile) */}
+        <div className="absolute left-[30px] md:left-1/2 top-4 bottom-4 w-[2px] bg-slate-200/50 -translate-x-1/2 overflow-hidden rounded-full">
+          {/* Animated Glowing Line */}
+          <motion.div 
+            className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-400 via-indigo-500 to-teal-400"
+            style={{ height: lineHeight }}
+          />
+        </div>
 
       <div className="space-y-16 md:space-y-24 relative z-10">
         {TIMELINE_DATA.map((item, index) => {
@@ -145,9 +146,12 @@ export default function FlowingTimeline() {
               </div>
 
               {/* Content Box */}
-              <div className={`md:w-[45%] pl-16 md:pl-0 ${isEven ? "md:pr-12 md:text-right" : "md:pl-12 md:text-left"}`}>
-                <div className="bg-white/60 backdrop-blur-sm border border-slate-100 p-6 md:p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-1 tracking-tight font-serif uppercase">
+              <div className={`md:w-[45%] pl-16 md:pl-0 ${isEven ? "md:pr-12 md:text-left" : "md:pl-12 md:text-left"}`}>
+                <div className="py-2">
+                  <h3 
+                    className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 tracking-wide"
+                    style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive" }}
+                  >
                     {item.title}
                   </h3>
                   {item.subtitle && (
@@ -164,6 +168,7 @@ export default function FlowingTimeline() {
             </motion.div>
           );
         })}
+      </div>
       </div>
     </div>
   );
