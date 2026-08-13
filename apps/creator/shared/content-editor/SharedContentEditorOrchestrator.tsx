@@ -1967,7 +1967,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             // Layers render in the shared right sidebar below, not here.
             <div 
               className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12 transition-all duration-300"
-              style={{ paddingRight: (rightPanelOpen || activeBadgeId) ? "356px" : undefined }}
             >
               <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
             </div>
