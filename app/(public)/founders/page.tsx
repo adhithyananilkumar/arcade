@@ -22,6 +22,17 @@ import {
   Code2,
   Quote,
   Star,
+  GraduationCap,
+  Laptop,
+  BookOpen,
+  Lightbulb,
+  Brain,
+  MonitorPlay,
+  Presentation,
+  Headset,
+  Library,
+  PencilRuler,
+  Video
 } from "lucide-react";
 
 import BlurText from "@/components/BlurText";
@@ -217,10 +228,49 @@ export default function FoundersPage() {
   const activeMilestone = TIMELINE_MILESTONES[activeEraIndex] || TIMELINE_MILESTONES[0];
 
   return (
-    <main className="min-h-screen bg-white text-slate-900 font-sans">
+    <main className="min-h-screen bg-white text-slate-900 font-sans relative">
+
       {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
-      <div className="w-full arcade-wash border-b border-slate-100 min-h-[95vh] flex flex-col items-center justify-center pt-16">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full">
+      <div className="relative w-full arcade-wash border-b border-slate-100 min-h-[95vh] flex flex-col items-center justify-center pt-16 overflow-hidden">
+        
+        {/* Floating Decorative Icons (Educational Theme) - Contained within Hero */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0 }} className="absolute top-[20%] left-[10%] sm:left-[15%] text-slate-400/20">
+            <GraduationCap size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 15, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[5%] sm:left-[10%] text-slate-400/20">
+            <Laptop size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[15%] left-[20%] sm:left-[25%] text-slate-400/20">
+            <BookOpen size={48} strokeWidth={1.5} />
+          </motion.div>
+          
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute top-[15%] right-[15%] sm:right-[20%] text-slate-400/20">
+            <Lightbulb size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} className="absolute top-[50%] right-[5%] sm:right-[10%] text-slate-400/20">
+            <Brain size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }} className="absolute bottom-[20%] right-[20%] sm:right-[25%] text-slate-400/20">
+            <Award size={48} strokeWidth={1.5} />
+          </motion.div>
+
+          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[30%] left-[25%] sm:left-[30%] text-slate-400/15">
+            <Presentation size={40} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[35%] right-[30%] sm:right-[35%] text-slate-400/15">
+            <MonitorPlay size={40} strokeWidth={1.5} />
+          </motion.div>
+          
+          <motion.div animate={{ y: [0, 18, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }} className="absolute bottom-[40%] left-[15%] sm:left-[20%] text-slate-400/15">
+            <Library size={44} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -18, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.8 }} className="absolute bottom-[35%] right-[10%] sm:right-[15%] text-slate-400/15">
+            <PencilRuler size={44} strokeWidth={1.5} />
+          </motion.div>
+        </div>
+
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full relative z-10">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
             {/* Title with BlurText Animation from React Bits */}
             <BlurText
@@ -244,8 +294,17 @@ export default function FoundersPage() {
 
           </div>
         </div>
+        
+        {/* Decorative Center Icon */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="absolute bottom-12 sm:bottom-16 left-1/2 -translate-x-1/2 text-slate-300/30 z-10 pointer-events-none"
+        >
+          <GraduationCap size={120} strokeWidth={1} />
+        </motion.div>
       </div>
-
       {/* ── MAIN BODY (PURE WHITE BACKGROUND) ── */}
       <div className="w-full bg-white">
         <div className="mx-auto max-w-6xl px-5 pt-10 sm:pt-12 pb-20 sm:px-8 space-y-28">
@@ -420,97 +479,35 @@ export default function FoundersPage() {
                   ))}
                 </div>
                 <div className="lg:col-span-5">
-                  <div className="w-full aspect-[4/3] bg-gradient-to-br from-white to-slate-50/80 rounded-[2rem] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.03)] relative overflow-hidden flex items-center justify-center">
-                    {/* Soft grid background */}
-                    <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-                    
-                    {/* The Path and Nodes */}
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="gradient-path" x1="0" y1="1" x2="1" y2="0">
-                          <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.4" />
-                          <stop offset="50%" stopColor="#64748b" stopOpacity="0.8" />
-                          <stop offset="100%" stopColor="#0f172a" />
-                        </linearGradient>
-                      </defs>
-                      
-                      {/* Timeline Curve */}
-                      <motion.path 
-                        d="M -20 250 Q 100 250, 200 150 T 420 50"
-                        stroke="url(#gradient-path)" 
-                        strokeWidth="3.5" 
-                        strokeDasharray="6 6"
-                        fill="none" 
-                        strokeLinecap="round"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        whileInView={{ pathLength: 1, opacity: 1 }}
-                        transition={{ duration: 2.5, ease: "easeOut" }}
-                        viewport={{ once: true }}
+                  <div className="w-full aspect-[4/3] relative overflow-visible flex items-center justify-center">
+                    <div className="w-full h-full flex items-center justify-center scale-110 sm:scale-[1.35]">
+                      <OrbitImages
+                        items={FOUNDERS_DATA.slice(0, 6).map((founder) => (
+                          <div 
+                            key={founder.id}
+                            className="w-full h-full cursor-pointer hover:scale-105 transition-transform duration-300 rounded-xl"
+                            onClick={() => setSelectedFounder(founder)}
+                          >
+                            <img
+                              src={founder.image}
+                              alt={founder.name}
+                              draggable={false}
+                              className="orbit-image"
+                            />
+                          </div>
+                        ))}
+                        shape="ellipse"
+                        radiusX={380}
+                        radiusY={170}
+                        rotation={-8}
+                        duration={45}
+                        itemSize={130}
+                        showPath={true}
+                        pathColor="rgba(15, 23, 42, 0.2)"
+                        pathWidth={1}
+                        responsive={true}
                       />
-                      
-                      {/* Node 1: Origin */}
-                      <motion.g 
-                        initial={{ scale: 0, opacity: 0 }}
-                        whileInView={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.6 }}
-                        viewport={{ once: true }}
-                      >
-                        <circle cx="95" cy="225" r="7" fill="#cbd5e1" stroke="white" strokeWidth="3" />
-                      </motion.g>
-                      
-                      {/* Node 2: Infrastructure */}
-                      <motion.g 
-                        initial={{ scale: 0, opacity: 0 }}
-                        whileInView={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 1.2 }}
-                        viewport={{ once: true }}
-                      >
-                        <circle cx="200" cy="150" r="10" fill="#475569" stroke="white" strokeWidth="4" />
-                        <circle cx="200" cy="150" r="3" fill="white" />
-                      </motion.g>
-
-                      {/* Node 3: The Future */}
-                      <motion.g 
-                        initial={{ scale: 0, opacity: 0 }}
-                        whileInView={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 1.8 }}
-                        viewport={{ once: true }}
-                      >
-                        <circle cx="305" cy="75" r="13" fill="#0f172a" stroke="white" strokeWidth="4" />
-                        <circle cx="305" cy="75" r="4.5" fill="white" />
-                        {/* Glow effect for final node */}
-                        <circle cx="305" cy="75" r="24" fill="#0f172a" opacity="0.08" className="animate-pulse" />
-                      </motion.g>
-                    </svg>
-
-                    {/* Floating UI Elements (representing Arcade platform) */}
-                    <motion.div 
-                      className="absolute bottom-[10%] right-[10%] bg-white backdrop-blur-md border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3.5 shadow-[0_12px_40px_rgb(0,0,0,0.06)]"
-                      animate={{ y: [0, -12, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200/60">
-                        <Code2 className="w-5 h-5 text-slate-800" />
-                      </div>
-                      <div className="space-y-2 hidden sm:block">
-                        <div className="w-16 h-1.5 bg-slate-200 rounded-full" />
-                        <div className="w-10 h-1.5 bg-slate-100 rounded-full" />
-                      </div>
-                    </motion.div>
-
-                    <motion.div 
-                      className="absolute top-[12%] left-[8%] bg-white backdrop-blur-md border border-slate-200/80 p-3.5 sm:p-4 rounded-2xl flex items-center gap-3.5 shadow-[0_12px_40px_rgb(0,0,0,0.06)]"
-                      animate={{ y: [0, 12, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200/60">
-                        <Users className="w-5 h-5 text-slate-800" />
-                      </div>
-                      <div className="space-y-2 hidden sm:block">
-                        <div className="w-20 h-1.5 bg-slate-200 rounded-full" />
-                        <div className="w-12 h-1.5 bg-slate-100 rounded-full" />
-                      </div>
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </div>
