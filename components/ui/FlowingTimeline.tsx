@@ -57,13 +57,20 @@ const TIMELINE_DATA: TimelineItem[] = [
     num: "04",
     title: "The Blueprint Took Shape",
     subtitle: "March 14",
-    desc: "As more information gathered, so did the team. Ideas that once lived only in conversations slowly found their place on paper, and the first basic architecture of Arcade began to emerge. The vision was no longer just imagined—it could now be seen."
+    desc: "As more information gathered, so did the team. Ideas that once lived only in conversations slowly found their place on paper, and the first basic architecture of Arcade began to emerge. The vision was no longer just imagined—it could now be seen.",
+    profiles: [
+      { name: "Mercedes Benz", avatar: "https://ui-avatars.com/api/?name=Mercedes+Benz&background=ffffff&color=0f172a&font-size=0.33" },
+      { name: "YAG", avatar: "https://ui-avatars.com/api/?name=YAG&background=ffffff&color=0f172a&font-size=0.33" }
+    ]
   },
   {
     num: "05",
     title: "Ideas Met Experience",
     subtitle: "March 16",
-    desc: "We carried the vision beyond our own walls, sharing it with Mercedes Benz and YAG for industrial guidance. Their insights challenged us to look again, rethink what we had designed, and refine the architecture into something stronger."
+    desc: "We carried the vision beyond our own walls, sharing it with Mercedes Benz and YAG for industrial guidance. Their insights challenged us to look again, rethink what we had designed, and refine the architecture into something stronger.",
+    profiles: [
+      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin.png" }
+    ]
   },
   {
     num: "06",
