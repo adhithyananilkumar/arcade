@@ -33,6 +33,11 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [fitSize, setFitSize] = useState(MIN_CANVAS_SIZE);
   const [zoom, setZoom] = useState<ZoomState>("fit");
+  // The toolbar is portalled to <body> (see FloatingToolbar) and can't rely on flex centering,
+  // so it's anchored to this measured value instead of a static "assume the sidebar takes N px"
+  // heuristic — a flat px reservation only lines up by coincidence once the canvas's own
+  // max-w-capped container and the toolbar's full-viewport container stop being the same width.
+  const [toolbarCenterX, setToolbarCenterX] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -45,23 +50,20 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
     // height, so trusting a possibly-collapsed contentRect.height was the reason
     // the badge kept landing on MIN_CANVAS_SIZE instead of dominating the
     // workspace the way it should.
-    const recompute = (width: number) => {
-      const target = Math.min(width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
+    const recompute = () => {
+      const rect = host.getBoundingClientRect();
+      const target = Math.min(rect.width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
       setFitSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
+      setToolbarCenterX(rect.left + rect.width / 2);
     };
 
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      recompute(entry.contentRect.width);
-    });
+    const observer = new ResizeObserver(recompute);
     observer.observe(host);
 
-    const onWindowResize = () => recompute(host.getBoundingClientRect().width);
-    window.addEventListener("resize", onWindowResize);
+    window.addEventListener("resize", recompute);
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", onWindowResize);
+      window.removeEventListener("resize", recompute);
     };
   }, []);
 
@@ -87,7 +89,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
 
   return (
     <div className="flex h-full w-full flex-col items-center">
-      {!editor.readOnly && <BadgeToolbar editor={editor} />}
+      {!editor.readOnly && <BadgeToolbar editor={editor} centerX={toolbarCenterX} />}
 
       <div ref={hostRef} className="flex min-h-0 w-full flex-1 items-center justify-center overflow-auto">
         <BadgeCanvas

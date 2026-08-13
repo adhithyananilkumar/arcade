@@ -31,13 +31,6 @@ import { uploadFileToStorage } from "@/infrastructure/media/upload";
 import { BADGE_ICON_CATEGORIES, getBadgeIconComponent, type BadgeShapeKind } from "..";
 import type { BadgeEditorState } from "../hooks/useBadgeEditor";
 
-// Matches the right-sidebar reservation SharedContentEditorOrchestrator applies to the badge
-// workspace's own paddingRight (340px panel + 16px gap) — the sidebar is effectively always
-// shown while a badge is open (EditorRightSidebar's "editor" mode), so the toolbar keeps this
-// reserved unconditionally rather than tracking rightPanelOpen, to stay visually aligned with
-// the canvas below it instead of re-centering on the full viewport underneath the panel.
-const SIDEBAR_RESERVED_PX = 356;
-
 const SHAPE_OPTIONS: Array<{ kind: BadgeShapeKind; label: string; icon: typeof Square }> = [
   { kind: "rectangle", label: "Rectangle", icon: Square },
   { kind: "roundedRectangle", label: "Rounded Rectangle", icon: RectangleHorizontal },
@@ -49,7 +42,7 @@ const SHAPE_OPTIONS: Array<{ kind: BadgeShapeKind; label: string; icon: typeof S
   { kind: "line", label: "Line", icon: Minus },
 ];
 
-export function BadgeToolbar({ editor }: { editor: BadgeEditorState }) {
+export function BadgeToolbar({ editor, centerX }: { editor: BadgeEditorState; centerX?: number }) {
   const hasSelection = !!editor.selectedObject;
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,7 +62,7 @@ export function BadgeToolbar({ editor }: { editor: BadgeEditorState }) {
   };
 
   return (
-    <FloatingToolbar rightInset={SIDEBAR_RESERVED_PX}>
+    <FloatingToolbar centerX={centerX}>
       <ToolButton icon={MousePointer2} label="Select" active />
       <Separator orientation="vertical" className="h-5 mx-1" />
       <ToolButton icon={Undo2} label="Undo — coming soon" disabled />
