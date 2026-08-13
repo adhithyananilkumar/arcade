@@ -163,7 +163,7 @@ export default function ContributorsPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.7, delay: idx * 0.2, ease: "easeOut" }}
-              className={`group relative w-60 sm:w-64 h-[380px] sm:h-[400px] rounded-full flex flex-col items-center pt-10 sm:pt-12 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-pointer ${contributor.color} ${idx % 2 === 1 ? 'md:mt-16' : 'md:mt-0'}`}
+              className={`group relative w-52 sm:w-56 h-[340px] sm:h-[360px] rounded-full flex flex-col items-center pt-8 sm:pt-10 overflow-hidden shadow-2xl hover:-translate-y-4 transition-transform duration-500 cursor-pointer ${contributor.color} ${idx % 2 === 1 ? 'md:mt-16' : 'md:mt-0'}`}
               onClick={() => setSelectedContributor(contributor)}
             >
               <div className="text-center z-10 px-5">
@@ -171,7 +171,7 @@ export default function ContributorsPage() {
                 <p className="text-xs sm:text-sm font-semibold text-slate-800/80 mt-1.5">{contributor.role}</p>
               </div>
               
-              <div className="absolute bottom-0 w-full h-[280px] sm:h-[300px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_100%)]">
+              <div className="absolute bottom-0 w-full h-[250px] sm:h-[270px] [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_100%)]">
                 <Image
                    src={contributor.avatar}
                    alt={contributor.name}

@@ -2,19 +2,43 @@
 
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 
-const TIMELINE_DATA = [
+type TimelineProfile = {
+  name: string;
+  avatar: string;
+};
+
+type TimelineItem = {
+  num: string;
+  title: string;
+  subtitle: string;
+  desc: string;
+  profiles?: TimelineProfile[];
+};
+
+const TIMELINE_DATA: TimelineItem[] = [
   {
     num: "01",
     title: "It Began With a Question",
     subtitle: "What can a department give back to the world?",
-    desc: "And somewhere between curiosity and possibility, the first page of Arcade began to unfold."
+    desc: "And somewhere between curiosity and possibility, the first page of Arcade began to unfold.",
+    profiles: [
+      { name: "Adhithyan Anilkumar", avatar: "/team/amal_jose.png" }, // temporary placeholder
+      { name: "Lisha Varghese", avatar: "/team/lisha_varghese.png" }
+    ]
   },
   {
     num: "02",
     title: "An Idea Found Its Name",
     subtitle: "March 10",
-    desc: "Adhithyan envisioned a content marketplace where students could learn through classes offered as part of the Silver Jubilee, helping them build new skills and discover new possibilities. He named it Arcade and shared the vision with Lisha Varghese, Faculty In-Charge and guide of the platform. A simple idea had found its name—and the wheels began to turn."
+    desc: "Adhithyan envisioned a content marketplace where students could learn through classes offered as part of the Silver Jubilee, helping them build new skills and discover new possibilities. He named it Arcade and shared the vision with Lisha Varghese, Faculty In-Charge and guide of the platform. A simple idea had found its name—and the wheels began to turn.",
+    profiles: [
+      { name: "Anadhulal C V", avatar: "/team/aibal_anil.png" },
+      { name: "Deepthi C D", avatar: "/team/ann_mary.png" },
+      { name: "Athira Biju", avatar: "/team/anna_christina.png" },
+      { name: "Kalyany S Nair", avatar: "/team/theresa_mathew.png" }
+    ]
   },
   {
     num: "03",
@@ -126,8 +150,19 @@ export default function FlowingTimeline() {
               className={`flex flex-col md:flex-row items-start md:items-center w-full ${isEven ? "md:flex-row-reverse" : ""}`}
             >
               
-              {/* Empty space for alternating layout on desktop */}
-              <div className="hidden md:block md:w-[45%]" />
+              {/* Empty space or Profiles for alternating layout on desktop */}
+              <div className={`hidden md:flex md:w-[45%] flex-row gap-4 md:gap-6 ${isEven ? "justify-start pl-16 lg:pl-24" : "justify-end pr-16 lg:pr-24"}`}>
+                {item.profiles && item.profiles.map((profile, i) => (
+                  <div key={i} className="flex flex-col items-center gap-1.5 min-w-[64px]">
+                    <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm border border-slate-200 shrink-0 bg-slate-100">
+                      <Image src={profile.avatar} alt={profile.name} fill className="object-cover" unoptimized />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[10px] md:text-[11px] font-semibold text-slate-500 leading-tight tracking-wide whitespace-nowrap">{profile.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Numbered Node */}
               <div className="md:w-[10%] flex justify-center shrink-0 mb-6 md:mb-0 ml-1 md:ml-0 relative z-20">
