@@ -44,7 +44,14 @@ const TIMELINE_DATA: TimelineItem[] = [
     num: "03",
     title: "We Looked Before We Built",
     subtitle: "March 12",
-    desc: "The team began by looking at what already existed, studying existing systems, their strengths, their shortcomings, and their relevance. From these observations, a basic case study took shape, giving the idea its first sense of direction."
+    desc: "The team began by looking at what already existed, studying existing systems, their strengths, their shortcomings, and their relevance. From these observations, a basic case study took shape, giving the idea its first sense of direction.",
+    profiles: [
+      { name: "Anandhu Pradeep", avatar: "/team/aibal_anil.png" },
+      { name: "Akash A", avatar: "/team/ann_mary.png" },
+      { name: "Jaganath Syam", avatar: "/team/anna_christina.png" },
+      { name: "Anjali Sunil", avatar: "/team/theresa_mathew.png" },
+      { name: "Aloshy Antony", avatar: "/team/amal_jose.png" }
+    ]
   },
   {
     num: "04",
