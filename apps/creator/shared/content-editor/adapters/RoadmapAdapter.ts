@@ -1,9 +1,9 @@
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, Terminology } from "../types";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 import type { RoadmapData } from "@/domains/roadmaps/types";
 
 export class RoadmapAdapter implements ContentDataAdapter {
-  terminology = {
+  terminology: Terminology = {
     root: "Roadmap",
     container: "Roadmap Section",
     leafDocument: "Roadmap Canvas",

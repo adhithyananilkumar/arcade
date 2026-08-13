@@ -87,6 +87,14 @@ export interface ModuleResponse {
   position: number;
   lessons: LessonResponse[];
   quizzes: QuizResponse[];
+  badges: BadgeSummaryResponse[];
+}
+
+// ── Badge (a module item — sibling of a lesson/quiz; owned by the badges domain) ─
+export interface BadgeSummaryResponse {
+  id: string;
+  title: string;
+  position: number;
 }
 
 export interface CreateModuleRequest {

@@ -90,6 +90,7 @@ import {
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
+import { StandaloneBadgeEditor } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import {
   DropdownMenu,
@@ -128,6 +129,7 @@ import {
   Eye,
   GripVertical,
   FileQuestion,
+  Award,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -182,15 +184,22 @@ interface LessonNode {
 
 
 
+interface BadgeNode {
+  id: string;
+  title: string;
+  position: number;
+}
+
 interface ModuleNode {
   id: string;
   title: string;
   position: number;
   lessons: LessonNode[];
+  badges: BadgeNode[];
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson";
+type EditKind = "module" | "lesson" | "badge";
 
 interface ConfirmOptions {
   title: string;
@@ -521,6 +530,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
+  // A badge design is open in the main panel — mutually exclusive with a lesson
+  // (StandaloneBadgeEditor replaces ArcadeEditor entirely; it doesn't share the
+  // Yjs/Tiptap document state below, since BadgeDocument isn't ProseMirror content).
+  const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
@@ -812,8 +825,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
+      setActiveBadgeId(null);
     },
     [adapter, resolveLegacyContent, rightPanelTab]
+  );
+
+  const openBadge = useCallback(
+    (badge: { id: string; title: string }) => {
+      setView("tree");
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
+      // StandaloneBadgeEditor owns its own load/save lifecycle (domains/badges), unlike
+      // openLesson's Y.Doc bootstrap — nothing to bind here beyond which badge is active.
+      setActiveYDoc(null);
+      setActiveLessonId(null);
+      setActiveLessonTitle(badge.title);
+      setActiveBadgeId(badge.id);
+    },
+    [rightPanelTab]
   );
 
   // ── Bootstrap: create or load content on mount ───────────────────────────
@@ -846,6 +874,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             position: m.position,
             expanded: false,
             lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document" || l.type === "lesson" || l.type === "quiz" || !l.type),
+            badges: ((m as any).leaves || []).filter((l: any) => l.type === "badge"),
           }))
         );
         const firstLeaf = containers[0]?.leaves?.[0];
@@ -980,6 +1009,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           title: m.title,
           position: m.position,
           lessons: [],
+          badges: [],
           expanded: true,
         },
       ]);
@@ -1007,6 +1037,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             position: newContainer.position,
             expanded: true,
             lessons: [],
+            badges: [],
           },
         ]);
         // Auto-open Day Settings dialog so the creator can set schedule details.
@@ -1049,7 +1080,35 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     [contentId, modules, openLesson, adapter]
   );
 
+  // ── Tree mutation: Add Badge (directly under a module) ───────────────────
 
+  const addBadge = useCallback(
+    async (moduleId: string) => {
+      if (!contentId) return;
+      try {
+        const mod = modules.find((m) => m.id === moduleId);
+        const nextIndex = (mod?.badges.length ?? 0) + 1;
+        const newBadge = await adapter.addLeaf(
+          moduleId,
+          `${adapter.terminology.leafBadge ?? "Badge"} ${nextIndex}`,
+          "badge"
+        );
+        setModules((prev) =>
+          prev.map((m) =>
+            m.id === moduleId
+              ? { ...m, expanded: true, badges: [...m.badges, newBadge as any] }
+              : m
+          )
+        );
+        setActiveModuleId(moduleId);
+        openBadge(newBadge as any);
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.error("Failed to add badge", e);
+      }
+    },
+    [contentId, modules, openBadge, adapter]
+  );
 
   // ── Inline rename ─────────────────────────────────────────────────────────
 
@@ -1074,6 +1133,20 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         console.warn("Module rename failed", e);
       }
 
+    } else if (kind === "badge") {
+      setModules((prev) =>
+        prev.map((m) => ({
+          ...m,
+          badges: m.badges.map((b) => (b.id === id ? { ...b, title: value } : b)),
+        }))
+      );
+      if (activeBadgeId === id) setActiveLessonTitle(value);
+      try {
+        await adapter.renameLeaf(id, value, "badge");
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.warn("Badge rename failed", e);
+      }
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -1095,6 +1168,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const deleteModuleNow = async (mod: ModuleNode) => {
     const hadActive = mod.lessons.some((l) => l.id === activeLessonId);
+    const hadActiveBadge = mod.badges.some((b) => b.id === activeBadgeId);
     setModules((prev) => prev.filter((m) => m.id !== mod.id));
     if (hadActive) {
       setActiveLessonId(null);
@@ -1102,6 +1176,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       activeYDocRef.current = null;
       setActiveYDoc(null);
       setActiveSeedContent(undefined);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
+    }
+    if (hadActiveBadge) {
+      setActiveBadgeId(null);
       setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
     }
     try {
@@ -1148,6 +1226,31 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       confirmLabel: "Delete",
       danger: true,
       onConfirm: () => deleteLessonNow(lesson.id),
+    });
+
+  const deleteBadgeNow = async (badgeId: string) => {
+    setModules((prev) =>
+      prev.map((m) => ({ ...m, badges: m.badges.filter((b) => b.id !== badgeId) }))
+    );
+    if (activeBadgeId === badgeId) {
+      setActiveBadgeId(null);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
+    }
+    try {
+      await adapter.deleteLeaf(badgeId, "badge");
+      setHasDraftChanges(true);
+    } catch (e) {
+      console.error("Failed to delete badge", e);
+    }
+  };
+
+  const askDeleteBadge = (badge: BadgeNode) =>
+    setConfirm({
+      title: `Delete ${adapter.terminology.leafBadge ?? "Badge"}?`,
+      message: `"${badge.title}" and its saved design will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete",
+      danger: true,
+      onConfirm: () => deleteBadgeNow(badge.id),
     });
 
 
@@ -1414,12 +1517,22 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           {/* Center: Title and Status */}
           <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
-              {activeLessonId ? (
+              {activeLessonId || activeBadgeId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
-                  {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+                  {modules.find(
+                    (m) =>
+                      m.lessons.some((l) => l.id === activeLessonId) ||
+                      m.badges.some((b) => b.id === activeBadgeId)
+                  )?.title && (
                     <>
                       <span className="block max-w-[15vw] truncate font-medium">
-                        {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
+                        {
+                          modules.find(
+                            (m) =>
+                              m.lessons.some((l) => l.id === activeLessonId) ||
+                              m.badges.some((b) => b.id === activeBadgeId)
+                          )?.title
+                        }
                       </span>
                       <span className="text-gray-400">/</span>
                     </>
@@ -1608,7 +1721,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger
-                                    title="Add lesson or quiz"
+                                    title="Add lesson or badge"
                                     className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]"
                                   >
                                     <Plus size={12} />
@@ -1617,6 +1730,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                     <DropdownMenuItem onClick={() => addLesson(mod.id)}>
                                       <FileText size={13} />
                                       Lesson
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => addBadge(mod.id)}>
+                                      <Award size={13} />
+                                      Badge
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -1708,7 +1825,59 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               </SortableContext>
                             </DndContext>
 
-                            {/* Add lesson to this Day/module */}
+                            {/* Badges — not part of the lesson drag/reorder list above; badge
+                                position isn't reorderable yet (see StandaloneBadgeEditor todo). */}
+                            {mod.badges
+                              .slice()
+                              .sort((a, b) => a.position - b.position)
+                              .map((badge) => {
+                                const isActive = activeBadgeId === badge.id;
+                                return (
+                                  <div
+                                    key={badge.id}
+                                    className={`group flex items-center gap-2 rounded-full px-3 transition-all ${isActive ? "bg-[#14142b] shadow-md" : "hover:bg-white/40"
+                                      }`}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveModuleId(mod.id);
+                                        openBadge(badge);
+                                      }}
+                                      className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${isActive ? "font-semibold text-white" : "text-slate-500"
+                                        }`}
+                                    >
+                                      <Award size={11} className="flex-shrink-0" />
+                                      {isEditing("badge", badge.id) ? (
+                                        renameInput("text-xs")
+                                      ) : (
+                                        <span className="truncate" title={badge.title}>
+                                          {badge.title}
+                                        </span>
+                                      )}
+                                    </button>
+                                    {status !== "SUBMITTED" && (
+                                      <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <IconBtn
+                                          title="Rename badge"
+                                          onClick={() => startEdit("badge", badge.id, badge.title)}
+                                        >
+                                          <Pencil size={12} />
+                                        </IconBtn>
+                                        <IconBtn
+                                          title="Delete badge"
+                                          danger
+                                          onClick={() => askDeleteBadge(badge)}
+                                        >
+                                          <Trash2 size={12} />
+                                        </IconBtn>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+
+                            {/* Add lesson/badge to this Day/module */}
                             {status !== "SUBMITTED" && (
                               <div className="mt-0.5 flex items-center gap-3 pl-2">
                                 <button
@@ -1718,6 +1887,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                                 >
                                   <Plus size={11} />
                                   Add {adapter.terminology.leafDocument}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => addBadge(mod.id)}
+                                  className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
+                                >
+                                  <Plus size={11} />
+                                  Add {adapter.terminology.leafBadge ?? "Badge"}
                                 </button>
                               </div>
                             )}
@@ -1801,6 +1978,19 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 }}
               />
             </div>
+          ) : activeBadgeId ? (
+            <div
+              className="w-full max-w-[1024px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12"
+              style={{ "--arcade-toolbar-top": "64px" } as CSSProperties}
+            >
+              <div className="flex h-full flex-col items-center overflow-y-auto rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-8 arcade-scrollbar-mini">
+                <StandaloneBadgeEditor
+                  key={activeBadgeId}
+                  badgeId={activeBadgeId}
+                  readOnly={status === "SUBMITTED"}
+                />
+              </div>
+            </div>
           ) : activeLessonId ? (
             // This outer wrapper is NOT scrollable — it just reserves a fixed box
             // (flex-1 inside the `main` column) below the floating toolbar. The
@@ -1843,12 +2033,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 <h3 className="text-base font-semibold text-gray-700">
                   {contentType === "workshop"
                     ? "Select a workshop day or create a new day to start editing."
-                    : "Select a lesson or quiz to start editing."}
+                    : "Select a lesson or badge to start editing."}
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
                   {contentType === "workshop"
                     ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
-                    : "Open the sidebar, add a module, then a lesson or quiz to begin."}
+                    : "Open the sidebar, add a module, then a lesson or badge to begin."}
                 </p>
               </div>
             </div>

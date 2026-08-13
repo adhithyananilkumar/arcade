@@ -1,5 +1,5 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, Terminology } from "../types";
 import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
 
 export class EventAdapter implements ContentDataAdapter {
@@ -9,7 +9,7 @@ export class EventAdapter implements ContentDataAdapter {
     this.eventId = eventId;
   }
 
-  terminology = {
+  terminology: Terminology = {
     root: "Event",
     container: "Day",
     leafDocument: "Lesson",

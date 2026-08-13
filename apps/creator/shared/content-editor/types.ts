@@ -1,7 +1,7 @@
 export interface LeafNode {
   id: string;
   title: string;
-  type: "document" | "quiz" | "external";
+  type: "document" | "quiz" | "badge" | "external";
   body?: string;
   position: number;
 }
@@ -30,6 +30,7 @@ export interface Terminology {
   container: string; // e.g. "Module", "Event Section"
   leafDocument: string; // e.g. "Lesson", "Session"
   leafQuiz: string; // e.g. "Quiz", "Assessment"
+  leafBadge?: string; // e.g. "Badge" — omitted where the root type doesn't support badges
 }
 
 export interface ContentDataAdapter {
