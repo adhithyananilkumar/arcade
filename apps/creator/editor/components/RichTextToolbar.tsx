@@ -126,9 +126,9 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
   // the editor itself lives.
   return createPortal(
     <div className="flex justify-center pointer-events-none fixed top-[70px] inset-x-0 z-[70]">
-      <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/60 backdrop-blur-md shadow-sm">
+      <div className="pointer-events-auto flex flex-wrap justify-center items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 rounded-[2rem] bg-white/60 backdrop-blur-md shadow-sm gap-y-1">
         {/* Groups are borderless and tightly packed — hairline separators carry the
-            grouping instead, so the whole strip fits on one row without scrolling. */}
+            grouping instead. Flex wrap allows it to fit fully on smaller screens. */}
         <div className="flex items-center">
         <RichTextUndo />
         <RichTextRedo />
