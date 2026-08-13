@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
   Sparkles,
+  X,
   Award,
   ShieldCheck,
   BadgeCheck,
@@ -224,6 +225,7 @@ const PHILOSOPHY_THEMES = [
 export default function FoundersPage() {
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
   const [activeEraIndex, setActiveEraIndex] = useState<number>(0);
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
 
   const activeMilestone = TIMELINE_MILESTONES[activeEraIndex] || TIMELINE_MILESTONES[0];
 
@@ -486,7 +488,7 @@ export default function FoundersPage() {
                           <div 
                             key={founder.id}
                             className="w-full h-full cursor-pointer hover:scale-105 transition-transform duration-300 rounded-xl"
-                            onClick={() => setSelectedFounder(founder)}
+                            onClick={() => setFullScreenImage(founder.image)}
                           >
                             <img
                               src={founder.image}
@@ -501,7 +503,7 @@ export default function FoundersPage() {
                         radiusY={170}
                         rotation={-8}
                         duration={45}
-                        itemSize={130}
+                        itemSize={150}
                         showPath={true}
                         pathColor="rgba(15, 23, 42, 0.2)"
                         pathWidth={1}
@@ -521,6 +523,36 @@ export default function FoundersPage() {
         founder={selectedFounder}
         onClose={() => setSelectedFounder(null)}
       />
+
+      {/* ── FULL SCREEN IMAGE VIEWER ── */}
+      <AnimatePresence>
+        {fullScreenImage && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 cursor-pointer"
+            onClick={() => setFullScreenImage(null)}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setFullScreenImage(null)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img 
+                src={fullScreenImage} 
+                alt="Full View" 
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
