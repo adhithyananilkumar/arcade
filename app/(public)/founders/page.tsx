@@ -387,8 +387,8 @@ export default function FoundersPage() {
               {/* Bottom Row: Centered Founder Cards Flanked by Animated Flourish Lines */}
               <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
                 {/* Left Flourish Line */}
-                <div className="hidden lg:block absolute -left-4 xl:-left-8 top-[235px] -translate-y-1/2">
-                  <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80" />
+                <div className="hidden lg:block absolute -left-8 xl:-left-20 top-[235px] -translate-y-1/2 group">
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md" />
                 </div>
 
                 {/* Centered Founders */}
@@ -452,8 +452,8 @@ export default function FoundersPage() {
                 </div>
 
                 {/* Right Flourish Line (Flipped) */}
-                <div className="hidden lg:block absolute -right-4 xl:-right-8 top-[235px] -translate-y-1/2">
-                  <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
+                <div className="hidden lg:block absolute -right-8 xl:-right-20 top-[235px] -translate-y-1/2 group">
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md transform scale-x-[-1]" />
                 </div>
               </div>
             </div>
