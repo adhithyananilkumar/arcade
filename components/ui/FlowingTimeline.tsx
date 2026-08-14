@@ -195,12 +195,12 @@ export default function FlowingTimeline() {
               {/* Empty space or Profiles for alternating layout on desktop */}
               <div className={`hidden md:flex md:w-[45%] flex-row gap-4 md:gap-6 ${isEven ? "justify-start pl-16 lg:pl-24" : "justify-end pr-16 lg:pr-24"}`}>
                 {item.profiles && item.profiles.map((profile, i) => (
-                  <div key={i} className="flex flex-col items-center gap-1.5 min-w-[64px]">
-                    <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm border border-slate-200 shrink-0 bg-slate-100">
-                      <Image src={profile.avatar} alt={profile.name} fill className="object-cover" unoptimized />
+                  <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0">
+                      <Image src={profile.avatar} alt={profile.name} fill className="object-contain hover:scale-110 transition-transform duration-300 mix-blend-multiply brightness-110 contrast-105" unoptimized />
                     </div>
                     <div className="text-center">
-                      <p className="text-[10px] md:text-[11px] font-semibold text-slate-500 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
+                      <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
                     </div>
                   </div>
                 ))}
