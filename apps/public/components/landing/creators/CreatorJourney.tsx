@@ -57,7 +57,7 @@ export default function CreatorJourney() {
   ];
 
   return (
-    <section ref={sectionRef} className="milestone-sec" id="path">
+    <section ref={sectionRef} className="milestone-sec" id="journey">
       <div className="wrap">
         <div className="sec-head">
           <span className="eyebrow">How it works</span>

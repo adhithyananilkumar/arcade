@@ -154,10 +154,22 @@
 
 /* HERO */
 .for-creators-root .hero {
-  position:relative;
-  overflow:hidden;
-  background:transparent;
-  padding:0;
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  padding: 0;
+  min-height: calc(100vh - 4.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .for-creators-root .hero {
+    min-height: auto;
+  }
 }
 
 .for-creators-root .gradient-text {
@@ -193,12 +205,11 @@
 }
 
 .for-creators-root .hero h1 {
-  font-weight:600;
-  font-size:clamp(2.4rem,4.8vw,3.6rem);
-  margin:.6rem 0;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+  font-family: 'Dancing Script', 'Caveat', 'Satisfy', cursive;
+  text-transform: none;
+  font-weight: 700;
+  font-size: clamp(3.2rem, 8vw, 6.5rem);
+  margin: .6rem 0;
 }
 
 .for-creators-root .hero-lead {
@@ -1488,7 +1499,7 @@
 
 @keyframes drawLine {
   from {
-    stroke-dashoffset: 2000;
+    stroke-dashoffset: 5000;
   }
   to {
     stroke-dashoffset: 0;
@@ -1496,20 +1507,31 @@
 }
 
 .animated-wave-line {
-  stroke-dasharray: 2000;
-  stroke-dashoffset: 2000;
-  animation: drawLine 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  stroke-linecap: round;
 }
 
 @keyframes pulseTravel {
-  0% { stroke-dashoffset: 260; }
-  100% { stroke-dashoffset: -940; }
+  0% { stroke-dashoffset: 1000; }
+  100% { stroke-dashoffset: -5000; }
 }
 
 .wave-glow-pulse {
-  stroke-dasharray: 60 200;
-  stroke-dashoffset: 260;
-  animation: pulseTravel 5s linear infinite;
+  stroke-dasharray: 120 300;
+  stroke-linecap: round;
+  animation: pulseTravel 10s linear infinite;
+}
+
+@keyframes ctaGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-cta-gradient-flow {
+  animation: ctaGradientFlow 6s linear infinite;
 }
 
 @keyframes scaleInHexagon {
@@ -1592,5 +1614,117 @@
 
 .animate-badge-shine {
   animation: badgeShine 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ────────────────────────────────────────────────────────────
+   Creator Contact Section
+   ──────────────────────────────────────────────────────────── */
+.for-creators-root .contact-sec {
+  padding: 80px 0 110px; /* Generous vertical spacing */
+  text-align: center;
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+.for-creators-root .contact-eyebrow {
+  font-family: 'Caveat', cursive;
+  font-size: 1.45rem;
+  color: #5B21B6;
+  font-style: italic;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.for-creators-root .contact-heading {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+  color: var(--brand-ink);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.for-creators-root .cursive-connect {
+  font-family: 'Caveat', cursive;
+  color: #5B21B6;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.for-creators-root .contact-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 580px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+.for-creators-root .btn-contact-reach {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--lav-200);
+  border-radius: 9999px;
+  padding: 6px 16px 6px 6px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--brand-ink);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(25, 25, 98, 0.04);
+  text-decoration: none;
+}
+
+.for-creators-root .btn-contact-reach:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(25, 25, 98, 0.08);
+  border-color: var(--brand-2);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.for-creators-root .btn-contact-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lav-100) 0%, var(--lav-50) 100%);
+  color: var(--brand-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.for-creators-root .btn-contact-text {
+  margin-right: 2px;
+}
+
+.for-creators-root .contact-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.for-creators-root .btn-contact-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.for-creators-root .btn-contact-arrow {
+  width: 14px;
+  height: 14px;
+  color: #a1a1aa; /* zinc-400 equivalent */
+  transition: color 0.2s ease;
+}
+
+.for-creators-root .btn-contact-reach:hover .btn-contact-arrow {
+  color: #52525b; /* zinc-600 equivalent */
+}
+
+@media (max-width: 640px) {
+  .for-creators-root .contact-sec {
+    padding: 48px 16px 72px;
+  }
 }
 
