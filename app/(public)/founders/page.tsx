@@ -498,8 +498,8 @@ export default function FoundersPage() {
                           </div>
                         ))}
                         shape="ellipse"
-                        radiusX={420}
-                        radiusY={190}
+                        radiusX={480}
+                        radiusY={220}
                         rotation={-8}
                         duration={45}
                         itemSize={160}
