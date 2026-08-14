@@ -837,13 +837,13 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
-  const isQuiz = item.type === "QUIZ";
+  const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
-  // Quiz has no split overview/editor yet — its "editor" is the detail page itself.
+  // Quiz / Exam has no split overview/editor yet — its "editor" is the detail page itself.
   // Every other type opens the Content Overview, not a direct editor route.
   const openHref = isQuiz
     ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ?? `/studio/course/${item.id}/edit`;
+    : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt

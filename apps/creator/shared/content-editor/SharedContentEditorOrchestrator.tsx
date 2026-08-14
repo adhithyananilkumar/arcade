@@ -1577,7 +1577,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
                     >
                       <Users size={14} className="text-indigo-600" />
-                      Add Collaborators
+                      View Collaborators
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {

@@ -111,7 +111,7 @@ export interface OverviewData {
 async function findContentSummary(contentId: string, segment: ContentTypeSegment): Promise<ContentSummaryLite | null> {
   try {
     const items = await api.get<ContentSummaryLite[]>("/api/content");
-    const found = items.find((item) => item.id === contentId);
+    const found = items.find((item) => item.id?.toLowerCase() === contentId?.toLowerCase());
     if (found) return found;
   } catch (e) {
     console.warn("Failed to list /api/content", e);
