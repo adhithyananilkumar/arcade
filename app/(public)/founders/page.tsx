@@ -271,11 +271,19 @@ export default function FoundersPage() {
 
         <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full relative z-10">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
-            {/* Title */}
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] text-center"
-                style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}>
-              The Minds Behind <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1">Arcade.</span>
-            </h1>
+            <BlurText
+              as="h1"
+              text="The Minds Behind Arcade."
+              delay={150}
+              animateBy="words"
+              direction="top"
+              stepDuration={0.35}
+              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] justify-center"
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
+              wordClasses={{
+                "Arcade.": "bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1"
+              }}
+            />
 
             {/* Description */}
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
