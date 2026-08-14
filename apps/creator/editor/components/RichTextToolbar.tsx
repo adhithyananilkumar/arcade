@@ -1,8 +1,8 @@
 "use client";
 
 import { memo, useEffect } from "react";
-import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/react";
+import { FloatingToolbar } from "@/shared/design-system/ui/floating-toolbar";
 import { localeActions } from "reactjs-tiptap-editor/locale-bundle";
 import { RichTextUndo, RichTextRedo } from "reactjs-tiptap-editor/history";
 import { RichTextHeading } from "reactjs-tiptap-editor/heading";
@@ -115,21 +115,18 @@ function useForceTooltipsBelowToolbar() {
 export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTextToolbarProps) {
   useForceTooltipsBelowToolbar();
 
-  // Portalled to <body> — mounted inside the lesson card, whose backdrop-blur
-  // establishes a new containing block for `position: fixed` descendants (same
-  // reason UploadQueuePanel below is portalled). Left in place, `fixed` here
-  // resolves against that card instead of the viewport: the toolbar scrolls with
-  // the card instead of staying pinned, and ends up visually "inside" it, clipped
-  // by whatever paints on top of the card at that scroll position. Escaping to
+  // FloatingToolbar portals this to <body> — mounted inside the lesson card, whose
+  // backdrop-blur establishes a new containing block for `position: fixed`
+  // descendants (same reason UploadQueuePanel below is portalled). Left in place,
+  // `fixed` here would resolve against that card instead of the viewport: the
+  // toolbar would scroll with the card instead of staying pinned. Escaping to
   // <body> makes it a true floating island, positioned just under the lesson-name
-  // pill (which sits ~28px–68px from the top) regardless of where in the DOM tree
-  // the editor itself lives.
-  return createPortal(
-    <div className="flex justify-center pointer-events-none fixed top-[70px] inset-x-0 z-[70]">
-      <div className="pointer-events-auto flex flex-wrap justify-center items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 rounded-[2rem] bg-white/60 backdrop-blur-md shadow-sm gap-y-1">
-        {/* Groups are borderless and tightly packed — hairline separators carry the
-            grouping instead. Flex wrap allows it to fit fully on smaller screens. */}
-        <div className="flex items-center">
+  // pill regardless of where in the DOM tree the editor itself lives.
+  return (
+    <FloatingToolbar>
+      {/* Groups are borderless and tightly packed — hairline separators carry the
+          grouping instead, so the whole strip fits on one row without scrolling. */}
+      <div className="flex items-center">
         <RichTextUndo />
         <RichTextRedo />
       </div>
@@ -223,9 +220,7 @@ export const RichTextToolbar = memo(function RichTextToolbar({ editor }: RichTex
           ImageUploadButton / VideoUploadButton above. Nesting it here is harmless
           now that this whole toolbar is itself body-portalled. */}
       <UploadQueuePanel />
-      </div>
-    </div>,
-    document.body
+    </FloatingToolbar>
   );
 });
 

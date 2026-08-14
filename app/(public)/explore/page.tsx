@@ -37,7 +37,12 @@ export const CATEGORY_DATA: Record<string, {
     resources: [
       { title: "Optimizing Next.js App Router Performance", type: "Article", readTime: "5 min read" },
       { title: "State Management in React in 2026", type: "Guide", readTime: "8 min read" },
-      { title: "Understanding Postgres Indexing & Querying", type: "Docs", readTime: "12 min read" }
+      { title: "Understanding Postgres Indexing & Querying", type: "Docs", readTime: "12 min read" },
+      { title: "Advanced TypeScript Patterns for Enterprise", type: "Guide", readTime: "15 min read" },
+      { title: "Building Micro-frontends with Webpack 5", type: "Article", readTime: "9 min read" },
+      { title: "GraphQL vs REST API Architecture", type: "Article", readTime: "7 min read" },
+      { title: "Introduction to WebAssembly with Rust", type: "Docs", readTime: "14 min read" },
+      { title: "Scaling Node.js Microservices on Kubernetes", type: "Guide", readTime: "11 min read" }
     ]
   },
   "Information Technology": {

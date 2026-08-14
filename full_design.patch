@@ -1,0 +1,3657 @@
+diff --git a/app/(authenticated)/channels/[id]/manage/ChannelDangerZone.tsx b/app/(authenticated)/channels/[id]/manage/ChannelDangerZone.tsx
+index a29fb88..95ad4d3 100644
+--- a/app/(authenticated)/channels/[id]/manage/ChannelDangerZone.tsx
++++ b/app/(authenticated)/channels/[id]/manage/ChannelDangerZone.tsx
+@@ -295,7 +295,7 @@ export function ChannelDangerZone({ channel }: Props) {
+   }
+ 
+   return (
+-    <div className="max-w-3xl space-y-6">
++    <div className="max-w-3xl mx-auto space-y-6">
+       <div>
+         <h3 className="text-lg font-bold text-red-600 mb-1 flex items-center gap-2">
+           <AlertTriangle size={20} />
+@@ -329,26 +329,26 @@ export function ChannelDangerZone({ channel }: Props) {
+       )}
+ 
+       {/* Transfer Ownership Subtle Danger Card */}
+-      <Card className="border border-red-200 dark:border-red-900/40 bg-red-50/60 dark:bg-red-950/20">
++      <Card className="border border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/20">
+         <CardContent className="p-6">
+           {loadingTransfer ? (
+             <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+-              <Loader2 size={16} className="animate-spin text-red-600" /> Loading transfer details...
++              <Loader2 size={16} className="animate-spin text-amber-600" /> Loading transfer details...
+             </div>
+           ) : transferRequest && transferRequest.status === 'PENDING' ? (
+             user?.id === transferRequest.proposedOwnerId ? (
+               // Logged-in user is the proposed owner
+               <div className="space-y-4">
+                 <div>
+-                  <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
+-                    <Crown size={18} className="text-red-600" />
++                  <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
++                    <Crown size={18} className="text-amber-600" />
+                     Pending Ownership Transfer Request
+                   </h4>
+                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                     You have been requested to become the new owner of this channel.
+                   </p>
+                 </div>
+-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-red-200/80 dark:border-red-800/40 space-y-2 text-sm">
++                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2 text-sm">
+                   <div className="flex justify-between">
+                     <span className="text-gray-500 dark:text-gray-400 font-medium">Requested By:</span>
+                     <span className="text-gray-900 dark:text-gray-100 font-semibold">{transferRequest.currentOwnerName}</span>
+@@ -368,7 +368,7 @@ export function ChannelDangerZone({ channel }: Props) {
+                   <Button
+                     onClick={handleAcceptTransfer}
+                     disabled={actionLoading}
+-                    className="bg-red-600 hover:bg-red-700 text-white font-bold"
++                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
+                   >
+                     {actionLoading && <Loader2 size={16} className="animate-spin mr-1" />}
+                     Accept Ownership
+@@ -389,11 +389,11 @@ export function ChannelDangerZone({ channel }: Props) {
+               <div className="space-y-4">
+                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                   <div>
+-                    <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
+-                      <ShieldAlert size={18} className="text-red-600" />
++                    <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
++                      <ShieldAlert size={18} className="text-amber-600" />
+                       Ownership Transfer Requested
+                     </h4>
+-                    <p className="text-sm text-red-900 dark:text-red-300 mt-1 font-medium">
++                    <p className="text-sm text-amber-900 dark:text-amber-300 mt-1 font-medium">
+                       A request has been sent to <span className="font-bold">{transferRequest.proposedOwnerName}</span>.
+                     </p>
+                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+@@ -404,13 +404,13 @@ export function ChannelDangerZone({ channel }: Props) {
+                     variant="outline"
+                     onClick={handleCancelTransfer}
+                     disabled={actionLoading}
+-                    className="border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0 font-semibold text-xs"
++                    className="border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 shrink-0 font-semibold text-xs"
+                   >
+                     {actionLoading && <Loader2 size={14} className="animate-spin mr-1" />}
+                     Cancel Request
+                   </Button>
+                 </div>
+-                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-red-200/80 dark:border-red-800/40 space-y-2.5 text-sm">
++                <div className="bg-white/90 dark:bg-neutral-900/90 rounded-xl p-4 border border-amber-200/80 dark:border-amber-800/40 space-y-2.5 text-sm">
+                   <div className="flex justify-between items-center">
+                     <span className="text-gray-500 dark:text-gray-400 font-medium">Proposed Owner:</span>
+                     <span className="text-gray-900 dark:text-gray-100 font-bold">{transferRequest.proposedOwnerName}</span>
+@@ -434,8 +434,8 @@ export function ChannelDangerZone({ channel }: Props) {
+             // No active pending transfer request -> Show primary button to open modal
+             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+               <div>
+-                <h4 className="font-bold text-red-700 dark:text-red-400 text-base flex items-center gap-2">
+-                  <Crown size={18} className="text-red-600" />
++                <h4 className="font-bold text-amber-800 dark:text-amber-400 text-base flex items-center gap-2">
++                  <Crown size={18} className="text-amber-600" />
+                   Transfer Ownership
+                 </h4>
+                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 max-w-xl">
+@@ -446,7 +446,7 @@ export function ChannelDangerZone({ channel }: Props) {
+                 type="button"
+                 onClick={handleOpenTransferModal}
+                 disabled={isSuspended}
+-                className="border border-red-300 text-red-700 hover:bg-red-100/80 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/50 font-bold shrink-0 shadow-sm transition-all"
++                className="border border-amber-300 text-amber-800 hover:bg-amber-100/80 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/50 font-bold shrink-0 shadow-sm transition-all"
+                 variant="outline"
+               >
+                 Transfer Ownership
+@@ -458,7 +458,7 @@ export function ChannelDangerZone({ channel }: Props) {
+ 
+       {/* Transfer Ownership Minimal Enterprise Desktop Modal */}
+       <Dialog open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen}>
+-        <DialogContent className="max-w-[760px] w-full p-6 overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl bg-white dark:bg-neutral-900">
++        <DialogContent className="max-w-3xl w-full sm:max-w-3xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
+           <DialogHeader className="p-0 pb-4 border-b border-slate-100 dark:border-neutral-800">
+             <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+               Transfer Ownership
+@@ -618,7 +618,7 @@ export function ChannelDangerZone({ channel }: Props) {
+ 
+       {/* Final Confirmation Modal */}
+       <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+-        <DialogContent className="max-w-md w-full p-6 overflow-hidden rounded-xl border border-slate-200 dark:border-neutral-800 shadow-xl bg-white dark:bg-neutral-900">
++        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 overflow-hidden rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
+           <DialogHeader className="p-0 pb-3 border-b border-slate-100 dark:border-neutral-800">
+             <DialogTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">
+               Confirm Ownership Transfer
+@@ -774,7 +774,7 @@ export function ChannelDangerZone({ channel }: Props) {
+ 
+       {/* Delete Modal */}
+       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+-        <DialogContent className="max-w-md p-6">
++        <DialogContent className="max-w-2xl w-full sm:max-w-2xl p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
+           <DialogHeader>
+             <DialogTitle className="text-xl text-red-600 flex items-center gap-2">
+               <AlertTriangle size={20} />
+diff --git a/app/(authenticated)/channels/[id]/manage/ChannelNotificationsManager.tsx b/app/(authenticated)/channels/[id]/manage/ChannelNotificationsManager.tsx
+index c01bab9..1f798b3 100644
+--- a/app/(authenticated)/channels/[id]/manage/ChannelNotificationsManager.tsx
++++ b/app/(authenticated)/channels/[id]/manage/ChannelNotificationsManager.tsx
+@@ -2,7 +2,18 @@
+ 
+ import { useEffect, useState } from 'react';
+ import { Channel, ChannelAuditLogEntry, channelService } from '@/domains/channels';
+-import { Loader2, Bell, Shield, User, Video, Map, Wrench, Calendar, Settings } from 'lucide-react';
++import {
++  Loader2,
++  Bell,
++  Shield,
++  Video,
++  Map,
++  Wrench,
++  Settings,
++  CheckCircle2,
++  Clock,
++  Sparkles,
++} from 'lucide-react';
+ import { toast } from 'sonner';
+ import { useAuthStore } from '@/infrastructure/auth/auth.store';
+ 
+@@ -16,87 +27,230 @@ export function ChannelNotificationsManager({ channel }: Props) {
+   const { user } = useAuthStore();
+ 
+   useEffect(() => {
+-    channelService.getChannelAuditLog(channel.id)
++    channelService
++      .getChannelAuditLog(channel.id)
+       .then(setLogs)
+-      .catch((err: any) => toast.error(err.message || err.response?.data?.message || 'Failed to load notifications'))
++      .catch((err: any) =>
++        toast.error(err.message || err.response?.data?.message || 'Failed to load notifications'),
++      )
+       .finally(() => setLoading(false));
+   }, [channel.id]);
+ 
+-  const getActionIcon = (action: string) => {
+-    if (action.includes('CONTENT') || action.includes('COURSE')) return <Video className="text-indigo-500" size={16} />;
+-    if (action.includes('ROADMAP')) return <Map className="text-emerald-500" size={16} />;
+-    if (action.includes('WORKSHOP') || action.includes('WEBINAR')) return <Wrench className="text-amber-500" size={16} />;
+-    if (action.includes('STAFF') || action.includes('ROLE')) return <Shield className="text-rose-500" size={16} />;
+-    if (action.includes('SETTING') || action.includes('UPDATE')) return <Settings className="text-slate-500" size={16} />;
+-    return <Bell className="text-blue-500" size={16} />;
++  const getActionTheme = (action: string, idx: number) => {
++    const act = action.toUpperCase();
++
++    // Bow & Ribbon Banner Cut Shapes matching reference image
++    const shapes = [
++      'rounded-l-2xl [clip-path:polygon(0_0,100%_0,calc(100%-24px)_50%,100%_100%,0_100%)]', // Inward V-Notch Bow Ribbon Tail
++      'rounded-l-2xl [clip-path:polygon(0_0,calc(100%-24px)_0,100%_50%,calc(100%-24px)_100%,0_100%)]', // Pointed Chevron Ribbon Bow Tail
++      '[clip-path:polygon(22px_0,calc(100%-22px)_0,100%_50%,calc(100%-22px)_100%,22px_100%,0_50%)]', // Double Symmetric Ribbon Banner Cut
++    ];
++
++    const currentShape = shapes[idx % shapes.length];
++
++    if (act.includes('APPROVE') || act.includes('SUCCESS') || act.includes('PUBLISH')) {
++      return {
++        icon: <CheckCircle2 className="text-emerald-600 shrink-0" size={18} />,
++        border: 'border border-emerald-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#a7f3d0]',
++        bg: 'bg-emerald-50/90 text-emerald-700 border border-emerald-200/80',
++        cardBg: 'bg-gradient-to-r from-emerald-50/60 via-white to-emerald-100/50',
++        badgeBg: 'bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 font-bold',
++        shape: currentShape,
++        category: 'Approval Event',
++      };
++    }
++    if (act.includes('DELETE') || act.includes('REMOVE') || act.includes('SUSPEND') || act.includes('REVOKE')) {
++      return {
++        icon: <Sparkles className="text-rose-600 shrink-0" size={18} />,
++        border: 'border border-rose-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#fecdd3]',
++        bg: 'bg-rose-50/90 text-rose-700 border border-rose-200/80',
++        cardBg: 'bg-gradient-to-r from-rose-50/60 via-white to-rose-100/50',
++        badgeBg: 'bg-rose-100/90 text-rose-800 border border-rose-200/80 font-bold',
++        shape: currentShape,
++        category: 'Security Alert',
++      };
++    }
++    if (act.includes('CONTENT') || act.includes('COURSE') || act.includes('VIDEO')) {
++      return {
++        icon: <Video className="text-blue-600 shrink-0" size={18} />,
++        border: 'border border-blue-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#bae6fd]',
++        bg: 'bg-blue-50/90 text-blue-700 border border-blue-200/80',
++        cardBg: 'bg-gradient-to-r from-blue-50/60 via-white to-blue-100/50',
++        badgeBg: 'bg-blue-100/90 text-blue-800 border border-blue-200/80 font-bold',
++        shape: currentShape,
++        category: 'Content Update',
++      };
++    }
++    if (act.includes('STAFF') || act.includes('ROLE') || act.includes('SHIELD')) {
++      return {
++        icon: <Shield className="text-purple-600 shrink-0" size={18} />,
++        border: 'border border-purple-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#e9d5ff]',
++        bg: 'bg-purple-50/90 text-purple-700 border border-purple-200/80',
++        cardBg: 'bg-gradient-to-r from-purple-50/60 via-white to-purple-100/50',
++        badgeBg: 'bg-purple-100/90 text-purple-800 border border-purple-200/80 font-bold',
++        shape: currentShape,
++        category: 'Staff Policy',
++      };
++    }
++    if (act.includes('SETTING') || act.includes('UPDATE')) {
++      return {
++        icon: <Settings className="text-sky-600 shrink-0" size={18} />,
++        border: 'border border-sky-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#bae6fd]',
++        bg: 'bg-sky-50/90 text-sky-700 border border-sky-200/80',
++        cardBg: 'bg-gradient-to-r from-sky-50/60 via-white to-sky-100/50',
++        badgeBg: 'bg-sky-100/90 text-sky-800 border border-sky-200/80 font-bold',
++        shape: currentShape,
++        category: 'System Setting',
++      };
++    }
++
++    const fallbackThemes = [
++      {
++        icon: <Bell className="text-blue-600 shrink-0" size={18} />,
++        border: 'border border-blue-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#bae6fd]',
++        bg: 'bg-blue-50/90 text-blue-700 border border-blue-200/80',
++        cardBg: 'bg-gradient-to-r from-blue-50/60 via-white to-blue-100/50',
++        badgeBg: 'bg-blue-100/90 text-blue-800 border border-blue-200/80 font-bold',
++        shape: currentShape,
++        category: 'Activity Log',
++      },
++      {
++        icon: <Bell className="text-amber-600 shrink-0" size={18} />,
++        border: 'border border-amber-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#fde68a]',
++        bg: 'bg-amber-50/90 text-amber-800 border border-amber-200/80',
++        cardBg: 'bg-gradient-to-r from-amber-50/60 via-white to-amber-100/50',
++        badgeBg: 'bg-amber-100/90 text-amber-900 border border-amber-200/80 font-bold',
++        shape: currentShape,
++        category: 'Activity Log',
++      },
++      {
++        icon: <Bell className="text-emerald-600 shrink-0" size={18} />,
++        border: 'border border-emerald-200/90',
++        shadow: 'shadow-[4px_-4px_0px_0px_#a7f3d0]',
++        bg: 'bg-emerald-50/90 text-emerald-700 border border-emerald-200/80',
++        cardBg: 'bg-gradient-to-r from-emerald-50/60 via-white to-emerald-100/50',
++        badgeBg: 'bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 font-bold',
++        shape: currentShape,
++        category: 'Activity Log',
++      },
++    ];
++    return fallbackThemes[idx % fallbackThemes.length];
+   };
+ 
+-  const isSuperUser = user?.platformRoles?.some((r) => r.code === 'SUPER_ADMIN' || r.code === 'PLATFORM_MANAGER');
++  const isSuperUser = user?.platformRoles?.some(
++    (r) => r.code === 'SUPER_ADMIN' || r.code === 'PLATFORM_MANAGER',
++  );
+   const isOwner = user?.id === channel.ownerId;
+ 
+   const filteredLogs = logs.filter((log) => {
+     if (isSuperUser || isOwner) return true;
+-    
+-    // For regular users: only show logs where they are the actor.
+-    // (Note: ChannelAuditLog currently does not track content ownership directly,
+-    // so this guarantees they only see actions they performed or relate to them).
+     return log.actorId === user?.id;
+   });
+ 
+   return (
+     <div className="space-y-6">
+-      <div className="flex items-center justify-between">
+-        <div>
+-          <h2 className="text-lg font-bold text-[#14142b]">Channel Notifications & Activity</h2>
+-          <p className="text-sm text-slate-500">
+-            A log of administrative events and channel actions.
+-          </p>
++      {/* Header Banner */}
++      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
++        <div className="flex items-center gap-3.5">
++          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-sky-600 to-slate-900 text-white shadow-xs">
++            <Bell size={20} />
++          </div>
++          <div>
++            <h2 className="text-xl sm:text-2xl font-black text-[#14142b] tracking-tight">
++              Channel Notifications & Activity
++            </h2>
++          </div>
+         </div>
++
++        {filteredLogs.length > 0 && (
++          <div className="flex items-center gap-2">
++            <span className="rounded-full bg-blue-50/90 px-3.5 py-1.5 text-xs font-extrabold text-blue-700 border border-blue-200/80 shadow-2xs">
++              {filteredLogs.length} Events Logged
++            </span>
++          </div>
++        )}
+       </div>
+ 
+-      <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-1 shadow-[0_4px_20px_rgba(20,20,43,0.03)]">
++      {/* Audit Log Activity Feed Cards with Lighter Soft Pastel Bow Ribbon Shapes */}
++      <div className="space-y-4">
+         {loading ? (
+-          <div className="flex h-40 items-center justify-center">
+-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
++          <div className="rounded-3xl border border-slate-200/80 bg-white p-12 flex flex-col items-center justify-center shadow-2xs">
++            <Loader2 className="h-7 w-7 animate-spin text-blue-600 mb-2" />
++            <p className="text-xs font-extrabold text-slate-500">Loading channel audit activity...</p>
+           </div>
+         ) : logs.length === 0 ? (
+-          <div className="flex flex-col items-center justify-center p-12 text-center">
+-            <div className="mb-4 rounded-full bg-slate-50 p-4">
+-              <Bell className="h-8 w-8 text-slate-300" />
++          <div className="rounded-3xl border border-slate-200/80 bg-white p-12 text-center shadow-2xs">
++            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 shadow-2xs">
++              <Bell className="h-6 w-6" />
+             </div>
+-            <h3 className="font-bold text-slate-700">No notifications yet</h3>
+-            <p className="mt-1 text-sm text-slate-500">
+-              Activity in this channel will appear here.
++            <h3 className="text-base font-extrabold text-[#14142b]">No notifications yet</h3>
++            <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
++              Administrative actions, status updates, and staff events will automatically appear here.
+             </p>
+           </div>
+         ) : filteredLogs.length === 0 ? (
+-          <div className="flex flex-col items-center justify-center p-12 text-center">
+-            <div className="mb-4 rounded-full bg-slate-50 p-4">
+-              <Bell className="h-8 w-8 text-slate-300" />
++          <div className="rounded-3xl border border-slate-200/80 bg-white p-12 text-center shadow-2xs">
++            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 text-slate-500 border border-slate-200/80 shadow-2xs">
++              <Shield className="h-6 w-6" />
+             </div>
+-            <h3 className="font-bold text-slate-700">No recent activity found</h3>
+-            <p className="mt-1 text-sm text-slate-500">
+-              There are no notifications matching your permissions.
++            <h3 className="text-base font-extrabold text-[#14142b]">No recent activity found</h3>
++            <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
++              There are no notifications matching your staff access permissions.
+             </p>
+           </div>
+         ) : (
+-          <div className="divide-y divide-slate-100">
+-            {filteredLogs.map((log) => (
+-              <div key={log.id} className="flex gap-4 p-4 hover:bg-slate-50/50 transition-colors">
+-                <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white shadow-sm border border-slate-100">
+-                  {getActionIcon(log.action)}
+-                </div>
+-                <div className="flex-1 min-w-0">
+-                  <p className="text-[13.5px] text-slate-700">
+-                    <strong className="font-semibold text-slate-900">{log.actorName || 'System'}</strong>
+-                    {' '}{log.details || log.action.replace(/_/g, ' ').toLowerCase()}
+-                  </p>
+-                  <p className="mt-0.5 text-[11.5px] font-medium text-slate-400">
+-                    {new Date(log.createdAt).toLocaleString()}
+-                  </p>
++          <div className="space-y-4">
++            {filteredLogs.map((log, idx) => {
++              const theme = getActionTheme(log.action, idx);
++              return (
++                <div
++                  key={log.id}
++                  className={`group relative ${theme.shape} ${theme.border} ${theme.cardBg} p-4.5 sm:p-5 sm:pr-10 ${theme.shadow} transition-all duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 my-2 [filter:drop-shadow(0_4px_12px_rgba(20,20,43,0.04))]`}
++                >
++                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
++                    <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl border shadow-2xs ${theme.bg}`}>
++                      {theme.icon}
++                    </div>
++
++                    <div className="min-w-0 flex-1">
++                      <div className="flex flex-wrap items-center gap-2.5 text-xs">
++                        <span className={`rounded-lg px-2.5 py-1 text-xs border ${theme.badgeBg}`}>
++                          {log.actorName || 'System'}
++                        </span>
++                        <span className="text-sm font-bold text-slate-800 truncate">
++                          {log.details || log.action.replace(/_/g, ' ').toLowerCase()}
++                        </span>
++                      </div>
++                    </div>
++                  </div>
++
++                  {/* Dashed Ticket Break Divider Line */}
++                  <div className="hidden md:block h-8 border-r-2 border-dashed border-slate-200/80" />
++
++                  <div className="shrink-0 self-end md:self-center pr-2 sm:pr-4">
++                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3.5 py-1.5 border border-slate-200/80 text-xs font-bold text-slate-600 shadow-2xs">
++                      <Clock size={13} className="text-slate-400" />
++                      {new Date(log.createdAt).toLocaleString(undefined, {
++                        month: 'numeric',
++                        day: 'numeric',
++                        year: 'numeric',
++                        hour: 'numeric',
++                        minute: '2-digit',
++                        second: '2-digit',
++                        hour12: true,
++                      })}
++                    </span>
++                  </div>
+                 </div>
+-              </div>
+-            ))}
++              );
++            })}
+           </div>
+         )}
+       </div>
+diff --git a/app/(authenticated)/channels/[id]/manage/ChannelPolicyManager.tsx b/app/(authenticated)/channels/[id]/manage/ChannelPolicyManager.tsx
+index 807c62e..5fb8f10 100644
+--- a/app/(authenticated)/channels/[id]/manage/ChannelPolicyManager.tsx
++++ b/app/(authenticated)/channels/[id]/manage/ChannelPolicyManager.tsx
+@@ -15,6 +15,7 @@ interface ChannelPolicyManagerProps {
+   channelId: string;
+   permissions: string[];
+   isSuspended?: boolean;
++  hideHeader?: boolean;
+ }
+ 
+ const formatPermissionKey = (key: string) => {
+@@ -29,7 +30,7 @@ const formatPermissionKey = (key: string) => {
+   return key;
+ };
+ 
+-export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended }: ChannelPolicyManagerProps) {
++export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended, hideHeader = false }: ChannelPolicyManagerProps) {
+   const [roles, setRoles] = useState<Role[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [isModalOpen, setIsModalOpen] = useState(false);
+@@ -124,7 +125,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions,
+ 
+   if (loading) {
+     return (
+-      <div className="space-y-3 mt-8 pt-8 border-t border-gray-200">
++      <div className={`space-y-3 ${hideHeader ? 'pt-2' : 'mt-8 pt-8 border-t border-gray-200'}`}>
+         <Skeleton className="h-6 w-40" />
+         <Skeleton className="h-24 w-full" />
+         <Skeleton className="h-24 w-full" />
+@@ -133,12 +134,12 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions,
+   }
+ 
+   return (
+-    <div className="space-y-6 mt-8 pt-8 border-t border-slate-200/60">
++    <div className={`space-y-6 ${hideHeader ? 'pt-0' : 'mt-8 pt-8 border-t border-slate-200/60'}`}>
+       {!canManageRoles && (
+-        <Card className="border-indigo-100/80 bg-indigo-50/20 shadow-2xs mb-8 rounded-3xl">
++        <Card className="border-2 border-blue-400/90 bg-blue-50/30 shadow-2xs mb-8 rounded-none">
+           <CardHeader>
+             <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
+-              <ShieldCheck className="text-indigo-600" size={18} />
++              <ShieldCheck className="text-blue-600" size={18} />
+               Your Permissions
+             </h3>
+             <p className="text-xs font-medium text-slate-500">Here are the permissions you have been granted in this channel.</p>
+@@ -159,104 +160,113 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions,
+ 
+       {canViewRoles && (
+         <>
+-          <div className="flex justify-between items-center">
+-            <div>
+-              <h3 className="text-lg font-extrabold text-[#14142b] flex items-center gap-2.5">
+-                <span className="grid size-9 place-items-center rounded-xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
+-                  <Shield size={18} />
+-                </span>
+-                <span>Custom Roles</span>
+-              </h3>
+-              <p className="text-sm font-medium text-slate-500 mt-1">Create custom roles with specific permissions for your channel staff.</p>
++          {!hideHeader ? (
++            <div className="flex justify-between items-center mb-6">
++              <div>
++                <h3 className="text-lg font-extrabold text-[#14142b] flex items-center gap-2.5">
++                  <span className="grid size-9 place-items-center rounded-2xl bg-blue-100/90 text-blue-700 border border-blue-200/60 shadow-2xs">
++                    <Shield size={18} />
++                  </span>
++                  <span>Custom Roles</span>
++                </h3>
++                <p className="text-sm font-medium text-slate-500 mt-1">Create custom roles with specific permissions for your channel staff.</p>
++              </div>
++              {canManageRoles && (
++                <Button
++                  onClick={() => setIsModalOpen(true)}
++                  disabled={isSuspended}
++                  title={isSuspended ? 'Channel is suspended' : undefined}
++                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
++                >
++                  <Plus size={16} /> Create Role
++                </Button>
++              )}
+             </div>
+-            {canManageRoles && (
+-              <Button
+-                onClick={() => setIsModalOpen(true)}
+-                disabled={isSuspended}
+-                title={isSuspended ? 'Channel is suspended' : undefined}
+-                className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4.5 py-2 text-xs font-extrabold shadow-xs transition-all active:scale-[0.98]"
+-              >
+-                <Plus size={16} /> Create Role
+-              </Button>
+-            )}
+-          </div>
++          ) : (
++            canManageRoles && (
++              <div className="flex justify-end mb-4">
++                <Button
++                  onClick={() => setIsModalOpen(true)}
++                  disabled={isSuspended}
++                  title={isSuspended ? 'Channel is suspended' : undefined}
++                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
++                >
++                  <Plus size={16} /> Create Role
++                </Button>
++              </div>
++            )
++          )}
+ 
+           <div className="grid gap-4.5 md:grid-cols-2">
+-            {roles.map((role, idx) => {
+-              const iconBg = idx % 2 === 0 ? 'bg-indigo-100/80 text-indigo-700 border-indigo-200/70' : 'bg-purple-100/80 text-purple-700 border-purple-200/70';
++            {roles.map((role) => (
++              <div
++                key={role.id}
++                className="group relative flex flex-col justify-between rounded-none border-2 border-sky-400/90 bg-white p-5 sm:p-6 shadow-[0_4px_25px_rgba(20,20,43,0.06)] hover:shadow-lg hover:border-blue-600 transition-all duration-200"
++              >
++                <div>
++                  <div className="flex items-start justify-between gap-3">
++                    <div className="flex items-center gap-2.5">
++                      <span className="grid size-8 place-items-center rounded-xl bg-sky-50/90 text-sky-600 border border-sky-200/80 shadow-2xs">
++                        <ShieldCheck size={16} />
++                      </span>
++                      <h4 className="font-extrabold text-[#14142b] text-base leading-tight">
++                        {role.displayName}
++                      </h4>
++                    </div>
+ 
+-              return (
+-                <Card
+-                  key={role.id}
+-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_4px_25px_rgba(20,20,43,0.04)] hover:shadow-xl hover:border-indigo-300 transition-all duration-300"
+-                >
+-                  {/* Hand-Drawn Doodle Background Accents */}
+-                  <div className="absolute bottom-2 right-4 pointer-events-none opacity-[0.12] select-none z-0">
+-                    {idx % 3 === 0 ? (
+-                      <svg className="size-20 text-indigo-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+-                        <path d="M35 12 L50 20 V35 C50 48 35 56 35 56 C35 56 20 48 20 35 V20 Z" strokeDasharray="4 2" />
+-                        <circle cx="35" cy="32" r="18" strokeDasharray="3 3" opacity="0.6" />
+-                      </svg>
+-                    ) : idx % 3 === 1 ? (
+-                      <svg className="size-20 text-purple-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+-                        <rect x="22" y="28" width="26" height="24" rx="6" strokeDasharray="4 2" />
+-                        <path d="M28 28 V20 C28 15 32 12 35 12 C38 12 42 15 42 20 V28" />
+-                        <path d="M52 14 L56 18 M16 48 L20 52 M54 44 L58 46" strokeDasharray="2 2" />
+-                      </svg>
+-                    ) : (
+-                      <svg className="size-20 text-emerald-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+-                        <circle cx="35" cy="30" r="16" strokeDasharray="4 2" />
+-                        <polygon points="35,18 39,26 47,27 41,33 43,41 35,37 27,41 29,33 23,27 31,26" strokeDasharray="3 2" />
+-                        <path d="M26 44 L20 58 L30 52 L35 58 L40 52 L50 58 L44 44" />
+-                      </svg>
++                    {!role.systemRole && canManageRoles && (
++                      <div className="flex items-center gap-1 shrink-0">
++                        <Button
++                          variant="ghost"
++                          size="icon-sm"
++                          onClick={() => startEditRole(role)}
++                          disabled={isSuspended}
++                          title={isSuspended ? 'Channel is suspended' : 'Edit Role'}
++                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
++                        >
++                          <Edit3 size={15} />
++                        </Button>
++                        <Button
++                          variant="ghost"
++                          size="icon-sm"
++                          onClick={() => handleDeletePolicy(role.id)}
++                          disabled={isSuspended}
++                          title={isSuspended ? 'Channel is suspended' : 'Delete Role'}
++                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
++                        >
++                          <Trash2 size={15} />
++                        </Button>
++                      </div>
+                     )}
+                   </div>
+-                  <CardHeader className="pb-3">
+-                    <div className="flex items-start justify-between">
+-                      <div>
+-                        <h4 className="font-extrabold text-[#14142b] flex items-center gap-2 text-sm">
+-                          <span className={`grid size-7 place-items-center rounded-lg border ${iconBg} shadow-2xs`}>
+-                            <ShieldCheck size={15} />
+-                          </span>
+-                          <span>{role.displayName}</span>
+-                          {role.systemRole ? (
+-                            <Badge variant="secondary" className="bg-slate-100/90 text-slate-700 text-[10px] font-extrabold border border-slate-200/60">System</Badge>
+-                          ) : (
+-                            <Badge variant="outline" className="text-amber-800 border-amber-200/80 bg-amber-100/80 text-[10px] font-extrabold shadow-2xs">Custom</Badge>
+-                          )}
+-                        </h4>
+-                        <p className="text-xs font-medium text-slate-500 mt-2 leading-relaxed">{role.description || 'No description provided.'}</p>
+-                      </div>
+ 
+-                      {!role.systemRole && canManageRoles && (
+-                        <div className="flex gap-1 shrink-0">
+-                          <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'} className="text-slate-400 hover:text-[#14142b] hover:bg-white/80">
+-                            <Edit3 size={16} />
+-                          </Button>
+-                          <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePolicy(role.id)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Delete Role'} className="text-slate-400 hover:text-red-600 hover:bg-rose-50">
+-                            <Trash2 size={16} />
+-                          </Button>
+-                        </div>
+-                      )}
+-                    </div>
+-                  </CardHeader>
++                  <p className="text-xs font-medium text-slate-500 mt-3 leading-relaxed">
++                    {role.description || 'No description provided.'}
++                  </p>
++                </div>
+ 
+-                  <CardContent className="mt-auto pt-3 border-t border-slate-100/80">
+-                    <p className="text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
+-                    <div className="flex flex-wrap gap-1.5">
+-                      {role.permissions?.map((p: any) => (
+-                        <Badge key={p.id} variant="outline" className="text-blue-700 border-blue-200/80 bg-blue-100/90 text-[10px] font-extrabold shadow-2xs">
+-                          {formatPermissionKey(p.code)}
+-                        </Badge>
+-                      ))}
+-                      {(!role.permissions || role.permissions.length === 0) && (
+-                        <span className="text-xs text-slate-400 italic font-medium">No permissions assigned</span>
+-                      )}
+-                    </div>
+-                  </CardContent>
+-                </Card>
+-              );
+-            })}
++                <div className="mt-5 pt-3.5 border-t border-slate-100">
++                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
++                    Permissions ({role.permissions?.length || 0})
++                  </p>
++                  <div className="flex flex-wrap gap-1.5">
++                    {role.permissions?.map((p: any) => (
++                      <Badge
++                        key={p.id}
++                        variant="outline"
++                        className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3 py-1 rounded-full shadow-2xs"
++                      >
++                        <ShieldCheck size={12} className="text-sky-500 shrink-0" />
++                        <span>{formatPermissionKey(p.code)}</span>
++                      </Badge>
++                    ))}
++                    {(!role.permissions || role.permissions.length === 0) && (
++                      <span className="text-xs text-slate-400 italic font-medium">No permissions assigned</span>
++                    )}
++                  </div>
++                </div>
++              </div>
++            ))}
+           </div>
+         </>
+       )}
+diff --git a/app/(authenticated)/channels/[id]/manage/ChannelSocialLinksCard.tsx b/app/(authenticated)/channels/[id]/manage/ChannelSocialLinksCard.tsx
+index 3bf7d65..ec7a900 100644
+--- a/app/(authenticated)/channels/[id]/manage/ChannelSocialLinksCard.tsx
++++ b/app/(authenticated)/channels/[id]/manage/ChannelSocialLinksCard.tsx
+@@ -3,22 +3,67 @@
+ import { useState } from 'react';
+ import { Channel, channelService } from '@/domains/channels';
+ import { toast } from 'sonner';
+-import { Trash2, Loader2, Plus } from 'lucide-react';
++import { Trash2, Loader2, Plus, Share2, Globe, ExternalLink, Edit3, Link2 } from 'lucide-react';
+ 
+ interface Props {
+   channel: Channel;
+   canManageSettings: boolean;
+   onUpdate: (updatedChannel: Channel) => void;
++  initialEditing?: boolean;
+ }
+ 
+-export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate }: Props) {
+-  const [socialLinks, setSocialLinks] = useState<string[]>(channel.socialLinks || []);
++function getPlatformDetails(urlStr: string) {
++  try {
++    const url = new URL(urlStr);
++    const host = url.hostname.toLowerCase().replace(/^www\./, '');
++    if (host.includes('linkedin')) {
++      return { label: 'LinkedIn', displayHost: host, badgeClass: 'bg-sky-50/90 text-sky-700 border-sky-200/80 hover:bg-sky-600 hover:text-white hover:border-sky-600 shadow-sky-500/10' };
++    }
++    if (host.includes('github')) {
++      return { label: 'GitHub', displayHost: host, badgeClass: 'bg-slate-100/90 text-slate-800 border-slate-300/80 hover:bg-slate-900 hover:text-white hover:border-slate-900 shadow-slate-500/10' };
++    }
++    if (host.includes('twitter') || host.includes('x.com')) {
++      return { label: 'X (Twitter)', displayHost: host, badgeClass: 'bg-neutral-100/90 text-neutral-800 border-neutral-300/80 hover:bg-black hover:text-white hover:border-black shadow-black/10' };
++    }
++    if (host.includes('youtube')) {
++      return { label: 'YouTube', displayHost: host, badgeClass: 'bg-rose-50/90 text-rose-700 border-rose-200/80 hover:bg-rose-600 hover:text-white hover:border-rose-600 shadow-rose-500/10' };
++    }
++    if (host.includes('instagram')) {
++      return { label: 'Instagram', displayHost: host, badgeClass: 'bg-pink-50/90 text-pink-700 border-pink-200/80 hover:bg-pink-600 hover:text-white hover:border-pink-600 shadow-pink-500/10' };
++    }
++    return { label: host, displayHost: host, badgeClass: 'bg-emerald-50/90 text-emerald-700 border-emerald-200/80 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-emerald-500/10' };
++  } catch (e) {
++    return { label: urlStr, displayHost: urlStr, badgeClass: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-800 hover:text-white' };
++  }
++}
++
++const PLATFORM_PREVIEWS = [
++  { name: 'GitHub', color: 'hover:bg-slate-900 hover:text-white hover:border-slate-900' },
++  { name: 'LinkedIn', color: 'hover:bg-sky-600 hover:text-white hover:border-sky-600' },
++  { name: 'X / Twitter', color: 'hover:bg-black hover:text-white hover:border-black' },
++  { name: 'Website', color: 'hover:bg-emerald-600 hover:text-white hover:border-emerald-600' },
++];
++
++export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, initialEditing = false }: Props) {
++  const [socialLinks, setSocialLinks] = useState<string[]>(
++    channel.socialLinks && channel.socialLinks.length > 0 ? channel.socialLinks : ['']
++  );
+   const [loading, setLoading] = useState(false);
+-  const [isEditing, setIsEditing] = useState(false);
++  const [isEditing, setIsEditing] = useState(
++    initialEditing || !channel.socialLinks || channel.socialLinks.length === 0
++  );
++
++  const startEditing = () => {
++    if (socialLinks.length === 0 || (socialLinks.length === 1 && socialLinks[0].trim() === '')) {
++      setSocialLinks(['']);
++    }
++    setIsEditing(true);
++  };
+ 
+   const handleSave = async () => {
+     try {
+       setLoading(true);
++      const cleanLinks = socialLinks.filter(link => link.trim() !== '');
+       const updatedChannel = await channelService.updateChannelSettings(
+         channel.id,
+         channel.description || '',
+@@ -26,7 +71,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate }:
+         undefined,
+         false,
+         false,
+-        socialLinks.filter(link => link.trim() !== '')
++        cleanLinks
+       );
+       toast.success('Social links updated successfully');
+       onUpdate(updatedChannel);
+@@ -42,97 +87,136 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate }:
+     return null;
+   }
+ 
++  const activeValidLinks = (channel.socialLinks || []).filter(l => l.trim() !== '');
++
+   return (
+-    <section className="rounded-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.03)] mb-6">
+-      <div className="flex items-center justify-between mb-4">
+-        <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Social Links</h3>
++    <section className="relative p-1">
++      {/* Header */}
++      <div className="flex items-center justify-between mb-5">
++        <div className="flex items-center gap-3.5">
++          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-[0_6px_20px_rgba(16,185,129,0.3)] ring-4 ring-emerald-50/80">
++            <Share2 size={19} />
++          </div>
++          <div>
++            <h3 className="text-base font-black tracking-tight text-slate-900">Social Links</h3>
++            <p className="text-xs font-medium text-slate-500 mt-0.5">Connect your channel across external social profiles</p>
++          </div>
++        </div>
++
+         {canManageSettings && !isEditing && (
+           <button
+             type="button"
+-            onClick={() => setIsEditing(true)}
+-            className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-700"
++            onClick={startEditing}
++            className="group/btn inline-flex items-center gap-1.5 rounded-full border border-emerald-200/90 bg-white/90 px-4 py-1.5 text-xs font-bold text-emerald-700 shadow-2xs transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 hover:text-white hover:border-transparent hover:shadow-[0_4px_16px_rgba(16,185,129,0.3)] cursor-pointer"
+           >
+-            Edit links
++            <Edit3 size={13} className="transition-transform group-hover/btn:scale-110" />
++            <span>Edit links</span>
+           </button>
+         )}
+       </div>
+ 
+       {!isEditing ? (
+-        <div className="flex flex-wrap gap-2.5">
+-          {socialLinks.length > 0 ? (
+-            socialLinks.map((link, idx) => {
+-              try {
+-                const url = new URL(link);
+-                const hostname = url.hostname.replace(/^www\./, '');
++        <div>
++          {activeValidLinks.length > 0 ? (
++            <div className="flex flex-wrap gap-2.5">
++              {activeValidLinks.map((link, idx) => {
++                const details = getPlatformDetails(link);
+                 return (
+                   <a
+                     key={idx}
+                     href={link}
+                     target="_blank"
+                     rel="noopener noreferrer"
+-                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/80 px-3 py-1.5 text-[12px] font-medium text-slate-600 transition-colors hover:bg-[#14142b] hover:text-white"
++                    className={`group/link inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-xs font-bold transition-all duration-200 shadow-2xs hover:-translate-y-0.5 hover:shadow-md ${details.badgeClass}`}
+                   >
+-                    {hostname}
++                    <Globe size={14} className="shrink-0 opacity-70" />
++                    <span>{details.displayHost}</span>
++                    <ExternalLink size={12} className="shrink-0 opacity-50 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                   </a>
+                 );
+-              } catch (e) {
+-                return null;
+-              }
+-            })
++              })}
++            </div>
+           ) : (
+-            <p className="text-[13px] text-slate-500 italic">No social links added yet.</p>
++            <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-emerald-200/70 bg-gradient-to-r from-emerald-50/50 via-white/80 to-teal-50/40 p-5 backdrop-blur-xs transition-colors hover:border-emerald-300">
++              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
++                <div className="flex items-center gap-3.5 text-center sm:text-left">
++                  <div className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100/80 text-emerald-600 border border-emerald-200/60 shadow-2xs">
++                    <Link2 size={18} />
++                  </div>
++                  <div>
++                    <p className="text-xs font-bold text-slate-800">No social links added yet</p>
++                    <p className="text-[11px] text-slate-500 mt-0.5">Showcase your GitHub, LinkedIn, Website, or X profiles directly on your channel banner.</p>
++                  </div>
++                </div>
++                {canManageSettings && (
++                  <button
++                    type="button"
++                    onClick={startEditing}
++                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2 text-xs font-extrabold text-white shadow-[0_6px_20px_rgba(16,185,129,0.25)] hover:shadow-[0_8px_24px_rgba(16,185,129,0.35)] hover:scale-[1.03] transition-all cursor-pointer shrink-0"
++                  >
++                    <Plus size={15} /> Add Links
++                  </button>
++                )}
++              </div>
++            </div>
+           )}
+         </div>
+       ) : (
+-        <div className="space-y-3">
+-          {socialLinks.map((link, index) => (
++        <div className="space-y-3 pt-1">
++          {(socialLinks.length > 0 ? socialLinks : ['']).map((link, index) => (
+             <div key={index} className="flex items-center gap-2">
+-              <input
+-                type="url"
+-                value={link}
+-                onChange={(e) => {
+-                  const newLinks = [...socialLinks];
+-                  newLinks[index] = e.target.value;
+-                  setSocialLinks(newLinks);
+-                }}
+-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+-                placeholder="e.g. https://www.linkedin.com/in/username"
+-              />
++              <div className="relative flex-1">
++                <Globe size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" />
++                <input
++                  type="url"
++                  value={link}
++                  onChange={(e) => {
++                    const newLinks = [...(socialLinks.length > 0 ? socialLinks : [''])];
++                    newLinks[index] = e.target.value;
++                    setSocialLinks(newLinks);
++                  }}
++                  className="w-full rounded-2xl border border-emerald-200/80 bg-white pl-9.5 pr-4 py-2.5 text-xs font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100/70 shadow-2xs"
++                  placeholder="https://www.linkedin.com/in/username"
++                />
++              </div>
+               <button
+                 type="button"
+                 onClick={() => {
+                   const newLinks = socialLinks.filter((_, i) => i !== index);
+-                  setSocialLinks(newLinks);
++                  setSocialLinks(newLinks.length > 0 ? newLinks : ['']);
+                 }}
+-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
++                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all cursor-pointer"
++                title="Remove link"
+               >
+-                <Trash2 size={16} />
++                <Trash2 size={15} />
+               </button>
+             </div>
+           ))}
+-          
+-          <div className="flex items-center justify-between pt-2">
++
++          <div className="flex items-center justify-between pt-3 border-t border-emerald-100/80">
+             {socialLinks.length < 4 ? (
+               <button
+                 type="button"
+                 onClick={() => setSocialLinks([...socialLinks, ''])}
+-                className="inline-flex items-center gap-1 text-[12px] font-semibold text-indigo-600 hover:text-indigo-700"
++                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+               >
+-                <Plus size={14} /> Add another link
++                <Plus size={15} /> Add another link
+               </button>
+             ) : (
+-              <span className="text-[12px] text-slate-400">Maximum 4 links allowed</span>
++              <span className="text-xs font-medium text-slate-400">Maximum 4 links allowed</span>
+             )}
+-            
++
+             <div className="flex gap-2">
+               <button
+                 type="button"
+                 onClick={() => {
+-                  setSocialLinks(channel.socialLinks || []);
++                  setSocialLinks(
++                    channel.socialLinks && channel.socialLinks.length > 0 ? channel.socialLinks : ['']
++                  );
+                   setIsEditing(false);
+                 }}
+                 disabled={loading}
+-                className="rounded-full px-4 py-2 text-[12px] font-semibold text-slate-600 hover:bg-slate-100"
++                className="rounded-full px-4 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+               >
+                 Cancel
+               </button>
+@@ -140,7 +224,7 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate }:
+                 type="button"
+                 onClick={handleSave}
+                 disabled={loading}
+-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-md transition-colors hover:bg-[#232735] disabled:opacity-50"
++                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-1.5 text-xs font-bold text-white shadow-md shadow-emerald-500/20 transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+               >
+                 {loading && <Loader2 size={14} className="animate-spin" />}
+                 Save links
+@@ -149,6 +233,23 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate }:
+           </div>
+         </div>
+       )}
++
++      {/* Bottom Single Line Supported Platforms Footer Bar */}
++      <div className="flex items-center gap-2.5 pt-3 mt-4 border-t border-emerald-100/70 whitespace-nowrap overflow-x-auto">
++        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 shrink-0">
++          Supported:
++        </span>
++        <div className="flex items-center gap-1.5 shrink-0">
++          {PLATFORM_PREVIEWS.map((p, i) => (
++            <span
++              key={i}
++              className={`inline-flex items-center rounded-full border border-slate-200/80 bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600 transition-all whitespace-nowrap shrink-0 ${p.color}`}
++            >
++              {p.name}
++            </span>
++          ))}
++        </div>
++      </div>
+     </section>
+   );
+ }
+diff --git a/app/(authenticated)/channels/[id]/manage/ChannelStaffManager.tsx b/app/(authenticated)/channels/[id]/manage/ChannelStaffManager.tsx
+index a950afd..da0d12a 100644
+--- a/app/(authenticated)/channels/[id]/manage/ChannelStaffManager.tsx
++++ b/app/(authenticated)/channels/[id]/manage/ChannelStaffManager.tsx
+@@ -1,13 +1,13 @@
+ 'use client';
+ 
+-import { useState, useEffect } from 'react';
++import { useState, useEffect, useRef } from 'react';
+ import { useRouter } from 'next/navigation';
+ import Link from 'next/link';
+ import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/channels";
+ import { UserService } from "@/domains/identity";
+ import { Role, roleService } from "@/domains/identity";
+ import { toast } from 'sonner';
+-import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil } from 'lucide-react';
++import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil, Search, ShieldCheck } from 'lucide-react';
+ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
+ import { ChannelPolicyManager } from './ChannelPolicyManager';
+ import { useAuthStore } from '@/infrastructure/auth/auth.store';
+@@ -27,6 +27,7 @@ interface ChannelStaffManagerProps {
+ 
+ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPersonalChannel }: ChannelStaffManagerProps) {
+   const router = useRouter();
++  const [activeSubView, setActiveSubView] = useState<'ROSTER' | 'CUSTOM_ROLES'>('ROSTER');
+   const [staff, setStaff] = useState<ChannelStaff[]>([]);
+   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
+   const [roles, setRoles] = useState<Role[]>([]);
+@@ -87,9 +88,9 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+ 
+   const filteredStaff = staffSearch.trim()
+     ? staff.filter((member) => {
+-        const q = staffSearch.trim().toLowerCase();
+-        return member.userName.toLowerCase().includes(q) || member.email.toLowerCase().includes(q);
+-      })
++      const q = staffSearch.trim().toLowerCase();
++      return member.userName.toLowerCase().includes(q) || member.email.toLowerCase().includes(q);
++    })
+     : staff;
+ 
+   useEffect(() => {
+@@ -221,111 +222,153 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+ 
+   return (
+     <div className="space-y-6">
+-      <div className="flex justify-between items-center">
+-        <div>
+-          <h3 className="text-xl font-bold text-[#14142b]">Staff Management</h3>
+-          <p className="text-sm font-medium text-slate-500">Manage who has access to this channel and their permissions.</p>
+-        </div>
+-        {canManageStaff && (
+-          <Button
+-            onClick={() => setIsInviteModalOpen(true)}
+-            disabled={isSuspended}
+-            title={isSuspended ? 'Channel is suspended' : undefined}
+-            className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4 py-2 text-xs font-bold shadow-xs"
++      {/* 1. Sub-View Switcher Bar at the Very Top */}
++      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
++        {/* Flat Minimal Sub-View Switcher (No Oval Shapes) with Hover-Based Switching */}
++        <div className="flex items-center gap-6">
++          <button
++            type="button"
++            onMouseEnter={() => setActiveSubView('ROSTER')}
++            onClick={() => setActiveSubView('ROSTER')}
++            className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'ROSTER'
++              ? 'text-blue-600'
++              : 'text-slate-500 hover:text-slate-900'
++              }`}
+           >
+-            <Plus size={16} />
+-            Invite Staff
+-          </Button>
+-        )}
+-      </div>
+-
+-      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
+-        <div className="flex flex-col gap-3 border-b border-slate-100/80 bg-gradient-to-r from-slate-50/90 via-indigo-50/40 to-purple-50/60 px-6 py-4 sm:flex-row sm:items-center justify-between">
+-          <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
+-            <span className="grid size-9 place-items-center rounded-2xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
+-              <Users size={18} />
+-            </span>
+-            <span>Staff Roster</span>
+-            {staff.length > 0 && (
+-              <span className="rounded-full bg-indigo-100/80 px-2.5 py-0.5 text-xs font-black text-indigo-800 border border-indigo-200/60">
+-                {staff.length} Members
+-              </span>
++            <Users size={16} className={`transition-transform ${activeSubView === 'ROSTER' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
++            <span>Manage Staff</span>
++            {activeSubView === 'ROSTER' && (
++              <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
+             )}
+-          </h4>
+-          {staff.length > 0 && (
+-            <Input
+-              type="text"
+-              value={staffSearch}
+-              onChange={(e) => setStaffSearch(e.target.value)}
+-              placeholder="Search by name or email..."
+-              className="w-full sm:w-64 border-slate-200 bg-white/90 focus:border-[#14142b] focus:ring-2 focus:ring-[#14142b]/10 text-xs rounded-xl"
+-            />
++          </button>
++
++          {canManageStaff && (
++            <button
++              type="button"
++              onMouseEnter={() => setActiveSubView('CUSTOM_ROLES')}
++              onClick={() => setActiveSubView('CUSTOM_ROLES')}
++              className={`group inline-flex items-center gap-2 text-sm font-extrabold transition-all cursor-pointer relative py-1.5 ${activeSubView === 'CUSTOM_ROLES'
++                ? 'text-blue-600'
++                : 'text-slate-500 hover:text-slate-900'
++                }`}
++            >
++              <ShieldCheck size={16} className={`transition-transform ${activeSubView === 'CUSTOM_ROLES' ? 'scale-110 text-blue-600' : 'text-slate-400 group-hover:text-slate-700'}`} />
++              <span>Custom Roles</span>
++              {activeSubView === 'CUSTOM_ROLES' && (
++                <div className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600 shadow-xs" />
++              )}
++            </button>
+           )}
+         </div>
+-        {staff.length === 0 ? (
+-          <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center bg-gradient-to-b from-white via-slate-50/40 to-white">
+-            {/* Hand-Drawn Doodle Background Accents */}
+-            <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
+-              <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+-                <circle cx="30" cy="20" r="10" strokeDasharray="3 2" />
+-                <path d="M15 48 C 15 35, 45 35, 45 48" />
+-              </svg>
+-              <svg className="absolute right-12 top-1/2 -translate-y-1/2 size-22 text-slate-800" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+-                <rect x="15" y="15" width="40" height="40" rx="8" strokeDasharray="4 2" />
+-                <path d="M25 35 L45 35 M35 25 L35 45" />
+-              </svg>
+-            </div>
+ 
+-            <div className="relative z-10">
+-              <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 shadow-2xs">
+-                <Users size={22} />
++        {/* Actions (Search + Invite Staff) */}
++        {activeSubView === 'ROSTER' && (
++          <div className="flex flex-wrap items-center gap-3">
++            {staff.length > 0 && (
++              <div className="relative w-full sm:w-52">
++                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
++                <Input
++                  type="text"
++                  value={staffSearch}
++                  onChange={(e) => setStaffSearch(e.target.value)}
++                  placeholder="Search staff..."
++                  className="w-full pl-9 pr-3 py-1.5 border-slate-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 text-xs rounded-full shadow-2xs font-medium placeholder:text-slate-400"
++                />
+               </div>
+-              <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
+-              <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
+-                Invite team members or creators to help manage this channel and publish content.
+-              </p>
+-            </div>
+-          </div>
+-        ) : filteredStaff.length === 0 ? (
+-          <div className="p-8 text-center text-sm font-medium text-slate-400">
+-            No staff match &quot;{staffSearch}&quot;.
++            )}
++
++            {canManageStaff && (
++              <Button
++                onClick={() => setIsInviteModalOpen(true)}
++                disabled={isSuspended}
++                title={isSuspended ? 'Channel is suspended' : undefined}
++                className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4.5 py-2 text-xs font-bold shadow-xs cursor-pointer shrink-0"
++              >
++                <Plus size={16} />
++                <span>Invite Staff</span>
++              </Button>
++            )}
+           </div>
+-        ) : (
+-          <>
+-            <div className="divide-y divide-slate-100">
+-              {/* Header Row */}
+-              <div className="hidden sm:grid sm:grid-cols-12 items-center gap-4 px-6 py-3 bg-slate-50/70 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-slate-100">
+-                <div className="col-span-5">Member</div>
+-                <div className="col-span-5">Policies & Roles</div>
+-                <div className="col-span-2 text-right">Actions</div>
++        )}
++      </div>
++
++      {/* 2. Dynamic Title Block */}
++      <div>
++        <h3 className="text-xl font-bold text-[#14142b]">
++          {activeSubView === 'ROSTER' ? 'Staff Management' : 'Custom Roles & Policies'}
++        </h3>
++        <p className="text-sm font-medium text-slate-500">
++          {activeSubView === 'ROSTER'
++            ? 'Manage who has access to this channel and their permissions.'
++            : 'Configure custom role policies and permission assignments for your channel staff.'}
++        </p>
++      </div>
++
++      {activeSubView === 'ROSTER' ? (
++        <>
++          {staff.length === 0 ? (
++            <div className="relative overflow-hidden flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/40 to-white shadow-2xs">
++              {/* Hand-Drawn Doodle Background Accents */}
++              <div className="absolute inset-0 pointer-events-none opacity-[0.14] select-none overflow-hidden">
++                <svg className="absolute left-10 top-1/2 -translate-y-1/2 size-20 text-slate-800" viewBox="0 0 60 60" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
++                  <circle cx="30" cy="20" r="10" strokeDasharray="3 2" />
++                  <path d="M15 48 C 15 35, 45 35, 45 48" />
++                </svg>
++                <svg className="absolute right-12 top-1/2 -translate-y-1/2 size-22 text-slate-800" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
++                  <rect x="15" y="15" width="40" height="40" rx="8" strokeDasharray="4 2" />
++                  <path d="M25 35 L45 35 M35 25 L35 45" />
++                </svg>
+               </div>
+ 
++              <div className="relative z-10">
++                <div className="mb-3.5 mx-auto grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80 shadow-2xs">
++                  <Users size={22} />
++                </div>
++                <p className="text-sm font-extrabold text-[#14142b]">No staff members invited yet</p>
++                <p className="mt-1 text-xs font-medium text-slate-500 max-w-sm mx-auto">
++                  Invite team members or creators to help manage this channel and publish content.
++                </p>
++              </div>
++            </div>
++          ) : filteredStaff.length === 0 ? (
++            <div className="p-8 text-center text-sm font-medium text-slate-400 rounded-3xl border border-slate-200/80 bg-white">
++              No staff match &quot;{staffSearch}&quot;.
++            </div>
++          ) : (
++            <div className="space-y-3.5">
+               {(isStaffExpanded ? filteredStaff : filteredStaff.slice(0, 5)).map((member) => {
+                 const isSelf = member.userId === user?.id;
++
+                 return (
+                   <div
+                     key={member.id}
+-                    className="grid grid-cols-1 sm:grid-cols-12 items-center gap-4 px-6 py-4 hover:bg-purple-50/20 transition-colors"
++                    className="group relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-none border-t-2 border-l-2 border-t-sky-400 border-l-sky-400 border-r border-b border-r-slate-200/60 border-b-slate-200/60 bg-white p-4 sm:p-5 shadow-[6px_-6px_16px_rgba(20,20,43,0.08)] hover:shadow-[8px_-8px_22px_rgba(20,20,43,0.12)] hover:border-t-blue-500 hover:border-l-blue-500 transition-all duration-200"
+                   >
+-                    {/* Member Info (Col 5) */}
+-                    <div className="col-span-1 sm:col-span-5 flex items-center gap-3.5 min-w-0">
+-                      <Avatar className="h-10 w-10 shrink-0 bg-gradient-to-tr from-[#14142b] to-purple-900 text-white shadow-2xs">
+-                        <AvatarFallback className="font-extrabold text-xs">
+-                          {member.userName.charAt(0).toUpperCase()}
+-                        </AvatarFallback>
+-                      </Avatar>
++                    {/* Left Block: Avatar + Member Meta */}
++                    <div className="flex items-center gap-4 min-w-0 flex-1">
++                      {/* User Avatar */}
++                      <div className="relative shrink-0">
++                        <Avatar className="h-11 w-11 bg-gradient-to-br from-blue-600 via-sky-600 to-slate-900 text-white font-black shadow-xs ring-2 ring-white">
++                          <AvatarFallback className="font-black text-xs text-white">
++                            {member.userName.charAt(0).toUpperCase()}
++                          </AvatarFallback>
++                        </Avatar>
++                        <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 ring-2 ring-white shadow-xs" title="Active Staff Member" />
++                      </div>
++
++                      {/* Member Name & Handle */}
+                       <div className="min-w-0">
+-                        <p className="text-xs font-black text-[#14142b] truncate flex items-center gap-1.5">
+-                          <span>{member.userName}</span>
++                        <div className="flex flex-wrap items-center gap-2">
++                          <span className="text-sm font-black text-[#14142b] truncate">{member.userName}</span>
+                           {isSelf && (
+-                            <span className="rounded-md bg-purple-100 px-1.5 py-0.2 text-[10px] font-black text-purple-700">
++                            <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-[10px] font-black text-purple-700 border border-purple-200/80">
+                               You
+                             </span>
+                           )}
+-                        </p>
+-                        <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
++                        </div>
++                        <p className="text-xs font-semibold text-slate-500 truncate mt-0.5">
+                           {member.username ? (
+-                            <Link href={`/${member.username}`} className="font-bold text-indigo-600 hover:underline">
++                            <Link href={`/${member.username}`} className="font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                               @{member.username}
+                             </Link>
+                           ) : (
+@@ -335,27 +378,28 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                       </div>
+                     </div>
+ 
+-                    {/* Roles / Policies (Col 5) */}
+-                    <div className="col-span-1 sm:col-span-5 flex flex-wrap items-center gap-1.5">
++                    {/* Center Block: Roles & Policies Badges */}
++                    <div className="flex flex-wrap items-center gap-1.5 min-w-0 md:justify-center">
+                       {member.roles.map((role) => (
+                         <Badge
+                           key={role.id}
+                           variant="outline"
+-                          className="text-purple-700 border-purple-200/70 bg-purple-50/90 text-[11px] font-black px-3 py-1 rounded-full shadow-2xs"
++                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3.5 py-1.5 rounded-full shadow-2xs"
+                         >
+-                          {role.displayName}
++                          <ShieldCheck size={13} className="text-sky-500 shrink-0" />
++                          <span>{role.displayName}</span>
+                         </Badge>
+                       ))}
+                     </div>
+ 
+-                    {/* Actions (Col 2) */}
+-                    <div className="col-span-1 sm:col-span-2 flex items-center justify-end gap-1.5 shrink-0">
++                    {/* Right Block: Action Buttons */}
++                    <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
+                       {canManageStaff && (
+                         <Button
+                           variant="ghost"
+                           size="icon-sm"
+                           onClick={() => openEditRoles(member)}
+-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-[#14142b] hover:bg-slate-100"
++                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-colors cursor-pointer"
+                           title="Edit policies"
+                         >
+                           <Pencil size={15} />
+@@ -366,7 +410,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                           variant="ghost"
+                           size="icon-sm"
+                           onClick={() => handleRemoveStaff(member.userId, isSelf)}
+-                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50"
++                          className="h-8.5 w-8.5 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
+                           title={isSelf ? 'Leave channel' : 'Remove staff member'}
+                         >
+                           {isSelf ? <LogOut size={15} /> : <Trash2 size={15} />}
+@@ -377,33 +421,38 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                 );
+               })}
+             </div>
+-            {!isStaffExpanded && filteredStaff.length > 5 && (
+-              <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
+-                <Button
+-                  variant="ghost"
+-                  size="sm"
+-                  onClick={() => setIsStaffExpanded(true)}
+-                  className="text-xs font-bold text-[#14142b]"
+-                >
+-                  See {filteredStaff.length - 5} More Members
+-                </Button>
+-              </div>
+-            )}
+-            {isStaffExpanded && filteredStaff.length > 5 && (
+-              <div className="p-3 bg-slate-50/60 flex justify-center border-t border-slate-100">
+-                <Button
+-                  variant="ghost"
+-                  size="sm"
+-                  onClick={() => setIsStaffExpanded(false)}
+-                  className="text-xs font-bold text-[#14142b]"
+-                >
+-                  Show Less
+-                </Button>
+-              </div>
+-            )}
+-          </>
+-        )}
+-      </div>
++          )}
++
++          {!isStaffExpanded && filteredStaff.length > 5 && (
++            <div className="pt-2 flex justify-center">
++              <Button
++                variant="ghost"
++                size="sm"
++                onClick={() => setIsStaffExpanded(true)}
++                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
++              >
++                See {filteredStaff.length - 5} More Members
++              </Button>
++            </div>
++          )}
++          {isStaffExpanded && filteredStaff.length > 5 && (
++            <div className="pt-2 flex justify-center">
++              <Button
++                variant="ghost"
++                size="sm"
++                onClick={() => setIsStaffExpanded(false)}
++                className="text-xs font-extrabold text-[#14142b] hover:bg-slate-100 rounded-full px-5 py-2"
++              >
++                Show Less
++              </Button>
++            </div>
++          )}
++        </>
++      ) : (
++        <div className="pt-1">
++          <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} hideHeader={true} />
++        </div>
++      )}
+ 
+       {isPersonalChannel && invitations.length > 0 && (
+         <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
+@@ -445,8 +494,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                       inv.status === 'PENDING'
+                         ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                         : inv.status === 'REJECTED'
+-                        ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+-                        : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
++                          ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
++                          : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
+                     }
+                   >
+                     {inv.roleNames.join(', ')} • {inv.status}
+@@ -501,7 +550,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                   value={inviteEmail}
+                   onChange={(e) => setInviteEmail(e.target.value)}
+                   placeholder="user@example.com or username"
+-                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-indigo-500 focus:bg-white"
++                  className="pl-10 pr-10 rounded-2xl border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-blue-500 focus:bg-white"
+                 />
+                 <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                   {emailStatus === 'LOADING' && <Loader2 size={16} className="animate-spin text-slate-400" />}
+@@ -528,12 +577,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+               </label>
+               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
+                 {roles.map(role => (
+-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
++                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                     <input
+                       type="checkbox"
+                       checked={selectedRoleIds.includes(role.id)}
+                       onChange={() => toggleRole(role.id, selectedRoleIds, setSelectedRoleIds)}
+-                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
++                      className="h-4 w-4 rounded-md accent-blue-600 cursor-pointer"
+                     />
+                     <span>{role.displayName || role.code}</span>
+                   </label>
+@@ -546,7 +595,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                 Cancel
+               </Button>
+               <Button
+-                className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
++                className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
+                 onClick={handleInvite}
+                 disabled={emailStatus !== 'FOUND' || selectedRoleIds.length === 0}
+               >
+@@ -570,12 +619,12 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+               </p>
+               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
+                 {roles.map(role => (
+-                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-indigo-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
++                  <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
+                     <input
+                       type="checkbox"
+                       checked={editRoleIds.includes(role.id)}
+                       onChange={() => toggleRole(role.id, editRoleIds, setEditRoleIds)}
+-                      className="h-4 w-4 rounded-md accent-indigo-600 cursor-pointer"
++                      className="h-4 w-4 rounded-md accent-blue-600 cursor-pointer"
+                     />
+                     <span>{role.displayName || role.code}</span>
+                   </label>
+@@ -586,7 +635,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+                   Cancel
+                 </Button>
+                 <Button
+-                  className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md"
++                  className="flex-1 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md"
+                   onClick={handleUpdateRoles}
+                   disabled={editRolesSubmitting || editRoleIds.length === 0}
+                 >
+@@ -597,9 +646,6 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
+           )}
+         </DialogContent>
+       </Dialog>
+-
+-      {/* Role Management Section */}
+-      <ChannelPolicyManager channelId={channelId} permissions={permissions} isSuspended={isSuspended} />
+     </div>
+   );
+ }
+diff --git a/app/(authenticated)/channels/[id]/manage/components/CourseManagementSection.tsx b/app/(authenticated)/channels/[id]/manage/components/CourseManagementSection.tsx
+index cdc943f..bee2e76 100644
+--- a/app/(authenticated)/channels/[id]/manage/components/CourseManagementSection.tsx
++++ b/app/(authenticated)/channels/[id]/manage/components/CourseManagementSection.tsx
+@@ -204,15 +204,51 @@ export const mockContent: ExtendedContent[] = [
+     lastUpdated: '1 day ago',
+     status: 'PUBLISHED',
+   },
++  {
++    id: 'article-2',
++    title: 'Demystifying WebAssembly and Rust for Web Performance',
++    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
++    instructor: 'Dr. Sarah Chen',
++    category: 'Web Development',
++    contentType: 'Article',
++    difficulty: 'Advanced',
++    duration: '15m read',
++    price: 'Free',
++    enrollments: 18400,
++    completionRate: 92.5,
++    rating: 4.94,
++    reviewsCount: 210,
++    wishlistCount: 680,
++    lastUpdated: '3 days ago',
++    status: 'PUBLISHED',
++  },
++  {
++    id: 'article-3',
++    title: 'State Management Trends in 2026: Signals vs Selectors',
++    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80',
++    instructor: 'David Kim',
++    category: 'Frontend Engineering',
++    contentType: 'Article',
++    difficulty: 'Intermediate',
++    duration: '8m read',
++    price: 'Free',
++    enrollments: 9200,
++    completionRate: 89.0,
++    rating: 4.87,
++    reviewsCount: 140,
++    wishlistCount: 390,
++    lastUpdated: '4 days ago',
++    status: 'DRAFT',
++  },
+   {
+     id: 'event-1',
+-    title: 'Live Event: Building High-Performance Web Apps',
++    title: 'Live Workshop: Building High-Performance Web Apps',
+     thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+     instructor: 'Dr. Sarah Chen',
+     category: 'Web Development',
+     contentType: 'Event',
+     difficulty: 'Beginner',
+-    duration: '2h',
++    duration: '2h live session',
+     price: 'Free',
+     enrollments: 1200,
+     completionRate: 100,
+@@ -222,6 +258,24 @@ export const mockContent: ExtendedContent[] = [
+     lastUpdated: 'Just now',
+     status: 'PUBLISHED',
+   },
++  {
++    id: 'event-2',
++    title: 'Global AI Summit 2026: Keynote & Live Q&A',
++    thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80',
++    instructor: 'Prof. Michael Vance',
++    category: 'AI Engineering',
++    contentType: 'Event',
++    difficulty: 'Intermediate',
++    duration: '4h keynote',
++    price: '$29.99',
++    enrollments: 3400,
++    completionRate: 96.0,
++    rating: 4.98,
++    reviewsCount: 410,
++    wishlistCount: 1100,
++    lastUpdated: 'Yesterday',
++    status: 'PUBLISHED',
++  },
+ ];
+ 
+ interface CourseManagementSectionProps {
+@@ -310,11 +364,15 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+         const matchesSearch =
+           c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           c.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+-          c.category.toLowerCase().includes(searchQuery.toLowerCase());
++          c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
++          c.contentType.toLowerCase().includes(searchQuery.toLowerCase());
++        const matchesType =
++          selectedType === 'ALL' ||
++          c.contentType.toLowerCase() === selectedType.toLowerCase();
+         const matchesCat = selectedCategory === 'ALL' || c.category === selectedCategory;
+         const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
+         const matchesInst = selectedInstructor === 'ALL' || c.instructor === selectedInstructor;
+-        return matchesSearch && matchesCat && matchesStatus && matchesInst;
++        return matchesSearch && matchesType && matchesCat && matchesStatus && matchesInst;
+       })
+       .sort((a, b) => {
+         if (sortBy === 'POPULAR') return b.enrollments - a.enrollments;
+@@ -322,7 +380,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+         if (sortBy === 'COMPLETION') return b.completionRate - a.completionRate;
+         return 0;
+       });
+-  }, [courses, searchQuery, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
++  }, [courses, searchQuery, selectedType, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
+ 
+   const rankedTopCourses = useMemo(() => {
+     const sorted = [...courses];
+@@ -647,7 +705,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+ 
+                 {/* Price & Actions Row */}
+                 <div className="flex items-center justify-between pt-1">
+-                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
++                  <span className="text-base font-black text-[#14142b] pl-3 sm:pl-4">{course.price}</span>
+                   <div className="flex items-center gap-2">
+                     <button
+                       type="button"
+@@ -730,24 +788,38 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+           ))}
+         </div>
+       ) : (
+-        /* List Mode View */
+-        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs">
+-          <div className="divide-y divide-slate-100">
+-            {filteredCourses.map((course) => (
+-              <div 
+-                key={course.id} 
++        /* List Mode View with Left Accent Borders (Grey by default, colored on hover/focus) */
++        <div className="space-y-3">
++          {filteredCourses.map((course) => {
++            const topAndLeftColor =
++              course.status === 'PUBLISHED'
++                ? 'border-t-emerald-500 border-l-emerald-500'
++                : course.status === 'DRAFT'
++                ? 'border-t-purple-500 border-l-purple-500'
++                : course.status === 'SUBMITTED'
++                ? 'border-t-sky-400 border-l-sky-400'
++                : 'border-t-indigo-600 border-l-indigo-600';
++
++            return (
++              <div
++                key={course.id}
++                tabIndex={0}
+                 onClick={() => handleCardClick(course)}
+-                className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors cursor-pointer"
++                className={`group relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border-t-2 border-l-2 ${topAndLeftColor} border-r border-b border-r-slate-200/80 border-b-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer outline-none`}
+               >
+                 <div className="flex items-center gap-4 min-w-0">
+-                  <img
+-                    src={course.thumbnail}
+-                    alt={course.title}
+-                    className="h-16 w-24 shrink-0 rounded-2xl object-cover border border-slate-200"
+-                  />
++                  <div className="relative shrink-0 overflow-hidden rounded-xl border border-slate-200/80 shadow-2xs">
++                    <img
++                      src={course.thumbnail}
++                      alt={course.title}
++                      className="h-16 w-24 object-cover group-hover:scale-105 transition-transform duration-300"
++                    />
++                  </div>
+                   <div className="min-w-0">
+-                    <div className="flex items-center gap-2 text-xs">
+-                      <span className="font-extrabold text-indigo-600">{course.category}</span>
++                    <div className="flex flex-wrap items-center gap-2 text-xs">
++                      <span className="font-extrabold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100/80">
++                        {course.category}
++                      </span>
+                       <span className="text-slate-300">·</span>
+                       <span className="font-semibold text-slate-500">{course.instructor}</span>
+                       {course.addedByStaff && (
+@@ -757,28 +829,33 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+                         </>
+                       )}
+                     </div>
+-                    <h3 className="text-sm font-extrabold text-[#14142b] truncate">{course.title}</h3>
++                    <h3 className="text-sm font-extrabold text-[#14142b] truncate mt-1 group-hover:text-indigo-600 transition-colors">
++                      {course.title}
++                    </h3>
+                     <div className="mt-1 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
+                       <span>{course.enrollments.toLocaleString()} enrolled</span>
+                       <span>·</span>
+-                      <span className="flex items-center gap-0.5 text-amber-500">
++                      <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                         <Star size={11} className="fill-amber-400 text-amber-400" />
+                         {course.rating}
+                       </span>
+                       <span>·</span>
+-                      <span className="text-emerald-600">{course.completionRate}% completion</span>
++                      <span className="text-emerald-600 font-extrabold">{course.completionRate}% completion</span>
+                     </div>
+                   </div>
+                 </div>
+ 
+-                <div className="flex items-center gap-4 justify-between sm:justify-end">
+-                  <span className="text-sm font-black text-[#14142b]">{course.price}</span>
++                <div className="flex items-center gap-4 justify-between sm:justify-end shrink-0">
++                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
+                   <div className="flex items-center gap-2">
+                     {course.status === 'DRAFT' && (
+                       <button
+                         type="button"
+-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'SUBMIT'); }}
+-                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100"
++                        onClick={(e) => {
++                          e.stopPropagation();
++                          handleAction(course.id, 'SUBMIT');
++                        }}
++                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition-colors"
+                       >
+                         Request Review
+                       </button>
+@@ -786,8 +863,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+                     {course.status === 'SUBMITTED' && (
+                       <button
+                         type="button"
+-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'PUBLISH'); }}
+-                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
++                        onClick={(e) => {
++                          e.stopPropagation();
++                          handleAction(course.id, 'PUBLISH');
++                        }}
++                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                       >
+                         Approve
+                       </button>
+@@ -795,8 +875,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+                     {course.status === 'PUBLISHED' && (
+                       <button
+                         type="button"
+-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'UNPUBLISH'); }}
+-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
++                        onClick={(e) => {
++                          e.stopPropagation();
++                          handleAction(course.id, 'UNPUBLISH');
++                        }}
++                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                       >
+                         Unpublish
+                       </button>
+@@ -813,16 +896,19 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
+                     )}
+                     <button
+                       type="button"
+-                      onClick={(e) => { e.stopPropagation(); router.push(`/studio/course/${course.id}`); }}
+-                      className="rounded-xl bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-900"
++                      onClick={(e) => {
++                        e.stopPropagation();
++                        router.push(`/studio/course/${course.id}`);
++                      }}
++                      className="rounded-xl bg-[#14142b] px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-900 shadow-2xs transition-colors"
+                     >
+                       Edit
+                     </button>
+                   </div>
+                 </div>
+               </div>
+-            ))}
+-          </div>
++            );
++          })}
+         </div>
+       )}
+     </div>
+diff --git a/app/(authenticated)/channels/[id]/manage/components/OrganizationAnalyticsSection.tsx b/app/(authenticated)/channels/[id]/manage/components/OrganizationAnalyticsSection.tsx
+index 9ef92d0..78501b7 100644
+--- a/app/(authenticated)/channels/[id]/manage/components/OrganizationAnalyticsSection.tsx
++++ b/app/(authenticated)/channels/[id]/manage/components/OrganizationAnalyticsSection.tsx
+@@ -1,16 +1,24 @@
+ 'use client';
+ 
+-import { useState, useMemo } from 'react';
++import { useState, useMemo, useEffect } from 'react';
++import confetti from 'canvas-confetti';
+ import {
+   BarChart3,
+   Star,
+   MessageSquare,
+   CornerDownRight,
+   TrendingUp,
+-  ArrowUpRight,
+-  CheckCircle2,
++  ThumbsUp,
++  Meh,
++  ThumbsDown,
++  Tag,
+   ChevronLeft,
+   ChevronRight,
++  Sparkles,
++  Award,
++  Users,
++  DollarSign,
++  BookOpen,
+ } from 'lucide-react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { toast } from 'sonner';
+@@ -22,6 +30,7 @@ export interface ReviewItem {
+   courseName: string;
+   rating: number;
+   date: string;
++  sentiment: 'POSITIVE' | 'NEUTRAL' | 'CONSTRUCTIVE';
+   reviewText: string;
+   instructorResponse?: string;
+   cardSize?: 'wide' | 'normal';
+@@ -35,6 +44,7 @@ const mockReviews: ReviewItem[] = [
+     courseName: 'AI Agent Architecture & Tool Use Masterclass',
+     rating: 5,
+     date: '2 hours ago',
++    sentiment: 'POSITIVE',
+     reviewText:
+       'Hands down the single best enterprise AI course I have taken! The hands-on labs with vector search and multi-agent coordination were immediately applicable to our engineering team.',
+     instructorResponse:
+@@ -47,6 +57,7 @@ const mockReviews: ReviewItem[] = [
+     courseName: 'Prompt Engineering & Context Window Optimization',
+     rating: 5,
+     date: '1 day ago',
++    sentiment: 'POSITIVE',
+     reviewText:
+       'Extremely clear explanations and excellent benchmark datasets provided. Learned how to cut our token costs by 40% using prompt caching.',
+   },
+@@ -57,11 +68,20 @@ const mockReviews: ReviewItem[] = [
+     courseName: 'Neural Networks from Scratch in Python',
+     rating: 4,
+     date: '3 days ago',
++    sentiment: 'CONSTRUCTIVE',
+     reviewText:
+       'Great math breakdown in Module 3. Would love to see additional PyTorch GPU acceleration examples in the bonus section!',
+   },
+ ];
+ 
++const ratingDistribution = [
++  { stars: 5, percentage: 88, count: 3379 },
++  { stars: 4, percentage: 8, count: 307 },
++  { stars: 3, percentage: 2, count: 76 },
++  { stars: 2, percentage: 1, count: 48 },
++  { stars: 1, percentage: 1, count: 30 },
++];
++
+ type TimeframeOption = '7D' | '30D' | '90D' | '1Y';
+ 
+ interface TimeframeData {
+@@ -166,8 +186,39 @@ export function OrganizationAnalyticsSection() {
+   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
+   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+ 
++  const ratingDistribution = [
++    { stars: 5, percentage: 88, count: 3379 },
++    { stars: 4, percentage: 8, count: 307 },
++    { stars: 3, percentage: 2, count: 76 },
++    { stars: 2, percentage: 1, count: 48 },
++    { stars: 1, percentage: 1, count: 30 },
++  ];
++
++  const topics = ['Hands-on Labs', 'AI Code Assistant', 'Clear Explanations', 'Real Projects', 'Token Cost Reduction'];
++
+   const activeData = useMemo(() => TIMEFRAME_DATA[timeframe], [timeframe]);
+ 
++  const triggerPoppers = () => {
++    try {
++      confetti({
++        particleCount: 55,
++        spread: 75,
++        origin: { y: 0.38, x: 0.5 },
++        colors: ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#8b5cf6'],
++        disableForReducedMotion: true,
++      });
++    } catch {
++      // Fallback
++    }
++  };
++
++  useEffect(() => {
++    const timer = setTimeout(() => {
++      triggerPoppers();
++    }, 250);
++    return () => clearTimeout(timer);
++  }, [timeframe]);
++
+   const handleSendResponse = (id: string) => {
+     if (!replyText[id]?.trim()) return;
+     setReviews(
+@@ -189,7 +240,6 @@ export function OrganizationAnalyticsSection() {
+ 
+   const reviewsPerPage = 10;
+ 
+-  // Order reviews so older feedback comes first and the latest feedback is shown last
+   const sortedReviews = useMemo(() => {
+     return [...reviews].reverse();
+   }, [reviews]);
+@@ -207,150 +257,99 @@ export function OrganizationAnalyticsSection() {
+     const range = maxVal - minVal || 1;
+ 
+     const width = 540;
+-    const height = 150;
++    const height = 170;
++    const chartBottom = 135;
+ 
+     const coords = pts.map((pt, idx) => {
+       const x = (idx / (pts.length - 1)) * width;
+-      const y = height - ((pt - minVal) / range) * (height - 35) - 20;
++      const y = chartBottom - ((pt - minVal) / range) * (chartBottom - 30);
+       return { x: Math.round(x), y: Math.round(y), pt };
+     });
+ 
+     const smoothLine = getSmoothPath(coords);
+-    const smoothArea = `${smoothLine} L ${width},${height} L 0,${height} Z`;
++    const smoothArea = `${smoothLine} L ${width},${chartBottom} L 0,${chartBottom} Z`;
+ 
+-    return { coords, smoothLine, smoothArea, width, height };
++    return { coords, smoothLine, smoothArea, width, height, chartBottom };
+   }, [activeData]);
+ 
+   return (
+-    <div className="relative group">
+-      {/* Dual Light Beam Border Accent Traveling in Opposite Directions */}
+-      <div className="absolute -inset-[1.5px] rounded-[2.5rem] rounded-tr-[3.5rem] rounded-bl-[3.5rem] overflow-hidden pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+-        {/* Beam 1: Clockwise Light Beam */}
+-        <motion.div
+-          className="absolute -inset-[100%] w-[300%] h-[300%]"
+-          style={{
+-            background:
+-              'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 290deg, #6366f1 320deg, #a855f7 350deg, transparent 360deg)',
+-          }}
+-          animate={{ rotate: [0, 360] }}
+-          transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
+-        />
+-        {/* Beam 2: Counter-Clockwise Light Beam (Traveling from opposite direction) */}
+-        <motion.div
+-          className="absolute -inset-[100%] w-[300%] h-[300%] mix-blend-screen"
+-          style={{
+-            background:
+-              'conic-gradient(from 180deg at 50% 50%, transparent 0deg, transparent 290deg, #ec4899 320deg, #06b6d4 350deg, transparent 360deg)',
+-          }}
+-          animate={{ rotate: [360, 0] }}
+-          transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
+-        />
+-      </div>
+-
+-      {/* Main Upgraded Card Container */}
+-      <div className="relative overflow-hidden rounded-[2.5rem] rounded-tr-[3.5rem] rounded-bl-[3.5rem] bg-white p-6 sm:p-8 shadow-[0_16px_45px_rgba(20,20,43,0.06)] space-y-8 z-10">
+-        {/* 1. Header & Dynamic Timeframe Filter */}
+-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-6">
+-          <div className="flex items-center gap-3">
+-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 border border-indigo-100/80 shadow-2xs">
+-              <BarChart3 size={20} />
+-            </div>
+-            <div>
+-              <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider mb-0.5">
+-                <span>Channel Analytics</span>
+-              </div>
+-              <h2 className="text-xl font-black text-[#14142b] tracking-tight">
+-                Overview & Performance
+-              </h2>
++    <div className="space-y-8">
++      {/* Top Header & Dynamic Timeframe Filter (Standalone without outer card) */}
++      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
++        <div className="flex items-center gap-3">
++          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md">
++            <BarChart3 size={22} />
++          </div>
++          <div>
++            <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider mb-0.5">
++              <span>Unified Dashboard</span>
++              <span className="inline-block h-1 w-1 rounded-full bg-indigo-400" />
++              <span>Real-Time Intelligence</span>
+             </div>
++            <h2 className="text-xl sm:text-2xl font-black text-[#14142b] tracking-tight">
++              Analytics & Learner Reviews
++            </h2>
+           </div>
++        </div>
+ 
+-          <div className="flex items-center gap-1.5 rounded-2xl bg-slate-100/90 p-1.5 text-xs font-bold">
+-            {(['7D', '30D', '90D', '1Y'] as const).map((tf) => (
+-              <button
+-                key={tf}
+-                type="button"
+-                onClick={() => {
+-                  setTimeframe(tf);
+-                  setHoverIdx(null);
+-                }}
+-                className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${timeframe === tf
+-                    ? 'bg-white text-indigo-600 shadow-2xs font-extrabold scale-[1.02]'
+-                    : 'text-slate-500 hover:text-slate-900'
+-                  }`}
+-              >
+-                {tf}
+-              </button>
+-            ))}
+-          </div>
++        <div className="flex items-center gap-1.5 rounded-2xl bg-white/90 p-1.5 text-xs font-bold border border-slate-200/80 shadow-2xs">
++          {(['7D', '30D', '90D', '1Y'] as const).map((tf) => (
++            <button
++              key={tf}
++              type="button"
++              onClick={() => {
++                setTimeframe(tf);
++                setHoverIdx(null);
++              }}
++              className={`rounded-xl px-4 py-1.5 transition-all duration-200 cursor-pointer ${timeframe === tf
++                  ? 'bg-indigo-600 text-white shadow-2xs font-extrabold scale-[1.02]'
++                  : 'text-slate-500 hover:text-slate-900'
++                }`}
++            >
++              {tf}
++            </button>
++          ))}
+         </div>
++      </div>
+ 
+-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-slate-50/80 px-5 py-3.5 border border-slate-200/60">
+-          <div className="flex items-center gap-3">
+-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-black">
+-              <TrendingUp size={18} />
+-            </div>
+-            <div>
+-              <p className="text-sm font-extrabold text-[#14142b]">
+-                {activeData.summaryHeadline}
+-              </p>
+-            </div>
++      {/* Summary Banner with Party Poppers */}
++      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-emerald-50/80 via-white to-indigo-50/50 p-4 border border-emerald-200/80 shadow-2xs">
++        <div className="flex items-center gap-3">
++          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white font-black shadow-xs">
++            <TrendingUp size={18} />
++          </div>
++          <div className="flex items-center gap-2">
++            <p className="text-sm font-extrabold text-[#14142b]">
++              {activeData.summaryHeadline}
++            </p>
++            <motion.span
++              animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.25, 1] }}
++              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
++              className="text-base select-none cursor-pointer"
++              onClick={triggerPoppers}
++              title="Pop Party Confetti!"
++            >
++              🎉
++            </motion.span>
+           </div>
+         </div>
++      </div>
+ 
+-        <AnimatePresence mode="wait">
+-          <motion.div
+-            key={timeframe}
+-            initial={{ opacity: 0, y: 6 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            exit={{ opacity: 0, y: -6 }}
+-            transition={{ duration: 0.2 }}
+-            className="grid grid-cols-2 gap-6 sm:grid-cols-4 py-2 border-b border-slate-100"
+-          >
+-            <div className="space-y-1">
+-              <p className="text-xs font-bold text-slate-400">Enrollments</p>
+-              <div className="flex items-baseline gap-2">
+-                <span className="text-2xl font-black text-[#14142b]">{activeData.enrollments}</span>
+-              </div>
+-            </div>
+-
+-            <div className="space-y-1 border-l border-slate-100 sm:pl-6">
+-              <p className="text-xs font-bold text-slate-400">Average Rating</p>
+-              <div className="flex items-baseline gap-2">
+-                <span className="text-2xl font-black text-[#14142b]">{activeData.rating}</span>
+-                <span className="text-xs font-semibold text-slate-400">{activeData.reviewsCount}</span>
+-              </div>
+-            </div>
+-
+-            <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
+-              <p className="text-xs font-bold text-slate-400">Completion Rate</p>
+-              <div className="flex items-baseline gap-2">
+-                <span className="text-2xl font-black text-[#14142b]">{activeData.completionRate}</span>
+-                <span className="text-xs font-extrabold text-indigo-600">Top Tier</span>
+-              </div>
+-            </div>
+-
+-            <div className="space-y-1 border-l border-slate-100 pl-4 sm:pl-6">
+-              <p className="text-xs font-bold text-slate-400">Estimated Revenue</p>
+-              <div className="flex items-baseline gap-2">
+-                <span className="text-2xl font-black text-[#14142b]">{activeData.revenue}</span>
+-              </div>
+-            </div>
+-          </motion.div>
+-        </AnimatePresence>
+-
+-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 pt-1">
+-          <div className="lg:col-span-2 space-y-3">
+-            <div className="flex items-center justify-between">
+-              <h3 className="text-sm font-extrabold text-[#14142b]">
+-                Enrollments • {activeData.timeframeLabel}
++      {/* Analytics Chart & Category Breakdown Grid */}
++      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
++        {/* Enrollment Trend Chart (Bare Content) */}
++        <div className="lg:col-span-2 space-y-3 flex flex-col justify-between py-1">
++          <div>
++            <div className="flex items-center justify-between pb-2">
++              <h3 className="text-sm font-bold text-slate-900">
++                Enrollment Trend • {activeData.timeframeLabel}
+               </h3>
+             </div>
+ 
+-            <div className="relative h-52 w-full pt-3">
++            <div className="relative h-56 w-full pt-1">
+               <svg
+                 className="h-full w-full overflow-visible"
+-                viewBox="0 0 540 150"
++                viewBox="0 0 540 170"
+                 onMouseLeave={() => setHoverIdx(null)}
+               >
+                 <defs>
+@@ -359,9 +358,9 @@ export function OrganizationAnalyticsSection() {
+                     <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                   </linearGradient>
+                 </defs>
+-                <line x1="0" y1="35" x2="540" y2="35" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
++                <line x1="0" y1="30" x2="540" y2="30" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                 <line x1="0" y1="75" x2="540" y2="75" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+-                <line x1="0" y1="115" x2="540" y2="115" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
++                <line x1="0" y1="120" x2="540" y2="120" stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth="1" />
+                 <path
+                   fill="url(#ytStudioGrad)"
+                   d={svgChart.smoothArea}
+@@ -392,7 +391,7 @@ export function OrganizationAnalyticsSection() {
+                         x1={c.x}
+                         y1="0"
+                         x2={c.x}
+-                        y2="150"
++                        y2={svgChart.chartBottom}
+                         stroke="#10b981"
+                         strokeDasharray="3 3"
+                         strokeWidth="1.5"
+@@ -400,6 +399,24 @@ export function OrganizationAnalyticsSection() {
+                     )}
+                   </g>
+                 ))}
++
++                {/* X-Axis Date Labels */}
++                {activeData.labels.map((lbl, i) => {
++                  const cx = (i / (activeData.labels.length - 1)) * 540;
++                  const textAnchor =
++                    i === 0 ? 'start' : i === activeData.labels.length - 1 ? 'end' : 'middle';
++                  return (
++                    <text
++                      key={lbl}
++                      x={cx}
++                      y="158"
++                      textAnchor={textAnchor}
++                      className="text-[11px] font-bold fill-slate-400 select-none font-sans"
++                    >
++                      {lbl}
++                    </text>
++                  );
++                })}
+               </svg>
+ 
+               {hoverIdx !== null && svgChart.coords[hoverIdx] && (
+@@ -407,7 +424,7 @@ export function OrganizationAnalyticsSection() {
+                   className="absolute z-30 pointer-events-none bg-[#14142b]/95 border border-slate-700/60 text-white px-3 py-2 rounded-xl text-xs shadow-xl backdrop-blur-md whitespace-nowrap transition-all duration-150"
+                   style={{
+                     left: `${(svgChart.coords[hoverIdx].x / 540) * 100}%`,
+-                    top: `${(svgChart.coords[hoverIdx].y / 150) * 100}%`,
++                    top: `${(svgChart.coords[hoverIdx].y / 170) * 100}%`,
+                     transform:
+                       hoverIdx === 0
+                         ? 'translate(0%, -125%)'
+@@ -424,18 +441,15 @@ export function OrganizationAnalyticsSection() {
+                   </span>
+                 </div>
+               )}
+-
+-              <div className="mt-3 flex justify-between text-xs font-bold text-slate-400">
+-                {activeData.labels.map((lbl) => (
+-                  <span key={lbl}>{lbl}</span>
+-                ))}
+-              </div>
+             </div>
+           </div>
++        </div>
+ 
+-          <div className="space-y-4">
+-            <div className="flex items-center justify-between">
+-              <h3 className="text-sm font-extrabold text-[#14142b]">Category Distribution</h3>
++        {/* Category Breakdown (Bare Content with Vertical Divider Separation) */}
++        <div className="space-y-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-slate-200/80 pt-6 lg:pt-0 pl-0 lg:pl-6">
++          <div>
++            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
++              <h3 className="text-sm font-bold text-slate-900">Category Breakdown</h3>
+               <div className="flex items-center gap-1.5">
+                 <span className="text-[11px] font-semibold text-slate-400 mr-1">
+                   {categoryPage + 1}/{totalCategoryPages}
+@@ -444,7 +458,7 @@ export function OrganizationAnalyticsSection() {
+                   type="button"
+                   onClick={() => setCategoryPage((p) => Math.max(0, p - 1))}
+                   disabled={categoryPage === 0}
+-                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
++                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                   title="Previous Category Page"
+                 >
+                   <ChevronLeft size={13} />
+@@ -453,7 +467,7 @@ export function OrganizationAnalyticsSection() {
+                   type="button"
+                   onClick={() => setCategoryPage((p) => Math.min(totalCategoryPages - 1, p + 1))}
+                   disabled={categoryPage === totalCategoryPages - 1}
+-                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
++                  className="grid h-6 w-6 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors"
+                   title="Next Category Page"
+                 >
+                   <ChevronRight size={13} />
+@@ -461,14 +475,14 @@ export function OrganizationAnalyticsSection() {
+               </div>
+             </div>
+ 
+-            <div className="space-y-3.5 min-h-[160px]">
++            <div className="space-y-3.5 pt-3">
+               {currentCategories.map((cat) => (
+                 <div key={cat.name} className="space-y-1">
+                   <div className="flex justify-between text-xs font-bold">
+                     <span className="text-slate-700">{cat.name}</span>
+                     <span className="text-slate-900 font-extrabold">{cat.percentage}%</span>
+                   </div>
+-                  <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100">
++                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200/60">
+                     <div
+                       className={`h-full rounded-full ${cat.color} transition-all duration-300`}
+                       style={{ width: `${cat.percentage}%` }}
+@@ -479,127 +493,221 @@ export function OrganizationAnalyticsSection() {
+             </div>
+           </div>
+         </div>
++      </div>
++      {/* Learner Feedback Analytics Section - Production-Grade SaaS UI */}
++      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
++        {/* Rating Overview Card */}
++        <div className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.03)] transition-all duration-200 hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:border-slate-300">
++          <div>
++            {/* Header Row */}
++            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
++              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
++                <Star size={16} className="text-sky-500 fill-sky-500" />
++                <span>Rating Overview</span>
++              </h3>
++            </div>
++
++            {/* Content Body: Two-Column Internal Layout */}
++            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 pt-5 items-center">
++              {/* Left Column: Primary Rating Metric */}
++              <div className="sm:col-span-4 flex flex-col items-start pr-0 sm:pr-2">
++                <span className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none">
++                  4.92
++                </span>
++                <div className="flex items-center gap-1 text-sky-500 my-2">
++                  {[...Array(5)].map((_, i) => (
++                    <Star key={i} size={14} className="fill-sky-500 text-sky-500" />
++                  ))}
++                </div>
++                <span className="text-xs font-medium text-slate-500">
++                  3,972 ratings
++                </span>
++              </div>
++
++              {/* Right Column: 5-Star through 1-Star Progress Bars */}
++              <div className="sm:col-span-8 space-y-2">
++                {ratingDistribution.map((dist) => (
++                  <div key={dist.stars} className="flex items-center gap-2 text-xs">
++                    <div className="w-6 flex items-center gap-0.5 text-slate-600 font-semibold shrink-0">
++                      <span>{dist.stars}</span>
++                      <Star size={10} className="fill-sky-500 text-sky-500" />
++                    </div>
++                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
++                      <div
++                        className="h-full rounded-full bg-sky-500 transition-all duration-500"
++                        style={{ width: `${dist.percentage}%` }}
++                      />
++                    </div>
++                    <span className="w-8 text-right text-xs font-medium text-slate-400 tabular-nums shrink-0">
++                      {dist.percentage}%
++                    </span>
++                  </div>
++                ))}
++              </div>
++            </div>
++          </div>
++        </div>
+ 
+-        <div className="pt-5 border-t border-slate-100 space-y-4">
+-          <div className="flex items-center justify-between">
+-            <div>
+-              <h3 className="text-sm font-extrabold text-[#14142b]">Recent Student Feedback</h3>
++        {/* Most Mentioned Topics Card */}
++        <div className="flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.03)] transition-all duration-200 hover:shadow-[0_4px_20px_rgba(15,23,42,0.06)] hover:border-slate-300">
++          <div>
++            {/* Header Row */}
++            <div className="pb-4 border-b border-slate-100">
++              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
++                <Tag size={16} className="text-indigo-600" />
++                <span>Most Mentioned Topics</span>
++              </h3>
++              <p className="text-xs text-slate-500 font-medium mt-1">
++                Frequently cited keywords across recent learner feedback
++              </p>
+             </div>
+ 
+-            <div className="flex items-center gap-1.5">
+-              <span className="text-[11px] font-semibold text-slate-400 mr-1">
+-                Page {feedbackPage + 1} of {totalFeedbackPages}
+-              </span>
+-              <button
+-                type="button"
+-                onClick={() => setFeedbackPage((p) => Math.max(0, p - 1))}
+-                disabled={feedbackPage === 0}
+-                className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+-                title="Previous Feedback Page"
+-              >
+-                <ChevronLeft size={14} />
+-              </button>
+-              <button
+-                type="button"
+-                onClick={() => setFeedbackPage((p) => Math.min(totalFeedbackPages - 1, p + 1))}
+-                disabled={feedbackPage === totalFeedbackPages - 1}
+-                className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors"
+-                title="Next Feedback Page"
+-              >
+-                <ChevronRight size={14} />
+-              </button>
++            {/* Keyword Tag Collection */}
++            <div className="pt-5">
++              <div className="flex flex-wrap gap-2">
++                {topics.map((topic) => (
++                  <span
++                    key={topic}
++                    className="inline-flex items-center rounded-lg border border-sky-200/70 bg-sky-50/60 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100/80 hover:border-sky-300"
++                  >
++                    #{topic}
++                  </span>
++                ))}
++              </div>
+             </div>
+           </div>
++        </div>
++      </div>
+ 
+-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2 pb-3">
+-            {currentReviews.map((rev, idx) => {
+-              const isWide = (rev as any).cardSize === 'wide';
+-              const themes = [
+-                'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',
+-                'border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 shadow-[-5px_5px_0px_rgba(139,92,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(124,58,237,0.35)]',
+-                'border border-blue-200/90 bg-gradient-to-br from-blue-50/50 via-white to-sky-50/30 shadow-[-5px_5px_0px_rgba(59,130,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(37,99,235,0.35)]',
+-                'border border-emerald-200/90 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 shadow-[-5px_5px_0px_rgba(16,185,129,0.25)] hover:shadow-[-7px_7px_0px_rgba(5,150,105,0.35)]',
+-              ];
+-              const cardStyle = themes[idx % themes.length];
+-
+-              return (
+-                <div
+-                  key={rev.id}
+-                  className={`rounded-[2.25rem] rounded-tl-xs rounded-br-xs transition-all duration-200 flex flex-col justify-between p-5 cursor-pointer ${cardStyle} ${
+-                    isWide ? 'md:col-span-2' : ''
++      {/* Learner Reviews Feed Section (Bare Content Header + Review Cards) */}
++      <div className="space-y-5 pt-2">
++        <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
++          <div>
++            <h3 className="text-base font-extrabold text-[#14142b] flex items-center gap-2">
++              <MessageSquare size={18} className="text-indigo-600" />
++              Recent Learner Reviews & Engagement
++            </h3>
++            <p className="text-xs text-slate-500 font-medium mt-0.5">
++              Read feedback, track sentiments, and post instructor responses directly
++            </p>
++          </div>
++
++          <div className="flex items-center gap-1.5">
++            <span className="text-[11px] font-semibold text-slate-400 mr-1">
++              Page {feedbackPage + 1} of {totalFeedbackPages}
++            </span>
++            <button
++              type="button"
++              onClick={() => setFeedbackPage((p) => Math.max(0, p - 1))}
++              disabled={feedbackPage === 0}
++              className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors cursor-pointer"
++              title="Previous Feedback Page"
++            >
++              <ChevronLeft size={14} />
++            </button>
++            <button
++              type="button"
++              onClick={() => setFeedbackPage((p) => Math.min(totalFeedbackPages - 1, p + 1))}
++              disabled={feedbackPage === totalFeedbackPages - 1}
++              className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition-colors cursor-pointer"
++              title="Next Feedback Page"
++            >
++              <ChevronRight size={14} />
++            </button>
++          </div>
++        </div>
++
++        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
++          {currentReviews.map((rev, idx) => {
++            const isWide = (rev as any).cardSize === 'wide';
++            const themes = [
++              'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',
++              'border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 shadow-[-5px_5px_0px_rgba(139,92,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(124,58,237,0.35)]',
++              'border border-blue-200/90 bg-gradient-to-br from-blue-50/50 via-white to-sky-50/30 shadow-[-5px_5px_0px_rgba(59,130,246,0.25)] hover:shadow-[-7px_7px_0px_rgba(37,99,235,0.35)]',
++              'border border-emerald-200/90 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30 shadow-[-5px_5px_0px_rgba(16,185,129,0.25)] hover:shadow-[-7px_7px_0px_rgba(5,150,105,0.35)]',
++            ];
++            const cardStyle = themes[idx % themes.length];
++
++            return (
++              <div
++                key={rev.id}
++                className={`rounded-[2.25rem] rounded-tl-xs rounded-br-xs transition-all duration-200 flex flex-col justify-between p-5 cursor-pointer ${cardStyle} ${isWide ? 'md:col-span-2' : ''
+                   }`}
+-                >
+-                  <div className="space-y-2.5">
+-                    {/* Top Row: Learner Info & Date */}
+-                    <div className="flex items-center justify-between gap-2">
+-                      <div className="flex items-center gap-2.5 min-w-0">
+-                        <img
+-                          src={rev.learnerAvatar}
+-                          alt={rev.learnerName}
+-                          className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white shadow-2xs"
+-                        />
+-                        <div className="min-w-0">
+-                          <span className="text-xs font-black text-[#14142b] truncate block">{rev.learnerName}</span>
+-                          <span className="text-[10px] text-slate-400 font-semibold block truncate">{rev.courseName}</span>
+-                        </div>
++              >
++                <div className="space-y-2.5">
++                  {/* Top Row: Learner Info & Rating */}
++                  <div className="flex items-center justify-between gap-2">
++                    <div className="flex items-center gap-2.5 min-w-0">
++                      <img
++                        src={rev.learnerAvatar}
++                        alt={rev.learnerName}
++                        className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white shadow-2xs"
++                      />
++                      <div className="min-w-0">
++                        <span className="text-xs font-black text-[#14142b] truncate block">{rev.learnerName}</span>
++                        <span className="text-[10px] text-slate-500 font-semibold block truncate">{rev.courseName}</span>
+                       </div>
+-
+-                      <span className="text-[10px] font-extrabold text-slate-400 shrink-0">{rev.date}</span>
+                     </div>
+ 
+-                    {/* Review Quote Body */}
+-                    <p className="text-xs font-semibold text-slate-700 leading-relaxed">
+-                      "{rev.reviewText}"
+-                    </p>
++                    <div className="flex flex-col items-end shrink-0">
++                      <div className="flex items-center gap-0.5 text-amber-400">
++                        {[...Array(rev.rating)].map((_, i) => (
++                          <Star key={i} size={11} className="fill-amber-400" />
++                        ))}
++                      </div>
++                      <span className="text-[9.5px] font-extrabold text-slate-400 mt-0.5">{rev.date}</span>
++                    </div>
+                   </div>
+ 
+-                  {/* Reply or Response Trigger */}
+-                  <div className="mt-3 pt-2.5 border-t border-slate-100">
+-                    {rev.instructorResponse ? (
+-                      <div className="flex items-start gap-2 text-xs text-slate-800 bg-indigo-50/70 p-2.5 rounded-2xl border border-indigo-100/80">
+-                        <img
+-                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80"
+-                          alt="Dr. Sarah Chen"
+-                          className="h-4.5 w-4.5 rounded-full object-cover shrink-0 mt-0.5"
+-                        />
+-                        <div className="space-y-0.5 min-w-0">
+-                          <span className="text-[10px] font-black text-indigo-900 block">Dr. Sarah Chen</span>
+-                          <p className="text-[11px] font-semibold text-slate-700 leading-snug">{rev.instructorResponse}</p>
+-                        </div>
+-                      </div>
+-                    ) : activeReplyId === rev.id ? (
+-                      <div className="flex items-center gap-2">
+-                        <input
+-                          type="text"
+-                          placeholder="Write a response..."
+-                          value={replyText[rev.id] || ''}
+-                          onChange={(e) => setReplyText({ ...replyText, [rev.id]: e.target.value })}
+-                          className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+-                        />
+-                        <button
+-                          type="button"
+-                          onClick={() => handleSendResponse(rev.id)}
+-                          className="rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white hover:bg-indigo-700 transition-colors"
+-                        >
+-                          Post
+-                        </button>
++                  {/* Review Quote Body */}
++                  <p className="text-xs font-semibold text-slate-700 leading-relaxed bg-white/70 p-3 rounded-2xl border border-slate-100">
++                    "{rev.reviewText}"
++                  </p>
++                </div>
++
++                {/* Reply or Response Trigger */}
++                <div className="mt-3 pt-2.5 border-t border-slate-100">
++                  {rev.instructorResponse ? (
++                    <div className="flex items-start gap-2 text-xs text-slate-800 bg-indigo-50/70 p-2.5 rounded-2xl border border-indigo-100/80">
++                      <CornerDownRight size={14} className="text-indigo-600 shrink-0 mt-0.5" />
++                      <div className="space-y-0.5 min-w-0">
++                        <span className="text-[10px] font-black text-indigo-900 block">Instructor Response</span>
++                        <p className="text-[11px] font-semibold text-slate-700 leading-snug">{rev.instructorResponse}</p>
+                       </div>
+-                    ) : (
++                    </div>
++                  ) : activeReplyId === rev.id ? (
++                    <div className="flex items-center gap-2">
++                      <input
++                        type="text"
++                        placeholder="Write a response..."
++                        value={replyText[rev.id] || ''}
++                        onChange={(e) => setReplyText({ ...replyText, [rev.id]: e.target.value })}
++                        className="flex-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500"
++                      />
+                       <button
+                         type="button"
+-                        onClick={() => setActiveReplyId(rev.id)}
+-                        className="text-[11px] font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
++                        onClick={() => handleSendResponse(rev.id)}
++                        className="rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-black text-white hover:bg-indigo-700 transition-colors"
+                       >
+-                        <MessageSquare size={12} /> Reply
++                        Post
+                       </button>
+-                    )}
+-                  </div>
++                    </div>
++                  ) : (
++                    <button
++                      type="button"
++                      onClick={() => setActiveReplyId(rev.id)}
++                      className="text-[11px] font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
++                    >
++                      <MessageSquare size={12} /> Respond to Learner
++                    </button>
++                  )}
+                 </div>
+-              );
+-            })}
+-          </div>
++              </div>
++            );
++          })}
+         </div>
+       </div>
+     </div>
+   );
+ }
++
+diff --git a/app/(authenticated)/channels/[id]/manage/components/OrganizationHeader.tsx b/app/(authenticated)/channels/[id]/manage/components/OrganizationHeader.tsx
+index 3af8365..71ea426 100644
+--- a/app/(authenticated)/channels/[id]/manage/components/OrganizationHeader.tsx
++++ b/app/(authenticated)/channels/[id]/manage/components/OrganizationHeader.tsx
+@@ -12,10 +12,14 @@ import {
+   Building2,
+   Check,
+   Mail,
++  Globe,
++  Plus,
++  X,
+ } from 'lucide-react';
+ import { motion } from 'framer-motion';
+ import { toast } from 'sonner';
+ import { ChannelDoodleBanner } from '../ChannelDoodleBanner';
++import { ChannelSocialLinksCard } from '../ChannelSocialLinksCard';
+ 
+ const LinkedinIcon = ({ size = 16, className = '' }: { size?: number; className?: string }) => (
+   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+@@ -39,6 +43,20 @@ const GithubIcon = ({ size = 16, className = '' }: { size?: number; className?:
+   </svg>
+ );
+ 
++const XIcon = ({ size = 16, className = '' }: { size?: number; className?: string }) => (
++  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
++    <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
++    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
++  </svg>
++);
++
++const YoutubeIcon = ({ size = 16, className = '' }: { size?: number; className?: string }) => (
++  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
++    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
++    <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
++  </svg>
++);
++
+ interface OrganizationHeaderProps {
+   channel: {
+     id: string;
+@@ -52,10 +70,12 @@ interface OrganizationHeaderProps {
+     ownerName: string;
+     ownerEmail?: string;
+     ownerUsername?: string;
++    socialLinks?: string[];
+   };
+   canEdit?: boolean;
+   onEditClick: () => void;
+   onViewPublicClick: () => void;
++  onUpdate?: (updatedChannel: any) => void;
+ }
+ 
+ export function OrganizationHeader({
+@@ -63,9 +83,11 @@ export function OrganizationHeader({
+   canEdit = true,
+   onEditClick,
+   onViewPublicClick,
++  onUpdate,
+ }: OrganizationHeaderProps) {
+   const [copied, setCopied] = useState(false);
+   const [isExporting, setIsExporting] = useState(false);
++  const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
+ 
+   const handleShare = () => {
+     const url = typeof window !== 'undefined' ? window.location.href : '';
+@@ -84,121 +106,181 @@ export function OrganizationHeader({
+     }, 1800);
+   };
+ 
+-  const socialLinks = [
+-    { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com', color: 'hover:bg-blue-600 hover:text-white' },
+-    { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com', color: 'hover:bg-pink-600 hover:text-white' },
+-    { name: 'GitHub', icon: GithubIcon, href: 'https://github.com', color: 'hover:bg-slate-900 hover:text-white' },
+-    { name: 'Mail', icon: Mail, href: `mailto:${channel.ownerEmail || 'contact@arcade.ai'}`, color: 'hover:bg-indigo-600 hover:text-white' },
+-  ];
+-
+   return (
+-    <motion.section
+-      initial={{ opacity: 0, y: 15 }}
+-      animate={{ opacity: 1, y: 0 }}
+-      transition={{ duration: 0.5 }}
+-      className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(20,20,43,0.06)] backdrop-blur-xl"
+-    >
+-      {/* Banner Background */}
+-      <div className="relative">
+-        <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-52 w-full sm:h-64" />
+-      </div>
++    <>
++      <motion.section
++        initial={{ opacity: 0, y: 15 }}
++        animate={{ opacity: 1, y: 0 }}
++        transition={{ duration: 0.5 }}
++        className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(20,20,43,0.06)] backdrop-blur-xl"
++      >
++        {/* Banner Background */}
++        <div className="relative">
++          <ChannelDoodleBanner bannerUrl={channel.bannerUrl} className="h-52 w-full sm:h-64" />
++        </div>
+ 
+-      {/* Main Header Body Content */}
+-      <div className="px-6 pb-8 pt-0 sm:px-8">
+-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+-          {/* Avatar & Title Row */}
+-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
+-            {/* Logo Avatar */}
+-            <div className="-mt-16 sm:-mt-20 relative shrink-0 z-20 group">
+-              <div className="relative flex h-28 w-28 sm:h-34 sm:w-34 items-center justify-center overflow-hidden rounded-3xl border-[6px] border-white bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]">
+-                {channel.iconUrl ? (
+-                  <img
+-                    src={channel.iconUrl}
+-                    alt={channel.name}
+-                    className="h-full w-full object-cover"
+-                  />
+-                ) : (
+-                  <div className="flex flex-col items-center justify-center gap-1">
+-                    <Building2 size={42} className="stroke-[1.75] text-white" />
+-                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">
+-                      ARCADE
+-                    </span>
+-                  </div>
+-                )}
+-              </div>
+-              <div className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-4 border-white bg-indigo-600 text-white shadow-md">
+-                <CheckCircle2 size={18} />
++        {/* Main Header Body Content */}
++        <div className="px-6 pb-8 pt-0 sm:px-8">
++          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
++            {/* Avatar & Title Row */}
++            <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
++              {/* Logo Avatar */}
++              <div className="-mt-16 sm:-mt-20 relative shrink-0 z-20 group">
++                <div className="relative flex h-28 w-28 sm:h-34 sm:w-34 items-center justify-center overflow-hidden rounded-3xl border-[6px] border-white bg-gradient-to-br from-indigo-500 via-purple-600 to-slate-900 text-white shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]">
++                  {channel.iconUrl ? (
++                    <img
++                      src={channel.iconUrl}
++                      alt={channel.name}
++                      className="h-full w-full object-cover"
++                    />
++                  ) : (
++                    <div className="flex flex-col items-center justify-center gap-1">
++                      <Building2 size={42} className="stroke-[1.75] text-white" />
++                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">
++                        ARCADE
++                      </span>
++                    </div>
++                  )}
++                </div>
++                <div className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border-4 border-white bg-indigo-600 text-white shadow-md">
++                  <CheckCircle2 size={18} />
++                </div>
+               </div>
+-            </div>
+ 
+-            {/* Title & Metadata Block */}
+-            <div className="min-w-0 space-y-2.5 pt-2 sm:pt-4">
+-              <div className="flex flex-wrap items-center gap-3">
+-                <h1 className="text-2xl font-black tracking-tight text-[#14142b] sm:text-4xl">
+-                  {channel.name}
+-                </h1>
+-              </div>
++              {/* Title & Metadata Block */}
++              <div className="min-w-0 space-y-2.5 pt-2 sm:pt-4">
++                <div className="flex flex-wrap items-center gap-3">
++                  <h1 className="text-2xl font-black tracking-tight text-[#14142b] sm:text-4xl">
++                    {channel.name}
++                  </h1>
++                </div>
+ 
+-              {/* Organization Type Pill & Info Line */}
+-              <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
+-                <span className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/90 px-3 py-1.5 text-xs font-extrabold text-indigo-700 shadow-2xs">
+-                  <Building2 size={13} className="text-indigo-600" />
+-                  <span>{channel.isPersonal ? 'Personal Channel' : 'Organizational Channel'}</span>
+-                </span>
+-
+-                {channel.ownerUsername ? (
+-                  <Link href={`/${channel.ownerUsername}`} className="hover:underline font-bold text-indigo-600">
+-                    @{channel.ownerUsername}
+-                  </Link>
+-                ) : channel.ownerName ? (
+-                  <span className="font-semibold text-slate-600">{channel.ownerName}</span>
+-                ) : null}
+-
+-                <span className="inline-flex items-center gap-1.5 text-slate-500">
+-                  <Calendar size={13} />
+-                  <span>Joined {new Date(channel.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
+-                </span>
+-              </div>
++                {/* Organization Type Pill & Info Line */}
++                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold">
++                  <span className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-indigo-50/90 px-3 py-1.5 text-xs font-extrabold text-indigo-700 shadow-2xs">
++                    <Building2 size={13} className="text-indigo-600" />
++                    <span>{channel.isPersonal ? 'Personal Channel' : 'Organizational Channel'}</span>
++                  </span>
+ 
+-              {/* Social Icons Row Directly Under Joined Date */}
+-              <div className="flex items-center gap-2 pt-1">
+-                {socialLinks.map((social) => {
+-                  const Icon = social.icon;
+-                  return (
+-                    <a
+-                      key={social.name}
+-                      href={social.href}
+-                      target="_blank"
+-                      rel="noreferrer"
+-                      onClick={(e) => {
+-                        if (social.name === 'Mail') {
+-                          e.preventDefault();
+-                          toast.info(`Sending email to ${channel.ownerEmail || 'contact@arcade.ai'}`);
++                  {channel.ownerUsername ? (
++                    <Link href={`/${channel.ownerUsername}`} className="hover:underline font-bold text-indigo-600">
++                      @{channel.ownerUsername}
++                    </Link>
++                  ) : channel.ownerName ? (
++                    <span className="font-semibold text-slate-600">{channel.ownerName}</span>
++                  ) : null}
++
++                  <span className="inline-flex items-center gap-1.5 text-slate-500">
++                    <Calendar size={13} />
++                    <span>Joined {new Date(channel.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
++                  </span>
++                </div>
++
++                {/* Social Icons Row Directly Under Joined Date + Plus Add Button */}
++                <div className="flex items-center gap-2 pt-1">
++                  {channel.socialLinks && channel.socialLinks.length > 0 ? (
++                    channel.socialLinks.map((linkStr, idx) => {
++                      try {
++                        const url = new URL(linkStr);
++                        const host = url.hostname.toLowerCase().replace(/^www\./, '');
++                        let IconComponent: any = Globe;
++                        let platformLabel = host;
++                        let hoverTone = 'hover:bg-emerald-600 hover:text-white';
++
++                        if (host.includes('linkedin')) {
++                          IconComponent = LinkedinIcon;
++                          platformLabel = 'LinkedIn';
++                          hoverTone = 'hover:bg-blue-600 hover:text-white';
++                        } else if (host.includes('instagram')) {
++                          IconComponent = InstagramIcon;
++                          platformLabel = 'Instagram';
++                          hoverTone = 'hover:bg-pink-600 hover:text-white';
++                        } else if (host.includes('github')) {
++                          IconComponent = GithubIcon;
++                          platformLabel = 'GitHub';
++                          hoverTone = 'hover:bg-slate-900 hover:text-white';
++                        } else if (host.includes('twitter') || host.includes('x.com')) {
++                          IconComponent = XIcon;
++                          platformLabel = 'X (Twitter)';
++                          hoverTone = 'hover:bg-black hover:text-white';
++                        } else if (host.includes('youtube')) {
++                          IconComponent = YoutubeIcon;
++                          platformLabel = 'YouTube';
++                          hoverTone = 'hover:bg-rose-600 hover:text-white';
+                         }
+-                      }}
+-                      className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-[#14142b] shadow-2xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${social.color}`}
+-                      title={`Visit Organization ${social.name}`}
++
++                        return (
++                          <a
++                            key={idx}
++                            href={linkStr}
++                            target="_blank"
++                            rel="noreferrer"
++                            className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-[#14142b] shadow-2xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${hoverTone}`}
++                            title={`Visit ${platformLabel}`}
++                          >
++                            <IconComponent size={15} />
++                          </a>
++                        );
++                      } catch (e) {
++                        return null;
++                      }
++                    })
++                  ) : (
++                    [
++                      { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com', color: 'hover:bg-blue-600 hover:text-white' },
++                      { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com', color: 'hover:bg-pink-600 hover:text-white' },
++                      { name: 'GitHub', icon: GithubIcon, href: 'https://github.com', color: 'hover:bg-slate-900 hover:text-white' },
++                      { name: 'Mail', icon: Mail, href: `mailto:${channel.ownerEmail || 'contact@arcade.ai'}`, color: 'hover:bg-indigo-600 hover:text-white' },
++                    ].map((social) => {
++                      const Icon = social.icon;
++                      return (
++                        <a
++                          key={social.name}
++                          href={social.href}
++                          target="_blank"
++                          rel="noreferrer"
++                          onClick={(e) => {
++                            if (social.name === 'Mail') {
++                              e.preventDefault();
++                              toast.info(`Sending email to ${channel.ownerEmail || 'contact@arcade.ai'}`);
++                            }
++                          }}
++                          className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-[#14142b] shadow-2xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${social.color}`}
++                          title={`Visit Organization ${social.name}`}
++                        >
++                          <Icon size={15} />
++                        </a>
++                      );
++                    })
++                  )}
++
++                  {/* Plus (+) Button to Add / Manage Social Links */}
++                  {canEdit && (
++                    <button
++                      type="button"
++                      onClick={() => setIsSocialModalOpen(true)}
++                      className="flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-dashed border-emerald-400/80 bg-emerald-50/90 text-emerald-700 shadow-2xs hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all duration-200 hover:scale-105 cursor-pointer"
++                      title="Add or manage social links"
+                     >
+-                      <Icon size={15} />
+-                    </a>
+-                  );
+-                })}
++                      <Plus size={16} />
++                    </button>
++                  )}
++                </div>
+               </div>
+             </div>
+-          </div>
+ 
+-          {/* Action Buttons Row */}
+-          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+-            {canEdit && (
+-              <button
+-                type="button"
+-                onClick={onEditClick}
+-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all active:scale-[0.98]"
+-              >
+-                <Edit3 size={14} className="text-indigo-600" />
+-                <span>Edit</span>
+-              </button>
+-            )}
++            {/* Action Buttons Row */}
++            <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
++              {canEdit && (
++                <button
++                  type="button"
++                  onClick={onEditClick}
++                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-700 transition-all active:scale-[0.98]"
++                >
++                  <Edit3 size={14} className="text-indigo-600" />
++                  <span>Edit</span>
++                </button>
++              )}
+ 
+             <button
+               type="button"
+@@ -240,5 +322,45 @@ export function OrganizationHeader({
+         </div>
+       </div>
+     </motion.section>
++
++      {/* Dedicated Social Links Manager Modal */}
++      {isSocialModalOpen && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
++          {/* Backdrop */}
++          <div
++            onClick={() => setIsSocialModalOpen(false)}
++            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
++          />
++
++          {/* Modal Container */}
++          <div className="relative z-10 w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl p-2 border border-slate-200">
++            <div className="flex items-center justify-between px-6 pt-4 pb-2 border-b border-slate-100 mb-2">
++              <div>
++                <h3 className="text-base font-black text-slate-900">Manage Social Links</h3>
++                <p className="text-xs font-semibold text-slate-500">Add or update social profile links displayed on your channel header</p>
++              </div>
++              <button
++                type="button"
++                onClick={() => setIsSocialModalOpen(false)}
++                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
++              >
++                <X size={18} />
++              </button>
++            </div>
++            <div className="p-3">
++              <ChannelSocialLinksCard
++                channel={channel as any}
++                canManageSettings={true}
++                initialEditing={true}
++                onUpdate={(updatedChannel: any) => {
++                  if (onUpdate) onUpdate(updatedChannel);
++                  setIsSocialModalOpen(false);
++                }}
++              />
++            </div>
++          </div>
++        </div>
++      )}
++    </>
+   );
+ }
+diff --git a/app/(authenticated)/channels/[id]/manage/components/RecentActivityTimeline.tsx b/app/(authenticated)/channels/[id]/manage/components/RecentActivityTimeline.tsx
+index a0e9431..ccc3bf2 100644
+--- a/app/(authenticated)/channels/[id]/manage/components/RecentActivityTimeline.tsx
++++ b/app/(authenticated)/channels/[id]/manage/components/RecentActivityTimeline.tsx
+@@ -194,11 +194,10 @@ export function RecentActivityTimeline() {
+             type="button"
+             onMouseEnter={() => setFilterType('ALL')}
+             onClick={() => setFilterType('ALL')}
+-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+-              filterType === 'ALL'
++            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'ALL'
+                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
+-            }`}
++              }`}
+           >
+             All Activity
+           </button>
+@@ -206,11 +205,10 @@ export function RecentActivityTimeline() {
+             type="button"
+             onMouseEnter={() => setFilterType('COURSE')}
+             onClick={() => setFilterType('COURSE')}
+-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+-              filterType === 'COURSE'
++            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'COURSE'
+                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
+-            }`}
++              }`}
+           >
+             Courses
+           </button>
+@@ -218,11 +216,10 @@ export function RecentActivityTimeline() {
+             type="button"
+             onMouseEnter={() => setFilterType('STAFF')}
+             onClick={() => setFilterType('STAFF')}
+-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+-              filterType === 'STAFF'
++            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'STAFF'
+                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
+-            }`}
++              }`}
+           >
+             Staff
+           </button>
+@@ -230,11 +227,10 @@ export function RecentActivityTimeline() {
+             type="button"
+             onMouseEnter={() => setFilterType('WEBINAR')}
+             onClick={() => setFilterType('WEBINAR')}
+-            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${
+-              filterType === 'WEBINAR'
++            className={`px-3 py-1.5 transition-all duration-200 cursor-pointer ${filterType === 'WEBINAR'
+                 ? 'text-indigo-600 font-extrabold border-b-2 border-indigo-600'
+                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
+-            }`}
++              }`}
+           >
+             Webinars
+           </button>
+diff --git a/app/(authenticated)/channels/[id]/manage/components/SmallCourseOverview.tsx b/app/(authenticated)/channels/[id]/manage/components/SmallCourseOverview.tsx
+index e4b07e2..e9255e7 100644
+--- a/app/(authenticated)/channels/[id]/manage/components/SmallCourseOverview.tsx
++++ b/app/(authenticated)/channels/[id]/manage/components/SmallCourseOverview.tsx
+@@ -119,19 +119,15 @@ export function SmallCourseOverview({
+         {/* Header & Filter Controls */}
+         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex items-center gap-2.5">
+-            <motion.div
+-              animate={{ rotate: [0, 5, -5, 0] }}
+-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+-              className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xs"
+-            >
+-              <Crown size={16} />
+-            </motion.div>
++            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
++              <Crown size={14} />
++            </div>
+             <div>
+-              <h2 className="text-base font-black tracking-tight text-[#14142b]">
++              <h2 className="text-sm font-bold tracking-tight text-slate-900">
+                 Top Performing Content
+               </h2>
+-              <p className="text-[11px] font-semibold text-slate-500">
+-                Content rankings based on real-time engagement metrics
++              <p className="text-[11px] font-medium text-slate-400">
++                Rankings based on real-time engagement
+               </p>
+             </div>
+           </div>
+diff --git a/app/(authenticated)/channels/[id]/manage/page.tsx b/app/(authenticated)/channels/[id]/manage/page.tsx
+index 0df584a..63f4c6f 100644
+--- a/app/(authenticated)/channels/[id]/manage/page.tsx
++++ b/app/(authenticated)/channels/[id]/manage/page.tsx
+@@ -1,7 +1,7 @@
+ 'use client';
+ 
+ import { useEffect, useState, useMemo } from 'react';
+-import { useParams, useRouter } from 'next/navigation';
++import { useParams, useRouter, useSearchParams } from 'next/navigation';
+ import Link from 'next/link';
+ import {
+   Channel,
+@@ -40,7 +40,6 @@ import { SmallCourseOverview } from './components/SmallCourseOverview';
+ import { CourseManagementSection } from './components/CourseManagementSection';
+ import { ArticlesManagementSection } from './components/ArticlesManagementSection';
+ import { EventsManagementSection } from './components/EventsManagementSection';
+-import { ReviewsFeedbackSection } from './components/ReviewsFeedbackSection';
+ import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
+ import { RecentActivityTimeline } from './components/RecentActivityTimeline';
+ import { EditOrganizationModal } from './components/EditOrganizationModal';
+@@ -53,14 +52,12 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
+ import { motion } from 'framer-motion';
+ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
+ 
++
++
+ type ManageTab =
+   | 'OVERVIEW'
+-  | 'COURSES'
+   | 'CONTENT'
+   | 'STAFF'
+-  | 'ARTICLES'
+-  | 'EVENTS'
+-  | 'REVIEWS'
+   | 'ANALYTICS'
+   | 'ACTIVITY'
+   | 'NOTIFICATIONS'
+@@ -71,6 +68,7 @@ type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
+ export default function ManageChannelPage() {
+   const params = useParams();
+   const router = useRouter();
++  const searchParams = useSearchParams();
+   const channelId = params.id as string;
+   const { user } = useAuthStore();
+ 
+@@ -80,7 +78,19 @@ export default function ManageChannelPage() {
+     useState<ChannelDeletionRequestDto | null>(null);
+   const [content, setContent] = useState<ChannelContentItem[]>([]);
+   const [loading, setLoading] = useState(true);
+-  const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
++  
++  const initialTab = (searchParams.get('tab')?.toUpperCase() as ManageTab) || 'OVERVIEW';
++  const [activeTab, setActiveTabState] = useState<ManageTab>(initialTab);
++
++  const setActiveTab = (tab: ManageTab) => {
++    setActiveTabState(tab);
++    if (typeof window !== 'undefined') {
++      const url = new URL(window.location.href);
++      url.searchParams.set('tab', tab);
++      window.history.replaceState({}, '', url.toString());
++      window.dispatchEvent(new Event('popstate'));
++    }
++  };
+   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+   const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
+@@ -183,14 +193,11 @@ export default function ManageChannelPage() {
+ 
+   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
+     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
+-    { id: 'COURSES', label: 'Courses', icon: BookOpen, badge: `${content.length || 48}` },
++    { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
+     ...(!channel.isPersonal
+       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
+       : []),
+-    { id: 'ARTICLES', label: 'Articles', icon: FileText, badge: '124' },
+-    { id: 'EVENTS', label: 'Events', icon: Calendar, badge: '18' },
+-    { id: 'REVIEWS', label: 'Reviews', icon: Star, badge: '4.92 ★' },
+-    { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
++    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3, badge: '4.92 ★' },
+     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
+     { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
+     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
+@@ -283,27 +290,15 @@ export default function ManageChannelPage() {
+       </TooltipProvider>
+ 
+       {/* Main Content Container */}
+-      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-20 sm:px-8 sm:pt-24">
+-        {/* Top Back Navigation Bar */}
+-        <div className="flex items-center justify-between">
+-          <button
+-            type="button"
+-            onClick={() => router.push('/manage-channels')}
+-            className="group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4.5 py-2 text-xs font-black text-slate-700 shadow-xs hover:border-slate-300 hover:bg-white hover:text-[#14142b] transition-all"
+-          >
+-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+-            <span>All Channels & Organizations</span>
+-          </button>
+-
+-          {channel.status && channel.status !== 'ACTIVE' && (
+-            <div className="flex items-center gap-2">
+-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
+-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+-                <span>{channel.status}</span>
+-              </span>
+-            </div>
+-          )}
+-        </div>
++      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-28 sm:px-8 sm:pt-32">
++        {channel.status && channel.status !== 'ACTIVE' && (
++          <div className="flex justify-end">
++            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
++              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
++              <span>{channel.status}</span>
++            </span>
++          </div>
++        )}
+ 
+         {/* Lock Warning Banners */}
+         {!isSuspended && pendingDeletionRequest && (
+@@ -328,6 +323,7 @@ export default function ManageChannelPage() {
+             canEdit={canEdit}
+             onEditClick={() => setIsEditModalOpen(true)}
+             onViewPublicClick={() => router.push(`/channels/${channelId}`)}
++            onUpdate={setChannel}
+           />
+         )}
+ 
+@@ -335,22 +331,15 @@ export default function ManageChannelPage() {
+         <div className="space-y-10">
+           {/* TAB 1: SMALL COURSE OVERVIEW DASHBOARD */}
+           {activeTab === 'OVERVIEW' && (
+-            <div className="space-y-6">
+-              <SmallCourseOverview
+-                onNavigateToCatalog={() => setActiveTab('COURSES')}
+-                onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
+-                onAddCourse={() => router.push('/studio')}
+-              />
+-              <ChannelSocialLinksCard 
+-                channel={channel} 
+-                canManageSettings={permissions.includes('ALL') || permissions.includes('channel.settings.manage') || isOwner} 
+-                onUpdate={setChannel} 
+-              />
+-            </div>
++            <SmallCourseOverview
++              onNavigateToCatalog={() => setActiveTab('CONTENT')}
++              onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
++              onAddCourse={() => router.push('/studio')}
++            />
+           )}
+ 
+-          {/* TAB 2: COURSES */}
+-          {activeTab === 'COURSES' && (
++          {/* TAB 2: CONTENT */}
++          {activeTab === 'CONTENT' && (
+             <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
+           )}
+ 
+@@ -364,16 +353,7 @@ export default function ManageChannelPage() {
+             />
+           )}
+ 
+-          {/* TAB 4: ARTICLES */}
+-          {activeTab === 'ARTICLES' && <ArticlesManagementSection />}
+-
+-          {/* TAB 5: EVENTS */}
+-          {activeTab === 'EVENTS' && <EventsManagementSection />}
+-
+-          {/* TAB 6: REVIEWS */}
+-          {activeTab === 'REVIEWS' && <ReviewsFeedbackSection />}
+-
+-          {/* TAB 7: ANALYTICS */}
++          {/* TAB 4: ANALYTICS & REVIEWS */}
+           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
+ 
+           {/* TAB 8: ACTIVITY */}
+diff --git a/app/(authenticated)/channels/[id]/page.tsx b/app/(authenticated)/channels/[id]/page.tsx
+index 60097aa..d0c30da 100644
+--- a/app/(authenticated)/channels/[id]/page.tsx
++++ b/app/(authenticated)/channels/[id]/page.tsx
+@@ -10,6 +10,7 @@ import {
+   Settings,
+   Loader2,
+   ArrowLeft,
++  ChevronRight,
+   BookOpen,
+   Map,
+   Wrench,
+@@ -190,15 +191,7 @@ export default function ChannelHomePage() {
+         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+       }}
+     >
+-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
+-        <button
+-          type="button"
+-          onClick={() => router.push(canManage ? '/manage-channels' : '/')}
+-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+-        >
+-          <ArrowLeft size={15} />
+-          {canManage ? 'All channels' : 'Home'}
+-        </button>
++      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-28 pt-32 sm:px-8 sm:pt-36">
+ 
+         {/* Hero */}
+         <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)]">
+diff --git a/app/(authenticated)/exam/page.tsx b/app/(authenticated)/exam/page.tsx
+index 8dcca91..3555efe 100644
+--- a/app/(authenticated)/exam/page.tsx
++++ b/app/(authenticated)/exam/page.tsx
+@@ -3,7 +3,8 @@
+ import { useEffect, useState } from "react";
+ import { useRouter } from "next/navigation";
+ import { api } from "@/infrastructure/http/api";
+-import { Calendar, Play, ClipboardList } from "lucide-react";
++import { Calendar, Play, ClipboardList, RefreshCw } from "lucide-react";
++import { motion } from "framer-motion";
+ 
+ interface ExamDto {
+   id: string;
+@@ -16,6 +17,179 @@ const pageBg = {
+   background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)",
+ };
+ 
++function ExamSketchToColorArtwork() {
++  return (
++    <div className="relative flex flex-col items-center justify-center p-2">
++      {/* Slowly Moving Authentic Hand-Drawn Pencil Sketch Artwork */}
++      <motion.svg
++        animate={{ y: [0, -10, 0] }}
++        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
++        className="w-full max-w-[360px] sm:max-w-[420px] h-auto drop-shadow-sm select-none"
++        viewBox="0 0 500 400"
++        fill="none"
++        xmlns="http://www.w3.org/2000/svg"
++      >
++        <defs>
++          {/* Authentic Hand-Drawn Pencil Texture Displacement Filter */}
++          <filter id="roughPencil" x="-20%" y="-20%" width="140%" height="140%">
++            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" result="noise" />
++            <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.8" xChannelSelector="R" yChannelSelector="G" />
++          </filter>
++
++          <linearGradient id="sketchBlobGrad" x1="100" y1="100" x2="400" y2="380">
++            <stop offset="0%" stopColor="#EEF2FF" />
++            <stop offset="50%" stopColor="#F0FDF4" />
++            <stop offset="100%" stopColor="#FAF5FF" />
++          </linearGradient>
++          <linearGradient id="calendarGrad" x1="0" y1="0" x2="0" y2="1">
++            <stop offset="0%" stopColor="#FFFFFF" />
++            <stop offset="100%" stopColor="#F8FAFC" />
++          </linearGradient>
++          <linearGradient id="headerGrad" x1="0" y1="0" x2="1" y2="0">
++            <stop offset="0%" stopColor="#4F46E5" />
++            <stop offset="100%" stopColor="#6366F1" />
++          </linearGradient>
++        </defs>
++
++        {/* Soft Background Backdrop Blob */}
++        <motion.ellipse
++          cx="250"
++          cy="230"
++          rx="195"
++          ry="135"
++          initial={{ opacity: 0, scale: 0.85 }}
++          animate={{ opacity: 1, scale: 1 }}
++          transition={{ duration: 0.8, delay: 0.8 }}
++          fill="url(#sketchBlobGrad)"
++        />
++
++        {/* Filtered Group applying real rough pencil sketch texture */}
++        <g filter="url(#roughPencil)">
++          {/* Main Calendar Card (Center Stage) */}
++          <motion.rect
++            x="130"
++            y="80"
++            width="240"
++            height="210"
++            rx="22"
++            fill="url(#calendarGrad)"
++            stroke="#334155"
++            strokeWidth="3.5"
++            strokeLinecap="round"
++            initial={{ pathLength: 0, fillOpacity: 0 }}
++            animate={{ pathLength: 1, fillOpacity: 1 }}
++            transition={{
++              pathLength: { duration: 1.5, ease: "easeInOut" },
++              fillOpacity: { duration: 0.6, delay: 1.2 },
++            }}
++          />
++
++          {/* Double Pencil Offset Line for Hand-Drawn Sketch Effect */}
++          <motion.rect
++            x="133"
++            y="83"
++            width="234"
++            height="204"
++            rx="20"
++            fill="none"
++            stroke="#64748B"
++            strokeWidth="1.5"
++            strokeDasharray="8,4"
++            initial={{ pathLength: 0 }}
++            animate={{ pathLength: 1 }}
++            transition={{ duration: 1.6, delay: 0.2 }}
++          />
++
++          {/* Calendar Header Bar */}
++          <motion.path
++            d="M 130 126 L 370 126"
++            stroke="#334155"
++            strokeWidth="3.5"
++            initial={{ pathLength: 0 }}
++            animate={{ pathLength: 1 }}
++            transition={{ duration: 0.8, delay: 0.4 }}
++          />
++          <motion.path
++            d="M 130 104 C 130 90, 370 90, 370 104 L 370 126 L 130 126 Z"
++            fill="url(#headerGrad)"
++            stroke="#334155"
++            strokeWidth="2.5"
++            initial={{ opacity: 0 }}
++            animate={{ opacity: 1 }}
++            transition={{ duration: 0.6, delay: 1.4 }}
++          />
++
++          {/* Hand-Drawn Calendar Binder Rings */}
++          <motion.circle cx="180" cy="80" r="7" fill="#94A3B8" stroke="#1E293B" strokeWidth="2.5" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.4, delay: 0.8 }} />
++          <motion.circle cx="250" cy="80" r="7" fill="#94A3B8" stroke="#1E293B" strokeWidth="2.5" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.4, delay: 0.9 }} />
++          <motion.circle cx="320" cy="80" r="7" fill="#94A3B8" stroke="#1E293B" strokeWidth="2.5" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.4, delay: 1.0 }} />
++
++          {/* Red Notebook Paper Margin Line */}
++          <motion.line
++            x1="168"
++            y1="135"
++            x2="168"
++            y2="280"
++            stroke="#F87171"
++            strokeWidth="2"
++            strokeDasharray="6,3"
++            opacity="0.8"
++            animate={{ opacity: [0.3, 0.8, 0.8, 0.3] }}
++            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
++          />
++
++          {/* Slow Continuous Animated Handwritten Note Lines */}
++          {[
++            { y: 160, width: 335, delay: 0.2 },
++            { y: 188, width: 315, delay: 0.6 },
++            { y: 216, width: 340, delay: 1.0 },
++            { y: 244, width: 290, delay: 1.4 },
++            { y: 272, width: 310, delay: 1.8 },
++          ].map((item, idx) => (
++            <g key={idx}>
++              {/* Bullet Checkmark */}
++              <motion.path
++                d={`M 148 ${item.y - 2} L 153 ${item.y + 3} L 161 ${item.y - 5}`}
++                stroke="#10B981"
++                strokeWidth="3.5"
++                strokeLinecap="round"
++                strokeLinejoin="round"
++                animate={{ pathLength: [0, 1, 1, 1, 0, 0] }}
++                transition={{
++                  duration: 7,
++                  repeat: Infinity,
++                  ease: "easeInOut",
++                  times: [0, 0.3, 0.75, 0.85, 0.95, 1],
++                  delay: item.delay,
++                }}
++              />
++              {/* Note Line */}
++              <motion.path
++                d={`M 180 ${item.y} L ${item.width} ${item.y}`}
++                stroke="#475569"
++                strokeWidth="3"
++                strokeLinecap="round"
++                animate={{ pathLength: [0, 1, 1, 1, 0, 0] }}
++                transition={{
++                  duration: 7,
++                  repeat: Infinity,
++                  ease: "easeInOut",
++                  times: [0, 0.35, 0.75, 0.85, 0.95, 1],
++                  delay: item.delay + 0.1,
++                }}
++              />
++            </g>
++          ))}
++
++          {/* Hand-Drawn Doodle Stars */}
++          <motion.polygon points="75,220 79,232 91,236 79,240 75,252 71,240 59,236 71,232" fill="#3B82F6" stroke="#1E40AF" strokeWidth="1.5" animate={{ scale: [1, 1.25, 1], rotate: [0, 90, 180] }} transition={{ duration: 5, repeat: Infinity }} />
++          <motion.polygon points="425,170 428,179 437,182 428,185 425,194 422,185 413,182 422,179" fill="#EC4899" stroke="#9D174D" strokeWidth="1.5" animate={{ scale: [1, 1.2, 1], rotate: [0, -90, -180] }} transition={{ duration: 4.5, repeat: Infinity, delay: 0.5 }} />
++        </g>
++      </motion.svg>
++    </div>
++  );
++}
++
+ export default function ExamDashboard() {
+   const router = useRouter();
+   const [exams, setExams] = useState<ExamDto[]>([]);
+@@ -62,84 +236,111 @@ export default function ExamDashboard() {
+   return (
+     <main className="min-h-screen pb-28" style={pageBg}>
+       <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:px-8 md:pt-32">
+-        <div className="mb-8 flex items-end justify-between gap-4">
+-          <div>
+-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
+-              <ClipboardList size={12} />
+-              Exams
++        {exams.length > 0 ? (
++          <>
++            <div className="mb-8 flex items-end justify-between gap-4">
++              <div>
++                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">
++                  <ClipboardList size={12} />
++                  Exams
++                </div>
++                <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] sm:text-[2rem]">
++                  Today&apos;s exams
++                </h1>
++                <p className="mt-1.5 text-[13px] font-medium text-slate-500">
++                  Scheduled assessments from your enrolled courses.
++                </p>
++              </div>
++              <span className="hidden rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-bold tabular-nums text-[#14142b] sm:inline-flex">
++                {exams.length} available
++              </span>
+             </div>
+-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] sm:text-[2rem]">
+-              Today&apos;s exams
+-            </h1>
+-            <p className="mt-1.5 text-[13px] font-medium text-slate-500">
+-              Scheduled assessments from your enrolled courses.
+-            </p>
+-          </div>
+-          <span className="hidden rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-bold tabular-nums text-[#14142b] sm:inline-flex">
+-            {exams.length} available
+-          </span>
+-        </div>
+-
+-        {exams.length === 0 ? (
+-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white/80 py-20 text-center shadow-[0_4px_16px_rgba(20,20,43,0.03)]">
+-            <span className="mb-4 grid size-14 place-items-center rounded-2xl bg-slate-50">
+-              <Calendar size={26} className="text-slate-300" />
+-            </span>
+-            <h2 className="text-[15px] font-bold text-[#14142b]">No exams today</h2>
+-            <p className="mt-1.5 max-w-sm text-[13px] font-medium text-slate-500">
+-              You don&apos;t have any exams scheduled for today in your enrolled courses.
+-            </p>
+-          </div>
+-        ) : (
+-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+-            {exams.map((exam) => (
+-              <article
+-                key={exam.id}
+-                className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_6px_20px_rgba(20,20,43,0.05)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,20,43,0.08)]"
+-              >
+-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+-                  {exam.coverImageUrl ? (
+-                    // eslint-disable-next-line @next/next/no-img-element
+-                    <img
+-                      src={exam.coverImageUrl}
+-                      alt={exam.title}
+-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+-                    />
+-                  ) : (
+-                    <div
+-                      className="flex h-full w-full items-center justify-center"
+-                      style={{
+-                        background: "linear-gradient(160deg, #EEF1F8 0%, #DDE3F0 100%)",
+-                      }}
++
++            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
++              {exams.map((exam) => (
++                <article
++                  key={exam.id}
++                  className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_6px_20px_rgba(20,20,43,0.05)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,20,43,0.08)]"
++                >
++                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
++                    {exam.coverImageUrl ? (
++                      // eslint-disable-next-line @next/next/no-img-element
++                      <img
++                        src={exam.coverImageUrl}
++                        alt={exam.title}
++                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
++                      />
++                    ) : (
++                      <div
++                        className="flex h-full w-full items-center justify-center"
++                        style={{
++                          background: "linear-gradient(160deg, #EEF1F8 0%, #DDE3F0 100%)",
++                        }}
++                      >
++                        <span className="text-4xl font-bold text-[#14142b]/25">
++                          {exam.title.charAt(0).toUpperCase()}
++                        </span>
++                      </div>
++                    )}
++                  </div>
++                  <div className="flex flex-1 flex-col p-5">
++                    <h2 className="line-clamp-2 text-[15px] font-bold tracking-tight text-[#14142b]">
++                      {exam.title}
++                    </h2>
++                    <p className="mt-1.5 text-[12px] font-semibold text-slate-400">
++                      Available today · single sitting
++                    </p>
++                    <p className="mt-3 flex-1 text-[12px] leading-relaxed text-slate-500">
++                      Once started, you must complete this exam without leaving the secure environment.
++                    </p>
++                    <button
++                      type="button"
++                      onClick={() => router.push(`/learn/exam/${exam.id}`)}
++                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#14142b] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
+                     >
+-                      <span className="text-4xl font-bold text-[#14142b]/25">
+-                        {exam.title.charAt(0).toUpperCase()}
+-                      </span>
+-                    </div>
+-                  )}
+-                </div>
+-                <div className="flex flex-1 flex-col p-5">
+-                  <h2 className="line-clamp-2 text-[15px] font-bold tracking-tight text-[#14142b]">
+-                    {exam.title}
+-                  </h2>
+-                  <p className="mt-1.5 text-[12px] font-semibold text-slate-400">
+-                    Available today · single sitting
+-                  </p>
+-                  <p className="mt-3 flex-1 text-[12px] leading-relaxed text-slate-500">
+-                    Once started, you must complete this exam without leaving the secure environment.
+-                  </p>
++                      <Play size={14} />
++                      Start exam
++                    </button>
++                  </div>
++                </article>
++              ))}
++            </div>
++          </>
++        ) : (
++          /* Clean 2-Column Hero Layout directly on Page Background (No Separate Header Section) */
++          <motion.div
++            initial={{ opacity: 0, y: 12 }}
++            animate={{ opacity: 1, y: 0 }}
++            transition={{ duration: 0.45, ease: "easeOut" }}
++            className="flex min-h-[60vh] items-center justify-center py-6 sm:py-12"
++          >
++            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center w-full">
++              {/* LEFT COLUMN: Slowly Moving Animated SVG Sketch Artwork (5 cols) */}
++              <div className="lg:col-span-5 flex justify-center">
++                <ExamSketchToColorArtwork />
++              </div>
++
++              {/* RIGHT COLUMN: Clean Title, Subtitle & Action Button (7 cols) */}
++              <div className="lg:col-span-7 space-y-4 text-left">
++                <h2 className="text-5xl sm:text-6xl font-normal leading-tight text-[#14142b] font-['Great_Vibes',_cursive]">
++                  No exams today
++                </h2>
++                <p className="text-base font-medium text-slate-500 leading-relaxed max-w-md">
++                  You don&apos;t have any exams scheduled for today in your enrolled courses.
++                </p>
++
++                <div className="pt-4">
+                   <button
+                     type="button"
+-                    onClick={() => router.push(`/learn/exam/${exam.id}`)}
+-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#14142b] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_16px_rgba(20,20,43,0.16)] transition-colors hover:bg-[#232735]"
++                    onClick={() => router.push("/catalog")}
++                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#14142b] px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-900 transition-colors cursor-pointer"
+                   >
+-                    <Play size={14} />
+-                    Start exam
++                    Back to Dashboard
+                   </button>
+                 </div>
+-              </article>
+-            ))}
+-          </div>
++              </div>
++            </div>
++          </motion.div>
+         )}
+       </div>
+     </main>
+diff --git a/app/globals.css b/app/globals.css
+index 9938a4c..7d77193 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -1,5 +1,5 @@
+ @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Satisfy&family=Alex+Brush&family=Great+Vibes&family=Marck+Script&family=Caveat:wght@600;700&display=swap');
++@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Alex+Brush&family=Pinyon+Script&family=Sacramento&family=Parisienne&family=Dancing+Script:wght@600;700&family=Satisfy&family=Caveat:wght@600;700&display=swap');
+ 
+ @font-face {
+   font-family: "Voyage";
+diff --git a/apps/learner/layout/LearnerNavbar.tsx b/apps/learner/layout/LearnerNavbar.tsx
+index 594ac19..d7ab45d 100644
+--- a/apps/learner/layout/LearnerNavbar.tsx
++++ b/apps/learner/layout/LearnerNavbar.tsx
+@@ -1,7 +1,7 @@
+ 'use client';
+ 
+ import { useAuthStore } from '@/infrastructure/auth/auth.store';
+-import { usePathname, useRouter } from 'next/navigation';
++import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+ import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
+ import { useState, useEffect } from 'react';
+ import { toast } from 'sonner';
+@@ -199,7 +199,25 @@ export default function LearnerNavbar() {
+       });
+   }, []);
+ 
++  const searchParams = useSearchParams();
+   const isConsole = pathname.startsWith('/console');
++  const isChannelManage = pathname.includes('/channels/') && pathname.includes('/manage');
++  const isChannelPage = pathname.startsWith('/channels/') && !pathname.includes('/manage');
++
++  const channelTabLabel = (() => {
++    if (!isChannelManage) return 'Overview';
++    const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
++    switch (tab) {
++      case 'CONTENT': return 'Content';
++      case 'STAFF': return 'Staff';
++      case 'ANALYTICS': return 'Analytics & Reviews';
++      case 'ACTIVITY': return 'Timeline';
++      case 'NOTIFICATIONS': return 'Notifications';
++      case 'DANGER': return 'Danger Zone';
++      default: return 'Overview';
++    }
++  })();
++
+   const consoleCrumb = (() => {
+     if (!isConsole) return null;
+     if (pathname.startsWith('/console/channels')) return 'Channels';
+@@ -236,6 +254,34 @@ export default function LearnerNavbar() {
+         </Link>
+       </div>
+ 
++      {/* Center: Channel Manage breadcrumbs */}
++      {isChannelManage && (
++        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
++          <Link
++            href="/manage-channels"
++            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
++          >
++            Channels
++          </Link>
++          <span className="h-3.5 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
++          <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
++            {channelTabLabel}
++          </span>
++        </div>
++      )}
++
++      {/* Center: Channel Public page breadcrumbs */}
++      {isChannelPage && (
++        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
++          <Link
++            href="/manage-channels"
++            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
++          >
++            Channels
++          </Link>
++        </div>
++      )}
++
+       {/* Center: small Console breadcrumbs */}
+       {isConsole && (
+         <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">

@@ -774,3 +774,59 @@
 .arcade-scrollbar-mini::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.3);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Clean Real-Time Collaborative Cursor & Presence Indicator
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Standard collaboration cursor wrapper */
+.arcade-collab-cursor,
+.ProseMirror-yjs-cursor {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  user-select: none;
+  vertical-align: baseline;
+  z-index: 20;
+}
+
+/* 1. Thin vertical caret matching normal text cursor size */
+.arcade-collab-caret {
+  display: inline-block !important;
+  width: 2px !important;
+  height: 1.2em !important;
+  border-radius: 1px !important;
+  flex-shrink: 0 !important;
+}
+
+/* 2. Compact remote collaborator presence name label attached above cursor */
+.arcade-collab-label,
+.ProseMirror-yjs-cursor > div {
+  position: absolute !important;
+  top: -1.35em !important;
+  left: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 6px !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.01em !important;
+  border-radius: 4px 4px 4px 1px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  border: none !important;
+  user-select: none !important;
+  pointer-events: none !important;
+  z-index: 30 !important;
+}
+
+/* Subtle selection highlight */
+.ProseMirror-yjs-selection {
+  background-color: rgba(124, 58, 237, 0.15) !important;
+}

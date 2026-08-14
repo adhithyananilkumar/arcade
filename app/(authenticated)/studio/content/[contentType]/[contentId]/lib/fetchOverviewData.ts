@@ -4,7 +4,7 @@ import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/stud
 import { getCollaborators as getEventCollaborators } from "@/app/(authenticated)/studio/events/api/collaboration";
 import { platformReviewApi, type ContentType as ReviewContentType, type ReviewResponse } from "@/domains/publishing/api/platformReview";
 import type { ContentTypeSegment } from "./contentTypeRouting";
-import type { PublishValidationResponse } from "@/app/(authenticated)/studio/events/types";
+import type { PublishValidationResponse, EventPricing } from "@/app/(authenticated)/studio/events/types";
 
 // Every fetch here hits an existing, already-working backend endpoint — see
 // the Content Workspace plan for the audited endpoint list. Nothing here
@@ -110,18 +110,87 @@ export interface OverviewData {
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
+  eventPricing?: FetchResult<EventPricing>;
 }
 
-async function findContentSummary(contentId: string): Promise<ContentSummaryLite | null> {
-  const items = await api.get<ContentSummaryLite[]>("/api/content");
-  return items.find((item) => item.id === contentId) ?? null;
+async function findContentSummary(contentId: string, segment: ContentTypeSegment): Promise<ContentSummaryLite | null> {
+  try {
+    const items = await api.get<ContentSummaryLite[]>("/api/content");
+    const found = items.find((item) => item.id?.toLowerCase() === contentId?.toLowerCase());
+    if (found) return found;
+  } catch (e) {
+    console.warn("Failed to list /api/content", e);
+  }
+
+  // Fallback direct endpoint lookup if the course/content exists in backend
+  try {
+    if (segment === "course") {
+      const res = await api.get<any>(`/api/courses/${contentId}`);
+      if (res && res.id) {
+        return {
+          id: res.id,
+          type: "COURSE",
+          title: res.title || "Untitled Course",
+          description: res.description,
+          coverImageUrl: res.coverImageUrl,
+          status: res.status || "DRAFT",
+          createdAt: res.createdAt,
+          updatedAt: res.updatedAt,
+          channelId: res.channelId,
+          channelName: res.channelName || "Studio",
+          authorId: res.authorId,
+          authorName: res.authorName,
+        };
+      }
+    } else if (segment === "roadmap") {
+      const res = await api.get<any>(`/api/roadmaps/${contentId}`);
+      if (res && res.id) {
+        return {
+          id: res.id,
+          type: "ROADMAP",
+          title: res.title || "Untitled Roadmap",
+          description: res.description,
+          coverImageUrl: res.coverImageUrl,
+          status: res.status || "DRAFT",
+          createdAt: res.createdAt,
+          updatedAt: res.updatedAt,
+          channelId: res.channelId,
+          channelName: res.channelName || "Studio",
+          authorId: res.authorId,
+          authorName: res.authorName,
+        };
+      }
+    } else if (segment === "event") {
+      const res = await api.get<any>(`/api/v1/events/${contentId}`);
+      if (res && res.id) {
+        return {
+          id: res.id,
+          type: "EVENT",
+          title: res.title || "Untitled Event",
+          description: res.description,
+          coverImageUrl: res.coverImageUrl,
+          status: res.status || "DRAFT",
+          createdAt: res.createdAt,
+          updatedAt: res.updatedAt,
+          channelId: res.channelId,
+          channelName: res.channelName || "Studio",
+          authorId: res.organizerId || res.authorId,
+          authorName: res.organizerName || res.authorName,
+        };
+      }
+    }
+  } catch (e) {
+    console.warn("Direct content lookup fallback failed", e);
+  }
+
+  return null;
 }
 
 export async function fetchOverviewData(
   segment: ContentTypeSegment,
   contentId: string
 ): Promise<OverviewData> {
-  const content = await findContentSummary(contentId);
+  const content = await findContentSummary(contentId, segment);
   if (!content) {
     return {
       content: null,
@@ -157,7 +226,7 @@ export async function fetchOverviewData(
   }
 
   // event
-  const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review] =
+  const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, eventPricing, review] =
     await Promise.all([
       settle(getEventStatusHistory(contentId), { isEmpty: isEmptyArray }),
       settle(getEventCollaborators(contentId), { isEmpty: isEmptyArray }),
@@ -166,7 +235,8 @@ export async function fetchOverviewData(
         isEmpty: (data) => !data || Object.keys(data).length === 0,
       }),
       settle(validateEvent(contentId)),
+      settle(api.get<EventPricing>(`/api/v1/events/${contentId}/pricing`), { emptyStatuses: [404] }),
       reviewPromise,
     ]);
-  return { content, statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review };
+  return { content, statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, eventPricing, review };
 }

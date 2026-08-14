@@ -1,5 +1,5 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, RootBadgeNode, Terminology } from "../types";
 import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
 
 export class EventAdapter implements ContentDataAdapter {
@@ -9,14 +9,14 @@ export class EventAdapter implements ContentDataAdapter {
     this.eventId = eventId;
   }
 
-  terminology = {
+  terminology: Terminology = {
     root: "Event",
     container: "Day",
     leafDocument: "Lesson",
     leafQuiz: "Quiz",
   };
 
-  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[] }> {
+  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }> {
     const [workshop, sessions] = await Promise.all([
       api.get<Event>(`/api/v1/events/${id}`),
       api.get<EventSession[]>(`/api/v1/events/${id}/sessions`).catch(() => []),
@@ -49,6 +49,7 @@ export class EventAdapter implements ContentDataAdapter {
           position: l.position ?? li,
         })),
       })),
+      badges: [],
     };
   }
 

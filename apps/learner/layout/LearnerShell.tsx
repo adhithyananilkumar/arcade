@@ -16,8 +16,10 @@ import { useEffect, useState } from 'react';
 const IMMERSIVE_ROUTES = [
   /^\/studio\/course\/[^/]+\/edit\/?$/,
   /^\/studio\/course\/[^/]+\/question-bank\/?$/,
-  /^\/studio\/workshop\/[^/]+\/edit\/?$/,
+  /^\/studio\/workshop\/[^/]+(\/edit)?\/?$/,
+  /^\/studio\/events\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
+  /^\/studio\/content\/[^/]+\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
   /^\/roadmap\/[^/]+\/?$/,

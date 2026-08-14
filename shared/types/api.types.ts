@@ -14,7 +14,8 @@ export type ContentStatus =
   | "APPROVED"
   | "PUBLISHED"
   | "ARCHIVED"
-  | "REJECTED";
+  | "REJECTED"
+  | "SUSPENDED";
 
 export interface UserProfileResponse {
   id: string;
@@ -55,6 +56,7 @@ export interface CourseResponse {
   rejectionReason?: string;
   wasPublished?: boolean;
   modules: ModuleResponse[];
+  badges: BadgeSummaryResponse[];
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
@@ -90,6 +92,13 @@ export interface ModuleResponse {
   position: number;
   lessons: LessonResponse[];
   quizzes: QuizResponse[];
+}
+
+// ── Badge (a course-level content item — sibling of Module; owned by the badges domain) ─
+export interface BadgeSummaryResponse {
+  id: string;
+  title: string;
+  position: number;
 }
 
 export interface CreateModuleRequest {
