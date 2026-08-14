@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
@@ -1418,6 +1419,31 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const initialCategory = searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
+
+  // Categories created via Console -> Content Manage -> Categories (super-user only),
+  // merged additively on top of the hardcoded dummy categories — never removes them.
+  // Each admin category is scoped to one section (courses/events/articles) via its `type`.
+  const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
+  const adminCategories = usePublicCategories().filter((c) => c.type === categoryType);
+  const mergedCategoriesList = [
+    ...categoriesList,
+    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+  ];
+  const getCategoryData = (cat: string) => {
+    if (CATEGORY_DATA[cat]) return CATEGORY_DATA[cat];
+    const admin = adminCategories.find((c) => c.name === cat);
+    if (!admin) return undefined;
+    const color = admin.color || "#64748B";
+    return {
+      desc: admin.description || "",
+      coursesCount: 0,
+      gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
+      colors: { primary: color, secondary: `${color}14` },
+      courses: [],
+      bootcamps: [],
+      resources: [],
+    };
+  };
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
 
   const [journeyCompleted, setJourneyCompleted] = useState(false);
@@ -1516,7 +1542,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   }, []);
 
   useEffect(() => {
-    if (initialCategory && categoriesList.includes(initialCategory)) {
+    if (initialCategory && mergedCategoriesList.includes(initialCategory)) {
       setActiveCategory(initialCategory);
     } else {
       setActiveCategory("Computer Science"); // Fallback default
@@ -1524,7 +1550,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   }, [initialCategory]);
 
   const activeCategoryName = activeCategory || "Computer Science";
-  const activeData = CATEGORY_DATA[activeCategoryName];
+  const activeData = getCategoryData(activeCategoryName) || CATEGORY_DATA["Computer Science"];
 
   // Sync body background so the footer (rendered outside this component) blends seamlessly.
   // Only active on articles mode — cleans up on unmount so other pages are unaffected.

@@ -8,6 +8,7 @@ import GradientText from "@/components/landing/GradientText";
 import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -1053,6 +1054,33 @@ function CoursesContent() {
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
+
+  // Categories created via Console -> Content Manage -> Categories (super-user only),
+  // merged additively on top of the hardcoded dummy categories — never removes them.
+  // Each admin category is scoped to one section (courses/events/articles) via its `type`;
+  // there's no admin-category equivalent for the roadmaps tab.
+  const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
+  const adminCategories = usePublicCategories().filter((c) => c.type === categoryType);
+  const mergedCategoriesList = [
+    ...categoriesList,
+    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+  ];
+  const getCategoryData = (cat: string) => {
+    if (CATEGORY_DATA[cat]) return CATEGORY_DATA[cat];
+    const admin = adminCategories.find((c) => c.name === cat);
+    if (!admin) return undefined;
+    const color = admin.color || "#64748B";
+    return {
+      desc: admin.description || "",
+      coursesCount: 0,
+      gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
+      colors: { primary: color, secondary: `${color}14` },
+      courses: [],
+      bootcamps: [],
+      resources: [],
+    };
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -1074,7 +1102,7 @@ function CoursesContent() {
   };
 
   useEffect(() => {
-    if (initialCategory && categoriesList.includes(initialCategory)) {
+    if (initialCategory && mergedCategoriesList.includes(initialCategory)) {
       router.push(`/courses?category=${encodeURIComponent(initialCategory)}`);
     } else {
       setActiveCategory(null);
@@ -1564,9 +1592,9 @@ function CoursesContent() {
         >
           {(() => {
             const query = searchQuery.toLowerCase();
-            const filteredCategories = searchQuery 
-              ? categoriesList.filter(cat => cat.toLowerCase().includes(query) || CATEGORY_DATA[cat]?.desc.toLowerCase().includes(query))
-              : categoriesList;
+            const filteredCategories = searchQuery
+              ? mergedCategoriesList.filter(cat => cat.toLowerCase().includes(query) || getCategoryData(cat)?.desc.toLowerCase().includes(query))
+              : mergedCategoriesList;
               
             const itemsPerPage = 8;
             const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
@@ -1574,9 +1602,9 @@ function CoursesContent() {
 
             let searchResults: any[] = [];
             if (searchQuery) {
-              categoriesList.forEach(cat => {
-                
-                        const data = CATEGORY_DATA[cat];
+              mergedCategoriesList.forEach(cat => {
+
+                        const data = getCategoryData(cat)!;
                         const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
                 if (activeTab === "courses") {
                   data.courses.forEach(course => {
@@ -1622,8 +1650,8 @@ function CoursesContent() {
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
                     {currentCategories
                       .map((cat) => {
-                        
-                        const data = CATEGORY_DATA[cat];
+
+                        const data = getCategoryData(cat)!;
                         const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
                         return (
                           <div
@@ -1721,7 +1749,7 @@ function CoursesContent() {
                                 course={item}
                                 index={idx}
                                 activeCategoryName={item.category}
-                                activeData={CATEGORY_DATA[item.category]}
+                                activeData={getCategoryData(item.category)}
                                 router={router}
                                 realRating={4.8}
                                 realReviewsCount={124}
@@ -1729,7 +1757,7 @@ function CoursesContent() {
                           );
                        }
                        
-                       const catColor = CATEGORY_DATA[item.category]?.colors?.primary || "#3B82F6";
+                       const catColor = getCategoryData(item.category)?.colors?.primary || "#3B82F6";
                        return (
                         <div key={idx} style={{
                           background: "#FFFFFF",
