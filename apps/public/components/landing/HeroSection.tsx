@@ -5,6 +5,7 @@ import { motion, useReducedMotion, useAnimation } from "framer-motion";
 import PinwheelToken from "./PinwheelToken";
 import GradientText from "./GradientText";
 import Link from "next/link";
+import HeroButton from "./HeroButton";
 import Image from "next/image";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
@@ -495,25 +496,11 @@ export default function HeroSection() {
             animate="visible"
           >
             {status === 'authenticated' ? (
-              <Link
-                href="/"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Continue Learning
-              </Link>
+              <HeroButton href="/reach-us" id="hero-cta-explore" text="Get in Touch" />
             ) : (
-              <Link
-                href="/sign"
-                className="l-btn l-btn--solid-ink"
-                id="hero-cta-explore"
-              >
-                Get Started
-              </Link>
+              <HeroButton href="/reach-us" id="hero-cta-explore" text="Get in Touch" />
             )}
           </motion.div>
-
-
         </div>
       </div>
     </section>

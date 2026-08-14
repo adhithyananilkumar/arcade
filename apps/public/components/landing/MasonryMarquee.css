@@ -1,0 +1,137 @@
+.masonry-marquee-section {
+  width: 100%;
+  overflow: hidden;
+  padding: 4rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--l-bg);
+}
+
+.marquee-row {
+  display: flex;
+  width: max-content;
+}
+
+.marquee-content {
+  display: flex;
+  width: fit-content;
+}
+
+.marquee-group {
+  display: flex;
+  gap: 24px;
+  padding-right: 24px;
+  flex-shrink: 0;
+}
+
+.mq-box {
+  height: 160px;
+  /* Keep boat/leaf shape as requested */
+  border-radius: 0 80px 0 80px;
+  background-color: #ffffff; 
+  border: 1px solid rgba(0, 0, 0, 0.05); /* Very subtle premium edge */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02); /* Soft ambient shadow perfectly matching the image */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 48px; 
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Alternate the boat shape direction */
+.mq-box:nth-child(even) {
+  border-radius: 80px 0 80px 0;
+}
+
+/* Typography inside the box - Premium styling */
+.mq-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+  /* Color will be injected by the bg-* modifiers to add a clean pop of color */
+}
+
+.mq-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #4b5563; /* Soft slate gray, exactly like the image's paragraph text */
+  line-height: 1.4;
+  margin: 0;
+  max-width: 90%; 
+}
+
+/* Widths */
+.w-1 { width: 280px; }
+.w-2 { width: 360px; }
+.w-3 { width: 440px; }
+.w-4 { width: 560px; }
+
+/* Theme-matched typography colors on pristine white cards */
+.bg-blue { background-color: #ffffff; }
+.bg-blue .mq-title { color: var(--l-blue); }
+
+.bg-coral { background-color: #ffffff; }
+.bg-coral .mq-title { color: var(--l-coral); }
+
+.bg-emerald { background-color: #ffffff; }
+.bg-emerald .mq-title { color: var(--l-emerald); }
+
+.bg-violet { background-color: #ffffff; }
+.bg-violet .mq-title { color: var(--l-violet); }
+
+.bg-dark { background-color: #ffffff; }
+.bg-dark .mq-title { color: var(--l-ink); }
+
+.bg-dashed {
+  background-color: #ffffff; 
+  border: 1.5px dashed rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+}
+.bg-dashed .mq-title { color: var(--l-ink); }
+.bg-dashed .mq-icon-corner { color: var(--l-ink); }
+
+/* Icon positioning in the corner */
+.mq-icon-corner {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  opacity: 1; /* Fully visible */
+  pointer-events: none;
+}
+
+/* Theme-matched Colored Icons */
+.bg-blue .mq-icon-corner { color: var(--l-blue); }
+.bg-coral .mq-icon-corner { color: var(--l-coral); }
+.bg-emerald .mq-icon-corner { color: var(--l-emerald); }
+.bg-violet .mq-icon-corner { color: var(--l-violet); }
+.bg-dark .mq-icon-corner { color: var(--l-ink); }
+
+/* Animations - slowed down */
+.marquee-left .marquee-content {
+  animation: scrollLeft 70s linear infinite;
+}
+
+.marquee-right .marquee-content {
+  animation: scrollRight 80s linear infinite;
+}
+
+.marquee-left.fast .marquee-content {
+  animation: scrollLeft 60s linear infinite;
+}
+
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}

@@ -17,8 +17,41 @@ export default function CourseShowcase() {
         {/* Left Column: Info & Details */}
         <div className="l-showcase__info">
           <div className="l-showcase__badge">
-            <div className="l-showcase__badge-icon" />
-            <span>The Arcade Story</span>
+            <span className="l-showcase__badge-text">The Arcade Story</span>
+            <div className="l-showcase__pixels">
+              <div className="l-pixel-group group1">
+                <div className="l-pixel p-sq px-blue"></div>
+                <div className="l-pixel p-tr px-coral"></div>
+              </div>
+              <div className="l-pixel-group group2">
+                <div className="l-pixel p-ci px-emerald"></div>
+                <div className="l-pixel p-sq px-violet"></div>
+              </div>
+              <div className="l-pixel-group group3">
+                <div className="l-pixel p-tr px-blue"></div>
+                <div className="l-pixel p-ci px-coral"></div>
+              </div>
+              <div className="l-pixel-group group4">
+                <div className="l-pixel p-sq px-emerald"></div>
+                <div className="l-pixel p-tr px-violet"></div>
+              </div>
+              <div className="l-pixel-group group7">
+                <div className="l-pixel p-tr px-emerald"></div>
+                <div className="l-pixel p-ci px-blue"></div>
+              </div>
+              <div className="l-pixel-group group8">
+                <div className="l-pixel p-sq px-coral"></div>
+                <div className="l-pixel p-tr px-violet"></div>
+              </div>
+              <div className="l-pixel-group group9">
+                <div className="l-pixel p-ci px-violet"></div>
+                <div className="l-pixel p-sq px-emerald"></div>
+              </div>
+              <div className="l-pixel-group group10">
+                <div className="l-pixel p-tr px-coral"></div>
+                <div className="l-pixel p-ci px-blue"></div>
+              </div>
+            </div>
           </div>
 
           <h2 className="l-showcase__title">

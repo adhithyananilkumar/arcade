@@ -3,6 +3,7 @@ import HeroSection from "@/apps/public/components/landing/HeroSection";
 import LogoStrip from "@/apps/public/components/landing/LogoStrip";
 import CourseShowcase from "@/apps/public/components/landing/CourseShowcase";
 import Testimonials from "@/apps/public/components/landing/Testimonials";
+import MasonryMarquee from "@/apps/public/components/landing/MasonryMarquee";
 import JourneyTimeline from "@/apps/public/components/landing/JourneyTimeline";
 import Footer from "@/apps/public/components/landing/Footer";
 import "@/apps/public/landing.css";
@@ -26,6 +27,7 @@ export default function PublicLandingPage() {
       <LogoStrip />
       <CourseShowcase />
       <Testimonials />
+      <MasonryMarquee />
       <JourneyTimeline />
       <Footer />
     </div>

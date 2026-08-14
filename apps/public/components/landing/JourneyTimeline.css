@@ -1,7 +1,7 @@
 /* ─── Top Rated Courses Carousel ────────────────────────────────── */
 
 .jt-section {
-  padding: 30px 0 50px;
+  padding: 120px 0 80px; /* Increased padding top for breathing room */
   /* overflow:hidden removed — it was clipping ambient glow from adjacent sections */
   background: transparent;
 }
