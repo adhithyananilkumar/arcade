@@ -479,9 +479,9 @@ export default function FoundersPage() {
                     </p>
                   ))}
                 </div>
-                <div className="lg:col-span-5">
-                  <div className="w-full aspect-[4/3] relative overflow-visible flex items-center justify-center">
-                    <div className="w-full h-full flex items-center justify-center scale-110 sm:scale-[1.35]">
+                <div className="lg:col-span-5 relative">
+                  <div className="w-full aspect-square sm:aspect-[4/3] relative overflow-visible flex items-center justify-center">
+                    <div className="w-full h-full flex items-center justify-center scale-110 sm:scale-[1.25] lg:scale-[1.4] lg:translate-x-4">
                       <OrbitImages
                         items={FOUNDERS_DATA.slice(0, 6).map((founder) => (
                           <div 
@@ -498,11 +498,11 @@ export default function FoundersPage() {
                           </div>
                         ))}
                         shape="ellipse"
-                        radiusX={380}
-                        radiusY={170}
+                        radiusX={420}
+                        radiusY={190}
                         rotation={-8}
                         duration={45}
-                        itemSize={150}
+                        itemSize={160}
                         showPath={true}
                         pathColor="rgba(15, 23, 42, 0.2)"
                         pathWidth={1}
