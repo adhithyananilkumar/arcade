@@ -52,6 +52,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
     // workspace the way it should.
     const recompute = () => {
       const rect = host.getBoundingClientRect();
+      if (rect.width === 0) return;
       const target = Math.min(rect.width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
       setFitSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
       setToolbarCenterX(rect.left + rect.width / 2);
@@ -100,6 +101,14 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
           size={canvasSize}
           showGuides={!editor.previewMode}
           readOnly={editor.readOnly || editor.previewMode}
+          onCanvasClick={(target) => {
+            editor.setActivePanel("design");
+            if (target === "background") {
+              editor.setOpenDesignSections(prev => ({ ...prev, background: true }));
+            } else if (target === "frame") {
+              editor.setOpenDesignSections(prev => ({ ...prev, frame: true }));
+            }
+          }}
         />
       </div>
 
