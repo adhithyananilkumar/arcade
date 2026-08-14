@@ -206,7 +206,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const width = typeof node.attrs?.width === "number" ? node.attrs.width : undefined;
       const height = typeof node.attrs?.height === "number" ? node.attrs.height : undefined;
       return (
-        <div key={key} className="mb-4 aspect-video w-full max-w-3xl overflow-hidden rounded-lg bg-black">
+        <div key={key} className="mb-4 w-full aspect-[16/9] overflow-hidden rounded-xl bg-black">
           <iframe
             src={src}
             width={width}
@@ -290,7 +290,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       return (
-        <video key={key} src={src} controls className="mb-4 w-full max-w-3xl rounded-lg bg-black" />
+        <video key={key} src={src} controls className="mb-4 w-full aspect-[16/9] overflow-hidden rounded-xl bg-black" />
       );
     }
 
@@ -300,7 +300,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       return (
-        <video key={key} src={src} controls className="mb-4 w-full max-w-3xl rounded-lg bg-black" />
+        <video key={key} src={src} controls className="mb-4 w-full aspect-[16/9] overflow-hidden rounded-xl bg-black" />
       );
     }
 
@@ -308,10 +308,10 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       const src = typeof node.attrs?.src === "string" ? node.attrs.src : undefined;
       if (!src) return null;
       return (
-        <div key={key} className="mb-4 overflow-hidden rounded-lg border border-gray-200">
+        <div key={key} className="mb-4 w-full aspect-[16/9] overflow-hidden rounded-xl border border-gray-200">
           <iframe
             src={src}
-            className="aspect-video w-full"
+            className="h-full w-full"
             loading="lazy"
             sandbox="allow-scripts allow-same-origin allow-presentation"
             allow="fullscreen"

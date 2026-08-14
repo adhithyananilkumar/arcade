@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Flag,
   MoreVertical,
+  X,
 } from 'lucide-react';
 import {
   Dialog,
@@ -47,6 +48,13 @@ export default function CourseLearnPage() {
     lessonTitle: string;
   } | null>(null);
 
+  // Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<{ role: 'ai' | 'user'; content: string }[]>([
+    { role: 'ai', content: "Hi! I'm your AI tutor.\n\nAsk me anything about this lesson." }
+  ]);
+
   const courseId = params?.courseId as string | undefined;
 
   const handleReportSubmit = async (combinedNote: string) => {
@@ -64,34 +72,80 @@ export default function CourseLearnPage() {
     setReportingContext(null);
   };
 
+  const handleChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMessage = chatInput.trim();
+    setChatMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    setChatInput('');
+
+    setTimeout(() => {
+      let aiResponse = "I'm a dummy assistant, so I can only answer a few specific questions right now!";
+      const lower = userMessage.toLowerCase();
+      
+      if (lower.includes("what is java")) {
+        aiResponse = "Java is a high-level, object-oriented programming language designed to be portable across different platforms.";
+      } else if (lower.includes("why is java popular")) {
+        aiResponse = "Java is popular because of its portability, object-oriented design, large ecosystem, strong community, and widespread use in enterprise applications.";
+      } else if (lower.includes("explain this lesson") || lower.includes("explain the lesson") || lower.includes("what is this lesson about")) {
+        aiResponse = "This lesson introduces Java and explains why it became one of the most widely used programming languages.";
+      }
+
+      setChatMessages((prev) => [...prev, { role: 'ai', content: aiResponse }]);
+    }, 500);
+  };
+
   useEffect(() => {
-    if (courseId) {
-      api
-        .get<CourseResponse>(`/api/v1/public/courses/${courseId}`)
-        .then((data) => {
-          setCourse(data);
-          if (data.modules && data.modules.length > 0) {
-            const allLessons = data.modules.flatMap((m) => m.lessons || []);
-            const targetLesson = lessonParam
-              ? allLessons.find((l) => l.id === lessonParam)
-              : null;
+    if (!courseId) {
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    Promise.all([
+      api.get<CourseResponse>(`/api/v1/public/courses/${courseId}`),
+      courseProgressService.getCourseProgress(courseId).catch(() => null),
+    ])
+      .then(([courseData, progressData]) => {
+        if (!isMounted) return;
+        setCourse(courseData);
+        setProgress(progressData);
+
+        if (courseData.modules && courseData.modules.length > 0) {
+          const allLessons = courseData.modules.flatMap((m) => m.lessons || []);
+          
+          if (lessonParam) {
+            const targetLesson = allLessons.find((l) => l.id === lessonParam);
             if (targetLesson) {
               setSelectedLesson(targetLesson);
-            } else if (allLessons.length > 0) {
-              setSelectedLesson(allLessons[0]);
+              return;
             }
           }
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+          
+          if (progressData) {
+            const completedIds = new Set(progressData.completedLessonIds || []);
+            const firstIncomplete = allLessons.find((l) => !completedIds.has(l.id));
+            if (firstIncomplete) {
+              setSelectedLesson(firstIncomplete);
+            } else {
+              setSelectedLesson(null);
+            }
+          } else if (allLessons.length > 0) {
+            setSelectedLesson(allLessons[0]);
+          }
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
 
-      courseProgressService
-        .getCourseProgress(courseId)
-        .then(setProgress)
-        .catch(() => setProgress(null));
-    } else {
-      setLoading(false);
-    }
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   const orderedLessons = useMemo(
@@ -141,9 +195,16 @@ export default function CourseLearnPage() {
     if (!selectedLesson) return;
     setMarking(true);
     try {
-      await markComplete();
-      if (nextLesson) {
-        setSelectedLesson(nextLesson);
+      const updatedProgress = await markComplete();
+      
+      const completedIds = new Set(updatedProgress?.completedLessonIds || []);
+      const nextIncomplete = orderedLessons.find((l) => !completedIds.has(l.id));
+      
+      if (nextIncomplete) {
+        setSelectedLesson(nextIncomplete);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setSelectedLesson(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
@@ -211,10 +272,10 @@ export default function CourseLearnPage() {
       />
 
       {/* Clear floating navbar */}
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1400px] flex-col pt-28 md:flex-row md:pt-32">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1700px] px-4 xl:px-8 flex-col pt-28 md:flex-row md:pt-32">
         {/* Sidebar */}
-        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/70 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] md:border-b-0 md:border-r md:border-slate-200/70 lg:w-[300px]">
-          <div className="space-y-4 px-5 pb-4 md:px-6">
+        <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/70 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[260px] md:border-b-0 md:border-r md:border-slate-200/70 lg:w-[280px]">
+          <div className="space-y-2.5 pl-3 pr-4 pb-2 md:pl-3 md:pr-5">
             <Link
               href="/my-learning"
               className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
@@ -253,16 +314,16 @@ export default function CourseLearnPage() {
             )}
           </div>
 
-          <nav className="flex-1 space-y-5 overflow-y-auto px-3 pb-8 md:px-4">
+          <nav className="flex-1 space-y-3 overflow-y-auto pl-3 pr-4 pb-6 md:pl-3 md:pr-5">
             {course.modules.length === 0 ? (
-              <p className="px-2 text-sm text-slate-400">No modules yet.</p>
+              <p className="text-sm text-slate-400">No modules yet.</p>
             ) : (
               course.modules.map((mod, modIdx) => (
                 <div key={mod.id}>
-                  <p className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
                     {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
                   </p>
-                  <ul className="space-y-0.5">
+                  <ul className="flex flex-col gap-2">
                     {mod.lessons.map((lesson) => {
                       const num = lessonNumberById.get(lesson.id) ?? 0;
                       const isSelected = selectedLesson?.id === lesson.id;
@@ -279,36 +340,57 @@ export default function CourseLearnPage() {
                                 setSelectedLesson(lesson);
                               }
                             }}
-                            className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
+                            className={`group/btn flex w-full cursor-pointer items-center gap-2.5 rounded-full px-2 py-2 min-h-[48px] text-left transition-all duration-300 border outline-none ${
                               isSelected
-                                ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
-                                : 'text-slate-600 hover:bg-white/80 hover:text-[#14142b]'
+                                ? 'border-indigo-300/70 bg-[linear-gradient(120deg,#c7d2fe_0%,#a5b4fc_55%,#c4b5fd_100%)] text-[#14142b] shadow-[0_8px_16px_rgba(49,94,232,0.16)]'
+                                : `border-transparent hover:-translate-y-[1px] hover:border-indigo-200 hover:bg-[linear-gradient(120deg,#e0e7ff_0%,#c7d2fe_55%,#ddd6fe_100%)] hover:text-[#14142b] hover:shadow-[0_6px_12px_rgba(49,94,232,0.08)] focus-visible:-translate-y-[1px] focus-visible:border-indigo-200 focus-visible:bg-[linear-gradient(120deg,#e0e7ff_0%,#c7d2fe_55%,#ddd6fe_100%)] focus-visible:text-[#14142b] focus-visible:shadow-[0_6px_12px_rgba(49,94,232,0.08)] ${
+                                    isComplete
+                                      ? 'bg-white/30 text-slate-500 backdrop-blur-[8px]'
+                                      : 'bg-transparent text-slate-600'
+                                  }`
                             }`}
                           >
                             <span
-                              className={`grid size-6 shrink-0 place-items-center rounded-md text-[11px] font-bold tabular-nums ${
+                              className={`grid size-7 shrink-0 place-items-center rounded-full text-[12px] font-bold tabular-nums transition-all duration-300 ${
                                 isSelected
-                                  ? 'bg-white/15 text-white'
-                                  : isComplete
-                                    ? 'bg-emerald-50 text-emerald-600'
-                                    : 'bg-slate-100 text-slate-400'
+                                  ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100/50'
+                                  : `group-hover/btn:bg-white group-hover/btn:text-indigo-500 group-hover/btn:shadow-sm group-hover/btn:border group-hover/btn:border-indigo-50 group-focus-visible/btn:bg-white group-focus-visible/btn:text-indigo-500 group-focus-visible/btn:shadow-sm group-focus-visible/btn:border group-focus-visible/btn:border-indigo-50 ${
+                                      isComplete ? 'bg-slate-200/50 text-slate-400 opacity-70 blur-[0.4px] group-hover/btn:opacity-100 group-hover/btn:blur-none group-focus-visible/btn:opacity-100 group-focus-visible/btn:blur-none' : 'bg-slate-100 text-slate-500'
+                                    }`
                               }`}
                             >
-                              {isComplete && !isSelected ? (
-                                <Check size={12} strokeWidth={2.5} />
-                              ) : (
-                                num
-                              )}
+                              {num}
                             </span>
                             <span
-                              className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${
-                                isComplete && !isSelected ? 'text-slate-400' : ''
+                              className={`min-w-0 flex-1 truncate text-[13px] font-semibold transition-all duration-300 ${
+                                isComplete && !isSelected ? 'text-slate-500/90 opacity-70 blur-[0.4px] group-hover/btn:text-[#14142b] group-hover/btn:opacity-100 group-hover/btn:blur-none group-focus-visible/btn:text-[#14142b] group-focus-visible/btn:opacity-100 group-focus-visible/btn:blur-none' : ''
                               }`}
                             >
                               {lesson.title}
                             </span>
 
-                            <div className="relative shrink-0">
+                            <div className="relative shrink-0 flex items-center">
+                              {isComplete && (
+                                <div
+                                  className={`pr-1.5 flex items-center justify-center ${
+                                    isSelected ? 'text-indigo-700/80' : 'text-[#111111]'
+                                  }`}
+                                >
+                                  <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M8 12l2.5 2.5 5.5-5.5" />
+                                  </svg>
+                                </div>
+                              )}
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -318,12 +400,12 @@ export default function CourseLearnPage() {
                                 onKeyDown={(e) => {
                                   e.stopPropagation();
                                 }}
-                                className={`p-1 rounded-md transition-all ${
+                                className={`p-1 rounded-full transition-all duration-200 ${
                                   activeMenuLessonId === lesson.id
-                                    ? 'opacity-100 bg-white/20 text-white'
+                                    ? 'opacity-100 bg-indigo-100 text-indigo-700'
                                     : isSelected
-                                      ? 'opacity-0 group-hover/item:opacity-100 text-white/70 hover:text-white hover:bg-white/15'
-                                      : 'opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60'
+                                      ? 'opacity-0 group-hover/item:opacity-100 text-indigo-300 hover:text-indigo-700 hover:bg-indigo-100/70'
+                                      : 'opacity-0 group-hover/item:opacity-100 text-slate-400 group-hover/btn:text-indigo-300 group-hover/btn:hover:text-indigo-700 group-hover/btn:hover:bg-indigo-50 hover:text-slate-800 hover:bg-slate-200/70'
                                 }`}
                                 title="Lesson options"
                               >
@@ -377,12 +459,12 @@ export default function CourseLearnPage() {
         </aside>
 
         {/* Lesson canvas — centered & wide */}
-        <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12">
-          <article className="relative flex w-full max-w-4xl flex-col">
+        <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12 transition-all duration-300">
+          <article className="relative flex w-full max-w-[1100px] flex-col">
             {selectedLesson ? (
               <>
-                <header className="mb-6 flex items-start justify-between gap-4 md:mb-8">
-                  <div>
+                <header className="mb-6 flex flex-wrap items-start justify-between gap-4 md:mb-8">
+                  <div className="flex-1 min-w-[200px]">
                     <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                       Lesson {currentLessonIndex + 1}
                       {orderedLessons.length > 0 ? ` · ${orderedLessons.length}` : ''}
@@ -397,17 +479,29 @@ export default function CourseLearnPage() {
                       </p>
                     )}
                   </div>
+                  
+                  {!isChatOpen && (
+                    <div className="shrink-0 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsChatOpen(true)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-[13px] font-bold text-indigo-700 transition-all hover:bg-indigo-100 hover:text-indigo-800 hover:shadow-sm"
+                      >
+                        <span className="text-lg leading-none text-indigo-600">✦</span> Ask AI
+                      </button>
+                    </div>
+                  )}
                 </header>
 
-                <div className="min-h-[42vh] flex-1 rounded-lg border border-slate-200/80 bg-white/95 px-5 py-7 shadow-[0_8px_28px_rgba(20,20,43,0.05)] sm:px-8 sm:py-9 md:px-12 md:py-11">
+                <div className="min-h-[42vh] flex-1 w-full py-4">
                   <div className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-[#14142b] prose-a:text-[#FF6B4A] hover:prose-a:text-[#D94F32] prose-p:text-slate-700">
                     {selectedLesson.body ? (
                       <TiptapContentView body={selectedLesson.body} />
                     ) : (
-                      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/80 px-6 py-14 text-center">
-                        <BookOpen size={36} className="mx-auto mb-3 text-slate-300" />
+                      <div className="rounded-lg border border-dashed border-slate-300/60 bg-transparent px-6 py-14 text-center">
+                        <BookOpen size={36} className="mx-auto mb-3 text-slate-400" />
                         <p className="text-[15px] font-semibold text-[#14142b]">No content yet</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                        <p className="mt-1 text-sm text-slate-500">
                           This lesson does not have material published.
                         </p>
                       </div>
@@ -469,15 +563,88 @@ export default function CourseLearnPage() {
                   </div>
                 </footer>
               </>
+            ) : progress?.enrollmentStatus === 'COMPLETED' || (progress && progress.totalLessons > 0 && progress.completedLessons === progress.totalLessons) ? (
+              <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 py-16 text-center">
+                <div className="mb-6 grid size-20 place-items-center rounded-full bg-emerald-100/50">
+                  <CheckCircle2 size={40} className="text-emerald-600" />
+                </div>
+                <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight text-[#14142b] md:text-[2.15rem]">
+                  Course Completed!
+                </h1>
+                <p className="mt-3 max-w-md text-[15px] text-slate-500">
+                  Congratulations on finishing {course.title}. You can review any lesson by clicking on it in the sidebar.
+                </p>
+                <Link
+                  href="/my-learning"
+                  className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#14142b] px-6 py-3 text-[14px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735]"
+                >
+                  <ChevronLeft size={16} />
+                  Back to My Learning
+                </Link>
+              </div>
             ) : (
-              <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-lg border border-slate-200/80 bg-white/90 px-6 py-16 text-center shadow-[0_8px_28px_rgba(20,20,43,0.05)]">
-                <BookOpen size={40} className="mb-3 text-slate-300" />
+              <div className="flex min-h-[50vh] flex-col items-center justify-center px-6 py-16 text-center">
+                <BookOpen size={40} className="mb-3 text-slate-400/50" />
                 <p className="text-lg font-bold text-[#14142b]">Pick a lesson</p>
-                <p className="mt-1 text-sm text-slate-400">Choose one from the sidebar to start.</p>
+                <p className="mt-1 text-sm text-slate-500">Choose one from the sidebar to start.</p>
               </div>
             )}
           </article>
         </main>
+
+        {/* AI Layout Column */}
+        <aside
+          className={`shrink-0 flex-col overflow-hidden transition-all duration-300 ease-in-out md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] ${
+            isChatOpen
+              ? 'w-full md:w-[300px] lg:w-[320px] opacity-100'
+              : 'w-0 opacity-0'
+          } flex`}
+        >
+          <div className="flex h-full w-full md:w-[300px] lg:w-[320px] flex-col rounded-3xl border border-white/60 bg-[linear-gradient(145deg,rgba(224,231,255,0.65)_0%,rgba(199,210,254,0.6)_50%,rgba(221,214,254,0.6)_100%)] shadow-[0_8px_32px_rgba(31,38,135,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl backdrop-saturate-150">
+            <div className="flex items-center justify-between border-b border-white/30 bg-white/10 px-5 py-4 rounded-t-3xl">
+              <div>
+                <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#14142b]">
+                  <span className="text-indigo-600">✦</span> AI Learning Assistant
+                </h3>
+                <p className="text-[12px] font-semibold text-slate-500 truncate">
+                  {course?.title || 'Loading course...'}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="shrink-0 rounded-full p-2 text-slate-400 transition-colors hover:bg-black/5 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-5 space-y-5 text-[14px]">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 ${
+                      msg.role === 'user'
+                        ? 'rounded-tr-sm bg-[#14142b] text-white shadow-sm'
+                        : 'rounded-tl-sm border border-white/50 bg-white/45 text-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.03)] backdrop-blur-md'
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={handleChatSubmit} className="border-t border-white/20 p-4">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask about this lesson..."
+                className="w-full rounded-full border border-white/50 bg-white/40 px-5 py-3 text-[14px] placeholder-slate-500 shadow-[0_2px_8px_rgba(0,0,0,0.04)] outline-none backdrop-blur-md transition-colors focus:border-indigo-300/80 focus:bg-white/60"
+              />
+            </form>
+          </div>
+        </aside>
       </div>
 
       {/* Report Lesson Modal */}
