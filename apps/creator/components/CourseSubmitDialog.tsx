@@ -20,7 +20,7 @@ interface ExamScheduleSlot {
 interface CourseSubmitDialogProps {
   course?: CourseResponse;
   roadmap?: RoadmapData;
-  contentType?: 'course' | 'roadmap' | 'workshop';
+  contentType?: 'course' | 'roadmap' | 'workshop' | 'question-bank';
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;

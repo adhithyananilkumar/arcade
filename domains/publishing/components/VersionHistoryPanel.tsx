@@ -9,7 +9,7 @@ import {
   Clock,
   Loader2,
   Bookmark,
-  Zap,
+  Save,
   GitCommitVertical,
   CheckCircle,
   XCircle,
@@ -58,6 +58,13 @@ interface VersionHistoryPanelProps {
   isSuView?: boolean;
   statusHistory?: ContentStatusHistoryResponse[];
   statusHistoryLoading?: boolean;
+  /**
+   * Renders as inline content sized to fill its parent instead of its own
+   * fixed-position, screen-docked overlay — for dropping into a host panel
+   * (EditorRightSidebar's "History" tab) that already provides the backdrop,
+   * header, and close button.
+   */
+  embedded?: boolean;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -84,12 +91,12 @@ function formatRelative(iso: string): string {
 
 const KIND_META: Record<
   VersionSummary["kind"],
-  { icon: typeof Zap; label: string; chip: string }
+  { icon: typeof Save; label: string; chip: string }
 > = {
   AUTO: {
-    icon: Zap,
-    label: "Auto-saved",
-    chip: "bg-slate-100 text-slate-500",
+    icon: Save,
+    label: "Auto save",
+    chip: "bg-slate-100 text-slate-600",
   },
   MANUAL: {
     icon: Bookmark,
@@ -154,6 +161,7 @@ export function VersionHistoryPanel({
   isSuView,
   statusHistory,
   statusHistoryLoading,
+  embedded,
 }: VersionHistoryPanelProps) {
   const [restoring, setRestoring] = useState(false);
   const [tab, setTab] = useState<"log" | "comment">("log");
@@ -179,36 +187,9 @@ export function VersionHistoryPanel({
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
-
-      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
-              <History size={17} />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
-                {isSuView ? "History" : "Version history"}
-              </h2>
-              <p className="text-[11px] font-medium text-slate-400">
-                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Tabs — SU review */}
+  const panelInner = (
+    <>
+      {/* Tabs — SU review */}
         {isSuView && (
           <div className="shrink-0 px-5 pt-3 pb-3">
             <div className="flex gap-1 rounded-full border border-slate-200/80 bg-slate-50 p-1">
@@ -241,7 +222,7 @@ export function VersionHistoryPanel({
         )}
 
         {/* Body */}
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {isSuView && tab === "comment" ? (
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-2 pb-6">
               {statusHistoryLoading ? (
@@ -388,15 +369,15 @@ export function VersionHistoryPanel({
           )}
         </div>
 
-        {/* Preview + restore footer */}
+        {/* Preview + restore floating side-panel */}
         {selected && (!isSuView || tab === "log") && (
-          <div className="flex max-h-[52%] shrink-0 flex-col border-t border-slate-100 bg-slate-50/90">
-            <div className="flex items-center justify-between gap-2 px-4 py-3">
+          <div className="absolute right-[calc(100%+16px)] top-0 bottom-16 z-50 flex w-[440px] flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-2xl backdrop-blur-xl">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/50 px-5 py-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   Preview
                 </p>
-                <p className="text-[12px] font-semibold text-[#14142b]">
+                <p className="text-[13px] font-semibold text-[#14142b]">
                   {formatAbsolute(selected.createdAt)}
                 </p>
               </div>
@@ -405,32 +386,71 @@ export function VersionHistoryPanel({
                   type="button"
                   onClick={handleRestore}
                   disabled={restoring || !previewDoc}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition-all hover:bg-[#232735] hover:shadow-md disabled:opacity-50"
                 >
                   {restoring ? (
-                    <Loader2 size={13} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                   ) : (
-                    <RotateCcw size={13} />
+                    <RotateCcw size={14} />
                   )}
                   {restoring ? "Restoring…" : "Restore"}
                 </button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto border-t border-slate-100 bg-white px-4 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6">
               {previewLoading ? (
-                <div className="flex items-center justify-center py-8 text-slate-400">
-                  <Loader2 size={18} className="animate-spin" />
+                <div className="flex h-full items-center justify-center text-slate-400">
+                  <Loader2 size={24} className="animate-spin" />
                 </div>
               ) : previewDoc ? (
                 renderEditor(previewDoc, selected.id)
               ) : (
-                <p className="py-6 text-center text-[12px] text-slate-400">
-                  This version has no previewable content.
-                </p>
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-center text-[13px] text-slate-400">
+                    This version has no previewable content.
+                  </p>
+                </div>
               )}
             </div>
           </div>
         )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="relative flex h-full min-h-0 flex-1 flex-col">{panelInner}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex justify-end">
+      <div className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm" onClick={onClose} />
+
+      <aside className="relative flex h-full w-full max-w-[420px] flex-col border-l border-slate-200/80 bg-white shadow-[0_0_56px_rgba(20,20,43,0.2)]">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-2xl bg-[#14142b] text-white shadow-[0_8px_16px_rgba(20,20,43,0.18)]">
+              <History size={17} />
+            </span>
+            <div>
+              <h2 className="text-[15px] font-bold tracking-tight text-[#14142b]">
+                {isSuView ? "History" : "Version history"}
+              </h2>
+              <p className="text-[11px] font-medium text-slate-400">
+                {isSuView ? "Versions & workflow activity" : "Restore any saved snapshot"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {panelInner}
       </aside>
     </div>
   );

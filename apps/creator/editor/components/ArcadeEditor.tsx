@@ -2,6 +2,7 @@
 "use client";
 
 import { EditorContent } from "@tiptap/react";
+import { type Editor } from "@tiptap/core";
 import { RichTextProvider } from "reactjs-tiptap-editor";
 import dynamic from "next/dynamic";
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
@@ -25,7 +26,7 @@ import {
   SaveStatusFooter,
   type SaveStatusStore,
 } from "./SaveStatusFooter";
-import { useArcadeEditor } from "../hooks/useArcadeEditor";
+import { useArcadeEditor, type CollabStatus, type ActiveCollaborator } from "../hooks/useArcadeEditor";
 import "reactjs-tiptap-editor/style.css";
 import "../styles/editor.css";
 import type { TiptapDocument } from "@/shared/types/editor.types";
@@ -57,6 +58,8 @@ export interface ArcadeEditorHandle {
   setContent: (doc: TiptapDocument) => void;
   /** Current document as JSON, or null before the editor is ready. */
   getJSON: () => TiptapDocument | null;
+  /** The raw Tiptap Editor instance. */
+  editor: Editor | null;
 }
 
 interface ArcadeEditorProps {
@@ -75,6 +78,8 @@ interface ArcadeEditorProps {
   ydoc?: Y.Doc;
   /** Legacy JSON to seed into an empty Y.Doc (migration for pre-history lessons). */
   seedContent?: TiptapDocument;
+  /** Document / Lesson ID for WebSocket real-time collaboration. */
+  documentId?: string;
   /** Extra classes applied to the outer wrapper. */
   className?: string;
   /**
@@ -84,6 +89,12 @@ interface ArcadeEditorProps {
   chromeless?: boolean;
   /** Content type of the editor. */
   contentType?: "course" | "workshop" | "roadmap";
+  /** Callback for selection updates */
+  onSelectionUpdate?: (props: { editor: Editor }) => void;
+  /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
+  documentName?: string;
+  /** Callback fired when collaboration connection status or active user list changes */
+  onCollabStateChange?: (state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => void;
 }
 
 // Memoized because the host is a large orchestrator: a keystroke in the course-title
@@ -92,7 +103,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, className = "", chromeless = false, contentType },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, onSelectionUpdate, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -123,20 +134,27 @@ export const ArcadeEditor = memo(
     [onSave, statusStore]
   );
 
-  const { editor, flushSave, setContent, getJSON } = useArcadeEditor({
+  const { editor, flushSave, setContent, getJSON, collabStatus, collaborators } = useArcadeEditor({
     initialContent,
     placeholder,
     readOnly,
     onSave: handleSave,
     ydoc,
     seedContent,
+    documentId,
     contentType,
+    onSelectionUpdate,
+    documentName,
   });
+
+  useEffect(() => {
+    onCollabStateChange?.({ status: collabStatus, collaborators });
+  }, [collabStatus, collaborators, onCollabStateChange]);
 
   useImperativeHandle(
     ref,
-    () => ({ flush: flushSave, setContent, getJSON }),
-    [flushSave, setContent, getJSON]
+    () => ({ flush: flushSave, setContent, getJSON, editor }),
+    [flushSave, setContent, getJSON, editor]
   );
 
   // editor is null during SSR — show skeleton
@@ -145,7 +163,7 @@ export const ArcadeEditor = memo(
       <div
         className={
           chromeless
-            ? `min-h-[300px] ${className}`
+            ? `min-h-[300px] !bg-transparent !shadow-none !border-none ${className}`
             : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
         }
       >
@@ -155,24 +173,23 @@ export const ArcadeEditor = memo(
   }
 
   const isRoadmap = contentType === "roadmap";
-console.log("ArcadeEditor render. editor exists:", !!editor, "isDestroyed:", editor?.isDestroyed, "doc:", editor?.state?.doc?.toJSON());
-
+  const hideToolbar = isRoadmap;
 
   return (
     <div
       className={
         chromeless
-          ? `relative flex flex-col ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
+          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !isRoadmap && <RichTextToolbar editor={editor} />}
+        {!readOnly && !hideToolbar && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={
             chromeless
-              ? `flex-1 min-h-[300px] focus-within:outline-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
+              ? `flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
               : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
           }
         />
