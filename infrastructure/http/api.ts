@@ -103,15 +103,22 @@ async function request<T>(
     if (refreshed) {
       return request<T>(path, options, true);
     }
-    
-    // Refresh failed — session is over. Send the user to sign in.
-    useAuthStore.getState().clearAuth();
-    queryClient.clear();
-    
-    if (typeof window !== "undefined" && window.location.pathname !== "/") {
-      window.location.href = "/";
+
+    // Only treat this as an expired session if we actually had a token to begin
+    // with. An anonymous request 401ing (e.g. a logged-out visitor hitting a
+    // protected endpoint from a public page) never had a session to expire, so
+    // it shouldn't clear auth state or force-navigate the user off the page.
+    if (token) {
+      useAuthStore.getState().clearAuth();
+      queryClient.clear();
+
+      if (typeof window !== "undefined" && window.location.pathname !== "/") {
+        window.location.href = "/";
+      }
+      throw new Error("Your session has expired. Please sign in again.");
     }
-    throw new Error("Your session has expired. Please sign in again.");
+
+    throw new ApiError(401, "Unauthorized");
   }
 
   // Read the body once as text so empty responses (204, or a 201/200 with no
@@ -121,6 +128,7 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     if (text) {
+      console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;

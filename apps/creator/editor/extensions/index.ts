@@ -66,6 +66,7 @@ import { getBlockExtensions } from "@/domains/courses";
 import { EMOJI_LIST } from "../lib/emojiList";
 import { uploadImageFile, uploadMediaFile } from "../lib/imageUpload";
 import { searchUsersForMention } from "../lib/mentionSuggestion";
+import { ImageDropPaste } from "./imageDropPaste";
 
 const lowlight = createLowlight(common);
 
@@ -229,6 +230,7 @@ export function buildExtensions(placeholder?: string, ydoc?: Y.Doc, provider?: a
     SlashCommand,
     CodeView,
     Callout,
+    ImageDropPaste,
 
     // ── Our own backend-tied domain blocks (no library equivalent) ──────────
     ...getBlockExtensions(),

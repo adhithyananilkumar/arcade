@@ -20,7 +20,6 @@ import {
   RichTextBubbleIframe,
   RichTextBubbleKatex,
   RichTextBubbleLink,
-  RichTextBubbleImage,
   RichTextBubbleVideo,
   RichTextBubbleImageGif,
   RichTextBubbleMermaid,
@@ -33,6 +32,7 @@ import {
 import { SlashCommandList, renderCommandListDefault } from "reactjs-tiptap-editor/slashcommand";
 import { useLocale } from "reactjs-tiptap-editor/locale-bundle";
 import { getBlockDefinitions } from "@/domains/courses";
+import { ImageAlignBubble, findSelectedImage } from "./ImageAlignBubble";
 
 /**
  * Node types that can appear in the ancestor chain of a plain-text caret without any
@@ -75,6 +75,11 @@ function isPlainTextContext(editor: Editor): boolean {
   // cross-instance `instanceof` unreliable. The structural `node` property is the
   // distinguishing feature of a NodeSelection and survives both problems.
   if (selection instanceof NodeSelection || "node" in selection) return false;
+  // Clicking an image leaves a *TextSelection* spanning the node rather than a
+  // NodeSelection (verified live — see ImageAlignBubble). Its $from/$to are doc-level,
+  // so the ancestor walk below would wrongly call that plain prose and unmount the
+  // node bubbles. Check for a selected image explicitly.
+  if (findSelectedImage(editor)) return false;
   const { $from } = selection;
   for (let depth = 0; depth <= $from.depth; depth++) {
     if (!PLAIN_TEXT_ANCESTORS.has($from.node(depth).type.name)) return false;
@@ -107,6 +112,14 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
     selector: ({ editor }) => isPlainTextContext(editor),
   });
 
+  // A selected image gets ImageAlignBubble instead of the generic text bubble —
+  // otherwise RichTextBubbleText (whose own shouldShow doesn't exclude an image-spanning
+  // TextSelection) renders the paragraph/bold/italic menu over the image controls.
+  const imageSelected = useEditorState({
+    editor,
+    selector: ({ editor }) => !!findSelectedImage(editor),
+  });
+
   const commandList = useMemo(() => {
     let defaults = renderCommandListDefault({ t });
     // Filter out commands for removed extensions
@@ -134,11 +147,16 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
 
   return (
     <>
-      {/* Always mounted: these must be listening while the user types in prose. */}
-      <RichTextBubbleText />
+      {/* Mounted while the user types in prose; unmounted when an image is selected so it
+          can't render on top of the image controls (see imageSelected above). */}
+      {!imageSelected && <RichTextBubbleText />}
       <RichTextBubbleLink />
       <SlashCommandList commandList={commandList} />
       <RichTextBubbleMenuDragHandle />
+      {/* Always mounted, unlike the group below: a selected image doesn't reliably read as
+          a node context, so gating this on `plainText` would keep it from ever appearing.
+          It's a single BubbleMenu with a cheap shouldShow, so the cost is negligible. */}
+      <ImageAlignBubble editor={editor} />
 
       {/* Node-specific menus — mounted only once the caret is somewhere one of them
           could apply. In plain prose none of them can match, so paying their
@@ -150,7 +168,6 @@ export const RichTextBubbles = memo(function RichTextBubbles({ editor }: RichTex
           <RichTextBubbleIframe />
           <RichTextBubbleKatex />
 
-          <RichTextBubbleImage />
           <RichTextBubbleVideo />
           <RichTextBubbleImageGif />
 

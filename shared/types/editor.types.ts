@@ -38,6 +38,7 @@ export type TiptapNodeType =
   | "cta-button"
   | "toggle"
   | "callout"
+  | "section"
   | string;
 
 export type TiptapMarkType =

@@ -77,7 +77,7 @@ import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
-import { EditorRightSidebar, type RightSidebarTab } from "./EditorRightSidebar";
+import { EditorRightSidebar, type SidebarExtraPanel } from "./EditorRightSidebar";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
@@ -90,6 +90,7 @@ import {
 } from "@/apps/creator/editor";
 import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
+import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
 import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
 import {
@@ -112,6 +113,8 @@ import {
   FileText,
   ListChecks,
   Layers,
+  Palette,
+  SlidersHorizontal,
   X,
   GraduationCap,
   Pencil,
@@ -129,6 +132,7 @@ import {
   Eye,
   GripVertical,
   FileQuestion,
+  Award,
   Users,
 } from "lucide-react";
 
@@ -167,6 +171,7 @@ function scheduleIdle(fn: () => void) {
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
+import type { ContentDataAdapter } from "./types";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
@@ -184,6 +189,12 @@ interface LessonNode {
 
 
 
+interface BadgeNode {
+  id: string;
+  title: string;
+  position: number;
+}
+
 interface ModuleNode {
   id: string;
   title: string;
@@ -192,7 +203,7 @@ interface ModuleNode {
   expanded: boolean;
 }
 
-type EditKind = "module" | "lesson";
+type EditKind = "module" | "lesson" | "badge";
 
 interface ConfirmOptions {
   title: string;
@@ -597,7 +608,7 @@ function ContentSettingsPanel({ terminology,
 export function SharedContentEditorOrchestrator({ contentType, contentId: initialContentId }: SharedContentEditorOrchestratorProps) {
   const router = useRouter();
   const [contentId] = useState<string | undefined>(initialContentId);
-  const adapter = useMemo(() => {
+  const adapter = useMemo((): ContentDataAdapter => {
     return contentType === "course"
       ? new CourseAdapter()
       : contentType === "roadmap"
@@ -628,8 +639,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
+  // Badges are a course-level tree item — a sibling of Modules, not nested inside one.
+  const [badges, setBadges] = useState<BadgeNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
+  // A badge design is open in the main panel — mutually exclusive with a lesson
+  // (BadgeEditorWorkspace replaces ArcadeEditor entirely; it doesn't share the
+  // Yjs/Tiptap document state below, since BadgeDocument isn't ProseMirror content).
+  const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
+  // Owns the active badge's full editing state (load/autosave/selection/mutations) — shared
+  // between BadgeEditorWorkspace (main content) and BadgeDesignPanel/PropertiesPanel/LayersPanel
+  // (right sidebar tabs), since both need the same live state. See useBadgeEditor docs.
+  const badgeEditor = useBadgeEditor(activeBadgeId, status === "SUBMITTED");
+  const BADGE_PANEL_IDS = ["design", "properties", "layers"];
+  useEffect(() => {
+    if (activeBadgeId) {
+      setRightPanelTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? prev : "design"));
+    } else {
+      setRightPanelTab((prev) => (BADGE_PANEL_IDS.includes(prev) ? "status" : prev));
+    }
+  }, [activeBadgeId]);
   // A quiz item is open in the main panel (mutually exclusive with a lesson).
   // Legacy JSON to seed into a fresh Y.Doc for lessons that predate version history.
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(
@@ -653,7 +682,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // right-side panel (EditorRightSidebar): a single hamburger button opens/
   // closes it, and its own internal pill tabs pick which of the three shows.
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelTab, setRightPanelTab] = useState<RightSidebarTab>("status");
+  const [rightPanelTab, setRightPanelTab] = useState<string>("status");
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
@@ -912,8 +941,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       setActiveSeedContent(seed);
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
+      setActiveBadgeId(null);
     },
     [adapter, resolveLegacyContent, rightPanelTab]
+  );
+
+  const openBadge = useCallback(
+    (badge: { id: string; title: string }) => {
+      setView("tree");
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
+      // StandaloneBadgeEditor owns its own load/save lifecycle (domains/badges), unlike
+      // openLesson's Y.Doc bootstrap — nothing to bind here beyond which badge is active.
+      setActiveYDoc(null);
+      setActiveLessonId(null);
+      setActiveLessonTitle(badge.title);
+      setActiveBadgeId(badge.id);
+    },
+    [rightPanelTab]
   );
 
   // ── Bootstrap: create or load content on mount ───────────────────────────
@@ -925,7 +969,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     }
     async function bootstrap() {
       try {
-        const { meta, containers } = await adapter.loadContent(initialContentId!);
+        const { meta, containers, badges: loadedBadges } = await adapter.loadContent(initialContentId!);
         setTitle(meta.title);
         setDescription(meta.description ?? "");
         setPricingModel(meta.pricingModel as "FREE" | "PAID");
@@ -948,6 +992,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
             lessons: ((m as any).leaves || []).filter((l: any) => l.type === "document" || l.type === "lesson" || l.type === "quiz" || !l.type),
           }))
         );
+        setBadges(loadedBadges ?? []);
         const firstLeaf = containers[0]?.leaves?.[0];
         if (firstLeaf && firstLeaf.type === "document" && contentType !== "roadmap") {
           await openLesson(firstLeaf as any);
@@ -1149,7 +1194,26 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     [contentId, modules, openLesson, adapter]
   );
 
+  // ── Tree mutation: Add Badge (course-level — a sibling of Module, not a child) ─
 
+  const addBadge = useCallback(
+    async () => {
+      if (!contentId || !adapter.addBadge) return;
+      try {
+        const nextIndex = badges.length + 1;
+        const newBadge = await adapter.addBadge(
+          contentId,
+          `${adapter.terminology.leafBadge ?? "Badge"} ${nextIndex}`
+        );
+        setBadges((prev) => [...prev, newBadge]);
+        openBadge(newBadge);
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.error("Failed to add badge", e);
+      }
+    },
+    [contentId, badges.length, openBadge, adapter]
+  );
 
   // ── Inline rename ─────────────────────────────────────────────────────────
 
@@ -1174,6 +1238,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         console.warn("Module rename failed", e);
       }
 
+    } else if (kind === "badge") {
+      setBadges((prev) => prev.map((b) => (b.id === id ? { ...b, title: value } : b)));
+      if (activeBadgeId === id) setActiveLessonTitle(value);
+      try {
+        await adapter.renameBadge?.(id, value);
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.warn("Badge rename failed", e);
+      }
     } else {
       setModules((prev) =>
         prev.map((m) => ({
@@ -1248,6 +1321,29 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       confirmLabel: "Delete",
       danger: true,
       onConfirm: () => deleteLessonNow(lesson.id),
+    });
+
+  const deleteBadgeNow = async (badgeId: string) => {
+    setBadges((prev) => prev.filter((b) => b.id !== badgeId));
+    if (activeBadgeId === badgeId) {
+      setActiveBadgeId(null);
+      setRightPanelOpen((prev) => (rightPanelTab === "history" ? false : prev));
+    }
+    try {
+      await adapter.deleteBadge?.(badgeId);
+      setHasDraftChanges(true);
+    } catch (e) {
+      console.error("Failed to delete badge", e);
+    }
+  };
+
+  const askDeleteBadge = (badge: BadgeNode) =>
+    setConfirm({
+      title: `Delete ${adapter.terminology.leafBadge ?? "Badge"}?`,
+      message: `"${badge.title}" and its saved design will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete",
+      danger: true,
+      onConfirm: () => deleteBadgeNow(badge.id),
     });
 
 
@@ -1522,9 +1618,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           {/* Center: Title and Status */}
           <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
-              {activeLessonId ? (
+              {activeLessonId || activeBadgeId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
-                  {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
+                  {/* Badges are course-level (no module parent), so only a lesson gets a
+                      "Module / Lesson" breadcrumb prefix. */}
+                  {activeLessonId && modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title && (
                     <>
                       <span className="block max-w-[15vw] truncate font-medium">
                         {modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))?.title}
@@ -1654,7 +1752,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       </div>
 
       <EditorRightSidebar
-        open={rightPanelOpen}
+        mode={rightPanelOpen ? "workflow" : activeBadgeId ? "editor" : "closed"}
         tab={rightPanelTab}
         onTabChange={setRightPanelTab}
         onClose={() => setRightPanelOpen(false)}
@@ -1676,6 +1774,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         inviting={inviting}
         onAddCollaborator={handleAddCollaborator}
         onRemoveCollaborator={handleRemoveCollaborator}
+        editorContextNode={activeBadgeId ? <BadgeEditorContextPanel editor={badgeEditor} /> : undefined}
+        footerOverride={activeBadgeId ? { label: "Badge ID", value: activeBadgeId } : null}
         historyContent={
           activeLessonId ? (
             <VersionHistoryOrchestrator
@@ -1716,7 +1816,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
               {/* ── Body ──────────────────────────────── */}
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
-                {modules.length === 0 && (
+                {modules.length === 0 && badges.length === 0 && (
                   <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
                     <Layers size={24} className="text-[#14142b]/40" />
                     <p className="text-xs font-medium text-[#14142b]/60">
@@ -1764,7 +1864,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                               <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger
-                                    title="Add lesson or quiz"
+                                    title="Add lesson"
                                     className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]"
                                   >
                                     <Plus size={12} />
@@ -1882,6 +1982,55 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       </div>
                     );
                   })}
+
+                {/* ── Badges: course-level tree items, a sibling of Modules — never
+                     nested inside one. See RootBadgeNode/Badge.java class docs. ── */}
+                {badges.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-1">
+                    {badges
+                      .slice()
+                      .sort((a, b) => a.position - b.position)
+                      .map((badge) => {
+                        const isActive = activeBadgeId === badge.id;
+                        return (
+                          <div
+                            key={badge.id}
+                            className={`group flex items-center gap-2 rounded-2xl border border-white/40 px-3 py-2 backdrop-blur-md shadow-sm transition-all ${isActive ? "bg-[#14142b] shadow-md" : "bg-white/60 hover:bg-white/80"
+                              }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => openBadge(badge)}
+                              className={`flex min-w-0 flex-1 items-center gap-1.5 text-left text-xs ${isActive ? "font-semibold text-white" : "font-bold text-[#14142b]"
+                                }`}
+                            >
+                              <Award size={13} className="flex-shrink-0" />
+                              {isEditing("badge", badge.id) ? (
+                                renameInput("text-xs")
+                              ) : (
+                                <span className="truncate" title={badge.title}>
+                                  {badge.title}
+                                </span>
+                              )}
+                            </button>
+                            {status !== "SUBMITTED" && (
+                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                <IconBtn
+                                  title="Rename badge"
+                                  onClick={() => startEdit("badge", badge.id, badge.title)}
+                                >
+                                  <Pencil size={12} />
+                                </IconBtn>
+                                <IconBtn title="Delete badge" danger onClick={() => askDeleteBadge(badge)}>
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
               </div>
 
               {/* ── Sidebar actions (Fixed at bottom) ───────────────── */}
@@ -1904,6 +2053,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     >
                       <Plus size={14} />
                       Add {adapter.terminology.container}
+                    </button>
+                  )}
+                  {typeof adapter.addBadge === "function" && (
+                    <button
+                      type="button"
+                      onClick={addBadge}
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add {adapter.terminology.leafBadge ?? "Badge"}
                     </button>
                   )}
                   {contentType === "course" && (
@@ -1957,6 +2116,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 }}
               />
             </div>
+          ) : activeBadgeId ? (
+            // No glass card, no dark canvas card — the badge geometry itself is the canvas,
+            // rendered directly against the Studio workspace background. The toolbar is the
+            // same floating shell as the Lesson editor's (FloatingToolbar); Design/Properties/
+            // Layers render in the shared right sidebar below, not here.
+            <div 
+              className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12 transition-all duration-300"
+            >
+              <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
+            </div>
           ) : activeLessonId ? (
             // This outer wrapper is NOT scrollable — it just reserves a fixed box
             // (flex-1 inside the `main` column) below the floating toolbar. The
@@ -1999,12 +2168,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 <h3 className="text-base font-semibold text-gray-700">
                   {contentType === "workshop"
                     ? "Select a workshop day or create a new day to start editing."
-                    : "Select a lesson or quiz to start editing."}
+                    : "Select a lesson or badge to start editing."}
                 </h3>
                 <p className="mt-1 text-sm text-gray-400">
                   {contentType === "workshop"
                     ? "Create your first workshop day and start building the agenda, notes, resources, and instructions."
-                    : "Open the sidebar, add a module, then a lesson or quiz to begin."}
+                    : "Open the sidebar, add a module, then a lesson or badge to begin."}
                 </p>
               </div>
             </div>

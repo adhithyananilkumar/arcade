@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { EnrollmentService } from '../api/enrollment.service';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export function EnrollmentButton({
   targetUrl
 }: EnrollmentButtonProps) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [currentState, setCurrentState] = useState<UIEnrollmentState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingPaymentEnrollmentId, setPendingPaymentEnrollmentId] = useState<string | null>(null);
@@ -94,7 +96,13 @@ export function EnrollmentButton({
 
   const handleEnroll = async () => {
     if (isProcessing) return;
-    
+
+    if (!user) {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      router.push(`/sign?mode=login&returnTo=${encodeURIComponent(returnTo)}`);
+      return;
+    }
+
     setIsProcessing(true);
     const key = getOrCreateIdempotencyKey();
 
