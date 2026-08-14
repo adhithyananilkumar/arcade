@@ -397,9 +397,9 @@ export default function FoundersPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, ease: "easeOut" }}
-                  className="hidden lg:block absolute left-0 top-28 -translate-y-1/2"
+                  className="hidden lg:block absolute left-0 top-[235px] -translate-y-1/2"
                 >
-                  <FlourishLine className="w-24 xl:w-40 h-auto text-slate-900 opacity-80" />
+                  <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80" />
                 </motion.div>
 
                 {/* Centered Founders */}
@@ -468,9 +468,9 @@ export default function FoundersPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.7, ease: "easeOut" }}
-                  className="hidden lg:block absolute right-0 top-28 -translate-y-1/2"
+                  className="hidden lg:block absolute right-0 top-[235px] -translate-y-1/2"
                 >
-                  <FlourishLine className="w-24 xl:w-40 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
+                  <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
                 </motion.div>
               </div>
             </div>
