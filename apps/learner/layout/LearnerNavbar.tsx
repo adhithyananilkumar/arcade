@@ -227,10 +227,21 @@ export default function LearnerNavbar() {
     return null;
   })();
 
+  const [studioDetailCrumb, setStudioDetailCrumb] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleCrumbChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setStudioDetailCrumb(detail || null);
+    };
+    window.addEventListener("studio-crumb-changed", handleCrumbChange);
+    return () => window.removeEventListener("studio-crumb-changed", handleCrumbChange);
+  }, []);
+
   const isStudio = pathname.startsWith('/studio');
   const studioCrumb = (() => {
     if (!isStudio) return null;
-    if (pathname.startsWith('/studio/content')) return 'Content';
+    if (pathname.startsWith('/studio/content')) return studioDetailCrumb || 'Content Overview';
     return null;
   })();
 
@@ -261,23 +272,7 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Center: small Console & Studio breadcrumbs */}
-      {(isConsole || isStudio) && (
-        <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
-          <Link
-            href={isConsole ? "/console" : "/studio"}
-            className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
-          >
-            {isConsole ? "Console" : "Studio"}
-          </Link>
-          {(consoleCrumb || studioCrumb) && (
-            <>
-              <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb || studioCrumb}</span>
-            </>
-          )}
-        </div>
-      )}
+
 
       {/* Right Utilities */}
       <div className="flex shrink-0 items-center gap-3">
