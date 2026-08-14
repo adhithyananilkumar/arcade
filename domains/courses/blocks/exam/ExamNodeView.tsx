@@ -27,7 +27,7 @@ export function ExamNodeView({ node, deleteNode }: NodeViewProps) {
           <div>
             <h4 className="text-sm font-semibold text-indigo-900">Exam Component</h4>
             <p className="text-xs text-indigo-700">
-              {node.attrs.examType === "CERTIFICATION" ? "Certification Exam" : "Badge Claim"} - Click to configure
+              {node.attrs.examType === "CERTIFIED" ? "Certified Exam" : "Badged Exam"} - Click to configure
             </p>
           </div>
         </div>

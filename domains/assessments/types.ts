@@ -74,6 +74,7 @@ export interface BankOptionRequest {
 }
 
 export interface BankQuestionRequest {
+  id?: string;
   type: BankQuestionType;
   difficulty: Difficulty;
   prompt: TiptapDocument;
@@ -84,6 +85,21 @@ export interface BankQuestionRequest {
 
 export interface QuestionBankQuestionsRequest {
   questions: BankQuestionRequest[];
+}
+
+export interface QuestionPoolResponse {
+  id: string;
+  bankId: string;
+  title: string;
+  questionCount: number;
+}
+
+export interface QuestionPoolRequest {
+  title?: string;
+}
+
+export interface QuestionPoolMembersRequest {
+  questionIds: string[];
 }
 
 export interface QuestionBankSummary {

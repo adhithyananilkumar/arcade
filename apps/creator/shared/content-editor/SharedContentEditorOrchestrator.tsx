@@ -127,7 +127,6 @@ import {
   Lock,
   Eye,
   GripVertical,
-  FileQuestion,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -966,6 +965,23 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     };
   }, [activeYDoc]);
 
+  // ── Final exam pinned row (course only, when Exam Settings is enabled) ────
+
+  const [openingExam, setOpeningExam] = useState(false);
+
+  const openExamConfig = useCallback(async () => {
+    if (!contentId) return;
+    setOpeningExam(true);
+    try {
+      const exam = await api.get<{ id: string }>(`/api/courses/${contentId}/exam`);
+      router.push(`/studio/course/${contentId}/exam/${exam.id}/config`);
+    } catch {
+      // Swallow — same best-effort pattern as the rest of this sidebar's navigation actions.
+    } finally {
+      setOpeningExam(false);
+    }
+  }, [contentId, router]);
+
   // ── Tree mutation: Add Module ──────────────────────────────────────────────
 
   const addModule = useCallback(async () => {
@@ -1231,10 +1247,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    router.push("/studio");
+    router.push(contentType === "course" ? `/studio/content/course/${contentId}` : "/studio");
   }, [
     navigatingBack,
     contentId,
+    contentType,
     title,
     description,
     pricingModel,
@@ -1726,6 +1743,30 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       </div>
                     );
                   })}
+
+                {contentType === "course" && courseData?.hasExam && (
+                  <div className="mb-2 flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={openExamConfig}
+                      disabled={openingExam}
+                      title="What students see once they finish every module — configure it from here"
+                      className="group flex items-center gap-2 rounded-2xl border border-dashed border-[#14142b]/15 bg-[#14142b]/[0.03] px-3 py-2 text-left shadow-sm transition-all hover:border-[#14142b]/25 hover:bg-[#14142b]/[0.06] disabled:opacity-60"
+                    >
+                      <GraduationCap size={14} className="flex-shrink-0 text-[#14142b]/50" />
+                      <span className="flex-1 truncate text-xs font-bold text-[#14142b]/70">
+                        Final Exam
+                      </span>
+                      <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#14142b]/50">
+                        Auto-added
+                      </span>
+                    </button>
+                    <p className="pl-3 text-[10px] leading-relaxed text-slate-400">
+                      Shown to students as the last step after every module — not a real lesson,
+                      just a preview of what they&apos;ll see. Click to configure the exam.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* ── Sidebar actions (Fixed at bottom) ───────────────── */}
@@ -1748,16 +1789,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     >
                       <Plus size={14} />
                       Add {adapter.terminology.container}
-                    </button>
-                  )}
-                  {contentType === "course" && (
-                    <button
-                      type="button"
-                      onClick={() => router.push(`/studio/course/${contentId}/question-bank`)}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-slate-500 shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow hover:text-[#14142b]"
-                    >
-                      <FileQuestion size={14} />
-                      Question Bank
                     </button>
                   )}
                 </div>

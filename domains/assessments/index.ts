@@ -21,7 +21,7 @@ export { QuizEditor } from "./components/QuizEditor";
 export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionBankEditor } from "./components/QuestionBankEditor";
-export { getQuizStats, getOrCreateCourseQuestionBank } from "./api";
+export { getQuizStats, getOrCreateCourseQuestionBank, listPools } from "./api";
 export type {
   QuestionType,
   QuestionResponse,
@@ -35,4 +35,5 @@ export type {
   BankQuestionType,
   QuestionBankSummary,
   SectionResponse,
+  QuestionPoolResponse,
 } from "./types";
