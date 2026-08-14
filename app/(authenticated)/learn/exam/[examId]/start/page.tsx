@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2 } from 'lucide-react';
+import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/infrastructure/http/api';
 
@@ -28,12 +28,57 @@ export default function ExamEnginePage() {
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
+  // Proctored exams reject /questions with 403 until a session exists, is identity-verified,
+  // and active — see ProctoringService#requireReadyForDelivery. Non-proctored exams never hit
+  // that branch since the fetch just succeeds on the first try. `isProctored` sticks once known
+  // (used later to report events/complete the session); `awaitingProctorGate` only reflects
+  // whether the consent screen is currently blocking question access.
+  const [isProctored, setIsProctored] = useState(false);
+  const [awaitingProctorGate, setAwaitingProctorGate] = useState(false);
+  const [startingSession, setStartingSession] = useState(false);
+
+  const loadQuestions = () => {
     api
       .get<Question[]>(`/api/exams/${params.examId}/questions`)
-      .then((data) => setQuestions(data))
-      .catch((err) => console.error('Failed to load questions', err));
+      .then((data) => {
+        setAwaitingProctorGate(false);
+        setQuestions(data);
+      })
+      .catch((err) => {
+        if (err?.status === 403) {
+          setIsProctored(true);
+          setAwaitingProctorGate(true);
+        } else {
+          console.error('Failed to load questions', err);
+        }
+      });
+  };
+
+  useEffect(() => {
+    loadQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.examId]);
+
+  const handleStartProctoring = async () => {
+    setStartingSession(true);
+    try {
+      await api.post(`/api/exams/${params.examId}/proctoring/session/start`, {});
+      await api.post(`/api/exams/${params.examId}/proctoring/session/verify-identity`, {});
+      loadQuestions();
+    } catch (err) {
+      console.error('Failed to start proctoring session', err);
+    } finally {
+      setStartingSession(false);
+    }
+  };
+
+  const reportProctorEvent = (eventType: string, detail: string) => {
+    api
+      .post(`/api/exams/${params.examId}/proctoring/session/events`, { eventType, detail })
+      .catch(() => {
+        // Best-effort — the client-side strike system is the source of truth for the UI.
+      });
+  };
 
   useEffect(() => {
     if (sessionStorage.getItem(`exam_terminated_${params.examId}`)) {
@@ -65,6 +110,7 @@ export default function ExamEnginePage() {
     const handleStrike = (reason: string) => {
       if (isSubmitting) return;
       console.warn('Anti-Cheat Strike:', reason);
+      reportProctorEvent('INTEGRITY_STRIKE', reason);
       setStrikes((prev) => prev + 1);
     };
 
@@ -185,6 +231,10 @@ export default function ExamEnginePage() {
     sessionStorage.setItem('examScore', score.toString());
     sessionStorage.setItem('examTotal', questions.length.toString());
 
+    if (isProctored) {
+      api.post(`/api/exams/${params.examId}/proctoring/session/complete`, {}).catch(() => {});
+    }
+
     const go = () => router.push(`/learn/exam/${params.examId}/results`);
     if (document.fullscreenElement) {
       document.exitFullscreen().then(go).catch(go);
@@ -192,6 +242,38 @@ export default function ExamEnginePage() {
       go();
     }
   };
+
+  if (awaitingProctorGate) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center p-4"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        <div className="w-full max-w-md rounded-2xl border border-slate-200/80 bg-white p-7 text-center shadow-[0_24px_60px_rgba(20,20,43,0.12)]">
+          <div className="mx-auto mb-5 grid size-14 place-items-center rounded-2xl bg-[#14142b]/[0.06]">
+            <ShieldCheck className="text-[#14142b]" size={26} />
+          </div>
+          <h2 className="text-[1.25rem] font-bold tracking-tight text-[#14142b]">
+            This is a proctored exam
+          </h2>
+          <p className="mt-2 text-[13px] font-medium leading-relaxed text-slate-500">
+            Stay in fullscreen and don&apos;t switch tabs once you begin — leaving the exam
+            environment is logged. Starting confirms you&apos;re the enrolled candidate and ready
+            to proceed.
+          </p>
+          <button
+            type="button"
+            onClick={handleStartProctoring}
+            disabled={startingSession}
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] disabled:opacity-60"
+          >
+            {startingSession ? <Loader2 size={15} className="animate-spin" /> : null}
+            Start proctoring session
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (questions.length === 0) {
     return (

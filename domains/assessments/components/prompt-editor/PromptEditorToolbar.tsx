@@ -43,8 +43,8 @@ function ToolbarButton({
       disabled={disabled}
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-        active ? "bg-indigo-50 text-indigo-600" : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+      className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-30 ${
+        active ? "bg-[#14142b] text-white shadow-sm" : "text-slate-400 hover:bg-slate-200/50 hover:text-[#14142b]"
       }`}
     >
       {children}
@@ -53,7 +53,7 @@ function ToolbarButton({
 }
 
 function Divider() {
-  return <span className="mx-1 h-4 w-px bg-gray-200" />;
+  return <span className="mx-1 h-5 w-px bg-slate-200/80" />;
 }
 
 export function PromptEditorToolbar({
@@ -92,7 +92,7 @@ export function PromptEditorToolbar({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-100 px-2 py-1.5">
+    <div className="flex flex-wrap items-center gap-1 border-b border-slate-200/60 bg-slate-50/50 px-3 py-2">
       <ToolbarButton
         title="Bold"
         active={editor.isActive("bold")}

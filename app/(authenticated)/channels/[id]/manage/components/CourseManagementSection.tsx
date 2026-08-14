@@ -205,14 +205,50 @@ export const mockContent: ExtendedContent[] = [
     status: 'PUBLISHED',
   },
   {
+    id: 'article-2',
+    title: 'Demystifying WebAssembly and Rust for Web Performance',
+    thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Dr. Sarah Chen',
+    category: 'Web Development',
+    contentType: 'Article',
+    difficulty: 'Advanced',
+    duration: '15m read',
+    price: 'Free',
+    enrollments: 18400,
+    completionRate: 92.5,
+    rating: 4.94,
+    reviewsCount: 210,
+    wishlistCount: 680,
+    lastUpdated: '3 days ago',
+    status: 'PUBLISHED',
+  },
+  {
+    id: 'article-3',
+    title: 'State Management Trends in 2026: Signals vs Selectors',
+    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80',
+    instructor: 'David Kim',
+    category: 'Frontend Engineering',
+    contentType: 'Article',
+    difficulty: 'Intermediate',
+    duration: '8m read',
+    price: 'Free',
+    enrollments: 9200,
+    completionRate: 89.0,
+    rating: 4.87,
+    reviewsCount: 140,
+    wishlistCount: 390,
+    lastUpdated: '4 days ago',
+    status: 'DRAFT',
+  },
+  {
     id: 'event-1',
-    title: 'Live Event: Building High-Performance Web Apps',
+    title: 'Live Workshop: Building High-Performance Web Apps',
     thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
     instructor: 'Dr. Sarah Chen',
     category: 'Web Development',
     contentType: 'Event',
     difficulty: 'Beginner',
-    duration: '2h',
+    duration: '2h live session',
     price: 'Free',
     enrollments: 1200,
     completionRate: 100,
@@ -220,6 +256,24 @@ export const mockContent: ExtendedContent[] = [
     reviewsCount: 150,
     wishlistCount: 200,
     lastUpdated: 'Just now',
+    status: 'PUBLISHED',
+  },
+  {
+    id: 'event-2',
+    title: 'Global AI Summit 2026: Keynote & Live Q&A',
+    thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80',
+    instructor: 'Prof. Michael Vance',
+    category: 'AI Engineering',
+    contentType: 'Event',
+    difficulty: 'Intermediate',
+    duration: '4h keynote',
+    price: '$29.99',
+    enrollments: 3400,
+    completionRate: 96.0,
+    rating: 4.98,
+    reviewsCount: 410,
+    wishlistCount: 1100,
+    lastUpdated: 'Yesterday',
     status: 'PUBLISHED',
   },
 ];
@@ -310,11 +364,15 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
         const matchesSearch =
           c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           c.instructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          c.category.toLowerCase().includes(searchQuery.toLowerCase());
+          c.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.contentType.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType =
+          selectedType === 'ALL' ||
+          c.contentType.toLowerCase() === selectedType.toLowerCase();
         const matchesCat = selectedCategory === 'ALL' || c.category === selectedCategory;
         const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
         const matchesInst = selectedInstructor === 'ALL' || c.instructor === selectedInstructor;
-        return matchesSearch && matchesCat && matchesStatus && matchesInst;
+        return matchesSearch && matchesType && matchesCat && matchesStatus && matchesInst;
       })
       .sort((a, b) => {
         if (sortBy === 'POPULAR') return b.enrollments - a.enrollments;
@@ -322,7 +380,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
         if (sortBy === 'COMPLETION') return b.completionRate - a.completionRate;
         return 0;
       });
-  }, [courses, searchQuery, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
+  }, [courses, searchQuery, selectedType, selectedCategory, selectedStatus, selectedInstructor, sortBy]);
 
   const rankedTopCourses = useMemo(() => {
     const sorted = [...courses];
@@ -647,7 +705,7 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
 
                 {/* Price & Actions Row */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
+                  <span className="text-base font-black text-[#14142b] pl-3 sm:pl-4">{course.price}</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -730,24 +788,38 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
           ))}
         </div>
       ) : (
-        /* List Mode View */
-        <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs">
-          <div className="divide-y divide-slate-100">
-            {filteredCourses.map((course) => (
-              <div 
-                key={course.id} 
+        /* List Mode View with Left Accent Borders (Grey by default, colored on hover/focus) */
+        <div className="space-y-3">
+          {filteredCourses.map((course) => {
+            const topAndLeftColor =
+              course.status === 'PUBLISHED'
+                ? 'border-t-emerald-500 border-l-emerald-500'
+                : course.status === 'DRAFT'
+                ? 'border-t-purple-500 border-l-purple-500'
+                : course.status === 'SUBMITTED'
+                ? 'border-t-sky-400 border-l-sky-400'
+                : 'border-t-indigo-600 border-l-indigo-600';
+
+            return (
+              <div
+                key={course.id}
+                tabIndex={0}
                 onClick={() => handleCardClick(course)}
-                className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between hover:bg-slate-50/80 transition-colors cursor-pointer"
+                className={`group relative flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border-t-2 border-l-2 ${topAndLeftColor} border-r border-b border-r-slate-200/80 border-b-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer outline-none`}
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="h-16 w-24 shrink-0 rounded-2xl object-cover border border-slate-200"
-                  />
+                  <div className="relative shrink-0 overflow-hidden rounded-xl border border-slate-200/80 shadow-2xs">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="h-16 w-24 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="font-extrabold text-indigo-600">{course.category}</span>
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-extrabold text-indigo-600 bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100/80">
+                        {course.category}
+                      </span>
                       <span className="text-slate-300">·</span>
                       <span className="font-semibold text-slate-500">{course.instructor}</span>
                       {course.addedByStaff && (
@@ -757,28 +829,33 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                         </>
                       )}
                     </div>
-                    <h3 className="text-sm font-extrabold text-[#14142b] truncate">{course.title}</h3>
+                    <h3 className="text-sm font-extrabold text-[#14142b] truncate mt-1 group-hover:text-indigo-600 transition-colors">
+                      {course.title}
+                    </h3>
                     <div className="mt-1 flex items-center gap-3 text-[11px] font-semibold text-slate-500">
                       <span>{course.enrollments.toLocaleString()} enrolled</span>
                       <span>·</span>
-                      <span className="flex items-center gap-0.5 text-amber-500">
+                      <span className="flex items-center gap-0.5 text-amber-500 font-bold">
                         <Star size={11} className="fill-amber-400 text-amber-400" />
                         {course.rating}
                       </span>
                       <span>·</span>
-                      <span className="text-emerald-600">{course.completionRate}% completion</span>
+                      <span className="text-emerald-600 font-extrabold">{course.completionRate}% completion</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 justify-between sm:justify-end">
-                  <span className="text-sm font-black text-[#14142b]">{course.price}</span>
+                <div className="flex items-center gap-4 justify-between sm:justify-end shrink-0">
+                  <span className="text-base font-black text-[#14142b]">{course.price}</span>
                   <div className="flex items-center gap-2">
                     {course.status === 'DRAFT' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'SUBMIT'); }}
-                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'SUBMIT');
+                        }}
+                        className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-100 transition-colors"
                       >
                         Request Review
                       </button>
@@ -786,8 +863,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     {course.status === 'SUBMITTED' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'PUBLISH'); }}
-                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'PUBLISH');
+                        }}
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-colors"
                       >
                         Approve
                       </button>
@@ -795,8 +875,11 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     {course.status === 'PUBLISHED' && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAction(course.id, 'UNPUBLISH'); }}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAction(course.id, 'UNPUBLISH');
+                        }}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
                       >
                         Unpublish
                       </button>
@@ -813,16 +896,19 @@ export function CourseManagementSection({ channelId, onAddCourse, reviewMap = {}
                     )}
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); router.push(`/studio/course/${course.id}`); }}
-                      className="rounded-xl bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-900"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/studio/course/${course.id}`);
+                      }}
+                      className="rounded-xl bg-[#14142b] px-4 py-1.5 text-xs font-bold text-white hover:bg-indigo-900 shadow-2xs transition-colors"
                     >
                       Edit
                     </button>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       )}
     </div>

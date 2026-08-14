@@ -16,6 +16,7 @@ import { ContentOverviewHeader } from "./components/ContentOverviewHeader";
 import type { OverviewTab } from "./components/ContentOverviewNav";
 import { ContentWorkspaceDock } from "./components/ContentWorkspaceDock";
 import { KeyInfoCard } from "./components/sections/KeyInfoCard";
+import { CourseExamSettingsCard } from "./components/sections/CourseExamSettingsCard";
 import { MetricsGrid } from "./components/sections/MetricsGrid";
 import { ReadinessCard } from "./components/sections/ReadinessCard";
 import { CourseOverviewTab, getCourseMetrics } from "./components/content-types/CourseOverview";
@@ -220,6 +221,13 @@ export default function ContentOverviewPage() {
                 createdAt={content.createdAt}
                 updatedAt={content.updatedAt}
               />
+              {segment === "course" && (
+                <CourseExamSettingsCard
+                  contentId={contentId}
+                  initialHasExam={data.courseSettings?.status === "ok" ? data.courseSettings.data.hasExam : undefined}
+                  onUpdate={reload}
+                />
+              )}
             </div>
             <div className="flex flex-col gap-6">
               <div className="group rounded-2xl border border-white/40 bg-white/40 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl">

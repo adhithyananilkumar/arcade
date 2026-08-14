@@ -95,11 +95,16 @@ const REVIEW_CONTENT_TYPE: Record<ContentTypeSegment, ReviewContentType> = {
   event: "EVENT",
 };
 
+export interface CourseSettingsLite {
+  hasExam: boolean;
+}
+
 export interface OverviewData {
   content: ContentSummaryLite | null;
   statusHistory: FetchResult<StatusHistoryEntry[]>;
   collaborators: FetchResult<CollaboratorLite[]>;
   review: FetchResult<ReviewResponse>;
+  courseSettings?: FetchResult<CourseSettingsLite>;
   roadmapAnalytics?: FetchResult<RoadmapAnalytics>;
   roadmapActivity?: FetchResult<ActivityEntry[]>;
   eventParticipants?: FetchResult<EventParticipant[]>;
@@ -200,12 +205,13 @@ export async function fetchOverviewData(
   });
 
   if (segment === "course") {
-    const [statusHistory, collaborators, review] = await Promise.all([
+    const [statusHistory, collaborators, courseSettings, review] = await Promise.all([
       settle(api.get<StatusHistoryEntry[]>(`/api/courses/${contentId}/status-history`), { isEmpty: isEmptyArray }),
       settle(api.get<CollaboratorLite[]>(`/api/v1/courses/${contentId}/collaborators`), { isEmpty: isEmptyArray }),
+      settle(api.get<CourseSettingsLite>(`/api/courses/${contentId}`)),
       reviewPromise,
     ]);
-    return { content, statusHistory, collaborators, review };
+    return { content, statusHistory, collaborators, courseSettings, review };
   }
 
   if (segment === "roadmap") {

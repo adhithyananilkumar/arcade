@@ -4,7 +4,7 @@
 @font-face {
   font-family: "Voyage";
   src: url("/fonts/Voyage.otf") format("opentype"),
-       url("/fonts/Voyage.woff2") format("woff2");
+    url("/fonts/Voyage.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -70,6 +70,7 @@
 }
 
 @theme inline {
+  --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite linear;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -226,27 +227,44 @@
       scroll-behavior: auto !important;
     }
   }
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
-    background-color: oklch(0.85 0 0); /* light mode grey */
+    background-color: oklch(0.85 0 0);
+    /* light mode grey */
     border-radius: 9999px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background-color: oklch(0.75 0 0);
   }
-  
+
   .dark ::-webkit-scrollbar-thumb {
-    background-color: oklch(0.25 0 0); /* dark mode grey */
+    background-color: oklch(0.25 0 0);
+    /* dark mode grey */
   }
+
   .dark ::-webkit-scrollbar-thumb:hover {
     background-color: oklch(0.35 0 0);
+  }
+
+  .font-script {
+    font-family: 'Dancing Script', 'Caveat', cursive;
+  }
+}
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
   }
 }
 
@@ -362,13 +380,14 @@
       transparent,
       rgba(255, 255, 255, 0.3));
 }
+
 /* Apple-style floating dock */
 .apple-glass-dock {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 0.5px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
     inset 0 -1px 0 rgba(255, 255, 255, 0.4);
@@ -377,8 +396,36 @@
 .dark .apple-glass-dock {
   background: rgba(40, 40, 40, 0.90);
   border: 0.5px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Card Scalloped Left Edge Cutout */
+.card-scalloped-left {
+  -webkit-mask-image: radial-gradient(circle 7px at 0px 16px, transparent 7px, #000 7.5px);
+  -webkit-mask-size: 100% 32px;
+  -webkit-mask-repeat: repeat-y;
+  mask-image: radial-gradient(circle 7px at 0px 16px, transparent 7px, #000 7.5px);
+  mask-size: 100% 32px;
+  mask-repeat: repeat-y;
+}
+
+/* Card Bottom Ribbon V-Notch Cutout / Bow Shape */
+.card-bow-shape {
+  clip-path: polygon(0 0,
+      100% 0,
+      100% 100%,
+      50% calc(100% - 20px),
+      0 100%);
+}
+
+/* Card Bottom Ribbon V-Notch Cutout */
+.card-vnotch-bottom {
+  clip-path: polygon(0 0,
+      100% 0,
+      100% 100%,
+      50% calc(100% - 14px),
+      0 100%);
 }

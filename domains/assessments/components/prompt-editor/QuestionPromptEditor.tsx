@@ -68,7 +68,7 @@ export function QuestionPromptEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none focus:outline-none min-h-[64px] px-3 py-2 prose-p:my-1 prose-headings:my-2",
+          "prose prose-sm max-w-none focus:outline-none min-h-[64px] px-4 py-3 prose-p:my-1 prose-headings:my-2",
       },
     },
   });
@@ -90,7 +90,7 @@ export function QuestionPromptEditor({
 
   return (
     <div
-      className={`qb-prompt rounded-lg border border-gray-200 bg-white transition-colors focus-within:border-indigo-300 focus-within:ring-1 focus-within:ring-indigo-200 ${className}`}
+      className={`qb-prompt overflow-hidden rounded-2xl border-0 bg-slate-50/50 ring-1 ring-slate-200/60 transition-all focus-within:bg-white focus-within:shadow-md focus-within:ring-slate-300 ${className}`}
     >
       {editor && (
         <PromptEditorToolbar editor={editor} onInsertImage={() => setImagePickerOpen(true)} />

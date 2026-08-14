@@ -8,6 +8,9 @@ import type {
   BankQuestionResponse,
   QuestionBankQuestionsRequest,
   QuestionBankSummary,
+  QuestionPoolMembersRequest,
+  QuestionPoolRequest,
+  QuestionPoolResponse,
   QuestionResponse,
   QuizAttemptResponse,
   QuizAttemptSummaryResponse,
@@ -131,4 +134,30 @@ export async function saveSectionQuestions(
     wireBody
   );
   return wire.map(fromWire);
+}
+
+// ── Question pools ────────────────────────────────────────────────────────────
+
+export function listPools(bankId: string) {
+  return api.get<QuestionPoolResponse[]>(`/api/question-banks/${bankId}/pools`);
+}
+
+export function createPool(bankId: string, req: QuestionPoolRequest = {}) {
+  return api.post<QuestionPoolResponse>(`/api/question-banks/${bankId}/pools`, req);
+}
+
+export function renamePool(poolId: string, title: string) {
+  return api.patch<QuestionPoolResponse>(`/api/question-banks/pools/${poolId}`, { title });
+}
+
+export function deletePool(poolId: string) {
+  return api.delete<void>(`/api/question-banks/pools/${poolId}`);
+}
+
+export function getPoolMembers(poolId: string) {
+  return api.get<string[]>(`/api/question-banks/pools/${poolId}/members`);
+}
+
+export function setPoolMembers(poolId: string, req: QuestionPoolMembersRequest) {
+  return api.put<QuestionPoolResponse>(`/api/question-banks/pools/${poolId}/members`, req);
 }

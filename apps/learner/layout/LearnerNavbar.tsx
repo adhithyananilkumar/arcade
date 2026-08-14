@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, Calendar } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -27,7 +27,7 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
+  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
   const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
@@ -41,13 +41,6 @@ export default function LearnerNavbar() {
   const [lastY, setLastY] = useState(0);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    // Never hide on console routes because they have their own internal scroll or need the nav visible
-    if (pathname.startsWith('/console')) {
-      setHidden(false);
-      setLastY(latest);
-      return;
-    }
-    
     // Only hide after 150px of downward scroll to avoid triggering at the very top
     if (latest > 150 && latest > lastY) {
       setHidden(true);
@@ -70,15 +63,6 @@ export default function LearnerNavbar() {
       })
       .catch(() => setHasChannels(false));
   }, []);
-
-  useEffect(() => {
-    const handleInboxUpdate = () => {
-      refresh();
-      fetchAdminTasks();
-    };
-    window.addEventListener('inbox-updated', handleInboxUpdate);
-    return () => window.removeEventListener('inbox-updated', handleInboxUpdate);
-  }, [refresh]);
 
   const fetchInvitations = async () => {
     try {
@@ -215,22 +199,31 @@ export default function LearnerNavbar() {
       });
   }, []);
 
+  const searchParams = useSearchParams();
   const isConsole = pathname.startsWith('/console');
+  const isChannelManage = pathname.includes('/channels/') && pathname.includes('/manage');
+  const isChannelPage = pathname.startsWith('/channels/') && !pathname.includes('/manage');
+
+  const channelTabLabel = (() => {
+    if (!isChannelManage) return 'Overview';
+    const tab = (searchParams.get('tab') || 'OVERVIEW').toUpperCase();
+    switch (tab) {
+      case 'CONTENT': return 'Content';
+      case 'STAFF': return 'Staff';
+      case 'ANALYTICS': return 'Analytics & Reviews';
+      case 'ACTIVITY': return 'Timeline';
+      case 'NOTIFICATIONS': return 'Notifications';
+      case 'DANGER': return 'Danger Zone';
+      default: return 'Overview';
+    }
+  })();
+
   const consoleCrumb = (() => {
     if (!isConsole) return null;
     if (pathname.startsWith('/console/channels')) return 'Channels';
     if (pathname.startsWith('/console/reviews')) return 'Reviews';
     if (pathname.startsWith('/console/exam-schedules')) return 'Exams';
-    if (pathname.startsWith('/console/payments')) return 'Payments';
-    if (pathname.startsWith('/console/inbox')) return 'Inbox';
     if (pathname.startsWith('/console/iam')) return 'IAM';
-    return null;
-  })();
-
-  const isStudio = pathname.startsWith('/studio');
-  const studioCrumb = (() => {
-    if (!isStudio) return null;
-    if (pathname.startsWith('/studio/content')) return 'Content';
     return null;
   })();
 
@@ -261,19 +254,47 @@ export default function LearnerNavbar() {
         </Link>
       </div>
 
-      {/* Center: small Console & Studio breadcrumbs */}
-      {(isConsole || isStudio) && (
+      {/* Center: Channel Manage breadcrumbs */}
+      {isChannelManage && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+          <Link
+            href="/manage-channels"
+            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Channels
+          </Link>
+          <span className="h-3.5 w-px bg-slate-200 dark:bg-slate-700 shrink-0" />
+          <span className="font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+            {channelTabLabel}
+          </span>
+        </div>
+      )}
+
+      {/* Center: Channel Public page breadcrumbs */}
+      {isChannelPage && (
+        <div className="pointer-events-auto absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 items-center justify-center gap-3 rounded-full px-5 apple-glass-dock text-xs shadow-none [box-shadow:none]">
+          <Link
+            href="/manage-channels"
+            className="font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            Channels
+          </Link>
+        </div>
+      )}
+
+      {/* Center: small Console breadcrumbs */}
+      {isConsole && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
           <Link
-            href={isConsole ? "/console" : "/studio"}
+            href="/console"
             className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
           >
-            {isConsole ? "Console" : "Studio"}
+            Console
           </Link>
-          {(consoleCrumb || studioCrumb) && (
+          {consoleCrumb && (
             <>
               <span className="text-[11px] text-slate-300">/</span>
-              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb || studioCrumb}</span>
+              <span className="text-[11px] font-bold text-[#14142b]">{consoleCrumb}</span>
             </>
           )}
         </div>
@@ -298,9 +319,7 @@ export default function LearnerNavbar() {
               <Bell size={20} strokeWidth={2} />
               {(invitations.length + unreadCount + pendingAdminTasks.length) > 0 && (
                 <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-white dark:border-neutral-900 shadow-sm">
-                  {(invitations.length + unreadCount + pendingAdminTasks.length) > 99
-                    ? '99+'
-                    : invitations.length + unreadCount + pendingAdminTasks.length}
+                  {invitations.length + unreadCount + pendingAdminTasks.length > 99 ? '99+' : invitations.length + unreadCount + pendingAdminTasks.length}
                 </span>
               )}
             </button>
@@ -311,19 +330,19 @@ export default function LearnerNavbar() {
                   className="fixed inset-0 z-40 cursor-default"
                   onClick={() => setIsNotificationsOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 md:w-[420px] max-w-[90vw] flex flex-col max-h-[85vh] sm:max-h-[520px] rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/50 dark:bg-neutral-900/50">
+                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
                       >
                         Mark all read
                       </button>
                     )}
                   </div>
-                  <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-black/5 dark:divide-white/5">
+                  <div className="max-h-[420px] overflow-y-auto">
                     {invitations.length > 0 && (
                       <div className="border-b border-black/5 dark:border-white/5">
                         <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
@@ -385,17 +404,12 @@ export default function LearnerNavbar() {
                     )}
                     <NotificationList
                       notifications={notifications}
-                      onItemClick={(notif) => {
-                        if (notif && !notif.read) {
-                          markRead(notif.id);
-                        }
-                        setIsNotificationsOpen(false);
-                      }}
+                      onItemClick={() => setIsNotificationsOpen(false)}
                       onNotificationAction={refresh}
                       emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />
                   </div>
-                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20 shrink-0">
+                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
                     <Link 
                       href="/notifications" 
                       onClick={() => setIsNotificationsOpen(false)}
@@ -452,7 +466,14 @@ export default function LearnerNavbar() {
                 Content Studio
               </MenuItem>
             )}
-
+            {collaboratedEventId && (
+              <MenuItem 
+                icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
+                onClick={() => router.push('/studio/events')}
+              >
+                Events
+              </MenuItem>
+            )}
             {showArcConsole && (
               <MenuItem 
                 icon={<ShieldAlert className="text-rose-500" strokeWidth={2} />} 

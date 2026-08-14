@@ -53,6 +53,7 @@ export interface CourseResponse {
   examSchedule?: string;
   /** Super-user-managed category (Console -> Content Manage -> Categories), or null for "Other". */
   categoryId?: string | null;
+  hasExam?: boolean;
   status: ContentStatus;
   rejectionReason?: string;
   wasPublished?: boolean;
@@ -71,6 +72,7 @@ export interface CreateCourseRequest {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
 }
 
 export interface PatchCourseRequest {
@@ -81,6 +83,7 @@ export interface PatchCourseRequest {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────
@@ -178,5 +181,6 @@ export interface CourseRenderResponse {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
   modules: ModuleRenderResponse[];
 }
