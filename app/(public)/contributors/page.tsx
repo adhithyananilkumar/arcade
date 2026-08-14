@@ -187,7 +187,7 @@ export default function ContributorsPage() {
 
       {/* --- OTHER CONTRIBUTORS GRID --- */}
       <section className="relative px-4 sm:px-6 lg:px-8 pb-32 max-w-7xl mx-auto w-full z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-10 justify-items-center">
+        <div className="flex flex-wrap justify-center gap-8 sm:gap-12 items-start">
           {OTHER_CONTRIBUTORS_DATA.map((contributor, idx) => (
             <motion.div
               key={contributor.id}

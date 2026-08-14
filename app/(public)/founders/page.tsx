@@ -36,7 +36,7 @@ import {
   Video
 } from "lucide-react";
 
-import BlurText from "@/components/BlurText";
+import BlurText from "@/components/ui/BlurText";
 import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
 import OrbitImages from "@/components/ui/OrbitImages";
 import FoldText from "@/components/ui/FoldText";
@@ -311,7 +311,8 @@ export default function FoundersPage() {
             {/* Section Header */}
             <div className="text-center space-y-3 max-w-2xl mx-auto">
               <BlurText
-                text="The Ones Who Make It Possible"
+                as="h2"
+                text="The Ones Who Built With Us"
                 delay={150}
                 animateBy="words"
                 direction="top"
