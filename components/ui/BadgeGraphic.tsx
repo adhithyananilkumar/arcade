@@ -63,18 +63,16 @@ export function getBadgeForCourse(identifier?: string): { type: string; title: s
 
 export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
   // Shape Paths for elongated vertical hexagon (viewBox 0 0 100 130)
-  const outerHex = "50,5 95,30 95,100 50,125 5,100 5,30";
-  const leftBevel = "50,5 50,125 5,100 5,30";
-  const innerHex = "50,15 85,35 85,95 50,115 15,95 15,35";
-  const innerShadow = "50,15 85,35 85,95 50,115";
+  const outerHex = "50,8 92,30 92,100 50,122 8,100 8,30";
+  const innerHex = "50,17 84,35 84,95 50,113 16,95 16,35";
+  const innerShadow = "50,17 84,35 84,95 50,113";
 
   return (
-    <svg viewBox="0 0 100 130" className={`w-full h-full drop-shadow-lg filter drop-shadow-[0_8px_15px_rgba(0,0,0,0.3)] ${className}`}>
+    <svg viewBox="0 0 100 130" className={`w-full h-full drop-shadow-lg filter drop-shadow-[0_8px_15px_rgba(0,0,0,0.3)] overflow-visible ${className}`}>
       {/* 1. Sword and Crown */}
       {type === 'sword-crown' && (
         <g>
           <polygon points={outerHex} fill="#b8860b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#0a2a43" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 50,25 L 50,105 M 25,50 L 75,80 M 25,80 L 75,50" stroke="#4682b4" strokeWidth="2" opacity="0.4" />
@@ -89,7 +87,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'potion' && (
         <g>
           <polygon points={outerHex} fill="#2980b9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#0d1f2d" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 30,75 C 30,95 70,95 70,75 C 70,65 60,60 60,50 L 60,40 L 40,40 L 40,50 C 40,60 30,65 30,75 Z" fill="#81ecec" />
@@ -104,7 +101,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'mountain' && (
         <g>
           <polygon points={outerHex} fill="#b2bec3" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2d3436" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 35,50 L 42,60 L 50,45 L 58,60 L 65,50 L 60,65 L 40,65 Z" fill="#f1c40f" />
@@ -119,7 +115,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'flower' && (
         <g>
           <polygon points={outerHex} fill="#00b894" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#004d40" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 50,35 C 65,50 65,60 50,70 C 35,60 35,50 50,35 Z" fill="#55efc4" />
@@ -135,7 +130,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'skull-arrows' && (
         <g>
           <polygon points={outerHex} fill="#e1b12c" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2f3640" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <line x1="25" y1="50" x2="75" y2="90" stroke="#e84118" strokeWidth="4" />
@@ -156,7 +150,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'star' && (
         <g>
           <polygon points={outerHex} fill="#8e44ad" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2c3e50" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <polygon points="50,40 55,55 70,55 58,65 62,80 50,72 38,80 42,65 30,55 45,55" fill="#f1c40f" />
@@ -168,7 +161,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'shield-book' && (
         <g>
           <polygon points={outerHex} fill="#c0392b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#641e16" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 35,55 L 50,60 L 65,55 L 65,75 L 50,80 L 35,75 Z" fill="#ecf0f1" />
@@ -181,7 +173,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'lightning' && (
         <g>
           <polygon points={outerHex} fill="#f39c12" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#7e5109" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <polygon points="55,35 35,65 50,65 45,95 65,60 50,60" fill="#f1c40f" />
@@ -193,7 +184,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'crystal' && (
         <g>
           <polygon points={outerHex} fill="#e84393" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#6c5ce7" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <polygon points="50,40 65,55 50,85 35,55" fill="#a29bfe" />
@@ -208,7 +198,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'atom-science' && (
         <g>
           <polygon points={outerHex} fill="#00cec9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#051923" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <ellipse cx="50" cy="65" rx="25" ry="10" fill="none" stroke="#81ecec" strokeWidth="2.5" transform="rotate(-30 50 65)" />
@@ -222,7 +211,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'fire-flame' && (
         <g>
           <polygon points={outerHex} fill="#ff7675" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#4a0e17" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 50,35 C 40,55 30,65 30,78 C 30,90 40,95 50,95 C 60,95 70,90 70,78 C 70,65 60,55 50,35 Z" fill="#e17055" />
@@ -235,7 +223,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'code-brackets' && (
         <g>
           <polygon points={outerHex} fill="#30336b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#130f40" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <path d="M 38,45 L 28,55 L 28,62 L 35,65 L 28,68 L 28,75 L 38,85" fill="none" stroke="#f1c40f" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -248,7 +235,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'compass-navigation' && (
         <g>
           <polygon points={outerHex} fill="#d35400" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#3d1e03" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <circle cx="50" cy="65" r="28" fill="none" stroke="#f39c12" strokeWidth="2.5" />
@@ -264,7 +250,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'cpu-chip' && (
         <g>
           <polygon points={outerHex} fill="#0984e3" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#001427" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <rect x="35" y="50" width="30" height="30" rx="4" fill="#00cec9" stroke="#74b9ff" strokeWidth="2" />
@@ -288,7 +273,6 @@ export function BadgeGraphic({ type, className = '' }: BadgeGraphicProps) {
       {type === 'target-bullseye' && (
         <g>
           <polygon points={outerHex} fill="#6c5ce7" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#111111" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           <circle cx="50" cy="65" r="26" fill="none" stroke="#ff7675" strokeWidth="3" />

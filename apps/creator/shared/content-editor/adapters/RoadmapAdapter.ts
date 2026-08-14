@@ -1,16 +1,16 @@
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, RootBadgeNode, Terminology } from "../types";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 import type { RoadmapData } from "@/domains/roadmaps/types";
 
 export class RoadmapAdapter implements ContentDataAdapter {
-  terminology = {
+  terminology: Terminology = {
     root: "Roadmap",
     container: "Roadmap Section",
     leafDocument: "Roadmap Canvas",
     leafQuiz: "Quiz",
   };
 
-  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[] }> {
+  async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }> {
     const roadmap = await roadmapService.getRoadmap(id);
 
     return {
@@ -39,6 +39,7 @@ export class RoadmapAdapter implements ContentDataAdapter {
           ],
         },
       ],
+      badges: [],
     };
   }
 

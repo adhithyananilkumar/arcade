@@ -29,7 +29,9 @@ export function EventCollaboratorsManager({ eventId }: Props) {
   const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
-  const isOwner = collaborators.find(c => c.userId === user?.id)?.role === 'OWNER';
+  const currentUserCollab = collaborators.find(c => c.userId === user?.id);
+  const isOwner = currentUserCollab?.role === 'OWNER';
+  const canManage = !currentUserCollab || isOwner || currentUserCollab?.role === 'MANAGER';
 
   useEffect(() => {
     loadCollaborators();
@@ -106,51 +108,53 @@ export function EventCollaboratorsManager({ eventId }: Props) {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto p-4">
-      {/* Invite collaborator box */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-2">
-          <Users className="w-5 h-5 text-indigo-600" />
-          Add Event Collaborators
-        </h2>
-        <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-          Grant other users edit or view access to this workshop and webinar contents under role-based policies.
-        </p>
+      {/* Invite collaborator box - Only visible to OWNER or MANAGER */}
+      {canManage && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 mb-2">
+            <Users className="w-5 h-5 text-indigo-600" />
+            Add Event Collaborators
+          </h2>
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
+            Grant other users edit or view access to this workshop and webinar contents under role-based policies.
+          </p>
 
-        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <Input
-              type="email"
-              placeholder="Enter user's email address"
-              className="pl-10"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="w-full sm:w-48">
-            <select
-              className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as any)}
-              disabled={!isOwner}
-            >
-              <option value="OWNER">Owner (Full Admin)</option>
-              <option value="MANAGER">Manager (Can manage workshop)</option>
-              <option value="EDITOR">Editor (Can edit content)</option>
-              <option value="VIEWER">Viewer (Read-only)</option>
-            </select>
-          </div>
-          <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
-            {inviting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            Add Collaborator
-          </Button>
-        </form>
-      </div>
+          <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Input
+                type="email"
+                placeholder="Enter user's email address"
+                className="pl-10"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <select
+                className="w-full h-10 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as any)}
+                disabled={!isOwner}
+              >
+                <option value="OWNER">Owner (Full Admin)</option>
+                <option value="MANAGER">Manager (Can manage workshop)</option>
+                <option value="EDITOR">Editor (Can edit content)</option>
+                <option value="VIEWER">Viewer (Read-only)</option>
+              </select>
+            </div>
+            <Button type="submit" disabled={inviting} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+              {inviting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              Add Collaborator
+            </Button>
+          </form>
+        </div>
+      )}
 
       {/* Collaborator roster */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
@@ -160,7 +164,7 @@ export function EventCollaboratorsManager({ eventId }: Props) {
         
         {collaborators.length === 0 ? (
           <div className="p-12 text-center text-zinc-500 dark:text-zinc-400">
-            No collaborators added yet. Add one above!
+            No collaborators added yet.
           </div>
         ) : (
           <Table>
@@ -191,14 +195,14 @@ export function EventCollaboratorsManager({ eventId }: Props) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {c.id === null ? (
-                      <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">OWNER</Badge>
+                    {c.id === null || !canManage ? (
+                      <Badge variant="secondary" className="bg-zinc-100 text-zinc-700">{c.role}</Badge>
                     ) : (
                       <select
                         className="h-8 px-2 rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         value={c.role}
-                        onChange={(e) => handleRoleChange(c.userId, e.target.value as any)}
-                        disabled={c.userId === user?.id || !isOwner}
+                        onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
+                        disabled={c.userId === user?.id || !canManage}
                       >
                         <option value="OWNER">Owner</option>
                         <option value="MANAGER">Manager</option>
@@ -213,10 +217,10 @@ export function EventCollaboratorsManager({ eventId }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {c.id !== null && c.userId !== user?.id && (
+                    {c.id !== null && c.userId !== user?.id && canManage && (
                       <Button
                         variant="ghost"
-                        onClick={() => handleRemove(c.userId)}
+                        onClick={() => handleRemove(c.id || c.userId)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 p-2 rounded-lg"
                       >
                         <Trash2 className="w-4 h-4" />

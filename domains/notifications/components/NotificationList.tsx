@@ -20,6 +20,12 @@ export type TransferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' |
 
 function typeLabel(type: string): string | null {
   switch (type) {
+    case 'COURSE_COLLABORATION_INVITATION':
+      return 'Collaboration Request';
+    case 'COURSE_COLLABORATION_ACCEPTED':
+      return 'Collaboration Accepted';
+    case 'COURSE_COLLABORATION_DECLINED':
+      return 'Collaboration Declined';
     case 'OWNER_TRANSFER_REQUESTED':
       return 'Ownership Transfer Request';
     case 'OWNER_TRANSFER_ACCEPTED':
@@ -48,6 +54,12 @@ function typeLabel(type: string): string | null {
 
 function typeTone(type: string): string {
   switch (type) {
+    case 'COURSE_COLLABORATION_INVITATION':
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    case 'COURSE_COLLABORATION_ACCEPTED':
+      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    case 'COURSE_COLLABORATION_DECLINED':
+      return 'bg-rose-50 text-rose-700 border-rose-200';
     case 'OWNER_TRANSFER_REQUESTED':
       return 'bg-amber-50 text-amber-800 border-amber-300';
     case 'OWNER_TRANSFER_ACCEPTED':

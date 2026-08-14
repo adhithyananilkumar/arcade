@@ -163,7 +163,7 @@ export const ArcadeEditor = memo(
       <div
         className={
           chromeless
-            ? `min-h-[300px] ${className}`
+            ? `min-h-[300px] !bg-transparent !shadow-none !border-none ${className}`
             : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
         }
       >
@@ -179,7 +179,7 @@ export const ArcadeEditor = memo(
     <div
       className={
         chromeless
-          ? `relative flex flex-col ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
+          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
@@ -189,7 +189,7 @@ export const ArcadeEditor = memo(
           editor={editor}
           className={
             chromeless
-              ? `flex-1 min-h-[300px] focus-within:outline-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
+              ? `flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
               : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
           }
         />

@@ -142,19 +142,17 @@ const badges = [
 
 function BadgeGraphic({ type }: { type: string }) {
   // Shape Paths for elongated vertical hexagon (viewBox 0 0 100 130) exactly matching the reference
-  const outerHex = "50,5 95,30 95,100 50,125 5,100 5,30";
-  const leftBevel = "50,5 50,125 5,100 5,30";
-  const innerHex = "50,15 85,35 85,95 50,115 15,95 15,35";
-  const innerShadow = "50,15 85,35 85,95 50,115";
+  const outerHex = "50,8 92,30 92,100 50,122 8,100 8,30";
+  const innerHex = "50,17 84,35 84,95 50,113 16,95 16,35";
+  const innerShadow = "50,17 84,35 84,95 50,113";
 
   return (
-    <svg viewBox="0 0 100 130" className="w-full h-full drop-shadow-lg filter drop-shadow-[0_8px_15px_rgba(0,0,0,0.3)]">
+    <svg viewBox="0 0 100 130" className="w-full h-full drop-shadow-lg filter drop-shadow-[0_8px_15px_rgba(0,0,0,0.3)] overflow-visible">
       {/* 1. Sword and Crown */}
       {type === 'sword-crown' && (
         <g>
           {/* Outer Border */}
           <polygon points={outerHex} fill="#b8860b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           
           {/* Inner Fill */}
           <polygon points={innerHex} fill="#0a2a43" />
@@ -177,7 +175,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'potion' && (
         <g>
           <polygon points={outerHex} fill="#2980b9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#0d1f2d" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -196,7 +193,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'mountain' && (
         <g>
           <polygon points={outerHex} fill="#b2bec3" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2d3436" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -216,7 +212,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'flower' && (
         <g>
           <polygon points={outerHex} fill="#00b894" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#004d40" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -237,7 +232,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'skull-arrows' && (
         <g>
           <polygon points={outerHex} fill="#e1b12c" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2f3640" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -265,7 +259,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'star' && (
         <g>
           <polygon points={outerHex} fill="#8e44ad" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#2c3e50" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -279,7 +272,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'shield-book' && (
         <g>
           <polygon points={outerHex} fill="#c0392b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#641e16" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -296,7 +288,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'lightning' && (
         <g>
           <polygon points={outerHex} fill="#f39c12" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#7e5109" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -310,7 +301,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'crystal' && (
         <g>
           <polygon points={outerHex} fill="#e84393" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#6c5ce7" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -327,7 +317,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'atom-science' && (
         <g>
           <polygon points={outerHex} fill="#00cec9" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#051923" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -342,7 +331,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'fire-flame' && (
         <g>
           <polygon points={outerHex} fill="#ff7675" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#4a0e17" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -356,7 +344,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'code-brackets' && (
         <g>
           <polygon points={outerHex} fill="#30336b" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#130f40" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -370,7 +357,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'compass-navigation' && (
         <g>
           <polygon points={outerHex} fill="#d35400" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#3d1e03" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -387,7 +373,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'cpu-chip' && (
         <g>
           <polygon points={outerHex} fill="#0984e3" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#001427" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           
@@ -412,7 +397,6 @@ function BadgeGraphic({ type }: { type: string }) {
       {type === 'target-bullseye' && (
         <g>
           <polygon points={outerHex} fill="#6c5ce7" />
-          <polygon points={leftBevel} fill="#ffffff" opacity="0.15" />
           <polygon points={innerHex} fill="#111111" />
           <polygon points={innerShadow} fill="#000000" opacity="0.25" />
           

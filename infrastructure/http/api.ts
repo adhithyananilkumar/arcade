@@ -25,6 +25,17 @@ import { queryClient } from "../state/queryClient";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
+// Thrown instead of a plain Error so callers that need to branch on HTTP
+// status (e.g. distinguishing 404 from 403) don't have to string-match messages.
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 // A single in-flight refresh shared across concurrent 401s
 let refreshPromise: Promise<boolean> | null = null;
 
@@ -110,6 +121,7 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     if (text) {
+      console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;
@@ -120,7 +132,7 @@ async function request<T>(
         }
       }
     }
-    throw new Error(message);
+    throw new ApiError(res.status, message);
   }
 
   return (text ? JSON.parse(text) : null) as T;
