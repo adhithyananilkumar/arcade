@@ -39,6 +39,7 @@ import {
 import BlurText from "@/components/BlurText";
 import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
 import OrbitImages from "@/components/ui/OrbitImages";
+import FoldText from "@/components/ui/FoldText";
 
 import {
   FOUNDERS_DATA,
@@ -470,7 +471,15 @@ export default function FoundersPage() {
             {/* Section Header */}
             <div className="text-left space-y-3 max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
               <h2 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight font-['Dancing_Script']">
-                How Arcade Started ?
+                <FoldText
+                  text="How Arcade Started ?"
+                  splitBy="word"
+                  trigger="scroll"
+                  color="currentColor"
+                  fontSize="inherit"
+                  fontWeight="inherit"
+                  className="block"
+                />
               </h2>
             </div>
 
