@@ -1,22 +1,33 @@
 "use client";
 
-import { Eye, EyeOff, Trash2, Lock, Palette, SlidersHorizontal, Layers as LayersIcon } from "lucide-react";
+import { useState, createContext, useContext } from "react";
+import { Eye, EyeOff, Trash2, Lock, Palette, SlidersHorizontal, Layers as LayersIcon, ChevronRight } from "lucide-react";
 import type { BadgeEditorPanel, BadgeEditorState } from "../hooks/useBadgeEditor";
 import type { BadgeBackground, BadgeBorderStyle, BadgePatternKind } from "..";
 
-/**
- * Content for the "Design" / "Properties" / "Layers" tabs of the shared Studio
- * right sidebar (EditorRightSidebar) when a Badge is the active editor. These
- * are pure content — the tab switcher, panel chrome (glass card, sizing,
- * open/close), and position are all owned by EditorRightSidebar itself, the
- * same shell the Lesson editor's Status/History/Team tabs render inside.
- */
-
-function PanelSection({ title, children }: { title: string; children: React.ReactNode }) {
+function StaticPanelSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div className="mb-4 mt-3 px-1">
       <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">{title}</p>
       {children}
+    </div>
+  );
+}
+
+function PanelSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-white/40 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center gap-2 py-2.5 px-1 text-left hover:bg-white/40 transition-colors"
+      >
+        <ChevronRight size={14} className={`text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{title}</span>
+      </button>
+      {isOpen && <div className="pb-3 pt-1 px-1 pl-7">{children}</div>}
     </div>
   );
 }
@@ -44,7 +55,7 @@ function NumberField({ value, onChange, min, max, step, width = "w-20" }: { valu
       max={max}
       step={step}
       onChange={(e) => onChange(Number(e.target.value) || 0)}
-      className={`${width} rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30`}
+      className={`${width} min-w-0 rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30`}
     />
   );
 }
@@ -261,17 +272,17 @@ export function BadgeDesignPanel({ editor }: { editor: BadgeEditorState }) {
   const { doc, shape } = editor;
 
   return (
-    <div className="space-y-4">
+    <div>
       <BackgroundSection editor={editor} />
       <FrameSection editor={editor} />
-      <PanelSection title="Shape">
+      <StaticPanelSection title="Shape">
         <p className="text-xs text-slate-600">{shape.name}</p>
-      </PanelSection>
-      <PanelSection title="Canvas">
+      </StaticPanelSection>
+      <StaticPanelSection title="Canvas">
         <p className="text-xs text-slate-600">
           {doc.canvas.width} × {doc.canvas.height}
         </p>
-      </PanelSection>
+      </StaticPanelSection>
     </div>
   );
 }
@@ -282,19 +293,24 @@ function TransformSection({ editor }: { editor: BadgeEditorState }) {
     <PanelSection title="Transform">
       <div className="grid grid-cols-2 gap-2">
         <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
-          X <NumberField value={Math.round(obj.x)} onChange={(x) => editor.updateSelected({ x })} width="flex-1" />
+          <span className="w-4">X</span>
+          <NumberField value={Math.round(obj.x)} onChange={(x) => editor.updateSelected({ x })} width="flex-1" />
         </label>
         <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
-          Y <NumberField value={Math.round(obj.y)} onChange={(y) => editor.updateSelected({ y })} width="flex-1" />
+          <span className="w-4">Y</span>
+          <NumberField value={Math.round(obj.y)} onChange={(y) => editor.updateSelected({ y })} width="flex-1" />
         </label>
         <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
-          W <NumberField value={Math.round(obj.width)} onChange={(width) => editor.updateSelected({ width })} width="flex-1" min={1} />
+          <span className="w-4">W</span>
+          <NumberField value={Math.round(obj.width)} onChange={(width) => editor.updateSelected({ width })} width="flex-1" min={1} />
         </label>
         <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
-          H <NumberField value={Math.round(obj.height)} onChange={(height) => editor.updateSelected({ height })} width="flex-1" min={1} />
+          <span className="w-4">H</span>
+          <NumberField value={Math.round(obj.height)} onChange={(height) => editor.updateSelected({ height })} width="flex-1" min={1} />
         </label>
         <label className="col-span-2 flex items-center gap-1.5 text-[11px] text-slate-500">
-          Rotation <NumberField value={Math.round(obj.rotation)} onChange={(rotation) => editor.updateSelected({ rotation })} width="flex-1" />
+          <span className="w-16">Rotation</span>
+          <NumberField value={Math.round(obj.rotation)} onChange={(rotation) => editor.updateSelected({ rotation })} width="flex-1" />
         </label>
       </div>
     </PanelSection>
@@ -326,10 +342,10 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div>
       {obj.type === "text" && (
         <>
-          <PanelSection title="Text">
+          <PanelSection title="Text" defaultOpen>
             <textarea
               value={obj.text}
               onChange={(e) => editor.updateSelected({ text: e.target.value })}
@@ -337,19 +353,27 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
               className="w-full resize-none rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30"
             />
           </PanelSection>
-          <PanelSection title="Typography">
+          <PanelSection title="Typography" defaultOpen>
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="w-16 text-[11px] text-slate-500">Size</span>
-                <NumberField value={obj.fontSize} onChange={(fontSize) => editor.updateSelected({ fontSize })} min={1} />
-                <span className="w-16 text-[11px] text-slate-500">Weight</span>
-                <NumberField value={obj.fontWeight} onChange={(fontWeight) => editor.updateSelected({ fontWeight })} min={100} max={900} step={100} />
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-12">Size</span>
+                  <NumberField value={obj.fontSize} onChange={(fontSize) => editor.updateSelected({ fontSize })} min={1} width="flex-1" />
+                </label>
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-12">Weight</span>
+                  <NumberField value={obj.fontWeight} onChange={(fontWeight) => editor.updateSelected({ fontWeight })} min={100} max={900} step={100} width="flex-1" />
+                </label>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-16 text-[11px] text-slate-500">Spacing</span>
-                <NumberField value={obj.letterSpacing} onChange={(letterSpacing) => editor.updateSelected({ letterSpacing })} />
-                <span className="w-16 text-[11px] text-slate-500">Line ht.</span>
-                <NumberField value={obj.lineHeight} onChange={(lineHeight) => editor.updateSelected({ lineHeight })} step={0.1} />
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-12">Spacing</span>
+                  <NumberField value={obj.letterSpacing} onChange={(letterSpacing) => editor.updateSelected({ letterSpacing })} width="flex-1" />
+                </label>
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="w-12">Line ht.</span>
+                  <NumberField value={obj.lineHeight} onChange={(lineHeight) => editor.updateSelected({ lineHeight })} step={0.1} width="flex-1" />
+                </label>
               </div>
               <label className="flex items-center gap-2 text-[11px] text-slate-500">
                 <input
@@ -373,14 +397,14 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
               </div>
             </div>
           </PanelSection>
-          <PanelSection title="Color">
+          <PanelSection title="Color" defaultOpen>
             <ColorField value={obj.color} onChange={(color) => editor.updateSelected({ color })} />
           </PanelSection>
         </>
       )}
 
       {obj.type === "shape" && (
-        <PanelSection title="Shape">
+        <PanelSection title="Shape" defaultOpen>
           <div className="space-y-2">
             {obj.shape !== "line" && (
               <div className="flex items-center gap-2">
@@ -413,7 +437,7 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
       )}
 
       {obj.type === "image" && (
-        <PanelSection title="Image">
+        <PanelSection title="Image" defaultOpen>
           <div className="space-y-2">
             <div>
               <p className="mb-1 text-[11px] text-slate-500">Fit</p>
@@ -424,7 +448,7 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
       )}
 
       {obj.type === "icon" && (
-        <PanelSection title="Icon">
+        <PanelSection title="Icon" defaultOpen>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="w-16 text-[11px] text-slate-500">Color</span>
@@ -516,7 +540,7 @@ export function BadgeEditorContextPanel({ editor }: { editor: BadgeEditorState }
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-x-hidden">
         {editor.activePanel === "properties" ? (
           <BadgePropertiesPanel editor={editor} />
         ) : editor.activePanel === "layers" ? (

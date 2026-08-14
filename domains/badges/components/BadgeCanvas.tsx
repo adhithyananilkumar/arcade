@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Stage,
   Layer,
@@ -96,8 +96,65 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
   const trRef = useRef<Konva.Transformer>(null);
   const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
 
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editingTextId && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(editingValue.length, editingValue.length);
+    }
+  }, [editingTextId, editingValue.length]);
+
+  const handleEditComplete = () => {
+    if (editingTextId) {
+      updateObject(editingTextId, { text: editingValue || " " });
+      setEditingTextId(null);
+      onSelect(null);
+    }
+  };
+
   const shape = useMemo(() => getBadgeShapeDefinition(doc.shape.type), [doc.shape.type]);
   const scale = size / doc.canvas.width;
+
+  const getEditTextStyle = (): React.CSSProperties => {
+    if (!editingTextId) return {};
+    const node = nodeRefs.current.get(editingTextId);
+    if (!node) return {};
+    const obj = doc.objects.find((o) => o.id === editingTextId) as import("..").BadgeTextObject;
+    if (!obj) return {};
+    
+    const absPos = node.absolutePosition();
+    
+    return {
+      position: "absolute",
+      top: absPos.y + "px",
+      left: absPos.x + "px",
+      width: obj.width * scale + "px",
+      height: obj.height * scale + "px",
+      fontSize: obj.fontSize * scale + "px",
+      border: "none",
+      padding: "0px",
+      margin: "0px",
+      overflow: "hidden",
+      background: "transparent",
+      outline: "none",
+      resize: "none",
+      lineHeight: obj.lineHeight,
+      fontFamily: obj.fontFamily,
+      fontWeight: obj.fontWeight,
+      fontStyle: obj.fontStyle === "italic" ? "italic" : "normal",
+      textAlign: obj.align,
+      color: obj.color,
+      transform: `rotate(${obj.rotation}deg)`,
+      transformOrigin: "top left",
+      wordWrap: "break-word",
+      whiteSpace: "pre-wrap",
+      letterSpacing: obj.letterSpacing * scale + "px",
+      zIndex: 100,
+    };
+  };
   const clipPoints = useMemo(() => pathToPoints(shape.clipGeometry), [shape]);
   const outerPoints = useMemo(() => pathToPoints(shape.outerGeometry), [shape]);
   const safeAreaPoints = useMemo(() => pathToPoints(shape.safeArea), [shape]);
@@ -106,10 +163,10 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
 
   useEffect(() => {
     if (!trRef.current) return;
-    const node = selectedId ? nodeRefs.current.get(selectedId) : null;
+    const node = selectedId && selectedId !== editingTextId ? nodeRefs.current.get(selectedId) : null;
     trRef.current.nodes(node ? [node] : []);
     trRef.current.getLayer()?.batchDraw();
-  }, [selectedId, doc.objects]);
+  }, [selectedId, editingTextId, doc.objects]);
 
   useEffect(() => {
     if (readOnly) return;
@@ -143,26 +200,43 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
     const scaleY = node.scaleY();
     node.scaleX(1);
     node.scaleY(1);
-    updateObject(obj.id, {
+    const patch: Record<string, unknown> = {
       x: node.x(),
       y: node.y(),
-      width: Math.max(10, obj.width * scaleX),
-      height: Math.max(10, obj.height * scaleY),
       rotation: node.rotation(),
-    });
+    };
+
+    if (obj.type === "text") {
+      const textObj = obj as import("..").BadgeTextObject;
+      // Use whichever scale factor changed (handles corners and side adjusters)
+      const scaleToUse = scaleX !== 1 ? scaleX : scaleY;
+      
+      patch.fontSize = Math.max(1, textObj.fontSize * scaleToUse);
+      patch.width = Math.max(10, textObj.width * scaleToUse);
+      patch.height = Math.max(10, textObj.height * scaleToUse);
+    } else {
+      patch.width = Math.max(10, obj.width * scaleX);
+      patch.height = Math.max(10, obj.height * scaleY);
+    }
+
+    updateObject(obj.id, patch);
   };
 
   return (
-    <Stage
-      ref={stageRef}
-      width={size}
-      height={size}
-      scaleX={scale}
-      scaleY={scale}
-      onMouseDown={(e) => {
-        if (e.target === e.target.getStage()) onSelect(null);
-      }}
-    >
+    <div className="relative" style={{ width: size, height: size }}>
+      <Stage
+        ref={stageRef}
+        width={size}
+        height={size}
+        scaleX={scale}
+        scaleY={scale}
+        onMouseDown={(e) => {
+          if (e.target === e.target.getStage()) {
+            if (editingTextId) handleEditComplete();
+            onSelect(null);
+          }
+        }}
+      >
       <Layer
         clipFunc={(ctx) => {
           ctx.beginPath();
@@ -189,7 +263,7 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
                   width={obj.width}
                   height={obj.height}
                   rotation={obj.rotation}
-                  opacity={obj.opacity}
+                  opacity={editingTextId === obj.id ? 0 : obj.opacity}
                   text={applyTextTransform(obj.text, obj.textTransform)}
                   fontFamily={obj.fontFamily}
                   fontSize={obj.fontSize}
@@ -205,8 +279,26 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
                   shadowOffsetX={obj.shadow?.offsetX}
                   shadowOffsetY={obj.shadow?.offsetY}
                   draggable={!readOnly && !obj.locked}
-                  onClick={() => !readOnly && onSelect(obj.id)}
-                  onTap={() => !readOnly && onSelect(obj.id)}
+                  onClick={() => {
+                    if (readOnly) return;
+                    onSelect(obj.id);
+                  }}
+                  onTap={() => {
+                    if (readOnly) return;
+                    onSelect(obj.id);
+                  }}
+                  onDblClick={() => {
+                    if (readOnly) return;
+                    onSelect(obj.id);
+                    setEditingTextId(obj.id);
+                    setEditingValue(obj.text === "New Text" ? "" : obj.text);
+                  }}
+                  onDblTap={() => {
+                    if (readOnly) return;
+                    onSelect(obj.id);
+                    setEditingTextId(obj.id);
+                    setEditingValue(obj.text === "New Text" ? "" : obj.text);
+                  }}
                   onDragEnd={(e) => updateObject(obj.id, { x: e.target.x(), y: e.target.y() })}
                   onTransformEnd={(e) => handleGroupTransformEnd(obj, e.target)}
                 />
@@ -260,6 +352,24 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
         </Layer>
       )}
     </Stage>
+    {editingTextId && (
+      <textarea
+        ref={textareaRef}
+        style={getEditTextStyle()}
+        value={editingValue}
+        onChange={(e) => setEditingValue(e.target.value)}
+        onBlur={handleEditComplete}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            setEditingTextId(null);
+          } else if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleEditComplete();
+          }
+        }}
+      />
+    )}
+  </div>
   );
 }
 
