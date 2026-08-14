@@ -1520,7 +1520,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Center: Title and Status */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               {activeLessonId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
@@ -1577,7 +1577,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
                     >
                       <Users size={14} className="text-indigo-600" />
-                      Add Collaborators
+                      View Collaborators
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => {
