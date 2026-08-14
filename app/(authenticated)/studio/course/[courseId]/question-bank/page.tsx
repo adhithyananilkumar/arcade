@@ -54,7 +54,7 @@ export default function CourseQuestionBankPage({
           <div className="justify-self-start">
             <button
               type="button"
-              onClick={() => router.push(`/studio/course/${courseId}/edit`)}
+              onClick={() => router.push(`/studio/content/course/${courseId}`)}
               title="Back to course"
               className="flex flex-shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
             >
