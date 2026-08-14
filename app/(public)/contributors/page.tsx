@@ -264,7 +264,7 @@ export default function ContributorsPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative"
+              className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
             >
               {/* Modal Header & Pattern Background */}
               <div className="relative pt-8 px-6 sm:px-10 pb-6 rounded-t-[2rem] overflow-hidden">
@@ -280,7 +280,7 @@ export default function ContributorsPage() {
                 </button>
 
                 <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-center sm:items-start relative z-10">
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-3xl overflow-hidden shadow-lg border-4 border-white shrink-0 relative bg-slate-100">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border-4 border-white shrink-0 relative bg-slate-100 group-hover:scale-105 transition-transform">
                     <Image
                       src={selectedContributor.avatar}
                       alt={selectedContributor.name}
