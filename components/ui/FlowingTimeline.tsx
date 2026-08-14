@@ -208,7 +208,7 @@ export default function FlowingTimeline() {
                   }
                   
                   const containerClasses = `relative shrink-0 rounded-xl overflow-hidden ${isRubin ? 'w-48 h-64 md:w-60 md:h-80' : 'bg-white border border-white w-16 h-16 md:w-20 md:h-20'}`;
-                  const textContainerClasses = `text-center ${isRubin ? '-mt-8 md:-mt-16 z-10 relative' : ''}`;
+                  const textContainerClasses = `text-center ${isRubin ? '-mt-2 md:-mt-4 z-10 relative' : ''}`;
                   
                   return (
                     <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
