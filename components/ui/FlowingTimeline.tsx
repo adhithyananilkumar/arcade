@@ -194,16 +194,20 @@ export default function FlowingTimeline() {
               
               {/* Empty space or Profiles for alternating layout on desktop */}
               <div className={`hidden md:flex md:w-[45%] flex-row gap-4 md:gap-6 ${isEven ? "justify-start pl-16 lg:pl-24" : "justify-end pr-16 lg:pr-24"}`}>
-                {item.profiles && item.profiles.map((profile, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
-                    <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0">
-                      <Image src={profile.avatar} alt={profile.name} fill className="object-contain hover:scale-110 transition-transform duration-300 mix-blend-multiply brightness-110 contrast-105" unoptimized />
+                {item.profiles && item.profiles.map((profile, i) => {
+                  const needsZoom = profile.name.includes("Anandhulal") || profile.name.includes("Athira") || profile.name.includes("Kalyany");
+                  const imageClasses = `object-cover transition-transform duration-300 mix-blend-multiply brightness-[1.15] contrast-[1.15] ${needsZoom ? "scale-[1.35] translate-y-2 hover:scale-[1.45]" : "scale-[1.15] hover:scale-[1.25]"}`;
+                  return (
+                    <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
+                      <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0 bg-white rounded-xl border border-white overflow-hidden">
+                        <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Numbered Node */}
