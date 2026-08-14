@@ -67,15 +67,11 @@ function GithubIcon({ className }: { className?: string }) {
 
 function FlourishLine({ className }: { className?: string }) {
   return (
-    <motion.svg
+    <svg
       viewBox="0 0 240 28"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
     >
       <motion.path
         d="M 4 16 C 24 9, 42 21, 62 16 C 74 13, 78 4, 80 7 C 83 12, 75 19, 70 13 C 66 8, 74 7, 96 13 C 114 18, 118 5, 121 8 C 124 13, 116 20, 111 14 C 107 9, 117 8, 144 14 C 170 20, 196 9, 218 15 C 228 17, 234 14, 236 14"
@@ -83,16 +79,15 @@ function FlourishLine({ className }: { className?: string }) {
         strokeWidth="2.25"
         strokeLinecap="round"
         strokeLinejoin="round"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
+        viewport={{ once: false, margin: "-50px" }}
         transition={{
-          duration: 1.6,
-          ease: [0.43, 0.13, 0.23, 0.96],
-          delay: 0.2,
+          duration: 1.5,
+          ease: "easeInOut"
         }}
       />
-    </motion.svg>
+    </svg>
   );
 }
 
@@ -392,15 +387,9 @@ export default function FoundersPage() {
               {/* Bottom Row: Centered Founder Cards Flanked by Animated Flourish Lines */}
               <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
                 {/* Left Flourish Line */}
-                <motion.div
-                  initial={{ opacity: 0, x: -40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, ease: "easeOut" }}
-                  className="hidden lg:block absolute left-0 top-[235px] -translate-y-1/2"
-                >
+                <div className="hidden lg:block absolute left-0 top-[235px] -translate-y-1/2">
                   <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80" />
-                </motion.div>
+                </div>
 
                 {/* Centered Founders */}
                 <div className="flex flex-wrap justify-center gap-y-12 gap-x-6 sm:gap-x-10 relative z-10">
@@ -463,15 +452,9 @@ export default function FoundersPage() {
                 </div>
 
                 {/* Right Flourish Line (Flipped) */}
-                <motion.div
-                  initial={{ opacity: 0, x: 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, ease: "easeOut" }}
-                  className="hidden lg:block absolute right-0 top-[235px] -translate-y-1/2"
-                >
+                <div className="hidden lg:block absolute right-0 top-[235px] -translate-y-1/2">
                   <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
-                </motion.div>
+                </div>
               </div>
             </div>
           </section>
