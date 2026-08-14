@@ -387,7 +387,7 @@ export default function FoundersPage() {
               {/* Bottom Row: Centered Founder Cards Flanked by Animated Flourish Lines */}
               <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
                 {/* Left Flourish Line */}
-                <div className="hidden lg:block absolute left-0 top-[235px] -translate-y-1/2">
+                <div className="hidden lg:block absolute -left-4 xl:-left-8 top-[235px] -translate-y-1/2">
                   <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80" />
                 </div>
 
@@ -452,7 +452,7 @@ export default function FoundersPage() {
                 </div>
 
                 {/* Right Flourish Line (Flipped) */}
-                <div className="hidden lg:block absolute right-0 top-[235px] -translate-y-1/2">
+                <div className="hidden lg:block absolute -right-4 xl:-right-8 top-[235px] -translate-y-1/2">
                   <FlourishLine className="w-20 xl:w-32 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
                 </div>
               </div>
