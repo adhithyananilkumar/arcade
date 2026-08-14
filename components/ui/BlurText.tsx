@@ -25,6 +25,8 @@ interface BlurTextProps {
   onAnimationComplete?: () => void;
   stepDuration?: number;
   as?: React.ElementType;
+  style?: React.CSSProperties;
+  wordClasses?: Record<string | number, string>;
 }
 
 const BlurText: React.FC<BlurTextProps> = ({
@@ -40,7 +42,9 @@ const BlurText: React.FC<BlurTextProps> = ({
   easing = (t: number) => t,
   onAnimationComplete,
   stepDuration = 0.35,
-  as: Component = 'p'
+  as: Component = 'p',
+  style,
+  wordClasses = {}
 }) => {
   const elements = animateBy === 'words' ? text.split(' ') : text.split('');
   const [inView, setInView] = useState(false);
@@ -87,7 +91,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   const times = Array.from({ length: stepCount }, (_, i) => (stepCount === 1 ? 0 : i / (stepCount - 1)));
 
   return (
-    <Component ref={ref} className={className} style={{ display: 'flex', flexWrap: 'wrap' }}>
+    <Component ref={ref} className={className} style={{ display: 'flex', flexWrap: 'wrap', ...style }}>
       {elements.map((segment, index) => {
         const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
 
@@ -100,7 +104,7 @@ const BlurText: React.FC<BlurTextProps> = ({
 
         return (
           <motion.span
-            className="inline-block will-change-[transform,filter,opacity]"
+            className={`inline-block will-change-[transform,filter,opacity] ${wordClasses[segment] || ''}`}
             key={index}
             initial={fromSnapshot}
             animate={inView ? animateKeyframes : fromSnapshot}

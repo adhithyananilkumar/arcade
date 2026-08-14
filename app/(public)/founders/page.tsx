@@ -40,6 +40,7 @@ import BlurText from "@/components/ui/BlurText";
 import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
 import OrbitImages from "@/components/ui/OrbitImages";
 import FoldText from "@/components/ui/FoldText";
+import DepthCarousel from "@/components/ui/DepthCarousel";
 
 import {
   FOUNDERS_DATA,
@@ -270,19 +271,11 @@ export default function FoundersPage() {
 
         <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full relative z-10">
           <div className="max-w-3xl mx-auto space-y-6 text-center">
-            {/* Title with BlurText Animation from React Bits */}
-            <BlurText
-              text="The Minds Behind Arcade."
-              delay={150}
-              animateBy="words"
-              direction="top"
-              stepDuration={0.35}
-              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] justify-center"
-              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
-              wordClasses={{
-                "Arcade.": "bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1"
-              }}
-            />
+            {/* Title */}
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] text-center"
+                style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}>
+              The Minds Behind <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1">Arcade.</span>
+            </h1>
 
             {/* Description */}
             <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
@@ -488,35 +481,20 @@ export default function FoundersPage() {
                   ))}
                 </div>
                 <div className="lg:col-span-5 relative">
-                  <div className="w-full aspect-square sm:aspect-[4/3] relative overflow-visible flex items-center justify-center">
-                    <div className="w-full h-full flex items-center justify-center scale-110 sm:scale-[1.25] lg:scale-[1.4] lg:translate-x-4">
-                      <OrbitImages
-                        items={FOUNDERS_DATA.slice(0, 6).map((founder) => (
-                          <div 
-                            key={founder.id}
-                            className="w-full h-full cursor-pointer hover:scale-105 transition-transform duration-300 rounded-xl"
-                            onClick={() => setFullScreenImage(founder.image)}
-                          >
-                            <img
-                              src={founder.image}
-                              alt={founder.name}
-                              draggable={false}
-                              className="orbit-image"
-                            />
-                          </div>
-                        ))}
-                        shape="ellipse"
-                        radiusX={480}
-                        radiusY={220}
-                        rotation={-8}
-                        duration={45}
-                        itemSize={160}
-                        showPath={true}
-                        pathColor="rgba(15, 23, 42, 0.2)"
-                        pathWidth={1}
-                        responsive={true}
-                      />
-                    </div>
+                  <div className="w-full h-[400px] sm:h-[500px] lg:h-[600px] relative">
+                    <DepthCarousel
+                      items={FOUNDERS_DATA.slice(0, 6).map(founder => ({ image: founder.image, alt: founder.name }))}
+                      depth={220}
+                      spread={90}
+                      tilt={22}
+                      tiltDirection="right"
+                      perspective={1400}
+                      visibleCards={4}
+                      falloff={0.2}
+                      blur={6}
+                      autoplay
+                      loop
+                    />
                   </div>
                 </div>
               </div>
