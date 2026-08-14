@@ -9,7 +9,7 @@ export const ExamNode = Node.create({
 
   addAttributes() {
     return {
-      examType: { default: "CERTIFICATION" },
+      examType: { default: "BADGED" },
       rules: { default: { EASY: 20, MEDIUM: 50, HARD: 30 } },
       selectedPool: { default: [] },
     };

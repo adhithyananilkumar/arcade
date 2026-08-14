@@ -51,6 +51,7 @@ export interface CourseResponse {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
   status: ContentStatus;
   rejectionReason?: string;
   wasPublished?: boolean;
@@ -69,6 +70,7 @@ export interface CreateCourseRequest {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
 }
 
 export interface PatchCourseRequest {
@@ -79,6 +81,7 @@ export interface PatchCourseRequest {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────
@@ -176,5 +179,6 @@ export interface CourseRenderResponse {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  hasExam?: boolean;
   modules: ModuleRenderResponse[];
 }

@@ -119,19 +119,15 @@ export function SmallCourseOverview({
         {/* Header & Filter Controls */}
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2.5">
-            <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xs"
-            >
-              <Crown size={16} />
-            </motion.div>
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+              <Crown size={14} />
+            </div>
             <div>
-              <h2 className="text-base font-black tracking-tight text-[#14142b]">
+              <h2 className="text-sm font-bold tracking-tight text-slate-900">
                 Top Performing Content
               </h2>
-              <p className="text-[11px] font-semibold text-slate-500">
-                Content rankings based on real-time engagement metrics
+              <p className="text-[11px] font-medium text-slate-400">
+                Rankings based on real-time engagement
               </p>
             </div>
           </div>

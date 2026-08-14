@@ -22,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  Boxes,
   GripVertical,
   Layers,
   Loader2,
@@ -39,6 +40,7 @@ import {
   reorderSections,
 } from "../api";
 import type { SectionResponse } from "../types";
+import { QuestionPoolsPanel } from "./QuestionPoolsPanel";
 import { SectionQuestionsEditor } from "./SectionQuestionsEditor";
 
 interface QuestionBankEditorProps {
@@ -164,6 +166,7 @@ function SortableSectionRow({
 }
 
 export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEditorProps) {
+  const [tab, setTab] = useState<"sections" | "pools">("sections");
   const [sections, setSections] = useState<SectionResponse[]>([]);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -201,6 +204,10 @@ export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEdito
       setCreating(false);
     }
   };
+
+  const handleQuestionCountChange = useCallback((sectionId: string, count: number) => {
+    setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, questionCount: count } : s)));
+  }, []);
 
   const handleRename = async (sectionId: string, title: string) => {
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, title } : s)));
@@ -254,17 +261,20 @@ export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEdito
     <div className={className}>
       {/* ── Canvas: full-bleed, scrolls under the floating chrome ── */}
       <div
-        className={`absolute inset-0 overflow-y-auto pt-20 pb-10 pr-6 transition-[padding] ${
-          sidebarOpen ? "pl-[300px]" : "pl-16"
+        className={`absolute inset-0 overflow-y-auto pt-20 pb-10 pr-6 transition-[padding] bg-[#F7F9FC] ${
+          tab === "sections" && sidebarOpen ? "pl-[300px]" : tab === "sections" ? "pl-16" : "pl-6"
         }`}
       >
-        {loading ? null : activeSection ? (
+        {tab === "pools" ? (
+          <QuestionPoolsPanel bankId={bankId} />
+        ) : loading ? null : activeSection ? (
           <SectionQuestionsEditor
             key={activeSection.id}
             bankId={bankId}
             sectionId={activeSection.id}
             sectionTitle={activeSection.title}
             className="max-w-[900px]"
+            onQuestionCountChange={handleQuestionCountChange}
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -285,8 +295,32 @@ export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEdito
         )}
       </div>
 
+      {/* ── Tab switch ── */}
+      <div className="absolute right-3 top-16 z-20 flex items-center gap-1 rounded-xl border border-slate-200/80 bg-white/95 p-1 shadow-sm sm:right-4">
+        <button
+          type="button"
+          onClick={() => setTab("sections")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            tab === "sections" ? "bg-[#14142b] text-white" : "text-slate-500 hover:bg-slate-100"
+          }`}
+        >
+          <Layers size={13} />
+          Sections
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("pools")}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+            tab === "pools" ? "bg-[#14142b] text-white" : "text-slate-500 hover:bg-slate-100"
+          }`}
+        >
+          <Boxes size={13} />
+          Pools
+        </button>
+      </div>
+
       {/* ── Floating collapsible sidebar: sections ── */}
-      <aside className="absolute left-3 top-16 z-20 flex sm:left-4">
+      <aside className={`absolute left-3 top-16 z-20 flex sm:left-4 ${tab === "pools" ? "hidden" : ""}`}>
         {!sidebarOpen ? (
           <button
             type="button"
@@ -297,7 +331,7 @@ export function QuestionBankEditor({ bankId, className = "" }: QuestionBankEdito
             <PanelLeftOpen size={18} />
           </button>
         ) : (
-          <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_16px_40px_rgba(20,20,43,0.1)] backdrop-blur-xl">
+          <div className="flex max-h-[calc(100vh-6.5rem)] w-[268px] flex-col overflow-hidden rounded-2xl border border-white/40 bg-white/70 shadow-[0_16px_40px_rgba(20,20,43,0.06)] backdrop-blur-2xl">
             {/* ── Sidebar header ───────────────── */}
             <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-3 py-2.5">
               <span className="min-w-0 flex-1 truncate px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">

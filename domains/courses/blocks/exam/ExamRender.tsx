@@ -4,7 +4,7 @@ export function ExamRender({ node }: { node: any }) {
   return (
     <div className="my-8 rounded-xl border border-indigo-200 bg-indigo-50 p-6 text-center shadow-sm">
       <h3 className="text-lg font-bold text-indigo-900">
-        {node.attrs.examType === "CERTIFICATION" ? "Certification Exam" : "Badge Exam"}
+        {node.attrs.examType === "CERTIFIED" ? "Certified Exam" : "Badged Exam"}
       </h3>
       <p className="mt-2 text-sm text-indigo-700">
         Click below to start your exam.
