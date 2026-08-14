@@ -16,7 +16,7 @@ import { api } from '@/infrastructure/http/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 
 export default function LearnerNavbar() {
   const { user, clearAuth } = useAuthStore();
@@ -278,103 +278,118 @@ export default function LearnerNavbar() {
               )}
             </button>
 
-            {isNotificationsOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40 cursor-default"
-                  onClick={() => setIsNotificationsOpen(false)}
-                />
-                <div className="absolute right-0 top-full mt-3 w-80 rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</h3>
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={markAllRead}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-                  <div className="max-h-[420px] overflow-y-auto">
-                    {invitations.length > 0 && (
-                      <div className="border-b border-black/5 dark:border-white/5">
-                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Action Required</p>
-                        <div className="divide-y divide-black/5 dark:divide-white/5">
-                          {invitations.map(inv => (
-                            <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
-                                Invitation to join <span className="font-bold">{inv.channelName}</span>
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                <span className="font-bold text-slate-700 dark:text-slate-300">{inv.invitedByName}</span> invited you as <span className="font-bold text-slate-700 dark:text-slate-300">{inv.roleNames.join(', ')}</span>.
-                              </p>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">
-                                {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-                              </p>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => { handleAcceptInvite(inv.id); setIsNotificationsOpen(false); }}
-                                  className="flex-1 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-1"
-                                >
-                                  <Check size={14} /> Accept
-                                </button>
-                                <button
-                                  onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
-                                  className="flex-1 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 rounded-lg transition-colors flex items-center justify-center gap-1"
-                                >
-                                  <X size={14} /> Decline
-                                </button>
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={() => setIsNotificationsOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+                    className="absolute right-0 top-full mt-3 w-80 rounded-[28px] bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-neutral-800 shadow-[0_4px_30px_rgba(0,0,0,0.08)] overflow-hidden z-50 origin-top-right"
+                  >
+                    <div className="px-4 py-3.5 border-b border-slate-100 dark:border-neutral-800/80 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-[#1f1f1f] dark:text-[#e3e3e3] text-sm">Notifications</h3>
+                        {(unreadCount + invitations.length + pendingAdminTasks.length) > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#e8f0fe] text-[#1a73e8] dark:bg-[#1a73e8]/20 dark:text-[#8ab4f8]">
+                            {unreadCount + invitations.length + pendingAdminTasks.length}
+                          </span>
+                        )}
+                      </div>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          className="text-xs font-semibold text-[#1a73e8] dark:text-[#8ab4f8] hover:text-[#1557b0] dark:hover:text-[#aecbfa] hover:underline cursor-pointer transition-colors"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[420px] overflow-y-auto scrollbar-none">
+                      {invitations.length > 0 && (
+                        <div className="border-b border-black/5 dark:border-white/5">
+                          <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Action Required</p>
+                          <div className="divide-y divide-black/5 dark:divide-white/5">
+                            {invitations.map(inv => (
+                              <div key={inv.id} className="p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                <p className="text-xs text-slate-800 dark:text-slate-200 font-bold mb-1">
+                                  Invitation to join <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{inv.channelName}</span>
+                                </p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1 leading-relaxed">
+                                  <span className="font-semibold text-slate-700 dark:text-slate-300">{inv.invitedByName}</span> invited you as <span className="font-semibold text-slate-700 dark:text-slate-300">{inv.roleNames.join(', ')}</span>.
+                                </p>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500 mb-3">
+                                  {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => { handleAcceptInvite(inv.id); setIsNotificationsOpen(false); }}
+                                    className="flex-1 py-1.5 text-[11px] font-semibold text-white bg-[#1a73e8] hover:bg-[#1557b0] active:bg-[#124b96] rounded-full transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() => { handleRejectInvite(inv.id); setIsNotificationsOpen(false); }}
+                                    className="flex-1 py-1.5 text-[11px] font-semibold text-[#1a73e8] dark:text-[#8ab4f8] bg-transparent border border-slate-200 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-850 rounded-full transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                  >
+                                    Decline
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    {pendingAdminTasks.length > 0 && (
-                      <div className="border-b border-black/5 dark:border-white/5">
-                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Admin Tasks</p>
-                        <div className="divide-y divide-black/5 dark:divide-white/5">
-                          {pendingAdminTasks.map(task => (
-                            <Link 
-                              href={task.href} 
-                              key={task.id} 
-                              onClick={() => setIsNotificationsOpen(false)} 
-                              className="block p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                            >
-                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
-                                {task.title}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                {task.subtitle}
-                              </p>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                                {new Date(task.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                              </p>
-                            </Link>
-                          ))}
+                      )}
+                      {pendingAdminTasks.length > 0 && (
+                        <div className="border-b border-black/5 dark:border-white/5">
+                          <p className="px-4 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Admin Tasks</p>
+                          <div className="divide-y divide-black/5 dark:divide-white/5">
+                            {pendingAdminTasks.map(task => (
+                              <Link 
+                                href={task.href} 
+                                key={task.id} 
+                                onClick={() => setIsNotificationsOpen(false)} 
+                                className="block p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                              >
+                                <p className="text-xs text-slate-800 dark:text-slate-200 font-bold mb-1">
+                                  {task.title}
+                                </p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                                  {task.subtitle}
+                                </p>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                                  {new Date(task.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </p>
+                              </Link>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    <NotificationList
-                      notifications={notifications}
-                      onItemClick={() => setIsNotificationsOpen(false)}
-                      onNotificationAction={refresh}
-                      emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
-                    />
-                  </div>
-                  <div className="border-t border-black/5 dark:border-white/5 p-3 text-center bg-slate-50/50 dark:bg-neutral-950/20">
-                    <Link 
-                      href="/notifications" 
-                      onClick={() => setIsNotificationsOpen(false)}
-                      className="text-xs font-extrabold text-indigo-600 hover:text-indigo-700 transition-colors"
-                    >
-                      See more
-                    </Link>
-                  </div>
-                </div>
-              </>
-            )}
+                      )}
+                      <NotificationList
+                        notifications={notifications.filter(n => !n.read)}
+                        onItemClick={() => setIsNotificationsOpen(false)}
+                        onNotificationAction={refresh}
+                        emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
+                      />
+                    </div>
+                    <div className="border-t border-slate-100 dark:border-neutral-800/80 p-3 text-center bg-[#f8f9fa] dark:bg-[#1f1f1f]">
+                      <Link 
+                        href="/notifications" 
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="inline-flex items-center justify-center gap-1 text-xs font-semibold text-[#1a73e8] dark:text-[#8ab4f8] hover:text-[#1557b0] dark:hover:text-[#aecbfa] hover:underline transition-colors cursor-pointer"
+                      >
+                        See more
+                      </Link>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

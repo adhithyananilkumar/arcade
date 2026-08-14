@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
-import { ArrowLeft, ClipboardCheck, Clock, Inbox } from "lucide-react";
+import { ArrowLeft, ClipboardCheck, Clock, Inbox, ArrowRight } from "lucide-react";
 
 // Statuses that count as "in the review queue". SUBMITTED is the one the Submit
 // button produces; APPROVED is kept visible so a reviewed course doesn't vanish
@@ -21,20 +21,31 @@ const REVIEW_STATUSES: ReadonlyArray<CourseResponse["status"]> = [
 ];
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    DRAFT: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    SUBMITTED: "bg-blue-50 text-blue-700 border-blue-200",
-    APPROVED: "bg-green-50 text-green-700 border-green-200",
-    PUBLISHED: "bg-green-50 text-green-700 border-green-200",
-    ARCHIVED: "bg-gray-100 text-gray-500 border-gray-200",
+  const map: Record<string, { bg: string; text: string; border: string; label: string }> = {
+    SUBMITTED: {
+      bg: "bg-blue-50/70",
+      text: "text-blue-700",
+      border: "border-blue-200/50",
+      label: "Submitted",
+    },
+    APPROVED: {
+      bg: "bg-emerald-50/70",
+      text: "text-emerald-700",
+      border: "border-emerald-200/50",
+      label: "Approved",
+    },
+  };
+  const style = map[status] || {
+    bg: "bg-slate-50",
+    text: "text-slate-600",
+    border: "border-slate-200/50",
+    label: status,
   };
   return (
     <span
-      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-        map[status] ?? "bg-gray-100 text-gray-500 border-gray-200"
-      }`}
+      className={`inline-flex items-center text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${style.bg} ${style.text} ${style.border} tracking-wide uppercase`}
     >
-      {status}
+      {style.label}
     </span>
   );
 }
@@ -54,90 +65,96 @@ export default function ReviewCoursesPage() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="bg-white border-b border-gray-200 px-8 py-5">
-        <div className="max-w-6xl mx-auto">
+    <div className="flex-1 flex flex-col bg-[#F8FAFC] min-h-screen">
+      <main className="flex-1 px-8 py-8 max-w-5xl mx-auto w-full select-none">
+        {/* Back Link & Title (Rendered directly on the background below global navbar) */}
+        <div className="flex flex-col gap-1.5 mb-8">
           <Link
             href="/studio"
-            className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
+            className="group inline-flex items-center gap-1.5 text-[11px] font-extrabold text-slate-400 hover:text-slate-700 uppercase tracking-wider transition-colors outline-hidden w-fit"
           >
-            <ArrowLeft size={14} />
+            <ArrowLeft size={12} className="transition-transform group-hover:-translate-x-0.5" />
             Content Studio
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Review Courses</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight mt-1">Review Courses</h1>
+          <p className="text-xs text-slate-400 font-semibold">
             Courses submitted for review land here, waiting to be approved.
           </p>
         </div>
-      </header>
 
-      <main className="flex-1 px-8 py-8 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2 mb-5">
-          <ClipboardCheck size={17} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-800">Awaiting Review</h2>
+        {/* Section title */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shadow-3xs">
+            <ClipboardCheck size={16} className="text-indigo-600" />
+          </div>
+          <h2 className="text-sm font-black text-slate-800 uppercase tracking-wider">Awaiting Review</h2>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded mb-3 w-2/3" />
-                <div className="h-3 bg-gray-50 rounded mb-2 w-full" />
-                <div className="h-3 bg-gray-50 rounded mb-4 w-3/4" />
-                <div className="flex justify-between items-center">
-                  <div className="h-5 w-14 bg-gray-100 rounded-full" />
-                  <div className="h-7 w-24 bg-gray-100 rounded-lg" />
+              <div key={i} className="bg-white rounded-3xl border border-slate-150 p-5 shadow-2xs animate-pulse flex flex-col gap-4">
+                <div className="flex justify-between items-start">
+                  <div className="h-4.5 bg-slate-100 rounded-md w-3/4" />
+                  <div className="h-4.5 bg-slate-100 rounded-full w-14" />
                 </div>
+                <div className="flex flex-col gap-2">
+                  <div className="h-3 bg-slate-50 rounded-md w-full" />
+                  <div className="h-3 bg-slate-50 rounded-md w-5/6" />
+                </div>
+                <div className="h-3 bg-slate-50 rounded-md w-1/2 mt-2" />
+                <div className="h-9 bg-slate-100 rounded-xl w-full mt-4" />
               </div>
             ))}
           </div>
         ) : courses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Inbox size={24} className="text-gray-400" />
+          <div className="bg-white border border-slate-150/80 rounded-3xl p-16 shadow-2xs flex flex-col items-center justify-center text-center gap-2 max-w-lg mx-auto mt-8 transition-all hover:shadow-xs">
+            <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shadow-3xs mb-2">
+              <Inbox size={26} className="text-blue-650" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">No courses awaiting review</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Open a course and press &quot;Submit for Review&quot; to send it here.
-              </p>
-            </div>
+            <h3 className="text-sm font-black text-slate-800 tracking-tight mt-1">No courses awaiting review</h3>
+            <p className="text-[11px] text-slate-400 font-semibold leading-relaxed max-w-xs mt-0.5">
+              Open a course inside your content studio and press &quot;Submit for Review&quot; to send it here.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="group bg-white rounded-2xl border border-gray-200 hover:border-indigo-200 hover:shadow-md transition-all p-5 flex flex-col gap-3"
+                className="group bg-white rounded-3xl border border-slate-150/80 hover:border-[#d2e3fc] hover:shadow-xs transition-all p-5 flex flex-col gap-4 relative"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-sm font-semibold text-gray-800 leading-snug line-clamp-2">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-sm font-black text-slate-800 leading-snug line-clamp-2">
                     {course.title}
                   </h3>
                   <StatusBadge status={course.status} />
                 </div>
                 {course.description && (
-                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-400 font-semibold line-clamp-2 leading-relaxed">
                     {course.description}
                   </p>
                 )}
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-auto">
-                  <Clock size={11} />
-                  Last edited:{" "}
-                  {new Date(course.updatedAt).toLocaleString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                <div className="flex items-center gap-1.5 text-[10.5px] text-slate-400 font-semibold mt-auto pt-2">
+                  <Clock size={12} className="text-slate-400" />
+                  <span>
+                    Last edited:{" "}
+                    {new Date(course.updatedAt).toLocaleString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </span>
                 </div>
                 <Link
                   href={`/studio/published/${course.id}`}
-                  className="text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg py-1.5 transition-colors"
+                  className="w-full text-center text-xs font-black text-[#1a73e8] bg-[#e8f0fe]/70 hover:bg-[#e8f0fe] border border-[#d2e3fc]/80 rounded-xl py-2.5 transition-all outline-hidden flex items-center justify-center gap-1.5 group-hover:shadow-3xs"
                 >
-                  Review Course →
+                  <span>Review Course</span>
+                  <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
             ))}
