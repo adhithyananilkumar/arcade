@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Channel,
@@ -40,7 +40,6 @@ import { SmallCourseOverview } from './components/SmallCourseOverview';
 import { CourseManagementSection } from './components/CourseManagementSection';
 import { ArticlesManagementSection } from './components/ArticlesManagementSection';
 import { EventsManagementSection } from './components/EventsManagementSection';
-import { ReviewsFeedbackSection } from './components/ReviewsFeedbackSection';
 import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
 import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
@@ -53,14 +52,12 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/design-system/ui/tooltip';
 
+
+
 type ManageTab =
   | 'OVERVIEW'
-  | 'COURSES'
   | 'CONTENT'
   | 'STAFF'
-  | 'ARTICLES'
-  | 'EVENTS'
-  | 'REVIEWS'
   | 'ANALYTICS'
   | 'ACTIVITY'
   | 'NOTIFICATIONS'
@@ -71,6 +68,7 @@ type ContentFilter = 'ALL' | 'PUBLISHED' | 'DRAFT' | 'SUBMITTED';
 export default function ManageChannelPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const channelId = params.id as string;
   const { user } = useAuthStore();
 
@@ -80,7 +78,19 @@ export default function ManageChannelPage() {
     useState<ChannelDeletionRequestDto | null>(null);
   const [content, setContent] = useState<ChannelContentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ManageTab>('OVERVIEW');
+  
+  const initialTab = (searchParams.get('tab')?.toUpperCase() as ManageTab) || 'OVERVIEW';
+  const [activeTab, setActiveTabState] = useState<ManageTab>(initialTab);
+
+  const setActiveTab = (tab: ManageTab) => {
+    setActiveTabState(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+      window.dispatchEvent(new Event('popstate'));
+    }
+  };
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [contentFilter, setContentFilter] = useState<ContentFilter>('ALL');
@@ -183,14 +193,11 @@ export default function ManageChannelPage() {
 
   const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
-    { id: 'COURSES', label: 'Courses', icon: BookOpen, badge: `${content.length || 48}` },
+    { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
     ...(!channel.isPersonal
       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
       : []),
-    { id: 'ARTICLES', label: 'Articles', icon: FileText, badge: '124' },
-    { id: 'EVENTS', label: 'Events', icon: Calendar, badge: '18' },
-    { id: 'REVIEWS', label: 'Reviews', icon: Star, badge: '4.92 ★' },
-    { id: 'ANALYTICS', label: 'Analytics', icon: BarChart3 },
+    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3, badge: '4.92 ★' },
     { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
     { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
@@ -283,27 +290,15 @@ export default function ManageChannelPage() {
       </TooltipProvider>
 
       {/* Main Content Container */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-20 sm:px-8 sm:pt-24">
-        {/* Top Back Navigation Bar */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => router.push('/manage-channels')}
-            className="group inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 px-4.5 py-2 text-xs font-black text-slate-700 shadow-xs hover:border-slate-300 hover:bg-white hover:text-[#14142b] transition-all"
-          >
-            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-            <span>All Channels & Organizations</span>
-          </button>
-
-          {channel.status && channel.status !== 'ACTIVE' && (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                <span>{channel.status}</span>
-              </span>
-            </div>
-          )}
-        </div>
+      <div className="relative z-10 mx-auto w-full max-w-7xl space-y-8 px-4 pb-36 pt-28 sm:px-8 sm:pt-32">
+        {channel.status && channel.status !== 'ACTIVE' && (
+          <div className="flex justify-end">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/80 bg-rose-50/90 px-3 py-1 text-[11px] font-bold text-rose-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              <span>{channel.status}</span>
+            </span>
+          </div>
+        )}
 
         {/* Lock Warning Banners */}
         {!isSuspended && pendingDeletionRequest && (
@@ -328,6 +323,7 @@ export default function ManageChannelPage() {
             canEdit={canEdit}
             onEditClick={() => setIsEditModalOpen(true)}
             onViewPublicClick={() => router.push(`/channels/${channelId}`)}
+            onUpdate={setChannel}
           />
         )}
 
@@ -335,22 +331,15 @@ export default function ManageChannelPage() {
         <div className="space-y-10">
           {/* TAB 1: SMALL COURSE OVERVIEW DASHBOARD */}
           {activeTab === 'OVERVIEW' && (
-            <div className="space-y-6">
-              <SmallCourseOverview
-                onNavigateToCatalog={() => setActiveTab('COURSES')}
-                onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
-                onAddCourse={() => router.push('/studio')}
-              />
-              <ChannelSocialLinksCard 
-                channel={channel} 
-                canManageSettings={permissions.includes('ALL') || permissions.includes('channel.settings.manage') || isOwner} 
-                onUpdate={setChannel} 
-              />
-            </div>
+            <SmallCourseOverview
+              onNavigateToCatalog={() => setActiveTab('CONTENT')}
+              onNavigateToAnalytics={() => setActiveTab('ANALYTICS')}
+              onAddCourse={() => router.push('/studio')}
+            />
           )}
 
-          {/* TAB 2: COURSES */}
-          {activeTab === 'COURSES' && (
+          {/* TAB 2: CONTENT */}
+          {activeTab === 'CONTENT' && (
             <CourseManagementSection channelId={channelId} reviewMap={channelReviews} onAddCourse={() => router.push('/studio')} />
           )}
 
@@ -364,16 +353,7 @@ export default function ManageChannelPage() {
             />
           )}
 
-          {/* TAB 4: ARTICLES */}
-          {activeTab === 'ARTICLES' && <ArticlesManagementSection />}
-
-          {/* TAB 5: EVENTS */}
-          {activeTab === 'EVENTS' && <EventsManagementSection />}
-
-          {/* TAB 6: REVIEWS */}
-          {activeTab === 'REVIEWS' && <ReviewsFeedbackSection />}
-
-          {/* TAB 7: ANALYTICS */}
+          {/* TAB 4: ANALYTICS & REVIEWS */}
           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
 
           {/* TAB 8: ACTIVITY */}

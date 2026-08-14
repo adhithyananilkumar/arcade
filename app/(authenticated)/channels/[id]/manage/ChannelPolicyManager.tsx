@@ -15,6 +15,7 @@ interface ChannelPolicyManagerProps {
   channelId: string;
   permissions: string[];
   isSuspended?: boolean;
+  hideHeader?: boolean;
 }
 
 const formatPermissionKey = (key: string) => {
@@ -29,7 +30,7 @@ const formatPermissionKey = (key: string) => {
   return key;
 };
 
-export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended }: ChannelPolicyManagerProps) {
+export function ChannelPolicyManager({ channelId, permissions: userPermissions, isSuspended, hideHeader = false }: ChannelPolicyManagerProps) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,7 +125,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
   if (loading) {
     return (
-      <div className="space-y-3 mt-8 pt-8 border-t border-gray-200">
+      <div className={`space-y-3 ${hideHeader ? 'pt-2' : 'mt-8 pt-8 border-t border-gray-200'}`}>
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
@@ -133,12 +134,12 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
   }
 
   return (
-    <div className="space-y-6 mt-8 pt-8 border-t border-slate-200/60">
+    <div className={`space-y-6 ${hideHeader ? 'pt-0' : 'mt-8 pt-8 border-t border-slate-200/60'}`}>
       {!canManageRoles && (
-        <Card className="border-indigo-100/80 bg-indigo-50/20 shadow-2xs mb-8 rounded-3xl">
+        <Card className="border-2 border-blue-400/90 bg-blue-50/30 shadow-2xs mb-8 rounded-none">
           <CardHeader>
             <h3 className="text-sm font-extrabold text-[#14142b] flex items-center gap-2">
-              <ShieldCheck className="text-indigo-600" size={18} />
+              <ShieldCheck className="text-blue-600" size={18} />
               Your Permissions
             </h3>
             <p className="text-xs font-medium text-slate-500">Here are the permissions you have been granted in this channel.</p>
@@ -159,104 +160,113 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
 
       {canViewRoles && (
         <>
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-extrabold text-[#14142b] flex items-center gap-2.5">
-                <span className="grid size-9 place-items-center rounded-xl bg-indigo-100/90 text-indigo-700 border border-indigo-200/60 shadow-2xs">
-                  <Shield size={18} />
-                </span>
-                <span>Custom Roles</span>
-              </h3>
-              <p className="text-sm font-medium text-slate-500 mt-1">Create custom roles with specific permissions for your channel staff.</p>
+          {!hideHeader ? (
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-extrabold text-[#14142b] flex items-center gap-2.5">
+                  <span className="grid size-9 place-items-center rounded-2xl bg-blue-100/90 text-blue-700 border border-blue-200/60 shadow-2xs">
+                    <Shield size={18} />
+                  </span>
+                  <span>Custom Roles</span>
+                </h3>
+                <p className="text-sm font-medium text-slate-500 mt-1">Create custom roles with specific permissions for your channel staff.</p>
+              </div>
+              {canManageRoles && (
+                <Button
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={isSuspended}
+                  title={isSuspended ? 'Channel is suspended' : undefined}
+                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  <Plus size={16} /> Create Role
+                </Button>
+              )}
             </div>
-            {canManageRoles && (
-              <Button
-                onClick={() => setIsModalOpen(true)}
-                disabled={isSuspended}
-                title={isSuspended ? 'Channel is suspended' : undefined}
-                className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-4.5 py-2 text-xs font-extrabold shadow-xs transition-all active:scale-[0.98]"
-              >
-                <Plus size={16} /> Create Role
-              </Button>
-            )}
-          </div>
+          ) : (
+            canManageRoles && (
+              <div className="flex justify-end mb-4">
+                <Button
+                  onClick={() => setIsModalOpen(true)}
+                  disabled={isSuspended}
+                  title={isSuspended ? 'Channel is suspended' : undefined}
+                  className="rounded-full bg-[#14142b] text-white hover:bg-[#232735] px-5 py-2 text-xs font-extrabold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                >
+                  <Plus size={16} /> Create Role
+                </Button>
+              </div>
+            )
+          )}
 
           <div className="grid gap-4.5 md:grid-cols-2">
-            {roles.map((role, idx) => {
-              const iconBg = idx % 2 === 0 ? 'bg-indigo-100/80 text-indigo-700 border-indigo-200/70' : 'bg-purple-100/80 text-purple-700 border-purple-200/70';
+            {roles.map((role) => (
+              <div
+                key={role.id}
+                className="group relative flex flex-col justify-between rounded-none border-2 border-sky-400/90 bg-white p-5 sm:p-6 shadow-[0_4px_25px_rgba(20,20,43,0.06)] hover:shadow-lg hover:border-blue-600 transition-all duration-200"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid size-8 place-items-center rounded-xl bg-sky-50/90 text-sky-600 border border-sky-200/80 shadow-2xs">
+                        <ShieldCheck size={16} />
+                      </span>
+                      <h4 className="font-extrabold text-[#14142b] text-base leading-tight">
+                        {role.displayName}
+                      </h4>
+                    </div>
 
-              return (
-                <Card
-                  key={role.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_4px_25px_rgba(20,20,43,0.04)] hover:shadow-xl hover:border-indigo-300 transition-all duration-300"
-                >
-                  {/* Hand-Drawn Doodle Background Accents */}
-                  <div className="absolute bottom-2 right-4 pointer-events-none opacity-[0.12] select-none z-0">
-                    {idx % 3 === 0 ? (
-                      <svg className="size-20 text-indigo-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                        <path d="M35 12 L50 20 V35 C50 48 35 56 35 56 C35 56 20 48 20 35 V20 Z" strokeDasharray="4 2" />
-                        <circle cx="35" cy="32" r="18" strokeDasharray="3 3" opacity="0.6" />
-                      </svg>
-                    ) : idx % 3 === 1 ? (
-                      <svg className="size-20 text-purple-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                        <rect x="22" y="28" width="26" height="24" rx="6" strokeDasharray="4 2" />
-                        <path d="M28 28 V20 C28 15 32 12 35 12 C38 12 42 15 42 20 V28" />
-                        <path d="M52 14 L56 18 M16 48 L20 52 M54 44 L58 46" strokeDasharray="2 2" />
-                      </svg>
-                    ) : (
-                      <svg className="size-20 text-emerald-900" viewBox="0 0 70 70" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                        <circle cx="35" cy="30" r="16" strokeDasharray="4 2" />
-                        <polygon points="35,18 39,26 47,27 41,33 43,41 35,37 27,41 29,33 23,27 31,26" strokeDasharray="3 2" />
-                        <path d="M26 44 L20 58 L30 52 L35 58 L40 52 L50 58 L44 44" />
-                      </svg>
+                    {!role.systemRole && canManageRoles && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => startEditRole(role)}
+                          disabled={isSuspended}
+                          title={isSuspended ? 'Channel is suspended' : 'Edit Role'}
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                        >
+                          <Edit3 size={15} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleDeletePolicy(role.id)}
+                          disabled={isSuspended}
+                          title={isSuspended ? 'Channel is suspended' : 'Delete Role'}
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        >
+                          <Trash2 size={15} />
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-extrabold text-[#14142b] flex items-center gap-2 text-sm">
-                          <span className={`grid size-7 place-items-center rounded-lg border ${iconBg} shadow-2xs`}>
-                            <ShieldCheck size={15} />
-                          </span>
-                          <span>{role.displayName}</span>
-                          {role.systemRole ? (
-                            <Badge variant="secondary" className="bg-slate-100/90 text-slate-700 text-[10px] font-extrabold border border-slate-200/60">System</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-amber-800 border-amber-200/80 bg-amber-100/80 text-[10px] font-extrabold shadow-2xs">Custom</Badge>
-                          )}
-                        </h4>
-                        <p className="text-xs font-medium text-slate-500 mt-2 leading-relaxed">{role.description || 'No description provided.'}</p>
-                      </div>
 
-                      {!role.systemRole && canManageRoles && (
-                        <div className="flex gap-1 shrink-0">
-                          <Button variant="ghost" size="icon-sm" onClick={() => startEditRole(role)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Edit Role'} className="text-slate-400 hover:text-[#14142b] hover:bg-white/80">
-                            <Edit3 size={16} />
-                          </Button>
-                          <Button variant="ghost" size="icon-sm" onClick={() => handleDeletePolicy(role.id)} disabled={isSuspended} title={isSuspended ? 'Channel is suspended' : 'Delete Role'} className="text-slate-400 hover:text-red-600 hover:bg-rose-50">
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
+                  <p className="text-xs font-medium text-slate-500 mt-3 leading-relaxed">
+                    {role.description || 'No description provided.'}
+                  </p>
+                </div>
 
-                  <CardContent className="mt-auto pt-3 border-t border-slate-100/80">
-                    <p className="text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-wider">Permissions ({role.permissions?.length || 0})</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {role.permissions?.map((p: any) => (
-                        <Badge key={p.id} variant="outline" className="text-blue-700 border-blue-200/80 bg-blue-100/90 text-[10px] font-extrabold shadow-2xs">
-                          {formatPermissionKey(p.code)}
-                        </Badge>
-                      ))}
-                      {(!role.permissions || role.permissions.length === 0) && (
-                        <span className="text-xs text-slate-400 italic font-medium">No permissions assigned</span>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                <div className="mt-5 pt-3.5 border-t border-slate-100">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                    Permissions ({role.permissions?.length || 0})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {role.permissions?.map((p: any) => (
+                      <Badge
+                        key={p.id}
+                        variant="outline"
+                        className="inline-flex items-center gap-1 text-[11px] font-extrabold text-sky-700 border-sky-200/90 bg-sky-50/90 px-3 py-1 rounded-full shadow-2xs"
+                      >
+                        <ShieldCheck size={12} className="text-sky-500 shrink-0" />
+                        <span>{formatPermissionKey(p.code)}</span>
+                      </Badge>
+                    ))}
+                    {(!role.permissions || role.permissions.length === 0) && (
+                      <span className="text-xs text-slate-400 italic font-medium">No permissions assigned</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
