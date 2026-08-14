@@ -2,13 +2,20 @@
 
 import React, { useState, useEffect, Suspense, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
 import { api } from "@/infrastructure/http/api";
+import CoursesView, { CourseCard } from "./CoursesView";
+import EventsView from "./EventsView";
+import ArticlesView from "./ArticlesView";
+import WindmillAnimation from "./WindmillAnimation";
+
+export { CourseCard };
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -36,7 +43,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   const isUpcoming = status === "Upcoming";
 
   const getBgTheme = () => {
-    switch(category) {
+    switch (category) {
       case "Computer Science": return "linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)";
       case "Information Technology": return "linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%)";
       case "Business & Management": return "linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%)";
@@ -46,7 +53,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   };
 
   const getAccentColor = () => {
-    switch(category) {
+    switch (category) {
       case "Computer Science": return "#4F46E5";
       case "Information Technology": return "#2563EB";
       case "Business & Management": return "#EA580C";
@@ -62,7 +69,7 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
         <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="2" />
         <path d="M50 100 L150 100 M100 50 L100 150" stroke="currentColor" strokeWidth="2" />
       </svg>
-      
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
         <div style={{ display: "inline-block", padding: "4px 10px", background: "#FFFFFF", borderRadius: "20px", fontSize: "0.7rem", fontWeight: "800", color: getAccentColor(), boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
           {category}
@@ -75,7 +82,261 @@ export function WebinarCardHeader({ title, status, duration, category }: any) {
   );
 }
 
-const HoneycombIllustration: React.FC = () => {
+const RocketJourney: React.FC<{ activeColor: string; progress: MotionValue<number> }> = ({ activeColor, progress }) => {
+  const t = progress;
+
+  const P0 = { x: 350, y: 400 }; // Bottom-right start
+  const P1 = { x: 150, y: 300 }; // Curve up and left
+  const P2 = { x: 150, y: 150 }; // High arc
+  const P3 = { x: 320, y: 150 }; // Land on moon surface
+
+  const bezierX = (val: number) => {
+    const mt = 1 - val;
+    return mt * mt * mt * P0.x + 3 * mt * mt * val * P1.x + 3 * mt * val * val * P2.x + val * val * val * P3.x;
+  };
+  const bezierY = (val: number) => {
+    const mt = 1 - val;
+    return mt * mt * mt * P0.y + 3 * mt * mt * val * P1.y + 3 * mt * val * val * P2.y + val * val * val * P3.y;
+  };
+
+  const tRocket = useTransform(t, [0, 0.85], [0, 1]);
+  const x = useTransform(tRocket, bezierX);
+  const y = useTransform(tRocket, bezierY);
+  const angle = useTransform(tRocket, (val) => {
+    const mt = 1 - val;
+    const dx = 3 * mt * mt * (P1.x - P0.x) + 6 * mt * val * (P2.x - P1.x) + 3 * val * val * (P3.x - P2.x);
+    const dy = 3 * mt * mt * (P1.y - P0.y) + 6 * mt * val * (P2.y - P1.y) + 3 * val * val * (P3.y - P2.y);
+    const targetAngle = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+
+    // Start upright (0 in SVG rotation is pointing straight up) 
+    // and smoothly tilt into the flight path as it lifts off
+    if (val < 0.02) {
+      return 0;
+    } else if (val < 0.15) {
+      const p = (val - 0.02) / 0.13;
+      return 0 * (1 - p) + targetAngle * p;
+    }
+    return targetAngle;
+  });
+
+  const flameOpacity = useTransform(t, [0, 0.03, 0.85, 0.92], [0, 1, 1, 0]);
+  const flameLen = useTransform(t, (v) => (v <= 0 || v >= 0.88) ? 0 : 0.7 + Math.abs(Math.sin(v * 60)) * 0.45);
+  const rocketFade = useTransform(t, [0.84, 0.91], [1, 0]);
+  const astronautX = useTransform(t, (v) => v < 0.85 ? P3.x - 4 : P3.x - 4 + Math.min((v - 0.85) / 0.08, 1) * 60);
+  const astronautOp = useTransform(t, [0.82, 0.88], [0, 1]);
+  const flagScale = useTransform(t, [0.90, 1.0], [0, 1]);
+  const trailOp = useTransform(t, [0, 0.06, 0.82, 1], [0, 0.5, 0.5, 0]);
+  const dustOp = useTransform(t, [0.82, 0.88, 0.95, 1], [0, 0.85, 0.3, 0]);
+  const dustSc = useTransform(t, [0.82, 1], [0.2, 2.8]);
+  const moonScale = useTransform(t, [0, 0.6, 1], [0.8, 1.2, 2.8]);
+  const moonX = useTransform(t, [0, 0.6, 1], [380, 350, P3.x + 30]);
+  const moonY = useTransform(t, [0, 0.6, 1], [80, 200, P3.y + 148]);
+
+  return (
+    <div style={{ position: "relative", width: "100%", height: "460px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <svg viewBox="35 30 430 400" width="100%" height="100%" style={{ overflow: "visible", display: "block" }}>
+        <defs>
+
+          {/* Trajectory gradient */}
+          <linearGradient id="traj" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={activeColor} stopOpacity="0.04" />
+            <stop offset="100%" stopColor={activeColor} stopOpacity="0.55" />
+          </linearGradient>
+
+          {/* Dust plume */}
+          <radialGradient id="dustg" cx="50%" cy="60%" r="50%">
+            <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.8" />
+            <stop offset="55%" stopColor="#cbd5e1" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Glow bloom filters */}
+          <filter id="bloom" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="5" result="b1" />
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b2" />
+            <feMerge>
+              <feMergeNode in="b1" />
+              <feMergeNode in="b2" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" />
+          </filter>
+          <filter id="ao" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.5" />
+          </filter>
+        </defs>
+
+        <style>{`
+          @keyframes twinkle { 0%,100%{opacity:0.15;} 50%{opacity:0.9;} }
+          @keyframes flagWave {
+            0%  { d: path("M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z"); }
+            30% { d: path("M 0,0 Q 18,5 40,1 L 40,22 Q 18,17 0,22 Z"); }
+            65% { d: path("M 0,0 Q 22,-5 40,0 L 40,22 Q 22,27 0,22 Z"); }
+            100%{ d: path("M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z"); }
+          }
+          .fw { animation: flagWave 2.8s ease-in-out infinite; }
+          .st-a { animation: twinkle 2.3s ease-in-out infinite; }
+          .st-b { animation: twinkle 3.2s ease-in-out infinite 0.7s; }
+          .st-c { animation: twinkle 2.8s ease-in-out infinite 1.2s; }
+          .st-d { animation: twinkle 1.9s ease-in-out infinite 0.4s; }
+        `}</style>
+
+        {/* ── Stars — soft circular dots, photographic ── */}
+        {([
+          [42, 35, 1.6, "st-a"], [120, 20, 1.1, "st-b"], [225, 50, 1.9, "st-c"],
+          [315, 18, 1.3, "st-d"], [405, 44, 1.7, "st-a"], [470, 14, 1.0, "st-b"],
+          [492, 95, 1.4, "st-c"], [25, 175, 1.6, "st-d"], [488, 295, 1.2, "st-a"],
+          [172, 84, 1.0, "st-b"], [335, 375, 1.5, "st-c"], [478, 355, 1.3, "st-d"],
+          [88, 135, 0.9, "st-a"], [448, 210, 1.1, "st-b"], [265, 310, 0.8, "st-c"],
+        ] as [number, number, number, string][]).map(([cx, cy, r, cls], i) => (
+          <circle key={i} className={cls} cx={cx} cy={cy} r={r} fill="white" opacity="0.7" />
+        ))}
+
+        {/* ── Launch Cloud ── */}
+        <motion.g style={{ opacity: useTransform(t, [0, 0.15], [1, 0]) }}>
+          <path d="M 320,410 Q 330,380 350,380 Q 370,380 380,400 Q 400,400 400,420 Q 400,440 370,440 L 320,440 Q 290,440 290,420 Q 290,400 320,410 Z" fill="#ffffff" filter="url(#shadow)" opacity="0.4" />
+          <path d="M 325,415 Q 335,390 350,390 Q 365,390 375,405 Q 390,405 390,420 Q 390,435 365,435 L 320,435 Q 300,435 300,420 Q 300,405 325,415 Z" fill="#f8fafc" />
+        </motion.g>
+
+        {/* ── Trajectory ── */}
+        <path
+          d={`M ${P0.x},${P0.y} C ${P1.x},${P1.y} ${P2.x},${P2.y} ${P3.x},${P3.y}`}
+          fill="none" stroke="url(#traj)" strokeWidth="1" strokeDasharray="4 9" opacity="0.45"
+        />
+
+        {/* ── Exhaust trail (volumetric smoke puffs) ── */}
+        <motion.g style={{ opacity: trailOp }}>
+          {[0.10, 0.22, 0.36, 0.50, 0.63].map((frac, i) => (
+            <ellipse key={i}
+              cx={bezierX(frac)} cy={bezierY(frac)}
+              rx={4 + i * 2.2} ry={3 + i * 1.4}
+              fill="url(#exhg)"
+            />
+          ))}
+        </motion.g>
+
+        {/* ── Moon ── */}
+        <motion.g style={{ x: moonX, y: moonY, scale: moonScale }}>
+          <circle cx="0" cy="0" r="53" fill="#f8fafc" filter="url(#shadow)" />
+          <circle cx="0" cy="0" r="53" fill="#f1f5f9" />
+
+          {/* Soft cute craters */}
+          <circle cx="-15" cy="-10" r="8" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="20" cy="-5" r="12" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="-5" cy="22" r="10" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="-25" cy="15" r="4" fill="#e2e8f0" opacity="0.8" />
+          <circle cx="15" cy="20" r="5" fill="#e2e8f0" opacity="0.8" />
+        </motion.g>
+
+        {/* ── Landing dust cloud (photographic dusty haze) ── */}
+        <motion.g style={{ opacity: dustOp, scale: dustSc, originX: `${P3.x}px`, originY: `${P3.y + 18}px` }}>
+          <ellipse cx={P3.x} cy={P3.y + 15} rx="35" ry="9" fill="url(#dustg)" />
+          <ellipse cx={P3.x - 20} cy={P3.y + 17} rx="16" ry="6" fill="url(#dustg)" opacity="0.7" />
+          <ellipse cx={P3.x + 20} cy={P3.y + 17} rx="16" ry="6" fill="url(#dustg)" opacity="0.7" />
+          <ellipse cx={P3.x} cy={P3.y + 12} rx="12" ry="4" fill="url(#dustg)" opacity="0.45" />
+        </motion.g>
+
+        {/* ── Flag ── */}
+        <motion.g style={{ x: P3.x + 82, y: P3.y, scale: flagScale, originX: "0px", originY: "0px" }}>
+          <g transform="scale(1.8)">
+            {/* Pole — metallic cylinder suggestion */}
+            <line x1="0.5" y1="2" x2="0.5" y2="-58" stroke="#8898a8" strokeWidth="2.2" strokeLinecap="round" />
+            <line x1="0" y1="2" x2="0" y2="-58" stroke="#c0d0dc" strokeWidth="1.0" strokeLinecap="round" opacity="0.5" />
+            {/* Flag fabric with wave */}
+            <g transform="translate(0,-58)">
+              <path className="fw" d="M 0,0 Q 20,-2 40,0 L 40,22 Q 20,24 0,22 Z" fill={activeColor} />
+              {/* Lighting fold */}
+              <path d="M 0,0 L 16,0 L 16,22 L 0,22 Z" fill="white" opacity="0.12" />
+              {/* Right shadow */}
+              <path d="M 32,0 L 40,0 L 40,22 L 32,22 Z" fill="#000" opacity="0.15" />
+              <text x="3" y="14" fill="white" fontSize="8.5" fontWeight="900"
+                fontFamily="'Inter','Outfit',sans-serif" letterSpacing="-0.5">arcade.</text>
+            </g>
+          </g>
+        </motion.g>
+
+        {/* ── Astronaut — cute cartoon style ── */}
+        <motion.g style={{ x: astronautX, y: P3.y + 26, opacity: astronautOp }}>
+          <g transform="scale(1.8) translate(0, -9)">
+            <ellipse cx="0" cy="16" rx="8" ry="2" fill="#94a3b8" opacity="0.3" />
+
+            {/* Legs */}
+            <path d="M -3,6 L -5,14 Q -6,16 -3,15 Z" fill="#ffffff" />
+            <path d="M 3,6 L 5,14 Q 6,16 3,15 Z" fill="#ffffff" />
+
+            {/* Torso */}
+            <rect x="-6" y="-2" width="12" height="10" rx="4" fill="#ffffff" />
+            <rect x="-4" y="0" width="8" height="6" rx="2" fill="#f1f5f9" />
+
+            {/* Backpack */}
+            <rect x="5" y="-3" width="4" height="10" rx="2" fill="#e2e8f0" />
+
+            {/* Arms */}
+            <path d="M -5,0 Q -9,4 -7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+            <path d="M 5,0 Q 9,4 7,10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+
+            {/* Helmet */}
+            <circle cx="0" cy="-8" r="7" fill="#ffffff" />
+            <circle cx="0" cy="-8" r="5" fill={activeColor} />
+            {/* Visor shine */}
+            <ellipse cx="-2" cy="-10" rx="2" ry="1" fill="#ffffff" opacity="0.4" transform="rotate(-30,-2,-10)" />
+          </g>
+        </motion.g>
+
+
+        {/* ── Rocket ── */}
+        <motion.g style={{ x, y, rotate: angle, opacity: rocketFade, originX: "0.5", originY: "0.5" }}>
+          <g transform="scale(1.2)">
+
+            {/* ── Cute Cartoon Flame ── */}
+            <motion.g style={{ opacity: flameOpacity, scaleY: flameLen, originX: "0.5", originY: "0" }} transform="translate(0,18)">
+              <path d="M -8,0 Q -12,15 0,35 Q 12,15 8,0 Z" fill="#f59e0b" filter="url(#bloom)" />
+              <path d="M -4,0 Q -6,10 0,22 Q 6,10 4,0 Z" fill="#fbbf24" />
+              <path d="M -2,0 Q -3,5 0,12 Q 3,5 2,0 Z" fill="#fef08a" />
+            </motion.g>
+
+            {/* Rocket body group */}
+            <g transform="translate(0,-8)">
+
+              {/* ── Left fin ── */}
+              <path d="M -12,12 Q -22,25 -22,32 Q -22,35 -16,35 L -10,25 Z" fill={activeColor} />
+              {/* ── Right fin ── */}
+              <path d="M 12,12 Q 22,25 22,32 Q 22,35 16,35 L 10,25 Z" fill={activeColor} />
+
+              {/* Engine nozzle */}
+              <path d="M -8,22 L -10,28 L 10,28 L 8,22 Z" fill="#64748b" />
+
+              {/* ── Main body — glossy white capsule ── */}
+              <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#ffffff" filter="url(#shadow)" />
+              <path d="M 0,-30 C -18,-10 -16,25 0,25 C 16,25 18,-10 0,-30 Z" fill="#f8fafc" />
+
+              {/* Soft inner shadow/gloss */}
+              <path d="M -8,-10 C -10,5 -8,15 -2,20" fill="none" stroke="#e2e8f0" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+
+              {/* ── Nose cone ── */}
+              <path d="M 0,-30 C -9,-15 -11,-5 -12,0 L 12,0 C 11,-5 9,-15 0,-30 Z" fill={activeColor} />
+              <path d="M -4,-25 C -6,-15 -6,-5 -5,0" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
+
+              {/* ── Porthole window ── */}
+              <circle cx="0" cy="5" r="7" fill="#cbd5e1" />
+              <circle cx="0" cy="5" r="5" fill="#ffffff" filter="url(#softglow)" />
+              <circle cx="0" cy="5" r="5" fill="#f1f5f9" />
+              <path d="M -2,2 Q 0,4 2,2" fill="none" stroke="#e2e8f0" strokeWidth="1.5" strokeLinecap="round" />
+            </g>
+          </g>
+        </motion.g>
+
+      </svg>
+    </div>
+  );
+};
+const HoneycombIllustration: React.FC<{ animate?: boolean }> = ({ animate = true }) => {
   return (
     <div style={{ position: "relative", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
       <svg
@@ -139,35 +400,35 @@ const HoneycombIllustration: React.FC = () => {
           }
 
           .flow-forward {
-            animation: flowForward 2s linear infinite;
+            ${animate ? "animation: flowForward 2s linear infinite;" : ""}
           }
           .flow-backward {
-            animation: flowBackward 2s linear infinite;
+            ${animate ? "animation: flowBackward 2s linear infinite;" : ""}
           }
           .animate-shuttle {
-            animation: shuttleFlight 5s ease-in-out infinite;
+            ${animate ? "animation: shuttleFlight 5s ease-in-out infinite;" : "transform: translate(350px, 45px) rotate(-30deg);"}
           }
           .animate-racket {
-            animation: racketSwing 5s ease-in-out infinite;
+            ${animate ? "animation: racketSwing 5s ease-in-out infinite;" : ""}
             transform-origin: -2px 2px;
           }
           .animate-sparkle-right {
-            animation: sparkleTwinkleRight 3s ease-in-out infinite;
+            ${animate ? "animation: sparkleTwinkleRight 3s ease-in-out infinite;" : "transform: translate(380px, 210px) scale(0.8);"}
           }
           .animate-sparkle-left {
-            animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;
+            ${animate ? "animation: sparkleTwinkleLeft 3s ease-in-out infinite 1.5s;" : "transform: translate(60px, 60px) scale(0.6);"}
           }
           .animate-clink-sparks {
-            animation: clinkSparksPulse 2.5s ease-in-out infinite;
+            ${animate ? "animation: clinkSparksPulse 2.5s ease-in-out infinite;" : "transform: translate(210px, 208px) scale(0.85);"}
           }
           .animate-expand-arrows {
-            animation: expandArrowsPulse 4s ease-in-out infinite;
+            ${animate ? "animation: expandArrowsPulse 4s ease-in-out infinite;" : "transform: translate(390px, 250px) scale(0.95);"}
           }
         `}</style>
 
         {/* Background dotted line paths / orbits */}
         <path
-          className="flow-forward"
+          className={animate ? "flow-forward" : undefined}
           d="M 120,40 C 200,-10 320,10 340,90"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -175,7 +436,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-backward"
+          className={animate ? "flow-backward" : undefined}
           d="M 50,110 C 30,50 120,10 200,60"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -183,7 +444,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-forward"
+          className={animate ? "flow-forward" : undefined}
           d="M 280,240 C 360,250 430,190 410,120"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -191,7 +452,7 @@ const HoneycombIllustration: React.FC = () => {
           fill="none"
         />
         <path
-          className="flow-backward"
+          className={animate ? "flow-backward" : undefined}
           d="M 60,190 C 80,250 180,270 230,240"
           stroke="#CBD5E1"
           strokeWidth="1.5"
@@ -200,52 +461,56 @@ const HoneycombIllustration: React.FC = () => {
         />
 
         {/* Glitter particles sliding along dotted paths */}
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 120,40 C 200,-10 320,10 340,90"
-            dur="6s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 50,110 C 30,50 120,10 200,60"
-            dur="7s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
-          <animateMotion
-            path="M 280,240 C 360,250 430,190 410,120"
-            dur="8s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
-          <animateMotion
-            path="M 60,190 C 80,250 180,270 230,240"
-            dur="6.5s"
-            repeatCount="indefinite"
-          />
-        </circle>
+        {animate && (
+          <>
+            <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+              <animateMotion
+                path="M 120,40 C 200,-10 320,10 340,90"
+                dur="6s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+              <animateMotion
+                path="M 50,110 C 30,50 120,10 200,60"
+                dur="7s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2.5" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 3px #FBBF24)" }}>
+              <animateMotion
+                path="M 280,240 C 360,250 430,190 410,120"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle r="2" fill="#FBBF24" style={{ filter: "drop-shadow(0px 0px 2px #FBBF24)" }}>
+              <animateMotion
+                path="M 60,190 C 80,250 180,270 230,240"
+                dur="6.5s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </>
+        )}
 
         {/* Small floating elements like badminton shuttles or balls */}
-        <g className="animate-shuttle" transform="translate(350, 45) rotate(-30)">
+        <g className={animate ? "animate-shuttle" : undefined} transform={animate ? undefined : "translate(350, 45) rotate(-30)"}>
           <path d="M 0,0 L -8,-15 L 8,-15 Z" fill="none" stroke="#1E293B" strokeWidth="1.2" />
           <path d="M -6,-11 L 6,-11 M -4,-7 L 4,-7" stroke="#1E293B" strokeWidth="1.2" />
           <circle cx="0" cy="1" r="3.5" fill="#1E293B" />
         </g>
-        
+
         {/* Sparkles / star outlines */}
-        <g className="animate-sparkle-right" transform="translate(380, 210) scale(0.8)">
+        <g className={animate ? "animate-sparkle-right" : undefined} transform={animate ? undefined : "translate(380, 210) scale(0.8)"}>
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
-        <g className="animate-sparkle-left" transform="translate(60, 60) scale(0.6)">
+        <g className={animate ? "animate-sparkle-left" : undefined} transform={animate ? undefined : "translate(60, 60) scale(0.6)"}>
           <path d="M 0,-8 L 2,-2 L 8,0 L 2,2 L 0,8 L -2,2 L -8,0 L -2,-2 Z" fill="#FBBF24" stroke="#1E293B" strokeWidth="1.2" />
         </g>
 
         {/* Diagonal Expand Arrows in bottom-right */}
-        <g className="animate-expand-arrows" transform="translate(390, 250)">
+        <g className={animate ? "animate-expand-arrows" : undefined} transform={animate ? undefined : "translate(390, 250)"}>
           <line x1="-8" y1="8" x2="8" y2="-8" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" />
           <polyline points="0,8 -8,8 -8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <polyline points="0,-8 8,-8 8,0" fill="none" stroke="#1E293B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -406,7 +671,7 @@ const HoneycombIllustration: React.FC = () => {
           <path d="M-22,13 Q-25,14 -24,16 Q-23,17 -21,16" stroke="#1E293B" strokeWidth="1.6" fill="none" />
           <path d="M-6,14 L-4,35 M12,14 L15,35" stroke="#1E293B" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
-        
+
         {/* Clink sparks between bottom left & right cups */}
         <g className="animate-clink-sparks" transform="translate(210, 208)" stroke="#1E293B" strokeWidth="1.5" strokeLinecap="round">
           <line x1="-8" y1="-8" x2="-3" y2="-3" />
@@ -420,6 +685,7 @@ const HoneycombIllustration: React.FC = () => {
     </div>
   );
 };
+
 
 function hexToHslStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -811,39 +1077,39 @@ const HEADER_COLOR_MESHES: Record<string, string> = {
 
 function getCourseGlyph(title: string, index: number, color: string): React.ReactNode {
   const norm = title.toLowerCase();
-  
+
   if (norm.includes("database") || norm.includes("sql") || norm.includes("query")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="3" width="16" height="12" rx="1.5"/>
-        <line x1="9" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="15" x2="12" y2="21"/>
+        <rect x="4" y="3" width="16" height="12" rx="1.5" />
+        <line x1="9" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="21" />
       </svg>
     );
   }
   if (norm.includes("structure") || norm.includes("algorithm")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M4 6h16M4 12h10M4 18h13"/>
-        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <path d="M4 6h16M4 12h10M4 18h13" />
+        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
       </svg>
     );
   }
   if (norm.includes("principle") || norm.includes("architecture") || norm.includes("design") || norm.includes("software")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
-        <path d="M12 12v9M4 7.5l8 4.5 8-4.5"/>
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+        <path d="M12 12v9M4 7.5l8 4.5 8-4.5" />
       </svg>
     );
   }
   if (norm.includes("operating") || norm.includes("system") || norm.includes("concurrency") || norm.includes("network")) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="4" width="16" height="7" rx="1.5"/>
-        <rect x="4" y="13" width="16" height="7" rx="1.5"/>
-        <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none"/>
-        <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>
+        <rect x="4" y="4" width="16" height="7" rx="1.5" />
+        <rect x="4" y="13" width="16" height="7" rx="1.5" />
+        <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+        <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
       </svg>
     );
   }
@@ -853,34 +1119,34 @@ function getCourseGlyph(title: string, index: number, color: string): React.Reac
   if (m === 0) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <rect x="4" y="3" width="16" height="12" rx="1.5"/>
-        <line x1="9" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="15" x2="12" y2="21"/>
+        <rect x="4" y="3" width="16" height="12" rx="1.5" />
+        <line x1="9" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="15" x2="12" y2="21" />
       </svg>
     );
   }
   if (m === 1) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M4 6h16M4 12h10M4 18h13"/>
-        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+        <path d="M4 6h16M4 12h10M4 18h13" />
+        <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
       </svg>
     );
   }
   if (m === 2) {
     return (
       <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
-        <path d="M12 12v9M4 7.5l8 4.5 8-4.5"/>
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+        <path d="M12 12v9M4 7.5l8 4.5 8-4.5" />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" style={{ width: "38px", height: "38px" }}>
-      <rect x="4" y="4" width="16" height="7" rx="1.5"/>
-      <rect x="4" y="13" width="16" height="7" rx="1.5"/>
-      <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none"/>
-      <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none"/>
+      <rect x="4" y="4" width="16" height="7" rx="1.5" />
+      <rect x="4" y="13" width="16" height="7" rx="1.5" />
+      <circle cx="7.5" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="7.5" cy="16.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -931,12 +1197,12 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
     if (!buttonRef.current || !isHoveredRef.current) return;
 
     const { width, height } = buttonRef.current.getBoundingClientRect();
-    
+
     // Subtle star particles tailored for smaller button sizes
     for (let i = 0; i < 6; i++) {
       const px = Math.random() * width;
       const py = Math.random() * height;
-      
+
       const particle = document.createElement("div");
       particle.className = "category-particle";
       particle.style.cssText = `
@@ -1122,8 +1388,8 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
         fontSize: "0.9rem",
         fontWeight: "700",
         cursor: "pointer",
-        boxShadow: isActive 
-          ? `0 10px 20px -8px ${itemData.colors.primary}33` 
+        boxShadow: isActive
+          ? `0 10px 20px -8px ${itemData.colors.primary}33`
           : "0 4px 10px -2px rgba(0,0,0,0.02)",
         transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "--glow-color": glowColor
@@ -1134,578 +1400,7 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
   );
 };
 
-interface FilterPillButtonProps {
-  isActive: boolean;
-  activeData: any;
-  onClick: () => void;
-  children: React.ReactNode;
-}
 
-const FilterPillButton: React.FC<FilterPillButtonProps> = ({
-  isActive,
-  activeData,
-  onClick,
-  children
-}) => {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const particlesRef = useRef<HTMLDivElement[]>([]);
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
-  const isHoveredRef = useRef(false);
-  const magnetismAnimationRef = useRef<gsap.core.Tween | null>(null);
-
-  const glowColor = hexToRgbStr(activeData.colors.primary);
-
-  const clearAllParticles = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-    magnetismAnimationRef.current?.kill();
-
-    particlesRef.current.forEach(particle => {
-      gsap.to(particle, {
-        scale: 0,
-        opacity: 0,
-        duration: 0.3,
-        ease: "back.in(1.7)",
-        onComplete: () => {
-          particle.parentNode?.removeChild(particle);
-        }
-      });
-    });
-    particlesRef.current = [];
-  }, []);
-
-  const animateParticles = useCallback(() => {
-    if (!buttonRef.current || !isHoveredRef.current) return;
-
-    const { width, height } = buttonRef.current.getBoundingClientRect();
-    
-    // Subtle star particles tailored for smaller button sizes
-    for (let i = 0; i < 6; i++) {
-      const px = Math.random() * width;
-      const py = Math.random() * height;
-      
-      const particle = document.createElement("div");
-      particle.className = "category-particle";
-      particle.style.cssText = `
-        position: absolute;
-        width: 3px;
-        height: 3px;
-        border-radius: 50%;
-        background: rgba(${glowColor}, 1);
-        box-shadow: 0 0 4px rgba(${glowColor}, 0.6);
-        pointer-events: none;
-        z-index: 10;
-        left: ${px}px;
-        top: ${py}px;
-      `;
-
-      const timeoutId = setTimeout(() => {
-        if (!isHoveredRef.current || !buttonRef.current) return;
-        buttonRef.current.appendChild(particle);
-        particlesRef.current.push(particle);
-
-        gsap.fromTo(particle, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" });
-
-        gsap.to(particle, {
-          x: (Math.random() - 0.5) * 50,
-          y: (Math.random() - 0.5) * 50,
-          rotation: Math.random() * 360,
-          duration: 1.5 + Math.random() * 1.5,
-          ease: "none",
-          repeat: -1,
-          yoyo: true
-        });
-
-        gsap.to(particle, {
-          opacity: 0.3,
-          duration: 1.2,
-          ease: "power2.inOut",
-          repeat: -1,
-          yoyo: true
-        });
-      }, i * 120);
-
-      timeoutsRef.current.push(timeoutId);
-    }
-  }, [glowColor]);
-
-  useEffect(() => {
-    const element = buttonRef.current;
-    if (!element) return;
-
-    const handleMouseEnter = () => {
-      isHoveredRef.current = true;
-      animateParticles();
-
-      // Subtle 3D tilt on hover
-      gsap.to(element, {
-        rotateX: 4,
-        rotateY: 4,
-        duration: 0.3,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-    };
-
-    const handleMouseLeave = () => {
-      isHoveredRef.current = false;
-      clearAllParticles();
-
-      gsap.to(element, {
-        rotateX: 0,
-        rotateY: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-
-      gsap.to(element, {
-        x: 0,
-        y: 0,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = ((y - centerY) / centerY) * -6;
-      const rotateY = ((x - centerX) / centerX) * 6;
-      gsap.to(element, {
-        rotateX,
-        rotateY,
-        duration: 0.1,
-        ease: "power2.out",
-        transformPerspective: 600
-      });
-
-      // Magnetism: subtle attraction to cursor
-      const magnetX = (x - centerX) * 0.08;
-      const magnetY = (y - centerY) * 0.08;
-      magnetismAnimationRef.current = gsap.to(element, {
-        x: magnetX,
-        y: magnetY,
-        duration: 0.3,
-        ease: "power2.out"
-      });
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const maxDistance = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(x - rect.width, y),
-        Math.hypot(x, y - rect.height),
-        Math.hypot(x - rect.width, y - rect.height)
-      );
-
-      const ripple = document.createElement("div");
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${maxDistance * 2}px;
-        height: ${maxDistance * 2}px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(${glowColor}, 0.3) 0%, rgba(${glowColor}, 0.1) 40%, transparent 70%);
-        left: ${x - maxDistance}px;
-        top: ${y - maxDistance}px;
-        pointer-events: none;
-        z-index: 10;
-      `;
-
-      element.appendChild(ripple);
-
-      gsap.fromTo(
-        ripple,
-        { scale: 0, opacity: 1 },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.7,
-          ease: "power2.out",
-          onComplete: () => ripple.remove()
-        }
-      );
-    };
-
-    element.addEventListener("mouseenter", handleMouseEnter);
-    element.addEventListener("mouseleave", handleMouseLeave);
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("click", handleClick);
-
-    return () => {
-      isHoveredRef.current = false;
-      element.removeEventListener("mouseenter", handleMouseEnter);
-      element.removeEventListener("mouseleave", handleMouseLeave);
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("click", handleClick);
-      clearAllParticles();
-    };
-  }, [animateParticles, clearAllParticles, glowColor]);
-
-  return (
-    <button
-      ref={buttonRef}
-      onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
-      style={{
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        padding: "8px 16px",
-        borderRadius: "10px",
-        border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? activeData.colors.secondary : "rgba(255, 255, 255, 0.65)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? activeData.colors.primary : "#5E606A",
-        fontSize: "0.82rem",
-        fontWeight: "700",
-        cursor: "pointer",
-        boxShadow: isActive 
-          ? `0 10px 20px -8px ${activeData.colors.primary}33` 
-          : "0 4px 10px -2px rgba(0,0,0,0.02)",
-        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-        "--glow-color": glowColor
-      } as React.CSSProperties}
-    >
-      {children}
-    </button>
-  );
-};
-
-interface CategoryGlobalSpotlightProps {
-  gridRef: React.RefObject<HTMLDivElement | null>;
-  spotlightRadius?: number;
-}
-
-const CategoryGlobalSpotlight: React.FC<CategoryGlobalSpotlightProps> = ({
-  gridRef,
-  spotlightRadius = 160
-}) => {
-  useEffect(() => {
-    if (!gridRef?.current) return;
-
-    const container = gridRef.current;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const cards = container.querySelectorAll(".category-bento-card");
-
-      cards.forEach(card => {
-        const cardElement = card as HTMLElement;
-        const cardRect = cardElement.getBoundingClientRect();
-        
-        const centerX = cardRect.left + cardRect.width / 2;
-        const centerY = cardRect.top + cardRect.height / 2;
-        const distance = Math.hypot(e.clientX - centerX, e.clientY - centerY) - Math.max(cardRect.width, cardRect.height) / 2;
-        const effectiveDistance = Math.max(0, distance);
-
-        const proximity = spotlightRadius * 0.5;
-        const fadeDistance = spotlightRadius * 0.75;
-
-        let glowIntensity = 0;
-        if (effectiveDistance <= proximity) {
-          glowIntensity = 1;
-        } else if (effectiveDistance <= fadeDistance) {
-          glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
-        }
-
-        const relativeX = ((e.clientX - cardRect.left) / cardRect.width) * 100;
-        const relativeY = ((e.clientY - cardRect.top) / cardRect.height) * 100;
-
-        cardElement.style.setProperty("--glow-x", `${relativeX}%`);
-        cardElement.style.setProperty("--glow-y", `${relativeY}%`);
-        cardElement.style.setProperty("--glow-intensity", glowIntensity.toString());
-        cardElement.style.setProperty("--glow-radius", `${spotlightRadius}px`);
-      });
-    };
-
-    const handleMouseLeave = () => {
-      container.querySelectorAll(".category-bento-card").forEach(card => {
-        (card as HTMLElement).style.setProperty("--glow-intensity", "0");
-      });
-    };
-
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      container.removeEventListener("mousemove", handleMouseMove);
-      container.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [gridRef, spotlightRadius]);
-
-  return null;
-};
-
-export interface CourseCardProps {
-  course: any;
-  index: number;
-  activeCategoryName: string;
-  activeData: any;
-  router: any;
-  realRating: number;
-  realReviewsCount: number;
-}
-
-export const CourseCard: React.FC<CourseCardProps> = ({
-  course,
-  index,
-  activeCategoryName,
-  activeData,
-  router,
-  realRating,
-  realReviewsCount
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const descRef = useRef<HTMLParagraphElement>(null);
-
-  const enriched = getEnrichedCourse(course, index, activeCategoryName);
-  const courseSlug = slugify(course.title);
-
-  useEffect(() => {
-    if (descRef.current) {
-      // Line-height is 1.5. If the height of element > line-height * 2, it overflows.
-      // Two lines is approx 44px. If scrollHeight is greater, it overflows 2 lines.
-      setIsOverflowing(descRef.current.scrollHeight > 45);
-    }
-  }, [course.desc]);
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column"
-      }}
-    >
-      <BorderGlow
-        edgeSensitivity={30}
-        glowColor={hexToHslStr(activeData.colors.primary)}
-        backgroundColor="#FFFFFF"
-        borderRadius={14}
-        glowRadius={40}
-        glowIntensity={0.3}
-        coneSpread={25}
-        animated={false}
-        colors={[`${activeData.colors.primary}40`, '#E6E3F1', `${activeData.colors.primary}40`]}
-        fillOpacity={0.08}
-        className="w-full h-full"
-      >
-        <div
-          style={{
-            background: "#FFFFFF",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            minHeight: "360px"
-          }}
-          className="course-card-premium"
-        >
-          {/* Card Graphic Header */}
-          <div
-            style={{
-              height: "90px",
-              position: "relative",
-              overflow: "hidden",
-              background: `
-                radial-gradient(circle at 25% 25%, ${activeData.colors.primary}12, transparent 55%),
-                repeating-linear-gradient(135deg, ${activeData.colors.primary}08 0 2px, transparent 2px 14px),
-                #F9FAFB
-              `,
-              borderBottom: "1px solid #E6E3F1",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            {/* Accent outline category visual watermark */}
-            <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
-              {getCourseGlyph(course.title, index, activeData.colors.primary)}
-            </div>
-          </div>
-
-          {/* Card Body */}
-          <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
-            <div>
-              {/* Title */}
-              <h3
-                style={{
-                  fontSize: "1.05rem",
-                  fontWeight: "800",
-                  color: "var(--l-ink)",
-                  margin: "0 0 6px",
-                  lineHeight: "1.3",
-                  fontFamily: "'Space Grotesk', sans-serif"
-                }}
-              >
-                {course.title}
-              </h3>
-
-              {/* Rating Row */}
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", color: "#5A5870", fontWeight: "600" }}>
-                  <span style={{ color: "#F59E0B", fontSize: "0.95rem" }}>★</span>
-                  <span style={{ fontWeight: "700", color: "var(--l-ink)" }}>{realReviewsCount > 0 ? realRating.toFixed(1) : "0.0"}</span>
-                  <span style={{ color: "#8886A0" }}>({realReviewsCount} {realReviewsCount === 1 ? "Review" : "Reviews"})</span>
-                </div>
-              </div>
-
-              {/* Description with Read More */}
-              <div style={{ position: "relative", marginBottom: "12px" }}>
-                <p
-                  ref={descRef}
-                  style={isExpanded ? {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0
-                  } : {
-                    fontSize: "0.86rem",
-                    color: "#5A5870",
-                    lineHeight: "1.5",
-                    margin: 0,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    maxHeight: "3em"
-                  }}
-                >
-                  {course.desc}
-                </p>
-                {isOverflowing && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsExpanded(!isExpanded);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: activeData.colors.primary,
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      cursor: "pointer",
-                      padding: "2px 0 0 0",
-                      marginTop: "4px",
-                      display: "block",
-                      outline: "none"
-                    }}
-                  >
-                    {isExpanded ? "Read less" : "Read more"}
-                  </button>
-                )}
-              </div>
-
-              {/* Instructor Info */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-                <img
-                  src={enriched.instructor.avatarUrl}
-                  alt={enriched.instructor.name}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #E6E3F1"
-                  }}
-                />
-                <div style={{ display: "flex", flexDirection: "column", lineHeight: "1.3" }}>
-                  <span style={{ fontSize: "0.84rem", fontWeight: "700", color: "var(--l-ink)" }}>
-                    {enriched.instructor.name}
-                  </span>
-                  <span style={{ fontSize: "0.68rem", color: "#8886A0", fontWeight: "600" }}>
-                    {enriched.instructor.role}
-                  </span>
-                </div>
-              </div>
-
-              {/* Primary Action Button */}
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                <button
-                  onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
-                  style={{
-                    width: "100%",
-                    background: activeData.colors.secondary,
-                    color: activeData.colors.primary,
-                    border: "none",
-                    padding: "10px 16px",
-                    borderRadius: "10px",
-                    fontSize: "0.85rem",
-                    fontWeight: "700",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    transition: "all 0.25s ease"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary.replace('0.08', '0.16');
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = activeData.colors.secondary;
-                    e.currentTarget.style.transform = "none";
-                  }}
-                >
-                  Enroll Now
-                </button>
-              </div>
-            </div>
-
-            {/* Bottom Info Row */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
-              <span
-                onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "700",
-                  color: "#5A5870",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  cursor: "pointer",
-                  transition: "color 0.2s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = activeData.colors.primary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#5A5870";
-                }}
-              >
-                View Course
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" className="view-arrow" style={{ transition: "transform .15s" }}>
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
-              </span>
-              
-              <span style={{ fontSize: "0.84rem", color: "#8886A0", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 2" />
-                </svg>
-                {course.duration}
-              </span>
-            </div>
-          </div>
-        </div>
-      </BorderGlow>
-    </div>
-  );
-};
 
 type CategoryDetailedViewProps = {
   /** When set (e.g. `/search`), stay inside the authenticated hub instead of public landing routes. */
@@ -1723,11 +1418,91 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const initialCategory = searchParams.get("category");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
-  const [wishlistedCourses, setWishlistedCourses] = useState<Record<string, boolean>>({});
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All Levels");
-  const [selectedTopic, setSelectedTopic] = useState("All Topics");
-
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+
+  const [journeyCompleted, setJourneyCompleted] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const progressValue = useMotionValue(0);
+
+  useEffect(() => {
+    setJourneyCompleted(false);
+    progressValue.set(0);
+  }, [activeCategory, progressValue]);
+
+  useEffect(() => {
+    if (mode !== "events") return;
+
+    if (journeyCompleted) {
+      progressValue.set(1);
+      return;
+    }
+
+    // Lock page scroll initially
+    document.body.style.overflow = "hidden";
+
+    let currentProgress = 0;
+    const scrollStep = 0.15;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (currentProgress >= 1) return;
+
+      // Prevent page from scrolling
+      e.preventDefault();
+
+      // Support scroll down (forward) and scroll up (backward)
+      if (e.deltaY > 0) {
+        currentProgress = Math.min(currentProgress + scrollStep, 1);
+      } else {
+        currentProgress = Math.max(currentProgress - scrollStep, 0);
+      }
+      progressValue.set(currentProgress);
+
+      if (currentProgress >= 1) {
+        // Unlock page scroll
+        document.body.style.overflow = "";
+        setJourneyCompleted(true);
+      }
+    };
+
+    let touchStart = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStart = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (currentProgress >= 1) return;
+
+      e.preventDefault();
+
+      const touchEnd = e.touches[0].clientY;
+      const diff = touchStart - touchEnd;
+
+      if (diff > 8) {
+        currentProgress = Math.min(currentProgress + scrollStep, 1);
+      } else if (diff < -8) {
+        currentProgress = Math.max(currentProgress - scrollStep, 0);
+      }
+      progressValue.set(currentProgress);
+      touchStart = touchEnd;
+
+      if (currentProgress >= 1) {
+        document.body.style.overflow = "";
+        setJourneyCompleted(true);
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [mode, progressValue, journeyCompleted]);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -1740,21 +1515,6 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     fetchStats();
   }, []);
 
-  const coursesSectionRef = useRef<HTMLDivElement>(null);
-  const categoriesGridRef = useRef<HTMLDivElement>(null);
-  const filtersGridRef = useRef<HTMLDivElement>(null);
-
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  };
-
   useEffect(() => {
     if (initialCategory && categoriesList.includes(initialCategory)) {
       setActiveCategory(initialCategory);
@@ -1763,439 +1523,65 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     }
   }, [initialCategory]);
 
+  const activeCategoryName = activeCategory || "Computer Science";
+  const activeData = CATEGORY_DATA[activeCategoryName];
+
+  // Sync body background so the footer (rendered outside this component) blends seamlessly.
+  // Only active on articles mode — cleans up on unmount so other pages are unaffected.
+  useEffect(() => {
+    if (mode !== "articles") return;
+
+    const ARTICLES_BODY_BG: Record<string, string> = {
+      "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)",
+      "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)",
+      "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)",
+      "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)",
+      "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)",
+      "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)",
+      "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
+    };
+
+    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["Computer Science"];
+    const prev = document.body.style.background;
+    document.body.style.background = bg;
+
+    return () => {
+      document.body.style.background = prev;
+    };
+  }, [mode, activeCategoryName]);
+
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     setCourseSearchQuery("");
-    setSelectedDifficulty("All Levels");
-    setSelectedTopic("All Topics");
 
     const base = hubBasePath || window.location.pathname;
     const newUrl = `${base}?category=${encodeURIComponent(category)}`;
     window.history.replaceState(null, "", newUrl);
-
-    coursesSectionRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
   };
 
   const goToExploreHome = () => {
     router.push(exploreHome);
   };
 
-  const toggleWishlist = (courseTitle: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setWishlistedCourses(prev => ({
-      ...prev,
-      [courseTitle]: !prev[courseTitle]
-    }));
+  const ARTICLES_BG: Record<string, string> = {
+    "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)", // warm antique parchment
+    "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)", // soft amber scroll
+    "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)", // golden honey
+    "Civil & Mechanical":     "linear-gradient(160deg, #F6F9F0 0%, #EBF3E0 35%, #F5FAF0 70%, #E2EED4 100%)", // earthy sage parchment
+    "Basic Sciences":         "linear-gradient(160deg, #FDF8F0 0%, #FAF0E0 35%, #FEFAF5 70%, #F5EDE0 100%)", // warm cream linen
+    "Humanities & Languages": "linear-gradient(160deg, #FDF4EE 0%, #FBEAD8 35%, #FDF8F0 70%, #F7E4D0 100%)", // warm terracotta scroll
+    "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)", // old vellum yellow
   };
 
-  const activeCategoryName = activeCategory || "Computer Science";
-  const activeData = CATEGORY_DATA[activeCategoryName];
-
-  const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
-  const topics = ["All Topics", ...Array.from(new Set(activeData.courses.map((c, i) => getEnrichedCourse(c, i, activeCategoryName).categoryTag)))];
-
-  const filteredCourses = activeData.courses.filter((course, index) => {
-    const enriched = getEnrichedCourse(course, index, activeCategoryName);
-    const matchesSearch = course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
-                          course.desc.toLowerCase().includes(courseSearchQuery.toLowerCase());
-    const matchesDifficulty = selectedDifficulty === "All Levels" || course.level === selectedDifficulty;
-    const matchesTopic = selectedTopic === "All Topics" || enriched.categoryTag === selectedTopic;
-    return matchesSearch && matchesDifficulty && matchesTopic;
-  });
-
-  const renderCoursesSection = (title: string = "Popular Courses") => (
-    <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-              Showing {filteredCourses.length} of {activeData.courses.length} courses
-            </span>
-          </div>
-
-          {/* Professional Horizontal Filters Bar */}
-          <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-          <div
-            ref={filtersGridRef}
-            style={{
-              display: "flex",
-              gap: "24px",
-              marginBottom: "32px",
-              background: "rgba(255, 255, 255, 0.65)",
-              border: "1px solid rgba(20, 23, 31, 0.06)",
-              borderRadius: "16px",
-              padding: "20px 24px",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-              flexWrap: "wrap",
-              alignItems: "flex-start"
-            }}
-          >
-            {/* Difficulty Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Level
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {difficultyLevels.map((level) => {
-                  const isActive = selectedDifficulty === level;
-                  return (
-                    <FilterPillButton
-                      key={level}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedDifficulty(level)}
-                    >
-                      {level}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Vertical Divider */}
-            <div style={{ width: "1px", height: "45px", background: "rgba(20, 23, 31, 0.08)", alignSelf: "center", display: "block" }} />
-
-            {/* Topic Filter */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flexGrow: 1 }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Course Type
-              </label>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {topics.map((topic) => {
-                  const isActive = selectedTopic === topic;
-                  return (
-                    <FilterPillButton
-                      key={topic}
-                      isActive={isActive}
-                      activeData={activeData}
-                      onClick={() => setSelectedTopic(topic)}
-                    >
-                      {topic}
-                    </FilterPillButton>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {filteredCourses.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-              <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-              <button 
-                onClick={() => setCourseSearchQuery("")}
-                style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
-              >
-                Reset search
-              </button>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-              {filteredCourses.map((course, index) => {
-                const slug = slugify(course.title);
-                const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
-                return (
-                  <CourseCard
-                    key={course.title}
-                    course={course}
-                    index={index}
-                    activeCategoryName={activeCategoryName}
-                    activeData={activeData}
-                    router={router}
-                    realRating={stats.averageRating}
-                    realReviewsCount={stats.reviewsCount}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </section>
-  );
-
-  const renderBootcampsSection = (title: string = "Practical Bootcamps") => (
-    <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-            <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary, cursor: "pointer" }}>
-              View all
-            </span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.bootcamps.map((bootcamp) => (
-              <div
-                key={bootcamp.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-                  position: "relative",
-                  overflow: "hidden"
-                }}
-                className="hover-card-y"
-              >
-                {/* Accent Watermark */}
-                <div style={{ position: "absolute", right: "-10px", bottom: "-10px", opacity: 0.05, transform: "scale(1.5)", color: activeData.colors.primary }}>
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Left Mini Icon Graphic */}
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "14px",
-                    background: `linear-gradient(135deg, ${activeData.colors.primary} 0%, #FFFFFF 200%)`,
-                    color: "#FFFFFF",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0
-                  }}
-                >
-                  {CATEGORY_ICONS[activeCategoryName]}
-                </div>
-
-                {/* Right Details */}
-                <div style={{ flexGrow: 1, position: "relative", zIndex: 1 }}>
-                  <h4 style={{ fontSize: "0.9rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 4px", lineHeight: "1.3", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {bootcamp.title}
-                  </h4>
-                  <div style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.5)", fontWeight: "600" }}>
-                    {bootcamp.type} • {bootcamp.duration}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.75rem", fontWeight: "700", color: activeData.colors.primary, marginTop: "6px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ color: "#F59E0B" }}>
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                    4.8 <span style={{ color: "rgba(20, 20, 43, 0.4)", fontWeight: "500" }}>(3.2k)</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-  );
-
-  const renderResourcesSection = (title: string = "Resource Libraries") => (
-    <section>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-              <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-                {title}
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {activeData.resources.map((doc) => (
-              <div
-                key={doc.title}
-                style={{
-                  background: "rgba(255, 255, 255, 0.65)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  minHeight: "140px",
-                  boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)"
-                }}
-                className="hover-card-y"
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: "0.7rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      background: activeData.colors.secondary,
-                      padding: "3px 8px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.03em",
-                      display: "inline-block",
-                      marginBottom: "12px"
-                    }}
-                  >
-                    {doc.type}
-                  </span>
-                  <h3 style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {doc.title}
-                  </h3>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(20, 23, 31, 0.06)", paddingTop: "12px" }}>
-                  <span style={{ fontSize: "0.75rem", color: "rgba(20, 20, 43, 0.45)", fontWeight: "600" }}>{doc.readTime}</span>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "800",
-                      color: activeData.colors.primary,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
-                    Read Guide
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-  );
-
-
-  const renderLiveSessionsSection = (title: string = "Live Sessions & Events") => {
-    let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
-    if (categoryWebinars.length === 0) {
-      categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
-    }
-
-    return (
-      <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-            <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
-              {title}
-            </h2>
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
-          {categoryWebinars.map((w, i) => {
-            const isLive = w.status === "Live Today";
-            const isUpcoming = w.status === "Upcoming";
-            const ctaBg = isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931");
-            const ctaColor = "#FFFFFF";
-            const ctaShadow = `0 4px 14px ${isLive ? "#EF4444" : (isUpcoming ? "#F59E0B" : "#0A1931")}30`;
-            const statusColor = isLive ? "#EF4444" : (isUpcoming ? "#D97706" : "#0A1931");
-            const titleColor = isLive ? "#991B1B" : (isUpcoming ? "#92400E" : "#1E3E62");
-
-            return (
-              <div
-                key={i}
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid #E5E7EB",
-                  borderRadius: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  position: "relative",
-                  overflow: "hidden",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.05)"
-                }}
-              >
-                <WebinarCardHeader title={w.title} status={w.status} duration={w.duration} category={w.category} />
-
-                <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                      <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                        {w.category} • {w.duration.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <h3
-                      style={{
-                        fontSize: "1.1rem",
-                        fontWeight: "800",
-                        color: titleColor,
-                        marginBottom: "16px",
-                        lineHeight: "1.4",
-                        minHeight: "56px",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        letterSpacing: "-0.01em"
-                      }}
-                    >
-                      {w.title}
-                    </h3>
-
-                    <div style={{ fontSize: "0.82rem", color: "#6B7280", display: "flex", alignItems: "center", marginBottom: "20px" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                      <span>Hosted by <strong style={{ color: "#374151", fontWeight: "700" }}>{w.host}</strong></span>
-                    </div>
-                  </div>
-
-                  <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: "16px", marginTop: "10px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", alignItems: "center", color: statusColor }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "6px" }}>
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                          <line x1="16" y1="2" x2="16" y2="6" />
-                          <line x1="8" y1="2" x2="8" y2="6" />
-                          <line x1="3" y1="10" x2="21" y2="10" />
-                        </svg>
-                        <span style={{ fontSize: "0.8rem", fontWeight: "700" }}>
-                          {w.date}
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          padding: "8px 16px",
-                          borderRadius: "8px",
-                          background: ctaBg,
-                          color: ctaColor,
-                          fontSize: "0.82rem",
-                          fontWeight: "700",
-                          boxShadow: ctaShadow,
-                          transition: "all 0.3s"
-                        }}
-                      >
-                        {isLive ? "Join Now" : (isUpcoming ? "Register" : "Watch")}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    );
-  };
+  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
 
   return (
     <div
       className="landing-root"
       style={{
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
-                    mode === "articles" ? "linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #ECFDF5 100%)" : // Fresh mint-emerald garden mix
-                    "#f8fafc",
+          mode === "articles" ? articlesBackground : // Dynamic per-category gradient
+            "#f8fafc",
         // Authenticated hub already clears the dock via LearnerShell pb-28.
         // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
         minHeight: isEmbeddedHub ? "auto" : "100vh",
@@ -2489,166 +1875,375 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
             }}
           >
-            <span
-              onClick={goToExploreHome}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
+            <a
+              href="/explore"
+              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Explore
-            </span>
+            </a>
             <span>/</span>
-            <span
-              onClick={goToExploreHome}
-              style={{ cursor: "pointer", transition: "color 0.2s" }}
+            <a
+              href="/explore"
+              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Departments
-            </span>
+            </a>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
           </div>
         </div>
 
-        {/* Hero Section Container (No background card, border, or shadow) */}
-        <div
-          style={{
-            position: "relative",
-            marginBottom: isEmbeddedHub ? "20px" : "56px",
-            display: "grid",
-            gridTemplateColumns: "1.2fr 0.8fr",
-            alignItems: isEmbeddedHub ? "start" : "center",
-            gap: isEmbeddedHub ? "24px" : "40px",
-            zIndex: 10,
-            padding: isEmbeddedHub ? "0" : "24px 0",
-          }}
-        >
+        {mode === "events" ? (
+          /* Redesigned Hero Section for Events / Live Sessions */
+          <div
+            ref={heroRef}
+            style={{
+              position: "relative",
+              marginBottom: isEmbeddedHub ? "20px" : "56px",
+              display: "grid",
+              gridTemplateColumns: "1.2fr 0.8fr",
+              alignItems: isEmbeddedHub ? "start" : "center",
+              gap: isEmbeddedHub ? "24px" : "40px",
+              zIndex: 10,
+              padding: isEmbeddedHub ? "0" : "24px 0",
+            }}
+          >
+            {/* Banner Left Info */}
+            <div style={{ position: "relative", zIndex: 2 }}>
+              {/* Removed Eyebrow Label as requested */}
 
-          {/* Banner Left Info */}
-          <div style={{ position: "relative", zIndex: 2 }}>
-            <h1
-              style={{
-                fontSize: "clamp(2rem, 4.5vw, 3rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.03em",
-                lineHeight: "1.15",
-                marginBottom: "16px",
-                color: "var(--l-ink)",
-                fontFamily: "'Space Grotesk', sans-serif"
-              }}
-            >
-              {mode === "courses" ? (
-                <>
-                  {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
-                  <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
-                    {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
-                  </GradientText>
-                </>
-              ) : mode === "events" ? (
-                <>
-                  Live Sessions & Events for <br />
-                  <GradientText colors={["#8B5CF6", "#6D28D9", "#3B82F6", "#1D4ED8", "#8B5CF6"]} animationSpeed={8} showBorder={false}>
-                    {activeCategoryName}
-                  </GradientText>
-                </>
-              ) : (
-                <>
-                  Latest Research & Articles in <br />
-                  <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
-                    {activeCategoryName}
-                  </GradientText>
-                </>
-              )}
-            </h1>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "rgba(20, 20, 43, 0.6)",
-                lineHeight: "1.6",
-                maxWidth: "600px",
-                marginBottom: "28px",
-                fontWeight: 500
-              }}
-            >
-              {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
-            </p>
-
-            {/* Banner Inner Search */}
-            <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-              <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search courses under this category..."
-                value={courseSearchQuery}
-                onChange={(e) => setCourseSearchQuery(e.target.value)}
+              {/* 2. MAIN HEADING */}
+              <h1
                 style={{
-                  width: "100%",
-                  padding: "14px 20px 14px 48px",
-                  borderRadius: "14px",
-                  border: "1px solid rgba(20, 23, 31, 0.06)",
-                  background: "rgba(255, 255, 255, 0.8)",
+                  fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
+                  fontWeight: 900,
+                  letterSpacing: "-0.03em",
+                  lineHeight: "1.1",
+                  marginBottom: "20px",
                   color: "var(--l-ink)",
-                  fontSize: "0.95rem",
-                  fontWeight: "600",
-                  outline: "none",
-                  boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                  transition: "all 0.3s ease"
+                  fontFamily: "'Space Grotesk', sans-serif"
                 }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = activeData.colors.primary;
-                  e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+              >
+                Build the Future <br />
+                <span style={{ fontSize: "0.85em", fontWeight: 700 }}>with </span>
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    display: "inline-block"
+                  }}
+                >
+                  {activeCategoryName}
+                </span>
+              </h1>
+
+              {/* 3. SUPPORTING TEXT */}
+              <p
+                style={{
+                  fontSize: "0.98rem",
+                  color: "rgba(20, 20, 43, 0.65)",
+                  lineHeight: "1.65",
+                  maxWidth: "580px",
+                  marginBottom: "28px",
+                  fontWeight: 500
                 }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                  e.currentTarget.style.boxShadow = "none";
+              >
+                Learn from experts, join live sessions, and build practical skills through events, bootcamps, and hands-on experiences designed for the next generation of developers.
+              </p>
+
+              {/* 5. FEATURE HIGHLIGHTS */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "16px",
+                  marginBottom: "32px",
+                  maxWidth: "580px"
                 }}
-              />
+              >
+                {[
+                  {
+                    title: "Live & Interactive",
+                    desc: "Real-time learning",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" fill="currentColor" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Expert Speakers",
+                    desc: "Industry professionals",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Hands-on Learning",
+                    desc: "Build real-world skills",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                      </svg>
+                    )
+                  },
+                  {
+                    title: "Flexible Schedule",
+                    desc: "Learn at your pace",
+                    icon: (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                    )
+                  }
+                ].map((feat, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "center",
+                      background: "rgba(255, 255, 255, 0.55)",
+                      border: "1px solid rgba(20, 23, 31, 0.05)",
+                      padding: "10px 14px",
+                      borderRadius: "12px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: activeData.colors.primary,
+                        background: `${activeData.colors.secondary}`,
+                        padding: "6px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    >
+                      {feat.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: "800", color: "var(--l-ink)" }}>{feat.title}</div>
+                      <div style={{ fontSize: "0.72rem", color: "rgba(20, 20, 43, 0.5)" }}>{feat.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 6. SEARCH */}
+              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search courses under this category..."
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px 14px 48px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(20, 23, 31, 0.06)",
+                    background: "rgba(255, 255, 255, 0.8)",
+                    color: "var(--l-ink)",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
+                    outline: "none",
+                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
+                    transition: "all 0.3s ease"
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
             </div>
 
+            {/* 7. RIGHT-SIDE ILLUSTRATION */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                minHeight: isEmbeddedHub ? "220px" : "300px",
+                maxHeight: isEmbeddedHub ? "340px" : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              {/* Soft Radial Glow */}
+              <div style={{ position: "absolute", width: "240px", height: "240px", borderRadius: "50%", background: `radial-gradient(circle, ${activeData.colors.primary}1e 0%, transparent 70%)`, filter: "blur(20px)", zIndex: -1 }} />
+              <RocketJourney activeColor={activeData.colors.primary} progress={progressValue} />
+            </div>
           </div>
-
-          {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+        ) : (
+          /* Original Hero Section for Courses / Articles */
           <div
             style={{
               position: "relative",
-              width: "100%",
-              height: "100%",
-              minHeight: isEmbeddedHub ? "220px" : "300px",
-              maxHeight: isEmbeddedHub ? "260px" : undefined,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 2,
+              marginBottom: isEmbeddedHub ? "20px" : "56px",
+              display: "grid",
+              gridTemplateColumns: "1.2fr 0.8fr",
+              alignItems: isEmbeddedHub ? "start" : "center",
+              gap: isEmbeddedHub ? "24px" : "40px",
+              zIndex: 10,
+              padding: isEmbeddedHub ? "0" : "24px 0",
             }}
           >
-            <HoneycombIllustration />
+            {/* Banner Left Info */}
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <h1
+                style={{
+                  fontSize: "clamp(2rem, 4.5vw, 3rem)",
+                  fontWeight: 900,
+                  letterSpacing: "-0.03em",
+                  lineHeight: "1.15",
+                  marginBottom: "16px",
+                  color: "var(--l-ink)",
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}
+              >
+                {mode === "courses" ? (
+                  <>
+                    {CATEGORY_HEADLINES[activeCategoryName]?.main || "Discover. Learn. "}
+                    <GradientText colors={["#2563EB", "#0EA5E9", "#06B6D4", "#10B981", "#4F46E5", "#2563EB"]} animationSpeed={8} showBorder={false}>
+                      {CATEGORY_HEADLINES[activeCategoryName]?.highlight || "Grow."}
+                    </GradientText>
+                  </>
+                ) : (
+                  <>
+                    Latest Research & Articles in <br />
+                    <GradientText colors={["#10B981", "#059669", "#2563EB", "#3B82F6", "#10B981"]} animationSpeed={8} showBorder={false}>
+                      {activeCategoryName}
+                    </GradientText>
+                  </>
+                )}
+              </h1>
+              <p
+                style={{
+                  fontSize: "0.95rem",
+                  color: "rgba(20, 20, 43, 0.6)",
+                  lineHeight: "1.6",
+                  maxWidth: "600px",
+                  marginBottom: "28px",
+                  fontWeight: 500
+                }}
+              >
+                {activeData.desc} Browse the courses, practical bootcamps, and resources curated to level up your career.
+              </p>
+
+              {/* Banner Inner Search */}
+              <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search courses under this category..."
+                  value={courseSearchQuery}
+                  onChange={(e) => setCourseSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "14px 20px 14px 48px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(20, 23, 31, 0.06)",
+                    background: "rgba(255, 255, 255, 0.8)",
+                    color: "var(--l-ink)",
+                    fontSize: "0.95rem",
+                    fontWeight: "600",
+                    outline: "none",
+                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
+                    transition: "all 0.3s ease"
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = activeData.colors.primary;
+                    e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
+
+            </div>
+
+            {/* Banner Right Panel: Honeycomb Sketch Illustration */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                minHeight: isEmbeddedHub ? "220px" : "300px",
+                maxHeight: isEmbeddedHub ? "260px" : undefined,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              {mode === "articles" ? (
+                <WindmillAnimation />
+              ) : (
+                <HoneycombIllustration />
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
 
         {mode === "courses" && (
-          <>
-            {renderCoursesSection("Popular Courses")}
-          </>
+          <CoursesView
+            activeData={activeData}
+            activeCategoryName={activeCategoryName}
+            router={router}
+            isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
+            courseStats={courseStats}
+          />
         )}
 
         {mode === "events" && (
-          <>
-            {renderBootcampsSection("Practical Bootcamps")}
-            {renderLiveSessionsSection("Live Sessions & Events")}
-          </>
+          <EventsView
+            activeData={activeData}
+            activeCategoryName={activeCategoryName}
+            isEmbeddedHub={isEmbeddedHub}
+          />
         )}
 
         {mode === "articles" && (
-          <>
-            {renderResourcesSection("Articles & Research")}
-          </>
+          <ArticlesView
+            activeData={activeData}
+            isEmbeddedHub={isEmbeddedHub}
+          />
         )}
 
       </main>
