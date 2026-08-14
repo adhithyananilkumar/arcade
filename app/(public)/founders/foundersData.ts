@@ -228,6 +228,26 @@ export const FOUNDERS_DATA: Founder[] = [
       linkedin: "https://linkedin.com",
       github: "https://github.com"
     }
+  },
+  {
+    id: "founder-11",
+    name: "Anna Christina Jhony",
+    role: "Co-Founder & UI/UX Specialist",
+    tagline: "Designing intuitive interfaces and engaging user experiences.",
+    image: "/team/anna_christina.png",
+    bio: "UI/UX designer focusing on creating seamless and accessible learning environments.",
+    extendedBio: "Anna joined Arcade to elevate the platform's visual design and user experience. She crafted the sleek, modern interface, ensuring that the navigation is intuitive and that students have a delightful experience while learning.",
+    quote: "Good design is invisible, yet it profoundly shapes how we learn and interact.",
+    achievements: [
+      "Designed the complete UI/UX architecture of Arcade",
+      "Created a consistent design system and component library",
+      "Enhanced user accessibility and visual hierarchy"
+    ],
+    skills: ["UI/UX Design", "Figma", "User Research", "Prototyping", "Frontend Development"],
+    social: {
+      linkedin: "https://linkedin.com",
+      github: "https://github.com"
+    }
   }
 ];
 

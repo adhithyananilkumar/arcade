@@ -86,16 +86,7 @@ export const OTHER_CONTRIBUTORS_DATA: OtherContributor[] = [
     journey: defaultJourney,
     milestones: defaultMilestones
   },
-  {
-    id: "other-2",
-    name: "Anna Christina Jhony",
-    role: "Core Contributor",
-    avatar: "/team/anna_christina.png",
-    github: "https://github.com",
-    linkedin: "https://linkedin.com",
-    journey: defaultJourney,
-    milestones: defaultMilestones
-  },
+
   {
     id: "other-3",
     name: "Neeraj V V",

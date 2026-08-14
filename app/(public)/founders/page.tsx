@@ -389,13 +389,21 @@ export default function FoundersPage() {
                 ))}
               </div>
 
-              {/* Bottom Row: 2 Centered Founder Cards Flanked by Flourish Lines */}
-              <div className="flex items-center justify-center gap-4 sm:gap-10 pt-4">
+              {/* Bottom Row: Centered Founder Cards Flanked by Animated Flourish Lines */}
+              <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
                 {/* Left Flourish Line */}
-                <FlourishLine className="w-24 sm:w-40 md:w-56 h-auto text-slate-900 shrink-0 hidden sm:block opacity-80" />
+                <motion.div
+                  initial={{ opacity: 0, x: -40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                  className="hidden lg:block absolute left-0 top-28 -translate-y-1/2"
+                >
+                  <FlourishLine className="w-24 xl:w-40 h-auto text-slate-900 opacity-80" />
+                </motion.div>
 
-                {/* Centered Founders (Aloshy Antony & Anjali) */}
-                <div className="flex flex-wrap justify-center gap-y-12 gap-x-6 sm:gap-x-10">
+                {/* Centered Founders */}
+                <div className="flex flex-wrap justify-center gap-y-12 gap-x-6 sm:gap-x-10 relative z-10">
                   {FOUNDERS_DATA.slice(8).map((founder, index) => (
                     <motion.div
                       key={founder.id}
@@ -455,7 +463,15 @@ export default function FoundersPage() {
                 </div>
 
                 {/* Right Flourish Line (Flipped) */}
-                <FlourishLine className="w-24 sm:w-40 md:w-56 h-auto text-slate-900 shrink-0 hidden sm:block opacity-80 transform scale-x-[-1]" />
+                <motion.div
+                  initial={{ opacity: 0, x: 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                  className="hidden lg:block absolute right-0 top-28 -translate-y-1/2"
+                >
+                  <FlourishLine className="w-24 xl:w-40 h-auto text-slate-900 opacity-80 transform scale-x-[-1]" />
+                </motion.div>
               </div>
             </div>
           </section>
