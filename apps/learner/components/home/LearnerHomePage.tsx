@@ -386,15 +386,14 @@ export default function LearnerHomePage() {
             </form>
           </motion.div>
 
-          {/* Floating elevation wrapper — gives the calendar a 3D lifted/projecting appearance */}
-          {/* Floating elevation wrapper for the Embroidery Hoop Calendar */}
+          {/* Floating elevation wrapper for Streak Calendar */}
           <div className="relative flex items-center justify-center">
             {/* Ambient glow halo underneath */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-x-6 -bottom-2 h-16 rounded-[40px] blur-2xl opacity-70"
               style={{
-                background: 'radial-gradient(ellipse at center, rgba(76,111,255,0.25) 0%, rgba(216,192,157,0.20) 60%, transparent 100%)',
+                background: 'radial-gradient(ellipse at center, rgba(76,111,255,0.20) 0%, rgba(255,107,74,0.15) 60%, transparent 100%)',
               }}
             />
             <div className="w-full flex justify-center">

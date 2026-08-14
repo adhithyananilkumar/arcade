@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 
 type Props = {
@@ -25,18 +25,19 @@ function daysInMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 }
 
-/** Sunday-first weekday index 0-6 (matches Image 1: sun, mon, tues, wed, thurs, fri, sat) */
+/** Sunday-first weekday index 0-6 */
 function sundayIndex(d: Date) {
   return d.getDay();
 }
 
 function isActiveDay(iso: string, map: Record<string, number>) {
-  return (map[iso] ?? 0) >= 60;
+  return (map[iso] ?? 0) >= 60; // ≥ 1 minute counts
 }
 
 /**
- * Handcrafted Embroidery Hoop Wooden Token Calendar Card
- * Inspired by Image 1: Circular wooden hoop frame, top clamp hardware, red embroidered day labels, and 3D wooden token date disks.
+ * Scalloped Receipt Paper Ticket Calendar Card —
+ * Featuring 3D Month Flip animation, electric blue typography,
+ * top header streak badge, perforated dashed line, and scalloped ticket bottom edge.
  */
 export function StreakCalendar({ activityByDate, streak }: Props) {
   const today = useMemo(() => {
@@ -45,6 +46,17 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
     return t;
   }, []);
   const [cursor, setCursor] = useState(() => startOfMonth(today));
+  const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
+
+  const handlePrevMonth = () => {
+    setDirection(-1);
+    setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setDirection(1);
+    setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1));
+  };
 
   const cells = useMemo(() => {
     const total = daysInMonth(cursor);
@@ -68,167 +80,178 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
     return rows;
   }, [cursor]);
 
-  const monthLabel = cursor
-    .toLocaleString(undefined, { month: 'long', year: 'numeric' })
-    .toLowerCase();
+  const monthLabel = cursor.toLocaleString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
 
   const todayIso = toISO(today);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto w-full max-w-[420px] select-none pt-4 pb-2 px-1"
-    >
-      {/* Wooden Hoop Tension Clamp Hardware at top */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-        {/* Metal wingnut / bolt */}
-        <div className="h-2 w-5 bg-gradient-to-r from-slate-400 via-slate-200 to-slate-400 rounded-sm shadow-xs border border-slate-500/50 -mb-0.5" />
-        {/* Wooden clamp blocks */}
-        <div className="flex items-center gap-1">
-          <div className="h-3.5 w-4 rounded-t-xs bg-gradient-to-b from-[#E2C799] to-[#C5A880] border border-[#A88B60] shadow-sm" />
-          <div className="h-3.5 w-4 rounded-t-xs bg-gradient-to-b from-[#E2C799] to-[#C5A880] border border-[#A88B60] shadow-sm" />
-        </div>
-      </div>
+    <div className="relative w-full max-w-[380px] select-none pt-4" style={{ perspective: '1000px' }}>
+      {/* Official Arcade Brand Blue Backing Stand Bar at Top */}
+      <div className="absolute top-1.5 inset-x-2 h-5 rounded-t-lg bg-[#4C6FFF] shadow-inner border border-[#3B5BDB] z-0" />
 
-      {/* Main Outer Circular Wooden Hoop Container */}
-      <div
-        className="relative overflow-hidden rounded-[38px] sm:rounded-[46px] border-[7px] border-[#D8C09D] dark:border-[#8B7355] bg-[#F7F4ED] dark:bg-[#1E1C1A] shadow-[0_16px_44px_rgba(40,30,20,0.12),0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(160,130,90,0.25)] p-3.5 sm:p-4.5"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 50% 0%, rgba(255,255,255,0.6) 0%, transparent 70%),
-            repeating-linear-gradient(45deg, rgba(180,160,130,0.03) 0px, rgba(180,160,130,0.03) 2px, transparent 2px, transparent 6px)
-          `,
-        }}
-      >
-        {/* Inner Stitched Hoop Ring Accent */}
-        <div className="absolute inset-2 pointer-events-none rounded-[30px] sm:rounded-[38px] border border-dashed border-[#C2A67F]/40 dark:border-[#5C4A36]" />
-
-        {/* Top Header: Script Month Title + Streak Badge + Month Controls */}
-        <div className="relative z-10 flex items-center justify-between px-1.5 pt-1 pb-1.5">
-          {/* Previous Month Button */}
-          <button
-            type="button"
-            aria-label="Previous month"
-            onClick={() =>
-              setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))
-            }
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#D5C2A5] bg-[#FAF7F0] text-[#6B5744] shadow-xs transition-transform hover:scale-105 active:scale-95 dark:bg-[#2A2622] dark:text-[#D5C2A5] dark:border-[#5C4D3C]"
-          >
-            <ChevronLeft size={15} />
-          </button>
-
-          {/* Month Label & Streak Pill */}
-          <div className="flex flex-col items-center">
-            <span className="font-script text-2xl sm:text-3xl font-bold text-[#3B2F2F] dark:text-[#EAE3D9] tracking-wide leading-none">
-              {monthLabel}
-            </span>
-            <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-[#FF6B4A]/30 bg-[#FF6B4A]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#D94F32] dark:text-[#FF8C6B]">
-              <Flame size={11} className="fill-current" />
-              {streak > 0 ? `${streak}-day streak` : 'Start a streak'}
+      {/* 6 3D Metallic Gold Spiral Ring Loops Spanning the Top */}
+      <div className="absolute top-0 inset-x-0 z-20 flex justify-between px-6 sm:px-8 pointer-events-none">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="relative flex flex-col items-center">
+            {/* 3D Metallic Gold Ring */}
+            <div className="h-7 w-3 sm:w-3.5 rounded-full bg-gradient-to-r from-[#D9A736] via-[#FFE27A] to-[#A8791E] border border-[#8C6112] shadow-[0_3px_6px_rgba(0,0,0,0.32),0_1px_1px_rgba(255,255,255,0.85)_inset]">
+              <div className="h-5 w-1 mx-auto mt-0.5 rounded-full bg-gradient-to-r from-[#FFF4CF] to-[#FFE27A] opacity-90" />
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Next Month Button */}
-          <button
-            type="button"
-            aria-label="Next month"
-            onClick={() =>
-              setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))
-            }
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-[#D5C2A5] bg-[#FAF7F0] text-[#6B5744] shadow-xs transition-transform hover:scale-105 active:scale-95 dark:bg-[#2A2622] dark:text-[#D5C2A5] dark:border-[#5C4D3C]"
-          >
-            <ChevronRight size={15} />
-          </button>
+      {/* Main Calendar Card Body */}
+      <div className="relative w-full rounded-t-3xl bg-[#FAF8F3] p-6 pb-6 pt-7 shadow-[0_16px_40px_rgba(20,20,40,0.08)] border border-stone-200/90 dark:bg-[#1A1C23] dark:border-slate-800 z-10">
+        {/* 6 Square Punched Holes showing Arcade Blue Background */}
+        <div className="absolute top-2 inset-x-0 z-10 flex justify-between px-6 sm:px-8 pointer-events-none">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-3 w-3 rounded-xs bg-[#3B5BDB] border border-[#2B46B3] shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)]"
+            />
+          ))}
+        </div>
+        
+        {/* Top Header: Arcade Blue Month Title + Compact Flame Counter Badge + Navigation */}
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#4C6FFF]">
+            {monthLabel}
+          </h2>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Compact Flame + Streak Number Badge */}
+            <div className="inline-flex items-center gap-1 rounded-full bg-[#4C6FFF]/10 px-2.5 py-1 text-xs font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/20 dark:text-[#7C98FF]">
+              <Flame size={13} className="fill-current text-[#4C6FFF] dark:text-[#7C98FF]" />
+              <span>{streak}</span>
+            </div>
+
+            <div className="flex items-center gap-0.5 ml-0.5">
+              <button
+                type="button"
+                aria-label="Previous month"
+                onClick={handlePrevMonth}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={17} />
+              </button>
+              <button
+                type="button"
+                aria-label="Next month"
+                onClick={handleNextMonth}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <ChevronRight size={17} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Day of Week Headers (Red embroidered thread style as in Image 1: sun, mon, tues...) */}
-        <div className="relative z-10 grid grid-cols-7 border-b-2 border-slate-800/70 pb-1 pt-1 text-center font-script text-xs sm:text-sm font-bold text-[#C84B31]">
-          {['sun', 'mon', 'tues', 'wed', 'thurs', 'fri', 'sat'].map((d) => (
-            <span key={d} className="capitalize tracking-tighter">
-              {d}
-            </span>
+        {/* Weekday Headers: Bold Black S M T W T F S */}
+        <div className="mb-3 grid grid-cols-7 text-center text-sm font-black text-black dark:text-white">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+            <span key={`${d}-${i}`}>{d}</span>
           ))}
         </div>
 
-        {/* Calendar Grid Body with Stitched Lines & Wooden Token Disks */}
-        <div className="relative z-10 flex flex-col pt-1">
-          {cells.map((row, ri) => {
-            const activeFlags = row.map(
-              (c) => !!c.iso && isActiveDay(c.iso, activityByDate),
-            );
+        {/* 3D Card Flip Motion Container for Month Grid */}
+        <div className="relative overflow-hidden" style={{ perspective: '1000px' }}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={cursor.toISOString()}
+              initial={{ rotateY: direction > 0 ? 90 : -90, opacity: 0 }}
+              animate={{ rotateY: 0, opacity: 1 }}
+              exit={{ rotateY: direction > 0 ? -90 : 90, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+              style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+              className="flex flex-col gap-1.5"
+            >
+              {cells.map((row, ri) => {
+                const activeFlags = row.map(
+                  (c) => !!c.iso && isActiveDay(c.iso, activityByDate),
+                );
 
-            return (
-              <div
-                key={ri}
-                className="relative grid grid-cols-7 border-b border-slate-800/40 last:border-b-0 py-0.5 sm:py-1"
-              >
-                {/* Streak Connecting Pill Line */}
-                {row.map((cell, ci) => {
-                  if (!cell.iso || !activeFlags[ci]) return null;
-                  const starts = ci === 0 || !activeFlags[ci - 1];
-                  if (!starts) return null;
-                  let end = ci;
-                  while (end + 1 < 7 && activeFlags[end + 1]) end++;
-                  const span = end - ci + 1;
-                  const isStart = true;
-                  const isEnd = end === 6 || !activeFlags[end + 1];
+                return (
+                  <div key={ri} className="relative grid grid-cols-7 gap-0 py-0.5">
+                    {/* Soft arcade blue streak capsule behind consecutive active days */}
+                    {row.map((cell, ci) => {
+                      if (!cell.iso || !activeFlags[ci]) return null;
+                      const starts = ci === 0 || !activeFlags[ci - 1];
+                      if (!starts) return null;
+                      let end = ci;
+                      while (end + 1 < 7 && activeFlags[end + 1]) end++;
+                      const span = end - ci + 1;
+                      const isStart = true;
+                      const isEnd = end === 6 || !activeFlags[end + 1];
 
-                  return (
-                    <div
-                      key={`bar-${ci}`}
-                      className="pointer-events-none absolute inset-y-[5px] bg-[#FF6B4A]/25 border-y border-[#FF6B4A]/40"
-                      style={{
-                        left: `calc(${(ci / 7) * 100}% + ${isStart ? 6 : 0}px)`,
-                        width: `calc(${(span / 7) * 100}% - ${(isStart ? 6 : 0) + (isEnd ? 6 : 0)}px)`,
-                        borderRadius: `${isStart ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isStart ? '999px' : '0'}`,
-                      }}
-                    />
-                  );
-                })}
+                      return (
+                        <div
+                          key={`bar-${ci}`}
+                          className="pointer-events-none absolute inset-y-1 bg-[#4C6FFF]/12 border-y border-[#4C6FFF]/25"
+                          style={{
+                            left: `calc(${(ci / 7) * 100}% + ${isStart ? 4 : 0}px)`,
+                            width: `calc(${(span / 7) * 100}% - ${(isStart ? 4 : 0) + (isEnd ? 4 : 0)}px)`,
+                            borderRadius: `${isStart ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isStart ? '999px' : '0'}`,
+                          }}
+                        />
+                      );
+                    })}
 
-                {/* Day Wooden Token Buttons */}
-                {row.map((cell, ci) => {
-                  if (cell.day === null || !cell.iso) {
-                    return <div key={ci} className="h-7 sm:h-8" />;
-                  }
-                  const active = isActiveDay(cell.iso, activityByDate);
-                  const isToday = cell.iso === todayIso;
+                    {/* Day numbers */}
+                    {row.map((cell, ci) => {
+                      if (cell.day === null || !cell.iso) {
+                        return <div key={ci} className="h-8" />;
+                      }
+                      const active = isActiveDay(cell.iso, activityByDate);
+                      const isToday = cell.iso === todayIso;
 
-                  return (
-                    <div
-                      key={cell.iso}
-                      className="relative z-[1] flex h-7 sm:h-8 items-center justify-center"
-                    >
-                      {/* 3D Wooden Token Button Disk */}
-                      <span
-                        className={`group relative flex h-6.5 w-6.5 sm:h-7.5 sm:w-7.5 items-center justify-center rounded-full text-[11px] sm:text-xs font-bold transition-all ${
-                          isToday
-                            ? 'bg-gradient-to-b from-[#4C6FFF] to-[#3A56D4] text-white shadow-[0_4px_10px_rgba(76,111,255,0.45)] ring-2 ring-[#4C6FFF]/40 scale-105'
-                            : active
-                            ? 'bg-gradient-to-b from-[#FF8C6B] to-[#E85A3C] text-white shadow-[0_3px_8px_rgba(232,90,60,0.35)] border border-[#D94F32]'
-                            : 'bg-gradient-to-b from-[#FAF6EE] to-[#EADBC8] text-[#4A3E3D] border border-[#D5C2A5] shadow-[0_2px_4px_rgba(60,40,20,0.12),0_1px_0_rgba(255,255,255,0.8)_inset] hover:scale-105 hover:bg-[#FFFDF9] dark:from-[#3A342E] dark:to-[#2A241F] dark:text-[#E2D5C3] dark:border-[#5C4D3C]'
-                        }`}
-                      >
-                        <span className="relative z-10 leading-none">
-                          {cell.day}
-                        </span>
+                      return (
+                        <div
+                          key={cell.iso}
+                          className="relative z-[1] flex h-8 items-center justify-center"
+                        >
+                          {isToday ? (
+                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30">
+                              {cell.day}
+                            </span>
+                          ) : active ? (
+                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF]">
+                              {cell.day}
+                            </span>
+                          ) : (
+                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors">
+                              {cell.day}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-                        {/* Today Indicator Pin */}
-                        {isToday && (
-                          <span className="absolute -bottom-1 h-1.5 w-1.5 rounded-full bg-[#4C6FFF] shadow-xs" />
-                        )}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+        {/* Scalloped Ticket Bottom Cutout Edge */}
+        <div className="absolute -bottom-2.5 inset-x-0 h-3 overflow-hidden pointer-events-none">
+          <svg
+            className="w-full h-full text-[#FAF8F3] dark:text-[#1A1C23]"
+            viewBox="0 0 240 12"
+            preserveAspectRatio="none"
+            fill="currentColor"
+          >
+            <path d="M0,0 Q5,12 10,0 Q15,12 20,0 Q25,12 30,0 Q35,12 40,0 Q45,12 50,0 Q55,12 60,0 Q65,12 70,0 Q75,12 80,0 Q85,12 90,0 Q95,12 100,0 Q105,12 110,0 Q115,12 120,0 Q125,12 130,0 Q135,12 140,0 Q145,12 150,0 Q155,12 160,0 Q165,12 170,0 Q175,12 180,0 Q185,12 190,0 Q195,12 200,0 Q205,12 210,0 Q215,12 220,0 Q225,12 230,0 Q235,12 240,0 L240,0 L0,0 Z" />
+          </svg>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+
+
 
