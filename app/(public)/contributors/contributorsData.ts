@@ -46,19 +46,19 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
   },
   {
     id: "contributor-3",
-    name: "Amal K Jose",
-    role: "Lead Developer",
-    avatar: "/team/amal_jose.png?v=2",
-    color: "bg-[#ffca28]", // Lighter Yellow
+    name: "Merin Chacko",
+    role: "Core Contributor",
+    avatar: "/team/anna_christina.png", // Temporary placeholder to ensure design renders
+    color: "bg-[#64b5f6]", // Light Blue
     journey: defaultJourney,
     milestones: defaultMilestones
   },
   {
     id: "contributor-4",
-    name: "Merin Chacko",
-    role: "Core Contributor",
-    avatar: "/team/anna_christina.png", // Temporary placeholder to ensure design renders
-    color: "bg-[#64b5f6]", // Light Blue
+    name: "Amal K Jose",
+    role: "Lead Developer",
+    avatar: "/team/amal_jose.png?v=2",
+    color: "bg-[#ffca28]", // Lighter Yellow
     journey: defaultJourney,
     milestones: defaultMilestones
   }
