@@ -58,10 +58,23 @@ function statusIcon(label: string) {
 
 export type RightSidebarTab = "status" | "collab" | "history";
 
+/**
+ * A panel contributed by whichever editor is currently active (Badge's Design/
+ * Properties/Layers, and eventually others) — plugs into this same shell/tab-bar
+ * alongside the always-present workflow tabs (Status/History/Team), rather than
+ * each editor building its own separate sidebar. See BadgeDesignPanel etc. in
+ * domains/badges for the current consumer.
+ */
+export interface SidebarExtraPanel {
+  id: string;
+  label: string;
+  icon: typeof History;
+  content: React.ReactNode;
+}
+
 interface EditorRightSidebarProps {
-  open: boolean;
-  tab: RightSidebarTab;
-  onTabChange: (tab: RightSidebarTab) => void;
+  tab: string;
+  onTabChange: (tab: string) => void;
   onClose: () => void;
 
   statusHistory: ContentStatusHistoryResponse[];
@@ -88,16 +101,24 @@ interface EditorRightSidebarProps {
   inviting: boolean;
   onAddCollaborator: (email?: string) => void;
   onRemoveCollaborator: (userId: string, name: string) => void;
+
+  /** Controls whether the sidebar renders the workflow tabs, the active editor context, or nothing. */
+  mode: "workflow" | "editor" | "closed";
+  /** The editor's own contextual panel (e.g. Design/Properties/Layers) to render when mode="editor". */
+  editorContextNode?: React.ReactNode;
+  /** Overrides the footer's "Document ID" row — e.g. a Badge ID instead of a lesson ID. */
+  footerOverride?: { label: string; value: string } | null;
 }
 
-const TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
+const BASE_TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
   { id: "status", label: "Status", icon: MessageSquare },
   { id: "history", label: "History", icon: History },
   { id: "collab", label: "Team", icon: Users },
 ];
 
 export function EditorRightSidebar(props: EditorRightSidebarProps) {
-  const { open, tab, onTabChange, onClose } = props;
+  const { mode, tab, onTabChange, onClose, editorContextNode } = props;
+  const TABS = BASE_TABS;
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // Close menu when clicking anywhere outside
@@ -111,49 +132,50 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
   // No visible close button — the hamburger button that opens this panel is
   // the toggle that closes it too — but Escape should still dismiss it.
   useEffect(() => {
-    if (!open) return;
+    if (mode === "closed") return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
+  }, [mode, onClose]);
 
-  if (!open) return null;
+  if (mode === "closed") return null;
 
   return (
     <div className="pointer-events-auto fixed right-4 top-20 bottom-4 z-[65] flex w-[340px] flex-col rounded-3xl border border-white/40 bg-white/70 shadow-xl backdrop-blur-xl">
-      {/* Pill tab switcher — same rounded-full language as the toolbar's own
-          controls. No close button here: the hamburger button that opened
-          this panel (in the top bar) is the single toggle that closes it too. */}
-      <div className="flex items-center gap-1.5 p-3">
-        <div className="flex flex-1 items-center gap-1 rounded-full border border-white/40 bg-white/60 p-1">
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onTabChange(id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                tab === id
-                  ? "bg-[#14142b] text-white shadow-sm"
-                  : "text-slate-500 hover:text-[#14142b]"
-              }`}
-            >
-              <Icon size={13} />
-              {label}
-            </button>
-          ))}
+      {mode === "workflow" && (
+        <div className="flex items-center gap-1.5 p-3">
+          <div className="flex flex-1 items-center gap-1 rounded-full border border-white/40 bg-white/60 p-1">
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onTabChange(id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  tab === id
+                    ? "bg-[#14142b] text-white shadow-sm"
+                    : "text-slate-500 hover:text-[#14142b]"
+                }`}
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div
         className={
-          tab === "history"
+          mode === "workflow" && tab === "history"
             ? "flex min-h-0 flex-1 flex-col" // embedded panel owns its own internal scroll regions
-            : "min-h-0 flex-1 overflow-y-auto px-4 pb-4"
+            : "min-h-0 flex-1 overflow-y-auto px-4 pb-4" + (mode === "editor" ? " pt-4" : "")
         }
       >
-        {tab === "history" ? (
+        {mode === "editor" ? (
+          editorContextNode
+        ) : tab === "history" ? (
           props.historyContent
         ) : tab === "status" ? (
           props.statusHistoryLoading ? (
@@ -424,9 +446,9 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
       {/* Footer: Document ID */}
       <div className="mt-auto px-4 pb-4">
         <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
-          <span>Document ID</span>
+          <span>{props.footerOverride?.label ?? "Document ID"}</span>
           <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-            {props.activeLessonId ? `lesson:${props.activeLessonId}` : "None"}
+            {props.footerOverride?.value ?? (props.activeLessonId ? `lesson:${props.activeLessonId}` : "None")}
           </span>
         </div>
       </div>
