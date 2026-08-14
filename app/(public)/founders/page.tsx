@@ -502,6 +502,7 @@ export default function FoundersPage() {
                       blur={6}
                       autoplay
                       loop
+                      showIndicators={false}
                     />
                   </div>
                 </div>
