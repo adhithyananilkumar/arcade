@@ -1,15 +1,18 @@
 "use client";
 
 import React from "react";
+import { ExploreFilters } from "./FilterSidebar";
 
 interface ArticlesViewProps {
   activeData: any;
   isEmbeddedHub: boolean;
+  filters?: ExploreFilters;
 }
 
 export default function ArticlesView({
   activeData,
-  isEmbeddedHub
+  isEmbeddedHub,
+  filters
 }: ArticlesViewProps) {
   const [articlesPage, setArticlesPage] = React.useState(0);
   const CARDS_PER_PAGE = 6;
@@ -19,7 +22,11 @@ export default function ArticlesView({
     setArticlesPage(0);
   }, [activeData]);
 
-  const resources = activeData.resources || [];
+  let resources = activeData.resources || [];
+  if (filters && filters.articleType !== "All") {
+    resources = resources.filter((doc: any) => doc.type === filters.articleType);
+  }
+
   const startIndex = articlesPage * CARDS_PER_PAGE;
   const endIndex = Math.min(startIndex + CARDS_PER_PAGE, resources.length);
   const currentCards = resources.slice(startIndex, endIndex);

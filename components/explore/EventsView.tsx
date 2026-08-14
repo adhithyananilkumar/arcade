@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ExploreFilters } from "./FilterSidebar";
 
 const WEBINARS_DATA = [
   { title: "Scaling React & Next.js App Router Performance", category: "Computer Science", host: "Next.js Core Team", date: "Friday, 10:00 AM", status: "Upcoming", duration: "90 mins" },
@@ -86,12 +87,14 @@ interface EventsViewProps {
   activeData: any;
   activeCategoryName: string;
   isEmbeddedHub: boolean;
+  filters?: ExploreFilters;
 }
 
 export default function EventsView({
   activeData,
   activeCategoryName,
-  isEmbeddedHub
+  isEmbeddedHub,
+  filters
 }: EventsViewProps) {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [webinarsPage, setWebinarsPage] = React.useState(0);
@@ -104,6 +107,10 @@ export default function EventsView({
   let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
   if (categoryWebinars.length === 0) {
     categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
+  }
+
+  if (filters && filters.eventStatus !== "All") {
+    categoryWebinars = categoryWebinars.filter(w => w.status === filters.eventStatus);
   }
 
   const renderBootcampsSection = (title: string = "Practical Bootcamps") => {

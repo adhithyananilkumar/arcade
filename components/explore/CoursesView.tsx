@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
+import { ExploreFilters } from "./FilterSidebar";
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -739,6 +740,7 @@ interface CoursesViewProps {
   courseSearchQuery: string;
   setCourseSearchQuery: (q: string) => void;
   courseStats: Record<string, { averageRating: number; reviewsCount: number }>;
+  filters?: ExploreFilters;
 }
 
 export default function CoursesView({
@@ -748,24 +750,42 @@ export default function CoursesView({
   isEmbeddedHub,
   courseSearchQuery,
   setCourseSearchQuery,
-  courseStats
+  courseStats,
+  filters
 }: CoursesViewProps) {
   const coursesSectionRef = useRef<HTMLDivElement>(null);
   const filtersGridRef = useRef<HTMLDivElement>(null);
-
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All Levels");
-  const [selectedTopic, setSelectedTopic] = useState("All Topics");
-
-  const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
-  const topics = ["All Topics", ...Array.from(new Set(activeData.courses.map((c: any, i: number) => getEnrichedCourse(c, i, activeCategoryName).categoryTag)))];
 
   const filteredCourses = activeData.courses.filter((course: any, index: number) => {
     const enriched = getEnrichedCourse(course, index, activeCategoryName);
     const matchesSearch = course.title.toLowerCase().includes(courseSearchQuery.toLowerCase()) ||
       course.desc.toLowerCase().includes(courseSearchQuery.toLowerCase());
-    const matchesDifficulty = selectedDifficulty === "All Levels" || course.level === selectedDifficulty;
-    const matchesTopic = selectedTopic === "All Topics" || enriched.categoryTag === selectedTopic;
-    return matchesSearch && matchesDifficulty && matchesTopic;
+    
+    const matchesDifficulty = !filters || filters.courseLevel === "All Levels" || course.level === filters.courseLevel;
+    
+    let matchesDuration = true;
+    if (filters && filters.courseDuration !== "All") {
+      const weeks = parseInt(course.duration);
+      if (!isNaN(weeks)) {
+        if (filters.courseDuration.includes("Short") && weeks > 4) matchesDuration = false;
+        if (filters.courseDuration.includes("Medium") && (weeks <= 4 || weeks > 8)) matchesDuration = false;
+        if (filters.courseDuration.includes("Long") && weeks <= 8) matchesDuration = false;
+      }
+    }
+    
+    let matchesPrice = true;
+    if (filters && filters.coursePrice !== "All") {
+      const isPaid = index % 2 === 0;
+      if (filters.coursePrice === "Free" && isPaid) matchesPrice = false;
+      if (filters.coursePrice === "Paid" && !isPaid) matchesPrice = false;
+    }
+
+    let matchesAuthor = true;
+    if (filters && filters.courseAuthor !== "All") {
+      matchesAuthor = enriched.instructor.name === filters.courseAuthor;
+    }
+
+    return matchesSearch && matchesDifficulty && matchesDuration && matchesPrice && matchesAuthor;
   });
 
   return (
@@ -783,46 +803,7 @@ export default function CoursesView({
       </div>
 
       <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
-      <div
-        ref={filtersGridRef}
-        style={{
-          display: "flex",
-          gap: "24px",
-          marginBottom: "32px",
-          background: "rgba(255, 255, 255, 0.65)",
-          border: "1px solid rgba(20, 23, 31, 0.06)",
-          borderRadius: "16px",
-          padding: "20px 24px",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-          flexWrap: "wrap",
-          alignItems: "flex-start"
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Course Level
-          </label>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            {difficultyLevels.map((level) => {
-              const isActive = selectedDifficulty === level;
-              return (
-                <FilterPillButton
-                  key={level}
-                  isActive={isActive}
-                  activeData={activeData}
-                  onClick={() => setSelectedDifficulty(level)}
-                >
-                  {level}
-                </FilterPillButton>
-              );
-            })}
-          </div>
-        </div>
-
-
-      </div>
+      {/* Removed inline filters since they are now in the Filter Sidebar */}
 
       {filteredCourses.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>

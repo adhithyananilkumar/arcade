@@ -14,6 +14,7 @@ import CoursesView, { CourseCard } from "./CoursesView";
 import EventsView from "./EventsView";
 import ArticlesView from "./ArticlesView";
 import WindmillAnimation from "./WindmillAnimation";
+import FilterSidebar, { ExploreFilters } from "./FilterSidebar";
 
 export { CourseCard };
 
@@ -1419,6 +1420,15 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [filters, setFilters] = useState<ExploreFilters>({
+    courseLevel: "All Levels",
+    courseDuration: "All",
+    coursePrice: "All",
+    courseAuthor: "All",
+    eventStatus: "All",
+    articleType: "All",
+  });
 
   const [journeyCompleted, setJourneyCompleted] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -1857,7 +1867,43 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
       >
 
         {/* Breadcrumb back into explore hub (authenticated) or public explore */}
-        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px", gap: "12px" }}>
+          
+          {/* Hamburger Filter Toggle Button */}
+          <button 
+            onClick={() => {
+              if (mode === "events" && !journeyCompleted) {
+                setJourneyCompleted(true);
+                progressValue.set(1);
+                document.body.style.overflow = "";
+              }
+              setIsSidebarOpen(!isSidebarOpen);
+            }}
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              width: "42px", 
+              height: "42px", 
+              borderRadius: "12px", 
+              background: "rgba(255, 255, 255, 0.65)",
+              border: "1px solid rgba(20, 23, 31, 0.06)",
+              cursor: "pointer", 
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
+              color: "var(--l-ink)",
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; e.currentTarget.style.borderColor = activeData.colors.primary; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--l-ink)"; e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)"; }}
+            title="Toggle Filters Sidebar"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+          </button>
+
           <div
             style={{
               display: "flex",
@@ -2228,6 +2274,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
             courseSearchQuery={courseSearchQuery}
             setCourseSearchQuery={setCourseSearchQuery}
             courseStats={courseStats}
+            filters={filters}
           />
         )}
 
@@ -2236,6 +2283,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
             activeData={activeData}
             activeCategoryName={activeCategoryName}
             isEmbeddedHub={isEmbeddedHub}
+            filters={filters}
           />
         )}
 
@@ -2243,10 +2291,22 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           <ArticlesView
             activeData={activeData}
             isEmbeddedHub={isEmbeddedHub}
+            filters={filters}
           />
         )}
 
       </main>
+
+      <FilterSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        mode={mode}
+        activeData={activeData}
+        activeCategoryName={activeCategoryName}
+        handleCategorySwitch={handleCategorySwitch}
+        filters={filters}
+        setFilters={setFilters}
+      />
     </div>
   );
 }
