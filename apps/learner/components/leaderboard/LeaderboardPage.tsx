@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Search, TrendingUp, CalendarDays, ChevronRight } from 'lucide-react';
+import { Crown, Search, TrendingUp, CalendarDays, ChevronRight, Award, Trophy, Medal, Sparkles, BookOpen, CheckCircle2, Zap, ArrowUp, ArrowDown } from 'lucide-react';
 
 type ViewMode = 'board' | 'monthly';
 type Period = 'all' | 'month';
@@ -172,12 +172,6 @@ const MONTHLY_ARCHIVE: MonthArchive[] = [
   },
 ];
 
-const PLACE_TONE = {
-  1: { ring: 'ring-[#D4AF37]/50', bar: 'bg-[#D4AF37]', label: '1st', chip: 'bg-[#FFF8E7] text-[#9A7B1A]' },
-  2: { ring: 'ring-slate-300', bar: 'bg-slate-400', label: '2nd', chip: 'bg-slate-100 text-slate-600' },
-  3: { ring: 'ring-[#C47B4A]/40', bar: 'bg-[#C47B4A]', label: '3rd', chip: 'bg-[#FFF1E8] text-[#9A5528]' },
-} as const;
-
 export default function LeaderboardPage() {
   const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<ViewMode>('board');
@@ -197,8 +191,7 @@ export default function LeaderboardPage() {
   );
 
   const top3 = board.slice(0, 3);
-  // Display order: 2nd | 1st | 3rd for classic podium feel, still side-by-side
-  const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
+  const maxTopXp = top3[0]?.xp || 50000;
 
   const list4to20 = useMemo(() => {
     const rows = board.slice(3, 20);
@@ -218,42 +211,53 @@ export default function LeaderboardPage() {
       r.name === me.name ||
       (user?.username && r.username === `@${user.username}`),
   );
-  // For demo data the user is outside top 20; also treat explicit rank > 20
   const showUserAfter20 = !inTop20 && me.rank > 20;
 
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative min-h-screen w-full text-slate-900 selection:bg-violet-100"
       style={{
-        background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
+        background: 'linear-gradient(180deg, #FFFFFF 0%, #FAF9FE 40%, #FFFFFF 100%)',
       }}
     >
+      {/* Crisp Ambient Cool Glow */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[380px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[400px]"
         style={{
           backgroundImage: [
-            'radial-gradient(ellipse 50% 40% at 12% 18%, rgba(76,111,255,0.14) 0%, transparent 60%)',
-            'radial-gradient(ellipse 40% 35% at 88% 12%, rgba(255,107,74,0.08) 0%, transparent 55%)',
+            'radial-gradient(ellipse 50% 40% at 15% 15%, rgba(99,102,241,0.05) 0%, transparent 60%)',
+            'radial-gradient(ellipse 50% 40% at 85% 15%, rgba(14,165,233,0.05) 0%, transparent 60%)',
           ].join(', '),
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 pb-32 pt-28 md:px-8 md:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-5xl space-y-9 px-4 pb-32 pt-26 sm:pt-28 md:px-6">
+        {/* Inject Cursive Font & Custom Keyframes */}
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
+          .font-cursive-heading {
+            font-family: 'Dancing Script', cursive;
+          }
+        `}</style>
+
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-1">
           <div>
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] md:text-[2.15rem]">
-              Leaderboard
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-cursive-heading text-slate-900 tracking-tight flex items-center gap-2.5 pb-2 overflow-visible">
+              <span className="pb-2">Leader</span>
+              <span className="inline-block pb-2 pr-4 bg-gradient-to-r from-indigo-600 via-violet-600 to-sky-500 bg-clip-text text-transparent">
+                board
+              </span>
             </h1>
-            <p className="mt-1 max-w-lg text-[14px] font-medium text-slate-500">
-              Top learners by XP — podium up top, ranks 4–20 below. Your place always shows if
-              you’re outside the top twenty.
+            <p className="mt-0.5 max-w-lg text-xs sm:text-sm font-medium text-slate-500 leading-relaxed">
+              Celebrate top achievements, track XP milestones, and rise through the community ranks.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Period Switcher */}
+            <div className="flex rounded-2xl border border-slate-200/90 bg-white/90 p-1 shadow-xs backdrop-blur-md">
               {(
                 [
                   { id: 'all' as Period, label: 'All time' },
@@ -267,9 +271,9 @@ export default function LeaderboardPage() {
                     setPeriod(p.id);
                     setViewMode('board');
                   }}
-                  className={`rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
                     period === p.id && viewMode === 'board'
-                      ? 'bg-[#12141C] text-white'
+                      ? 'bg-slate-950 text-white shadow-xs'
                       : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -278,17 +282,18 @@ export default function LeaderboardPage() {
               ))}
             </div>
 
+            {/* Monthly Tops Toggle */}
             <button
               type="button"
               onClick={() => setViewMode((m) => (m === 'monthly' ? 'board' : 'monthly'))}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-[12px] font-semibold transition-colors ${
+              className={`inline-flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-xs font-bold transition-all shadow-xs ${
                 viewMode === 'monthly'
-                  ? 'border-[#4C6FFF] bg-[#4C6FFF]/10 text-[#3A56D4]'
-                  : 'border-slate-200 bg-white/95 text-slate-700 hover:border-slate-300'
+                  ? 'border-violet-300 bg-violet-50 text-violet-700'
+                  : 'border-slate-200/90 bg-white/90 text-slate-700 hover:border-slate-300'
               }`}
             >
-              <CalendarDays size={14} />
-              Monthly tops
+              <CalendarDays size={14} className="text-violet-600" />
+              <span>Monthly Hall of Fame</span>
             </button>
           </div>
         </div>
@@ -297,97 +302,185 @@ export default function LeaderboardPage() {
           {viewMode === 'monthly' ? (
             <motion.div
               key="monthly"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-4"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
-              <div className="flex items-end justify-between gap-3">
-                <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-                  Monthly tops
-                </h2>
-                <p className="text-[12px] font-medium text-slate-400">
-                  Top 3 for each month
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900">Monthly Hall of Fame</h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Champions crowned in each previous season</p>
+                </div>
+                <span className="text-xs font-bold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-200/60">
+                  {MONTHLY_ARCHIVE.length} Archive Seasons
+                </span>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {MONTHLY_ARCHIVE.map((month) => (
-                  <MonthCard key={month.id} month={month} />
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {MONTHLY_ARCHIVE.map((month, idx) => (
+                  <MonthlyArchiveCard key={month.id} month={month} index={idx} />
                 ))}
               </div>
             </motion.div>
           ) : (
             <motion.div
               key={`board-${period}`}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-8"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-9"
             >
-              {/* Top 3 side by side */}
-              <section className="space-y-3">
-                <div className="flex items-end justify-between gap-3">
-                  <h2 className="text-xl font-bold tracking-tight text-[#14142b]">Top three</h2>
-                  <span className="text-[12px] font-semibold text-slate-400">
-                    {period === 'all' ? 'All time' : 'This month'}
+              {/* 1. FLOWING CARD-LESS CHAMPIONS SHOWCASE (REACTBITS INSPIRED) */}
+              <section
+                className="relative py-8 sm:py-12 select-none overflow-visible group/stage"
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  e.currentTarget.style.setProperty('--stage-x', `${x}px`);
+                  e.currentTarget.style.setProperty('--stage-y', `${y}px`);
+                }}
+              >
+                {/* Dynamic Cursor Stage Spotlight */}
+                <div
+                  className="pointer-events-none absolute -inset-x-8 -inset-y-12 opacity-0 group-hover/stage:opacity-100 transition-opacity duration-700 ease-out z-0"
+                  style={{
+                    background: 'radial-gradient(550px circle at var(--stage-x, 50%) var(--stage-y, 50%), rgba(99, 102, 241, 0.07), transparent 70%)'
+                  }}
+                />
+
+                {/* Flowing Section Header */}
+                <div className="relative z-10 flex items-center justify-between mb-10 px-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                    <span className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-slate-400">
+                      Hall of Champions
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 bg-white/90 px-3.5 py-1 rounded-full border border-slate-200/80 shadow-2xs backdrop-blur-md">
+                    {period === 'all' ? 'All-Time Records' : 'This Month Standing'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-end">
-                  {podiumOrder.map((u) => (
-                    <PodiumCard key={u.rank} user={u} place={u.rank as 1 | 2 | 3} />
-                  ))}
+                {/* Continuous Flowing Curved Arch & Stage */}
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-12 md:gap-8 lg:gap-16 pt-2 pb-6">
+                  {/* Fluid Wave SVG Arch Connecting All 3 Podiums */}
+                  <svg
+                    className="hidden md:block pointer-events-none absolute top-1/2 left-4 right-4 w-[calc(100%-2rem)] h-32 -translate-y-6 z-0 overflow-visible opacity-40"
+                    viewBox="0 0 800 120"
+                    fill="none"
+                  >
+                    <path
+                      d="M 120,90 Q 400,-10 680,90"
+                      stroke="url(#waveGrad)"
+                      strokeWidth="2.5"
+                      strokeDasharray="6 6"
+                    />
+                    <defs>
+                      <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.4" />
+                        <stop offset="50%" stopColor="#6366F1" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+
+                  {/* #2 Silver (Left) */}
+                  {top3[1] && (
+                    <FlowingPodiumChampion
+                      user={top3[1]}
+                      place={2}
+                      maxTopXp={maxTopXp}
+                    />
+                  )}
+
+                  {/* #1 Gold Champion (Center Elevated) */}
+                  {top3[0] && (
+                    <FlowingPodiumChampion
+                      user={top3[0]}
+                      place={1}
+                      maxTopXp={maxTopXp}
+                    />
+                  )}
+
+                  {/* #3 Bronze / Teal (Right) */}
+                  {top3[2] && (
+                    <FlowingPodiumChampion
+                      user={top3[2]}
+                      place={3}
+                      maxTopXp={maxTopXp}
+                    />
+                  )}
                 </div>
               </section>
 
-              {/* Ranks 4–20 */}
-              <section className="space-y-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
-                    Ranks 4–20
-                  </h2>
-                  <div className="relative w-full sm:w-64">
+              {/* 2. RANKS 4–20 SCROLLING REVEAL LIST & INDIVIDUAL CARDS */}
+              <section className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+                      Ranks 4 – 20
+                    </h2>
+                    <p className="text-xs text-slate-500 font-medium">Contenders climbing towards the top podium</p>
+                  </div>
+
+                  <div className="relative w-full sm:w-72">
                     <Search
                       size={15}
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search learners…"
-                      className="w-full rounded-full border border-slate-200 bg-white/95 py-2 pl-9 pr-3 text-[13px] font-medium text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#4C6FFF]/45 focus:ring-4 focus:ring-[#4C6FFF]/10"
+                      placeholder="Search rank, name, or role…"
+                      className="w-full rounded-2xl border border-slate-200/90 bg-white/90 py-2.5 pl-10 pr-3.5 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10 shadow-2xs"
                     />
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 shadow-[0_4px_18px_rgba(20,20,43,0.04)]">
-                  <ul className="divide-y divide-slate-100">
-                    {list4to20.length === 0 && !showUserAfter20 ? (
-                      <li className="px-4 py-10 text-center text-sm font-medium text-slate-400">
-                        No matches in ranks 4–20.
-                      </li>
-                    ) : (
-                      <>
-                        {list4to20.map((row) => (
-                          <RankRow
-                            key={row.rank}
-                            user={row}
-                            highlight={
-                              row.username === me.username ||
-                              (!!user?.username && row.username === `@${user.username}`)
-                            }
+                {/* Individual Animated Rank Micro-Cards with Staggered Scroll Animation */}
+                <div className="space-y-2.5">
+                  {list4to20.length === 0 && !showUserAfter20 ? (
+                    <div className="py-12 text-center rounded-3xl border border-slate-200/80 bg-white/80 p-8 space-y-2">
+                      <p className="text-sm font-bold text-slate-700">No matching learners found</p>
+                      <p className="text-xs text-slate-400">Try searching for a different name or role title.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {list4to20.map((item, idx) => (
+                        <IndividualRankCard
+                          key={item.rank}
+                          user={item}
+                          index={idx}
+                          maxTopXp={maxTopXp}
+                          highlight={
+                            item.username === me.username ||
+                            (!!user?.username && item.username === `@${user.username}`)
+                          }
+                        />
+                      ))}
+
+                      {showUserAfter20 && !query.trim() && (
+                        <div className="pt-2">
+                          <div className="mb-2 text-center">
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-violet-600 bg-violet-50 px-3 py-0.5 rounded-full border border-violet-200">
+                              Your Standing
+                            </span>
+                          </div>
+                          <IndividualRankCard
+                            user={me}
+                            index={20}
+                            maxTopXp={maxTopXp}
+                            highlight={true}
+                            slotLabel="Your rank"
                           />
-                        ))}
-                        {/* 21st slot: your rank when outside top 20 */}
-                        {showUserAfter20 && !query.trim() && (
-                          <RankRow user={me} highlight slotLabel="Your rank" />
-                        )}
-                      </>
-                    )}
-                  </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </section>
             </motion.div>
@@ -398,161 +491,347 @@ export default function LeaderboardPage() {
   );
 }
 
-function PodiumCard({ user, place }: { user: LeaderboardUser; place: 1 | 2 | 3 }) {
-  const tone = PLACE_TONE[place];
+// -------------------------------------------------------------------------------------------------
+// 1. Seamless Card-Less Stage Podium Component
+// -------------------------------------------------------------------------------------------------
+function FlowingPodiumChampion({
+  user,
+  place,
+  maxTopXp
+}: {
+  user: LeaderboardUser;
+  place: 1 | 2 | 3;
+  maxTopXp: number;
+}) {
   const isFirst = place === 1;
+  const isSecond = place === 2;
+  const isThird = place === 3;
+
+  const styleConfig = {
+    1: {
+      avatarSize: 'w-30 h-30 sm:w-34 sm:h-34',
+      avatarRing: 'ring-4 ring-indigo-600/90 ring-offset-4 ring-offset-white shadow-[0_20px_50px_rgba(79,70,229,0.25)]',
+      haloGlow: 'from-indigo-500/20 via-violet-500/15 to-cyan-400/20',
+      xpGrad: 'from-indigo-600 via-violet-600 to-indigo-800',
+      pillStyle: 'bg-indigo-50/80 text-indigo-950 border-indigo-200/80 shadow-xs',
+      yFloat: [-6, 6, -6],
+      delay: 0,
+      heightOffset: 'md:-translate-y-8',
+    },
+    2: {
+      avatarSize: 'w-22 h-22 sm:w-26 sm:h-26',
+      avatarRing: 'ring-4 ring-sky-500/80 ring-offset-4 ring-offset-white shadow-[0_12px_36px_rgba(14,165,233,0.18)]',
+      haloGlow: 'from-sky-400/20 to-transparent',
+      xpGrad: 'from-sky-600 to-blue-700',
+      pillStyle: 'bg-sky-50/80 text-sky-950 border-sky-200/80 shadow-2xs',
+      yFloat: [4, -4, 4],
+      delay: 0.3,
+      heightOffset: 'md:translate-y-2',
+    },
+    3: {
+      avatarSize: 'w-20 h-20 sm:w-24 sm:h-24',
+      avatarRing: 'ring-4 ring-teal-500/80 ring-offset-4 ring-offset-white shadow-[0_12px_36px_rgba(20,184,166,0.18)]',
+      haloGlow: 'from-teal-400/20 to-transparent',
+      xpGrad: 'from-teal-600 to-emerald-700',
+      pillStyle: 'bg-teal-50/80 text-teal-950 border-teal-200/80 shadow-2xs',
+      yFloat: [-4, 4, -4],
+      delay: 0.6,
+      heightOffset: 'md:translate-y-4',
+    },
+  }[place];
 
   return (
-    <motion.article
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.18 }}
-      className={`relative flex flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 p-4 shadow-[0_6px_20px_rgba(20,20,43,0.05)] ${
-        isFirst ? 'md:pb-6 md:pt-5' : ''
-      }`}
-    >
-      <div className={`absolute inset-x-0 top-0 h-1 ${tone.bar}`} />
-      <div className="mb-3 flex items-center justify-between">
-        <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${tone.chip}`}>
-          {tone.label}
+    <div className={`relative z-10 flex-1 flex flex-col items-center text-center transition-all duration-500 ${styleConfig.heightOffset} ${isFirst ? 'order-1 md:order-2' : isSecond ? 'order-2 md:order-1' : 'order-3'}`}>
+      {/* Floating Avatar & Halo System */}
+      <motion.div
+        animate={{ y: styleConfig.yFloat }}
+        transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut', delay: styleConfig.delay }}
+        whileHover={{ scale: 1.07, y: -8 }}
+        className="relative group/avatar cursor-pointer flex flex-col items-center"
+      >
+        {/* Ambient Halo Glow */}
+        <div className={`absolute inset-0 rounded-full bg-gradient-to-tr ${styleConfig.haloGlow} blur-2xl scale-140 pointer-events-none group-hover/avatar:scale-160 transition-transform duration-500`} />
+
+        {/* Orbiting Dashed Ring for #1 Champion */}
+        {isFirst && (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
+            className="pointer-events-none absolute -inset-3.5 rounded-full border border-dashed border-indigo-400/50"
+          />
+        )}
+
+        {/* Floating Crown Badge for #1 Champion */}
+        {isFirst && (
+          <motion.div
+            animate={{ y: [-2, 2, -2] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-7.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-slate-900 text-white text-[10.5px] font-extrabold uppercase tracking-wider shadow-lg shadow-indigo-900/30 border border-slate-700/80"
+          >
+            <Crown size={12} className="text-amber-300 fill-amber-300" />
+            <span>#1 Champion</span>
+          </motion.div>
+        )}
+
+        {/* Avatar Image Frame */}
+        <div className={`relative z-10 ${styleConfig.avatarSize} rounded-full overflow-hidden ${styleConfig.avatarRing} bg-slate-100 mx-auto transition-all`}>
+          <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+        </div>
+
+        {/* Sleek Place Pill (2nd & 3rd) */}
+        {!isFirst && (
+          <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 z-20 px-3 py-0.5 rounded-full text-[10.5px] font-black uppercase tracking-wider shadow-xs bg-slate-900 text-white border border-slate-700 whitespace-nowrap">
+            {place === 2 ? '2nd Place' : '3rd Place'}
+          </div>
+        )}
+      </motion.div>
+
+      {/* User Information */}
+      <div className="mt-5 space-y-0.5 max-w-[220px]">
+        <h3 className={`truncate font-bold text-slate-900 ${isFirst ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'} tracking-tight`}>
+          {user.name}
+        </h3>
+        <p className="truncate text-xs font-medium text-slate-400">
+          {user.username} {user.roleBadge ? `· ${user.roleBadge}` : ''}
+        </p>
+      </div>
+
+      {/* Large Hero Display XP */}
+      <div className="mt-2.5 mb-3 flex items-baseline justify-center gap-1.5">
+        <span className={`font-black tracking-tight ${isFirst ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl'} bg-gradient-to-r ${styleConfig.xpGrad} bg-clip-text text-transparent`}>
+          {user.xp.toLocaleString()}
         </span>
-        {isFirst && <Crown size={16} className="text-[#D4AF37]" />}
+        <span className="text-xs font-black uppercase text-slate-400">XP</span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-offset-2 ${tone.ring}`}>
-          <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+      {/* Flowing Floating Stats Pill */}
+      <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl border text-xs font-semibold backdrop-blur-md ${styleConfig.pillStyle}`}>
+        <div className="flex items-center gap-1">
+          <Zap size={11} className="opacity-70" />
+          <span>Lvl {user.level}</span>
         </div>
-        <div className="min-w-0">
-          <h3 className="truncate text-[15px] font-bold text-[#14142b]">{user.name}</h3>
-          <p className="truncate text-[12px] font-medium text-slate-400">{user.username}</p>
-          <p className="mt-1 text-[12px] font-semibold text-[#4C6FFF]">
-            {user.xp.toLocaleString()} XP
-          </p>
+        <span className="w-1 h-1 rounded-full bg-current opacity-30" />
+        <div className="flex items-center gap-1">
+          <BookOpen size={11} className="opacity-70" />
+          <span>{user.coursesCount}</span>
         </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.level}</p>
-          <p className="text-[10px] font-medium text-slate-400">Level</p>
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.coursesCount}</p>
-          <p className="text-[10px] font-medium text-slate-400">Courses</p>
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.certificatesCount}</p>
-          <p className="text-[10px] font-medium text-slate-400">Certs</p>
+        <span className="w-1 h-1 rounded-full bg-current opacity-30" />
+        <div className="flex items-center gap-1">
+          <Award size={11} className="opacity-70" />
+          <span>{user.certificatesCount}</span>
         </div>
       </div>
-    </motion.article>
+    </div>
   );
 }
 
-function RankRow({
+function IndividualRankCard({
   user,
+  index,
+  maxTopXp,
   highlight,
   slotLabel,
 }: {
   user: LeaderboardUser;
+  index: number;
+  maxTopXp: number;
   highlight?: boolean;
   slotLabel?: string;
 }) {
+  const percentOfLeader = Math.min(100, Math.round((user.xp / maxTopXp) * 100));
+
   return (
-    <li
-      className={`flex items-center gap-3 px-3.5 py-3 sm:px-4 ${
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.35, delay: Math.min(index * 0.03, 0.3) }}
+      whileHover={{ x: 4, scale: 1.008 }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        e.currentTarget.style.setProperty('--spotlight-x', `${x}px`);
+        e.currentTarget.style.setProperty('--spotlight-y', `${y}px`);
+      }}
+      className={`group/rank relative overflow-hidden rounded-2xl border transition-all duration-200 p-3.5 sm:p-4 shadow-2xs ${
         highlight
-          ? 'border-t border-[#4C6FFF]/15 bg-[#4C6FFF]/[0.06]'
-          : 'hover:bg-slate-50/80'
+          ? 'border-violet-300 bg-gradient-to-r from-violet-50/90 via-fuchsia-50/30 to-amber-50/30 ring-1 ring-violet-500/25 shadow-sm'
+          : 'border-slate-200/90 bg-white/95 hover:border-violet-300 hover:shadow-md'
       }`}
     >
-      <span
-        className={`w-9 shrink-0 text-center text-[13px] font-bold tabular-nums ${
-          highlight ? 'text-[#4C6FFF]' : 'text-slate-400'
-        }`}
-      >
-        #{user.rank}
-      </span>
+      {/* Dynamic Cursor Spotlight Glow */}
       <div
-        className={`h-10 w-10 shrink-0 overflow-hidden rounded-full border ${
-          highlight ? 'border-[#4C6FFF]/35 ring-2 ring-[#4C6FFF]/20' : 'border-slate-200'
-        }`}
-      >
-        <img src={user.avatar} alt="" className="h-full w-full object-cover" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-[14px] font-bold text-[#14142b]">{user.name}</p>
-          {highlight && (
-            <span className="rounded bg-[#4C6FFF] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-              You
-            </span>
-          )}
-          {slotLabel && (
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[#4C6FFF]/80">
-              {slotLabel}
+        className="pointer-events-none absolute -inset-px opacity-0 group-hover/rank:opacity-100 transition-opacity duration-300 ease-out z-0"
+        style={{
+          background: 'radial-gradient(320px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(168, 85, 247, 0.10), transparent 70%)'
+        }}
+      />
+
+      <div className="relative z-10 flex items-center gap-3.5 sm:gap-5">
+        {/* Rank Number Badge */}
+        <div className="w-8 shrink-0 text-center">
+          <span className={`text-sm font-black ${highlight ? 'text-violet-600' : 'text-slate-400 group-hover/rank:text-slate-700'} transition-colors`}>
+            #{user.rank}
+          </span>
+        </div>
+
+        {/* User Avatar with Level Ring */}
+        <div className="relative h-11 w-11 shrink-0">
+          <div className="h-full w-full rounded-full overflow-hidden ring-2 ring-slate-100 group-hover/rank:ring-violet-200 transition-all">
+            <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+          </div>
+          <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-md bg-slate-900 text-white text-[9px] font-black">
+            {user.level}
+          </span>
+        </div>
+
+        {/* User Details & Progress Track */}
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="truncate text-sm font-bold text-slate-900 group-hover/rank:text-violet-700 transition-colors">
+              {user.name}
+            </h4>
+            {highlight && (
+              <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white">
+                You
+              </span>
+            )}
+            {slotLabel && (
+              <span className="text-[10px] font-bold text-violet-600 bg-violet-100/60 px-2 py-0.5 rounded-full">
+                {slotLabel}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 text-xs text-slate-400">
+            <span className="truncate">{user.username} {user.roleBadge ? `· ${user.roleBadge}` : ''}</span>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <span className="hidden sm:inline text-slate-500 font-medium">{user.coursesCount} Courses</span>
+            <span className="hidden sm:inline text-slate-300">•</span>
+            <span className="hidden sm:inline text-slate-500 font-medium">{user.certificatesCount} Certs</span>
+          </div>
+
+          {/* Micro Progress Bar towards leader */}
+          <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden mt-1.5">
+            <div
+              style={{ width: `${percentOfLeader}%` }}
+              className="h-full bg-gradient-to-r from-violet-500 to-sky-400 rounded-full"
+            />
+          </div>
+        </div>
+
+        {/* XP Score & Trending Indicator */}
+        <div className="flex items-center gap-3 shrink-0 text-right">
+          <div>
+            <p className="text-sm font-black text-slate-900 group-hover/rank:text-violet-600 transition-colors">
+              {user.xp.toLocaleString()} <span className="text-[10px] font-bold text-slate-400">XP</span>
+            </p>
+            <p className="text-[10px] font-semibold text-slate-400">
+              {percentOfLeader}% of leader
+            </p>
+          </div>
+
+          {/* Weekly Trending Pill */}
+          {user.weeklyChange !== 0 && (
+            <span
+              className={`hidden sm:inline-flex items-center gap-0.5 rounded-full px-2 py-1 text-[10px] font-bold ${
+                user.weeklyChange > 0
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                  : 'bg-rose-50 text-rose-600 border border-rose-200/60'
+              }`}
+            >
+              {user.weeklyChange > 0 ? (
+                <ArrowUp size={10} className="stroke-[3]" />
+              ) : (
+                <ArrowDown size={10} className="stroke-[3]" />
+              )}
+              <span>{Math.abs(user.weeklyChange)}</span>
             </span>
           )}
         </div>
-        <p className="truncate text-[12px] font-medium text-slate-400">
-          {user.username}
-          {user.roleBadge ? ` · ${user.roleBadge}` : ''}
-        </p>
       </div>
-      <div className="hidden text-right sm:block">
-        <p className="text-[13px] font-bold text-[#4C6FFF]">{user.xp.toLocaleString()} XP</p>
-        <p className="text-[11px] font-medium text-slate-400">Lvl {user.level}</p>
-      </div>
-      {user.weeklyChange !== 0 && (
-        <span
-          className={`hidden items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold md:inline-flex ${
-            user.weeklyChange > 0
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-rose-50 text-rose-600'
-          }`}
-        >
-          <TrendingUp size={12} className={user.weeklyChange < 0 ? 'rotate-180' : ''} />
-          {user.weeklyChange > 0 ? '+' : ''}
-          {user.weeklyChange}
-        </span>
-      )}
-    </li>
+    </motion.div>
   );
 }
 
-function MonthCard({ month }: { month: MonthArchive }) {
+// -------------------------------------------------------------------------------------------------
+// 3. Unique Interactive Monthly Archive Cards with ReactBits Spotlight
+// -------------------------------------------------------------------------------------------------
+function MonthlyArchiveCard({ month, index }: { month: MonthArchive; index: number }) {
+  const totalXp = month.top.reduce((acc, u) => acc + u.xp, 0);
+
   return (
-    <article className="rounded-lg border border-slate-200/80 bg-white/95 p-4 shadow-[0_4px_18px_rgba(20,20,43,0.04)]">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <h3 className="text-[15px] font-bold text-[#14142b]">
-            {month.label} {month.year}
-          </h3>
-          <p className="text-[11px] font-medium text-slate-400">Top 3 that month</p>
+    <motion.article
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: index * 0.05 }}
+      whileHover={{ y: -4, scale: 1.015 }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        e.currentTarget.style.setProperty('--spotlight-x', `${x}px`);
+        e.currentTarget.style.setProperty('--spotlight-y', `${y}px`);
+      }}
+      className="group/month relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white/95 p-5 shadow-sm hover:shadow-xl hover:border-violet-300 transition-all duration-300"
+    >
+      {/* ReactBits Dynamic Radial Spotlight */}
+      <div
+        className="pointer-events-none absolute -inset-px opacity-0 group-hover/month:opacity-100 transition-opacity duration-500 ease-out z-0"
+        style={{
+          background: 'radial-gradient(350px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(168, 85, 247, 0.12), transparent 70%)'
+        }}
+      />
+
+      <div className="relative z-10 space-y-4">
+        {/* Month Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-1.5">
+              <Trophy size={15} className="text-amber-500" />
+              <h3 className="text-base font-bold text-slate-900">
+                {month.label} {month.year}
+              </h3>
+            </div>
+            <p className="text-[11px] font-medium text-slate-400 mt-0.5">Total podium: {totalXp.toLocaleString()} XP</p>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full border border-violet-200/60">
+            Season {month.id.split('-')[1]}
+          </span>
         </div>
-        <ChevronRight size={16} className="text-slate-300" />
+
+        {/* Top 3 Champions in that Month */}
+        <div className="space-y-2.5">
+          {month.top.map((u, i) => {
+            const rankConfig = {
+              0: { badge: 'bg-amber-400 text-amber-950 font-black', ring: 'ring-2 ring-amber-400', label: '1st' },
+              1: { badge: 'bg-slate-700 text-white font-bold', ring: 'ring-2 ring-slate-300', label: '2nd' },
+              2: { badge: 'bg-orange-600 text-white font-bold', ring: 'ring-2 ring-orange-300', label: '3rd' },
+            }[i] || { badge: 'bg-slate-200 text-slate-700', ring: '', label: `#${i+1}` };
+
+            return (
+              <div
+                key={`${month.id}-${u.rank}`}
+                className="flex items-center justify-between gap-3 p-2 rounded-2xl bg-slate-50/70 hover:bg-violet-50/50 border border-slate-100 transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 ${rankConfig.badge}`}>
+                    {rankConfig.label}
+                  </span>
+                  <div className={`w-8 h-8 rounded-full overflow-hidden shrink-0 ${rankConfig.ring}`}>
+                    <img src={u.avatar} alt={u.name} className="h-full w-full object-cover" />
+                  </div>
+                  <p className="truncate text-xs font-bold text-slate-800">{u.name}</p>
+                </div>
+                <span className="text-xs font-black text-violet-600 shrink-0">
+                  {u.xp.toLocaleString()} <span className="text-[9px] text-slate-400 font-bold">XP</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <ul className="space-y-2.5">
-        {month.top.map((u) => {
-          const tone = PLACE_TONE[u.rank as 1 | 2 | 3];
-          return (
-            <li key={`${month.id}-${u.rank}`} className="flex items-center gap-2.5">
-              <span className={`w-8 rounded-md px-1.5 py-0.5 text-center text-[10px] font-bold ${tone.chip}`}>
-                #{u.rank}
-              </span>
-              <div className="h-8 w-8 overflow-hidden rounded-full border border-slate-200">
-                <img src={u.avatar} alt="" className="h-full w-full object-cover" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-[#14142b]">{u.name}</p>
-              </div>
-              <span className="text-[11px] font-bold text-[#4C6FFF]">
-                {u.xp.toLocaleString()}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </article>
+    </motion.article>
   );
 }
