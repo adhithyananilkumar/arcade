@@ -531,7 +531,7 @@ function CreateEventModal({
         channelId,
       });
       toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/events/${event.id}/edit`);
+      router.push(`/studio/content/event/${event.id}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not create event";
       setError(message);

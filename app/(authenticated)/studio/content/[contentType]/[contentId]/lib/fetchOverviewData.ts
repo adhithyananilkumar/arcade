@@ -4,7 +4,7 @@ import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/stud
 import { getCollaborators as getEventCollaborators } from "@/app/(authenticated)/studio/events/api/collaboration";
 import { platformReviewApi, type ContentType as ReviewContentType, type ReviewResponse } from "@/domains/publishing/api/platformReview";
 import type { ContentTypeSegment } from "./contentTypeRouting";
-import type { PublishValidationResponse } from "@/app/(authenticated)/studio/events/types";
+import type { PublishValidationResponse, EventPricing } from "@/app/(authenticated)/studio/events/types";
 
 // Every fetch here hits an existing, already-working backend endpoint — see
 // the Content Workspace plan for the audited endpoint list. Nothing here
@@ -105,6 +105,7 @@ export interface OverviewData {
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
+  eventPricing?: FetchResult<EventPricing>;
 }
 
 async function findContentSummary(contentId: string, segment: ContentTypeSegment): Promise<ContentSummaryLite | null> {
@@ -219,7 +220,7 @@ export async function fetchOverviewData(
   }
 
   // event
-  const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review] =
+  const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, eventPricing, review] =
     await Promise.all([
       settle(getEventStatusHistory(contentId), { isEmpty: isEmptyArray }),
       settle(getEventCollaborators(contentId), { isEmpty: isEmptyArray }),
@@ -228,7 +229,8 @@ export async function fetchOverviewData(
         isEmpty: (data) => !data || Object.keys(data).length === 0,
       }),
       settle(validateEvent(contentId)),
+      settle(api.get<EventPricing>(`/api/v1/events/${contentId}/pricing`), { emptyStatuses: [404] }),
       reviewPromise,
     ]);
-  return { content, statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review };
+  return { content, statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, eventPricing, review };
 }
