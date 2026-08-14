@@ -17,8 +17,9 @@ import { toggleBlock } from "./toggle";
 import { roadmapBlock } from "./roadmap";
 import { quizBlock } from "./quiz";
 import { examBlock } from "./exam";
+import { sectionBlock } from "./section";
 
-const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, quizBlock, roadmapBlock, examBlock];
+const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, quizBlock, roadmapBlock, examBlock, sectionBlock];
 
 export function getBlockDefinitions(): BlockDefinition[] {
   return BLOCKS;
