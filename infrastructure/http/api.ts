@@ -121,6 +121,7 @@ async function request<T>(
   if (!res.ok) {
     let message = `API error ${res.status}`;
     if (text) {
+      console.error(`[API ERROR ${res.status}] Path: ${path}`, text);
       try {
         const err = JSON.parse(text);
         message = err.message ?? message;
