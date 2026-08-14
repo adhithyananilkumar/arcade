@@ -493,15 +493,15 @@ export default function FoundersPage() {
                     <DepthCarousel
                       items={FOUNDERS_DATA.slice(0, 6).map(founder => ({ image: founder.image, alt: founder.name }))}
                       depth={220}
-                      spread={90}
+                      spread={110}
                       tilt={22}
                       tiltDirection="right"
                       perspective={1400}
                       visibleCards={4}
                       falloff={0.2}
                       blur={6}
-                      cardWidth={600}
-                      cardHeight={400}
+                      cardWidth={480}
+                      cardHeight={320}
                       autoplay
                       loop
                       showIndicators={false}
