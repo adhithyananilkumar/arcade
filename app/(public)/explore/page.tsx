@@ -9,6 +9,7 @@ import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
+import { usePublicCourses } from "@/shared/hooks/usePublicCourses";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -1060,22 +1061,66 @@ function CoursesContent() {
   // Each admin category is scoped to one section (courses/events/articles) via its `type`;
   // there's no admin-category equivalent for the roadmaps tab.
   const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
-  const adminCategories = usePublicCategories().filter((c) => c.type === categoryType);
+  const allPublicCategories = usePublicCategories();
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const publicCourses = usePublicCourses();
+
   const mergedCategoriesList = [
     ...categoriesList,
     ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
   ];
+
   const getCategoryData = (cat: string) => {
-    if (CATEGORY_DATA[cat]) return CATEGORY_DATA[cat];
-    const admin = adminCategories.find((c) => c.name === cat);
-    if (!admin) return undefined;
+    const base = CATEGORY_DATA[cat];
+    const admin = allPublicCategories.find(
+      (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase()
+    );
+    const catId = admin?.id;
+
+    const publishedForCat = publicCourses
+      .filter((c) => {
+        if (!c.categoryId) return false;
+        const matchesId = (catId && c.categoryId === catId) || (admin && c.categoryId === admin.id);
+        const matchesName = (admin && c.categoryId.toLowerCase() === admin.name.toLowerCase()) || c.categoryId.toLowerCase() === cat.toLowerCase();
+        return Boolean(matchesId || matchesName);
+      })
+      .map((c) => ({
+        id: c.id,
+        title: c.title,
+        duration: "Self-Paced",
+        level: "All Levels",
+        desc: c.description || "",
+      }));
+
+    if (base) {
+      return {
+        ...base,
+        courses: [...publishedForCat, ...base.courses],
+        coursesCount: base.coursesCount + publishedForCat.length,
+      };
+    }
+
+    if (!admin) {
+      if (publishedForCat.length > 0) {
+        return {
+          desc: `${cat} Courses`,
+          coursesCount: publishedForCat.length,
+          gradient: `linear-gradient(135deg, #3B82F6 0%, #3B82F6 100%)`,
+          colors: { primary: "#3B82F6", secondary: "#3B82F614" },
+          courses: publishedForCat,
+          bootcamps: [],
+          resources: [],
+        };
+      }
+      return undefined;
+    }
     const color = admin.color || "#64748B";
     return {
       desc: admin.description || "",
-      coursesCount: 0,
+      coursesCount: publishedForCat.length,
       gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
       colors: { primary: color, secondary: `${color}14` },
-      courses: [],
+      courses: publishedForCat,
       bootcamps: [],
       resources: [],
     };

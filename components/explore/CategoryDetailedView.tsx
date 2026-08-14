@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, useMotionValue, MotionValue } from "framer-motion";
 import { CATEGORY_DATA, categoriesList, CategoryWatermark } from "@/app/(public)/explore/page";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
+import { usePublicCourses } from "@/shared/hooks/usePublicCourses";
 import DotGrid from "@/components/landing/DotGrid";
 import GradientText from "@/components/landing/GradientText";
 import BorderGlow from "./BorderGlow";
@@ -1424,22 +1425,66 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   // merged additively on top of the hardcoded dummy categories — never removes them.
   // Each admin category is scoped to one section (courses/events/articles) via its `type`.
   const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
-  const adminCategories = usePublicCategories().filter((c) => c.type === categoryType);
+  const allPublicCategories = usePublicCategories();
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const publicCourses = usePublicCourses();
+
   const mergedCategoriesList = [
     ...categoriesList,
     ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
   ];
   const getCategoryData = (cat: string) => {
-    if (CATEGORY_DATA[cat]) return CATEGORY_DATA[cat];
-    const admin = adminCategories.find((c) => c.name === cat);
-    if (!admin) return undefined;
+    const base = CATEGORY_DATA[cat];
+    const admin = allPublicCategories.find(
+      (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase() || slugify(c.name) === slugify(cat)
+    );
+    const catId = admin?.id;
+
+    const publishedForCat = publicCourses
+      .filter((c) => {
+        if (!c.categoryId) return false;
+        const matchesId = (catId && c.categoryId === catId) || (admin && c.categoryId === admin.id);
+        const matchesName = (admin && c.categoryId.toLowerCase() === admin.name.toLowerCase()) || c.categoryId.toLowerCase() === cat.toLowerCase();
+        const matchesSlug = (admin && c.categoryId.toLowerCase() === admin.slug.toLowerCase()) || c.categoryId.toLowerCase() === slugify(cat);
+        return Boolean(matchesId || matchesName || matchesSlug);
+      })
+      .map((c) => ({
+        id: c.id,
+        title: c.title,
+        duration: "Self-Paced",
+        level: "All Levels",
+        desc: c.description || "",
+      }));
+
+    if (base) {
+      return {
+        ...base,
+        courses: [...publishedForCat, ...base.courses],
+        coursesCount: base.coursesCount + publishedForCat.length,
+      };
+    }
+
+    if (!admin) {
+      if (publishedForCat.length > 0) {
+        return {
+          desc: `${cat} Courses & Resources`,
+          coursesCount: publishedForCat.length,
+          gradient: `linear-gradient(135deg, #3B82F6 0%, #3B82F6 100%)`,
+          colors: { primary: "#3B82F6", secondary: "#3B82F614" },
+          courses: publishedForCat,
+          bootcamps: [],
+          resources: [],
+        };
+      }
+      return undefined;
+    }
     const color = admin.color || "#64748B";
     return {
       desc: admin.description || "",
-      coursesCount: 0,
+      coursesCount: publishedForCat.length,
       gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
       colors: { primary: color, secondary: `${color}14` },
-      courses: [],
+      courses: publishedForCat,
       bootcamps: [],
       resources: [],
     };
@@ -1542,12 +1587,24 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   }, []);
 
   useEffect(() => {
-    if (initialCategory && mergedCategoriesList.includes(initialCategory)) {
-      setActiveCategory(initialCategory);
+    if (initialCategory) {
+      const exactMatch = mergedCategoriesList.find((c) => c === initialCategory);
+      if (exactMatch) {
+        setActiveCategory(exactMatch);
+      } else {
+        const fuzzyMatch = mergedCategoriesList.find(
+          (c) => c.toLowerCase() === initialCategory.toLowerCase() || slugify(c) === slugify(initialCategory)
+        );
+        if (fuzzyMatch) {
+          setActiveCategory(fuzzyMatch);
+        } else {
+          setActiveCategory(initialCategory);
+        }
+      }
     } else {
       setActiveCategory("Computer Science"); // Fallback default
     }
-  }, [initialCategory]);
+  }, [initialCategory, mergedCategoriesList]);
 
   const activeCategoryName = activeCategory || "Computer Science";
   const activeData = getCategoryData(activeCategoryName) || CATEGORY_DATA["Computer Science"];

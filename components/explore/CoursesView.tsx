@@ -659,7 +659,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
               <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
                 <button
-                  onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
+                  onClick={() => router.push(course.id ? `/courses/${course.id}` : `/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
                   style={{
                     width: "100%",
                     background: activeData.colors.secondary,
@@ -692,7 +692,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
               <span
-                onClick={() => router.push(`/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
+                onClick={() => router.push(course.id ? `/courses/${course.id}` : `/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
                 style={{
                   fontSize: "0.85rem",
                   fontWeight: "700",
