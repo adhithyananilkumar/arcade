@@ -386,8 +386,8 @@ export default function LearnerHomePage() {
             </form>
           </motion.div>
 
-          {/* Floating elevation wrapper for Streak Calendar */}
-          <div className="relative flex items-center justify-center">
+          {/* Floating elevation wrapper for Streak Calendar - Fixed Height Container */}
+          <div className="relative flex items-center justify-center h-[395px] shrink-0">
             {/* Ambient glow halo underneath */}
             <div
               aria-hidden
@@ -396,7 +396,7 @@ export default function LearnerHomePage() {
                 background: 'radial-gradient(ellipse at center, rgba(76,111,255,0.20) 0%, rgba(255,107,74,0.15) 60%, transparent 100%)',
               }}
             />
-            <div className="w-full flex justify-center">
+            <div className="w-full h-full flex justify-center">
               <StreakCalendar activityByDate={activityByDate} streak={streak} />
             </div>
           </div>

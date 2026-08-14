@@ -77,6 +77,10 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
       while (row.length < 7) row.push({ day: null, iso: null });
       rows.push(row);
     }
+    // Always pad to 6 rows so every month occupies the exact same fixed height
+    while (rows.length < 6) {
+      rows.push(Array.from({ length: 7 }, () => ({ day: null, iso: null })));
+    }
     return rows;
   }, [cursor]);
 
@@ -88,7 +92,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
   const todayIso = toISO(today);
 
   return (
-    <div className="relative w-full max-w-[380px] select-none pt-4" style={{ perspective: '1000px' }}>
+    <div className="relative w-full max-w-[380px] h-[395px] select-none pt-4 shrink-0" style={{ perspective: '1000px' }}>
       {/* Official Arcade Brand Blue Backing Stand Bar at Top */}
       <div className="absolute top-1.5 inset-x-2 h-5 rounded-t-lg bg-[#4C6FFF] shadow-inner border border-[#3B5BDB] z-0" />
 
@@ -104,136 +108,138 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
         ))}
       </div>
 
-      {/* Main Calendar Card Body */}
-      <div className="relative w-full rounded-t-3xl bg-[#FAF8F3] p-6 pb-6 pt-7 shadow-[0_16px_40px_rgba(20,20,40,0.08)] border border-stone-200/90 dark:bg-[#1A1C23] dark:border-slate-800 z-10">
-        {/* 6 Square Punched Holes showing Arcade Blue Background */}
-        <div className="absolute top-2 inset-x-0 z-10 flex justify-between px-6 sm:px-8 pointer-events-none">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-3 w-3 rounded-xs bg-[#3B5BDB] border border-[#2B46B3] shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)]"
-            />
-          ))}
-        </div>
-        
-        {/* Top Header: Arcade Blue Month Title + Compact Flame Counter Badge + Navigation */}
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#4C6FFF]">
-            {monthLabel}
-          </h2>
+      {/* Main Calendar Card Body - Fixed Dimensions */}
+      <div className="relative w-full h-[375px] rounded-t-3xl bg-[#FAF8F3] p-6 pb-6 pt-7 shadow-[0_16px_40px_rgba(20,20,40,0.08)] border border-stone-200/90 dark:bg-[#1A1C23] dark:border-slate-800 z-10 flex flex-col justify-between">
+        <div>
+          {/* 6 Square Punched Holes showing Arcade Blue Background */}
+          <div className="absolute top-2 inset-x-0 z-10 flex justify-between px-6 sm:px-8 pointer-events-none">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-3 w-3 rounded-xs bg-[#3B5BDB] border border-[#2B46B3] shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)]"
+              />
+            ))}
+          </div>
+          
+          {/* Top Header: Arcade Blue Month Title + Compact Flame Counter Badge + Navigation */}
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#4C6FFF]">
+              {monthLabel}
+            </h2>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Compact Flame + Streak Number Badge */}
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#4C6FFF]/10 px-2.5 py-1 text-xs font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/20 dark:text-[#7C98FF]">
-              <Flame size={13} className="fill-current text-[#4C6FFF] dark:text-[#7C98FF]" />
-              <span>{streak}</span>
-            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Compact Flame + Streak Number Badge */}
+              <div className="inline-flex items-center gap-1 rounded-full bg-[#4C6FFF]/10 px-2.5 py-1 text-xs font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/20 dark:text-[#7C98FF]">
+                <Flame size={13} className="fill-current text-[#4C6FFF] dark:text-[#7C98FF]" />
+                <span>{streak}</span>
+              </div>
 
-            <div className="flex items-center gap-0.5 ml-0.5">
-              <button
-                type="button"
-                aria-label="Previous month"
-                onClick={handlePrevMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                type="button"
-                aria-label="Next month"
-                onClick={handleNextMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              >
-                <ChevronRight size={17} />
-              </button>
+              <div className="flex items-center gap-0.5 ml-0.5">
+                <button
+                  type="button"
+                  aria-label="Previous month"
+                  onClick={handlePrevMonth}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next month"
+                  onClick={handleNextMonth}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-stone-400 hover:bg-stone-200/60 hover:text-stone-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Weekday Headers: Bold Black S M T W T F S */}
-        <div className="mb-3 grid grid-cols-7 text-center text-sm font-black text-black dark:text-white">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-            <span key={`${d}-${i}`}>{d}</span>
-          ))}
-        </div>
+          {/* Weekday Headers: Bold Black S M T W T F S */}
+          <div className="mb-3 grid grid-cols-7 text-center text-sm font-black text-black dark:text-white">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+              <span key={`${d}-${i}`}>{d}</span>
+            ))}
+          </div>
 
-        {/* 3D Card Flip Motion Container for Month Grid */}
-        <div className="relative overflow-hidden" style={{ perspective: '1000px' }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={cursor.toISOString()}
-              initial={{ rotateY: direction > 0 ? 90 : -90, opacity: 0 }}
-              animate={{ rotateY: 0, opacity: 1 }}
-              exit={{ rotateY: direction > 0 ? -90 : 90, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-              style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
-              className="flex flex-col gap-1.5"
-            >
-              {cells.map((row, ri) => {
-                const activeFlags = row.map(
-                  (c) => !!c.iso && isActiveDay(c.iso, activityByDate),
-                );
+          {/* 3D Card Flip Motion Container for Month Grid */}
+          <div className="relative h-[235px] overflow-hidden" style={{ perspective: '1000px' }}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={cursor.toISOString()}
+                initial={{ rotateY: direction > 0 ? 90 : -90, opacity: 0 }}
+                animate={{ rotateY: 0, opacity: 1 }}
+                exit={{ rotateY: direction > 0 ? -90 : 90, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+                style={{ transformStyle: 'preserve-3d', backfaceVisibility: 'hidden' }}
+                className="w-full flex flex-col gap-1.5"
+              >
+                {cells.map((row, ri) => {
+                  const activeFlags = row.map(
+                    (c) => !!c.iso && isActiveDay(c.iso, activityByDate),
+                  );
 
-                return (
-                  <div key={ri} className="relative grid grid-cols-7 gap-0 py-0.5">
-                    {/* Soft arcade blue streak capsule behind consecutive active days */}
-                    {row.map((cell, ci) => {
-                      if (!cell.iso || !activeFlags[ci]) return null;
-                      const starts = ci === 0 || !activeFlags[ci - 1];
-                      if (!starts) return null;
-                      let end = ci;
-                      while (end + 1 < 7 && activeFlags[end + 1]) end++;
-                      const span = end - ci + 1;
-                      const isStart = true;
-                      const isEnd = end === 6 || !activeFlags[end + 1];
+                  return (
+                    <div key={ri} className="relative grid grid-cols-7 gap-0 py-0.5">
+                      {/* Soft arcade blue streak capsule behind consecutive active days */}
+                      {row.map((cell, ci) => {
+                        if (!cell.iso || !activeFlags[ci]) return null;
+                        const starts = ci === 0 || !activeFlags[ci - 1];
+                        if (!starts) return null;
+                        let end = ci;
+                        while (end + 1 < 7 && activeFlags[end + 1]) end++;
+                        const span = end - ci + 1;
+                        const isStart = true;
+                        const isEnd = end === 6 || !activeFlags[end + 1];
 
-                      return (
-                        <div
-                          key={`bar-${ci}`}
-                          className="pointer-events-none absolute inset-y-1 bg-[#4C6FFF]/12 border-y border-[#4C6FFF]/25"
-                          style={{
-                            left: `calc(${(ci / 7) * 100}% + ${isStart ? 4 : 0}px)`,
-                            width: `calc(${(span / 7) * 100}% - ${(isStart ? 4 : 0) + (isEnd ? 4 : 0)}px)`,
-                            borderRadius: `${isStart ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isStart ? '999px' : '0'}`,
-                          }}
-                        />
-                      );
-                    })}
+                        return (
+                          <div
+                            key={`bar-${ci}`}
+                            className="pointer-events-none absolute inset-y-1 bg-[#4C6FFF]/12 border-y border-[#4C6FFF]/25"
+                            style={{
+                              left: `calc(${(ci / 7) * 100}% + ${isStart ? 4 : 0}px)`,
+                              width: `calc(${(span / 7) * 100}% - ${(isStart ? 4 : 0) + (isEnd ? 4 : 0)}px)`,
+                              borderRadius: `${isStart ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isEnd ? '999px' : '0'} ${isStart ? '999px' : '0'}`,
+                            }}
+                          />
+                        );
+                      })}
 
-                    {/* Day numbers */}
-                    {row.map((cell, ci) => {
-                      if (cell.day === null || !cell.iso) {
-                        return <div key={ci} className="h-8" />;
-                      }
-                      const active = isActiveDay(cell.iso, activityByDate);
-                      const isToday = cell.iso === todayIso;
+                      {/* Day numbers */}
+                      {row.map((cell, ci) => {
+                        if (cell.day === null || !cell.iso) {
+                          return <div key={ci} className="h-8" />;
+                        }
+                        const active = isActiveDay(cell.iso, activityByDate);
+                        const isToday = cell.iso === todayIso;
 
-                      return (
-                        <div
-                          key={cell.iso}
-                          className="relative z-[1] flex h-8 items-center justify-center"
-                        >
-                          {isToday ? (
-                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30">
-                              {cell.day}
-                            </span>
-                          ) : active ? (
-                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF]">
-                              {cell.day}
-                            </span>
-                          ) : (
-                            <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors">
-                              {cell.day}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </motion.div>
-          </AnimatePresence>
+                        return (
+                          <div
+                            key={cell.iso}
+                            className="relative z-[1] flex h-8 items-center justify-center"
+                          >
+                            {isToday ? (
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30">
+                                {cell.day}
+                              </span>
+                            ) : active ? (
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF]">
+                                {cell.day}
+                              </span>
+                            ) : (
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors">
+                                {cell.day}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Scalloped Ticket Bottom Cutout Edge */}
