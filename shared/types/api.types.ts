@@ -14,7 +14,8 @@ export type ContentStatus =
   | "APPROVED"
   | "PUBLISHED"
   | "ARCHIVED"
-  | "REJECTED";
+  | "REJECTED"
+  | "SUSPENDED";
 
 export interface UserProfileResponse {
   id: string;

@@ -32,9 +32,12 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
   const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
-  const apiBasePath = contentType === 'workshop' 
-    ? `/api/v1/events/${contentId}/collaborators`
-    : `/api/v1/courses/${contentId}/collaborators`;
+  const apiBasePath = 
+    contentType === 'workshop' 
+      ? `/api/v1/events/${contentId}/collaborators`
+      : contentType === 'roadmap'
+      ? `/api/v1/roadmaps/${contentId}/collaborators`
+      : `/api/v1/courses/${contentId}/collaborators`;
 
   useEffect(() => {
     if (isOpen && contentId) {
@@ -100,6 +103,9 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
     }
   };
 
+  const currentUserCollab = collaborators.find((c) => c.userId === user?.id);
+  const canManage = !currentUserCollab || currentUserCollab.role === 'OWNER' || currentUserCollab.role === 'MANAGER';
+
   if (!isOpen) return null;
 
   return (
@@ -112,8 +118,12 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
               <Users size={18} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#14142b]">Manage Collaborators</h2>
-              <p className="text-xs text-slate-500">Invite and manage co-authors for this {contentType}</p>
+              <h2 className="text-base font-bold text-[#14142b]">
+                {canManage ? "Manage Collaborators" : "Collaborators"}
+              </h2>
+              <p className="text-xs text-slate-500">
+                {canManage ? `Invite and manage co-authors for this ${contentType}` : `Co-authors for this ${contentType}`}
+              </p>
             </div>
           </div>
           <button
@@ -126,41 +136,43 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
         </div>
 
         <div className="max-h-[75vh] overflow-y-auto p-6 space-y-6">
-          {/* Invite Form */}
-          <form onSubmit={handleInvite} className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4">
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Invite New Collaborator</h3>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="relative flex-1">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="email"
-                  placeholder="collaborator@example.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm font-medium text-[#14142b] outline-none focus:border-[#14142b]"
-                  required
-                />
+          {/* Invite Form - Only visible to OWNER or MANAGER */}
+          {canManage && (
+            <form onSubmit={handleInvite} className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4">
+              <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">Invite New Collaborator</h3>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="email"
+                    placeholder="collaborator@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm font-medium text-[#14142b] outline-none focus:border-[#14142b]"
+                    required
+                  />
+                </div>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as any)}
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-[#14142b]"
+                >
+                  <option value="EDITOR">Editor</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="VIEWER">Viewer</option>
+                  <option value="OWNER">Owner</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={inviting || !inviteEmail.trim()}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#14142b] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#232735] disabled:opacity-50"
+                >
+                  {inviting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  <span>Invite</span>
+                </button>
               </div>
-              <select
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value as any)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-[#14142b] outline-none focus:border-[#14142b]"
-              >
-                <option value="EDITOR">Editor</option>
-                <option value="MANAGER">Manager</option>
-                <option value="VIEWER">Viewer</option>
-                <option value="OWNER">Owner</option>
-              </select>
-              <button
-                type="submit"
-                disabled={inviting || !inviteEmail.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#14142b] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#232735] disabled:opacity-50"
-              >
-                {inviting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                <span>Invite</span>
-              </button>
-            </div>
-          </form>
+            </form>
+          )}
 
           {/* Collaborators List */}
           <div>
@@ -173,7 +185,7 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
               <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-400">
                 <Users size={32} className="mx-auto mb-2 opacity-50" />
                 <p className="text-sm font-medium">No collaborators added yet.</p>
-                <p className="text-xs">Invite team members above to start collaborating.</p>
+                {canManage && <p className="text-xs">Invite team members above to start collaborating.</p>}
               </div>
             ) : (
               <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 overflow-hidden">
@@ -201,29 +213,32 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {c.role === 'OWNER' ? (
+                        {!c.id ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700">
                             <Shield size={12} />
                             Owner
                           </span>
-                        ) : (
+                        ) : canManage && !isSelf ? (
                           <select
                             value={c.role}
-                            onChange={(e) => handleRoleChange(c.userId, e.target.value as any)}
-                            disabled={isSelf}
-                            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-[#14142b] outline-none focus:border-[#14142b] disabled:opacity-50"
+                            onChange={(e) => handleRoleChange(c.id || c.userId, e.target.value as any)}
+                            className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-[#14142b] outline-none focus:border-[#14142b]"
                           >
                             <option value="EDITOR">Editor</option>
                             <option value="MANAGER">Manager</option>
                             <option value="VIEWER">Viewer</option>
                             <option value="OWNER">Owner</option>
                           </select>
+                        ) : (
+                          <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                            {c.role}
+                          </span>
                         )}
 
-                        {c.role !== 'OWNER' && !isSelf && (
+                        {canManage && !!c.id && !isSelf && (
                           <button
                             type="button"
-                            onClick={() => handleRemove(c.userId)}
+                            onClick={() => handleRemove(c.id || c.userId)}
                             className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600"
                             title="Remove collaborator"
                           >

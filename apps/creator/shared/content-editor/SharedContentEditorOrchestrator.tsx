@@ -92,6 +92,7 @@ import { QuizEditor } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
+import { ContentCollaboratorsModal } from "../components/ContentCollaboratorsModal";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -132,6 +133,7 @@ import {
   GripVertical,
   FileQuestion,
   Award,
+  Users,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -334,6 +336,104 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+// ── Google Docs Style Live Active Collaborator Avatar Stack ─────────────────
+
+function LiveCollaboratorStack({ collaborators }: { collaborators: ActiveCollaborator[] }) {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  const activeList = useMemo(() => {
+    if (!collaborators || collaborators.length === 0) return [];
+    const map = new Map<string, ActiveCollaborator>();
+    for (const c of collaborators) {
+      const key = c.user?.id || c.user?.name || String(c.clientId);
+      if (!map.has(key)) {
+        map.set(key, c);
+      }
+    }
+    return Array.from(map.values());
+  }, [collaborators]);
+
+  if (activeList.length === 0) return null;
+
+  const MAX_VISIBLE = 3;
+  const visible = activeList.slice(0, MAX_VISIBLE);
+  const overflowCount = activeList.length - MAX_VISIBLE;
+
+  return (
+    <div className="relative flex items-center">
+      {/* Overlapped Avatar Stack */}
+      <div
+        onClick={() => setPopoverOpen((prev) => !prev)}
+        className="flex items-center -space-x-2 cursor-pointer transition-transform hover:scale-[1.02]"
+        title="View live connected collaborators"
+      >
+        {visible.map((c, i) => {
+          const name = c.user?.name || "Collaborator";
+          const initial = name.charAt(0).toUpperCase();
+          const bgColor = c.user?.color || ["#7c3aed", "#2563eb", "#059669", "#d97706"][i % 4];
+
+          return (
+            <div
+              key={c.user?.id || c.clientId}
+              title={`${name} (Editing now)`}
+              style={{ backgroundColor: bgColor }}
+              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
+            >
+              {initial}
+            </div>
+          );
+        })}
+
+        {overflowCount > 0 && (
+          <div
+            title={`${overflowCount} more active collaborator${overflowCount > 1 ? "s" : ""}`}
+            className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-700 text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
+          >
+            +{overflowCount}
+          </div>
+        )}
+      </div>
+
+      {/* Popover list of connected active collaborators */}
+      {popoverOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPopoverOpen(false)} />
+          <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl ring-1 ring-black/5">
+            <div className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Active Collaborators ({activeList.length})
+            </div>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              {activeList.map((c, i) => {
+                const name = c.user?.name || "Collaborator";
+                const initial = name.charAt(0).toUpperCase();
+                const bgColor = c.user?.color || ["#7c3aed", "#2563eb", "#059669", "#d97706"][i % 4];
+
+                return (
+                  <div key={c.user?.id || c.clientId} className="flex items-center gap-2.5 rounded-lg p-1.5 hover:bg-slate-50">
+                    <div
+                      style={{ backgroundColor: bgColor }}
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white shrink-0"
+                    >
+                      {initial}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs font-semibold text-slate-800">{name}</div>
+                      <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Editing now
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Course settings panel (with GitHub-style Danger Zone) ────────────────────
 
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -527,6 +627,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
+  const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
+    status: "disabled",
+    collaborators: [],
+  });
+
+  const handleCollabStateChange = useCallback((state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => {
+    setCollabState(state);
+  }, []);
 
 
   const [modules, setModules] = useState<ModuleNode[]>([]);
@@ -579,15 +688,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [statusHistory, setStatusHistory] = useState<ContentStatusHistoryResponse[]>([]);
   const [statusHistoryLoading, setStatusHistoryLoading] = useState(false);
   const [statusHistoryError, setStatusHistoryError] = useState<string | null>(null);
-
-  const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
-    status: "disabled",
-    collaborators: [],
-  });
-
-  const handleCollabStateChange = useCallback((state: { status: CollabStatus; collaborators: ActiveCollaborator[] }) => {
-    setCollabState(state);
-  }, []);
 
   const [eventCollaborators, setEventCollaborators] = useState<Collaborator[]>([]);
   const [loadingCollaborators, setLoadingCollaborators] = useState(false);
@@ -1456,6 +1556,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           onSubmit={handleSubmit}
         />
       )}
+      {collaboratorsModalOpen && contentId && (
+        <ContentCollaboratorsModal
+          isOpen={collaboratorsModalOpen}
+          onClose={() => setCollaboratorsModalOpen(false)}
+          contentId={contentId}
+          contentType={contentType}
+        />
+      )}
       <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
       <SessionSettingsDialog
         open={!!sessionSettingsSessionId}
@@ -1508,7 +1616,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Center: Title and Status */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center mt-3 gap-2">
+          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
             <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
               {activeLessonId || activeBadgeId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
@@ -1535,7 +1643,55 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
           </div>
 
           {/* Right actions */}
-          <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-2">
+          <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-3.5">
+            {/* Live Active Collaborator Avatars (Google Docs Style) */}
+            <LiveCollaboratorStack collaborators={collabState.collaborators} />
+
+            {/* Google Docs style Share / Add Collaborators Split Pill Button */}
+            {contentId && (
+              <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-[#001d35] shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md">
+                <button
+                  type="button"
+                  onClick={() => setCollaboratorsModalOpen(true)}
+                  className="flex items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-[#001d35] transition-colors cursor-pointer"
+                  title="Add Collaborators"
+                >
+                  <Users size={15} className="text-[#001d35]" />
+                  <span>Share</span>
+                </button>
+                <div className="h-4 w-[1px] bg-white/90" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <div
+                      className="flex items-center justify-center py-2.5 pl-2 pr-3 text-xs text-[#001d35] hover:bg-[#a6d9ff] transition-colors cursor-pointer"
+                      title="Share options"
+                    >
+                      <ChevronDown size={14} />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5 shadow-lg border border-slate-100 bg-white z-50">
+                    <DropdownMenuItem
+                      onClick={() => setCollaboratorsModalOpen(true)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    >
+                      <Users size={14} className="text-indigo-600" />
+                      View Collaborators
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success("Editor link copied to clipboard!");
+                      }}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                    >
+                      <Copy size={14} className="text-slate-500" />
+                      Copy Link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
             {/* Single entry point into EditorRightSidebar — its own pill tabs
                 (Status / History / Team) switch what's shown inside; this just
                 toggles the panel open/closed, mirroring a standard hamburger menu. */}

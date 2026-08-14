@@ -36,9 +36,12 @@ import {
   Lock,
   User,
   FileQuestion,
-  HelpCircle,
   Eye,
   Archive,
+  Tv,
+  Loader2,
+  HelpCircle,
+  Check,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -59,6 +62,8 @@ interface ContentSummary {
   channelForcedSuspension: boolean;
   authorId?: string | null;
   authorName?: string | null;
+  collaborationStatus?: string | null;
+  collaborationRole?: string | null;
 }
 
 // ── Content type menu items ─────────────────────────────────────────────────────
@@ -495,6 +500,7 @@ function CreateEventModal({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [eventType, setEventType] = useState<"WORKSHOP" | "WEBINAR">("WORKSHOP");
   const [creating, setCreating] = useState(false);
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelId, setChannelId] = useState("");
@@ -511,11 +517,9 @@ function CreateEventModal({
     setError(null);
 
     try {
-      // Event type and the rest of the details default here and stay editable
-      // afterwards from the Event editor/overview — the create modal only asks for a name.
       const event = await api.post<{ id: string }>("/api/v1/events", {
         title: title.trim(),
-        eventType: "WORKSHOP",
+        eventType,
         category: "uncategorized",
         tags: [],
         deliveryMode: "ONLINE",
@@ -527,7 +531,7 @@ function CreateEventModal({
         channelId,
       });
       toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/events/${event.id}/edit`);
+      router.push(`/studio/content/event/${event.id}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not create event";
       setError(message);
@@ -540,40 +544,98 @@ function CreateEventModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button type="button" onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
+        >
           <X size={18} />
         </button>
-        <div className="mb-6 flex items-center gap-3">
+
+        <div className="mb-5 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
             <Calendar size={20} className="text-violet-600" />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <p className="text-[12px] font-medium text-slate-500">Choose event type and give it a title.</p>
           </div>
         </div>
+
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {error}
+          </div>
         )}
+
         <form onSubmit={handleCreate} className="space-y-4">
+          {/* Event Type Choice (Workshop vs Webinar) */}
+          <div>
+            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Event Type <span className="text-red-500">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setEventType("WORKSHOP")}
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  eventType === "WORKSHOP"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
+                }`}
+              >
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-xs font-bold text-[#14142b]">Workshop</span>
+                  {eventType === "WORKSHOP" && <Check size={14} className="text-violet-600" />}
+                </div>
+                <p className="mt-1 text-[11px] leading-tight text-slate-500">
+                  Interactive sessions with agenda & modules
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEventType("WEBINAR")}
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  eventType === "WEBINAR"
+                    ? "border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/20"
+                    : "border-slate-200 bg-slate-50/60 hover:bg-slate-100/60"
+                }`}
+              >
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-xs font-bold text-[#14142b]">Webinar</span>
+                  {eventType === "WEBINAR" && <Check size={14} className="text-violet-600" />}
+                </div>
+                <p className="mt-1 text-[11px] leading-tight text-slate-500">
+                  Live presentation or Q&A stream session
+                </p>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Title <span className="text-red-500">*</span>
             </label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Full-Stack Event" maxLength={120} autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" />
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={eventType === "WORKSHOP" ? "e.g. Full-Stack Web Development Workshop" : "e.g. Intro to AI Webinar"}
+              maxLength={120}
+              autoFocus
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-violet-600 focus:bg-white focus:ring-2 focus:ring-violet-600/20"
+            />
           </div>
-          <div>
-            <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Channel <span className="text-red-500">*</span>
-            </label>
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          </div>
-          <button type="submit" disabled={!title.trim() || !channelId || creating}
-            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50">
-            {creating ? "Creating..." : "Create Event"}
+
+          <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+
+          <button
+            type="submit"
+            disabled={!title.trim() || !channelId || creating}
+            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-700 disabled:opacity-50 cursor-pointer"
+          >
+            {creating ? "Creating..." : `Create ${eventType === "WORKSHOP" ? "Workshop" : "Webinar"}`}
           </button>
         </form>
       </div>
@@ -775,13 +837,13 @@ function ContentCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
-  const isQuiz = item.type === "QUIZ";
+  const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
-  // Quiz has no split overview/editor yet — its "editor" is the detail page itself.
+  // Quiz / Exam has no split overview/editor yet — its "editor" is the detail page itself.
   // Every other type opens the Content Overview, not a direct editor route.
   const openHref = isQuiz
     ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ?? `/studio/course/${item.id}/edit`;
+    : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
@@ -791,7 +853,8 @@ function ContentCard({
   const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
-  const hasSecondaryMenu = isRoadmap || (!isQuiz && segment != null);
+  const isPendingInvitation = item.collaborationStatus === "PENDING";
+  const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -832,9 +895,9 @@ function ContentCard({
 
   return (
     <div
-      onClick={channelSuspended ? undefined : handleCardActivate}
+      onClick={channelSuspended || isPendingInvitation ? undefined : handleCardActivate}
       className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
-        channelSuspended ? "" : "cursor-pointer"
+        channelSuspended || isPendingInvitation ? "" : "cursor-pointer"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -946,6 +1009,11 @@ function ContentCard({
       <div className="flex flex-wrap items-center gap-2">
         <TypeBadge type={item.type} />
         <StatusBadge status={item.status} />
+        {item.collaborationStatus === "PENDING" && (
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            Invitation Pending
+          </span>
+        )}
         {channelSuspended && (
           <span
             className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
@@ -980,6 +1048,41 @@ function ContentCard({
         >
           Editing Disabled
         </span>
+      ) : item.collaborationStatus === "PENDING" ? (
+        <div className="flex items-center gap-2" data-card-interactive onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                toast.success("Accepted collaboration invitation!");
+                onChanged();
+              } catch {
+                toast.error("Failed to accept invitation");
+              }
+            }}
+            className="flex-1 rounded-lg bg-indigo-600 py-2 text-center text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            Accept
+          </button>
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                toast.info("Declined invitation");
+                onChanged();
+              } catch {
+                toast.error("Failed to decline invitation");
+              }
+            }}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            Decline
+          </button>
+        </div>
       ) : (
         <Link
           href={openHref}
@@ -1023,9 +1126,70 @@ function ContentCard({
   );
 }
 
+// ── Feature Locked Modal (shown when user has no channels) ───────────────────
+
+function ChannelRequiredModal({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal Surface */}
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
+        {/* Icon & Close */}
+        <div className="flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <Lock size={24} />
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="mt-4">
+          <h3 className="text-lg font-bold tracking-tight text-[#14142b]">
+            Feature Locked
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-slate-500">
+            Content creation is not currently available for your account. Contact your administrator to unlock this feature.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-6 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full bg-[#14142b] px-5 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-[#232735] cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
@@ -1034,18 +1198,46 @@ export default function DashboardPage() {
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
 
-  const { channels } = useEligibleChannels();
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelRequiredModalOpen, setChannelRequiredModalOpen] = useState(false);
+
+  const handleCreateContentClick = () => {
+    if (channelsLoading) return;
+    if (channels.length === 0) {
+      setChannelRequiredModalOpen(true);
+      setDropdownOpen(false);
+    } else {
+      setDropdownOpen((v) => !v);
+    }
+  };
+
+  const handleSelectContentType = (typeId: string, href?: string) => {
+    setDropdownOpen(false);
+    if (channels.length === 0) {
+      setChannelRequiredModalOpen(true);
+      return;
+    }
+    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz") {
+      setCreateOpen(typeId as any);
+    } else if (href) {
+      router.push(href);
+    }
+  };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || channelsLoading) return;
     const params = new URLSearchParams(window.location.search);
     const create = params.get("create");
-    if (create === "webinar" || create === "workshop" || create === "event") {
-      setCreateOpen("event");
-    } else if (create === "course" || create === "roadmap" || create === "quiz") {
-      setCreateOpen(create);
+    if (create) {
+      if (channels.length === 0) {
+        setChannelRequiredModalOpen(true);
+      } else if (create === "webinar" || create === "workshop" || create === "event") {
+        setCreateOpen("event");
+      } else if (create === "course" || create === "roadmap" || create === "quiz") {
+        setCreateOpen(create as any);
+      }
     }
-  }, []);
+  }, [channelsLoading, channels.length]);
 
   const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
@@ -1088,8 +1280,8 @@ export default function DashboardPage() {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // Content Studio strictly displays content owned/authored by channels the user has authority over
-      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId)) {
+      // Content Studio strictly displays content owned/authored by channels the user has authority over, or collaborated items
+      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId) && !item.collaborationStatus) {
         return false;
       }
       const statusOk =
@@ -1097,7 +1289,7 @@ export default function DashboardPage() {
       const typeOk =
         typeFilter === "ALL" ||
         item.type?.toUpperCase() === typeFilter;
-      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter;
+      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter || !!item.collaborationStatus;
       return statusOk && typeOk && channelOk;
     });
   }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
@@ -1134,6 +1326,10 @@ export default function DashboardPage() {
         background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)",
       }}
     >
+      <ChannelRequiredModal
+        isOpen={channelRequiredModalOpen}
+        onClose={() => setChannelRequiredModalOpen(false)}
+      />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
@@ -1208,10 +1404,14 @@ export default function DashboardPage() {
             <div className="relative">
               <button
                 id="create-content-btn"
-                onClick={() => setDropdownOpen((v) => !v)}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735]"
+                onClick={handleCreateContentClick}
+                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-75 cursor-pointer"
               >
-                <Plus size={16} />
+                {channelsLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
                 Create Content
                 <ChevronDown
                   size={14}
@@ -1248,30 +1448,17 @@ export default function DashboardPage() {
                         </>
                       );
                       const cls =
-                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50";
-                      return type.id === "course" || type.id === "roadmap" || type.id === "event" || type.id === "quiz" ? (
+                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 cursor-pointer";
+                      return (
                         <button
                           key={type.id}
                           type="button"
                           role="menuitem"
-                          onClick={() => {
-                            setDropdownOpen(false);
-                            setCreateOpen(type.id);
-                          }}
+                          onClick={() => handleSelectContentType(type.id, type.href)}
                           className={cls}
                         >
                           {inner}
                         </button>
-                      ) : (
-                        <Link
-                          key={type.id}
-                          href={type.href}
-                          role="menuitem"
-                          onClick={() => setDropdownOpen(false)}
-                          className={cls}
-                        >
-                          {inner}
-                        </Link>
                       );
                     })}
                   </div>

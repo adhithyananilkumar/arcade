@@ -2,7 +2,7 @@
 
 import { usePathname, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt } from 'lucide-react';
+import { Tv, ClipboardCheck, Shield, Calendar, Inbox, Receipt, Library } from 'lucide-react';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -31,6 +31,9 @@ export default function ArcConsoleLayout({
       : []),
     ...(showReviews
       ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck, iconBg: 'bg-[#fef08a] text-[#854d0e]' }]
+      : []),
+    ...(showPlatformReviews
+      ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843]' }]
       : []),
     ...(showPlatformReviews
       ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
