@@ -468,24 +468,18 @@ export default function FoundersPage() {
 
           {/* --- PLATFORM MILESTONES (HORIZONTAL CARDS) --- */}
           <section className="space-y-12 pt-4 pb-20 relative overflow-hidden">
-            {/* Section Header */}
-            <div className="text-left space-y-3 max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
-              <h2 className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight font-['Dancing_Script']">
-                <FoldText
-                  text="How Arcade Started ?"
-                  splitBy="word"
-                  trigger="scroll"
-                  color="currentColor"
-                  fontSize="inherit"
-                  fontWeight="inherit"
-                  className="block"
-                />
-              </h2>
-            </div>
+            {/* Section Header moved inside grid */}
 
             <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
                 <div className="lg:col-span-7 text-left space-y-6">
+                  <BlurText
+                    text="How Arcade Started ?"
+                    delay={150}
+                    animateBy="words"
+                    direction="top"
+                    className="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight font-['Dancing_Script'] mb-8"
+                  />
                   {TIMELINE_MILESTONES[0].description.split("\n\n").map((para, idx) => (
                     <p key={idx} className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed">
                       {para}
