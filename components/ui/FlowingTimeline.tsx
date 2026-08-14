@@ -76,7 +76,7 @@ const TIMELINE_DATA: TimelineItem[] = [
     subtitle: "March 17",
     desc: "With the architecture and setup plan ready, we approached the college administration seeking support. Their encouragement came with the infrastructure we needed, giving Arcade not just an idea to follow, but a place in which that idea could grow.",
     profiles: [
-      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin.png" }
+      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin_cutout.png" }
     ]
   },
   {
@@ -196,13 +196,26 @@ export default function FlowingTimeline() {
               <div className={`hidden md:flex md:w-[45%] flex-row gap-4 md:gap-6 ${isEven ? "justify-start pl-16 lg:pl-24" : "justify-end pr-16 lg:pr-24"}`}>
                 {item.profiles && item.profiles.map((profile, i) => {
                   const needsZoom = profile.name.includes("Anandhulal") || profile.name.includes("Athira") || profile.name.includes("Kalyany");
-                  const imageClasses = `object-cover transition-transform duration-300 mix-blend-multiply brightness-[1.15] contrast-[1.15] ${needsZoom ? "scale-[1.35] translate-y-2 hover:scale-[1.45]" : "scale-[1.15] hover:scale-[1.25]"}`;
+                  const isRubin = profile.name.includes("Rubin");
+                  
+                  let imageClasses = `transition-transform duration-300`;
+                  if (needsZoom) {
+                    imageClasses += ` mix-blend-multiply brightness-[1.15] contrast-[1.15] object-cover scale-[1.35] translate-y-2 hover:scale-[1.45]`;
+                  } else if (isRubin) {
+                    imageClasses += ` object-contain scale-[1.0] hover:scale-[1.05] drop-shadow-md`;
+                  } else {
+                    imageClasses += ` mix-blend-multiply brightness-[1.15] contrast-[1.15] object-cover scale-[1.15] hover:scale-[1.25]`;
+                  }
+                  
+                  const containerClasses = `relative shrink-0 rounded-xl overflow-hidden ${isRubin ? 'w-48 h-64 md:w-60 md:h-80' : 'bg-white border border-white w-16 h-16 md:w-20 md:h-20'}`;
+                  const textContainerClasses = `text-center ${isRubin ? '-mt-8 md:-mt-16 z-10 relative' : ''}`;
+                  
                   return (
                     <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
-                      <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0 bg-white rounded-xl border border-white overflow-hidden">
+                      <div className={containerClasses}>
                         <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
                       </div>
-                      <div className="text-center">
+                      <div className={textContainerClasses}>
                         <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
                       </div>
                     </div>

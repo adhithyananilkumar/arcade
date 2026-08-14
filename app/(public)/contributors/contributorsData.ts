@@ -22,7 +22,7 @@ export const CONTRIBUTORS_DATA: Contributor[] = [
     id: "contributor-1",
     name: "Fr. Rubin Tottupuram",
     role: "Visionary & Leader",
-    avatar: "/team/fr_rubin.png?v=2",
+    avatar: "/team/fr_rubin_cutout.png",
     color: "bg-[#ef5350]", // Lighter Red
     journey: "Guided the overarching vision and philosophical direction of Arcade. Focused on integrating holistic educational frameworks into a modern, scalable digital platform for students.",
     milestones: [
