@@ -3,12 +3,17 @@
 import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { parseRoadmapGraph } from '../engine/parser';
 import { LearningDrawer } from './LearningDrawer';
+import { HybridTaskProjectCard, HybridCardTheme } from './HybridTaskProjectCard';
+import { ColorThemeProjectCard, CardColorTheme } from './ColorThemeProjectCard';
+import { ProjectDetailDrawer, ProjectDetailData } from './ProjectDetailDrawer';
+import { RoadmapProjectDetailView, RoadmapProjectDetail } from './RoadmapProjectDetailView';
 import { useRoadmapViewerStore } from '../store/useRoadmapViewerStore';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell,
   CheckCircle2,
+  Flame,
   Globe,
   Code,
   Palette,
@@ -37,12 +42,14 @@ import {
   Briefcase,
   Box,
   Clock,
+  Search,
   Plus,
   ChevronDown,
   ChevronUp,
   Lock,
   X,
   Layers,
+  Zap,
 } from 'lucide-react';
 
 interface RoadmapViewerProps {
@@ -617,10 +624,24 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
   const [activeTabSegment, setActiveTabSegment] = useState<'roadmap' | 'projects' | 'personalize' | 'guides'>('roadmap');
   const [searchQuery, setSearchQuery] = useState('');
   const [projectFilter, setProjectFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
+  const [cardStyleMode, setCardStyleMode] = useState<'color-theme' | 'hybrid-3d' | 'all'>('color-theme');
+  const [selectedProjectForDrawer, setSelectedProjectForDrawer] = useState<ProjectDetailData | null>(null);
+  const [activeProjectDetail, setActiveProjectDetail] = useState<RoadmapProjectDetail | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<'learn' | 'job' | 'projects'>('learn');
   const [selectedCommitment, setSelectedCommitment] = useState<'casual' | 'regular' | 'intensive'>('regular');
   const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>(['css', 'javascript']);
   const [guideTopicFilter, setGuideTopicFilter] = useState<'all' | 'html' | 'css' | 'javascript'>('all');
+
+  const displayTitle = useMemo(() => {
+    if (title && title.trim()) return title;
+    try {
+      if (graphJson) {
+        const raw = JSON.parse(graphJson);
+        if (raw.title || raw.name) return raw.title || raw.name;
+      }
+    } catch (e) {}
+    return 'Backend';
+  }, [title, graphJson]);
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewportRatio, setViewportRatio] = useState(0.2);
@@ -769,18 +790,202 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
   }, []);
 
   const projectsData = useMemo(() => [
-    { id: 'proj-1', title: 'Single-Page CV', description: 'Create a single-page HTML CV to showcase your career history', difficulty: 'beginner', category: 'HTML', startedCount: '25,852 Started', icon: Code, iconBg: 'bg-purple-50', iconColor: '#8b5cf6' },
-    { id: 'proj-2', title: 'Basic HTML Website', description: 'Create simple HTML only website with multiple pages.', difficulty: 'beginner', category: 'HTML', startedCount: '11,902 Started', icon: Layout, iconBg: 'bg-emerald-50', iconColor: '#10b981' },
-    { id: 'proj-3', title: 'Personal Portfolio', description: 'Convert the previous simple HTML website into a personal portfolio.', difficulty: 'beginner', category: 'CSS', startedCount: '4,642 Started', icon: FileText, iconBg: 'bg-amber-50/70', iconColor: '#f59e0b' },
-    { id: 'proj-4', title: 'Changelog Component', description: 'Create a changelog component for a website using HTML and CSS.', difficulty: 'beginner', category: 'CSS', startedCount: '1,735 Started', icon: Cloud, iconBg: 'bg-blue-50', iconColor: '#3b82f6' },
-    { id: 'proj-5', title: 'Testimonial Cards', description: 'Create testimonial cards for a website using HTML and CSS.', difficulty: 'beginner', category: 'CSS', startedCount: '1,507 Started', icon: Quote, iconBg: 'bg-rose-50', iconColor: '#f43f5e' },
-    { id: 'proj-6', title: 'Datepicker UI', description: 'Create a simple datepicker UI using HTML and CSS.', difficulty: 'beginner', category: 'CSS', startedCount: '1,104 Started', icon: Calendar, iconBg: 'bg-emerald-50', iconColor: '#10b981' },
-    { id: 'proj-7', title: 'Accessible Form UI', description: 'Create an accessible form UI using HTML and CSS.', difficulty: 'beginner', category: 'Accessibility', startedCount: '840 Started', icon: User, iconBg: 'bg-purple-50', iconColor: '#8b5cf6' },
-    { id: 'proj-8', title: 'Image Grid Layout', description: 'Create a grid layout of images using HTML and CSS.', difficulty: 'beginner', category: 'CSS', startedCount: '938 Started', icon: ImageIcon, iconBg: 'bg-orange-50', iconColor: '#f97316' },
-    { id: 'proj-9', title: 'Tooltip UI', description: 'Create a tooltip for navigation items using only HTML and CSS.', difficulty: 'beginner', category: 'CSS', startedCount: '720 Started', icon: MessageSquare, iconBg: 'bg-blue-50', iconColor: '#3b82f6' },
-    { id: 'proj-10', title: 'Weather App', description: 'Get real-time weather information using a weather API.', difficulty: 'intermediate', category: 'JavaScript', startedCount: '2,351 Started', icon: Cloud, iconBg: 'bg-sky-50', iconColor: '#0ea5e9' },
-    { id: 'proj-11', title: 'Interactive Quiz App', description: 'Create a multiple choice quiz app with timer and progress tracking.', difficulty: 'intermediate', category: 'JavaScript', startedCount: '1,894 Started', icon: HelpCircle, iconBg: 'bg-amber-50/70', iconColor: '#f59e0b' },
-    { id: 'proj-12', title: 'E-commerce UI Platform', description: 'Design and build a premium e-commerce product catalog with shopping cart.', difficulty: 'advanced', category: 'React', startedCount: '852 Started', icon: Trophy, iconBg: 'bg-rose-50', iconColor: '#ec4899' },
+    {
+      id: 'proj-1',
+      title: 'Single-Page CV Website',
+      description: 'Build a clean, semantic single-page resume site to present your professional experience, technical skills, and key projects.',
+      difficulty: 'beginner',
+      category: 'HTML & CSS',
+      colorTheme: 'yellow',
+      hybridTheme: 'rocket-yellow',
+      membersCount: '25,850 Learners',
+      timeAgo: 'Est. 2-3 Hours',
+      icon: Code,
+      techStack: ['HTML5', 'CSS Flexbox', 'Responsive UI', 'Accessibility'],
+      starterCode: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Single-Page CV</title>
+  <style>
+    :root { --primary: #0f172a; --accent: #2563eb; }
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; color: var(--primary); }
+    header { border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; }
+    .skill-tag { background: #e0f2fe; color: #0369a1; padding: 4px 10px; rounded-md; font-size: 12px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Alex Rivera</h1>
+    <p>Frontend Developer & UI Specialist</p>
+  </header>
+  <main>
+    <section>
+      <h2>About Me</h2>
+      <p>Passionate developer with expertise in building responsive web applications.</p>
+    </section>
+  </main>
+</body>
+</html>`,
+      tasks: [
+        { id: 'proj-1-t1', phase: 'HTML Setup', label: 'Build Semantic Document Skeleton', description: 'Create semantic HTML5 structure with <header>, <main>, <section id="experience">, and <footer> tags.' },
+        { id: 'proj-1-t2', phase: 'Styling', label: 'Implement Typography & Responsive Grid', description: 'Add Google Fonts, CSS custom variables, flexbox container layouts, and mobile media queries.' },
+        { id: 'proj-1-t3', phase: 'Interactivity', label: 'Add Skills Filter & Contact Modal', description: 'Wire up vanilla JavaScript event handlers to filter skill badges dynamically.' },
+        { id: 'proj-1-t4', phase: 'Deployment', label: 'Audit Accessibility & Live Deploy', description: 'Perform Lighthouse accessibility checks and publish your CV live on GitHub Pages.' }
+      ]
+    },
+    {
+      id: 'proj-2',
+      title: 'Multi-Page HTML Website',
+      description: 'Design a structured multi-page website with semantic navigation links, contact form controls, and embedded media.',
+      difficulty: 'intermediate',
+      category: 'HTML & CSS',
+      colorTheme: 'white',
+      hybridTheme: 'laptop-code',
+      membersCount: '18,420 Learners',
+      timeAgo: 'Est. 3-5 Hours',
+      icon: Layout,
+      techStack: ['HTML5 Navigation', 'CSS Grid', 'Forms', 'Media Embedding'],
+      starterCode: `<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Corporate Website</title>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a> | 
+    <a href="about.html">About</a> | 
+    <a href="contact.html">Contact</a>
+  </nav>
+  <main><h1>Welcome to our Company</h1></main>
+</body>
+</html>`,
+      tasks: [
+        { id: 'proj-2-t1', phase: 'Navigation', label: 'Create Shared Header & Nav Bar', description: 'Build reusable navigation links across index.html, about.html, and contact.html pages.' },
+        { id: 'proj-2-t2', phase: 'Layout', label: 'Design Responsive Page Content', description: 'Use CSS Grid to create multi-column feature sections and team showcase cards.' },
+        { id: 'proj-2-t3', phase: 'Form Validation', label: 'Build Validated Contact Form', description: 'Add HTML5 input attributes (required, pattern, email) and user feedback styling.' },
+        { id: 'proj-2-t4', phase: 'Optimization', label: 'Optimize Images & Assets', description: 'Compress images, add alt attributes, and verify navigation link paths.' }
+      ]
+    },
+    {
+      id: 'proj-3',
+      title: 'Personal Developer Portfolio',
+      description: 'Craft a responsive personal portfolio featuring smooth section scrolling, dark mode theme toggles, and interactive project cards.',
+      difficulty: 'advanced',
+      category: 'CSS & Flexbox',
+      colorTheme: 'green',
+      hybridTheme: 'lightbulb-purple',
+      membersCount: '14,910 Learners',
+      timeAgo: 'Est. 4-6 Hours',
+      icon: FileText,
+      techStack: ['CSS Variables', 'Dark Mode', 'Animations', 'Flexbox'],
+      starterCode: `/* Dark mode setup */
+:root {
+  --bg-primary: #ffffff;
+  --text-primary: #0f172a;
+}
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --text-primary: #f8fafc;
+}
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease;
+}`,
+      tasks: [
+        { id: 'proj-3-t1', phase: 'Design System', label: 'Setup Color Tokens & Theme State', description: 'Define CSS variables for light/dark themes and store theme preference in localStorage.' },
+        { id: 'proj-3-t2', phase: 'Hero Section', label: 'Build Hero Header with Bio', description: 'Create an engaging hero section with animated call-to-action buttons and profile badge.' },
+        { id: 'proj-3-t3', phase: 'Project Showcase', label: 'Build Interactive Project Grid', description: 'Display past projects in a responsive card grid with hover effects and live links.' },
+        { id: 'proj-3-t4', phase: 'Interactivity', label: 'Implement Dark Mode Toggle Button', description: 'Add a theme toggle button that switches data-theme attribute smoothly.' }
+      ]
+    },
+    {
+      id: 'proj-4',
+      title: 'Interactive Task Manager',
+      description: 'Develop a web application with drag-and-drop task columns, localStorage data persistence, and category filter pills.',
+      difficulty: 'beginner',
+      category: 'JavaScript',
+      colorTheme: 'blue',
+      hybridTheme: 'browser-blue',
+      membersCount: '12,300 Learners',
+      timeAgo: 'Est. 5-7 Hours',
+      icon: Layout,
+      techStack: ['Vanilla JS', 'DOM Manipulation', 'LocalStorage', 'Events'],
+      starterCode: `// Task state manager
+const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+
+function addTask(title) {
+  const newTask = { id: Date.now(), title, completed: false };
+  tasks.push(newTask);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  renderTasks();
+}`,
+      tasks: [
+        { id: 'proj-4-t1', phase: 'UI Layout', label: 'Build Task Board & Form UI', description: 'Create columns for To Do, In Progress, and Completed tasks with input form.' },
+        { id: 'proj-4-t2', phase: 'State Logic', label: 'Implement Add/Edit/Delete Task', description: 'Write JavaScript functions to dynamically add, update, and remove tasks from DOM.' },
+        { id: 'proj-4-t3', phase: 'Persistence', label: 'Sync State with LocalStorage', description: 'Save task state changes so user data persists across browser refreshes.' },
+        { id: 'proj-4-t4', phase: 'Filters', label: 'Add Category & Status Filter Pills', description: 'Allow filtering tasks by status (All, Active, Completed).' }
+      ]
+    },
+    {
+      id: 'proj-5',
+      title: 'Real-Time Weather Dashboard',
+      description: 'Build a live weather forecasting app integrating geolocation APIs, 7-day weather predictions, and animated weather widgets.',
+      difficulty: 'intermediate',
+      category: 'JavaScript & API',
+      colorTheme: 'purple',
+      hybridTheme: 'database-violet',
+      membersCount: '9,640 Learners',
+      timeAgo: 'Est. 6-8 Hours',
+      icon: Cloud,
+      techStack: ['Fetch API', 'Async/Await', 'REST API', 'JSON Parsing'],
+      starterCode: `async function fetchWeather(city) {
+  const API_KEY = 'YOUR_API_KEY';
+  const response = await fetch(\`https://api.openweathermap.org/data/2.5/weather?q=\${city}&appid=\${API_KEY}&units=metric\`);
+  const data = await response.json();
+  return data;
+}`,
+      tasks: [
+        { id: 'proj-5-t1', phase: 'API Setup', label: 'Connect OpenWeather API', description: 'Setup async fetch calls to retrieve current temperature, humidity, and forecast data.' },
+        { id: 'proj-5-t2', phase: 'Search UI', label: 'Build City Search & Geolocation', description: 'Implement city search bar with auto-complete and Geolocation API fallback.' },
+        { id: 'proj-5-t3', phase: 'Forecast Grid', label: 'Render 7-Day Weather Cards', description: 'Map daily weather JSON responses into styled forecast cards with weather icons.' },
+        { id: 'proj-5-t4', phase: 'Dynamic UI', label: 'Add Dynamic Weather Backgrounds', description: 'Change background gradient based on weather condition (Sunny, Rainy, Snowy).' }
+      ]
+    },
+    {
+      id: 'proj-6',
+      title: 'Full-Stack Developer Blog',
+      description: 'Create a responsive developer blog powered by Next.js App Router, MDX file parsing, syntax highlighting, and SEO optimization.',
+      difficulty: 'advanced',
+      category: 'React & Next.js',
+      colorTheme: 'rose',
+      hybridTheme: 'smartphone-teal',
+      membersCount: '8,120 Learners',
+      timeAgo: 'Est. 8-10 Hours',
+      icon: Code,
+      techStack: ['Next.js 14', 'MDX Parsing', 'Prism.js', 'Tailwind CSS'],
+      starterCode: `// app/blog/[slug]/page.tsx
+import { getPostBySlug } from '@/lib/mdx';
+
+export default async function BlogPost({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  return (
+    <article className="prose lg:prose-xl mx-auto">
+      <h1>{post.title}</h1>
+      <div>{post.content}</div>
+    </article>
+  );
+}`,
+      tasks: [
+        { id: 'proj-6-t1', phase: 'App Router', label: 'Setup Next.js Project Structure', description: 'Create dynamic route handler app/blog/[slug]/page.tsx for rendering posts.' },
+        { id: 'proj-6-t2', phase: 'MDX Pipeline', label: 'Integrate MDX Content Parsing', description: 'Parse local markdown files and frontmatter metadata into React components.' },
+        { id: 'proj-6-t3', phase: 'Syntax Highlighting', label: 'Add Code Block Highlighting', description: 'Enable Prism.js syntax highlighting and add a click-to-copy code button.' },
+        { id: 'proj-6-t4', phase: 'SEO & Deploy', label: 'Configure OpenGraph Metadata & Deploy', description: 'Generate dynamic social share cards and deploy live to Vercel platform.' }
+      ]
+    },
   ], []);
 
   const filteredProjects = useMemo(() =>
@@ -934,8 +1139,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
   // SPACIOUS LAYOUT CONSTANTS
   const NODE_RADIUS = 32; // 64px milestone circle
   const NODE_SPACING = 640; // Generous horizontal spacing so Next Cards sit neatly side-by-side without overlap
-  const CANVAS_PAD_X = 180; // Left padding
-  const NODE_Y = 160; // Top row Y coordinate
+  const CANVAS_PAD_X = 260; // Clean left padding so Milestone 01 & cards start comfortably inside the viewport
+  const NODE_Y = 90; // Shifting nodes upwards
 
   const stepLayouts = useMemo(() => {
     return roadmapSteps.map((step, idx) => {
@@ -976,8 +1181,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
     const cy = first.coreCenterY;
     const parts: string[] = [];
 
-    parts.push(`M ${first.coreCenterX - 120} ${cy - 12}`);
-    parts.push(`C ${first.coreCenterX - 85} ${cy - 30}, ${first.coreCenterX - 40} ${cy - 5}, ${first.coreCenterX} ${cy}`);
+    parts.push(`M ${first.coreCenterX - 100} ${cy}`);
+    parts.push(`L ${first.coreCenterX} ${cy}`);
 
     for (let i = 1; i < segmentPaths.length; i++) {
       const segD = segmentPaths[i];
@@ -1039,123 +1244,134 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
   return (
     <div className="relative w-full h-screen overflow-hidden flex bg-[#F8FAFC]">
 
-      {/* UNIFIED FLOATING ARCADE COMMAND CONSOLE (CREATIVE NEW DESIGN) */}
-      <div className="absolute top-4 left-0 right-0 px-6 z-30 pointer-events-none flex items-center justify-between gap-4">
-
-        {/* Left: Arcade Brand & Quick Search Capsule */}
-        <div className="flex items-center gap-2.5 pointer-events-auto">
-          <div onClick={() => router.push('/')} className="cursor-pointer bg-white/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-slate-200/80 shadow-md flex items-center justify-center hover:shadow-lg transition-all hover:scale-[1.02]">
-            <img src="/arcade.svg" alt="arcade" className="h-4.5 w-auto" />
+      {/* TOP NAVBAR (MATCHING SCREENSHOT LAYOUT) */}
+      <div className="absolute top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/60 px-6 py-3 flex items-center justify-between pointer-events-auto select-none">
+        {/* Left: arcade. Logo Pill + Search Capsule */}
+        <div className="flex items-center gap-3">
+          <div
+            onClick={() => router.push('/')}
+            className="cursor-pointer bg-white px-5 py-2 rounded-full border border-slate-200/80 shadow-2xs flex items-center justify-center hover:scale-[1.02] transition-all"
+          >
+            <img src="/arcade.svg" alt="arcade" className="h-5 w-auto" />
           </div>
-          <div className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl pl-3.5 pr-1 py-1 shadow-md flex items-center gap-2 w-52 hover:shadow-lg transition-all">
-            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-slate-400 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search topics..." className="w-full bg-transparent text-xs font-semibold text-slate-700 placeholder-slate-400 outline-hidden border-none text-[11px] leading-none" />
-            {searchQuery && <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-slate-600 pr-2 text-xs font-black cursor-pointer">x</button>}
+
+          <div className="bg-white border border-slate-200/80 rounded-full px-3.5 py-1.5 shadow-2xs flex items-center gap-2 w-56">
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search topics..."
+              className="w-full bg-transparent text-xs font-semibold text-slate-700 placeholder-slate-400 outline-none border-none leading-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-slate-400 hover:text-slate-600 text-xs font-black cursor-pointer"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Center: Creative Floating Title & Mode Console Island */}
-        <div className="pointer-events-auto flex items-center gap-2 bg-white/95 backdrop-blur-2xl border border-slate-200/90 p-1.5 rounded-2xl shadow-xl shadow-indigo-950/10">
+        {/* Right: Notification Bell & Profile Capsule */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/notifications')}
+            className="w-10 h-10 bg-white border border-slate-200/80 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all cursor-pointer shadow-2xs"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
 
-          {/* Title & Metadata Badge */}
-          <div className="flex items-center gap-3 pl-3 pr-3.5 py-1 border-r border-slate-200/70 select-none">
-            <div className="flex flex-col items-start leading-none">
-              <div className="relative flex items-center gap-1.5">
-                <span className="text-xl sm:text-2xl font-extrabold text-[#2563eb] tracking-tight cursor-pointer hover:scale-[1.01] transition-transform" style={{ fontFamily: "'Dancing Script','Caveat',cursive" }} onClick={() => router.push('/')}>
-                  {title}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1 text-[8.5px] font-black uppercase tracking-wider text-slate-400">
-                <span className="text-indigo-600 font-extrabold">{roadmapSteps.length} TOPICS</span>
-                <span className="text-slate-300">•</span>
-                <span>BEGINNER</span>
+          <div
+            onClick={() => router.push('/profile')}
+            className="bg-white border border-slate-200/80 rounded-full pl-4 pr-1 py-1 flex items-center gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs transition-all"
+          >
+            <span className="text-xs font-extrabold text-slate-700">athirabiju20...</span>
+            <div className="h-7 w-7 rounded-full bg-[#8D6E63] text-white flex items-center justify-center text-[10px] font-black uppercase shadow-2xs">
+              A
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Canvas Container */}
+      <div className="w-full h-full flex flex-col pt-20 overflow-y-auto">
+
+        {/* PAGE HERO SECTION (COMPACT TOP OFFSET) */}
+        <div className="w-full max-w-7xl mx-auto px-6 pt-2 pb-1 pointer-events-auto flex flex-col items-center justify-center gap-1.5 text-center select-none z-20 relative">
+          {/* Cursive Title with Underline */}
+          <div className="relative flex flex-col items-center justify-center">
+            <h1
+              className="text-5xl sm:text-6xl font-normal text-[#2563eb] cursor-pointer select-none leading-none tracking-normal"
+              style={{ fontFamily: "'Dancing Script', 'Caveat', 'Brush Script MT', cursive" }}
+              onClick={() => router.push('/')}
+            >
+              {displayTitle ? displayTitle.toLowerCase() : 'frontend'}
+            </h1>
+
+            {/* Blue Curved Underline Stroke */}
+            <svg className="w-48 sm:w-56 h-3 text-[#2563eb] mt-1" viewBox="0 0 200 12" fill="none">
+              <path
+                d="M 5 6 C 60 11, 140 11, 195 4"
+                stroke="#2563eb"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          {/* Subtitle Metadata Row: Unique Glassmorphic Badges with Live Progress */}
+          <div className="flex items-center gap-2 text-[10px] font-black tracking-wider uppercase mt-0.5 flex-wrap justify-center">
+            <span className="bg-blue-50/90 text-blue-700 border border-blue-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+              {roadmapSteps.length} TOPICS
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="bg-emerald-50/90 text-emerald-700 border border-emerald-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
+              <FileText className="w-3 h-3 text-emerald-600" />
+              BEGINNER
+            </span>
+            <span className="text-slate-300">•</span>
+            <div className="bg-purple-50/90 text-purple-700 border border-purple-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-2">
+              <Clock className="w-3 h-3 text-purple-600" />
+              <span>{Math.round(completionPercentage)}% COMPLETE</span>
+              <div className="w-12 h-1.5 bg-purple-200/80 rounded-full overflow-hidden">
+                <div
+                  style={{ width: `${completionPercentage}%` }}
+                  className="h-full bg-purple-600 rounded-full transition-all duration-300"
+                />
               </div>
             </div>
           </div>
 
-          {/* Interactive Mode Tabs */}
-          <div className="flex items-center gap-1">
-            {([
-              { id: 'roadmap' as const, label: 'Roadmap Flow', icon: GitBranch, badge: 'FLOW' },
-              { id: 'projects' as const, label: 'Projects', icon: Briefcase, badge: '12' },
-              { id: 'personalize' as const, label: 'Personalize', icon: Sparkles, badge: null },
-              { id: 'guides' as const, label: 'Guides', icon: BookOpen, badge: '4' },
-            ]).map(tab => {
+          {/* Mode Switcher Controller Tabs */}
+          <div className="bg-white border border-slate-200/80 p-1.5 rounded-full flex items-center gap-2 shadow-2xs mt-2">
+            {[
+              { id: 'roadmap' as const, label: 'Roadmap', icon: BookOpen },
+              { id: 'projects' as const, label: 'Projects', icon: Trophy },
+              { id: 'personalize' as const, label: 'Personalize', icon: Sliders },
+            ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTabSegment === tab.id;
 
               return (
-                <motion.button
+                <button
                   key={tab.id}
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.96 }}
                   onClick={() => setActiveTabSegment(tab.id)}
-                  className={`relative px-3.5 py-2 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer flex items-center gap-1.5 select-none outline-none ${
-                    isActive ? 'text-white' : 'text-slate-600 hover:text-slate-900'
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-600 border border-blue-200/80 shadow-2xs'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                   }`}
                 >
-                  {/* Animated Background Sliding Pill */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabPill"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-xl shadow-md shadow-indigo-500/25"
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <span className="relative z-10 flex items-center justify-center">
-                    <Icon className={`w-3.5 h-3.5 transition-transform duration-200 ${isActive ? 'scale-110 text-white' : 'text-slate-500'}`} />
-                  </span>
-
-                  {/* Label */}
-                  <span className="relative z-10 drop-shadow-xs">{tab.label}</span>
-
-                  {/* Badge */}
-                  {tab.badge && (
-                    <span
-                      className={`relative z-10 px-1.5 py-0.2 text-[8px] font-black rounded-md transition-colors ${
-                        isActive
-                          ? 'bg-white/20 text-white border border-white/30'
-                          : 'bg-slate-100 text-slate-500 border border-slate-200/60'
-                      }`}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-
-                  {/* Active Live Pulse Dot */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="activeDot"
-                      className="relative z-10 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-xs"
-                      animate={{ scale: [1, 1.3, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    />
-                  )}
-                </motion.button>
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
               );
             })}
           </div>
         </div>
-
-        {/* Right: Notifications & Profile Capsule */}
-        <div className="flex items-center gap-2.5 pointer-events-auto">
-          <button onClick={() => router.push('/notifications')} className="w-9.5 h-9.5 bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-md flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all hover:shadow-lg cursor-pointer outline-hidden">
-            <Bell className="w-4 h-4" />
-          </button>
-          <div onClick={() => router.push('/profile')} className="bg-white/90 backdrop-blur-xl border border-slate-200/80 rounded-2xl pl-3.5 pr-1.5 py-1 shadow-md flex items-center gap-2.5 cursor-pointer hover:shadow-lg transition-all">
-            <span className="text-[11px] font-extrabold text-slate-700">athirabiju20...</span>
-            <div className="h-7 w-7 rounded-xl bg-[#8D6E63] text-white flex items-center justify-center text-[10px] font-black uppercase shadow-xs">A</div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Main Canvas Container */}
-      <div className="w-full h-full flex flex-col pt-20">
 
         {/* Canvas Scroll Area */}
         <div
@@ -1169,10 +1385,10 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
           >
             {isRoadmapTab && (
               <>
-                {/* SVG Layer for Curved Roads, Dash Lines, and Connected Dot Lines */}
+                {/* SVG OVERLAY CANVAS FOR ROAD TRACKS & CONNECTORS */}
                 <svg
+                  className="absolute inset-0 pointer-events-none"
                   style={{ width: `${CANVAS_WIDTH}px`, height: `${wrapperHeight}px` }}
-                  className="absolute inset-0 pointer-events-none z-10 overflow-visible"
                 >
                   <defs>
                     <filter id="road-glow" x="-20%" y="-20%" width="140%" height="140%">
@@ -1180,18 +1396,17 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
                     <filter id="seg-glow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feGaussianBlur stdDeviation="3" result="blur" />
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
+
                     {roadmapSteps.map((step, idx) => {
-                      if (idx === roadmapSteps.length - 1) return null;
-                      const next = roadmapSteps[idx + 1];
-                      if (!next) return null;
+                      if (idx === 0) return null;
+                      const prev = roadmapSteps[idx - 1];
                       return (
-                        <linearGradient key={`grad-${step.id}`} id={`grad-${step.id}`}
-                          x1="0%" y1="50%" x2="100%" y2="50%" gradientUnits="objectBoundingBox">
-                          <stop offset="0%" stopColor={step.lineColor} />
-                          <stop offset="100%" stopColor={next.lineColor} />
+                        <linearGradient key={`grad-${step.id}`} id={`grad-seg-${idx}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor={prev.lineColor} />
+                          <stop offset="100%" stopColor={step.lineColor} />
                         </linearGradient>
                       );
                     })}
@@ -1200,7 +1415,7 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                   {/* Main Road Track Path */}
                   <path d={windingPathD} fill="none" stroke="#0f172a" strokeWidth={12} strokeLinecap="round" strokeLinejoin="round" opacity={0.03} filter="url(#road-glow)" />
 
-                  {/* Main Connecting Upper Road Animated Dotted Segments */}
+                  {/* Main Connecting Upper Road Segments: Solid Dark Line for Completed, Dotted Line for Incomplete */}
                   {roadmapSteps.map((step, idx) => {
                     if (idx === 0) return null;
                     const prev = roadmapSteps[idx - 1];
@@ -1209,22 +1424,47 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
 
                     const isCompleted = isStepCompleted(prev) && isStepCompleted(step);
                     const isCurrent = isStepCompleted(prev) && !isStepCompleted(step);
-                    const segColor = isCompleted || isCurrent ? prev.lineColor : '#94a3b8';
 
                     return (
                       <React.Fragment key={`seg-${step.id}`}>
-                        <path d={pathD} fill="none" stroke={segColor} strokeWidth={8} strokeLinecap="round" opacity={0.12} filter="url(#seg-glow)" />
-                        <motion.path
+                        <path
                           d={pathD}
                           fill="none"
-                          stroke={segColor}
-                          strokeWidth="3.5"
+                          stroke={isCompleted ? prev.lineColor : '#94a3b8'}
+                          strokeWidth={isCompleted ? 8 : 6}
                           strokeLinecap="round"
-                          strokeDasharray="6 6"
-                          opacity={isCompleted ? 0.95 : isCurrent ? 0.9 : 0.65}
-                          animate={{ strokeDashoffset: [-24, 0] }}
-                          transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+                          opacity={isCompleted ? 0.25 : 0.08}
+                          filter="url(#seg-glow)"
                         />
+                        
+                        {isCompleted ? (
+                          /* COMPLETED: SOLID DARK / VIBRANT LINE (NO DOTS) */
+                          <motion.path
+                            d={pathD}
+                            fill="none"
+                            stroke={`url(#grad-seg-${idx})`}
+                            strokeWidth="4.5"
+                            strokeLinecap="round"
+                            strokeDasharray="none"
+                            opacity={1}
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            transition={{ duration: 0.8, ease: 'easeOut' }}
+                          />
+                        ) : (
+                          /* NOT COMPLETED: DOTTED LINE */
+                          <motion.path
+                            d={pathD}
+                            fill="none"
+                            stroke={isCurrent ? prev.lineColor : '#94a3b8'}
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            strokeDasharray="6 6"
+                            opacity={isCurrent ? 0.9 : 0.55}
+                            animate={{ strokeDashoffset: [-24, 0] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                          />
+                        )}
                       </React.Fragment>
                     );
                   })}
@@ -1417,9 +1657,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                             : isCompleted || isCurrent ? `0 8px 24px -3px ${step.lineColor}40` : `0 4px 12px -2px ${step.lineColor}20`,
                           opacity: stepMatched ? 1 : 0.3, zIndex: 20,
                         }}
-                        className={`rounded-full border-[3.5px] bg-white flex items-center justify-center cursor-pointer pointer-events-auto select-none transition-shadow group ${
-                          isActiveFocus ? 'ring-4 ring-indigo-400/40 ring-offset-2' : ''
-                        }`}
+                        className={`rounded-full border-[3.5px] bg-white flex items-center justify-center cursor-pointer pointer-events-auto select-none transition-shadow group ${isActiveFocus ? 'ring-4 ring-indigo-400/40 ring-offset-2' : ''
+                          }`}
                       >
                         {isCompleted && <div style={{ backgroundColor: step.lineColor }} className="absolute inset-0 rounded-full opacity-10" />}
                         {(isCurrent || isActiveFocus) && (
@@ -1499,9 +1738,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                         className="flex flex-col items-center gap-2.5 pointer-events-auto transition-opacity duration-200">
                         {hasSubtopics && (
                           <div style={{ backgroundColor: `${step.lightBg}F0`, borderColor: `${step.borderColor}` }}
-                            className={`w-full rounded-3xl border-2 p-4 shadow-md flex flex-col gap-2.5 backdrop-blur-md hover:shadow-lg transition-all ${
-                              isActiveFocus ? 'ring-2 ring-indigo-500/30' : ''
-                            }`}>
+                            className={`w-full rounded-3xl border-2 p-4 shadow-md flex flex-col gap-2.5 backdrop-blur-md hover:shadow-lg transition-all ${isActiveFocus ? 'ring-2 ring-indigo-500/30' : ''
+                              }`}>
                             <div className="flex items-center justify-between border-b border-slate-200/70 pb-2 mb-0.5">
                               <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">{subtopics.length} TOPICS</span>
                               <span className="text-[9px] font-bold text-slate-400">Click topic to view categories</span>
@@ -1526,22 +1764,21 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                                       backgroundColor: isSelectedSubtopic ? `${step.lineColor}20` : undefined,
                                       borderColor: isSelectedSubtopic ? step.lineColor : 'transparent',
                                     }}
-                                    className={`relative flex items-center justify-between gap-2 cursor-pointer group hover:scale-[1.01] transition-all py-1.5 px-3 rounded-2xl border ${
-                                      isSelectedSubtopic
+                                    className={`relative flex items-center justify-between gap-2 cursor-pointer group hover:scale-[1.01] transition-all py-1.5 px-3 rounded-2xl border ${isSelectedSubtopic
                                         ? 'font-black text-slate-900 shadow-2xs ring-1 ring-white/50'
                                         : 'hover:bg-white/80'
-                                    }`}
+                                      }`}
                                   >
                                     <div className="flex items-center gap-2 truncate">
                                       {isDone
                                         ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" onClick={e => {
-                                            e.stopPropagation();
-                                            toggleNodeCompletion(sub.id);
-                                          }} />
+                                          e.stopPropagation();
+                                          toggleNodeCompletion(sub.id);
+                                        }} />
                                         : <span style={{ borderColor: step.lineColor }} className="w-3 h-3 rounded-full border-2 bg-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform" onClick={e => {
-                                            e.stopPropagation();
-                                            toggleNodeCompletion(sub.id);
-                                          }}>
+                                          e.stopPropagation();
+                                          toggleNodeCompletion(sub.id);
+                                        }}>
                                           <span style={{ backgroundColor: step.lineColor }} className="w-1 h-1 rounded-full" />
                                         </span>}
                                       <span className={`text-[11px] font-extrabold leading-tight ${isSelectedSubtopic ? 'text-slate-900 font-black' : 'text-slate-700'} ${isDone ? 'line-through opacity-60' : ''}`}>{sub.label}</span>
@@ -1559,19 +1796,6 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                               })}
                             </div>
                           </div>
-                        )}
-
-                        {step.isStart && (
-                          <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                            className="flex flex-col items-center gap-1 mt-0.5">
-                            <button
-                              onClick={() => setActiveNode(step.id)}
-                              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-extrabold text-[10.5px] uppercase tracking-wider px-5 py-1.5 rounded-full shadow-md hover:shadow-lg transition-all hover:scale-105 cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Rocket className="w-3.5 h-3.5" />
-                              <span>START HERE</span>
-                            </button>
-                          </motion.div>
                         )}
                       </div>
 
@@ -1630,9 +1854,8 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                                           borderColor: step.lineColor,
                                           backgroundColor: isSelected ? step.lineColor : 'white',
                                         }}
-                                        className={`absolute left-[-20px] w-2.5 h-2.5 rounded-full border-2 z-10 transition-transform ${
-                                          isSelected ? 'scale-125 shadow-xs' : ''
-                                        }`}
+                                        className={`absolute left-[-20px] w-2.5 h-2.5 rounded-full border-2 z-10 transition-transform ${isSelected ? 'scale-125 shadow-xs' : ''
+                                          }`}
                                       />
 
                                       {/* Category Item Button */}
@@ -1642,11 +1865,10 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
                                           backgroundColor: isSelected ? `${step.lineColor}15` : undefined,
                                           borderColor: isSelected ? `${step.lineColor}40` : 'transparent',
                                         }}
-                                        className={`w-full flex items-center justify-between text-[10.5px] font-bold px-3 py-2 rounded-xl transition-all cursor-pointer border ${
-                                          isSelected
+                                        className={`w-full flex items-center justify-between text-[10.5px] font-bold px-3 py-2 rounded-xl transition-all cursor-pointer border ${isSelected
                                             ? 'font-black text-indigo-950 shadow-2xs bg-indigo-50/70 border-indigo-200'
                                             : 'text-slate-700 hover:bg-slate-50'
-                                        }`}
+                                          }`}
                                       >
                                         <div className="flex items-center gap-2 truncate">
                                           <span className={`font-mono text-[9px] ${isSelected ? 'text-indigo-700 font-black' : 'text-slate-400 font-bold'}`}>{item.code}</span>
@@ -1748,130 +1970,298 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
               </>
             )}
 
-            {/* PROJECTS TAB */}
+            {/* PROJECTS TAB (Standard Page Layout with roadmap.sh Detail View) */}
             {activeTabSegment === 'projects' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
-                style={{ position: 'absolute', top: '20px', left: '50px', width: '1100px' }}
-                className="flex flex-col items-center pointer-events-auto pb-24 text-center select-none">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-8 text-left">
-                  {filteredProjects.map(p => {
-                    const Icon = p.icon;
-                    return (
-                      <motion.div key={p.id} whileHover={{ y: -3, scale: 1.01 }}
-                        className="bg-white border border-slate-150/80 rounded-3xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between h-[190px] relative group">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full ${p.iconBg} flex items-center justify-center border border-slate-100 shadow-3xs`}><Icon className="w-4.5 h-4.5" style={{ color: p.iconColor }} /></div>
-                            <span className="bg-[#FEF3C7] text-[#D97706] rounded-md px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide">{p.difficulty}</span>
-                          </div>
-                          <span className="bg-[#F1F5F9] text-[#475569] rounded-md px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide">{p.category}</span>
+              activeProjectDetail ? (
+                <RoadmapProjectDetailView
+                  project={activeProjectDetail}
+                  onBack={() => setActiveProjectDetail(null)}
+                />
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-24 pointer-events-auto flex flex-col gap-6 select-none h-full overflow-y-auto"
+                >
+                  {/* Filter Toolbar (Colorful Vibrant Pill Capsules) */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Difficulty Filter Pills */}
+                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 p-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
+                      {[
+                        {
+                          id: 'all' as const,
+                          label: 'All Levels',
+                          count: projectsData.length,
+                          activeClass: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25',
+                          inactiveClass: 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70',
+                          badgeActive: 'bg-white/20 text-white',
+                          badgeInactive: 'bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700',
+                        },
+                        {
+                          id: 'beginner' as const,
+                          label: 'Beginner',
+                          count: projectsData.filter(p => p.difficulty === 'beginner').length,
+                          activeClass: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25',
+                          inactiveClass: 'text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50/70',
+                          badgeActive: 'bg-white/20 text-white',
+                          badgeInactive: 'bg-emerald-100 text-emerald-800',
+                        },
+                        {
+                          id: 'intermediate' as const,
+                          label: 'Intermediate',
+                          count: projectsData.filter(p => p.difficulty === 'intermediate').length,
+                          activeClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25',
+                          inactiveClass: 'text-amber-700 hover:text-amber-800 hover:bg-amber-50/70',
+                          badgeActive: 'bg-white/20 text-white',
+                          badgeInactive: 'bg-amber-100 text-amber-800',
+                        },
+                        {
+                          id: 'advanced' as const,
+                          label: 'Advanced',
+                          count: projectsData.filter(p => p.difficulty === 'advanced').length,
+                          activeClass: 'bg-gradient-to-r from-purple-600 to-rose-600 text-white shadow-md shadow-purple-500/25',
+                          inactiveClass: 'text-purple-700 hover:text-purple-800 hover:bg-purple-50/70',
+                          badgeActive: 'bg-white/20 text-white',
+                          badgeInactive: 'bg-purple-100 text-purple-800',
+                        },
+                      ].map((filter) => {
+                        const isActive = projectFilter === filter.id;
+                        return (
+                          <button
+                            key={filter.id}
+                            onClick={() => setProjectFilter(filter.id)}
+                            className={`group px-3.5 py-1.5 rounded-full text-xs font-black capitalize transition-all cursor-pointer flex items-center gap-1.5 ${
+                              isActive ? filter.activeClass : filter.inactiveClass
+                            }`}
+                          >
+                            <span>{filter.label}</span>
+                            <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full transition-colors ${
+                              isActive ? filter.badgeActive : filter.badgeInactive
+                            }`}>
+                              {filter.count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Project Count Badge */}
+                    <div className="bg-white border border-slate-200/80 px-3.5 py-1.5 rounded-full text-xs font-black text-slate-600 shadow-2xs flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{filteredProjects.length} Projects Available</span>
+                    </div>
+                  </div>
+
+                  {/* Soft Pastel Light Color Theme Projects Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 w-full text-left">
+                    {filteredProjects.map((p) => {
+                      const fullProjectDetail: RoadmapProjectDetail = {
+                        id: p.id,
+                        title: p.title,
+                        description: p.description,
+                        difficulty: p.difficulty,
+                        category: p.category,
+                        membersCount: p.membersCount,
+                        timeAgo: p.timeAgo,
+                        colorTheme: p.colorTheme,
+                        overview: p.description,
+                        userStories: [
+                          "The layout must render cleanly across mobile, tablet, and desktop screens.",
+                          "All semantic HTML tags (<header>, <main>, <section>, <footer>) must be used properly.",
+                          "No horizontal scrollbars should appear on mobile viewport widths (320px+).",
+                          "Page must pass W3C HTML markup validation without critical errors.",
+                        ],
+                        starterCode: p.starterCode,
+                        tasks: p.tasks.map((t) => ({
+                          id: t.id,
+                          title: t.label || t.phase,
+                          description: t.description,
+                        })),
+                      };
+
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => setActiveProjectDetail(fullProjectDetail)}
+                        >
+                          <ColorThemeProjectCard
+                            id={p.id}
+                            title={p.title}
+                            description={p.description}
+                            difficulty={p.difficulty}
+                            category={p.category || 'HTML'}
+                            membersCount={p.membersCount}
+                            timeAgo={p.timeAgo}
+                            colorTheme={p.colorTheme as CardColorTheme}
+                            icon={p.icon}
+                            onJoin={() => setActiveProjectDetail(fullProjectDetail)}
+                            onShare={() => setActiveProjectDetail(fullProjectDetail)}
+                          />
                         </div>
-                        <div className="flex-1 flex flex-col justify-center mt-2.5">
-                          <h3 className="text-[13px] font-black text-slate-800 tracking-tight leading-snug">{p.title}</h3>
-                          <p className="text-[10.5px] text-slate-400 font-semibold mt-1.5 leading-relaxed line-clamp-2">{p.description}</p>
-                        </div>
-                        <div className="flex items-center justify-between mt-3.5">
-                          <div className="flex items-center gap-1.5 text-slate-400"><Users className="w-3.5 h-3.5" /><span className="text-[10px] font-extrabold">{p.startedCount || '0 Started'}</span></div>
-                          <div className="w-7 h-7 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center transition-all group-hover:bg-blue-50 group-hover:border-blue-200"><ArrowRight className="w-3 h-3 text-slate-700" /></div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )
             )}
 
-            {/* PERSONALIZE TAB */}
+            {/* Project Implementation Plan Detail Drawer */}
+            <ProjectDetailDrawer
+              project={selectedProjectForDrawer}
+              isOpen={!!selectedProjectForDrawer}
+              onClose={() => setSelectedProjectForDrawer(null)}
+            />
+
+            {/* PERSONALIZE TAB (UNIFIED PAGE LAYOUT MATCHING OTHER TABS) */}
             {activeTabSegment === 'personalize' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
-                style={{ position: 'absolute', top: '20px', left: '100px', width: '1000px' }}
-                className="flex flex-col items-center pointer-events-auto pb-24 text-center select-none">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mt-2 text-left">
-                  <div className="bg-white border border-slate-150/80 rounded-3xl p-6 shadow-2xs flex flex-col gap-4">
-                    <div><h3 className="text-sm font-black text-slate-800 tracking-tight">Your Goal</h3><p className="text-[11px] text-slate-400 font-semibold mt-0.5">What do you want to achieve?</p></div>
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-2 pb-24 pointer-events-auto flex flex-col items-center gap-6 text-left select-none relative z-10"
+              >
+                {/* Grid Container: Step 1 (Your Goal) & Step 2 (Your Commitment) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                  {/* Step 1: Your Goal */}
+                  <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col gap-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-full bg-[#0a463d] text-white font-black text-xs flex items-center justify-center shrink-0">
+                        1
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Your Goal</h2>
+                        <p className="text-[11px] text-slate-400 font-medium">What do you want to achieve?</p>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-3">
-                      {([
-                        { key: 'learn' as const, label: 'Learn Frontend', sub: 'I want to learn frontend development', icon: Code, bg: 'bg-purple-50', color: 'text-purple-600' },
-                        { key: 'job' as const, label: 'Get a Job', sub: 'I want to become a frontend developer', icon: Briefcase, bg: 'bg-emerald-50', color: 'text-emerald-600' },
-                        { key: 'projects' as const, label: 'Build Projects', sub: 'I want to build real-world projects', icon: Box, bg: 'bg-amber-50/70', color: 'text-amber-600' },
-                      ]).map(({ key, label, sub, icon: Ic, bg, color }) => (
-                        <div key={key} onClick={() => setSelectedGoal(key)}
-                          className={`p-3.5 border rounded-2xl flex items-center cursor-pointer transition-all ${selectedGoal === key ? 'border-[#d2e3fc] bg-[#e8f0fe]/20 shadow-3xs' : 'border-slate-150 bg-white hover:bg-slate-50/50'}`}>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedGoal === key ? 'border-[#1a73e8] bg-white' : 'border-slate-300'}`}>
-                            {selectedGoal === key && <div className="w-2.5 h-2.5 rounded-full bg-[#1a73e8]" />}
+                      {[
+                        { key: 'learn' as const, label: 'Learn Frontend', sub: 'I want to learn frontend development', icon: Code, bg: 'bg-indigo-50', color: 'text-indigo-600' },
+                        { key: 'job' as const, label: 'Get a Job', sub: 'I want to become a frontend developer', icon: Briefcase, bg: 'bg-emerald-50', color: 'text-emerald-700' },
+                        { key: 'projects' as const, label: 'Build Projects', sub: 'I want to build real-world projects', icon: Box, bg: 'bg-amber-50', color: 'text-amber-700' },
+                      ].map(({ key, label, sub, icon: Ic, bg, color }) => {
+                        const isSel = selectedGoal === key;
+                        return (
+                          <div
+                            key={key}
+                            onClick={() => setSelectedGoal(key)}
+                            className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-3.5 ${
+                              isSel
+                                ? 'border-[#147a6e] bg-[#147a6e]/5 shadow-2xs'
+                                : 'border-slate-200/80 bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              isSel ? 'border-[#147a6e] bg-white' : 'border-slate-300 bg-white'
+                            }`}>
+                              {isSel && <div className="w-2.5 h-2.5 rounded-full bg-[#147a6e]" />}
+                            </div>
+
+                            <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center border border-slate-100 shrink-0`}>
+                              <Ic className={`w-4 h-4 ${color}`} />
+                            </div>
+
+                            <div className="flex flex-col text-left">
+                              <span className="text-xs font-black text-slate-900 leading-snug">{label}</span>
+                              <span className="text-[10.5px] text-slate-400 font-medium">{sub}</span>
+                            </div>
                           </div>
-                          <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center border border-slate-100 shadow-3xs ml-3`}><Ic className={`w-4.5 h-4.5 ${color}`} /></div>
-                          <div className="flex flex-col ml-3"><span className="text-xs font-black text-slate-800 leading-snug">{label}</span><span className="text-[10px] text-slate-400 font-semibold mt-0.5">{sub}</span></div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
-                  <div className="bg-white border border-slate-150/80 rounded-3xl p-6 shadow-2xs flex flex-col gap-4">
-                    <div><h3 className="text-sm font-black text-slate-800 tracking-tight">Your Commitment</h3><p className="text-[11px] text-slate-400 font-semibold mt-0.5">How much time can you invest?</p></div>
+
+                  {/* Step 2: Your Commitment */}
+                  <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col gap-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-full bg-[#0a463d] text-white font-black text-xs flex items-center justify-center shrink-0">
+                        2
+                      </div>
+                      <div>
+                        <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Your Commitment</h2>
+                        <p className="text-[11px] text-slate-400 font-medium">How much time can you invest?</p>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-3">
-                      {([
-                        { key: 'casual' as const, label: 'Casual', sub: '1-2 hours / week', bg: 'bg-sky-50', color: 'text-sky-600' },
-                        { key: 'regular' as const, label: 'Regular', sub: '3-5 hours / week', bg: 'bg-indigo-50', color: 'text-indigo-600' },
-                        { key: 'intensive' as const, label: 'Intensive', sub: '10+ hours / week', bg: 'bg-rose-50', color: 'text-rose-600' },
-                      ]).map(({ key, label, sub, bg, color }) => (
-                        <div key={key} onClick={() => setSelectedCommitment(key)}
-                          className={`p-3.5 border rounded-2xl flex items-center cursor-pointer transition-all ${selectedCommitment === key ? 'border-[#d2e3fc] bg-[#e8f0fe]/20 shadow-3xs' : 'border-slate-150 bg-white hover:bg-slate-50/50'}`}>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedCommitment === key ? 'border-[#1a73e8] bg-white' : 'border-slate-300'}`}>
-                            {selectedCommitment === key && <div className="w-2.5 h-2.5 rounded-full bg-[#1a73e8]" />}
+                      {[
+                        { key: 'casual' as const, label: 'Casual', sub: '1–2 hours / week', bg: 'bg-sky-50', color: 'text-sky-600' },
+                        { key: 'regular' as const, label: 'Regular', sub: '3–5 hours / week', bg: 'bg-amber-50', color: 'text-amber-700' },
+                        { key: 'intensive' as const, label: 'Intensive', sub: '10+ hours / week', bg: 'bg-teal-50', color: 'text-teal-700' },
+                      ].map(({ key, label, sub, bg, color }) => {
+                        const isSel = selectedCommitment === key;
+                        return (
+                          <div
+                            key={key}
+                            onClick={() => setSelectedCommitment(key)}
+                            className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-3.5 ${
+                              isSel
+                                ? 'border-[#147a6e] bg-[#147a6e]/5 shadow-2xs'
+                                : 'border-slate-200/80 bg-white hover:border-slate-300'
+                            }`}
+                          >
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              isSel ? 'border-[#147a6e] bg-white' : 'border-slate-300 bg-white'
+                            }`}>
+                              {isSel && <div className="w-2.5 h-2.5 rounded-full bg-[#147a6e]" />}
+                            </div>
+
+                            <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center border border-slate-100 shrink-0`}>
+                              <Clock className={`w-4 h-4 ${color}`} />
+                            </div>
+
+                            <div className="flex flex-col text-left">
+                              <span className="text-xs font-black text-slate-900 leading-snug">{label}</span>
+                              <span className="text-[10.5px] text-slate-400 font-medium">{sub}</span>
+                            </div>
                           </div>
-                          <div className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center border border-slate-100 shadow-3xs ml-3`}><Clock className={`w-4.5 h-4.5 ${color}`} /></div>
-                          <div className="flex flex-col ml-3"><span className="text-xs font-black text-slate-800 leading-snug">{label}</span><span className="text-[10px] text-slate-400 font-semibold mt-0.5">{sub}</span></div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
-                <div className="bg-white border border-slate-150/80 rounded-3xl p-6 shadow-2xs flex flex-col gap-4 w-full mt-8">
-                  <div><h3 className="text-sm font-black text-slate-800 tracking-tight">Focus Areas</h3><p className="text-[11px] text-slate-400 font-semibold mt-0.5">Select the topics you want to focus on.</p></div>
-                  <div className="flex flex-wrap gap-2">
-                    {['html', 'css', 'javascript', 'react', 'nextjs', 'typescript', 'testing', 'deployment'].map(area => {
-                      const sel = selectedFocusAreas.includes(area);
+
+                {/* Step 3: Focus Areas Container */}
+                <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col gap-4 w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[#0a463d] text-white font-black text-xs flex items-center justify-center shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">Focus Areas</h2>
+                      <p className="text-[11px] text-slate-400 font-medium">Select the topics you want to focus on.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                    {['HTML', 'CSS', 'JAVASCRIPT', 'REACT', 'NEXTJS', 'TYPESCRIPT', 'TESTING', 'DEPLOYMENT'].map(area => {
+                      const lower = area.toLowerCase();
+                      const sel = selectedFocusAreas.includes(lower);
                       return (
-                        <button key={area} onClick={() => setSelectedFocusAreas(prev => sel ? prev.filter(a => a !== area) : [...prev, area])}
-                          className={`px-4 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide transition-all cursor-pointer border ${sel ? 'bg-[#e8f0fe] text-[#1a73e8] border-[#d2e3fc]' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}
-                        >{area}</button>
+                        <button
+                          key={area}
+                          onClick={() => setSelectedFocusAreas(prev => sel ? prev.filter(a => a !== lower) : [...prev, lower])}
+                          className={`px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border-2 ${
+                            sel
+                              ? 'bg-[#147a6e]/10 text-[#147a6e] border-[#147a6e] shadow-2xs'
+                              : 'bg-white text-slate-600 border-slate-200/90 hover:border-slate-300'
+                          }`}
+                        >
+                          {area}
+                        </button>
                       );
                     })}
                   </div>
                 </div>
-                <button className="mt-8 bg-[#1a73e8] text-white font-black text-xs uppercase tracking-wider px-8 py-3 rounded-full shadow-md hover:bg-[#1558b0] transition-colors cursor-pointer">Save Preferences</button>
-              </motion.div>
-            )}
 
-            {/* GUIDES TAB */}
-            {activeTabSegment === 'guides' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
-                style={{ position: 'absolute', top: '20px', left: '100px', width: '1000px' }}
-                className="flex flex-col items-center pointer-events-auto pb-24 text-center select-none">
-                <div className="mt-2 pointer-events-auto bg-white border border-slate-200/80 p-1.5 rounded-full shadow-2xs flex items-center gap-1.5 w-fit">
-                  {(['all', 'html', 'css', 'javascript'] as const).map(f => (
-                    <button key={f} onClick={() => setGuideTopicFilter(f)}
-                      className={`px-4.5 py-1.5 rounded-full text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer outline-hidden focus:outline-hidden ${guideTopicFilter === f ? 'bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] shadow-[#d2e3fc] font-black' : 'bg-transparent border border-transparent text-slate-500 hover:text-slate-800'}`}
-                    >{f.toUpperCase()}</button>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-4 w-full mt-6 text-left">
-                  {filteredGuides.map(g => {
-                    const Icon = g.icon;
-                    return (
-                      <motion.div key={g.id} whileHover={{ y: -2, scale: 1.005 }}
-                        className="bg-white border border-slate-150/80 rounded-3xl p-5 shadow-2xs hover:shadow-xs transition-all flex items-center gap-5 group cursor-pointer">
-                        <div className={`w-11 h-11 rounded-full ${g.iconBg} flex items-center justify-center border border-slate-100 shadow-3xs shrink-0`}><Icon className="w-5 h-5" style={{ color: g.iconColor }} /></div>
-                        <div className="flex-1 min-w-0"><h3 className="text-[13px] font-black text-slate-800 tracking-tight leading-snug">{g.title}</h3><p className="text-[10.5px] text-slate-400 font-semibold mt-0.5 leading-relaxed">{g.description}</p></div>
-                        <div className="flex items-center gap-6">
-                          <span className={`${g.tagBg} ${g.tagColor} ${g.tagBorder} border rounded-lg px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide`}>{g.category}</span>
-                          <span className="text-[10px] text-slate-400 font-semibold whitespace-nowrap">{g.readTime}</span>
-                          <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center transition-all group-hover:bg-blue-50 group-hover:border-blue-150"><ArrowRight className="w-3.5 h-3.5 text-blue-600" /></div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                {/* Action Save Button */}
+                <button
+                  onClick={() => alert('Preferences saved successfully!')}
+                  className="mt-4 bg-[#0a463d] hover:bg-[#07362f] text-white font-black text-xs uppercase tracking-widest px-10 py-3.5 rounded-full shadow-md hover:shadow-lg transition-all cursor-pointer"
+                >
+                  SAVE PREFERENCES
+                </button>
               </motion.div>
             )}
           </div>
@@ -1924,14 +2314,6 @@ export const RoadmapViewer: React.FC<RoadmapViewerProps> = ({
               </div>
             </div>
           )}
-
-          <div className="pointer-events-auto bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-2xl px-4 py-2 shadow-md flex items-center gap-3">
-            <span className="text-[10.5px] font-black text-slate-700 uppercase tracking-wider">Progress</span>
-            <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
-              <div style={{ width: `${completionPercentage}%` }} className="h-full bg-emerald-500 rounded-full transition-all duration-300" />
-            </div>
-            <span className="text-[11px] font-mono font-black text-slate-700">{Math.round(completionPercentage)}%</span>
-          </div>
         </div>
 
       </div>

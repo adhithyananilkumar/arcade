@@ -25,6 +25,9 @@ import {
   type ResumeCourse,
 } from './ResumeAndEventsSection';
 import { HomeRoadmapPreview } from './HomeRoadmapPreview';
+import { ColorThemeProjectCard, CardColorTheme } from '@/features/roadmap/renderer/components/ColorThemeProjectCard';
+import { RoadmapProjectDetailView, RoadmapProjectDetail } from '@/features/roadmap/renderer/components/RoadmapProjectDetailView';
+import { Code, Layout, FileText, Cloud as CloudIcon } from 'lucide-react';
 
 const NAME_GRADIENT = [
   '#4C6FFF',
@@ -250,6 +253,91 @@ export default function LearnerHomePage() {
     router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
   };
 
+  const [selectedProject, setSelectedProject] = useState<RoadmapProjectDetail | null>(null);
+
+  const homeProjects = useMemo<RoadmapProjectDetail[]>(() => [
+    {
+      id: 'proj-1',
+      title: 'Single-Page CV Website',
+      description: 'Build a clean, semantic single-page resume site to present your professional experience, technical skills, and key projects.',
+      difficulty: 'beginner',
+      category: 'HTML & CSS',
+      colorTheme: 'yellow',
+      membersCount: '25,850 Learners',
+      timeAgo: 'Est. 2-3 Hours',
+      overview: 'Build a clean, semantic single-page resume site to present your professional experience, technical skills, and key projects.',
+      userStories: [
+        'The layout must render cleanly across mobile, tablet, and desktop screens.',
+        'All semantic HTML tags (<header>, <main>, <section>, <footer>) must be used properly.',
+        'No horizontal scrollbars should appear on mobile viewport widths (320px+).',
+        'Page must pass W3C HTML markup validation without critical errors.',
+      ],
+      starterCode: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Single-Page CV</title>\n</head>\n<body>\n  <header><h1>Alex Rivera</h1></header>\n</body>\n</html>`,
+      tasks: [
+        { id: 'proj-1-t1', title: 'HTML Setup', description: 'Create semantic HTML5 structure with <header>, <main>, and <footer> tags.' },
+        { id: 'proj-1-t2', title: 'Responsive Styling', description: 'Add Google Fonts, flexbox container layouts, and mobile media queries.' },
+        { id: 'proj-1-t3', title: 'Skills Badges', description: 'Add CSS hover styling for skill tags.' },
+        { id: 'proj-1-t4', title: 'GitHub Deployment', description: 'Publish your CV live on GitHub Pages.' },
+      ],
+    },
+    {
+      id: 'proj-2',
+      title: 'Multi-Page HTML Website',
+      description: 'Design a structured multi-page website with semantic navigation links, contact form controls, and embedded media.',
+      difficulty: 'intermediate',
+      category: 'HTML & CSS',
+      colorTheme: 'white',
+      membersCount: '18,420 Learners',
+      timeAgo: 'Est. 3-5 Hours',
+      overview: 'Design a structured multi-page website with semantic navigation links, contact form controls, and embedded media.',
+      userStories: [
+        'The layout must render cleanly across mobile, tablet, and desktop screens.',
+        'Navigation header must stay active across all 3 HTML pages.',
+      ],
+      starterCode: `<!-- index.html -->\n<!DOCTYPE html>\n<html lang="en">\n<head><title>Company</title></head>\n<body><nav><a href="index.html">Home</a></nav></body>\n</html>`,
+      tasks: [
+        { id: 'proj-2-t1', title: 'Navigation Bar', description: 'Build reusable navigation links across HTML pages.' },
+        { id: 'proj-2-t2', title: 'Page Content Grid', description: 'Use CSS Grid to create multi-column feature sections.' },
+        { id: 'proj-2-t3', title: 'Validated Contact Form', description: 'Add HTML5 input attributes for contact forms.' },
+      ],
+    },
+    {
+      id: 'proj-3',
+      title: 'Personal Developer Portfolio',
+      description: 'Craft a responsive personal portfolio featuring smooth section scrolling, dark mode theme toggles, and interactive project cards.',
+      difficulty: 'advanced',
+      category: 'CSS & Flexbox',
+      colorTheme: 'green',
+      membersCount: '14,910 Learners',
+      timeAgo: 'Est. 4-6 Hours',
+      overview: 'Craft a responsive personal portfolio featuring smooth section scrolling, dark mode theme toggles, and interactive project cards.',
+      userStories: ['Dark mode toggle must switch CSS variables dynamically.'],
+      starterCode: `:root { --bg: #ffffff; } [data-theme="dark"] { --bg: #0f172a; }`,
+      tasks: [
+        { id: 'proj-3-t1', title: 'CSS Theme Variables', description: 'Define CSS variables for light/dark themes.' },
+        { id: 'proj-3-t2', title: 'Hero Section & Bio', description: 'Create an engaging hero section with profile badge.' },
+        { id: 'proj-3-t3', title: 'Dark Mode Switcher', description: 'Add a theme toggle button.' },
+      ],
+    },
+    {
+      id: 'proj-4',
+      title: 'Interactive Task Manager',
+      description: 'Develop a web application with drag-and-drop task columns, localStorage data persistence, and category filter pills.',
+      difficulty: 'beginner',
+      category: 'JavaScript',
+      colorTheme: 'blue',
+      membersCount: '12,300 Learners',
+      timeAgo: 'Est. 5-7 Hours',
+      overview: 'Develop a web application with drag-and-drop task columns, localStorage data persistence, and category filter pills.',
+      userStories: ['Tasks must persist across page refreshes using LocalStorage.'],
+      starterCode: `const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');`,
+      tasks: [
+        { id: 'proj-4-t1', title: 'Task Board UI', description: 'Create columns for To Do, In Progress, and Completed.' },
+        { id: 'proj-4-t2', title: 'JavaScript State Sync', description: 'Write functions to add and remove tasks from DOM.' },
+      ],
+    },
+  ], []);
+
   if (status === 'loading' || !user) return <DashboardLoading />;
 
   return (
@@ -338,9 +426,69 @@ export default function LearnerHomePage() {
           <StreakCalendar activityByDate={activityByDate} streak={streak} />
         </section>
 
-        <HomeRoadmapPreview />
+        {selectedProject ? (
+          <div className="fixed inset-0 z-50 bg-[#F8FAFC] overflow-y-auto pt-16">
+            <RoadmapProjectDetailView
+              project={selectedProject}
+              onBack={() => setSelectedProject(null)}
+            />
+          </div>
+        ) : (
+          <>
+            <HomeRoadmapPreview />
 
-        <ResumeAndEventsSection resumeCourse={resumeCourse} events={upcomingEvents} />
+            {/* FEATURED COMPACT PRACTICE PROJECTS SECTION */}
+            <section className="space-y-4">
+              <div className="flex items-end justify-between gap-4 border-b border-slate-100 pb-3">
+                <div>
+                  <h2 className="text-xl font-extrabold tracking-tight text-[#14142b]">
+                    Featured Practice Projects
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Interactive hands-on labs with step-by-step task checklists & starter templates.
+                  </p>
+                </div>
+                <Link
+                  href="/roadmap/f6e2eee0-dd8a-4405-b35b-470000d0450b"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#4C6FFF] transition-colors hover:text-[#3a5ae6]"
+                >
+                  View Roadmap <ChevronRight size={14} />
+                </Link>
+              </div>
+
+              {/* 4-Column Compact Soft Pastel Card Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+                {homeProjects.map((p) => {
+                  const cardIcons = {
+                    'proj-1': Code,
+                    'proj-2': Layout,
+                    'proj-3': FileText,
+                    'proj-4': CloudIcon,
+                  };
+                  const IconComp = cardIcons[p.id as keyof typeof cardIcons] || Code;
+
+                  return (
+                    <div key={p.id} onClick={() => setSelectedProject(p)}>
+                      <ColorThemeProjectCard
+                        id={p.id}
+                        title={p.title}
+                        description={p.description}
+                        membersCount={p.membersCount}
+                        timeAgo={p.timeAgo}
+                        colorTheme={p.colorTheme as CardColorTheme}
+                        icon={IconComp}
+                        onJoin={() => setSelectedProject(p)}
+                        onShare={() => setSelectedProject(p)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <ResumeAndEventsSection resumeCourse={resumeCourse} events={upcomingEvents} />
+          </>
+        )}
 
         <section className="space-y-3.5">
           <div className="flex items-end justify-between gap-4">
