@@ -429,3 +429,8 @@
       50% calc(100% - 14px),
       0 100%);
 }
+
+/* Handwritten Cursive Script Font Utility */
+.font-script {
+  font-family: 'Dancing Script', 'Satisfy', 'Caveat', cursive, sans-serif;
+}

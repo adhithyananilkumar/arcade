@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
+import { DepthCard, DepthLayer } from "@/components/ui/DepthCard";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
@@ -822,19 +824,24 @@ function DeleteRoadmapModal({
 
 function ContentCard({
   item,
+  isMenuOpen,
+  onToggleMenu,
+  onCloseMenu,
   onRename,
   onDelete,
   onDuplicate,
   onChanged,
 }: {
   item: ContentSummary;
+  isMenuOpen: boolean;
+  onToggleMenu: () => void;
+  onCloseMenu: () => void;
   onRename: (item: ContentSummary) => void;
   onDelete: (item: ContentSummary) => void;
   onDuplicate: (item: ContentSummary) => void;
   onChanged: () => void;
 }) {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
   const isRoadmap = item.type === "ROADMAP";
   const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
@@ -857,7 +864,7 @@ function ContentCard({
   const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
-    setMenuOpen(false);
+    onCloseMenu();
     if (isRoadmap) {
       onDuplicate(item);
       return;
@@ -893,206 +900,288 @@ function ContentCard({
     router.push(openHref);
   }
 
+  const IconComponent = isRoadmap ? Map : item.type === "WORKSHOP" || item.type === "EVENT" ? Calendar : isQuiz ? HelpCircle : BookOpen;
+  const variantShape = (item.id.charCodeAt(0) % 2 === 0) ? "tr-bl" : "tl-br";
+
   return (
-    <div
+    <DepthCard
+      cardId={item.id}
+      variant={variantShape}
       onClick={channelSuspended || isPendingInvitation ? undefined : handleCardActivate}
-      className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
-        channelSuspended || isPendingInvitation ? "" : "cursor-pointer"
-      }`}
+      className={channelSuspended || isPendingInvitation ? "" : "cursor-pointer"}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
-          {item.title}
-        </h3>
-        {hasSecondaryMenu && (
-          <div className="relative" data-card-interactive>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-              aria-label="More actions"
-            >
-              <MoreVertical size={16} />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      router.push(openHref);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <MoreVertical size={14} /> Open
-                  </button>
-                  {segment && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push(editorHref(segment, item.id));
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} /> Edit
-                    </button>
-                  )}
-                  {preview && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push(preview);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Eye size={14} /> Preview
-                    </button>
-                  )}
-                  {isRoadmap && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onRename(item);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} /> Rename
-                    </button>
-                  )}
-                  {(isRoadmap || duplicate) && (
-                    <button
-                      onClick={handleDuplicateSegmentAware}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Copy size={14} /> Duplicate
-                    </button>
-                  )}
-                  {canArchive && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setConfirmAction("archive");
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Archive size={14} /> Archive
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (isRoadmap) {
-                        onDelete(item);
-                      } else {
-                        setConfirmAction("delete");
-                      }
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
-                  >
-                    <Trash2 size={14} /> Delete
-                  </button>
+      {/* Top Header: Content Type Icon Box + Title & Kebab Menu with 3D Depth Layer z=30 */}
+      <DepthLayer z={30}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-md shadow-[#2962D6]/25">
+              <IconComponent size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="line-clamp-2 text-[16px] font-extrabold leading-snug tracking-tight text-[#14142b]">
+                {item.title}
+              </h3>
+              {item.authorName && (
+                <div className="mt-0.5 flex items-center gap-1 text-xs font-medium text-slate-500">
+                  <User size={12} className="text-slate-400 shrink-0" />
+                  <span className="truncate">{item.authorName}</span>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {hasSecondaryMenu && (
+            <div className="relative shrink-0 mr-1" data-card-interactive>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleMenu();
+                }}
+                className={`rounded-xl p-1.5 transition-all cursor-pointer ${
+                  isMenuOpen
+                    ? "bg-[#2962D6]/10 text-[#2962D6] ring-2 ring-[#2C83F5]/30 scale-105"
+                    : "text-slate-400 hover:bg-slate-100 hover:text-[#14142b]"
+                }`}
+                aria-label="More actions"
+              >
+                <MoreVertical size={18} />
+              </button>
+
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <>
+                    {/* Backdrop to dismiss menu */}
+                    <div
+                      className="fixed inset-0 z-40 cursor-default"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCloseMenu();
+                      }}
+                    />
+
+                    {/* Thread + Floating Menu Card (Placed ABOVE 3-dots button) */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, scale: 0.88 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 20, scale: 0.88 }}
+                      transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                      className="absolute right-0 bottom-full z-50 flex flex-col-reverse items-end mb-1 pointer-events-auto"
+                      style={{ transformOrigin: "bottom right" }}
+                    >
+                      {/* Thread Line (Extending UP from 3 dots button to floating card) */}
+                      <div className="flex flex-col items-center mr-3.5 -mb-1 pointer-events-none">
+                        {/* Bottom Anchor Pin at 3 dots button */}
+                        <span className="h-2 w-2 rounded-full bg-gradient-to-r from-[#2962D6] to-[#27C5D8] shadow-sm shadow-[#2962D6]/50 ring-2 ring-white" />
+                        {/* Vertical Thread String (28px height) */}
+                        <div className="w-[2px] h-7 bg-gradient-to-t from-[#2962D6] via-[#2C83F5] to-[#27C5D8] opacity-90 shadow-xs" />
+                        {/* Top Ring attached to floating card */}
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#27C5D8] ring-2 ring-white shadow-xs" />
+                      </div>
+
+                      {/* Floating Action Card (Positioned ABOVE 3 dots) */}
+                      <div className="w-48 overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 backdrop-blur-md p-1.5 shadow-[0_20px_48px_rgba(41,98,214,0.25)] ring-1 ring-black/5">
+                        <div className="px-3 py-1.5 border-b border-slate-100 mb-1 flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Actions</span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#2C83F5] animate-pulse" />
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCloseMenu();
+                            router.push(openHref);
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                        >
+                          <MoreVertical size={14} className="text-slate-400" /> Open
+                        </button>
+                        {segment && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCloseMenu();
+                              router.push(editorHref(segment, item.id));
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                          >
+                            <Pencil size={14} className="text-slate-400" /> Edit
+                          </button>
+                        )}
+                        {preview && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCloseMenu();
+                              router.push(preview);
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                          >
+                            <Eye size={14} className="text-slate-400" /> Preview
+                          </button>
+                        )}
+                        {isRoadmap && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCloseMenu();
+                              onRename(item);
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                          >
+                            <Pencil size={14} className="text-slate-400" /> Rename
+                          </button>
+                        )}
+                        {(isRoadmap || duplicate) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicateSegmentAware();
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                          >
+                            <Copy size={14} className="text-slate-400" /> Duplicate
+                          </button>
+                        )}
+                        {canArchive && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCloseMenu();
+                              setConfirmAction("archive");
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#2962D6] cursor-pointer"
+                          >
+                            <Archive size={14} className="text-slate-400" /> Archive
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCloseMenu();
+                            if (isRoadmap) {
+                              onDelete(item);
+                            } else {
+                              setConfirmAction("delete");
+                            }
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 cursor-pointer"
+                        >
+                          <Trash2 size={14} className="text-rose-500" /> Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </DepthLayer>
+
       {item.description && (
-        <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
+        <DepthLayer z={15}>
+          <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
+        </DepthLayer>
       )}
-      {item.authorName && (
-        <div className="flex items-center gap-1 text-xs text-slate-500">
-          <User size={11} className="text-slate-400" />
-          <span className="truncate">{item.authorName}</span>
+
+      {/* Badges Row with 3D Depth Layer z=20 */}
+      <DepthLayer z={20}>
+        <div className="flex flex-wrap items-center gap-2">
+          <TypeBadge type={item.type} />
+          <StatusBadge status={item.status} />
+          {item.collaborationStatus === "PENDING" && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              Invitation Pending
+            </span>
+          )}
+          {channelSuspended && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
+              title={
+                item.channelForcedSuspension
+                  ? "Channel suspended — already unlisted from public discovery"
+                  : unlistDate
+                    ? `Channel suspended — will be unlisted on ${unlistDate.toLocaleDateString()}`
+                    : "Channel suspended"
+              }
+            >
+              <Lock size={10} /> Channel Suspended
+            </span>
+          )}
         </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        <TypeBadge type={item.type} />
-        <StatusBadge status={item.status} />
-        {item.collaborationStatus === "PENDING" && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-            Invitation Pending
-          </span>
-        )}
-        {channelSuspended && (
+      </DepthLayer>
+
+      {/* Timestamp with 3D Depth Layer z=10 */}
+      <DepthLayer z={10} className="mt-auto">
+        <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-400 pt-1">
+          <Clock size={13} />
+          Last edited:{" "}
+          {new Date(item.updatedAt).toLocaleString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          })}
+        </div>
+      </DepthLayer>
+
+      {/* Action Button with 3D Depth Layer z=35 (Pops out in 3D perspective!) */}
+      <DepthLayer z={35}>
+        {channelSuspended ? (
           <span
-            className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
-            title={
-              item.channelForcedSuspension
-                ? "Channel suspended — already unlisted from public discovery"
-                : unlistDate
-                  ? `Channel suspended — will be unlisted on ${unlistDate.toLocaleDateString()}`
-                  : "Channel suspended"
-            }
+            className="block cursor-not-allowed rounded-2xl bg-slate-100 py-2.5 text-center text-xs font-bold text-slate-400"
+            title="This channel is suspended — editing is disabled until it's reactivated"
           >
-            <Lock size={10} /> Channel Suspended
+            Editing Disabled
           </span>
+        ) : item.collaborationStatus === "PENDING" ? (
+          <div className="flex items-center gap-2" data-card-interactive onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                  toast.success("Accepted collaboration invitation!");
+                  onChanged();
+                } catch {
+                  toast.error("Failed to accept invitation");
+                }
+              }}
+              className="flex-1 rounded-2xl bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] py-2.5 text-center text-xs font-bold text-white shadow-md shadow-[#2962D6]/25 hover:opacity-95 transition-all cursor-pointer"
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                  toast.info("Declined invitation");
+                  onChanged();
+                } catch {
+                  toast.error("Failed to decline invitation");
+                }
+              }}
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-center text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Decline
+            </button>
+          </div>
+        ) : (
+          <Link
+            href={openHref}
+            data-card-interactive
+            onClick={(e) => e.stopPropagation()}
+            className="block rounded-2xl bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] py-2.5 text-center text-xs font-bold text-white shadow-md shadow-[#2962D6]/25 transition-all hover:opacity-95 hover:shadow-lg hover:shadow-[#2C83F5]/35 active:scale-[0.98]"
+          >
+            {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
+          </Link>
         )}
-      </div>
-      <div className="mt-auto flex items-center gap-1.5 text-xs text-slate-400">
-        <Clock size={11} />
-        Last edited:{" "}
-        {new Date(item.updatedAt).toLocaleString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })}
-      </div>
-      {channelSuspended ? (
-        <span
-          className="cursor-not-allowed rounded-lg bg-slate-50 py-2 text-center text-xs font-semibold text-slate-400"
-          title="This channel is suspended — editing is disabled until it's reactivated"
-        >
-          Editing Disabled
-        </span>
-      ) : item.collaborationStatus === "PENDING" ? (
-        <div className="flex items-center gap-2" data-card-interactive onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={async (e) => {
-              e.stopPropagation();
-              try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
-                toast.success("Accepted collaboration invitation!");
-                onChanged();
-              } catch {
-                toast.error("Failed to accept invitation");
-              }
-            }}
-            className="flex-1 rounded-lg bg-indigo-600 py-2 text-center text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
-          >
-            Accept
-          </button>
-          <button
-            type="button"
-            onClick={async (e) => {
-              e.stopPropagation();
-              try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
-                toast.info("Declined invitation");
-                onChanged();
-              } catch {
-                toast.error("Failed to decline invitation");
-              }
-            }}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            Decline
-          </button>
-        </div>
-      ) : (
-        <Link
-          href={openHref}
-          data-card-interactive
-          onClick={(e) => e.stopPropagation()}
-          className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
-        >
-          {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
-        </Link>
-      )}
+      </DepthLayer>
 
       {confirmAction === "archive" && (
         <div data-card-interactive>
@@ -1122,7 +1211,7 @@ function ContentCard({
           />
         </div>
       )}
-    </div>
+    </DepthCard>
   );
 }
 
@@ -1192,6 +1281,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
+  const [activeMenuCardId, setActiveMenuCardId] = useState<string | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1323,7 +1413,7 @@ export default function DashboardPage() {
     <div
       className="relative flex min-h-screen flex-1 flex-col"
       style={{
-        background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)",
+        background: "linear-gradient(180deg, #EBF3FE 0%, #F4F8FD 35%, #FFFFFF 70%)",
       }}
     >
       <ChannelRequiredModal
@@ -1355,25 +1445,34 @@ export default function DashboardPage() {
         />
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] md:text-[2rem]">
-              Content Studio
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-20 pt-14 sm:px-8 sm:pt-16">
+        {/* Header - Centered Viewfinder Corner Brackets Title (Matching Reference Image) */}
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
+          {/* Viewfinder Bracket Framed Heading */}
+          <div className="relative inline-flex items-center justify-center px-6 py-2">
+            {/* 4 Corner Bracket Marks in Arcade Blue (#2962D6) */}
+            <span className="pointer-events-none absolute top-0 left-0 h-3.5 w-3.5 border-t-[2.5px] border-l-[2.5px] border-[#2962D6] rounded-tl-[3px]" />
+            <span className="pointer-events-none absolute top-0 right-0 h-3.5 w-3.5 border-t-[2.5px] border-r-[2.5px] border-[#2962D6] rounded-tr-[3px]" />
+            <span className="pointer-events-none absolute bottom-0 left-0 h-3.5 w-3.5 border-b-[2.5px] border-l-[2.5px] border-[#2962D6] rounded-bl-[3px]" />
+            <span className="pointer-events-none absolute bottom-0 right-0 h-3.5 w-3.5 border-b-[2.5px] border-r-[2.5px] border-[#2962D6] rounded-br-[3px]" />
+
+            <h1 className="font-script text-4xl sm:text-5xl md:text-[3.5rem] font-bold tracking-wide bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent cursor-default py-1">
+              Arcade Studio
             </h1>
-            <p className="mt-1 text-[14px] font-medium text-slate-500">
-              Create and manage your educational content
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <p className="mt-2 text-sm sm:text-base font-medium text-slate-500 max-w-md">
+            Create and manage your educational content
+          </p>
+
+          {/* Centered Action & Filter Control Bar */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
             {channels.length > 0 && (
               <div className="relative">
                 <select
                   value={channelFilter}
                   onChange={(e) => setChannelFilter(e.target.value)}
-                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-3.5 pr-8 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b] outline-none cursor-pointer focus:ring-2 focus:ring-slate-200"
+                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-4 pr-9 py-2.5 text-[13px] font-semibold text-slate-600 transition-colors hover:border-[#2C83F5]/40 hover:text-[#2962D6] outline-none cursor-pointer focus:ring-2 focus:ring-[#2C83F5]/20 shadow-xs"
                 >
                   {CHANNEL_CHIPS.map((chip) => (
                     <option key={chip.id} value={chip.id}>
@@ -1388,16 +1487,16 @@ export default function DashboardPage() {
             )}
             <Link
               href="/studio/review"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-4 py-2.5 text-[13px] font-semibold text-slate-600 transition-colors hover:border-[#2C83F5]/40 hover:text-[#2962D6] shadow-xs"
             >
-              <ClipboardCheck size={14} />
+              <ClipboardCheck size={15} />
               Review
             </Link>
             <Link
               href="/trash"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-4 py-2.5 text-[13px] font-semibold text-slate-600 transition-colors hover:border-[#2C83F5]/40 hover:text-[#2962D6] shadow-xs"
             >
-              <Trash2 size={14} />
+              <Trash2 size={15} />
               Trash
             </Link>
 
@@ -1405,7 +1504,7 @@ export default function DashboardPage() {
               <button
                 id="create-content-btn"
                 onClick={handleCreateContentClick}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-75 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] px-6 py-2.5 text-[13px] font-bold text-white shadow-[0_6px_20px_rgba(41,98,214,0.32)] transition-all hover:opacity-95 hover:shadow-[0_8px_24px_rgba(44,131,245,0.42)] active:scale-95 disabled:opacity-75 cursor-pointer"
               >
                 {channelsLoading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -1423,10 +1522,10 @@ export default function DashboardPage() {
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
                   <div
-                    className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
+                    className="absolute left-1/2 -translate-x-1/2 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
                     role="menu"
                   >
-                    <div className="border-b border-slate-100 px-4 py-2.5">
+                    <div className="border-b border-slate-100 px-4 py-2.5 text-left">
                       <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                         Select content type
                       </p>
@@ -1479,13 +1578,13 @@ export default function DashboardPage() {
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
                 className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${active
-                    ? "bg-[#14142b] text-white shadow-sm"
+                    ? "bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-sm"
                     : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
                   }`}
               >
                 {tab.label}
                 <span
-                  className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"
+                  className={`tabular-nums ${active ? "text-white/80 font-bold" : "text-slate-400"
                     }`}
                 >
                   {count}
@@ -1504,8 +1603,8 @@ export default function DashboardPage() {
                 key={chip.id}
                 type="button"
                 onClick={() => setTypeFilter(chip.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${active
-                    ? "border-[#FF6B4A]/35 bg-[#FF6B4A]/10 text-[#D94F32]"
+                className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-colors ${active
+                    ? "border-[#2C83F5]/40 bg-[#2C83F5]/10 text-[#2962D6]"
                     : "border-slate-200 bg-white/80 text-slate-500 hover:border-slate-300 hover:text-[#14142b]"
                   }`}
               >
@@ -1565,6 +1664,9 @@ export default function DashboardPage() {
               <ContentCard
                 key={item.id}
                 item={item}
+                isMenuOpen={activeMenuCardId === item.id}
+                onToggleMenu={() => setActiveMenuCardId(activeMenuCardId === item.id ? null : item.id)}
+                onCloseMenu={() => setActiveMenuCardId(null)}
                 onRename={setRenameTarget}
                 onDelete={setDeleteTarget}
                 onDuplicate={handleDuplicate}
