@@ -11,6 +11,7 @@ import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
 import { roadmapService, roadmapProgressService, type RoadmapData } from "@/domains/roadmaps";
 import { CourseCard } from "@/components/explore/CategoryDetailedView";
+import { usePublicCategories, type PublicCategory } from "@/shared/hooks/usePublicCategories";
 
 export const CATEGORY_DATA: Record<string, {
   desc: string;
@@ -1195,6 +1196,29 @@ function CoursesContent() {
 
 function ExploreCatalog() {
   const router = useRouter();
+
+  // Categories created via Console -> Content Manage -> Categories (super-user only),
+  // merged additively on top of the hardcoded dummy categories below — never removes them.
+  const adminCategories = usePublicCategories();
+  const mergedCategoriesList = [
+    ...categoriesList,
+    ...adminCategories.filter((c: PublicCategory) => !categoriesList.includes(c.name)).map((c: PublicCategory) => c.name),
+  ];
+  const getCategoryData = (cat: string) => {
+    if (CATEGORY_DATA[cat]) return CATEGORY_DATA[cat];
+    const admin = adminCategories.find((c: PublicCategory) => c.name === cat);
+    if (!admin) return undefined;
+    const color = admin.color || "#64748B";
+    return {
+      desc: admin.description || "",
+      coursesCount: 0,
+      gradient: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
+      colors: { primary: color, secondary: `${color}14` },
+      courses: [],
+      bootcamps: [],
+      resources: [],
+    };
+  };
 
   // Tab State
   const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");

@@ -21,6 +21,7 @@ export class CourseAdapter implements ContentDataAdapter {
         description: course.description ?? "",
         status: course.status,
         pricingModel: course.pricingModel,
+        categoryId: course.categoryId ?? null,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
         raw: course,
@@ -45,7 +46,18 @@ export class CourseAdapter implements ContentDataAdapter {
   }
 
   async updateMeta(id: string, patch: Partial<ContentMeta>): Promise<void> {
-    await api.patch(`/api/courses/${id}`, patch);
+    // categoryId goes through a dedicated endpoint: the generic patch below only ever sets a
+    // field when it's non-null (see CourseAuthoringService.patchCourse), so it can never clear
+    // categoryId back to null ("Other") — a separate endpoint sidesteps that ambiguity entirely.
+    const { categoryId, ...rest } = patch;
+    const requests: Promise<unknown>[] = [];
+    if ("categoryId" in patch) {
+      requests.push(api.patch(`/api/courses/${id}/category`, { categoryId: categoryId ?? null }));
+    }
+    if (Object.keys(rest).length > 0) {
+      requests.push(api.patch(`/api/courses/${id}`, rest));
+    }
+    await Promise.all(requests);
   }
 
   async deleteContent(id: string, confirmTitle: string): Promise<void> {

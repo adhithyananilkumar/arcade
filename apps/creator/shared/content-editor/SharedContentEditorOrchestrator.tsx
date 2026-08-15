@@ -14,22 +14,6 @@
  * - The supreme authority for the course authoring state.
  * - Handles complex cross-domain interactions.
  * - Keep domain UI pure.
-"use client";
-
-/**
- * ------------------------------------------------------------------
- * Arcade Frontend Architecture
- * Layer: Apps
- * App: Creator
- * Type: Orchestrator
- *
- * Purpose:
- * Composes Courses, Learning, and Publishing domains into the rich text editor.
- *
- * Rules:
- * - The supreme authority for the course authoring state.
- * - Handles complex cross-domain interactions.
- * - Keep domain UI pure.
  * - See docs/architecture/ADR-001-frontend-architecture.md
  * ------------------------------------------------------------------
  */
@@ -106,6 +90,7 @@ import type {
   QuizResponse,
 } from "@/shared/types/api.types";
 import type { TiptapDocument } from "@/shared/types/editor.types";
+import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
 import {
   ChevronRight,
   ChevronDown,
@@ -624,6 +609,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [courseData, setCourseData] = useState<any>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [savingCategory, setSavingCategory] = useState(false);
+  // Categories created via Console -> Content Manage -> Categories (super-user only). Scoped
+  // to COURSES-type categories only — this is the Studio course editor, not events/articles.
+  const publicCategories = usePublicCategories();
+  const courseCategories = publicCategories.filter((c) => c.type === "COURSES");
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
@@ -980,6 +971,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setContentChannelId(meta.raw?.channelId || null);
         if (contentType === "course") {
           setCourseData(meta.raw);
+          setCategoryId(meta.raw?.categoryId ?? null);
         } else if (contentType === "roadmap") {
           setRoadmapData(meta.raw);
         }
@@ -1149,6 +1141,27 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       console.error("Failed to add module", e);
     }
   }, [contentId, modules.length, adapter]);
+
+  // ── Course category (super-user-managed, or "Other" for uncategorized) ────
+
+  const updateCourseCategory = useCallback(
+    async (newCategoryId: string | null) => {
+      if (!contentId || contentType !== "course") return;
+      const previous = categoryId;
+      setCategoryId(newCategoryId);
+      setSavingCategory(true);
+      try {
+        await adapter.updateMeta(contentId, { categoryId: newCategoryId } as any);
+      } catch (e) {
+        console.error("Failed to update course category", e);
+        setCategoryId(previous);
+        toast.error("Failed to update category");
+      } finally {
+        setSavingCategory(false);
+      }
+    },
+    [contentId, contentType, adapter, categoryId]
+  );
 
   // ── Tree mutation: Add Day (container) — workshop only ───────────────────
 
@@ -2095,6 +2108,25 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       <Plus size={14} />
                       Add {adapter.terminology.container}
                     </button>
+                  )}
+                  {contentType === "course" && (
+                    <div className="flex flex-col gap-1 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
+                      <label htmlFor="course-category-select" className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
+                        Category
+                      </label>
+                      <select
+                        id="course-category-select"
+                        value={categoryId ?? "OTHER"}
+                        disabled={savingCategory}
+                        onChange={(e) => updateCourseCategory(e.target.value === "OTHER" ? null : e.target.value)}
+                        className="w-full rounded-lg border border-[#14142b]/10 bg-white px-2 py-1.5 text-xs font-semibold text-[#14142b] outline-none focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 disabled:opacity-60"
+                      >
+                        {courseCategories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                        <option value="OTHER">Other</option>
+                      </select>
+                    </div>
                   )}
                   {typeof adapter.addBadge === "function" && (
                     <button

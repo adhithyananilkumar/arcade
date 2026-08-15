@@ -51,6 +51,8 @@ export interface CourseResponse {
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
+  /** Super-user-managed category (Console -> Content Manage -> Categories), or null for "Other". */
+  categoryId?: string | null;
   hasExam?: boolean;
   status: ContentStatus;
   rejectionReason?: string;

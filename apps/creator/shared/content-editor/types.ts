@@ -31,6 +31,7 @@ export interface ContentMeta {
   description: string;
   status: string;
   pricingModel?: string;
+  categoryId?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   raw?: any;

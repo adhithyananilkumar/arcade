@@ -39,7 +39,9 @@ export const AuthorizationService = {
   canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.roles.assign') || AuthorizationService.hasPermission(user, 'platform.roles.manage'),
   canManagePermissions: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.permissions.manage'),
   canManageSettings: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.system.manage'),
-  
+
+  canManageCategories: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.categories.manage'),
+
   canViewAuditLogs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.audit.view'),
 
   canViewPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'payments.view'),
