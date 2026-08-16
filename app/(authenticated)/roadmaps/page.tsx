@@ -63,13 +63,13 @@ export interface CardItem {
 
 // 7 Infographic Theme Colors for Roadmaps with hover halo accents, BorderBeam colors and dashed cut line colors
 const INFOGRAPHIC_COLORS = [
-  { bg: 'bg-[#FF5A4E]', iconColor: 'text-[#FF5A4E]', haloBg: 'bg-[#FF5A4E]/25', glowBorder: 'group-hover:border-[#FF5A4E]/40', colorFrom: '#FF5A4E', colorTo: '#FF85A1', dashedBorder: 'border-[#FF5A4E]', notchBorder: 'border-[#FF5A4E]' }, // Coral Red
-  { bg: 'bg-[#4361EE]', iconColor: 'text-[#4361EE]', haloBg: 'bg-[#4361EE]/25', glowBorder: 'group-hover:border-[#4361EE]/40', colorFrom: '#4361EE', colorTo: '#06B6D4', dashedBorder: 'border-[#4361EE]', notchBorder: 'border-[#4361EE]' }, // Royal Blue
-  { bg: 'bg-[#2EC4B6]', iconColor: 'text-[#2EC4B6]', haloBg: 'bg-[#2EC4B6]/25', glowBorder: 'group-hover:border-[#2EC4B6]/40', colorFrom: '#2EC4B6', colorTo: '#06B6D4', dashedBorder: 'border-[#2EC4B6]', notchBorder: 'border-[#2EC4B6]' }, // Mint Teal
-  { bg: 'bg-[#FF9F1C]', iconColor: 'text-[#FF9F1C]', haloBg: 'bg-[#FF9F1C]/25', glowBorder: 'group-hover:border-[#FF9F1C]/40', colorFrom: '#FF9F1C', colorTo: '#FFD166', dashedBorder: 'border-[#FF9F1C]', notchBorder: 'border-[#FF9F1C]' }, // Warm Orange
-  { bg: 'bg-[#FF85A1]', iconColor: 'text-[#FF85A1]', haloBg: 'bg-[#FF85A1]/25', glowBorder: 'group-hover:border-[#FF85A1]/40', colorFrom: '#FF85A1', colorTo: '#7209B7', dashedBorder: 'border-[#FF85A1]', notchBorder: 'border-[#FF85A1]' }, // Soft Pink
-  { bg: 'bg-[#FFD166]', iconColor: 'text-[#D9A636]', haloBg: 'bg-[#FFD166]/35', glowBorder: 'group-hover:border-[#FFD166]/60', colorFrom: '#FFD166', colorTo: '#FF9F1C', dashedBorder: 'border-[#FFD166]', notchBorder: 'border-[#FFD166]' }, // Golden Yellow
-  { bg: 'bg-[#7209B7]', iconColor: 'text-[#7209B7]', haloBg: 'bg-[#7209B7]/25', glowBorder: 'group-hover:border-[#7209B7]/40', colorFrom: '#7209B7', colorTo: '#4361EE', dashedBorder: 'border-[#7209B7]', notchBorder: 'border-[#7209B7]' }  // Deep Purple
+  { bg: 'bg-[#FF5A4E]', lightBg: 'bg-[#FF5A4E]/10 border border-[#FF5A4E]/20', iconColor: 'text-[#FF5A4E]', haloBg: 'bg-[#FF5A4E]/20', glowBorder: 'group-hover:border-[#FF5A4E]/40', colorFrom: '#FF5A4E', colorTo: '#FF85A1', dashedBorder: 'border-[#FF5A4E]', notchBorder: 'border-[#FF5A4E]' }, // Coral Red
+  { bg: 'bg-[#4361EE]', lightBg: 'bg-[#4361EE]/10 border border-[#4361EE]/20', iconColor: 'text-[#4361EE]', haloBg: 'bg-[#4361EE]/20', glowBorder: 'group-hover:border-[#4361EE]/40', colorFrom: '#4361EE', colorTo: '#06B6D4', dashedBorder: 'border-[#4361EE]', notchBorder: 'border-[#4361EE]' }, // Royal Blue
+  { bg: 'bg-[#2EC4B6]', lightBg: 'bg-[#2EC4B6]/10 border border-[#2EC4B6]/20', iconColor: 'text-[#0D9488]', haloBg: 'bg-[#2EC4B6]/20', glowBorder: 'group-hover:border-[#2EC4B6]/40', colorFrom: '#2EC4B6', colorTo: '#06B6D4', dashedBorder: 'border-[#2EC4B6]', notchBorder: 'border-[#2EC4B6]' }, // Mint Teal
+  { bg: 'bg-[#FF9F1C]', lightBg: 'bg-[#FF9F1C]/10 border border-[#FF9F1C]/20', iconColor: 'text-[#D97706]', haloBg: 'bg-[#FF9F1C]/20', glowBorder: 'group-hover:border-[#FF9F1C]/40', colorFrom: '#FF9F1C', colorTo: '#FFD166', dashedBorder: 'border-[#FF9F1C]', notchBorder: 'border-[#FF9F1C]' }, // Warm Orange
+  { bg: 'bg-[#FF85A1]', lightBg: 'bg-[#FF85A1]/10 border border-[#FF85A1]/20', iconColor: 'text-[#E11D48]', haloBg: 'bg-[#FF85A1]/20', glowBorder: 'group-hover:border-[#FF85A1]/40', colorFrom: '#FF85A1', colorTo: '#7209B7', dashedBorder: 'border-[#FF85A1]', notchBorder: 'border-[#FF85A1]' }, // Soft Pink
+  { bg: 'bg-[#FFD166]', lightBg: 'bg-[#FFD166]/15 border border-[#FFD166]/35', iconColor: 'text-[#D97706]', haloBg: 'bg-[#FFD166]/30', glowBorder: 'group-hover:border-[#FFD166]/60', colorFrom: '#FFD166', colorTo: '#FF9F1C', dashedBorder: 'border-[#FFD166]', notchBorder: 'border-[#FFD166]' }, // Golden Yellow
+  { bg: 'bg-[#7209B7]', lightBg: 'bg-[#7209B7]/10 border border-[#7209B7]/20', iconColor: 'text-[#7209B7]', haloBg: 'bg-[#7209B7]/20', glowBorder: 'group-hover:border-[#7209B7]/40', colorFrom: '#7209B7', colorTo: '#4361EE', dashedBorder: 'border-[#7209B7]', notchBorder: 'border-[#7209B7]' }  // Deep Purple
 ];
 
 // Topic Icon Mapping
@@ -140,12 +140,6 @@ export const CATEGORY_ITEMS: Record<MainCategory, CardItem[]> = {
     { id: 'devsecops', title: 'DevSecOps', category: 'Role based Roadmaps', description: 'Security integration in modern CI/CD' },
     { id: 'data-analyst', title: 'Data Analyst', category: 'Role based Roadmaps', description: 'SQL, Python, Excel & Tableau' },
     { id: 'ai-engineer', title: 'AI Engineer', category: 'Role based Roadmaps', description: 'LLMs, RAG, Agents & Fine-tuning' },
-    { id: 'ai-data-scientist', title: 'AI and Data Scientist', category: 'Role based Roadmaps', description: 'Statistics, ML models & Neural Nets' },
-    { id: 'data-engineer', title: 'Data Engineer', category: 'Role based Roadmaps', description: 'ETL Pipelines, Spark & Data Warehousing' },
-    { id: 'machine-learning', title: 'Machine Learning', category: 'Role based Roadmaps', description: 'Scikit-Learn, PyTorch & Model Deployment' },
-    { id: 'product-design', title: 'Product Design', isNew: true, category: 'Role based Roadmaps', description: 'UI/UX Design Systems, Figma & Prototyping' },
-    { id: 'postgresql', title: 'PostgreSQL', category: 'Role based Roadmaps', description: 'Relational DBs, Query Tuning & Indexing' },
-    { id: 'ios', title: 'iOS', category: 'Role based Roadmaps', description: 'Swift, SwiftUI & iOS App Architecture' }
   ],
   'Skill based Roadmaps': [
     { id: 'claude-code', title: 'Claude Code', category: 'Skill based Roadmaps', description: 'Agentic AI coding & prompt engineering' },
@@ -153,25 +147,7 @@ export const CATEGORY_ITEMS: Record<MainCategory, CardItem[]> = {
     { id: 'vibe-coding', title: 'Vibe Coding', category: 'Skill based Roadmaps', description: 'Rapid prototyping with LLM assistants' },
     { id: 'power-bi', title: 'Power BI', isNew: true, category: 'Skill based Roadmaps', description: 'Business Analytics & DAX modeling' },
     { id: 'leetcode', title: 'LeetCode', category: 'Skill based Roadmaps', description: 'Algorithms & Data Structure patterns' },
-    { id: 'python', title: 'Python', category: 'Skill based Roadmaps', description: 'Core language, OOP & ecosystem' },
-    { id: 'computer-science', title: 'Computer Science', category: 'Skill based Roadmaps', description: 'OS, Networking & Fundamentals' },
-    { id: 'sql', title: 'SQL', category: 'Skill based Roadmaps', description: 'Database Queries, Joins & Optimization' },
-    { id: 'openclaw', title: 'OpenClaw', category: 'Skill based Roadmaps', description: 'Web scraping & automation tools' },
     { id: 'react', title: 'React', category: 'Skill based Roadmaps', description: 'Hooks, State Management & Next.js' },
-    { id: 'vue', title: 'Vue', category: 'Skill based Roadmaps', description: 'Composition API, Pinia & Nuxt' },
-    { id: 'angular', title: 'Angular', category: 'Skill based Roadmaps', description: 'TypeScript, RxJS & Enterprise Apps' },
-    { id: 'javascript', title: 'JavaScript', category: 'Skill based Roadmaps', description: 'ES6+, Async/Await & Event Loop' },
-    { id: 'typescript', title: 'TypeScript', category: 'Skill based Roadmaps', description: 'Type Systems, Generics & Tooling' },
-    { id: 'nodejs', title: 'Node.js', category: 'Skill based Roadmaps', description: 'Event-driven I/O, Express & Microservices' },
-    { id: 'system-design', title: 'System Design', category: 'Skill based Roadmaps', description: 'Scalability, Load Balancers & Caching' },
-    { id: 'java', title: 'Java', category: 'Skill based Roadmaps', description: 'JVM, Multithreading & Enterprise Java' },
-    { id: 'aspnet-core', title: 'ASP.NET Core', category: 'Skill based Roadmaps', description: 'C#, Web APIs & Entity Framework' },
-    { id: 'api-design', title: 'API Design', category: 'Skill based Roadmaps', description: 'REST, GraphQL, gRPC & OpenAPI' },
-    { id: 'spring-boot', title: 'Spring Boot', category: 'Skill based Roadmaps', description: 'Dependency Injection, Security & Data JPA' },
-    { id: 'flutter', title: 'Flutter', category: 'Skill based Roadmaps', description: 'Dart, Cross-platform UI & State' },
-    { id: 'c-programming', title: 'C Programming', category: 'Skill based Roadmaps', description: 'Pointers, Memory & Low-level C' },
-    { id: 'cpp', title: 'C++', category: 'Skill based Roadmaps', description: 'Modern C++, STL & Memory Management' },
-    { id: 'rust', title: 'Rust', category: 'Skill based Roadmaps', description: 'Ownership, Memory Safety & Concurrency' }
   ],
   'Project ideas': [
     { id: 'frontend', title: 'Frontend', category: 'Project ideas', description: 'Real-world UI & Web app project builds' },
@@ -180,7 +156,6 @@ export const CATEGORY_ITEMS: Record<MainCategory, CardItem[]> = {
     { id: 'html', title: 'HTML', category: 'Project ideas', description: 'Semantic markup & Accessibility challenges' },
     { id: 'css', title: 'CSS', category: 'Project ideas', description: 'Responsive layouts & CSS animation projects' },
     { id: 'javascript-proj', title: 'JavaScript', category: 'Project ideas', description: 'Vanilla JS DOM apps & interactive tools' },
-    { id: 'nodejs-proj', title: 'Node.js', category: 'Project ideas', description: 'CLI utilities, WebSockets & Server builds' }
   ],
   'Best practices': [
     { id: 'code-review', title: 'Code Review', category: 'Best practices', description: 'Peer feedback, Pull Request guidelines & standards' },
@@ -207,10 +182,10 @@ export default function ScriptHeaderInfographicRoadmapPage() {
     );
   }, [rawItems, searchQuery]);
 
-  // Paginate items: 12 items max per page (3 rows of 4 nodes)
-  const totalPages = Math.ceil(filteredItems.length / 12);
+  // Paginate items: 6 items max per page (2 rows of 3 nodes)
+  const totalPages = Math.ceil(filteredItems.length / 6);
   const currentItems = useMemo(() => {
-    return filteredItems.slice(pageIndex * 12, (pageIndex + 1) * 12);
+    return filteredItems.slice(pageIndex * 6, (pageIndex + 1) * 6);
   }, [filteredItems, pageIndex]);
 
   const handleCategorySelect = (cat: MainCategory) => {
@@ -237,13 +212,13 @@ export default function ScriptHeaderInfographicRoadmapPage() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
 
-        {/* ── TOP HEADER SECTION ───────────────────────────────────────────── */}
-        <div className="flex flex-col items-start max-w-6xl pb-8">
+        {/* ── TOP HEADER SECTION (CENTERED) ───────────────────────────────────────────── */}
+        <div className="flex flex-col items-center justify-center text-center max-w-6xl mx-auto pb-8">
 
-          {/* Cursive Main Heading */}
-          <div className="relative z-10 flex flex-col items-start space-y-1">
+          {/* Cursive Main Heading Centered */}
+          <div className="relative z-10 flex flex-col items-center justify-center space-y-1">
             {/* Line 1: "Clear Steps" (Arcade Logo Gradient script font) + "for a —" (slate text) */}
-            <div className="flex items-baseline gap-3 flex-wrap">
+            <div className="flex items-baseline justify-center gap-3 flex-wrap">
               <span
                 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent tracking-wide"
                 style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
@@ -288,16 +263,16 @@ export default function ScriptHeaderInfographicRoadmapPage() {
             </div>
           </div>
 
-          {/* Subtitle Description */}
-          <p className="text-slate-500 font-medium text-sm sm:text-base mt-2 max-w-2xl">
+          {/* Subtitle Description Centered */}
+          <p className="text-slate-500 font-medium text-sm sm:text-base mt-2 max-w-2xl text-center mx-auto">
             Select a category below to explore single-topic roadmaps and specialized career learning tracks.
           </p>
 
           {/* Horizontal Category Pill Tabs + Search Input */}
-          <div className="flex flex-wrap items-center justify-between gap-4 w-full mt-8 pt-1">
+          <div className="flex flex-wrap items-center justify-center sm:justify-between gap-4 w-full mt-8 pt-1">
 
             {/* Minimalist Text Tabs with Underline Indicator matching reference image */}
-            <div className="flex flex-wrap items-center gap-6 sm:gap-8">
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8">
               {MAIN_CATEGORIES.map((cat) => {
                 const isActive = activeCategory === cat.id;
                 const Icon = cat.icon;
@@ -370,10 +345,10 @@ export default function ScriptHeaderInfographicRoadmapPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.25 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6"
               >
                 {currentItems.map((item, idx) => {
-                  const globalIdx = pageIndex * 12 + idx;
+                  const globalIdx = pageIndex * 6 + idx;
                   return (
                     <RoadmapCard
                       key={item.id}
@@ -453,19 +428,16 @@ function RoadmapCard({
         />
       </div>
 
-      {/* Signature Circular Badge with Outer Translucent Halo Ring Animation */}
+      {/* Signature Soft Light Pastel Circular Badge */}
       <div className="relative flex items-center justify-center my-1">
-        {/* Animated Outer Translucent Halo Ring (expands smoothly when card is hovered) */}
+        {/* Animated Outer Translucent Halo Ring */}
         <div
           className={`absolute -inset-1.5 sm:-inset-2 rounded-full ${colorTheme.haloBg} opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out pointer-events-none`}
         />
 
-        {/* Outer Solid Circle */}
-        <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-full ${colorTheme.bg} border-4 border-white shadow-md flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105 shrink-0`}>
-          {/* Inner White Circle */}
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center shadow-inner">
-            <IconComp size={22} className={colorTheme.iconColor} />
-          </div>
+        {/* Outer Light Soft Pastel Circle */}
+        <div className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full ${colorTheme.lightBg} flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105 shrink-0 shadow-xs`}>
+          <IconComp size={24} className={colorTheme.iconColor} />
         </div>
       </div>
 
