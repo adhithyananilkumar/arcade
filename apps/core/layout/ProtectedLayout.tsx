@@ -19,8 +19,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { AuthService } from '@/infrastructure/auth/auth.service';
-import { UserService } from '@/domains/identity';
+import { initializeSession } from '@/apps/core/lib/session';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 
 function AuthTransition({ label }: { label: string }) {
@@ -38,7 +37,7 @@ function AuthTransition({ label }: { label: string }) {
 }
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const { user, status, setStatus, setAuth } = useAuthStore();
+  const { user, status } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
@@ -49,28 +48,10 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-    const initAuth = async () => {
-      if (status === 'loading') {
-        try {
-          let { accessToken, user } = await AuthService.refresh();
-
-          setAuth(user || {}, accessToken);
-
-          if (!user || Object.keys(user).length === 0) {
-            try {
-              user = await UserService.getMe();
-              setAuth(user, accessToken);
-            } catch (err) {
-              console.error('Failed to fetch user profile after refresh', err);
-            }
-          }
-        } catch {
-          setStatus('unauthenticated');
-        }
-      }
-    };
-    initAuth();
-  }, [status, setAuth, setStatus]);
+    if (status === 'loading') {
+      initializeSession();
+    }
+  }, [status]);
 
   useEffect(() => {
     if (!mounted) return;

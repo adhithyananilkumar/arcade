@@ -9,6 +9,7 @@ import { AuthService } from '@/infrastructure/auth/auth.service';
 import { toast } from 'sonner';
 import { Shield, Plus, X, Edit3, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 export function UsersList() {
   const currentUser = useAuthStore(state => state.user);
@@ -19,19 +20,6 @@ export function UsersList() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
 
   useEffect(() => {
     fetchData();

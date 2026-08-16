@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { WS_ORIGIN } from '@/infrastructure/config/env';
 
-function toBrokerUrl(httpBase: string): string {
+export function toBrokerUrl(httpBase: string): string {
   const base = httpBase.replace(/\/$/, '');
   if (base.startsWith('https://')) return `wss://${base.slice('https://'.length)}/ws`;
   if (base.startsWith('http://')) return `ws://${base.slice('http://'.length)}/ws`;
@@ -55,7 +56,7 @@ export function useWebSocket() {
       return;
     }
 
-    const brokerURL = toBrokerUrl(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080');
+    const brokerURL = toBrokerUrl(WS_ORIGIN);
 
     const client = new Client({
       brokerURL,

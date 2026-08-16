@@ -6,21 +6,9 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import { api } from "@/infrastructure/http/api";
 import type { CourseResponse } from "@/shared/types/api.types";
+import { getAvatarUrl } from "@/shared/utils/avatar";
 import { Calendar, Save, Plus, Trash2, X, Search, BookOpen, User } from "lucide-react";
 import { toast } from "sonner";
-
-function getAvatarUrl(url?: string | null) {
-  if (!url) return undefined;
-  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) return url;
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-  if (url.startsWith("/api/v1/")) {
-    return baseUrl.replace("/api/v1", "") + url;
-  }
-  if (!url.includes("/")) {
-    return `${baseUrl}/users/avatars/${url}`;
-  }
-  return baseUrl + (url.startsWith("/") ? "" : "/") + url;
-}
 
 function parseSlots(raw?: string | null) {
   if (!raw || raw === "[]") return [] as { dayOfWeek: string; startTime: string; endTime: string }[];

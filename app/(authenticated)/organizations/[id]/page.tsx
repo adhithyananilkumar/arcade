@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { API_V1_BASE_URL } from '@/infrastructure/config/env';
 
 export default function OrganizationDetailsPage() {
   const { id } = useParams();
@@ -64,7 +65,7 @@ export default function OrganizationDetailsPage() {
   const getLogoUrl = (url?: string) => {
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    const baseUrl = API_V1_BASE_URL;
     if (url.startsWith('/api/v1/')) {
       return baseUrl.replace('/api/v1', '') + url;
     }

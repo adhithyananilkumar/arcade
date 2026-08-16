@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthService } from '@/infrastructure/auth/auth.service';
+import { GOOGLE_OAUTH_URL } from '@/infrastructure/config/env';
 import AuthForm, { type AuthView } from '@/domains/identity/components/AuthForm';
 
 function parseMode(raw: string | null): AuthView {
@@ -168,7 +169,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = GOOGLE_OAUTH_URL;
   };
 
   const handleResendOtp = async (email: string) => {

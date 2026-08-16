@@ -16,6 +16,7 @@ import Image from 'next/image';
 import PublicProfileLoading from './loading';
 import Lottie from 'lottie-react';
 import notFoundAnimation from '@/public/404 page not found.json';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 const badges = [
   { 
@@ -632,18 +633,6 @@ export default function PublicProfilePage() {
     );
   }
 
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
 
   const username = profileData.username || 'username';
   const displayedBadges = showAllBadges ? dynamicBadges : dynamicBadges.slice(0, 5);
@@ -697,7 +686,7 @@ export default function PublicProfilePage() {
                       profileData.role === 'ROLE_ADMIN' ||
                       profileData.role === 'PLATFORM_ADMIN' ||
                       profileData.isAdmin === true ||
-                      profileData.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                      profileData.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
                       profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
 
                     const isCreator = 
@@ -740,7 +729,7 @@ export default function PublicProfilePage() {
                     profileData.role === 'ROLE_ADMIN' ||
                     profileData.role === 'PLATFORM_ADMIN' ||
                     profileData.isAdmin === true ||
-                    profileData.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    profileData.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
                     profileData.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
 
                   const isCreator = 

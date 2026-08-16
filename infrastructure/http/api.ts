@@ -22,8 +22,9 @@
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthService } from "@/infrastructure/auth/auth.service";
 import { queryClient } from "../state/queryClient";
+import { API_ORIGIN } from "@/infrastructure/config/env";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const BASE_URL = API_ORIGIN;
 
 // Thrown instead of a plain Error so callers that need to branch on HTTP
 // status (e.g. distinguishing 404 from 403) don't have to string-match messages.

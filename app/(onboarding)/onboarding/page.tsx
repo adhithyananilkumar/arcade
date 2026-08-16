@@ -12,6 +12,7 @@ import { api } from '@/infrastructure/http/api';
 import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 const PREFERENCE_OPTIONS = [
   'Computer Science',
@@ -57,18 +58,6 @@ export default function OnboardingPage() {
   const [socialLink2, setSocialLink2] = useState(user?.githubUrl || user?.socialLinks?.[1] || '');
   const [preferences, setPreferences] = useState<string[]>(user?.preferences || []);
   
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
   const [customPreference, setCustomPreference] = useState('');
 
   useEffect(() => {

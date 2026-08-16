@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { Client } from '@stomp/stompjs';
+import { WS_ORIGIN } from '@/infrastructure/config/env';
+import { toBrokerUrl } from '@/infrastructure/websocket/useWebSocket';
 
 export default function TimeTracker() {
   const { user, accessToken } = useAuthStore();
@@ -14,7 +16,7 @@ export default function TimeTracker() {
 
     // Connect to WebSocket using STOMP
     const client = new Client({
-      brokerURL: 'ws://localhost:8080/ws',
+      brokerURL: toBrokerUrl(WS_ORIGIN),
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },

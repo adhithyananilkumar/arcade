@@ -7,6 +7,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
 import { toast } from 'sonner';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 import { gsap } from 'gsap';
 import { 
   User as UserIcon, MapPin, Link as LinkIcon, Mail, Calendar, Edit3, 
@@ -923,18 +924,6 @@ function ProfilePageContent() {
   }
 
   const currentUser = profileData || user;
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
 
   const username = currentUser.username || currentUser.email?.split('@')[0] || 'username';
 
@@ -1025,7 +1014,7 @@ function ProfilePageContent() {
                     currentUser.role === 'ROLE_ADMIN' ||
                     currentUser.role === 'PLATFORM_ADMIN' ||
                     currentUser.isAdmin === true ||
-                    currentUser.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
                     currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
 
                   const isCreator = 
@@ -1068,7 +1057,7 @@ function ProfilePageContent() {
                     currentUser.role === 'ROLE_ADMIN' ||
                     currentUser.role === 'PLATFORM_ADMIN' ||
                     currentUser.isAdmin === true ||
-                    currentUser.platformRoles?.some((r: any) => ['ADMIN', 'ROLE_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN', 'SYSTEM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
+                    currentUser.platformRoles?.some((r: any) => ['PLATFORM_OWNER', 'PLATFORM_ADMIN'].includes((r.code || r.name || '').toUpperCase())) ||
                     currentUser.roles?.some((r: any) => (typeof r === 'string' ? r : r.code || r.name)?.toUpperCase().includes('ADMIN'));
 
                   const isCreator = 

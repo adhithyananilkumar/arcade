@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { API_V1_BASE_URL } from '@/infrastructure/config/env';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api/v1';
+const BACKEND_URL = API_V1_BASE_URL;
 
 export async function GET() {
   return NextResponse.json({ message: 'Login API route active' });
