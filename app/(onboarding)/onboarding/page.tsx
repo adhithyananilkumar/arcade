@@ -315,7 +315,7 @@ export default function OnboardingPage() {
                       id="mobile" 
                       type="tel" 
                       value={mobileNumber} 
-                      onChange={e => setMobileNumber(e.target.value)} 
+                      onChange={e => setMobileNumber(e.target.value.replace(/[^\d\s+-]/g, ''))} 
                       placeholder="+1 234 567 8900"
                       autoComplete="tel"
                       className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 

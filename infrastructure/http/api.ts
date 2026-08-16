@@ -140,6 +140,18 @@ async function request<T>(
         }
       }
     }
+
+    // 5xx bodies may contain the backend's raw exception message (and, in a
+    // dev-mode backend config, a full stack trace — see
+    // GlobalExceptionHandler's catch-all handler). The parsed message above
+    // is still logged to the console for debugging, but callers across the
+    // app widely do `toast.error(error.message)` directly, so anything not
+    // safe to show a user must be replaced here rather than at each of
+    // those call sites individually.
+    if (res.status >= 500) {
+      message = 'Something went wrong on our end. Please try again in a moment.';
+    }
+
     throw new ApiError(res.status, message);
   }
 

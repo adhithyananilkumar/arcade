@@ -130,12 +130,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
           email: data.email,
           password: data.password,
         });
-        setSuccessKind('signup');
-        setShowSuccess(true);
-        setTimeout(() => {
-          setShowSuccess(false);
-          handleModeChange('verify');
-        }, 2000);
+        handleModeChange('verify');
       } else if (mode === 'verify') {
         if (!data.otp) {
           setGlobalError('Please enter the 6-digit verification code.');

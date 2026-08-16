@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from "@/domains/identity";
 import { toast } from 'sonner';
+import { sanitizeHtml } from '@/shared/utils/sanitizeHtml';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Loader2,
@@ -1506,7 +1507,7 @@ export default function MyLearningPage() {
 
                               <div className={`absolute ${isActive ? (node.level === 1 ? 'top-7' : node.level === 5 ? 'top-9' : 'top-9 sm:top-10') : (node.level === 1 ? 'top-7' : node.level === 5 ? 'top-8 sm:top-9' : 'top-8')} text-center w-[70px] sm:w-[85px] pointer-events-none`}>
                                 <p className={`text-[10px] sm:text-[10.5px] font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>{node.title}</p>
-                                <p className="text-[8px] sm:text-[8.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" dangerouslySetInnerHTML={{ __html: node.subtitle }}></p>
+                                <p className="text-[8px] sm:text-[8.5px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" dangerouslySetInnerHTML={{ __html: sanitizeHtml(node.subtitle) }}></p>
                               </div>
                             </div>
                           );

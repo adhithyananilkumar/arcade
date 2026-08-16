@@ -169,6 +169,67 @@ function PrimaryButton({
   );
 }
 
+function OtpInput({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  error?: string;
+}) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      if (!value[index] && index > 0) {
+        const prev = document.getElementById(`otp-${index - 1}`);
+        prev?.focus();
+      }
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const char = e.target.value.replace(/\D/g, '').slice(-1);
+    const newOtp = value.split('');
+    newOtp[index] = char;
+    const newVal = newOtp.join('').slice(0, 6);
+    onChange(newVal);
+    if (char && index < 5) {
+      const next = document.getElementById(`otp-${index + 1}`);
+      next?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    onChange(pasted);
+  };
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex justify-between gap-1 sm:gap-2" onPaste={handlePaste}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <input
+            key={i}
+            id={`otp-${i}`}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={value[i] || ''}
+            onChange={(e) => handleChange(e, i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            autoComplete={i === 0 ? 'one-time-code' : 'off'}
+            className={`h-12 w-full max-w-[48px] rounded-xl border-2 text-center text-lg font-bold text-slate-900 outline-none transition-all focus:border-[#4C6FFF] ${
+              error ? 'border-red-500 bg-red-50/50' : 'border-slate-200 bg-transparent'
+            }`}
+          />
+        ))}
+      </div>
+      <FieldError message={error} />
+    </div>
+  );
+}
+
 export default function AuthForm({
   mode,
   loading,
@@ -195,10 +256,35 @@ export default function AuthForm({
   const [dismissedGlobal, setDismissedGlobal] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [showVerifyEmail, setShowVerifyEmail] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(true);
 
   useEffect(() => {
     if (globalError) setDismissedGlobal(false);
   }, [globalError]);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('arcade_auth_email');
+    if (stored && !email) {
+      setEmail(stored);
+    }
+    setIsRestoring(false);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && email) {
+      sessionStorage.setItem('arcade_auth_email', email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (isRestoring) return;
+    if (mode === 'verify' && !email && !showVerifyEmail && !hasToken) {
+      setShowVerifyEmail(true);
+    } else if (mode !== 'verify') {
+      setShowVerifyEmail(false);
+    }
+  }, [mode, email, showVerifyEmail, hasToken, isRestoring]);
 
   const handleModeChange = (next: AuthView) => {
     setErrors({});
@@ -278,6 +364,8 @@ export default function AuthForm({
   const emailError =
     errors.email ||
     ((mode === 'signup' || mode === 'forgot') && activeGlobal ? activeGlobal : undefined);
+  const otpError =
+    errors.otp || (mode === 'verify' && activeGlobal ? activeGlobal : undefined);
 
   const heading =
     mode === 'signup'
@@ -318,7 +406,13 @@ export default function AuthForm({
     ) : mode === 'reset' ? (
       <>Enter a strong password for your Arcade account.</>
     ) : (
-      <>Confirming your email address…</>
+      <>
+        {showVerifyEmail ? (
+          'Please enter your email and the verification code.'
+        ) : (
+          <>We sent a verification code to <strong className="text-slate-700">{email}</strong>.</>
+        )}
+      </>
     );
 
   if (showSuccess) {
@@ -441,10 +535,10 @@ export default function AuthForm({
           {(mode === 'forgot' || mode === 'reset' || mode === 'verify') && (
             <button
               type="button"
-              onClick={() => handleModeChange('login')}
+              onClick={() => handleModeChange(mode === 'verify' ? 'signup' : 'login')}
               className="mb-5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
             >
-              <ArrowLeft size={16} /> Back to sign in
+              <ArrowLeft size={16} /> {mode === 'verify' ? 'Back to sign up' : 'Back to sign in'}
             </button>
           )}
 
@@ -502,7 +596,7 @@ export default function AuthForm({
               )}
             </AnimatePresence>
 
-            {(mode === 'login' || mode === 'signup' || mode === 'forgot' || mode === 'verify') && (
+            {(mode === 'login' || mode === 'signup' || mode === 'forgot' || showVerifyEmail) && (
               <InputField
                 label={mode === 'login' ? 'Email or username' : 'Email'}
                 type={mode === 'login' ? 'text' : 'email'}
@@ -521,21 +615,19 @@ export default function AuthForm({
 
             {mode === 'verify' && (
               <div className="flex w-full flex-col">
-                <InputField
-                  label="Verification Code (OTP)"
-                  type="text"
-                  placeholder="6-digit code"
+                <label className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Verification Code
+                </label>
+                <OtpInput
                   value={otp}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  onChange={(val) => {
                     setOtp(val);
+                    setDismissedGlobal(true);
                     if (errors.otp) setErrors((prev) => ({ ...prev, otp: '' }));
                   }}
-                  icon={CheckCircle2}
-                  error={errors.otp}
-                  autoComplete="one-time-code"
+                  error={otpError}
                 />
-                <div className="mt-2.5 flex justify-end pr-1">
+                <div className="mt-3 flex justify-end pr-1">
                   {resendSuccess ? (
                     <span className="text-xs font-semibold text-green-600">
                       Verification code resent!
