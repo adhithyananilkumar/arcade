@@ -75,6 +75,12 @@ export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> =
     // Planned — /progress returns the caller's own progress, not a learner list.
     { id: "LEARNERS", label: "Learners", group: "people", availability: "planned" },
   ],
+  article: [
+    { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "available" },
+    { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
+    // Planned — no article analytics endpoint exists yet.
+    { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "planned" },
+  ],
 };
 
 export function availableCapabilities(segment: ContentTypeSegment): CapabilityDef[] {

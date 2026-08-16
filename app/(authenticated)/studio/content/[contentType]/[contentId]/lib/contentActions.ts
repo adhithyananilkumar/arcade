@@ -1,5 +1,6 @@
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
+import { articleService } from "@/domains/articles";
 import { submitEvent, duplicateEvent, archiveEvent } from "@/app/(authenticated)/studio/events/api/publish";
 import { deleteEvent } from "@/app/(authenticated)/studio/events/api/dashboardApi";
 import type { ContentTypeSegment } from "./contentTypeRouting";
@@ -10,6 +11,7 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 export function submitForReview(segment: ContentTypeSegment, contentId: string): Promise<unknown> {
   if (segment === "course") return api.post(`/api/courses/${contentId}/submit`);
   if (segment === "roadmap") return roadmapService.submitRoadmap(contentId);
+  if (segment === "article") return articleService.submitArticle(contentId);
   return submitEvent(contentId);
 }
 
@@ -37,6 +39,7 @@ export function deleteContent(
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
   if (segment === "roadmap") return roadmapService.deleteRoadmap(contentId);
+  if (segment === "article") return articleService.deleteArticle(contentId);
   if (segment === "event") return deleteEvent(contentId);
   return null;
 }
@@ -49,6 +52,7 @@ const COLLABORATORS_BASE: Record<ContentTypeSegment, (id: string) => string> = {
   course: (id) => `/api/v1/courses/${id}/collaborators`,
   roadmap: (id) => `/api/roadmaps/${id}/collaborators`,
   event: (id) => `/api/v1/events/${id}/collaborators`,
+  article: (id) => `/api/v1/articles/${id}/collaborators`,
 };
 
 // All three domains share the exact same {email, role} invite contract —

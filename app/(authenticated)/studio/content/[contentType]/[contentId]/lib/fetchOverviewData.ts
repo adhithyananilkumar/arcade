@@ -93,6 +93,7 @@ const REVIEW_CONTENT_TYPE: Record<ContentTypeSegment, ReviewContentType> = {
   course: "COURSE",
   roadmap: "ROADMAP",
   event: "EVENT",
+  article: "ARTICLE",
 };
 
 export interface CourseSettingsLite {
@@ -178,6 +179,24 @@ async function findContentSummary(contentId: string, segment: ContentTypeSegment
           authorName: res.organizerName || res.authorName,
         };
       }
+    } else if (segment === "article") {
+      const res = await api.get<any>(`/api/articles/${contentId}`);
+      if (res && res.id) {
+        return {
+          id: res.id,
+          type: "ARTICLE",
+          title: res.title || "Untitled Article",
+          description: res.description,
+          coverImageUrl: res.coverImageUrl,
+          status: res.status || "DRAFT",
+          createdAt: res.createdAt,
+          updatedAt: res.updatedAt,
+          channelId: res.channelId,
+          channelName: res.channelName || "Studio",
+          authorId: res.authorId || res.createdBy?.id,
+          authorName: res.authorName || res.createdBy?.fullName,
+        };
+      }
     }
   } catch (e) {
     console.warn("Direct content lookup fallback failed", e);
@@ -203,6 +222,15 @@ export async function fetchOverviewData(
   const reviewPromise = settle(platformReviewApi.byContent(REVIEW_CONTENT_TYPE[segment], contentId), {
     emptyStatuses: [404],
   });
+
+  if (segment === "article") {
+    const [statusHistory, collaborators, review] = await Promise.all([
+      settle(api.get<StatusHistoryEntry[]>(`/api/articles/${contentId}/status-history`), { isEmpty: isEmptyArray, emptyStatuses: [404] }),
+      settle(api.get<CollaboratorLite[]>(`/api/v1/articles/${contentId}/collaborators`), { isEmpty: isEmptyArray, emptyStatuses: [404] }),
+      reviewPromise,
+    ]);
+    return { content, statusHistory, collaborators, review };
+  }
 
   if (segment === "course") {
     const [statusHistory, collaborators, courseSettings, review] = await Promise.all([

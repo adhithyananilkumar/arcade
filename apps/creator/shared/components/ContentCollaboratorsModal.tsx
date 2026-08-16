@@ -21,7 +21,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   contentId: string;
-  contentType: 'course' | 'workshop' | 'roadmap';
+  contentType: 'course' | 'workshop' | 'roadmap' | 'article';
 }
 
 export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentType }: Props) {
@@ -32,11 +32,13 @@ export function ContentCollaboratorsModal({ isOpen, onClose, contentId, contentT
   const [inviteRole, setInviteRole] = useState<'OWNER' | 'MANAGER' | 'EDITOR' | 'VIEWER'>('EDITOR');
   const [inviting, setInviting] = useState(false);
 
-  const apiBasePath = 
-    contentType === 'workshop' 
+  const apiBasePath =
+    contentType === 'workshop'
       ? `/api/v1/events/${contentId}/collaborators`
       : contentType === 'roadmap'
       ? `/api/v1/roadmaps/${contentId}/collaborators`
+      : contentType === 'article'
+      ? `/api/v1/articles/${contentId}/collaborators`
       : `/api/v1/courses/${contentId}/collaborators`;
 
   useEffect(() => {

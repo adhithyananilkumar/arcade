@@ -3,7 +3,7 @@
 // /studio/content/{contentType}/{contentId}, and for building the editor URL
 // each type's existing (unchanged) editor lives at.
 
-export type ContentTypeSegment = "course" | "roadmap" | "event";
+export type ContentTypeSegment = "course" | "roadmap" | "event" | "article";
 
 const EVENT_TYPES = new Set(["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"]);
 
@@ -12,6 +12,7 @@ export function toContentTypeSegment(rawType: string): ContentTypeSegment | null
   const type = rawType?.toUpperCase();
   if (type === "ROADMAP") return "roadmap";
   if (type === "COURSE") return "course";
+  if (type === "ARTICLE") return "article";
   if (type && EVENT_TYPES.has(type)) return "event";
   return null;
 }
@@ -30,6 +31,8 @@ export function editorHref(segment: ContentTypeSegment, id: string): string {
       return `/studio/events/${id}/edit`;
     case "course":
       return `/studio/course/${id}/edit`;
+    case "article":
+      return `/studio/article/${id}/edit`;
   }
 }
 
@@ -37,6 +40,7 @@ export const CONTENT_TYPE_LABEL: Record<ContentTypeSegment, string> = {
   course: "Course",
   roadmap: "Roadmap",
   event: "Event",
+  article: "Article",
 };
 
 /** Real learner-facing preview route, or null when the type has none — never link to a route that doesn't exist. */

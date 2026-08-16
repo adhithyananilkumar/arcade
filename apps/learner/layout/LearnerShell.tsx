@@ -19,8 +19,10 @@ const IMMERSIVE_ROUTES = [
   /^\/studio\/workshop\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/events\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
-  /^\/studio\/content\/[^/]+\/[^/]+\/edit\/?$/,
+  /^\/studio\/article(\/.*)?$/,
+  /^\/studio\/content\/[^/]+\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
+  /^\/studio\/[^/]+\/new\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
   /^\/roadmap\/[^/]+\/?$/,
 ];

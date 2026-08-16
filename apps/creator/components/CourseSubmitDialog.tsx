@@ -20,7 +20,7 @@ interface ExamScheduleSlot {
 interface CourseSubmitDialogProps {
   course?: CourseResponse;
   roadmap?: RoadmapData;
-  contentType?: 'course' | 'roadmap' | 'workshop' | 'question-bank';
+  contentType?: 'course' | 'roadmap' | 'workshop' | 'question-bank' | 'article';
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
@@ -119,9 +119,9 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Event' : 'Course'} for Review</DialogTitle>
+          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Event' : contentType === 'article' ? 'Article' : 'Course'} for Review</DialogTitle>
           <DialogDescription>
-            Configure the final details before sending your {contentType === 'roadmap' ? 'roadmap' : contentType === 'workshop' ? 'workshop' : 'course'} for approval.
+            Configure the final details before sending your {contentType === 'roadmap' ? 'roadmap' : contentType === 'workshop' ? 'workshop' : contentType === 'article' ? 'article' : 'course'} for approval.
           </DialogDescription>
         </DialogHeader>
 

@@ -22,8 +22,9 @@ import { ReadinessCard } from "./components/sections/ReadinessCard";
 import { CourseOverviewTab, getCourseMetrics } from "./components/content-types/CourseOverview";
 import { EventOverviewTab, getEventMetrics } from "./components/content-types/EventOverview";
 import { RoadmapOverviewTab, getRoadmapMetrics } from "./components/content-types/RoadmapOverview";
+import { ArticleOverviewTab, getArticleMetrics } from "./components/content-types/ArticleOverview";
 
-const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "roadmap", "event"];
+const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "roadmap", "event", "article"];
 
 type LoadState =
   | { status: "loading" }
@@ -160,7 +161,13 @@ export default function ContentOverviewPage() {
   const review = data.review.status === "ok" ? data.review.data : null;
 
   const metrics =
-    segment === "course" ? getCourseMetrics(data) : segment === "event" ? getEventMetrics(data) : getRoadmapMetrics(data);
+    segment === "course"
+      ? getCourseMetrics(data)
+      : segment === "event"
+      ? getEventMetrics(data)
+      : segment === "article"
+      ? getArticleMetrics(data)
+      : getRoadmapMetrics(data);
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -294,6 +301,16 @@ export default function ContentOverviewPage() {
               </div>
             </div>
           </div>
+        ) : segment === "article" ? (
+          <ArticleOverviewTab
+            tab={activeTab}
+            data={data}
+            contentId={contentId}
+            currentUserId={currentUserId}
+            onChanged={reload}
+            onSubmit={handleSubmit}
+            submitting={submitting}
+          />
         ) : segment === "course" ? (
           <CourseOverviewTab
             tab={activeTab}

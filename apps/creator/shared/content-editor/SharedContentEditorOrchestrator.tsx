@@ -156,12 +156,13 @@ function scheduleIdle(fn: () => void) {
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
 import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
+import { ArticleAdapter } from "./adapters/ArticleAdapter";
 import type { ContentDataAdapter } from "./types";
 import { RoadmapCanvas } from "@/domains/roadmaps";
 import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop" | "roadmap";
+  contentType: "course" | "workshop" | "roadmap" | "article";
   contentId?: string;
 }
 
@@ -598,7 +599,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       ? new CourseAdapter()
       : contentType === "roadmap"
         ? new RoadmapAdapter()
-        : new EventAdapter(contentId || "");
+        : contentType === "article"
+          ? new ArticleAdapter()
+          : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -614,7 +617,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // Categories created via Console -> Content Manage -> Categories (super-user only). Scoped
   // to COURSES-type categories only — this is the Studio course editor, not events/articles.
   const publicCategories = usePublicCategories();
-  const courseCategories = publicCategories.filter((c) => c.type === "COURSES");
+  const categoryType = contentType === "article" ? "ARTICLES" : "COURSES";
+  const courseCategories = publicCategories.filter((c) => c.type === categoryType || c.type === "COURSES" || c.type === "ARTICLES");
   const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
@@ -691,6 +695,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const collabApiBasePath = useMemo(() => {
     if (contentType === "course") return `/api/v1/courses/${contentId}/collaborators`;
     if (contentType === "roadmap") return `/api/roadmaps/${contentId}/collaborators`;
+    if (contentType === "article") return `/api/v1/articles/${contentId}/collaborators`;
     return `/api/v1/events/${contentId}/collaborators`;
   }, [contentType, contentId]);
 
@@ -716,6 +721,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const statusHistoryApiPath = useMemo(() => {
     if (contentType === "roadmap") return `/api/roadmaps/${contentId}/status-history`;
     if (contentType === "workshop") return `/api/v1/events/${contentId}/status-history`;
+    if (contentType === "article") return `/api/articles/${contentId}/status-history`;
     return `/api/courses/${contentId}/status-history`;
   }, [contentType, contentId]);
 
@@ -969,8 +975,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setCreatedAt(meta.createdAt);
         setUpdatedAt(meta.updatedAt);
         setContentChannelId(meta.raw?.channelId || null);
-        if (contentType === "course") {
-          setCourseData(meta.raw);
+        if (contentType === "course" || contentType === "article") {
+          if (contentType === "course") setCourseData(meta.raw);
           setCategoryId(meta.raw?.categoryId ?? null);
         } else if (contentType === "roadmap") {
           setRoadmapData(meta.raw);
@@ -1146,7 +1152,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const updateCourseCategory = useCallback(
     async (newCategoryId: string | null) => {
-      if (!contentId || contentType !== "course") return;
+      if (!contentId || (contentType !== "course" && contentType !== "article")) return;
       const previous = categoryId;
       setCategoryId(newCategoryId);
       setSavingCategory(true);
@@ -1421,13 +1427,17 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
     if (activeLessonId) {
       // Persist the lesson title, then flush the editor body (bypasses its debounce).
-      tasks.push(
-        api
-          .patch(`/api/lessons/${activeLessonId}`, {
-            title: activeLessonTitle.trim() || adapter.terminology.leafDocument,
-          })
-          .catch((e) => console.warn("Lesson title flush failed", e))
-      );
+      // Article's single leaf isn't independently titled — its title is the content title,
+      // already flushed via adapter.updateMeta above — so skip the lesson-title PATCH for it.
+      if (contentType !== "article") {
+        tasks.push(
+          api
+            .patch(`/api/lessons/${activeLessonId}`, {
+              title: activeLessonTitle.trim() || adapter.terminology.leafDocument,
+            })
+            .catch((e) => console.warn("Lesson title flush failed", e))
+        );
+      }
       if (editorRef.current) {
         tasks.push(
           Promise.resolve(editorRef.current.flush()).catch((e) =>
@@ -1439,14 +1449,14 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
     await Promise.all(tasks);
 
-    // Save a version snapshot of the open lesson on exit, so leaving the editor
+    // Save a version snapshot of the open lesson/article on exit, so leaving the editor
     // always leaves a restorable point in history. Runs after the flush above so it
     // references the just-persisted document state.
     if (activeLessonId && activeYDocRef.current && editorRef.current) {
       const json = editorRef.current.getJSON();
       if (json) {
         try {
-          await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+          await adapter.saveLeafVersion(activeLessonId, {
             snapshot: encodeSnapshotBase64(activeYDocRef.current),
             body: JSON.stringify(json),
             kind: "AUTO",
@@ -1457,7 +1467,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       }
     }
 
-    router.push(contentType === "course" ? `/studio/content/course/${contentId}` : "/studio");
+    router.push(
+      contentType === "course" ? `/studio/content/course/${contentId}` : "/studio"
+    );
   }, [
     navigatingBack,
     contentId,
@@ -1474,7 +1486,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => {
-    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
+    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop" || contentType === "article") {
       setSubmitDialogOpen(true);
       return;
     }
@@ -1508,6 +1520,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setPricingModel(updated.pricingModel as "FREE" | "PAID");
       } else if (contentType === "roadmap") {
         const updated = await api.post<any>(`/api/roadmaps/${contentId}/submit`, { message: data.message });
+        setStatus(updated.status);
+        setUpdatedAt(updated.updatedAt);
+      } else if (contentType === "article") {
+        const updated = await api.post<any>(`/api/articles/${contentId}/submit`, { message: data.message });
         setStatus(updated.status);
         setUpdatedAt(updated.updatedAt);
       } else if (contentType === "workshop") {
@@ -1833,7 +1849,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
         {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
-        {contentType !== "roadmap" && (
+        {contentType !== "roadmap" && contentType !== "article" && (
           <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
               {/* ── Sidebar header ───────────────── */}
@@ -2109,7 +2125,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       Add {adapter.terminology.container}
                     </button>
                   )}
-                  {contentType === "course" && (
+                  {((contentType as string) === "course" || (contentType as string) === "article") && (
                     <div className="flex flex-col gap-1 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
                       <label htmlFor="course-category-select" className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
                         Category
@@ -2212,6 +2228,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     ref={editorRef}
                     ydoc={activeYDoc}
                     documentId={activeLessonId}
+                    documentName={contentType === "article" ? `article:${activeLessonId}` : undefined}
                     seedContent={activeSeedContent}
                     placeholder="Start writing your lesson content…"
                     onSave={handleSave}

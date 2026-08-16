@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
+import { articleService } from "@/domains/articles";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
@@ -162,6 +163,13 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
         <FileQuestion size={10} /> Quiz
+      </span>
+    );
+  }
+  if (type === "ARTICLE") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+        <FileText size={10} /> Article
       </span>
     );
   }
@@ -485,6 +493,113 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
               className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {creating ? "Creating..." : "Create roadmap"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── New Article creation modal ──────────────────────────────────────────────────
+
+function CreateArticleModal({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { channels, loading: channelsLoading } = useEligibleChannels();
+  const [channelId, setChannelId] = useState("");
+
+  useEffect(() => {
+    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
+  }, [channels, channelId]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim() || !channelId) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const article = await articleService.createArticle({
+        title: title.trim(),
+        channelId,
+      });
+      toast.success(`"${title.trim()}" created`);
+      router.push(`/studio/article/${article.id}/edit`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not create article";
+      setError(message);
+      toast.error(message);
+      setCreating(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+        >
+          <X size={18} />
+        </button>
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
+            <FileText size={20} className="text-[#14142b]" />
+          </div>
+          <div>
+            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Article</h3>
+            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div>
+            <label htmlFor="article-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
+              Article Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="article-title"
+              type="text"
+              required
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Understanding Dependency Injection"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
+            />
+          </div>
+          {!channelsLoading && channels.length > 0 && (
+            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
+          )}
+          {!channelsLoading && channels.length === 0 && (
+            <p className="text-sm text-rose-600">
+              You need a channel with content-authoring rights before you can create an article.
+            </p>
+          )}
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creating}
+              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {creating ? "Creating..." : "Create article"}
             </button>
           </div>
         </form>
@@ -1191,7 +1306,7 @@ function ChannelRequiredModal({
 export default function DashboardPage() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | "article" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -1217,7 +1332,7 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz") {
+    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz" || typeId === "article") {
       setCreateOpen(typeId as any);
     } else if (href) {
       router.push(href);
@@ -1233,7 +1348,7 @@ export default function DashboardPage() {
         setChannelRequiredModalOpen(true);
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
-      } else if (create === "course" || create === "roadmap" || create === "quiz") {
+      } else if (create === "course" || create === "roadmap" || create === "quiz" || create === "article") {
         setCreateOpen(create as any);
       }
     }
@@ -1332,6 +1447,7 @@ export default function DashboardPage() {
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
+      {createOpen === "article" && <CreateArticleModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
       {renameTarget && (
