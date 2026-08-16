@@ -1456,8 +1456,9 @@ export default function DashboardPage() {
             <span className="pointer-events-none absolute bottom-0 left-0 h-3.5 w-3.5 border-b-[2.5px] border-l-[2.5px] border-[#2962D6] rounded-bl-[3px]" />
             <span className="pointer-events-none absolute bottom-0 right-0 h-3.5 w-3.5 border-b-[2.5px] border-r-[2.5px] border-[#2962D6] rounded-br-[3px]" />
 
-            <h1 className="font-script text-4xl sm:text-5xl md:text-[3.5rem] font-bold tracking-wide bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent cursor-default py-1">
-              Arcade Studio
+            <h1 className="font-script text-4xl sm:text-5xl md:text-[3.5rem] font-bold tracking-wide cursor-default py-1">
+              <span className="text-[#14142b]">Arcade</span>{" "}
+              <span className="bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent">Studio</span>
             </h1>
           </div>
 

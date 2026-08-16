@@ -22,6 +22,7 @@ import { ReadinessCard } from "./components/sections/ReadinessCard";
 import { CourseOverviewTab, getCourseMetrics } from "./components/content-types/CourseOverview";
 import { EventOverviewTab, getEventMetrics } from "./components/content-types/EventOverview";
 import { RoadmapOverviewTab, getRoadmapMetrics } from "./components/content-types/RoadmapOverview";
+import { ChevronCard } from "@/components/ui/ChevronCard";
 
 const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "roadmap", "event"];
 
@@ -230,15 +231,15 @@ export default function ContentOverviewPage() {
               )}
             </div>
             <div className="flex flex-col gap-6">
-              <div className="group rounded-2xl border border-white/40 bg-white/40 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl">
+              <ChevronCard accentColor="#ff6b4a">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#14142b]">
-                    <Users size={14} /> People
+                    <Users size={14} className="text-[#ff6b4a]" /> People
                   </h2>
                   {groups.includes("people") && (
                     <button
                       onClick={() => setActiveTab("people")}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#14142b] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#ff6b4a] hover:underline cursor-pointer"
                     >
                       View all <ArrowRight size={11} />
                     </button>
@@ -256,24 +257,24 @@ export default function ContentOverviewPage() {
                     ))}
                   </ul>
                 )}
-              </div>
+              </ChevronCard>
 
-              <div className="group rounded-2xl border border-white/40 bg-white/40 p-6 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-white/60 hover:bg-white/60 hover:shadow-xl">
+              <ChevronCard accentColor="#0ea5e9">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="flex items-center gap-1.5 text-sm font-bold text-[#14142b]">
-                    <Clock size={14} /> Recent activity
+                    <Clock size={14} className="text-[#0ea5e9]" /> Recent activity
                   </h2>
                   {groups.includes("more") ? (
                     <button
                       onClick={() => setActiveTab("more")}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#14142b] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#0ea5e9] hover:underline cursor-pointer"
                     >
                       View all <ArrowRight size={11} />
                     </button>
                   ) : (
                     <button
                       onClick={() => setActiveTab("publishing")}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#14142b] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#0ea5e9] hover:underline cursor-pointer"
                     >
                       View all <ArrowRight size={11} />
                     </button>
@@ -291,7 +292,7 @@ export default function ContentOverviewPage() {
                     ))}
                   </ul>
                 )}
-              </div>
+              </ChevronCard>
             </div>
           </div>
         ) : segment === "course" ? (

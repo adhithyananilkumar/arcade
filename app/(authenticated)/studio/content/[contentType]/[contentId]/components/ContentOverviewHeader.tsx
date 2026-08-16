@@ -189,35 +189,38 @@ export function ContentOverviewHeader({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      {/* Centered Hero Header Title Section */}
+      <div className="flex flex-col items-center justify-center text-center">
+        {coverImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverImageUrl}
+            alt=""
+            className="mb-4 h-20 w-20 rounded-2xl border border-white/80 bg-slate-50 object-cover shadow-md"
+          />
+        )}
 
+        {/* Title Centered */}
+        <h1 className="font-script text-3xl sm:text-4xl md:text-5xl font-bold tracking-wide text-[#14142b] cursor-default py-1">
+          {title}
+        </h1>
 
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div className="flex items-start gap-4">
-          {coverImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element -- arbitrary uploaded/CDN URLs, no fixed remotePatterns to lean on next/image for
-            <img
-              src={coverImageUrl}
-              alt=""
-              className="hidden h-16 w-16 shrink-0 rounded-xl border border-slate-200/80 bg-slate-50 object-cover sm:block"
-            />
-          )}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight text-[#14142b] sm:text-2xl">{title}</h1>
-              <StatusPill status={status} />
-            </div>
-            <p className="text-xs font-medium text-slate-500">{subtitleParts.join(" · ")}</p>
-            <p className="text-[11px] text-slate-400">
-              Created {formatDate(createdAt)} · Last edited {formatDate(updatedAt)}
-            </p>
-          </div>
-        </div>
+        {/* Subtitle */}
+        <p className="mt-2 text-sm sm:text-base font-semibold text-slate-600 max-w-lg">
+          {subtitleParts.join(" · ")}
+        </p>
 
-        <div className="flex shrink-0 items-center gap-2">
+        {/* Dates */}
+        <p className="mt-1 text-xs font-medium text-slate-400">
+          Created {formatDate(createdAt)} · Last edited {formatDate(updatedAt)}
+        </p>
+
+        {/* Centered Action Buttons Bar */}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
           {channelSuspended ? (
             <span
-              className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-lg bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-400"
+              className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-full bg-slate-100 px-5 py-2.5 text-xs font-semibold text-slate-400"
               title="This channel is suspended — editing is disabled until it's reactivated"
             >
               Editing Disabled
@@ -240,7 +243,7 @@ export function ContentOverviewHeader({
               <button
                 type="button"
                 onClick={() => setMenuOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-xs transition-colors hover:bg-slate-50 cursor-pointer"
                 aria-label="More actions"
               >
                 <MoreVertical size={16} />
@@ -248,11 +251,11 @@ export function ContentOverviewHeader({
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
+                  <div className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 z-20 mt-1 w-44 rounded-xl border border-slate-100 bg-white/95 backdrop-blur-md py-1.5 shadow-xl">
                     {duplicate && (
                       <button
                         onClick={handleDuplicate}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                        className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                       >
                         <Copy size={14} /> Duplicate
                       </button>
@@ -263,7 +266,7 @@ export function ContentOverviewHeader({
                           setMenuOpen(false);
                           setConfirmAction("archive");
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                        className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
                       >
                         <Archive size={14} /> Archive
                       </button>
@@ -274,7 +277,7 @@ export function ContentOverviewHeader({
                           setMenuOpen(false);
                           setConfirmAction("delete");
                         }}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
+                        className="flex w-full items-center gap-2 px-3.5 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer"
                       >
                         <Trash2 size={14} /> Delete
                       </button>

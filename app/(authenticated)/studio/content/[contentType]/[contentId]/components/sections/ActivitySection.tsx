@@ -32,25 +32,36 @@ export function ActivitySection({
   }
 
   return (
-    <ol className="flex flex-col gap-3 rounded-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">
-      {entries.map((entry) => (
-        <li key={entry.id} className="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0 last:pb-0">
-          <Clock size={14} className="mt-0.5 shrink-0 text-slate-400" />
-          <div className="flex flex-col gap-0.5">
-            <p className="text-sm font-semibold text-[#14142b]">{entry.title}</p>
-            <p className="text-xs text-slate-500">
-              {entry.actorName} · {new Date(entry.createdAt).toLocaleString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              })}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ol>
+    <div className="relative group my-4 mx-2 select-none">
+      {/* Bottom-Left Outline Frame Offset */}
+      <div className="pointer-events-none absolute -bottom-2.5 -left-2.5 inset-0 rounded-2xl border-2 border-[#06b6d4] transition-all duration-300 group-hover:-bottom-3.5 group-hover:-left-3.5 z-0" />
+
+      {/* Top-Right Solid Color Panel Offset */}
+      <div className="pointer-events-none absolute -top-2.5 -right-2.5 inset-0 rounded-2xl bg-[#06b6d4] transition-all duration-300 group-hover:-top-3.5 group-hover:-right-3.5 z-0" />
+
+      {/* Main White Card Container */}
+      <div className="relative z-10 flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-md">
+        <ol className="flex flex-col gap-3">
+          {entries.map((entry) => (
+            <li key={entry.id} className="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0 last:pb-0">
+              <Clock size={14} className="mt-0.5 shrink-0 text-slate-400" />
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-semibold text-[#14142b]">{entry.title}</p>
+                <p className="text-xs text-slate-500">
+                  {entry.actorName} · {new Date(entry.createdAt).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
   );
 }
