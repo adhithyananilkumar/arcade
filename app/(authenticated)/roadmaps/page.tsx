@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import BorderBeam from '@/components/ui/border-beam';
 import {
@@ -435,65 +436,67 @@ function RoadmapCard({
   const IconComp = TOPIC_ICONS[item.id] || Compass;
 
   return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/60 card-scalloped-left transition-all duration-300 cursor-pointer flex flex-col items-center text-center relative overflow-hidden"
-    >
-      {/* Fixed Theme Colored Hairline Scalloped Left Edge Line (2px width) */}
-      <div className={`absolute top-0 bottom-0 left-0 w-[2px] ${colorTheme.bg} pointer-events-none z-10`} />
-      {/* BorderBeam Animation on Card Hover */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <BorderBeam
-          size={180}
-          duration={8}
-          borderWidth={2}
-          colorFrom={colorTheme.colorFrom}
-          colorTo={colorTheme.colorTo}
-        />
-      </div>
+    <Link href={`/roadmap/${item.id}`} className="block w-full">
+      <motion.div
+        whileHover={{ y: -4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="group h-full bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/60 card-scalloped-left transition-all duration-300 cursor-pointer flex flex-col items-center text-center relative overflow-hidden"
+      >
+        {/* Fixed Theme Colored Hairline Scalloped Left Edge Line (2px width) */}
+        <div className={`absolute top-0 bottom-0 left-0 w-[2px] ${colorTheme.bg} pointer-events-none z-10`} />
+        {/* BorderBeam Animation on Card Hover */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <BorderBeam
+            size={180}
+            duration={8}
+            borderWidth={2}
+            colorFrom={colorTheme.colorFrom}
+            colorTo={colorTheme.colorTo}
+          />
+        </div>
 
-      {/* Signature Circular Badge with Outer Translucent Halo Ring Animation */}
-      <div className="relative flex items-center justify-center my-1">
-        {/* Animated Outer Translucent Halo Ring (expands smoothly when card is hovered) */}
-        <div
-          className={`absolute -inset-1.5 sm:-inset-2 rounded-full ${colorTheme.haloBg} opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out pointer-events-none`}
-        />
+        {/* Signature Circular Badge with Outer Translucent Halo Ring Animation */}
+        <div className="relative flex items-center justify-center my-1">
+          {/* Animated Outer Translucent Halo Ring (expands smoothly when card is hovered) */}
+          <div
+            className={`absolute -inset-1.5 sm:-inset-2 rounded-full ${colorTheme.haloBg} opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out pointer-events-none`}
+          />
 
-        {/* Outer Solid Circle */}
-        <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-full ${colorTheme.bg} border-4 border-white shadow-md flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105 shrink-0`}>
-          {/* Inner White Circle */}
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center shadow-inner">
-            <IconComp size={22} className={colorTheme.iconColor} />
+          {/* Outer Solid Circle */}
+          <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-full ${colorTheme.bg} border-4 border-white shadow-md flex items-center justify-center relative z-10 transition-transform duration-300 group-hover:scale-105 shrink-0`}>
+            {/* Inner White Circle */}
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center shadow-inner">
+              <IconComp size={22} className={colorTheme.iconColor} />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Title */}
-      <h3 className="font-extrabold text-base sm:text-lg text-[#0F172A] group-hover:text-[#06B6D4] transition-colors mt-4 leading-snug">
-        {item.title}
-      </h3>
+        {/* Title */}
+        <h3 className="font-extrabold text-base sm:text-lg text-[#0F172A] group-hover:text-[#06B6D4] transition-colors mt-4 leading-snug">
+          {item.title}
+        </h3>
 
-      {/* Description */}
-      {item.description && (
-        <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
-          {item.description}
-        </p>
-      )}
+        {/* Description */}
+        {item.description && (
+          <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+            {item.description}
+          </p>
+        )}
 
-      {/* Footer / Action link */}
-      <div className="mt-5 mb-2 w-full flex items-center justify-center text-xs font-bold text-slate-400 group-hover:text-[#06B6D4] transition-colors gap-1">
-        <span>Explore Roadmap</span>
-        <ChevronRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
-      </div>
+        {/* Footer / Action link */}
+        <div className="mt-5 mb-2 w-full flex items-center justify-center text-xs font-bold text-slate-400 group-hover:text-[#06B6D4] transition-colors gap-1">
+          <span>Explore Roadmap</span>
+          <ChevronRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
+        </div>
 
-      {/* Signature Ribbon Flag V-Notch Cutout at Bottom-Right of Card (Bow Card Design) */}
-      <div className="absolute bottom-0 right-6 w-10 h-3 pointer-events-none z-20">
-        <svg className="w-full h-full" viewBox="0 0 40 12" preserveAspectRatio="none">
-          <polygon points="0,12 20,0 40,12 40,12 0,12" fill="#F8FAFC" />
-          <path d="M 0,12 L 20,0 L 40,12" fill="none" stroke="#E2E8F0" strokeWidth="1.5" />
-        </svg>
-      </div>
-    </motion.div>
+        {/* Signature Ribbon Flag V-Notch Cutout at Bottom-Right of Card (Bow Card Design) */}
+        <div className="absolute bottom-0 right-6 w-10 h-3 pointer-events-none z-20">
+          <svg className="w-full h-full" viewBox="0 0 40 12" preserveAspectRatio="none">
+            <polygon points="0,12 20,0 40,12 40,12 0,12" fill="#F8FAFC" />
+            <path d="M 0,12 L 20,0 L 40,12" fill="none" stroke="#E2E8F0" strokeWidth="1.5" />
+          </svg>
+        </div>
+      </motion.div>
+    </Link>
   );
 }
