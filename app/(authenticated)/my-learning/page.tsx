@@ -366,7 +366,7 @@ export default function MyLearningPage() {
 
   useEffect(() => {
     if (currentUser?.username) {
-      UserService.getUserActivity(currentUser.username)
+      UserService.getMyTimeActivity()
         .then(data => {
           const map: Record<string, number> = {};
           if (Array.isArray(data)) {

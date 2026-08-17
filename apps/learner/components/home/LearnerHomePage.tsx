@@ -21,8 +21,8 @@ import type { CourseResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardLoading from '@/app/(authenticated)/loading';
-import { UserService } from '@/domains/identity';
 import { courseProgressService } from '@/domains/learning/progress/api/courseProgress';
+import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learning';
 import GradientText from '@/apps/public/components/landing/GradientText';
 import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
 import type { EventDto } from '@/app/(public)/events/types/event.types';
@@ -70,21 +70,6 @@ const COURSE_ICON_CONFIG = [
 ];
 
 const EVENT_TONES: EventCard['tone'][] = ['coral', 'blue', 'emerald', 'violet'];
-
-function computeStreak(activityByDate: Record<string, number>) {
-  let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < 365; i++) {
-    const target = new Date(today);
-    target.setDate(today.getDate() - i);
-    const iso = target.toISOString().split('T')[0];
-    const minutes = Math.floor((activityByDate[iso] ?? 0) / 60);
-    if (minutes > 0) streak++;
-    else if (i === 0) continue;
-    else break;
-  }
-  return streak;
-}
 
 function deliveryLabel(mode?: DeliveryMode | string) {
   switch (mode) {
@@ -144,7 +129,6 @@ export default function LearnerHomePage() {
   const router = useRouter();
   const [courses, setCourses] = useState<CourseResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activityByDate, setActivityByDate] = useState<Record<string, number>>({});
   const [query, setQuery] = useState('');
   const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
   const [resumeCourse, setResumeCourse] = useState<ResumeCourse | null>(null);
@@ -180,18 +164,26 @@ export default function LearnerHomePage() {
       });
   }, []);
 
-  useEffect(() => {
-    if (!user?.username) return;
-    UserService.getUserActivity(user.username)
-      .then((data) => {
-        const map: Record<string, number> = {};
-        data.forEach((item) => {
-          map[item.date] = item.secondsSpent;
-        });
-        setActivityByDate(map);
-      })
-      .catch(() => setActivityByDate({}));
-  }, [user?.username]);
+  // Bounded 400-day trailing window (backend's max range) — canonical LearnerDailyActivity
+  // source, not TimeLog (see docs/architecture/LEARNING_ACTIVITY_STREAK.md).
+  const { activityFromISO, activityToISO } = useMemo(() => {
+    const to = new Date();
+    const from = new Date(to);
+    from.setDate(from.getDate() - 399);
+    return {
+      activityFromISO: from.toISOString().split('T')[0],
+      activityToISO: to.toISOString().split('T')[0],
+    };
+  }, []);
+  const { data: activitySummary } = useActivitySummaryQuery(Boolean(user));
+  const { data: dailyActivity } = useDailyActivityQuery(activityFromISO, activityToISO, Boolean(user));
+  const activityByDate = useMemo(() => {
+    const map: Record<string, number> = {};
+    (dailyActivity ?? []).forEach((d) => {
+      map[d.date] = d.activityCount;
+    });
+    return map;
+  }, [dailyActivity]);
 
   // Pick most recent in-progress enrollment for Resume learning
   useEffect(() => {
@@ -240,7 +232,7 @@ export default function LearnerHomePage() {
       .catch(() => { });
   }, [user?.enrolledCourses, courses]);
 
-  const streak = useMemo(() => computeStreak(activityByDate), [activityByDate]);
+  const streak = activitySummary?.currentStreak ?? 0;
   const enrolledCount = user?.enrolledCourses?.length ?? 0;
 
   const recommendedCourses = useMemo(() => {

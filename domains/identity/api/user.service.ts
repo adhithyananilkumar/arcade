@@ -27,8 +27,9 @@ export class UserService {
     return data;
   }
 
-  static async getUserActivity(username: string): Promise<{date: string, secondsSpent: number}[]> {
-    const data = await api.get<{date: string, secondsSpent: number}[]>(`/api/v1/public/profiles/${username}/activity`);
+  /** Self-service only — TimeLog is per-user session-presence data, never fetchable for another user. */
+  static async getMyTimeActivity(): Promise<{date: string, secondsSpent: number}[]> {
+    const data = await api.get<{date: string, secondsSpent: number}[]>('/api/v1/users/me/time-activity');
     return data;
   }
 

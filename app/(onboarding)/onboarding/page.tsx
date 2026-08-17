@@ -6,24 +6,16 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
-import { Loader2, Camera, CheckCircle2, AlertCircle, X, Plus, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase } from 'lucide-react';
+import { Loader2, Camera, CheckCircle2, AlertCircle, X, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
 import { api } from '@/infrastructure/http/api';
 import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { getAvatarUrl } from '@/shared/utils/avatar';
+import { useInterestsQuery, InterestService } from '@/domains/identity';
 
-const PREFERENCE_OPTIONS = [
-  'Computer Science',
-  'Designing',
-  'Marketing',
-  'Finance',
-  'Healthcare',
-  'Education',
-  'Engineering',
-  'Business',
-];
+const MAX_INTERESTS = 10;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -56,9 +48,11 @@ export default function OnboardingPage() {
   const [address, setAddress] = useState(user?.address || '');
   const [socialLink1, setSocialLink1] = useState(user?.linkedinUrl || user?.socialLinks?.[0] || '');
   const [socialLink2, setSocialLink2] = useState(user?.githubUrl || user?.socialLinks?.[1] || '');
-  const [preferences, setPreferences] = useState<string[]>(user?.preferences || []);
-  
-  const [customPreference, setCustomPreference] = useState('');
+  // Step 4: Interests — canonical interest IDs, not arbitrary display strings (see
+  // domains/identity/api/interest.service.ts and the backend `interests` taxonomy).
+  const [selectedInterestIds, setSelectedInterestIds] = useState<string[]>([]);
+  const [interestSearch, setInterestSearch] = useState('');
+  const { data: allInterests = [], isLoading: interestsLoading } = useInterestsQuery();
 
   useEffect(() => {
     if (user?.onboardingCompleted) {
@@ -100,18 +94,17 @@ export default function OnboardingPage() {
     }
   };
 
-  const togglePreference = (pref: string) => {
-    setPreferences(prev => 
-      prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
-    );
+  const toggleInterest = (interestId: string) => {
+    setSelectedInterestIds(prev => {
+      if (prev.includes(interestId)) return prev.filter(id => id !== interestId);
+      if (prev.length >= MAX_INTERESTS) return prev; // sensible selection limit
+      return [...prev, interestId];
+    });
   };
 
-  const addCustomPreference = () => {
-    if (customPreference.trim() && !preferences.includes(customPreference.trim())) {
-      setPreferences(prev => [...prev, customPreference.trim()]);
-      setCustomPreference('');
-    }
-  };
+  const filteredInterests = allInterests.filter(interest =>
+    interest.name.toLowerCase().includes(interestSearch.trim().toLowerCase())
+  );
 
   const handleComplete = async () => {
     setIsSubmitting(true);
@@ -124,6 +117,13 @@ export default function OnboardingPage() {
         uploadedAvatarUrl = avatarRes.avatarUrl;
       }
 
+      // Interests go through their own domain endpoint (canonical IDs, not the legacy free-text
+      // `preferences` field) — submitted before the profile update so onboarding is only marked
+      // complete once the interest selection has actually persisted.
+      if (selectedInterestIds.length > 0) {
+        await InterestService.updateMine(selectedInterestIds);
+      }
+
       const payload = {
         firstName,
         lastName,
@@ -134,7 +134,6 @@ export default function OnboardingPage() {
         address,
         linkedinUrl: socialLink1.trim() || undefined,
         githubUrl: socialLink2.trim() || undefined,
-        preferences,
         onboardingCompleted: true
       };
 
@@ -444,42 +443,53 @@ export default function OnboardingPage() {
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="space-y-6"
                 >
-                  <div className="flex flex-wrap gap-3">
-                    {[...PREFERENCE_OPTIONS, ...preferences.filter(p => !PREFERENCE_OPTIONS.includes(p))].map(pref => {
-                      const isSelected = preferences.includes(pref);
-                      return (
-                        <button
-                          key={pref}
-                          onClick={() => togglePreference(pref)}
-                          className={`px-5 py-3 rounded-[24px] text-[14px] font-bold transition-all border border-transparent ${
-                            isSelected 
-                              ? 'bg-[#12141C] text-white shadow-[0_2px_10px_rgba(18,20,28,0.12)]' 
-                              : 'bg-white/70 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/80'
-                          }`}
-                        >
-                          {pref}
-                        </button>
-                      );
-                    })}
+                  <div className="auth-field relative flex h-[52px] cursor-text flex-row items-center rounded-[20px] px-5">
+                    <Search className="h-4 w-4 text-[#A5B3CA] shrink-0" />
+                    <input
+                      value={interestSearch}
+                      onChange={e => setInterestSearch(e.target.value)}
+                      placeholder="Search topics"
+                      className="w-full border-none bg-transparent p-0 pl-3 text-[14px] font-semibold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
+                    />
                   </div>
 
-                  <div className="pt-2">
-                    <div className="flex gap-2">
-                      <div className="auth-field relative flex h-[60px] flex-1 cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
-                        <label className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Add another field</label>
-                        <input 
-                          value={customPreference} 
-                          onChange={e => setCustomPreference(e.target.value)}
-                          placeholder="e.g. Artificial Intelligence"
-                          onKeyDown={e => e.key === 'Enter' && addCustomPreference()}
-                          className="w-full border-none bg-transparent p-0 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
-                        />
-                      </div>
-                      <button onClick={addCustomPreference} type="button" className="auth-field flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[20px] text-slate-400 transition-all hover:text-[#14142b]">
-                        <Plus className="h-6 w-6" />
-                      </button>
+                  <p className="text-[12.5px] font-semibold text-slate-400">
+                    {selectedInterestIds.length} of {MAX_INTERESTS} selected
+                  </p>
+
+                  {interestsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                     </div>
-                  </div>
+                  ) : filteredInterests.length === 0 ? (
+                    <p className="py-8 text-center text-[13px] font-medium text-slate-400">
+                      No topics match &ldquo;{interestSearch}&rdquo;.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {filteredInterests.map(interest => {
+                        const isSelected = selectedInterestIds.includes(interest.id);
+                        const atLimit = !isSelected && selectedInterestIds.length >= MAX_INTERESTS;
+                        return (
+                          <button
+                            key={interest.id}
+                            type="button"
+                            disabled={atLimit}
+                            onClick={() => toggleInterest(interest.id)}
+                            className={`px-5 py-3 rounded-[24px] text-[14px] font-bold transition-all border border-transparent ${
+                              isSelected
+                                ? 'bg-[#12141C] text-white shadow-[0_2px_10px_rgba(18,20,28,0.12)]'
+                                : atLimit
+                                  ? 'bg-white/40 text-slate-300 border border-slate-200/60 cursor-not-allowed'
+                                  : 'bg-white/70 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/80'
+                            }`}
+                          >
+                            {interest.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

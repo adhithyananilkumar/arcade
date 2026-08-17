@@ -22,3 +22,10 @@ export { LessonReviewFeedback } from './delivery/components/LessonReviewFeedback
 export { courseDeliveryService } from './delivery/api/courses';
 export { courseProgressService } from './progress/api/courseProgress';
 export type { CourseProgress, EnrollmentStatus } from './progress/api/courseProgress';
+export { ActivityService } from './activity/api/activity.service';
+export type { ActivitySummary, DailyActivity } from './activity/api/activity.service';
+export {
+  activityKeys,
+  useActivitySummaryQuery,
+  useDailyActivityQuery,
+} from './activity/api/activity.queries';

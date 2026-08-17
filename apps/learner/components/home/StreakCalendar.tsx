@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 
 type Props = {
-  /** ISO date keys (YYYY-MM-DD) with activity seconds */
+  /** ISO date keys (YYYY-MM-DD) mapped to backend-computed qualifying-activity count for that day */
   activityByDate: Record<string, number>;
   streak: number;
 };
@@ -31,7 +31,7 @@ function sundayIndex(d: Date) {
 }
 
 function isActiveDay(iso: string, map: Record<string, number>) {
-  return (map[iso] ?? 0) >= 60; // ≥ 1 minute counts
+  return (map[iso] ?? 0) > 0;
 }
 
 /**
