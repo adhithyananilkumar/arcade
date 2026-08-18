@@ -42,7 +42,9 @@ export class UserService {
     mobileNumber?: string,
     gender?: string,
     address?: string,
-    githubUrl?: string
+    githubUrl?: string,
+    avatarUrl?: string,
+    onboardingCompleted?: boolean
   ): Promise<User> {
     const data = await api.put<User>('/api/v1/users/me', {
       firstName,
@@ -54,6 +56,8 @@ export class UserService {
       gender,
       address,
       githubUrl,
+      avatarUrl,
+      onboardingCompleted,
     });
     return data;
   }

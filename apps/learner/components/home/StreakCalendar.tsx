@@ -131,7 +131,7 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
               {/* Compact Flame + Streak Number Badge */}
               <div className="inline-flex items-center gap-1 rounded-full bg-[#4C6FFF]/10 px-2.5 py-1 text-xs font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/20 dark:text-[#7C98FF]">
                 <Flame size={13} className="fill-current text-[#4C6FFF] dark:text-[#7C98FF]" />
-                <span>{streak}</span>
+                <span data-testid="streak-count">{streak}</span>
               </div>
 
               <div className="flex items-center gap-0.5 ml-0.5">

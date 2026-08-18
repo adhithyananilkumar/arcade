@@ -8,12 +8,11 @@ import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
 import { Loader2, Camera, CheckCircle2, AlertCircle, X, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
-import { api } from '@/infrastructure/http/api';
 import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
 import { getAvatarUrl } from '@/shared/utils/avatar';
-import { useInterestsQuery, InterestService } from '@/domains/identity';
+import { useInterestsQuery, InterestService, UserService } from '@/domains/identity';
 
 const MAX_INTERESTS = 10;
 
@@ -68,7 +67,7 @@ export default function OnboardingPage() {
       }
       setUsernameStatus('checking');
       try {
-        const res = await api.get<{available: boolean, suggestions?: string[]}>(`/api/v1/users/check-username?username=${username}`);
+        const res = await UserService.checkUsername(username);
         if (res.available) {
           setUsernameStatus('available');
           setUsernameSuggestions([]);
@@ -111,9 +110,7 @@ export default function OnboardingPage() {
     try {
       let uploadedAvatarUrl = user?.avatarUrl;
       if (avatarFile) {
-        const formData = new FormData();
-        formData.append('file', avatarFile);
-        const avatarRes = await api.post<{avatarUrl: string}>('/api/v1/users/me/avatar', formData);
+        const avatarRes = await UserService.uploadAvatar(avatarFile);
         uploadedAvatarUrl = avatarRes.avatarUrl;
       }
 
@@ -124,20 +121,19 @@ export default function OnboardingPage() {
         await InterestService.updateMine(selectedInterestIds);
       }
 
-      const payload = {
+      const profileRes = await UserService.updateProfile(
         firstName,
         lastName,
-        avatarUrl: uploadedAvatarUrl,
+        undefined,
+        socialLink1.trim() || undefined,
         username,
         mobileNumber,
         gender,
         address,
-        linkedinUrl: socialLink1.trim() || undefined,
-        githubUrl: socialLink2.trim() || undefined,
-        onboardingCompleted: true
-      };
-
-      const profileRes = await api.put<any>('/api/v1/users/me', payload);
+        socialLink2.trim() || undefined,
+        uploadedAvatarUrl,
+        true
+      );
       updateUser(profileRes);
       router.push('/');
     } catch (error) {

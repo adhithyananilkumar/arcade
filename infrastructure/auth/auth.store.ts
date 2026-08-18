@@ -23,7 +23,12 @@ export interface User {
   emailVerified: boolean;
   platformRoles?: { id: string; code: string; name: string }[];
   channelMemberships?: { channelId: string; channelName: string; channelType: string; roles: { id: string; code: string; name: string }[] }[];
-  enrolledCourses?: { courseId: string; title?: string; coverImageUrl?: string; authorName?: string; instructor?: string; date?: string; type?: string; status?: string; }[];
+  enrolledCourses?: { courseId: string; title?: string; coverImageUrl?: string; authorName?: string; instructor?: string; date?: string; type?: string; status?: string; percentComplete?: number | null; }[];
+  // "Body of work" — content the user authored (backend: ProfileResponse.CourseDto/RoadmapDto/AuthoredWorkshopDto/CertificateDto)
+  courses?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
+  roadmaps?: { id: string; title: string; description?: string; status?: string; createdAt?: string }[];
+  workshops?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
+  certificates?: { name: string; issuer?: string; date?: string; idCode?: string }[];
   // Legacy fields (kept for fallback)
   roles?: any[];
   permissions?: string[];
