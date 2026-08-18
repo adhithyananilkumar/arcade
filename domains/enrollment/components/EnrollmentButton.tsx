@@ -200,9 +200,8 @@ export function EnrollmentButton({
     if (resourceType === 'COURSE') {
       router.push(`/learn/${resourceId}/learn`);
     } else if (resourceType === 'EVENT') {
-      router.push(`/events/${resourceId}`);
-    } else if (resourceType === 'WORKSHOP') {
-      // Legacy compatibility — route to new Event page
+      // EVENT is canonical for all event-like content (workshop, webinar, bootcamp). The former
+      // 'WORKSHOP' branch was dead: the backend enum has no such member and rejected the request.
       router.push(`/events/${resourceId}`);
     }
   };

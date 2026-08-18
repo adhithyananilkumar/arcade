@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Users, Award, PlayCircle, CheckCircle, Clock } from 'lucide-react';
 import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
-import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
-import { UIEnrollmentState } from '@/domains/enrollment/types/enrollment.types';
+import { EnrollmentButton, type UIEnrollmentState } from '@/domains/enrollment';
 import { getMyRegistrationStatus } from '@/app/(public)/workshop/api/registration';
 import { toast } from 'sonner';
 
