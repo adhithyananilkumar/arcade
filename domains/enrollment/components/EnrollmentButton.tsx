@@ -2,8 +2,10 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { EnrollmentService } from '../api/enrollment.service';
+import { myEnrollmentKeys } from '../api/myEnrollments.queries';
 import { ResourceType, UIEnrollmentState } from '../types/enrollment.types';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, LogOut } from 'lucide-react';
@@ -29,6 +31,7 @@ export function EnrollmentButton({
   targetUrl
 }: EnrollmentButtonProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [currentState, setCurrentState] = useState<UIEnrollmentState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -49,12 +52,26 @@ export function EnrollmentButton({
     idempotencyKeyRef.current = null;
   }, []);
 
+  /**
+   * Any enrollment state transition invalidates the learner read model.
+   *
+   * `myEnrollmentKeys.all` (`['me','enrollments']`) is the shared *prefix* of the library list,
+   * the per-resource "am I enrolled" lookup and the events list, so React Query's prefix matching
+   * means this single invalidation refreshes all three — no separate per-key call needed. This is
+   * what makes "enrol here, see it on My Learning" work without a full page reload; previously the
+   * only way to refresh enrollment state was to refetch the whole `/users/me` profile.
+   */
+  const invalidateEnrollmentReads = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: myEnrollmentKeys.all });
+  }, [queryClient]);
+
   const notifyStateChange = useCallback((newState: UIEnrollmentState) => {
     setCurrentState(newState);
+    invalidateEnrollmentReads();
     if (onStateChange) {
       onStateChange(newState);
     }
-  }, [onStateChange]);
+  }, [onStateChange, invalidateEnrollmentReads]);
 
   const startPayment = useCallback(async (paymentEnrollmentId: string) => {
     if (isPaying) return;

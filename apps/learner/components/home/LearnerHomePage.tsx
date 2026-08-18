@@ -21,8 +21,8 @@ import type { CourseResponse } from '@/shared/types/api.types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardLoading from '@/app/(authenticated)/loading';
-import { courseProgressService } from '@/domains/learning/progress/api/courseProgress';
 import { useActivitySummaryQuery, useDailyActivityQuery } from '@/domains/learning';
+import { useMyEnrollmentsQuery } from '@/domains/enrollment';
 import GradientText from '@/apps/public/components/landing/GradientText';
 import { getPublishedEvents } from '@/app/(public)/events/api/event.service';
 import type { EventDto } from '@/app/(public)/events/types/event.types';
@@ -131,7 +131,6 @@ export default function LearnerHomePage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [hasSeenHomeBefore, setHasSeenHomeBefore] = useState(true);
-  const [resumeCourse, setResumeCourse] = useState<ResumeCourse | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<EventCard[]>([]);
 
   useEffect(() => {
@@ -185,64 +184,56 @@ export default function LearnerHomePage() {
     return map;
   }, [dailyActivity]);
 
-  // Pick most recent in-progress enrollment for Resume learning
-  useEffect(() => {
-    const enrolled = user?.enrolledCourses;
-    if (!enrolled?.length) {
-      setResumeCourse(null);
-      return;
-    }
+  /**
+   * The learner's own course enrollments, from the D2 read model.
+   *
+   * Replaces `user.enrolledCourses` (private learning state carried on the identity payload) plus
+   * a follow-up `getCourseProgress` request. One bounded request now covers the resume card, the
+   * enrolled count and the recommendation exclusion set — the percentage arrives already joined in
+   * by the server, so there is no second round-trip and no N+1.
+   *
+   * `sort=updatedAt desc` puts the most recently touched enrollment first, which is what "resume"
+   * means. Size 100 is the server's maximum page size: bounded by construction, and strictly less
+   * data than the old profile payload, which carried the learner's entire enrollment list with no
+   * limit at all.
+   */
+  const { data: myCourses } = useMyEnrollmentsQuery(
+    { resourceType: 'COURSE', page: 0, size: 100, sort: 'updatedAt', direction: 'desc' },
+    Boolean(user),
+  );
 
-    const candidates = [...enrolled]
-      .filter((c: any) => {
-        const s = String(c.status || '').toLowerCase();
-        return s !== 'completed' && s !== 'dropped';
-      })
-      .sort((a: any, b: any) => {
-        const da = a.date ? new Date(a.date).getTime() : 0;
-        const db = b.date ? new Date(b.date).getTime() : 0;
-        return db - da;
-      });
+  // Derived, not stored: the resume card is a pure projection of the query result, so there is no
+  // second copy of server state to fall out of sync.
+  const resumeCourse: ResumeCourse | null = useMemo(() => {
+    const rows = myCourses?.content ?? [];
+    // Only an ACCESSIBLE enrollment can be resumed: a pending (unpaid) or revoked one must never
+    // present a "Continue Learning" button that leads to a locked course.
+    const pick =
+      rows.find((r) => r.accessState === 'ACCESSIBLE' && r.progressState === 'IN_PROGRESS') ??
+      rows.find((r) => r.accessState === 'ACCESSIBLE' && r.progressState === 'NOT_STARTED') ??
+      null;
 
-    const pick = candidates[0] || enrolled[0];
-    if (!pick?.courseId) {
-      setResumeCourse(null);
-      return;
-    }
+    if (!pick) return null;
 
-    const coverFromCatalog = courses.find((c) => c.id === pick.courseId)?.coverImageUrl;
-
-    setResumeCourse({
-      id: pick.courseId,
-      title: pick.title || 'Your course',
-      coverImageUrl: coverFromCatalog || pick.coverImageUrl,
-      progress: 0,
-      authorName: pick.authorName || pick.instructor,
-    });
-
-    courseProgressService
-      .getCourseProgress(pick.courseId)
-      .then((p) => {
-        setResumeCourse((prev) =>
-          prev && prev.id === pick.courseId
-            ? { ...prev, progress: p.percent ?? 0 }
-            : prev,
-        );
-      })
-      .catch(() => { });
-  }, [user?.enrolledCourses, courses]);
+    return {
+      id: pick.resourceId,
+      title: pick.title ?? 'Your course',
+      coverImageUrl: pick.imageUrl,
+      // Passed through verbatim: null stays null and renders as "Not tracked", never as 0%.
+      progress: pick.progressPercent,
+      authorName: null,
+    };
+  }, [myCourses]);
 
   const streak = activitySummary?.currentStreak ?? 0;
-  const enrolledCount = user?.enrolledCourses?.length ?? 0;
+  const enrolledCount = myCourses?.totalElements ?? 0;
 
   const recommendedCourses = useMemo(() => {
-    const enrolledIds = new Set(
-      (user?.enrolledCourses || []).map((c: any) => c.courseId).filter(Boolean),
-    );
+    const enrolledIds = new Set((myCourses?.content ?? []).map((r) => r.resourceId));
     const pool = courses.filter((c) => !enrolledIds.has(c.id));
     const source = pool.length > 0 ? pool : courses;
     return pickDailyCourses(source, 4);
-  }, [courses, user?.enrolledCourses]);
+  }, [courses, myCourses]);
 
   const greeting = useMemo(
     () =>

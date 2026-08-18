@@ -34,7 +34,12 @@ export type ResumeCourse = {
   id: string;
   title: string;
   coverImageUrl?: string | null;
-  progress: number;
+  /**
+   * Backend `progressPercent`. **Null is not zero** — it means the read model has no percentage
+   * to report (unpublished course, or a course with no lessons). Rendering null as a 0% bar would
+   * assert "you have completed none of it", which is a different and unverified claim.
+   */
+  progress: number | null;
   authorName?: string | null;
 };
 
@@ -236,7 +241,10 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
     );
   }
 
-  const pct = Math.max(0, Math.min(100, Math.round(course.progress)));
+  const pct =
+    course.progress === null || course.progress === undefined
+      ? null
+      : Math.max(0, Math.min(100, Math.round(course.progress)));
 
   return (
     <motion.div
@@ -253,15 +261,28 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
         {/* Prominent Large Course Cover Image Banner */}
+        {/*
+          No image => a neutral placeholder, never a stock photo. The previous hardcoded Unsplash
+          URL presented an unrelated stock classroom shot as if it were this course's own cover.
+        */}
         <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 bg-slate-100 shadow-sm">
-          <img
-            src={
-              course.coverImageUrl ||
-              'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80'
-            }
-            alt={course.title}
-            className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-          />
+          {course.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={course.coverImageUrl}
+              alt=""
+              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200"
+            >
+              <span className="text-4xl font-black text-slate-400 select-none">
+                {(course.title || '?').trim().charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Title and Author details */}
@@ -278,16 +299,20 @@ function ResumeLearningCard({ course }: { course: ResumeCourse | null }) {
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
             <span className="text-slate-500">Course Progress</span>
-            <span className="font-bold text-[#14142b]">{pct}%</span>
+            <span className="font-bold text-[#14142b]">
+              {pct === null ? 'Not tracked' : `${pct}%`}
+            </span>
           </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#4C6FFF] via-[#0EA5E9] to-[#1DB876]"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            />
-          </div>
+          {pct !== null && (
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 p-0.5">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-[#4C6FFF] via-[#0EA5E9] to-[#1DB876]"
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Bottom CTA Action Button */}
