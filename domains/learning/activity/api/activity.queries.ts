@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ActivityService } from './activity.service';
 
 export const activityKeys = {
+  /** Shared root — a prefix of every key below, so one invalidation refreshes all activity reads. */
+  all: ['activity'] as const,
   summary: () => ['activity', 'summary'] as const,
   daily: (from: string, to: string) => ['activity', 'daily', from, to] as const,
 };

@@ -8,23 +8,77 @@
 
 ## Qualifying activity
 
-A closed, deliberately narrow set (`ActivityType` enum): `LESSON_COMPLETED`, `QUIZ_COMPLETED`, `COURSE_COMPLETED`. Each is sourced from a real, pre-existing backend trigger:
+> **Updated in D3.** The rule now has two limbs, because duration is real. A local calendar day is `qualifying_activity` if **either** the learner completed something that day (any countable action — the original rule, unchanged) **or** they accumulated at least `LearningDurationPolicy.MIN_QUALIFYING_MINUTES` (2) of verified engaged time. The duration floor exists so that opening a lesson for twenty seconds cannot manufacture a streak day. The rule lives in exactly one place — `LearningDurationPolicy.isQualifyingDay(countableActions, learningMinutes)` — and both the incremental path and the rebuild path call it.
+
+A closed, deliberately narrow set (`ActivityType` enum): `LESSON_COMPLETED`, `QUIZ_COMPLETED`, `COURSE_COMPLETED`, and (D3) `LESSON_ENGAGEMENT`. Each is sourced from a real backend trigger:
 
 - `LESSON_COMPLETED` — `CourseProgressService.markLessonComplete()`, right after the existing `LessonProgress` upsert.
 - `QUIZ_COMPLETED` — `QuizTakingService.submitAttempt()`, right after a score-improving attempt is saved.
 - `COURSE_COMPLETED` — `CourseProgressService.recordCompletionIfAbsent()`, alongside the existing `COURSE_COMPLETED` durable outbox event that already drives the `EnrolledCourse` projection.
 
-**Deliberately absent: `LESSON_STARTED`.** No such signal exists anywhere in the backend today — `LessonProgressStatus` only has `IN_PROGRESS`/`COMPLETED` states, and nothing ever calls a "mark started" transition. Inventing a synthetic start-event here would have violated the task's explicit "do not create activity types for features that do not exist" instruction. Add it only once a real trigger exists.
+- `LESSON_ENGAGEMENT` (D3) — `POST /api/v1/me/activity/learning-segments`, emitted by the lesson player. The only duration-bearing type. It contributes to `learning_minutes` and deliberately does **not** increment `activity_count`: an hour of reading must not read as sixty "learning actions" on the heatmap. Actions and time are two different signals and stay two different fields.
+
+**Deliberately still absent: `LESSON_STARTED`.** D3 reconsidered this and still declined. A start event carries nothing the first `LESSON_ENGAGEMENT` segment for that lesson does not already carry, and it would add a row per lesson open — including accidental opens — with no corresponding learner action. "The learner opened this lesson and stayed engaged" is now expressible, and it is strictly better evidence than "the learner opened this lesson".
 
 **Not qualifying**: page views, navigation, being logged in, or `TimeLog`'s WebSocket-presence signal (see below) — none of these represent a learner having actually done something.
 
-## TimeLog — status and why it was not folded in
+## Learning duration (D3)
+
+### The event
+
+`LESSON_ENGAGEMENT` — one bounded interval of *verified engaged* time with a lesson. The player accumulates time only while the document is visible **and** the window is focused **and** the learner has interacted within the last 60s. A tab left open on a lesson overnight accumulates nothing.
+
+`learning_activity` gained `duration_seconds`, `started_at`, `ended_at` (V257). The interval is stored, not just a duration, because the aggregator needs it twice: to split a segment across local midnight, and to take the *union* of overlapping segments instead of their sum.
+
+### The client states duration, never time
+
+The client submits `{ segmentId, lessonId, courseId, durationSeconds, endedSecondsAgo }` — **no timestamps**. The server computes `endedAt = serverNow − endedSecondsAgo`, clamps the duration, and derives `startedAt`. Consequences: a wrong client clock cannot mis-attribute a calendar day; a segment cannot extend into the future; and the frontend is *structurally* incapable of deciding when learning happened. `durationSeconds` is measured with `performance.now()` (monotonic), so NTP jumps and wall-clock edits do not inflate it either.
+
+### Anti-inflation rules (all server-side, all in `LearningDurationPolicy`)
+
+| Rule | Value | Also enforced at |
+|---|---|---|
+| Max per event | `MAX_SEGMENT_SECONDS` = 900s | `chk_learning_activity_duration` |
+| Min per event (noise floor) | `MIN_SEGMENT_SECONDS` = 5s | service |
+| Max backdating | 24h | service |
+| Max per day | `MAX_DAILY_MINUTES` = 1440 | `chk_learner_daily_activity_learning_minutes` |
+| Overlap | union of intervals, never sum | `engagedSecondsInWindow` |
+| Entitlement | course entitlement per distinct course in the batch | `LearningSegmentIngestService` |
+
+### Aggregation: recompute, never increment
+
+`learning_minutes` for a day is **set to an absolute recomputed value**, not incremented. On a new segment the service reads every engagement row that can overlap that local day (lower bound widened by the per-segment clamp, so the query stays a pure index range scan on the partial index), unions the intervals clipped to the day's UTC window, floors to minutes, clamps, and writes.
+
+This single choice delivers most of the required properties at once: reprocessing an event is a no-op, replaying an hour of segments under fresh ids adds zero, overlapping heartbeats cannot double-count, and rebuild is trivially identical to the incremental path because it calls the same functions.
+
+Duplicate *submissions* are caught earlier still, by `learning_activity.idempotency_key` = `LESSON_ENGAGEMENT:<learnerId>:<segmentId>` (learner-namespaced so one learner cannot burn another's segment ids on a globally unique column).
+
+### Midnight and timezones
+
+A segment's local days come from `LearningDurationPolicy.localDatesTouched`, and each day's UTC window from `utcWindowOfLocalDay(day, zone)` — built with `atStartOfDay(zone)` on both ends, so a DST day is correctly 23h or 25h rather than a drifting 24h. A segment straddling local midnight is clipped to each day's window: the seconds split across the two days and total exactly the original. A segment ending *exactly* at local midnight belongs wholly to the day that ended and creates no empty next-day row. Zones come from `LearnerTimezoneResolver` as before; no new timezone logic was introduced.
+
+### Rebuild / backfill
+
+`rebuildForLearner(learnerId)` now rebuilds both signals: `activity_count` from countable completion events, `learning_minutes` via `LearningDurationPolicy.minutesByLocalDay`. It is deterministic and idempotent, and it repairs drift (verified against real Postgres).
+
+Two latent bugs in the original rebuild were fixed when it was first executed against a real database rather than mocks:
+
+1. It queried "all history" as `LocalDateTime.MIN..now` / `LocalDate.MIN..MAX`. Those are year −999999999 and Postgres rejects them outright (`timestamp out of range`), so the rebuild could never actually have run. Replaced with `findByLearnerIdOrderByOccurredAtAsc` / `findByLearnerIdOrderByActivityDateAsc` — bounded by `learner_id`, which is what the index serves anyway.
+2. It deleted the old daily rows and inserted new ones in one transaction. Hibernate's action queue flushes inserts *before* deletes, so the insert collided with `uq_learner_daily_activity_learner_date` on every day that already had a row — i.e. on every real rebuild. Fixed with an explicit `flush()` between the two phases.
+
+**All-learners procedure** (not automated, deliberately): iterate learner ids in batches and call `rebuildForLearner` per learner, each in its own transaction. Never a single unbounded query. No admin endpoint exposes this yet.
+
+## TimeLog — retired as a learning-time source (D3)
 
 `infrastructure.timelog.TimeLog` (table `time_logs`) already existed: one row per `(user, log_date)`, `seconds_spent` incremented on every WebSocket disconnect (`TimeTrackerEventListener`), driven by `TimeTracker.tsx`, which is mounted app-wide in `LearnerShell` — i.e. it fires for *any* authenticated page being open, not specifically for learning. It backs the existing `GET /api/v1/public/profiles/{username}/activity` endpoint (unchanged, still real, still used by the public-profile and home-page heatmaps).
 
 **Inspected before this pass** (per the task's explicit instruction): 5 rows total in the current database, 3 distinct users, 2 days of data — lightly used. **Decision: left entirely as-is, not touched, not repurposed, not deleted.** Two reasons: (1) it's a different, legitimate concern (time-spent-in-app) that other screens already depend on; (2) it does not represent "meaningful learning activity" as this task defines it, so folding it into the new streak system would have silently laundered a low-confidence signal (any open tab) into something that looks authoritative (a learning streak). If a future pass wants a unified "time spent learning" metric, it needs a real per-lesson time-on-task signal, not this one.
 
-**Consequence**: `LearnerDailyActivity.learning_minutes` is nullable and is **never populated** by this implementation. Per the task's explicit instruction ("do not invent learning_minutes from lesson-start/lesson-complete timestamps... either omit it or only populate from a verified learning-duration source") — it stays null until a real duration signal exists.
+**Consequence (superseded by D3)**: `learning_minutes` stayed null until a real duration signal existed. D3 built that signal (`LESSON_ENGAGEMENT`, above) and the column is now populated from it.
+
+**D3 status**: `GET /api/v1/users/me/time-activity` and `UserService.getMyTimeActivity()` are **removed**, after confirming zero consumers in both repos. `TimeLogActivityResponse` and `TimeLogService.getUserActivityResponses` are gone with them. The `TimeLog` entity, its repository and its WebSocket writer (`TimeTrackerEventListener`, driven by `TimeTracker.tsx` in `LearnerShell`) are **untouched** — session-presence telemetry is a legitimate but entirely separate concern, and only its use as a learning-time proxy was retired. It now has no reader; see the D3 report for the recommendation on that.
+
+Note: the claim above that TimeLog "backs `GET /api/v1/public/profiles/{username}/activity`" is stale — that endpoint was removed by SEC-1 in the audit phase, before D2.
 
 ## Timezone semantics
 

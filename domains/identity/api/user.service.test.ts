@@ -31,10 +31,16 @@ describe('UserService — public vs private profile separation', () => {
     expect(api.get).toHaveBeenCalledWith('/api/v1/public/profiles/someone');
   });
 
-  it('getMyTimeActivity() calls the self-service endpoint and takes no username/id parameter — a caller structurally cannot request anyone\'s activity but their own (see PUBLIC_PROFILE_SECURITY.md)', async () => {
-    (api.get as any).mockResolvedValue([]);
-    await UserService.getMyTimeActivity();
-    expect(api.get).toHaveBeenCalledWith('/api/v1/users/me/time-activity');
+  it('exposes no session-presence time source at all — learning duration belongs to the learning domain (D3)', () => {
+    // Replaces the old getMyTimeActivity() coverage. That method wrapped
+    // GET /api/v1/users/me/time-activity (TimeLog page-presence), which My Learning rendered as
+    // hours of learning. D3 removed the endpoint and moved real duration to
+    // GET /api/v1/me/activity (learningMinutes). This asserts the identity domain does not grow a
+    // replacement: the self-scoping that the old test protected is now moot because the surface
+    // does not exist.
+    expect(
+      Object.getOwnPropertyNames(UserService).filter((name) => /time/i.test(name))
+    ).toEqual([]);
   });
 });
 

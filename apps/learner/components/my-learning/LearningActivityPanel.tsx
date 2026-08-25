@@ -1,28 +1,31 @@
 'use client';
 
 /**
- * Learning Activity — honest replacement for the old "Learning Time" chart.
+ * Learning Activity — now showing REAL learning time (D3).
  *
- * WHAT CHANGED AND WHY
- * The previous chart read `GET /api/v1/users/me/time-activity` (TimeLog / session presence) and
- * rendered it as "Learning Time … Hours/Day". That data measures *how long a page was open*, not
- * how long anything was learned: leaving a tab open overnight produced an 8-hour "learning" day.
- * The audit flagged this as the single most misleading number on the page.
+ * HISTORY, BECAUSE IT MATTERS
+ * Originally this chart read `GET /api/v1/users/me/time-activity` (TimeLog / WebSocket session
+ * presence) and rendered it as "Learning Time … Hours/Day". That measured how long a tab was open:
+ * a tab left open overnight produced an eight-hour "learning" day. D2.5 removed that and fell back
+ * to honest activity COUNTS, with a standing caption saying time was not tracked.
  *
- * This panel instead uses the canonical `LearnerDailyActivity` source
- * (`GET /api/v1/me/activity`, exposed by `useDailyActivityQuery`), the same source the home page
- * and profile heatmap already use. It reports an **activity count** per day — how many learning
- * actions were recorded — which is a real, backend-owned quantity.
+ * D3 made time real. `GET /api/v1/me/activity` now carries `learningMinutes` per day, aggregated
+ * server-side from interaction-gated, server-clamped, de-overlapped lesson-engagement segments.
+ * This panel renders that.
  *
- * It deliberately does NOT report duration in any form. There is no genuine learning-duration
- * signal in the backend today; `EventRegistration.totalWatchTimeMinutes` exists but covers only
- * live event watch time and is not exposed by the read model, precisely so it cannot be quietly
- * substituted here. Real duration is D3's `LearnerDailyActivity.learning_minutes` work.
+ * WHAT THIS COMPONENT IS STILL NOT ALLOWED TO DO
+ * - It never computes duration. It sums per-day values the backend already decided, purely to
+ *   render a range total — no inference, no estimation, no filling gaps.
+ * - It never coalesces `learningMinutes: null` to 0. `null` means "no duration recorded for this
+ *   day", which is a different statement from "zero minutes", and the UI says so.
+ * - It keeps activity COUNTS as a genuine secondary signal rather than deleting the concept: time
+ *   and completed actions answer different questions, and the backend deliberately models them as
+ *   two separate fields.
  */
 
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Info, Loader2 } from 'lucide-react';
+import { Activity, Clock, Info, Loader2 } from 'lucide-react';
 import { useDailyActivityQuery } from '@/domains/learning';
 
 type RangePreset = '7d' | '30d';
@@ -34,6 +37,15 @@ function toISODate(d: Date): string {
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+/** `195` ⇒ `"3h 15m"`, `45` ⇒ `"45m"`, `0` ⇒ `"0m"`. Presentation only. */
+export function formatMinutes(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
 }
 
 export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
@@ -59,25 +71,40 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
   const { data, isLoading, isError } = useDailyActivityQuery(fromISO, toISO, enabled);
 
   const byDate = useMemo(() => {
-    const map = new Map<string, number>();
-    (data ?? []).forEach((d) => map.set(d.date, d.activityCount));
+    const map = new Map<string, { minutes: number | null; count: number }>();
+    (data ?? []).forEach((d) =>
+      map.set(d.date, { minutes: d.learningMinutes ?? null, count: d.activityCount })
+    );
     return map;
   }, [data]);
 
   const bars = useMemo(
     () =>
-      days.map((d) => ({
-        key: toISODate(d),
-        label: d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' }),
-        weekday: d.toLocaleDateString(undefined, { weekday: 'short' }),
-        count: byDate.get(toISODate(d)) ?? 0,
-      })),
+      days.map((d) => {
+        const key = toISODate(d);
+        const row = byDate.get(key);
+        return {
+          key,
+          label: d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' }),
+          weekday: d.toLocaleDateString(undefined, { weekday: 'short' }),
+          // `null` is preserved through to render: a day the backend has no duration for shows no
+          // bar and no "0m", rather than a confident zero.
+          minutes: row?.minutes ?? null,
+          count: row?.count ?? 0,
+        };
+      }),
     [days, byDate]
   );
 
-  const maxCount = Math.max(1, ...bars.map((b) => b.count));
-  const activeDays = bars.filter((b) => b.count > 0).length;
+  const totalMinutes = bars.reduce((sum, b) => sum + (b.minutes ?? 0), 0);
+  const totalActions = bars.reduce((sum, b) => sum + b.count, 0);
+  const maxMinutes = Math.max(1, ...bars.map((b) => b.minutes ?? 0));
+  const daysWithTime = bars.filter((b) => (b.minutes ?? 0) > 0).length;
+  const activeDays = bars.filter((b) => b.count > 0 || (b.minutes ?? 0) > 0).length;
   const isManyBars = bars.length > 14;
+  const rangeLabel = preset === '7d' ? 'this week' : 'this month';
+
+  const hasAnything = activeDays > 0;
 
   return (
     <section className="relative overflow-hidden rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-xs">
@@ -90,8 +117,8 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
           <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-start gap-1.5 max-w-lg">
             <Info size={12} className="mt-0.5 shrink-0 text-slate-400" />
             <span>
-              Recorded learning actions per day. Time spent learning is not tracked yet, so this
-              chart intentionally shows activity counts rather than hours.
+              Time you were actively engaged with lesson content. Idle time and background tabs are
+              not counted.
             </span>
           </p>
         </div>
@@ -129,30 +156,41 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
             Your activity could not be loaded right now. Nothing is lost — try again shortly.
           </p>
         </div>
-      ) : activeDays === 0 ? (
+      ) : !hasAnything ? (
         <div className="h-48 flex flex-col items-center justify-center text-center gap-2 px-6">
           <Activity className="text-slate-300 dark:text-slate-700" size={28} />
           <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
             No activity recorded in this range
           </p>
           <p className="text-xs font-medium text-slate-400 dark:text-slate-500 max-w-sm">
-            Open a lesson or join an event and your activity will appear here.
+            Open a lesson and your learning time will appear here.
           </p>
         </div>
       ) : (
         <>
-          <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
-            Active on{' '}
-            <span className="font-extrabold text-[#2C83F5] dark:text-[#27C5D8]">
-              {activeDays} of {bars.length} days
-            </span>
-          </p>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="flex items-baseline gap-1.5 text-slate-900 dark:text-white">
+              <Clock size={16} className="self-center text-[#2C83F5]" />
+              <span className="text-2xl font-black tracking-tight tabular-nums">
+                {formatMinutes(totalMinutes)}
+              </span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                {rangeLabel}
+              </span>
+            </p>
+            {/* Activity counts kept as a secondary, genuinely different signal — actions completed,
+                not time spent. */}
+            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              {totalActions} {totalActions === 1 ? 'learning action' : 'learning actions'} ·{' '}
+              {daysWithTime} of {bars.length} days with recorded time
+            </p>
+          </div>
 
           <div className="relative h-48 w-full flex items-end">
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-              {[maxCount, Math.round(maxCount / 2), 0].map((val, i) => (
+              {[maxMinutes, Math.round(maxMinutes / 2), 0].map((val, i) => (
                 <div key={i} className="flex items-center gap-3 w-full">
-                  <span className="w-9 text-right shrink-0">{val}</span>
+                  <span className="w-9 text-right shrink-0">{val}m</span>
                   <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
                 </div>
               ))}
@@ -174,7 +212,11 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                         exit={{ opacity: 0, y: 4 }}
                         className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold shadow-md z-30 pointer-events-none whitespace-nowrap"
                       >
-                        {b.label}: {b.count} {b.count === 1 ? 'activity' : 'activities'}
+                        {b.label}:{' '}
+                        {b.minutes === null ? 'no time recorded' : formatMinutes(b.minutes)}
+                        {b.count > 0
+                          ? ` · ${b.count} ${b.count === 1 ? 'action' : 'actions'}`
+                          : ''}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -183,7 +225,10 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{
-                        height: b.count > 0 ? `${Math.max((b.count / maxCount) * 100, 4)}%` : '0%',
+                        height:
+                          (b.minutes ?? 0) > 0
+                            ? `${Math.max(((b.minutes as number) / maxMinutes) * 100, 4)}%`
+                            : '0%',
                       }}
                       transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.4) }}
                       className="w-full rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
@@ -199,6 +244,7 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                     {!isManyBars && (
                       <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
                         {b.weekday}
+                        {b.minutes !== null && b.minutes > 0 ? ` · ${formatMinutes(b.minutes)}` : ''}
                       </p>
                     )}
                   </div>
