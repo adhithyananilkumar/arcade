@@ -25,7 +25,6 @@ Always preserve scalability, tenant isolation, multi-channel architecture, and b
 ## Architecture Protection Rules
 Before making ANY structural change, ask:
 1. Does this change alter the architecture?
-2. Does this move code between layers?
 3. Does this introduce a new architectural pattern?
 4. Does this create a new root folder?
 5. Does this change dependency direction?
