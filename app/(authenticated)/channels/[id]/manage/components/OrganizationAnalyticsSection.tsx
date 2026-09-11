@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface ReviewItem {
   id: string;
@@ -36,43 +37,7 @@ export interface ReviewItem {
   cardSize?: 'wide' | 'normal';
 }
 
-const mockReviews: ReviewItem[] = [
-  {
-    id: 'rev-1',
-    learnerName: 'Marcus Vance',
-    learnerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-    courseName: 'AI Agent Architecture & Tool Use Masterclass',
-    rating: 5,
-    date: '2 hours ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Hands down the single best enterprise AI course I have taken! The hands-on labs with vector search and multi-agent coordination were immediately applicable to our engineering team.',
-    instructorResponse:
-      'Thank you Marcus! So glad the multi-agent labs resonated with your engineering workflow.',
-  },
-  {
-    id: 'rev-2',
-    learnerName: 'Sophia Lin',
-    learnerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Prompt Engineering & Context Window Optimization',
-    rating: 5,
-    date: '1 day ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Extremely clear explanations and excellent benchmark datasets provided. Learned how to cut our token costs by 40% using prompt caching.',
-  },
-  {
-    id: 'rev-3',
-    learnerName: 'David K.',
-    learnerAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Neural Networks from Scratch in Python',
-    rating: 4,
-    date: '3 days ago',
-    sentiment: 'CONSTRUCTIVE',
-    reviewText:
-      'Great math breakdown in Module 3. Would love to see additional PyTorch GPU acceleration examples in the bonus section!',
-  },
-];
+const mockReviews: ReviewItem[] = [];
 
 const ratingDistribution = [
   { stars: 5, percentage: 88, count: 3379 },
@@ -618,7 +583,8 @@ export function OrganizationAnalyticsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {currentReviews.map((rev, idx) => {
+          {currentReviews.length === 0 && <EmptyState title="No contents" message="No analytics data available yet." />}
+        {currentReviews.length > 0 && currentReviews.map((rev, idx) => {
             const isWide = (rev as any).cardSize === 'wide';
             const themes = [
               'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface ChannelEvent {
   id: string;
@@ -35,63 +36,7 @@ export interface ChannelEvent {
   tags: string[];
 }
 
-const mockEvents: ChannelEvent[] = [
-  {
-    id: 'evt-1',
-    title: 'Future of Autonomous AI Agents & Real-World Deployments',
-    type: 'WEBINAR',
-    thumbnail: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Dr. Sarah Chen',
-    speakerRole: 'Lead AI Scientist',
-    dateTime: 'Tomorrow at 4:00 PM EST',
-    duration: '90 mins',
-    registeredCount: 1420,
-    status: 'UPCOMING',
-    tags: ['AI Agents', 'LLMs', 'Keynote'],
-  },
-  {
-    id: 'evt-2',
-    title: 'Hands-on RAG Pipeline & Vector DB Optimization Event',
-    type: 'WORKSHOP',
-    thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Alex Rivera',
-    speakerRole: 'Senior Prompt Engineer',
-    dateTime: 'Aug 12, 2026 at 2:00 PM EST',
-    duration: '3 hours',
-    registeredCount: 240,
-    maxAttendees: 300,
-    status: 'UPCOMING',
-    tags: ['Hands-on', 'Vector Search', 'Live Lab'],
-  },
-  {
-    id: 'evt-3',
-    title: 'Fine-Tuning Llama 3 & Open Source Models Masterclass',
-    type: 'WORKSHOP',
-    thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Elena Rostova',
-    speakerRole: 'MLOps Lead Instructor',
-    dateTime: 'Jul 28, 2026',
-    duration: '2h 30m',
-    registeredCount: 890,
-    status: 'RECORDED',
-    recordingUrl: 'https://arcade.ai/recordings/llama-fine-tune',
-    tags: ['Model Tuning', 'PyTorch', 'GPU Clusters'],
-  },
-  {
-    id: 'evt-4',
-    title: 'Enterprise AI Governance, Safety & Guardrails Live Q&A',
-    type: 'WEBINAR',
-    thumbnail: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Prof. Michael Vance',
-    speakerRole: 'Head of Curriculum',
-    dateTime: 'Jul 15, 2026',
-    duration: '60 mins',
-    registeredCount: 2100,
-    status: 'RECORDED',
-    recordingUrl: 'https://arcade.ai/recordings/ai-safety-qa',
-    tags: ['AI Ethics', 'Compliance', 'Security'],
-  },
-];
+const mockEvents: ChannelEvent[] = [];
 
 interface EventsManagementSectionProps {
   onScheduleEvent?: () => void;
@@ -194,7 +139,8 @@ export function EventsManagementSection({ onScheduleEvent }: EventsManagementSec
 
       {/* Events Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        {filteredEvents.map((evt) => {
+        {filteredEvents.length === 0 && <EmptyState title="No contents" message="No events scheduled yet." />}
+        {filteredEvents.length > 0 && filteredEvents.map((evt) => {
           const isWebinar = evt.type === 'WEBINAR';
           return (
             <motion.div
