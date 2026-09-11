@@ -16,9 +16,7 @@ export default function CourseShowcase() {
       <div className="l-showcase__card">
         {/* Left Column: Info & Details */}
         <div className="l-showcase__info">
-          <div className="l-showcase__badge">
-            <span className="l-showcase__badge-text">The Arcade Story</span>
-          </div>
+
 
           <h2 className="l-showcase__title">
             Built to empower, educate, and connect the next generation of builders.

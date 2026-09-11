@@ -207,7 +207,18 @@ export default function JourneyTimeline() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="jt-title">Top Rated Courses</h2>
+          <h2 className="jt-title" style={{ position: "relative", zIndex: 1 }}>
+            <span className="jt-typo-wrap">
+              Top
+              <svg className="jt-typo-shape jt-typo-shape--1" width="90" height="90" viewBox="0 0 100 100" fill="none" stroke="#FDE047" strokeWidth="12" strokeLinecap="round">
+                <line x1="50" y1="15" x2="50" y2="85" />
+                <line x1="15" y1="50" x2="85" y2="50" />
+                <line x1="25" y1="25" x2="75" y2="75" />
+                <line x1="75" y1="25" x2="25" y2="75" />
+              </svg>
+            </span>
+            {" "}Rated Courses
+          </h2>
         </motion.div>
 
         {/* Carousel Stage */}

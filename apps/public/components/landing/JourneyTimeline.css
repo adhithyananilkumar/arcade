@@ -381,3 +381,41 @@
     padding: 30px 0 40px;
   }
 }
+
+/* ─── Typography-Integrated Shapes ────────────────────────────────────── */
+.jt-typo-wrap {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.jt-typo-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1; 
+}
+
+/* 1: Yellow Asterisk behind "Top" */
+.jt-typo-shape--1 {
+  top: -15px;
+  left: -25px;
+  animation: jtAsteriskSpin 25s linear infinite;
+  z-index: -1;
+}
+
+@keyframes jtAsteriskSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jt-typo-shape {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .jt-typo-shape--1 {
+    transform: scale(0.6) !important;
+  }
+}
