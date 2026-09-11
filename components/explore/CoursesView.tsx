@@ -800,6 +800,7 @@ export default function CoursesView({
 
   const [selectedDifficulty, setSelectedDifficulty] = useState("All Levels");
   const [selectedTopic, setSelectedTopic] = useState("All Topics");
+  const [sortBy, setSortBy] = useState<"popular" | "rating" | "duration">("popular");
 
   const difficultyLevels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
   const topics = ["All Topics", ...Array.from(new Set(activeData.courses.map((c: any, i: number) => getEnrichedCourse(c, i, activeCategoryName).categoryTag)))];
@@ -813,75 +814,215 @@ export default function CoursesView({
     return matchesSearch && matchesDifficulty && matchesTopic;
   });
 
+  const sortedCourses = [...filteredCourses].sort((a: any, b: any) => {
+    const slugA = slugify(a.title);
+    const slugB = slugify(b.title);
+    const ratingA = courseStats[slugA]?.averageRating || 4.8;
+    const ratingB = courseStats[slugB]?.averageRating || 4.8;
+
+    if (sortBy === "rating") {
+      return ratingB - ratingA;
+    }
+    if (sortBy === "duration") {
+      return (a.duration || "").localeCompare(b.duration || "");
+    }
+    return 0;
+  });
+
   return (
     <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
+          <h2 style={{ fontSize: "1.45rem", fontWeight: "800", letterSpacing: "-0.02em", color: "var(--l-ink)", fontFamily: "'Space Grotesk', sans-serif", margin: 0 }}>
             Popular Courses
           </h2>
         </div>
-        <span style={{ fontSize: "0.85rem", fontWeight: "700", color: activeData.colors.primary }}>
-          Showing {filteredCourses.length} of {activeData.courses.length} courses
+        <span style={{ fontSize: "0.84rem", fontWeight: "700", color: activeData.colors.primary, background: `${activeData.colors.primary}12`, padding: "4px 12px", borderRadius: "20px" }}>
+          Showing {sortedCourses.length} of {activeData.courses.length} courses
         </span>
       </div>
 
-      <CategoryGlobalSpotlight gridRef={filtersGridRef} spotlightRadius={160} />
+      {/* Uniform Horizontal Filter & Sort Toolbar */}
       <div
-        ref={filtersGridRef}
         style={{
           display: "flex",
-          gap: "24px",
-          marginBottom: "32px",
-          background: "rgba(255, 255, 255, 0.65)",
-          border: "1px solid rgba(20, 23, 31, 0.06)",
-          borderRadius: "16px",
-          padding: "20px 24px",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "16px",
+          flexWrap: "wrap",
+          marginBottom: "28px",
+          padding: "10px 16px",
+          background: "rgba(255, 255, 255, 0.75)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          boxShadow: "0 4px 12px rgba(20, 23, 31, 0.02)",
-          flexWrap: "wrap",
-          alignItems: "flex-start"
+          borderRadius: "14px",
+          border: "1px solid rgba(20, 23, 31, 0.08)",
+          boxShadow: "0 2px 10px rgba(0, 0, 0, 0.02)"
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <label style={{ fontSize: "0.75rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Course Level
-          </label>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        {/* Left: Filter by Level */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "0.82rem",
+              fontWeight: "800",
+              color: "#4B5563",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+              paddingRight: "4px"
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            <span>Level:</span>
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
             {difficultyLevels.map((level) => {
               const isActive = selectedDifficulty === level;
               return (
-                <FilterPillButton
+                <button
                   key={level}
-                  isActive={isActive}
-                  activeData={activeData}
+                  type="button"
                   onClick={() => setSelectedDifficulty(level)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    fontSize: "0.82rem",
+                    fontWeight: isActive ? "700" : "600",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
+                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
+                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
                 >
                   {level}
-                </FilterPillButton>
+                </button>
               );
             })}
           </div>
         </div>
 
-
+        {/* Right: Horizontal Sort */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "0.82rem",
+              fontWeight: "800",
+              color: "#4B5563",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em"
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span>Sort:</span>
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            {[
+              { id: "popular", label: "Popular" },
+              { id: "rating", label: "Highest Rated" },
+              { id: "duration", label: "Duration" }
+            ].map((s) => {
+              const isActive = sortBy === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSortBy(s.id as any)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: "8px",
+                    fontSize: "0.82rem",
+                    fontWeight: isActive ? "700" : "600",
+                    border: isActive ? `1.5px solid ${activeData.colors.primary}` : "1px solid rgba(20, 23, 31, 0.08)",
+                    background: isActive ? `${activeData.colors.primary}18` : "#FFFFFF",
+                    color: isActive ? activeData.colors.primary : "#4B5563",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
-      {filteredCourses.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px", background: "rgba(255,255,255,0.65)", backdropFilter: "blur(12px)", borderRadius: "20px", border: "1px solid rgba(20, 23, 31, 0.06)" }}>
-          <p style={{ color: "rgba(20, 20, 43, 0.5)", fontSize: "0.95rem" }}>No courses matching your search query were found.</p>
-          <button
-            onClick={() => setCourseSearchQuery("")}
-            style={{ marginTop: "12px", background: activeData.colors.primary, color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "10px", fontWeight: "700", cursor: "pointer" }}
+      {sortedCourses.length === 0 ? (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "36px 20px",
+            background: "rgba(255, 255, 255, 0.65)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            borderRadius: "16px",
+            border: "1px dashed rgba(20, 23, 31, 0.15)",
+            maxWidth: "460px",
+            margin: "24px auto"
+          }}
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: `${activeData.colors.primary}12`,
+              color: activeData.colors.primary,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px"
+            }}
           >
-            Reset search
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <h4 style={{ fontSize: "1rem", fontWeight: "700", color: "var(--l-ink)", margin: "0 0 6px" }}>
+            No courses found
+          </h4>
+          <p style={{ color: "#6B7280", fontSize: "0.86rem", margin: "0 0 16px", lineHeight: "1.5" }}>
+            {courseSearchQuery ? `No courses match "${courseSearchQuery}".` : "Try choosing a different level or clearing the search."}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setCourseSearchQuery("");
+              setSelectedDifficulty("All Levels");
+            }}
+            style={{
+              background: activeData.colors.primary,
+              color: "#FFFFFF",
+              border: "none",
+              padding: "8px 18px",
+              borderRadius: "10px",
+              fontSize: "0.84rem",
+              fontWeight: "700",
+              cursor: "pointer",
+              boxShadow: `0 4px 12px ${activeData.colors.primary}30`
+            }}
+          >
+            Reset Filters
           </button>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
-          {filteredCourses.map((course: any, index: number) => {
+          {sortedCourses.map((course: any, index: number) => {
             const slug = slugify(course.title);
             const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
             return (

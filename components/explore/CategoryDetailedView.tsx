@@ -1384,26 +1384,31 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
     <button
       ref={buttonRef}
       onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      data-active={isActive}
+      className="category-pill-btn"
       style={{
         flexShrink: 0,
-        display: "flex",
+        display: "inline-flex",
+        flexDirection: "row",
         alignItems: "center",
+        whiteSpace: "nowrap",
+        width: "auto",
+        height: "auto",
         gap: "8px",
-        padding: "12px 20px",
-        borderRadius: "14px",
-        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        padding: "10px 18px",
+        borderRadius: "12px",
+        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.08)",
+        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.75)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? itemData.colors.primary : "#5E606A",
-        fontSize: "0.9rem",
+        color: isActive ? itemData.colors.primary : "#4B5563",
+        fontSize: "0.86rem",
         fontWeight: "700",
         cursor: "pointer",
         boxShadow: isActive
-          ? `0 10px 20px -8px ${itemData.colors.primary}33`
-          : "0 4px 10px -2px rgba(0,0,0,0.02)",
-        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+          ? `0 6px 16px -4px ${itemData.colors.primary}40`
+          : "0 2px 6px rgba(0,0,0,0.02)",
+        transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
         "--glow-color": glowColor
       } as React.CSSProperties}
     >
@@ -1554,6 +1559,38 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
   };
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
 
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkCategoryScroll = useCallback(() => {
+    if (!categoryScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  }, []);
+
+  const handleScrollCategories = (direction: "left" | "right") => {
+    if (!categoryScrollRef.current) return;
+    const scrollAmount = 320;
+    categoryScrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth"
+    });
+  };
+
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    checkCategoryScroll();
+    el.addEventListener("scroll", checkCategoryScroll);
+    window.addEventListener("resize", checkCategoryScroll);
+    return () => {
+      el.removeEventListener("scroll", checkCategoryScroll);
+      window.removeEventListener("resize", checkCategoryScroll);
+    };
+  }, [checkCategoryScroll, mergedCategoriesList]);
+
   const [journeyCompleted, setJourneyCompleted] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const progressValue = useMotionValue(0);
@@ -1671,6 +1708,15 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
   const activeCategoryName = activeCategory || "All";
   const activeData = getCategoryData(activeCategoryName) || getCategoryData("All") || CATEGORY_DATA["All"] || CATEGORY_DATA["Computer Science"];
+
+  useEffect(() => {
+    if (categoryScrollRef.current) {
+      const activeEl = categoryScrollRef.current.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, [activeCategoryName]);
 
   // Sync body background so the footer (rendered outside this component) blends seamlessly.
   // Only active on articles mode — cleans up on unmount so other pages are unaffected.
@@ -2057,72 +2103,94 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
           </div>
 
-          {/* Content Type Tabs: Courses | Events & Bootcamps | Articles & Research */}
+          {/* Redesigned Premium Content Type Switcher */}
           <div
             style={{
               display: "inline-flex",
               alignItems: "center",
-              background: "rgba(255, 255, 255, 0.8)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
               border: "1px solid rgba(20, 23, 31, 0.08)",
-              borderRadius: "12px",
+              borderRadius: "14px",
               padding: "4px",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
+              boxShadow: "0 4px 16px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
               gap: "4px"
             }}
           >
-            <button
-              type="button"
-              onClick={() => handleModeChange("courses")}
-              style={{
-                background: mode === "courses" ? activeData.colors.primary : "transparent",
-                color: mode === "courses" ? "#FFFFFF" : "#4B5563",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "0.82rem",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "all 0.2s ease"
-              }}
-            >
-              Courses
-            </button>
-            <button
-              type="button"
-              onClick={() => handleModeChange("events")}
-              style={{
-                background: mode === "events" ? activeData.colors.primary : "transparent",
-                color: mode === "events" ? "#FFFFFF" : "#4B5563",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "0.82rem",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "all 0.2s ease"
-              }}
-            >
-              Events & Bootcamps
-            </button>
-            <button
-              type="button"
-              onClick={() => handleModeChange("articles")}
-              style={{
-                background: mode === "articles" ? activeData.colors.primary : "transparent",
-                color: mode === "articles" ? "#FFFFFF" : "#4B5563",
-                border: "none",
-                borderRadius: "8px",
-                padding: "8px 16px",
-                fontSize: "0.82rem",
-                fontWeight: "700",
-                cursor: "pointer",
-                transition: "all 0.2s ease"
-              }}
-            >
-              Articles & Research
-            </button>
+            {[
+              {
+                id: "courses",
+                label: "Courses",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                  </svg>
+                )
+              },
+              {
+                id: "events",
+                label: "Events & Bootcamps",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                )
+              },
+              {
+                id: "articles",
+                label: "Articles & Research",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                )
+              }
+            ].map((tab) => {
+              const isSelected = mode === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleModeChange(tab.id as any)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "7px",
+                    background: isSelected ? activeData.colors.primary : "transparent",
+                    color: isSelected ? "#FFFFFF" : "#4B5563",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "8px 16px",
+                    fontSize: "0.84rem",
+                    fontWeight: isSelected ? "700" : "600",
+                    cursor: "pointer",
+                    boxShadow: isSelected ? `0 4px 14px -2px ${activeData.colors.primary}50` : "none",
+                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = "rgba(20, 23, 31, 0.04)";
+                      e.currentTarget.style.color = "var(--l-ink)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#4B5563";
+                    }
+                  }}
+                >
+                  <span style={{ display: "inline-flex", opacity: isSelected ? 1 : 0.75 }}>
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -2274,7 +2342,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
               {/* 6. SEARCH */}
               <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2282,31 +2350,64 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 </div>
                 <input
                   type="text"
-                  placeholder="Search courses under this category..."
+                  placeholder={activeCategoryName === "All" ? "Search all events, webinars & bootcamps..." : `Search events & bootcamps in ${activeCategoryName}...`}
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "14px 20px 14px 48px",
+                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
                     borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.06)",
-                    background: "rgba(255, 255, 255, 0.8)",
+                    border: "1px solid rgba(20, 23, 31, 0.08)",
+                    background: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     color: "var(--l-ink)",
                     fontSize: "0.95rem",
                     fontWeight: "600",
                     outline: "none",
-                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                    transition: "all 0.3s ease"
+                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
+                    transition: "all 0.25s ease"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = activeData.colors.primary;
                     e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
                   }}
                 />
+                {courseSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCourseSearchQuery("")}
+                    aria-label="Clear search"
+                    style={{
+                      position: "absolute",
+                      right: "14px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "rgba(20, 23, 31, 0.08)",
+                      color: "#6B7280",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      lineHeight: "1",
+                      transition: "all 0.15s ease"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2387,7 +2488,7 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
 
               {/* Banner Inner Search */}
               <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2395,31 +2496,68 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
                 </div>
                 <input
                   type="text"
-                  placeholder="Search courses under this category..."
+                  placeholder={
+                    mode === "courses"
+                      ? (activeCategoryName === "All" ? "Search all courses..." : `Search ${activeCategoryName} courses...`)
+                      : (activeCategoryName === "All" ? "Search all articles & research..." : `Search ${activeCategoryName} articles...`)
+                  }
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "14px 20px 14px 48px",
+                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
                     borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.06)",
-                    background: "rgba(255, 255, 255, 0.8)",
+                    border: "1px solid rgba(20, 23, 31, 0.08)",
+                    background: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     color: "var(--l-ink)",
                     fontSize: "0.95rem",
                     fontWeight: "600",
                     outline: "none",
-                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                    transition: "all 0.3s ease"
+                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
+                    transition: "all 0.25s ease"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = activeData.colors.primary;
                     e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
                   }}
                 />
+                {courseSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCourseSearchQuery("")}
+                    aria-label="Clear search"
+                    style={{
+                      position: "absolute",
+                      right: "14px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "rgba(20, 23, 31, 0.08)",
+                      color: "#6B7280",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      lineHeight: "1",
+                      transition: "all 0.15s ease"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
 
             </div>
@@ -2447,64 +2585,132 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           </div>
         )}
 
-        {/* Category Filter Pills Bar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            overflowX: "auto",
-            paddingBottom: "12px",
-            marginBottom: "36px",
-            scrollbarWidth: "none",
-            msOverflowStyle: "none"
-          }}
-          className="hide-scrollbar"
-        >
-          {mergedCategoriesList.map((catName) => {
-            const isActive = activeCategoryName.toLowerCase() === catName.toLowerCase();
-            const data = getCategoryData(catName);
-            if (!data) return null;
-            const count = mode === "courses" 
-              ? data.coursesCount 
-              : mode === "events" 
-                ? (catName === "All" ? WEBINARS_DATA.length + data.bootcamps.length : data.bootcamps.length)
-                : data.resources.length;
+        {/* Category Filter Pills Bar with Smooth Horizontal Navigation */}
+        <div style={{ position: "relative", marginBottom: "36px" }}>
+          {/* Left scroll chevron */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => handleScrollCategories("left")}
+              aria-label="Scroll categories left"
+              style={{
+                position: "absolute",
+                left: "-12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "#FFFFFF",
+                border: "1px solid rgba(20, 23, 31, 0.12)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#374151",
+                transition: "all 0.2s"
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
 
-            return (
-              <CategoryPillButton
-                key={catName}
-                item={catName}
-                isActive={isActive}
-                itemData={data}
-                onClick={() => handleCategorySwitch(catName)}
-              >
-                {catName === "All" ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                  </svg>
-                ) : (
-                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: data.colors.primary }} />
-                )}
-                <span>{catName}</span>
-                <span
-                  style={{
-                    fontSize: "0.72rem",
-                    fontWeight: "800",
-                    padding: "2px 7px",
-                    borderRadius: "10px",
-                    background: isActive ? `${data.colors.primary}20` : "#F3F4F6",
-                    color: isActive ? data.colors.primary : "#6B7280"
-                  }}
+          {/* Right scroll chevron */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => handleScrollCategories("right")}
+              aria-label="Scroll categories right"
+              style={{
+                position: "absolute",
+                right: "-12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "#FFFFFF",
+                border: "1px solid rgba(20, 23, 31, 0.12)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#374151",
+                transition: "all 0.2s"
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          )}
+
+          <div
+            ref={categoryScrollRef}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              overflowX: "auto",
+              paddingBottom: "8px",
+              paddingTop: "4px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              scrollBehavior: "smooth"
+            }}
+            className="hide-scrollbar"
+          >
+            {mergedCategoriesList.map((catName) => {
+              const isActive = activeCategoryName.toLowerCase() === catName.toLowerCase();
+              const data = getCategoryData(catName);
+              if (!data) return null;
+              const count = mode === "courses" 
+                ? data.coursesCount 
+                : mode === "events" 
+                  ? (catName === "All" ? WEBINARS_DATA.length + data.bootcamps.length : data.bootcamps.length)
+                  : data.resources.length;
+
+              return (
+                <CategoryPillButton
+                  key={catName}
+                  item={catName}
+                  isActive={isActive}
+                  itemData={data}
+                  onClick={() => handleCategorySwitch(catName)}
                 >
-                  {count}
-                </span>
-              </CategoryPillButton>
-            );
-          })}
+                  {catName === "All" ? (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
+                  ) : (
+                    <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: data.colors.primary }} />
+                  )}
+                  <span>{catName}</span>
+                  <span
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: "800",
+                      padding: "2px 7px",
+                      borderRadius: "10px",
+                      background: isActive ? `${data.colors.primary}20` : "#F3F4F6",
+                      color: isActive ? data.colors.primary : "#6B7280"
+                    }}
+                  >
+                    {count}
+                  </span>
+                </CategoryPillButton>
+              );
+            })}
+          </div>
         </div>
 
         {mode === "courses" && (
@@ -2524,6 +2730,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
             activeData={activeData}
             activeCategoryName={activeCategoryName}
             isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
           />
         )}
 
@@ -2531,6 +2739,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           <ArticlesView
             activeData={activeData}
             isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
           />
         )}
 
