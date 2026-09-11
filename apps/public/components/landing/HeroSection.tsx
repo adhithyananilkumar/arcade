@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { motion, useReducedMotion, useAnimation } from "framer-motion";
 import PinwheelToken from "./PinwheelToken";
 import GradientText from "./GradientText";
-import Link from "next/link";
 import HeroButton from "./HeroButton";
 import Image from "next/image";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -487,7 +486,6 @@ export default function HeroSection() {
           </span>
         </h1>
 
-
         {/* ── CTAs ── */}
         <div className="l-ctas">
           <motion.div
@@ -496,9 +494,9 @@ export default function HeroSection() {
             animate="visible"
           >
             {status === 'authenticated' ? (
-              <HeroButton href="/reach-us" id="hero-cta-explore" text="Get in Touch" />
+              <HeroButton href="/sign?mode=signup" id="hero-cta-explore" text="Get Started" />
             ) : (
-              <HeroButton href="/reach-us" id="hero-cta-explore" text="Get in Touch" />
+              <HeroButton href="/sign?mode=signup" id="hero-cta-explore" text="Get Started" />
             )}
           </motion.div>
         </div>

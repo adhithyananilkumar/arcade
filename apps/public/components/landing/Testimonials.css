@@ -230,3 +230,143 @@
     gap: 1.5rem;
   }
 }
+
+/* ─── Typography-Integrated Shapes ────────────────────────────────────── */
+.l-typo-wrap {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.l-typo-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1; 
+}
+
+/* 1: Above "Trusted" */
+.l-typo-shape--1 {
+  top: -16px;
+  left: -8px;
+  animation: typoFloat 7s ease-in-out infinite alternate;
+}
+
+/* 2: Around "millions" */
+.l-typo-shape--2 {
+  top: -8px;
+  right: -12px;
+  z-index: 1; 
+  animation: typoSpin 9s ease-in-out infinite alternate;
+}
+
+/* 3: Near "developers" */
+.l-typo-shape--3 {
+  bottom: -4px;
+  right: -20px;
+  animation: typoFloat 5s ease-in-out infinite alternate;
+}
+
+/* 4: Around "all over" */
+.l-typo-shape--4 {
+  top: -12px;
+  left: 12px;
+  transform: rotate(-15deg);
+  animation: typoSwing 8s ease-in-out infinite alternate;
+}
+
+/* 5: Near "world" */
+.l-typo-shape--5 {
+  bottom: 4px;
+  right: -24px;
+  animation: typoFloat 6s ease-in-out infinite alternate;
+}
+
+@keyframes typoFloat {
+  0% { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(-4px) translateX(2px); }
+}
+
+@keyframes typoSpin {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-3px) rotate(10deg); }
+}
+
+@keyframes typoSwing {
+  0% { transform: rotate(-15deg) translateY(0); }
+  100% { transform: rotate(-5deg) translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l-typo-shape {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 960px) {
+  .l-typo-shape--1, .l-typo-shape--4 {
+    display: none;
+  }
+  .l-typo-shape {
+    transform: scale(0.8) !important;
+  }
+}
+
+/* ─── Cute Bird ──────────────────────────────────────────────────────── */
+.l-animated-bird-container {
+  width: 90px;
+  height: 60px;
+  /* Centered around the origin so left/top percentages place the center */
+  margin-top: -30px;
+  margin-left: -45px;
+}
+
+.l-bird-body {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+}
+
+.l-bird-body.is-flying {
+  animation: birdBob 0.8s infinite ease-in-out alternate;
+}
+
+.l-bird-body.is-flying .b-wing {
+  transform-origin: 55px 27px;
+  animation: flapFront 0.2s infinite alternate ease-in-out;
+}
+
+.l-bird-body.is-flying .b-wing-back {
+  transform-origin: 56px 24px;
+  animation: flapBack 0.2s infinite alternate ease-in-out;
+}
+
+.l-bird-body.is-flying .b-tail {
+  transform-origin: 33px 30px;
+  animation: tailWag 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes birdBob {
+  0% { transform: translateY(-4px); }
+  100% { transform: translateY(4px); }
+}
+
+@keyframes flapFront {
+  0% { transform: rotate(50deg); }
+  100% { transform: rotate(-40deg); }
+}
+
+@keyframes flapBack {
+  0% { transform: rotate(45deg); }
+  100% { transform: rotate(-45deg); }
+}
+
+@keyframes tailWag {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+
+@media (max-width: 960px) {
+  .l-animated-bird-container {
+    transform: scale(0.7) !important;
+  }
+}

@@ -116,7 +116,7 @@ export default function HeroNav() {
           </Link>
         ) : (
           <Link href="/sign" className="l-nav__get-started">
-            Get Started
+            Sign In
           </Link>
         )}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { motion, useAnimation, useReducedMotion } from "framer-motion";
 import "./Testimonials.css";
 
 interface Testimonial {
@@ -131,15 +132,172 @@ function TestimonialCard({ item }: { item: Testimonial }) {
   );
 }
 
+const BIRD_WAYPOINTS = [
+  { x: "5%", y: "-15%" },
+  { x: "30%", y: "-5%" },
+  { x: "60%", y: "-20%" },
+  { x: "85%", y: "0%" },
+  { x: "90%", y: "45%" },
+  { x: "70%", y: "60%" },
+  { x: "50%", y: "40%" },
+  { x: "20%", y: "55%" },
+  { x: "-5%", y: "30%" },
+  { x: "40%", y: "85%" },
+  { x: "80%", y: "90%" },
+];
+
+function AnimatedBird() {
+  const controls = useAnimation();
+  const shouldReduceMotion = useReducedMotion();
+  const [direction, setDirection] = useState<"left" | "right">("right");
+
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+
+    let isMounted = true;
+    let currentWaypointIndex = 0;
+
+    const moveBird = async () => {
+      while (isMounted) {
+        // Pick a random waypoint different from current
+        let nextIndex;
+        do {
+          nextIndex = Math.floor(Math.random() * BIRD_WAYPOINTS.length);
+        } while (nextIndex === currentWaypointIndex);
+
+        const currentWP = BIRD_WAYPOINTS[currentWaypointIndex];
+        const nextWP = BIRD_WAYPOINTS[nextIndex];
+        
+        // Determine direction
+        const currentXVal = parseFloat(currentWP.x);
+        const nextXVal = parseFloat(nextWP.x);
+        if (nextXVal < currentXVal) {
+          setDirection("left");
+        } else {
+          setDirection("right");
+        }
+
+        currentWaypointIndex = nextIndex;
+
+        // Calculate a random duration for flying
+        const duration = 3 + Math.random() * 3;
+
+        await controls.start({
+          left: nextWP.x,
+          top: nextWP.y,
+          transition: {
+            duration,
+            ease: "easeInOut",
+          }
+        });
+
+        if (!isMounted) break;
+
+        // Pause occasionally (like hovering/perching briefly)
+        if (Math.random() > 0.6) {
+          await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1500));
+        }
+      }
+    };
+
+    moveBird();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [controls, shouldReduceMotion]);
+
+  // If reduced motion, stay still at a cute spot
+  const initialStyle = shouldReduceMotion 
+    ? { left: "80%", top: "10%" } 
+    : { left: "10%", top: "-10%" };
+
+  return (
+    <motion.div
+      className="l-animated-bird-container"
+      initial={initialStyle}
+      animate={controls}
+      style={{
+        position: "absolute",
+        pointerEvents: "none",
+        zIndex: 2,
+      }}
+    >
+      <div 
+        className="l-animated-bird-flipper"
+        style={{
+          transform: direction === "left" ? "scaleX(-1)" : "scaleX(1)",
+          transition: "transform 0.4s ease-in-out"
+        }}
+      >
+        <div className={`l-bird-body ${shouldReduceMotion ? '' : 'is-flying'}`}>
+          <svg width="90" height="60" viewBox="0 0 90 60" fill="none">
+            {/* Tail */}
+            <path className="b-tail" d="M33 30 L15 22 L21 37 Z" fill="#0EA5E9" />
+            {/* Back Wing */}
+            <ellipse className="b-wing-back" cx="48" cy="24" rx="12" ry="6" fill="#0284C7" />
+            {/* Body */}
+            <rect x="30" y="22" width="30" height="22" rx="11" fill="#38BDF8" />
+            {/* Head */}
+            <circle cx="60" cy="25" r="12" fill="#38BDF8" />
+            {/* Beak */}
+            <path d="M70 22 L81 25 L70 28 Z" fill="#FBBF24" />
+            {/* Eye */}
+            <circle cx="64" cy="22" r="2.2" fill="#111827" />
+            {/* Front Wing */}
+            <ellipse className="b-wing" cx="45" cy="27" rx="13.5" ry="7.5" fill="#BAE6FD" />
+          </svg>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Testimonials() {
   return (
     <section className="l-testimonials" aria-label="Developer testimonials">
       <div className="l-testimonials__container">
         
         {/* Header */}
-        <div className="l-testimonials__header">
+        <div className="l-testimonials__header" style={{ position: "relative", zIndex: 1 }}>
+          <AnimatedBird />
           <h2 className="l-testimonials__title">
-            Trusted by millions of developers all over the world
+            <span className="l-typo-wrap">
+              Trusted
+              <svg className="l-typo-shape l-typo-shape--1" width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <circle cx="4" cy="12" r="3" fill="#14B8A6" />
+                <circle cx="12" cy="5" r="4" fill="#0EA5E9" />
+                <circle cx="20" cy="10" r="2.5" fill="#8B5CF6" />
+              </svg>
+            </span>
+            {" "}by{" "}
+            <span className="l-typo-wrap">
+              millions
+              <svg className="l-typo-shape l-typo-shape--2" width="22" height="22" viewBox="0 0 24 24" fill="#FBBF24">
+                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+              </svg>
+            </span>
+            {" "}of{" "}
+            <span className="l-typo-wrap">
+              developers
+              <svg className="l-typo-shape l-typo-shape--3" width="28" height="28" viewBox="0 0 24 24" fill="#8B5CF6">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12H12V2Z" />
+              </svg>
+            </span>
+            {" "}all{" "}
+            <span className="l-typo-wrap">
+              over
+              <svg className="l-typo-shape l-typo-shape--4" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" strokeWidth="3.5" strokeLinecap="round">
+                <path d="M3 12c5-8 13-8 18 0" />
+              </svg>
+            </span>
+            {" "}the{" "}
+            <span className="l-typo-wrap">
+              world
+              <svg className="l-typo-shape l-typo-shape--5" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="4">
+                <circle cx="12" cy="12" r="8" />
+              </svg>
+            </span>
           </h2>
         </div>
 
