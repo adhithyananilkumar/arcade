@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,10 +11,6 @@ export default function SessionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
   const loadSessions = async () => {
     try {
       const { SessionService } = await import('@/infrastructure/auth/session.service');
@@ -25,6 +22,10 @@ export default function SessionsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
 
   const handleRevoke = async (familyId: string) => {
     if (!confirm('Are you sure you want to revoke this session? It will be logged out immediately.')) return;
