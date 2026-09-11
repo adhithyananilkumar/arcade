@@ -477,7 +477,7 @@ export default function EventsView({
   };
 
   return (
-    <section style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+    <section style={{ marginBottom: "20px" }}>
       {/* Section Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

@@ -239,7 +239,7 @@ export default function LeaderboardPage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 pb-32 pt-28 md:px-8 md:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-8 md:pt-32">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

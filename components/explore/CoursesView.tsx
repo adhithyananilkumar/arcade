@@ -830,7 +830,7 @@ export default function CoursesView({
   });
 
   return (
-    <section ref={coursesSectionRef} style={{ marginBottom: isEmbeddedHub ? "36px" : "56px" }}>
+    <section ref={coursesSectionRef} style={{ marginBottom: "20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "4px", height: "24px", borderRadius: "2px", background: activeData.colors.primary }} />

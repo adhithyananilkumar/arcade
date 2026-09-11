@@ -226,7 +226,7 @@ export default function ScriptHeaderInfographicRoadmapPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex-1 bg-[#F8FAFC] text-slate-900 font-sans pb-32 pt-12 sm:pt-16 relative">
+    <div className="w-full min-h-screen flex-1 bg-[#F8FAFC] text-slate-900 font-sans pb-20 pt-12 sm:pt-16 relative">
 
       {/* Fixed Full Viewport Soft Off-White Background Overlay */}
       <div className="fixed inset-0 bg-[#F8FAFC] -z-10 pointer-events-none" />

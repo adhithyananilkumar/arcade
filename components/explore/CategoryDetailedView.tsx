@@ -1789,10 +1789,8 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
           mode === "articles" ? articlesBackground : // Dynamic per-category gradient
             "#f8fafc",
-        // Authenticated hub already clears the dock via LearnerShell pb-28.
-        // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
-        minHeight: isEmbeddedHub ? "auto" : "100vh",
-        paddingBottom: isEmbeddedHub ? "8px" : "100px",
+        minHeight: "100%",
+        paddingBottom: "24px",
         color: "inherit"
       }}
     >
