@@ -1,275 +1,262 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import { motion, Variants, useScroll, useTransform, useInView, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
-import Image from "next/image";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  ShieldCheck,
-  BadgeCheck,
-  Medal,
-} from "lucide-react";
+import React, { useRef, useEffect, useState } from "react";
+import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from "framer-motion";
+import { ShieldCheck, BadgeCheck, Medal, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
-import VariableProximity from "@/apps/public/components/landing/VariableProximity";
 import WhyGetCertifiedSection from "@/apps/public/components/landing/WhyGetCertifiedSection";
-import "@/apps/public/landing.css";
 
-// Reusable Animation Variants
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-};
+const FRAME_COUNT = 300;
 
 export default function AboutPage() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  const [images, setImages] = useState<HTMLImageElement[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
-  // Mouse Parallax values (X ±6px, Y ±4px)
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 120 };
-  const mouseXSpring = useSpring(mouseX, springConfig);
-  const mouseYSpring = useSpring(mouseY, springConfig);
+  // --- COMBINED SCROLL PROGRESS (500vh Total) ---
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
 
-  const bgX = useTransform(mouseXSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-6, 6]);
-  const bgY = useTransform(mouseYSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-4, 4]);
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 70,
+    damping: 20,
+    restDelta: 0.001
+  });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    if (shouldReduceMotion) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
+  // 0% to 40% of scroll is Hero (200vh out of 500vh)
+  const heroTextOpacity = useTransform(smoothProgress, [0, 0.1], [1, 0]);
+  // Logo scales up massively. Start at 0.1, end at 0.4.
+  const heroLogoScale = useTransform(smoothProgress, [0.1, 0.4], [1, 150]);
+  // Hero wrapper opacity (disappear after 0.4 so it doesn't block clicks)
+  const heroWrapperOpacity = useTransform(smoothProgress, [0.38, 0.4], [1, 0]);
+  const heroPointerEvents = useTransform(smoothProgress, (p) => p > 0.4 ? "none" : "auto");
+
+  // Preload images
+  useEffect(() => {
+    let isMounted = true;
+    const loadedImages: HTMLImageElement[] = [];
+    let loadedCount = 0;
+
+    for (let i = 1; i <= FRAME_COUNT; i++) {
+      const img = new window.Image();
+      const paddedIndex = i.toString().padStart(3, "0");
+      img.src = `/about-picture/ezgif-frame-${paddedIndex}.jpg`;
+      img.onload = () => {
+        if (!isMounted) return;
+        loadedCount++;
+        if (loadedCount === FRAME_COUNT) {
+          setLoaded(true);
+        }
+      };
+      loadedImages.push(img);
+    }
+    
+    if (isMounted) {
+      setImages(loadedImages);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Draw frame on canvas
+  const drawImage = (index: number) => {
+    if (!canvasRef.current || !images[index]) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = images[index];
+
+    // Object-fit: cover logic
+    const canvasRatio = canvas.width / canvas.height;
+    const imgRatio = img.width / img.height;
+
+    let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+
+    if (canvasRatio > imgRatio) {
+      drawWidth = canvas.width;
+      drawHeight = canvas.width / imgRatio;
+      offsetY = (canvas.height - drawHeight) / 2;
+    } else {
+      drawWidth = canvas.height * imgRatio;
+      drawHeight = canvas.height;
+      offsetX = (canvas.width - drawWidth) / 2;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
   };
 
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
+  // Handle Resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+        
+        const latest = smoothProgress.get();
+        let canvasProgress = 0;
+        if (latest > 0.4) {
+          const endScrollThreshold = 0.9;
+          canvasProgress = (latest - 0.4) / (endScrollThreshold - 0.4);
+          if (canvasProgress > 1) canvasProgress = 1;
+          if (canvasProgress < 0) canvasProgress = 0;
+        }
+        
+        const currentFrame = Math.floor(canvasProgress * (FRAME_COUNT - 1));
+        if (loaded) drawImage(currentFrame);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, [loaded, smoothProgress]);
+
+  // Update canvas on scroll
+  useMotionValueEvent(smoothProgress, "change", (latest) => {
+    if (!loaded) return;
+    
+    let canvasProgress = 0;
+    if (latest > 0.4) {
+      const endScrollThreshold = 0.9;
+      canvasProgress = (latest - 0.4) / (endScrollThreshold - 0.4);
+      if (canvasProgress > 1) canvasProgress = 1;
+      if (canvasProgress < 0) canvasProgress = 0;
+    }
+    
+    const frameIndex = Math.floor(canvasProgress * (FRAME_COUNT - 1));
+    requestAnimationFrame(() => drawImage(frameIndex));
+  });
+
+  // Initial draw once loaded
+  useEffect(() => {
+    if (loaded) {
+      drawImage(0);
+    }
+  }, [loaded]);
+
+  // --- TEXT OVERLAY ANIMATIONS ---
+
+  // 1. Hero Text (0 - 15% visible, fades out by 20%)
+  const oldHeroOpacity = useTransform(smoothProgress, [0.4, 0.55, 0.61], [1, 1, 0]);
+  const oldHeroY = useTransform(smoothProgress, [0.4, 0.55, 0.61], [0, 0, -50]);
+
+  // 2. Intro Text (30% - 90% visible)
+  const introOpacity = useTransform(smoothProgress, [0.58, 0.67, 0.94, 0.98], [0, 1, 1, 0]);
+  const introY = useTransform(smoothProgress, [0.58, 0.67, 0.94, 0.98], [50, 0, 0, -50]);
+
+  // Staggered text lines within intro text
+  const introLine1Op = useTransform(smoothProgress, [0.59, 0.64], [0, 1]);
+  const introLine1Y = useTransform(smoothProgress, [0.59, 0.64], [30, 0]);
+  const introLine2Op = useTransform(smoothProgress, [0.63, 0.68], [0, 1]);
+  const introLine2Y = useTransform(smoothProgress, [0.63, 0.68], [30, 0]);
 
   return (
-    <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
-      {/* Background Gradients */}
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-slate-50">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[100px]" />
+    <div className="bg-[#050505] text-white min-h-screen relative font-sans selection:bg-white/20 selection:text-white">
+      
+      {/* COMBINED HERO & SCROLLYTELLING CONTAINER */}
+      <div ref={containerRef} className="h-[500vh] relative w-full">
+        
+        {/* SCROLLYTELLING CANVAS (Sticky background layer) */}
+        <div className="sticky top-0 h-screen w-full overflow-hidden bg-[#050505] z-0">
+          {/* Subtle Radial Gradient Background */}
+          <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#050815] via-[#050505] to-[#050505] opacity-90 pointer-events-none" />
+          
+          <canvas
+            ref={canvasRef}
+            className="absolute inset-0 z-10 w-full h-full"
+            style={{ filter: "contrast(1.05) brightness(0.9)" }}
+          />
+          
+          <div className="absolute inset-0 z-20 bg-gradient-to-b from-[#050505]/60 via-transparent to-[#050505]/80 pointer-events-none" />
+          
+          {/* TEXT OVERLAYS */}
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            {/* OLD HERO TEXT */}
+            <motion.div 
+              style={{ opacity: oldHeroOpacity, y: oldHeroY }} 
+              className="absolute inset-0 flex flex-col justify-center items-start text-left mt-[-10vh] px-8 md:px-16 lg:px-[10%]"
+            >
+              {!loaded && (
+                <div className="mt-10 text-[10px] font-bold text-white/40 tracking-[0.3em] uppercase animate-pulse">
+                  Loading Experience...
+                </div>
+              )}
+            </motion.div>
+
+            {/* INTRO TEXT */}
+            <motion.div
+              style={{ opacity: introOpacity, y: introY }}
+              className="absolute inset-0 flex flex-col justify-center items-start text-left px-8 md:px-16 lg:px-[10%]"
+            >
+            </motion.div>
+          </div>
+        </div>
+
+        {/* HERO SECTION WITH SCROLL ZOOM (Sticky foreground layer) */}
+        <motion.div 
+          style={{ opacity: heroWrapperOpacity, pointerEvents: heroPointerEvents as any }}
+          className="absolute top-0 left-0 w-full h-[200vh] z-50"
+        >
+          <div className="sticky top-0 h-screen w-full flex flex-col md:flex-row items-center justify-center md:justify-between px-8 md:px-16 lg:px-24 py-20 gap-12 overflow-hidden pointer-events-auto">
+            
+            {/* Left Side */}
+            <motion.div style={{ opacity: heroTextOpacity }} className="flex-1 max-w-md text-white text-center md:text-left order-2 md:order-1 z-10 drop-shadow-md">
+              <h2 className="font-bricolage text-3xl lg:text-4xl font-bold mb-4">Learn by Doing</h2>
+              <p className="text-base lg:text-lg text-gray-200 leading-relaxed">
+                Arcade provides an interactive learning environment where you gain practical experience through hands-on labs and real-world projects, bridging the gap between theory and industry.
+              </p>
+            </motion.div>
+
+            {/* Center: Logo (Zooming) */}
+            <motion.div 
+              style={{ 
+                scale: heroLogoScale, 
+                transformOrigin: "51.93% 63.27%"
+              }}
+              className="flex-none order-1 md:order-2 z-10"
+            >
+              <Image 
+                src="/arcade-navy.svg" 
+                alt="Arcade Logo" 
+                width={300} 
+                height={300} 
+                className="w-48 md:w-64 lg:w-80 h-auto brightness-0 invert drop-shadow-lg" 
+              />
+            </motion.div>
+
+            {/* Right Side */}
+            <motion.div style={{ opacity: heroTextOpacity }} className="flex-1 max-w-md text-white text-center md:text-right order-3 md:order-3 z-10 drop-shadow-md">
+              <h2 className="font-bricolage text-3xl lg:text-4xl font-bold mb-4">Earn Credentials</h2>
+              <p className="text-base lg:text-lg text-gray-200 leading-relaxed">
+                Validate your skills with verifiable certificates backed by Amal Jyothi College of Engineering. Build a strong portfolio that showcases your technical expertise to future employers.
+              </p>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* --- HERO SECTION --- */}
-      <section
-        ref={headerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="relative w-full h-[100vh] min-h-[100vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white pt-24 md:pt-28"
-      >
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
-
-          @keyframes gradientShift15s {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          .animate-gradient-15s {
-            background-size: 200% 200%;
-            animation: gradientShift15s 15s ease-in-out infinite;
-          }
-
-          @keyframes floatBirds {
-            0%, 100% { transform: translate(0px, 0px); }
-            50% { transform: translate(6px, -4px); }
-          }
-          .animate-birds-float {
-            animation: floatBirds 10s ease-in-out infinite;
-          }
-        `}</style>
-
-        {/* Parallax Background Layer (Sharpened pen-line contrast & 4K edge clarity) */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            x: bgX,
-            y: bgY,
-            backgroundImage: "url('/ink-dome-bg.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center 100px",
-            backgroundRepeat: "no-repeat",
-            imageRendering: "-webkit-optimize-contrast",
-            filter: "contrast(1.06) brightness(1.01)",
-            WebkitFilter: "contrast(1.06) brightness(1.01)",
-          }}
-        />
-
-        {/* Seamless Anti-Banding Smooth Radial Gradient Dome Layer */}
-        <div
-          className="absolute top-[100px] left-1/2 -translate-x-1/2 w-[75vw] max-w-[1000px] h-[400px] pointer-events-none rounded-t-full opacity-50 mix-blend-multiply"
-          style={{
-            background: "radial-gradient(ellipse 100% 100% at 50% 100%, rgba(195, 218, 255, 0.4) 0%, rgba(215, 232, 255, 0.2) 50%, transparent 80%)",
-          }}
-        />
-
-        {/* Gentle floating motion for birds (infinite 10s float, Y ±4px, X ±6px) */}
-        <div className="absolute inset-0 pointer-events-none animate-birds-float opacity-30" />
-
-        <div className="relative z-10 max-w-[800px] mx-auto text-center space-y-8 my-auto py-12">
-          {/* HEADLINE */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
-            style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif", fontWeight: 600 }}
-          >
-            <span className="block">
-              Where{" "}
-              <span className="relative inline-block">
-                Ideas
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-none origin-left"
-                />
-              </span>
-            </span>
-            <span className="block mt-1 sm:mt-2">
-              Become{" "}
-              <span
-                className="inline-block animate-gradient-15s"
-                style={{
-                  backgroundImage: "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Impact.
-              </span>
-            </span>
-          </motion.h1>
-
-          {/* DESCRIPTION */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-            className="text-[18px] sm:text-[19px] leading-[1.75] text-[#475569] max-w-[560px] mx-auto font-sans font-normal drop-shadow-[0_2px_8px_rgba(11,19,43,0.02)]"
-          >
-            Arcade is AJCE's official platform for learning, innovation, and collaboration, offering certified webinars, hackathons, workshops, and engaging community experiences.
-          </motion.p>
-
-          {/* BUTTON */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
-            className="pt-2 flex justify-center"
-          >
-            <Link
-              href="/explore"
-              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#121E42] text-white font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[3px] active:translate-y-0 transition-all duration-250 ease-out group"
-            >
-              <span>Learn More</span>
-              <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-inner group-hover:translate-x-[4px] transition-transform duration-250 ease-out">
-                <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
-              </span>
-            </Link>
-            <button
-              disabled
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white border border-slate-200 text-slate-400 font-semibold text-base cursor-not-allowed opacity-70"
-              title="Verification feature coming soon"
-            >
-              <ShieldCheck size={18} />
-              <span>Verify Certificates</span>
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* --- AJCE ANIMATION + WHY AJCE SECTION --- */}
-      <AJCESection />
+      {/* --- WHY AJCE SECTION --- */}
+      <WhyAJCESection />
 
       {/* --- WHY GET CERTIFIED SECTION --- */}
-      <WhyGetCertifiedSection />
+      <div className="relative z-40 bg-white">
+        <WhyGetCertifiedSection />
+      </div>
+
     </div>
   );
 }
 
-function AJCESection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  /*
-  ============================================================
-  SCROLL PROGRESS
-  ============================================================
-  */
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start 90%", "start 10%"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 40,
-    damping: 15,
-    restDelta: 0.001,
-  });
-
-  // Coordinates
-  const initA = isMobile ? { x: "20%", y: "20%" } : { x: "15%", y: "25%" };
-  const initJ = isMobile ? { x: "70%", y: "35%" } : { x: "35%", y: "55%" };
-  const initC = isMobile ? { x: "20%", y: "50%" } : { x: "55%", y: "20%" };
-  const initE = isMobile ? { x: "70%", y: "65%" } : { x: "75%", y: "50%" };
-
-  const finalY = isMobile ? "15%" : "30%";
-  const finalA = isMobile ? { x: "17%", y: finalY } : { x: "8%", y: finalY };
-  const finalJ = isMobile ? { x: "39%", y: finalY } : { x: "17%", y: finalY };
-  const finalC = isMobile ? { x: "61%", y: finalY } : { x: "26%", y: finalY };
-  const finalE = isMobile ? { x: "83%", y: finalY } : { x: "35%", y: finalY };
-
-  // Opacities for appearance sequence
-  const opacityJ = useTransform(smoothProgress, [0.15, 0.20], [0, 1]);
-  const opacityC = useTransform(smoothProgress, [0.30, 0.35], [0, 1]);
-  const opacityE = useTransform(smoothProgress, [0.45, 0.50], [0, 1]);
-
-  // Line paths (drawing)
-  const pathAJ = useTransform(smoothProgress, [0.05, 0.15], [0, 1]);
-  const pathJC = useTransform(smoothProgress, [0.20, 0.30], [0, 1]);
-  const pathCE = useTransform(smoothProgress, [0.35, 0.45], [0, 1]);
-
-  // Line fading out before reorganization
-  const lineOpacity = useTransform(smoothProgress, [0.65, 0.70], [1, 0]);
-
-  // Letters movement to final positions
-  const xA = useTransform(smoothProgress, [0.70, 0.90], [initA.x, finalA.x]);
-  const yA = useTransform(smoothProgress, [0.70, 0.90], [initA.y, finalA.y]);
-
-  const xJ = useTransform(smoothProgress, [0.70, 0.90], [initJ.x, finalJ.x]);
-  const yJ = useTransform(smoothProgress, [0.70, 0.90], [initJ.y, finalJ.y]);
-
-  const xC = useTransform(smoothProgress, [0.70, 0.90], [initC.x, finalC.x]);
-  const yC = useTransform(smoothProgress, [0.70, 0.90], [initC.y, finalC.y]);
-
-  const xE = useTransform(smoothProgress, [0.70, 0.90], [initE.x, finalE.x]);
-  const yE = useTransform(smoothProgress, [0.70, 0.90], [initE.y, finalE.y]);
-
-  // Final content reveal (institution details and building becomes clear)
-  const finalRevealOpacity = useTransform(smoothProgress, [0.80, 0.90], [0, 1]);
-
-  // Building fades in slightly from blueprint style, and shifts to center
-  const buildingOpacity = useTransform(smoothProgress, [0, 0.70, 0.90], [0.3, 0.3, 1]);
-  const buildingX = useTransform(smoothProgress, [0.70, 0.90], ["0%", "5%"]);
-
+function WhyAJCESection() {
   const highlights = [
     {
       number: "01",
@@ -322,244 +309,69 @@ function AJCESection() {
   ];
 
   return (
-    <section className="relative bg-gradient-to-b from-slate-50 via-blue-50/60 to-slate-50 text-[#0b1220]">
-      <div ref={sectionRef} className="relative h-[100vh] min-h-[850px] overflow-hidden">
-
-        {/* Background */}
-        <div className="absolute inset-0 bg-transparent" />
-
-        {/* Building Sketch background/interactive layer */}
-        <motion.div
-          style={{ opacity: buildingOpacity, x: buildingX }}
-          className="absolute right-[-15%] top-[22%] z-10 h-[55vh] w-[80vw] sm:right-[-10%] sm:w-[70vw] lg:right-[1%] lg:top-[17%] lg:h-[70vh] lg:w-[60vw]"
-        >
-          <div className="absolute inset-0 bg-[#2563eb]/10 blur-[100px]" />
-          <Image
-            src="/images/ajce-sketch2.png"
-            alt="Amal Jyothi College of Engineering campus"
-            fill
-            priority
-            className="object-contain object-right"
-          />
-        </motion.div>
-
-        {/* SVG Overlay for Connections */}
-        <svg className="absolute inset-0 h-full w-full pointer-events-none z-20">
-          <motion.line
-            x1={initA.x} y1={initA.y} x2={initJ.x} y2={initJ.y}
-            stroke="#2563eb" strokeWidth={isMobile ? 2 : 3}
-            style={{ pathLength: pathAJ, opacity: lineOpacity }}
-          />
-          <motion.line
-            x1={initJ.x} y1={initJ.y} x2={initC.x} y2={initC.y}
-            stroke="#2563eb" strokeWidth={isMobile ? 2 : 3}
-            style={{ pathLength: pathJC, opacity: lineOpacity }}
-          />
-          <motion.line
-            x1={initC.x} y1={initC.y} x2={initE.x} y2={initE.y}
-            stroke="#2563eb" strokeWidth={isMobile ? 2 : 3}
-            style={{ pathLength: pathCE, opacity: lineOpacity }}
-          />
-
-          {/* SVG circle nodes */}
-          <motion.circle cx={initA.x} cy={initA.y} r="6" fill="white" stroke="#2563eb" strokeWidth="2" style={{ opacity: lineOpacity }} />
-          <motion.circle cx={initJ.x} cy={initJ.y} r="6" fill="white" stroke="#2563eb" strokeWidth="2" style={{ opacity: lineOpacity }} />
-          <motion.circle cx={initC.x} cy={initC.y} r="6" fill="white" stroke="#2563eb" strokeWidth="2" style={{ opacity: lineOpacity }} />
-          <motion.circle cx={initE.x} cy={initE.y} r="6" fill="white" stroke="#2563eb" strokeWidth="2" style={{ opacity: lineOpacity }} />
-        </svg>
-
-        {/* Animated Typography */}
-        <div className="absolute inset-0 z-30 pointer-events-none font-black text-[22vw] md:text-[12vw] tracking-[-0.05em] text-[#0b1220] leading-none">
-          <motion.div style={{ left: xA, top: yA }} className="absolute -translate-x-1/2 -translate-y-1/2">
-            A
-          </motion.div>
-          <motion.div style={{ left: xJ, top: yJ, opacity: opacityJ }} className="absolute -translate-x-1/2 -translate-y-1/2">
-            J
-          </motion.div>
-          <motion.div style={{ left: xC, top: yC, opacity: opacityC }} className="absolute -translate-x-1/2 -translate-y-1/2">
-            C
-          </motion.div>
-          <motion.div style={{ left: xE, top: yE, opacity: opacityE }} className="absolute -translate-x-1/2 -translate-y-1/2">
-            E
-          </motion.div>
+    <section className="relative overflow-hidden bg-[#f8fafc] text-[#0b1220] z-40">
+      <div className="mx-auto max-w-[1400px] px-6 py-28 sm:px-10 lg:px-16 lg:py-40">
+        {/* Section heading */}
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb]">
+              Why AJCE
+            </p>
+            <h3 className="font-bricolage text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-6xl">
+              Kerala's largest
+              <br />
+              infrastructure of
+              <br />
+              <span className="text-[#2563eb]">
+                Engineering Education.
+              </span>
+            </h3>
+          </div>
+          <div className="flex items-center">
+            <p className="max-w-2xl text-base md:text-lg leading-8 text-[#64748b]">
+              An institution shaped by academic excellence,
+              innovation, accreditation, and a commitment to
+              meaningful industry engagement.
+            </p>
+          </div>
         </div>
 
-        {/* Final Reveal Institution Details */}
-        <motion.div
-          style={{ opacity: finalRevealOpacity }}
-          className="absolute left-[8%] md:left-[8%] top-[45%] z-40 max-w-[520px] pr-8 lg:pr-12"
-        >
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-[#2563eb]">
-            Powered by Amal Jyothi
-          </p>
-          <h2 className="font-bricolage text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            College of<br />Engineering
-          </h2>
-          <p className="mt-6 max-w-[430px] text-base leading-7 text-[#64748b] pr-4">
-            Arcade is the official learning and event platform of Amal
-            Jyothi College of Engineering, where every certificate is
-            backed by an institution known for academic excellence,
-            innovation, and industry engagement.
-          </p>
-        </motion.div>
-
+        {/* FEATURE LIST */}
+        <div className="mt-24 border-t border-[#0b1220]/15">
+          {highlights.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <motion.div
+                key={item.number}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.7, delay: index * 0.08 }}
+                className="group relative grid gap-8 border-b border-[#0b1220]/15 py-12 transition-colors duration-500 hover:bg-white lg:grid-cols-[100px_1fr_1fr_80px] lg:items-center"
+              >
+                {/* Number */}
+                <div className={`text-sm font-bold tracking-[0.2em] ${item.colorClasses.numberText}`}>
+                  {item.number}
+                </div>
+                {/* Title */}
+                <h4 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  {item.title}
+                </h4>
+                {/* Description */}
+                <p className="max-w-md text-sm leading-6 text-[#64748b]">
+                  {item.description}
+                </p>
+                {/* Icon */}
+                <div className={`flex h-12 w-12 items-center justify-center rounded-full border border-[#0b1220]/15 transition-all duration-500 ${item.colorClasses.hoverBorder} ${item.colorClasses.hoverBg} group-hover:text-white`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                {/* Hover line */}
+                <div className={`absolute bottom-0 left-0 h-[2px] w-0 ${item.colorClasses.lineBg} transition-all duration-700 group-hover:w-full`} />
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
-
-
-      {/* ========================================================
-          WHY AJCE
-      ========================================================= */}
-
-      <section className="relative overflow-hidden bg-[#f8fafc]">
-
-        <div className="mx-auto max-w-[1400px] px-6 py-28 sm:px-10 lg:px-16 lg:py-40">
-
-          {/* Section heading */}
-
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-
-            <div>
-
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb]">
-                Why AJCE
-              </p>
-
-              <h3 className="font-bricolage text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-6xl">
-                Kerala's largest
-                <br />
-                infrastructure of
-                <br />
-                <span className="text-[#2563eb]">
-                  Engineering Education.
-                </span>
-              </h3>
-
-            </div>
-
-            <div className="flex items-center">
-
-              <p className="max-w-2xl text-base md:text-lg leading-8 text-[#64748b]">
-                An institution shaped by academic excellence,
-                innovation, accreditation, and a commitment to
-                meaningful industry engagement.
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* ====================================================
-              FEATURE LIST
-          ========================================================= */}
-
-          <div className="mt-24 border-t border-[#0b1220]/15">
-
-            {highlights.map((item, index) => {
-
-              const Icon = item.icon;
-
-              return (
-
-                <motion.div
-                  key={item.number}
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  whileInView={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  viewport={{
-                    once: true,
-                    margin: "-80px",
-                  }}
-                  transition={{
-                    duration: 0.7,
-                    delay: index * 0.08,
-                  }}
-                  className="
-                    group
-                    relative
-                    grid
-                    gap-8
-                    border-b
-                    border-[#0b1220]/15
-                    py-12
-                    transition-colors
-                    duration-500
-                    hover:bg-white
-                    lg:grid-cols-[100px_1fr_1fr_80px]
-                    lg:items-center
-                  "
-                >
-
-                  {/* Number */}
-
-                  <div className={`text-sm font-bold tracking-[0.2em] ${item.colorClasses.numberText}`}>
-                    {item.number}
-                  </div>
-
-                  {/* Title */}
-
-                  <h4 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                    {item.title}
-                  </h4>
-
-                  {/* Description */}
-
-                  <p className="max-w-md text-sm leading-6 text-[#64748b]">
-                    {item.description}
-                  </p>
-
-                  {/* Icon */}
-
-                  <div className={`
-                    flex
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-                    rounded-full
-                    border
-                    border-[#0b1220]/15
-                    transition-all
-                    duration-500
-                    ${item.colorClasses.hoverBorder}
-                    ${item.colorClasses.hoverBg}
-                    group-hover:text-white
-                  `}>
-
-                    <Icon className="h-5 w-5" />
-
-                  </div>
-
-                  {/* Hover line */}
-
-                  <div className={`
-                    absolute
-                    bottom-0
-                    left-0
-                    h-[2px]
-                    w-0
-                    ${item.colorClasses.lineBg}
-                    transition-all
-                    duration-700
-                    group-hover:w-full
-                  `} />
-
-                </motion.div>
-
-              );
-
-            })}
-
-          </div>
-
-        </div>
-
-      </section>
-
     </section>
   );
 }
