@@ -55,22 +55,40 @@ export default function ArticlesView({
             className="hover-card-y"
           >
             <div>
-              <span
-                style={{
-                  fontSize: "0.7rem",
-                  fontWeight: "800",
-                  color: activeData.colors.primary,
-                  background: activeData.colors.secondary,
-                  padding: "3px 8px",
-                  borderRadius: "8px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.03em",
-                  display: "inline-block",
-                  marginBottom: "12px"
-                }}
-              >
-                {doc.type}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
+                {doc.category && (
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      fontWeight: "700",
+                      color: "#4B5563",
+                      background: "rgba(20, 23, 31, 0.05)",
+                      border: "1px solid rgba(20, 23, 31, 0.08)",
+                      padding: "2px 7px",
+                      borderRadius: "6px",
+                      letterSpacing: "0.02em",
+                      display: "inline-block"
+                    }}
+                  >
+                    {doc.category}
+                  </span>
+                )}
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    fontWeight: "800",
+                    color: activeData.colors.primary,
+                    background: activeData.colors.secondary,
+                    padding: "3px 8px",
+                    borderRadius: "8px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.03em",
+                    display: "inline-block"
+                  }}
+                >
+                  {doc.type}
+                </span>
+              </div>
               <h3 style={{ fontSize: "1.1rem", fontWeight: "800", color: "var(--l-ink)", margin: "0 0 8px", lineHeight: "1.4", fontFamily: "'Space Grotesk', sans-serif" }}>
                 {doc.title}
               </h3>

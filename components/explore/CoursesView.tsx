@@ -64,34 +64,37 @@ interface EnrichedCourse {
   };
 }
 
-function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string }, index: number, categoryName: string): EnrichedCourse {
+function getEnrichedCourse(course: { title: string; duration: string; level: string; desc: string; category?: string }, index: number, categoryName: string): EnrichedCourse {
   const ratings = [4.8, 4.9, 4.7, 4.6];
   const reviews = [320, 240, 185, 95];
   const rating = ratings[index % ratings.length];
   const reviewsCount = reviews[index % reviews.length];
 
-  let categoryTag = categoryName;
-  if (categoryName === "Computer Science") {
+  const effectiveCategory = (course.category && course.category.toLowerCase() !== "all") ? course.category : categoryName;
+  let categoryTag = effectiveCategory;
+  if (effectiveCategory === "Computer Science") {
     const tags = ["Programming", "Algorithms", "Databases", "Software Engineering"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Information Technology") {
+  } else if (effectiveCategory === "Information Technology") {
     const tags = ["Networking", "Cybersecurity", "Cloud Computing", "Systems"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Business & Management") {
+  } else if (effectiveCategory === "Business & Management") {
     const tags = ["Entrepreneurship", "Marketing", "Finance", "Product"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Civil & Mechanical") {
+  } else if (effectiveCategory === "Civil & Mechanical") {
     const tags = ["CAD Design", "Fluid Mechanics", "Structural", "Robotics"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Basic Sciences") {
+  } else if (effectiveCategory === "Basic Sciences") {
     const tags = ["Mathematics", "Physics", "Chemistry", "Biology"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Humanities & Languages") {
+  } else if (effectiveCategory === "Humanities & Languages") {
     const tags = ["Literature", "Linguistics", "Philosophy", "History"];
     categoryTag = tags[index % tags.length];
-  } else if (categoryName === "Personal Development") {
+  } else if (effectiveCategory === "Personal Development") {
     const tags = ["Productivity", "Leadership", "Communication", "Mindfulness"];
     categoryTag = tags[index % tags.length];
+  } else if (effectiveCategory.toLowerCase() === "all") {
+    categoryTag = course.category || "General";
   }
 
   const instructors = [
@@ -573,6 +576,48 @@ export const CourseCard: React.FC<CourseCardProps> = ({
             <div style={{ color: activeData.colors.primary, opacity: 0.25 }}>
               {getCourseGlyph(course.title, index, activeData.colors.primary)}
             </div>
+
+            {/* Category tag pill */}
+            <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                left: "12px",
+                background: "rgba(255, 255, 255, 0.92)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                fontSize: "0.72rem",
+                fontWeight: "700",
+                color: activeData.colors.primary,
+                border: `1px solid ${activeData.colors.primary}30`,
+                letterSpacing: "0.02em",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.04)"
+              }}
+            >
+              {course.category || enriched.categoryTag}
+            </div>
+
+            {/* Level pill */}
+            <div
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "12px",
+                background: "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                padding: "3px 8px",
+                borderRadius: "6px",
+                fontSize: "0.7rem",
+                fontWeight: "600",
+                color: "#5A5870",
+                border: "1px solid #E6E3F1"
+              }}
+            >
+              {course.level}
+            </div>
           </div>
 
           <div style={{ padding: "16px 16px 14px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "8px" }}>
@@ -841,7 +886,7 @@ export default function CoursesView({
             const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
             return (
               <CourseCard
-                key={course.title}
+                key={course.id || `${course.title}-${index}`}
                 course={course}
                 index={index}
                 activeCategoryName={activeCategoryName}

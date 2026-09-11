@@ -101,29 +101,35 @@ export default function EventsView({
     setWebinarsPage(0);
   }, [activeCategoryName]);
 
-  let categoryWebinars = WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
+  const isAllCategory = activeCategoryName.toLowerCase() === "all";
+
+  let categoryWebinars = isAllCategory
+    ? WEBINARS_DATA
+    : WEBINARS_DATA.filter(w => w.category.toLowerCase() === activeCategoryName.toLowerCase());
   if (categoryWebinars.length === 0) {
     categoryWebinars = WEBINARS_DATA.map(w => ({ ...w, category: activeCategoryName }));
   }
 
   const renderBootcampsSection = (title: string = "Practical Bootcamps") => {
-    const bootcampsToShow = [
-      ...activeData.bootcamps,
-      {
-        title: `${activeCategoryName} Advanced Masterclass Bootcamp`,
-        duration: "10 Weeks",
-        type: "Bootcamp",
-        date: "Starts next Monday",
-        desc: "Deep dive into industry-level practices, live coding labs, and professional certification prep."
-      },
-      {
-        title: `${activeCategoryName} Career Acceleration Program`,
-        duration: "14 Weeks",
-        type: "Bootcamp",
-        date: "Open for Admission",
-        desc: "Guaranteed project portfolio building, mock technical interviews, and resume mentorship sessions."
-      }
-    ];
+    const bootcampsToShow = isAllCategory
+      ? activeData.bootcamps
+      : [
+          ...activeData.bootcamps,
+          {
+            title: `${activeCategoryName} Advanced Masterclass Bootcamp`,
+            duration: "10 Weeks",
+            type: "Bootcamp",
+            date: "Starts next Monday",
+            desc: "Deep dive into industry-level practices, live coding labs, and professional certification prep."
+          },
+          {
+            title: `${activeCategoryName} Career Acceleration Program`,
+            duration: "14 Weeks",
+            type: "Bootcamp",
+            date: "Open for Admission",
+            desc: "Guaranteed project portfolio building, mock technical interviews, and resume mentorship sessions."
+          }
+        ];
 
     const CARDS_PER_PAGE = 3;
     const startIndex = currentPage * CARDS_PER_PAGE;
@@ -143,6 +149,7 @@ export default function EventsView({
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px" }}>
           {visibleBootcamps.map((bootcamp: any, i: number) => {
+            const itemCat = bootcamp.category || activeCategoryName;
             const ctaBg = activeData.colors.primary;
             const ctaColor = "#FFFFFF";
             const ctaShadow = `0 4px 14px ${activeData.colors.primary}30`;
@@ -164,13 +171,13 @@ export default function EventsView({
                 }}
                 className="hover-card-y"
               >
-                <WebinarCardHeader title={bootcamp.title} status={bootcamp.type} duration={bootcamp.duration} category={activeCategoryName} />
+                <WebinarCardHeader title={bootcamp.title} status={bootcamp.type} duration={bootcamp.duration} category={itemCat} />
 
                 <div style={{ padding: "20px", flexGrow: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                       <span style={{ fontSize: "0.72rem", fontWeight: "800", color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                        {activeCategoryName} • {bootcamp.duration.toUpperCase()}
+                        {itemCat} • {bootcamp.duration.toUpperCase()}
                       </span>
                     </div>
 

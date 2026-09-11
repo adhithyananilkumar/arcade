@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Footer from "@/apps/public/components/landing/Footer";
 import GradientText from "@/components/landing/GradientText";
-import { CourseCard } from "@/components/explore/CategoryDetailedView";
+import CategoryDetailedView, { CourseCard } from "@/components/explore/CategoryDetailedView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
@@ -214,10 +214,19 @@ export const CATEGORY_DATA: Record<string, {
     courses: [],
     bootcamps: [],
     resources: []
+  },
+  "All": {
+    coursesCount: 50,
+    gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+    colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+    desc: "Explore all comprehensive learning paths, hands-on bootcamps, and educational resources across all disciplines.",
+    courses: [],
+    bootcamps: [],
+    resources: []
   }
 };
 
-export const categoriesList = Object.keys(CATEGORY_DATA);
+export const categoriesList = ["All", ...Object.keys(CATEGORY_DATA).filter((c) => c !== "All")];
 
 // Static Webinar Content
 const WEBINARS_DATA = [
@@ -229,6 +238,7 @@ const WEBINARS_DATA = [
 ];
 
 const ILLUSTRATION_BGS: Record<string, string> = {
+  "All": "#2563EB", // Solid vibrant blue
   "Computer Science": "#7C3AED", // Solid vibrant purple
   "Information Technology": "#2563EB", // Solid vibrant blue
   "Business & Management": "#EA580C", // Solid vibrant orange
@@ -250,6 +260,19 @@ export function CategoryWatermark({ category, color }: { category: string; color
     zIndex: 0
   };
   switch (category) {
+    case "All":
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <line x1="10" y1="6.5" x2="14" y2="6.5" strokeWidth="1.5" />
+          <line x1="10" y1="17.5" x2="14" y2="17.5" strokeWidth="1.5" />
+          <line x1="6.5" y1="10" x2="6.5" y2="14" strokeWidth="1.5" />
+          <line x1="17.5" y1="10" x2="17.5" y2="14" strokeWidth="1.5" />
+        </svg>
+      );
     case "Computer Science":
     case "Information Technology":
       return (
@@ -307,6 +330,21 @@ export function CategoryWatermark({ category, color }: { category: string; color
 function CategoryIllustration({ category }: { category: string }) {
   const bgFill = "transparent";
   switch (category) {
+    case "All":
+      return (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <rect width="100%" height="100%" fill={bgFill} />
+          <circle cx="150" cy="80" r="50" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+          <circle cx="150" cy="80" r="30" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <circle cx="150" cy="80" r="8" fill="#FFFFFF" />
+          <line x1="100" y1="80" x2="200" y2="80" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <line x1="150" y1="30" x2="150" y2="130" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <rect x="75" y="45" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="195" y="45" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="75" y="95" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="195" y="95" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+        </svg>
+      );
     case "Computer Science":
       return (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
@@ -481,6 +519,32 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
   }
 
   switch (category) {
+    case "All":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="150" cy="80" r="48" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeDasharray="4 4" />
+          <circle cx="150" cy="80" r="28" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <rect x="138" y="68" width="24" height="24" rx="4" fill={colors.dark} />
+          <path d="M 144,80 L 156,80 M 150,74 L 150,86" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+          {/* Left discipline node */}
+          <g transform="translate(62, 65)">
+            <rect x="0" y="0" width="36" height="26" rx="4" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1.5" />
+            <line x1="6" y1="8" x2="22" y2="8" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="6" y1="14" x2="30" y2="14" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="6" y1="20" x2="18" y2="20" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+          {/* Right discipline node */}
+          <g transform="translate(202, 65)">
+            <circle cx="16" cy="13" r="15" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1.5" />
+            <path d="M 8,13 H 24 M 16,5 V 21" stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="16" cy="13" r="4" fill={colors.dark} />
+          </g>
+          {/* Connectors */}
+          <path d="M 98,78 L 122,80" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M 178,80 L 202,78" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+        </svg>
+      );
     case "Computer Science":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1045,16 +1109,33 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
   );
 }
 
-function CoursesContent() {
+function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Route selector
   const initialCategory = searchParams.get("category");
+  const tabParam = searchParams.get("tab");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
+  const initialTab = (tabParam === "bootcamps" || tabParam === "events")
+    ? "bootcamps"
+    : tabParam === "articles"
+      ? "articles"
+      : tabParam === "roadmaps"
+        ? "roadmaps"
+        : "courses";
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">(initialTab);
+
+  useEffect(() => {
+    if (tabParam) {
+      if (tabParam === "bootcamps" || tabParam === "events") setActiveTab("bootcamps");
+      else if (tabParam === "articles") setActiveTab("articles");
+      else if (tabParam === "roadmaps") setActiveTab("roadmaps");
+      else if (tabParam === "courses") setActiveTab("courses");
+    }
+  }, [tabParam]);
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
@@ -1062,15 +1143,50 @@ function CoursesContent() {
   // there's no admin-category equivalent for the roadmaps tab.
   const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
   const allPublicCategories = usePublicCategories();
-  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
   const publicCourses = usePublicCourses();
 
   const mergedCategoriesList = [
-    ...categoriesList,
-    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+    "All",
+    ...categoriesList.filter((c) => c !== "All"),
+    ...adminCategories.filter((c) => c.name !== "All" && !categoriesList.includes(c.name)).map((c) => c.name),
   ];
 
   const getCategoryData = (cat: string) => {
+    if (cat.toLowerCase() === "all") {
+      const allCourses: any[] = [];
+      const allBootcamps: any[] = [];
+      const allResources: any[] = [];
+
+      Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
+        if (k.toLowerCase() === "all") return;
+        val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
+        val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
+        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
+      });
+
+      publicCourses.forEach((c) => {
+        allCourses.unshift({
+          id: c.id,
+          title: c.title,
+          duration: "Self-Paced",
+          level: "All Levels",
+          desc: c.description || "",
+          category: "Courses",
+        });
+      });
+
+      return {
+        desc: "Access all self-paced courses, expert bootcamps, and in-depth articles across every topic.",
+        coursesCount: allCourses.length,
+        gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+        colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+        courses: allCourses,
+        bootcamps: allBootcamps,
+        resources: allResources,
+      };
+    }
+
     const base = CATEGORY_DATA[cat];
     const admin = allPublicCategories.find(
       (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase()
@@ -1147,25 +1263,33 @@ function CoursesContent() {
   };
 
   useEffect(() => {
+    if (hubBasePath) {
+      // When inside internal authenticated hub, category viewing is handled at top level
+      return;
+    }
     if (initialCategory && mergedCategoriesList.includes(initialCategory)) {
       router.push(`/courses?category=${encodeURIComponent(initialCategory)}`);
     } else {
       setActiveCategory(null);
     }
-  }, [initialCategory, router]);
+  }, [initialCategory, router, hubBasePath, mergedCategoriesList]);
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     const encodedCat = encodeURIComponent(category);
-    if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
-    else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
-    else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
-    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
+    if (hubBasePath) {
+      router.push(`${hubBasePath}?category=${encodedCat}&tab=${activeTab}`);
+    } else {
+      if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
+      else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
+      else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+      else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
+    }
   };
 
   const handleGoBackToExplore = () => {
     setActiveCategory(null);
-    router.push("/explore");
+    router.push(hubBasePath || "/explore");
   };
 
   // RENDER OPTION B: Main Explore Hub Dashboard
@@ -1217,7 +1341,7 @@ function CoursesContent() {
       `}</style>
 
       {/* Spacer to prevent banner content/diagonal background from sliding under the fixed header navigation bar */}
-      <div style={{ height: "64px" }} />
+      {!hubBasePath && <div style={{ height: "64px" }} />}
 
       {/* Neobrutalist Typography Header */}
       <div
@@ -1648,9 +1772,10 @@ function CoursesContent() {
             let searchResults: any[] = [];
             if (searchQuery) {
               mergedCategoriesList.forEach(cat => {
+                if (cat.toLowerCase() === "all") return;
 
-                        const data = getCategoryData(cat)!;
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                const data = getCategoryData(cat)!;
+                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
                 if (activeTab === "courses") {
                   data.courses.forEach(course => {
                     if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
@@ -1901,15 +2026,32 @@ function CoursesContent() {
             })()}
         </div>{/* end contentRef wrapper */}
       </main>
-      <Footer />
+      {!hubBasePath && <Footer />}
     </div>
   );
 }
 
-export default function ExploreHubPage() {
+function ExploreHubInner({ hubBasePath }: { hubBasePath?: string } = {}) {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  const tabParam = searchParams.get("tab");
+
+  if (hubBasePath && category) {
+    const mode = (tabParam === "bootcamps" || tabParam === "events")
+      ? "events"
+      : tabParam === "articles"
+        ? "articles"
+        : "courses";
+    return <CategoryDetailedView hubBasePath={hubBasePath} mode={mode} />;
+  }
+
+  return <CoursesContent hubBasePath={hubBasePath} />;
+}
+
+export default function ExploreHubPage({ hubBasePath }: { hubBasePath?: string } = {}) {
   return (
     <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading explore hub...</div>}>
-      <CoursesContent />
+      <ExploreHubInner hubBasePath={hubBasePath} />
     </Suspense>
   );
 }

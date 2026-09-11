@@ -796,6 +796,7 @@ const CATEGORY_TOPICS: Record<string, string[]> = {
 };
 
 const CATEGORY_HEADLINES: Record<string, { main: string; highlight: string }> = {
+  "All": { main: "Explore All Topics & ", highlight: "Disciplines" },
   "Computer Science": { main: "Build the Future of ", highlight: "Software" },
   "Information Technology": { main: "Secure & Scale Modern ", highlight: "Infrastructure" },
   "Business & Management": { main: "Lead Teams & Scale ", highlight: "Enterprises" },
@@ -1016,6 +1017,14 @@ const CATEGORY_EDITOR_TABS: Record<string, EditorContent[]> = {
 };
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "All": (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
   "Computer Science": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
@@ -1067,6 +1076,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 // Color presets for custom graphic header meshes
 const HEADER_COLOR_MESHES: Record<string, string> = {
+  "All": "radial-gradient(at 10% 20%, rgba(37, 99, 235, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(124, 58, 237, 0.1) 0px, transparent 50%)",
   "Computer Science": "radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)",
 
   "Information Technology": "radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.1) 0px, transparent 50%)",
@@ -1410,9 +1420,27 @@ type CategoryDetailedViewProps = {
   mode?: "courses" | "events" | "articles";
 };
 
-export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: CategoryDetailedViewProps = {}) {
+export default function CategoryDetailedView({ hubBasePath, mode: propMode = "courses" }: CategoryDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const tabFromQuery = searchParams.get("tab");
+  const initialMode = (tabFromQuery === "bootcamps" || tabFromQuery === "events")
+    ? "events"
+    : tabFromQuery === "articles"
+      ? "articles"
+      : propMode;
+  const [mode, setMode] = useState<"courses" | "events" | "articles">(initialMode);
+
+  useEffect(() => {
+    if (tabFromQuery === "bootcamps" || tabFromQuery === "events") {
+      setMode("events");
+    } else if (tabFromQuery === "articles") {
+      setMode("articles");
+    } else if (tabFromQuery === "courses") {
+      setMode("courses");
+    }
+  }, [tabFromQuery]);
+
   const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "articles" ? "/articles" : "/explore");
   const isEmbeddedHub = Boolean(hubBasePath);
 
@@ -1426,14 +1454,49 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   // Each admin category is scoped to one section (courses/events/articles) via its `type`.
   const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
   const allPublicCategories = usePublicCategories();
-  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
   const publicCourses = usePublicCourses();
 
   const mergedCategoriesList = [
-    ...categoriesList,
-    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+    "All",
+    ...categoriesList.filter((c) => c !== "All"),
+    ...adminCategories.filter((c) => c.name !== "All" && !categoriesList.includes(c.name)).map((c) => c.name),
   ];
   const getCategoryData = (cat: string) => {
+    if (cat.toLowerCase() === "all") {
+      const allCourses: any[] = [];
+      const allBootcamps: any[] = [];
+      const allResources: any[] = [];
+
+      Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
+        if (k.toLowerCase() === "all") return;
+        val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
+        val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
+        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
+      });
+
+      publicCourses.forEach((c) => {
+        allCourses.unshift({
+          id: c.id,
+          title: c.title,
+          duration: "Self-Paced",
+          level: "All Levels",
+          desc: c.description || "",
+          category: "Courses",
+        });
+      });
+
+      return {
+        desc: "Explore all comprehensive courses, interactive bootcamps, and guides across every department.",
+        coursesCount: allCourses.length,
+        gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+        colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+        courses: allCourses,
+        bootcamps: allBootcamps,
+        resources: allResources,
+      };
+    }
+
     const base = CATEGORY_DATA[cat];
     const admin = allPublicCategories.find(
       (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase() || slugify(c.name) === slugify(cat)
@@ -1588,7 +1651,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
 
   useEffect(() => {
     if (initialCategory) {
-      const exactMatch = mergedCategoriesList.find((c) => c === initialCategory);
+      const exactMatch = mergedCategoriesList.find((c) => c.toLowerCase() === initialCategory.toLowerCase());
       if (exactMatch) {
         setActiveCategory(exactMatch);
       } else {
@@ -1602,12 +1665,12 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         }
       }
     } else {
-      setActiveCategory("Computer Science"); // Fallback default
+      setActiveCategory("All"); // Default to "All" category
     }
   }, [initialCategory, mergedCategoriesList]);
 
-  const activeCategoryName = activeCategory || "Computer Science";
-  const activeData = getCategoryData(activeCategoryName) || CATEGORY_DATA["Computer Science"];
+  const activeCategoryName = activeCategory || "All";
+  const activeData = getCategoryData(activeCategoryName) || getCategoryData("All") || CATEGORY_DATA["All"] || CATEGORY_DATA["Computer Science"];
 
   // Sync body background so the footer (rendered outside this component) blends seamlessly.
   // Only active on articles mode — cleans up on unmount so other pages are unaffected.
@@ -1615,6 +1678,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     if (mode !== "articles") return;
 
     const ARTICLES_BODY_BG: Record<string, string> = {
+      "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
       "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)",
       "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)",
       "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)",
@@ -1624,7 +1688,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
       "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
     };
 
-    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["Computer Science"];
+    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["All"] ?? ARTICLES_BODY_BG["Computer Science"];
     const prev = document.body.style.background;
     document.body.style.background = bg;
 
@@ -1638,8 +1702,21 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     setCourseSearchQuery("");
 
     const base = hubBasePath || window.location.pathname;
-    const newUrl = `${base}?category=${encodeURIComponent(category)}`;
+    const tabParam = mode === "events" ? "&tab=bootcamps" : mode === "articles" ? "&tab=articles" : "&tab=courses";
+    const newUrl = `${base}?category=${encodeURIComponent(category)}${tabParam}`;
     window.history.replaceState(null, "", newUrl);
+  };
+
+  const handleModeChange = (newMode: "courses" | "events" | "articles") => {
+    setMode(newMode);
+    if (hubBasePath) {
+      const tabParam = newMode === "events" ? "bootcamps" : newMode;
+      const newUrl = `${hubBasePath}?category=${encodeURIComponent(activeCategoryName)}&tab=${tabParam}`;
+      window.history.replaceState(null, "", newUrl);
+    } else {
+      const targetPath = newMode === "events" ? "/events" : newMode === "articles" ? "/articles" : "/courses";
+      router.push(`${targetPath}?category=${encodeURIComponent(activeCategoryName)}`);
+    }
   };
 
   const goToExploreHome = () => {
@@ -1647,6 +1724,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   };
 
   const ARTICLES_BG: Record<string, string> = {
+    "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
     "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)", // warm antique parchment
     "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)", // soft amber scroll
     "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)", // golden honey
@@ -1656,7 +1734,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)", // old vellum yellow
   };
 
-  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
+  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? ARTICLES_BG["All"] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
 
   return (
     <div
@@ -1939,8 +2017,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         }}
       >
 
-        {/* Breadcrumb back into explore hub (authenticated) or public explore */}
-        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}>
+        {/* Breadcrumb back into explore hub (authenticated) or public explore, and content-type mode switcher */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: isEmbeddedHub ? "20px" : "28px" }}>
           <div
             style={{
               display: "flex",
@@ -1958,25 +2036,93 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
             }}
           >
-            <a
-              href="/explore"
-              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Explore
-            </a>
+            </span>
             <span>/</span>
-            <a
-              href="/explore"
-              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Departments
-            </a>
+            </span>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
+          </div>
+
+          {/* Content Type Tabs: Courses | Events & Bootcamps | Articles & Research */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              border: "1px solid rgba(20, 23, 31, 0.08)",
+              borderRadius: "12px",
+              padding: "4px",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03)",
+              gap: "4px"
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => handleModeChange("courses")}
+              style={{
+                background: mode === "courses" ? activeData.colors.primary : "transparent",
+                color: mode === "courses" ? "#FFFFFF" : "#4B5563",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.82rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+            >
+              Courses
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("events")}
+              style={{
+                background: mode === "events" ? activeData.colors.primary : "transparent",
+                color: mode === "events" ? "#FFFFFF" : "#4B5563",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.82rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+            >
+              Events & Bootcamps
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("articles")}
+              style={{
+                background: mode === "articles" ? activeData.colors.primary : "transparent",
+                color: mode === "articles" ? "#FFFFFF" : "#4B5563",
+                border: "none",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontSize: "0.82rem",
+                fontWeight: "700",
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+            >
+              Articles & Research
+            </button>
           </div>
         </div>
 
@@ -2301,6 +2447,65 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           </div>
         )}
 
+        {/* Category Filter Pills Bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            overflowX: "auto",
+            paddingBottom: "12px",
+            marginBottom: "36px",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none"
+          }}
+          className="hide-scrollbar"
+        >
+          {mergedCategoriesList.map((catName) => {
+            const isActive = activeCategoryName.toLowerCase() === catName.toLowerCase();
+            const data = getCategoryData(catName);
+            if (!data) return null;
+            const count = mode === "courses" 
+              ? data.coursesCount 
+              : mode === "events" 
+                ? (catName === "All" ? WEBINARS_DATA.length + data.bootcamps.length : data.bootcamps.length)
+                : data.resources.length;
+
+            return (
+              <CategoryPillButton
+                key={catName}
+                item={catName}
+                isActive={isActive}
+                itemData={data}
+                onClick={() => handleCategorySwitch(catName)}
+              >
+                {catName === "All" ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  </svg>
+                ) : (
+                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: data.colors.primary }} />
+                )}
+                <span>{catName}</span>
+                <span
+                  style={{
+                    fontSize: "0.72rem",
+                    fontWeight: "800",
+                    padding: "2px 7px",
+                    borderRadius: "10px",
+                    background: isActive ? `${data.colors.primary}20` : "#F3F4F6",
+                    color: isActive ? data.colors.primary : "#6B7280"
+                  }}
+                >
+                  {count}
+                </span>
+              </CategoryPillButton>
+            );
+          })}
+        </div>
 
         {mode === "courses" && (
           <CoursesView

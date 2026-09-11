@@ -4,5 +4,5 @@
 import ExploreHubPage from "@/app/(public)/explore/page";
 
 export default function ExplorePage() {
-  return <ExploreHubPage />;
+  return <ExploreHubPage hubBasePath="/search" />;
 }
