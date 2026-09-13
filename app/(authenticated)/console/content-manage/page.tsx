@@ -17,15 +17,17 @@ interface ConsoleCourse {
   enrollments: number;
 }
 
-type CategoryType = 'COURSES' | 'EVENTS' | 'ARTICLES';
+type CategoryType = 'COURSES' | 'EVENTS' | 'ARTICLES' | 'ALL';
 
 const CATEGORY_TYPE_OPTIONS: { value: CategoryType; label: string }[] = [
+  { value: 'ALL', label: 'All Content Types (Courses, Events, Articles)' },
   { value: 'COURSES', label: 'Self-Paced Courses' },
   { value: 'EVENTS', label: 'Events' },
   { value: 'ARTICLES', label: 'Articles' },
 ];
 
 const CATEGORY_TYPE_LABELS: Record<string, string> = {
+  ALL: 'All Content Types',
   COURSES: 'Self-Paced Courses',
   EVENTS: 'Events',
   ARTICLES: 'Articles',

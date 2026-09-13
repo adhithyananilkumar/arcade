@@ -330,7 +330,7 @@ function ProfilePageContent() {
       <div className="fixed top-96 right-1/4 w-[450px] h-[450px] bg-purple-200/20 dark:bg-purple-900/10 rounded-full blur-[130px] pointer-events-none z-0" />
 
       <motion.div 
-        className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-28 relative transition-colors z-10"
+        className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-16 relative transition-colors z-10"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
