@@ -113,24 +113,24 @@ export default function CreatorPublishingInfographic() {
     >
 
       {/* Header (Section title) */}
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-3.5">
-        <span className="text-xs font-bold tracking-widest text-[#7A5AF8] uppercase flex items-center justify-center gap-2">
+      <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+        <span className="text-xs font-bold tracking-widest text-[#7A5AF8] uppercase flex items-center justify-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#7A5AF8] animate-pulse" />
           Infographic Pathway
         </span>
-        <h2 className="font-serif text-3xl sm:text-4xl md:text-[2.85rem] text-slate-900 tracking-tight leading-tight">
+        <h2 className="font-serif text-3xl sm:text-4xl text-slate-900 tracking-tight leading-tight">
           Publishing Process Outline
         </h2>
-        <p className="text-sm sm:text-base text-slate-500 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
           Watch the automated pathway showcase or toggle to inspect the step-by-step progress checklist for either model.
         </p>
       </div>
 
-      {/* Main Infographic Wheel & Track container (1280px width, 580px height) */}
-      <div className="hidden lg:block relative w-[1280px] h-[580px] mx-auto select-none mt-6">
+      {/* Main Infographic Wheel & Track container (1140px width, 490px height) */}
+      <div className="hidden lg:block relative w-[1140px] h-[490px] mx-auto select-none mt-5">
 
         {/* SVG Branch Connector Paths with Sequential Light Pulse Animation */}
-        <svg viewBox="0 0 1280 580" className="absolute left-0 top-0 w-full h-[580px] pointer-events-none z-0">
+        <svg viewBox="0 0 1140 490" className="absolute left-0 top-0 w-full h-[490px] pointer-events-none z-0">
           <defs>
             <linearGradient id="line-gradient-1" x1="0%" y1="50%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#FFC8D8" stopOpacity="0.8" />
@@ -146,61 +146,61 @@ export default function CreatorPublishingInfographic() {
             </linearGradient>
           </defs>
 
-          {/* Dotted Branch 01 Base & Sequential Light Traveler (Hub -> Point 01 X=640, Y=95) */}
+          {/* Dotted Branch 01 Base & Sequential Light Traveler (Hub -> Point 01 X=575, Y=68) */}
           <path
-            d="M 500,290 Q 565,140 640,95"
+            d="M 415,245 Q 490,105 575,68"
             fill="none"
             stroke="#E2E8F0"
-            strokeWidth="2.5"
-            strokeDasharray="6 6"
+            strokeWidth="2.2"
+            strokeDasharray="5.5 5.5"
           />
           <motion.path
             key={activeTab + "-branch1"}
-            d="M 500,290 Q 565,140 640,95"
+            d="M 415,245 Q 490,105 575,68"
             fill="none"
             stroke="url(#line-gradient-1)"
-            strokeWidth="3.5"
-            strokeDasharray="6 6"
+            strokeWidth="3.2"
+            strokeDasharray="5.5 5.5"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: [0.3, 1, 0.75] }}
             transition={{ duration: 0.5, delay: 0.0, ease: "easeInOut" }}
           />
 
-          {/* Dotted Branch 02 Base & Sequential Light Traveler (Hub -> Point 02 X=620, Y=290) */}
+          {/* Dotted Branch 02 Base & Sequential Light Traveler (Hub -> Point 02 X=555, Y=245) */}
           <path
-            d="M 500,290 L 620,290"
+            d="M 415,245 L 555,245"
             fill="none"
             stroke="#E2E8F0"
-            strokeWidth="2.5"
-            strokeDasharray="6 6"
+            strokeWidth="2.2"
+            strokeDasharray="5.5 5.5"
           />
           <motion.path
             key={activeTab + "-branch2"}
-            d="M 500,290 L 620,290"
+            d="M 415,245 L 555,245"
             fill="none"
             stroke="url(#line-gradient-2)"
-            strokeWidth="3.5"
-            strokeDasharray="6 6"
+            strokeWidth="3.2"
+            strokeDasharray="5.5 5.5"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: [0.3, 1, 0.75] }}
             transition={{ duration: 0.5, delay: 0.12, ease: "easeInOut" }}
           />
 
-          {/* Dotted Branch 03 Base & Sequential Light Traveler (Hub -> Point 03 X=640, Y=485) */}
+          {/* Dotted Branch 03 Base & Sequential Light Traveler (Hub -> Point 03 X=575, Y=422) */}
           <path
-            d="M 500,290 Q 565,440 640,485"
+            d="M 415,245 Q 490,385 575,422"
             fill="none"
             stroke="#E2E8F0"
-            strokeWidth="2.5"
-            strokeDasharray="6 6"
+            strokeWidth="2.2"
+            strokeDasharray="5.5 5.5"
           />
           <motion.path
             key={activeTab + "-branch3"}
-            d="M 500,290 Q 565,440 640,485"
+            d="M 415,245 Q 490,385 575,422"
             fill="none"
             stroke="url(#line-gradient-3)"
-            strokeWidth="3.5"
-            strokeDasharray="6 6"
+            strokeWidth="3.2"
+            strokeDasharray="5.5 5.5"
             initial={{ pathLength: 0, opacity: 0 }}
             animate={{ pathLength: 1, opacity: [0.3, 1, 0.75] }}
             transition={{ duration: 0.5, delay: 0.24, ease: "easeInOut" }}
@@ -209,90 +209,90 @@ export default function CreatorPublishingInfographic() {
           {/* Connector Branch Endpoint Dots */}
           <motion.circle
             key={activeTab + "-dot1"}
-            cx="640"
-            cy="95"
-            r="5.5"
+            cx="575"
+            cy="68"
+            r="5"
             className="fill-[#7A5AF8]"
             initial={{ scale: 0.8 }}
-            animate={{ scale: [1, 1.45, 1] }}
+            animate={{ scale: [1, 1.4, 1] }}
             transition={{ duration: 0.35, delay: 0.0 }}
           />
           <motion.circle
             key={activeTab + "-dot2"}
-            cx="620"
-            cy="290"
-            r="5.5"
+            cx="555"
+            cy="245"
+            r="5"
             className="fill-[#E8368F]"
             initial={{ scale: 0.8 }}
-            animate={{ scale: [1, 1.45, 1] }}
+            animate={{ scale: [1, 1.4, 1] }}
             transition={{ duration: 0.35, delay: 0.12 }}
           />
           <motion.circle
             key={activeTab + "-dot3"}
-            cx="640"
-            cy="485"
-            r="5.5"
+            cx="575"
+            cy="422"
+            r="5"
             className="fill-[#0D9488]"
             initial={{ scale: 0.8 }}
-            animate={{ scale: [1, 1.45, 1] }}
+            animate={{ scale: [1, 1.4, 1] }}
             transition={{ duration: 0.35, delay: 0.24 }}
           />
         </svg>
 
-        {/* 1. Left Large Circular Control Hub (480px x 480px) */}
+        {/* 1. Left Circular Control Hub (400px x 400px) */}
         <motion.div
           key={activeTab + "-wheel"}
           initial={{ scale: 1 }}
           animate={{
-            y: [0, -4, 0],
+            y: [0, -3.5, 0],
           }}
           transition={{
             y: { duration: 7, repeat: Infinity, ease: "easeInOut" },
           }}
-          className="absolute left-[20px] top-[50px] w-[480px] h-[480px] rounded-full bg-white border border-slate-200/80 shadow-lg p-12 flex flex-col items-center justify-center text-center z-10"
+          className="absolute left-[15px] top-[45px] w-[400px] h-[400px] rounded-full bg-white border border-slate-200/80 shadow-md p-10 flex flex-col items-center justify-center text-center z-10"
         >
-          {/* Curved Soft Pastel Banner at top of circle (Rotates 12–15° during mode switch) */}
+          {/* Curved Soft Pastel Banner at top of circle */}
           <motion.div
             animate={{ rotate: activeTab === "solo" ? 0 : 14 }}
             transition={{ type: "spring", stiffness: 180, damping: 22 }}
-            className="absolute top-3.5 left-1/2 -translate-x-1/2 w-[430px] h-[215px] rounded-t-full pointer-events-none origin-bottom"
+            className="absolute top-3 left-1/2 -translate-x-1/2 w-[355px] h-[178px] rounded-t-full pointer-events-none origin-bottom"
             style={{
-              paddingTop: "10px",
+              paddingTop: "9px",
               background: "linear-gradient(90deg, #CDB8FF 0%, #FFC8D8 50%, #BFF3E3 100%)",
               WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
               WebkitMaskComposite: "xor",
               maskComposite: "exclude",
-              filter: "drop-shadow(0 6px 16px rgba(205, 184, 255, 0.4))"
+              filter: "drop-shadow(0 5px 14px rgba(205, 184, 255, 0.35))"
             }}
           />
 
           {/* Model Selector Header */}
-          <span className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-2.5 mt-5">Choose Model</span>
+          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-2 mt-4">Choose Model</span>
           
           <AnimatePresence mode="wait">
             <motion.h3
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className="font-serif text-3xl sm:text-4xl text-slate-800 tracking-tight mb-6"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="font-serif text-2xl sm:text-[1.95rem] text-slate-800 tracking-tight mb-5"
             >
               {activeTab === "solo" ? "Solo Creator" : "Enterprise Hub"}
             </motion.h3>
           </AnimatePresence>
 
           {/* Animated Segmented Control Switch */}
-          <div className="relative flex gap-2 p-1.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs sm:text-sm font-bold text-slate-500 select-none">
+          <div className="relative flex gap-1.5 p-1 bg-slate-50 border border-slate-200/80 rounded-xl text-xs sm:text-[13px] font-bold text-slate-500 select-none">
             <button
               onClick={() => handleTabChange("solo")}
-              className="relative px-5 py-2.5 rounded-lg z-10 transition-colors duration-300 cursor-pointer"
+              className="relative px-4 py-2 rounded-lg z-10 transition-colors duration-300 cursor-pointer"
             >
               {activeTab === "solo" && (
                 <motion.div
                   layoutId="activeModelPillDesktop"
                   transition={{ type: "spring", stiffness: 310, damping: 24 }}
-                  className="absolute inset-0 bg-gradient-to-r from-[#7A5AF8] to-[#9E77ED] rounded-lg shadow-[0_4px_20px_rgba(122,90,248,0.45)] z-0"
+                  className="absolute inset-0 bg-gradient-to-r from-[#7A5AF8] to-[#9E77ED] rounded-lg shadow-[0_3px_16px_rgba(122,90,248,0.4)] z-0"
                 />
               )}
               <span className={`relative z-10 transition-colors duration-300 ${activeTab === "solo" ? "text-white font-extrabold" : "text-slate-500 hover:text-slate-800"}`}>
@@ -301,13 +301,13 @@ export default function CreatorPublishingInfographic() {
             </button>
             <button
               onClick={() => handleTabChange("enterprise")}
-              className="relative px-5 py-2.5 rounded-lg z-10 transition-colors duration-300 cursor-pointer"
+              className="relative px-4 py-2 rounded-lg z-10 transition-colors duration-300 cursor-pointer"
             >
               {activeTab === "enterprise" && (
                 <motion.div
                   layoutId="activeModelPillDesktop"
                   transition={{ type: "spring", stiffness: 310, damping: 24 }}
-                  className="absolute inset-0 bg-gradient-to-r from-[#7A5AF8] to-[#9E77ED] rounded-lg shadow-[0_4px_20px_rgba(122,90,248,0.45)] z-0"
+                  className="absolute inset-0 bg-gradient-to-r from-[#7A5AF8] to-[#9E77ED] rounded-lg shadow-[0_3px_16px_rgba(122,90,248,0.4)] z-0"
                 />
               )}
               <span className={`relative z-10 transition-colors duration-300 ${activeTab === "enterprise" ? "text-white font-extrabold" : "text-slate-500 hover:text-slate-800"}`}>
@@ -317,37 +317,37 @@ export default function CreatorPublishingInfographic() {
           </div>
         </motion.div>
 
-        {/* 2. Right Side: Organic Independent Feature Branches (NO Vertical Connector Line) */}
-        <div className="absolute left-[630px] top-0 w-[610px] h-[580px] select-none z-10">
+        {/* 2. Right Side: Organic Independent Feature Branches */}
+        <div className="absolute left-[550px] top-0 w-[560px] h-[490px] select-none z-10">
 
-          {/* FEATURE POINT 01 (Top - Offset X=20px, Floating Motion & 5s Scale Pulse) */}
-          <div className="absolute top-[71px] left-[20px] w-[570px] z-10">
-            <div className="relative flex items-start gap-6 group cursor-pointer py-1">
-              {/* Badge 01: Float 3-4px up/down + 5s gentle scale pulse */}
+          {/* FEATURE POINT 01 (Top) */}
+          <div className="absolute top-[48px] left-[20px] w-[530px] z-10">
+            <div className="relative flex items-start gap-5 group cursor-pointer py-1">
+              {/* Badge 01 */}
               <motion.div
                 key={activeTab + "-badge1"}
                 animate={{
-                  y: [0, -4, 0],
-                  scale: [1, 1.06, 1],
+                  y: [0, -3.5, 0],
+                  scale: [1, 1.05, 1],
                 }}
                 transition={{
                   y: { duration: 5.5, repeat: Infinity, ease: "easeInOut" },
                   scale: { duration: 5, repeat: Infinity, ease: "easeInOut" },
                 }}
-                className={`w-12 h-12 rounded-full border-2 ${currentSteps[0].nodeBorder} ${currentSteps[0].badgeBg} ${currentSteps[0].badgeText} flex items-center justify-center font-black text-sm flex-shrink-0 ${currentSteps[0].nodeShadow} z-10`}
+                className={`w-10 h-10 rounded-full border-2 ${currentSteps[0].nodeBorder} ${currentSteps[0].badgeBg} ${currentSteps[0].badgeText} flex items-center justify-center font-black text-xs flex-shrink-0 ${currentSteps[0].nodeShadow} z-10`}
               >
                 01
               </motion.div>
-              {/* Content 01: Title fade-up + Description 100ms delay fade-in */}
+              {/* Content 01 */}
               <div className="space-y-1 flex-1 pt-0.5">
                 <AnimatePresence mode="wait">
                   <motion.h3
                     key={activeTab + "-title1"}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 7 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: "easeOut" }}
-                    className={`text-lg sm:text-xl font-extrabold text-slate-800 ${currentSteps[0].hoverTitle} transition-colors duration-300 leading-snug`}
+                    exit={{ opacity: 0, y: -7 }}
+                    transition={{ duration: 0.26, ease: "easeOut" }}
+                    className={`text-lg sm:text-xl font-bold text-slate-800 ${currentSteps[0].hoverTitle} transition-colors duration-300 leading-snug`}
                   >
                     {currentSteps[0].title}
                   </motion.h3>
@@ -358,8 +358,8 @@ export default function CreatorPublishingInfographic() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, delay: 0.10, ease: "easeOut" }}
-                    className="text-sm text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
+                    transition={{ duration: 0.26, delay: 0.09, ease: "easeOut" }}
+                    className="text-xs sm:text-[13.5px] text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
                   >
                     {currentSteps[0].desc}
                   </motion.p>
@@ -368,38 +368,38 @@ export default function CreatorPublishingInfographic() {
             </div>
           </div>
 
-          {/* FEATURE POINT 02 (Middle - Offset X=0px, Fading Glow Halo & Opposite Float Motion) */}
-          <div className="absolute top-[266px] left-[0px] w-[590px] z-10">
-            <div className="relative flex items-start gap-6 group cursor-pointer py-1">
-              {/* Badge 02: Soft glowing halo fade in/out + Float opposite to Point 01 */}
+          {/* FEATURE POINT 02 (Middle) */}
+          <div className="absolute top-[225px] left-[0px] w-[550px] z-10">
+            <div className="relative flex items-start gap-5 group cursor-pointer py-1">
+              {/* Badge 02 */}
               <motion.div
                 key={activeTab + "-badge2"}
                 animate={{
-                  y: [0, 4, 0],
+                  y: [0, 3.5, 0],
                   boxShadow: [
-                    "0 4px 16px rgba(255,200,216,0.35)",
-                    "0 0 24px rgba(232,54,143,0.5)",
-                    "0 4px 16px rgba(255,200,216,0.35)"
+                    "0 3px 14px rgba(255,200,216,0.3)",
+                    "0 0 20px rgba(232,54,143,0.45)",
+                    "0 3px 14px rgba(255,200,216,0.3)"
                   ]
                 }}
                 transition={{
                   y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
                   boxShadow: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
                 }}
-                className={`w-12 h-12 rounded-full border-2 ${currentSteps[1].nodeBorder} ${currentSteps[1].badgeBg} ${currentSteps[1].badgeText} flex items-center justify-center font-black text-sm flex-shrink-0 z-10`}
+                className={`w-10 h-10 rounded-full border-2 ${currentSteps[1].nodeBorder} ${currentSteps[1].badgeBg} ${currentSteps[1].badgeText} flex items-center justify-center font-black text-xs flex-shrink-0 z-10`}
               >
                 02
               </motion.div>
-              {/* Content 02: Title fade-up + Description 100ms delay fade-in */}
+              {/* Content 02 */}
               <div className="space-y-1 flex-1 pt-0.5">
                 <AnimatePresence mode="wait">
                   <motion.h3
                     key={activeTab + "-title2"}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 7 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, delay: 0.12, ease: "easeOut" }}
-                    className={`text-lg sm:text-xl font-extrabold text-slate-800 ${currentSteps[1].hoverTitle} transition-colors duration-300 leading-snug`}
+                    exit={{ opacity: 0, y: -7 }}
+                    transition={{ duration: 0.26, delay: 0.10, ease: "easeOut" }}
+                    className={`text-lg sm:text-xl font-bold text-slate-800 ${currentSteps[1].hoverTitle} transition-colors duration-300 leading-snug`}
                   >
                     {currentSteps[1].title}
                   </motion.h3>
@@ -410,8 +410,8 @@ export default function CreatorPublishingInfographic() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, delay: 0.22, ease: "easeOut" }}
-                    className="text-sm text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
+                    transition={{ duration: 0.26, delay: 0.18, ease: "easeOut" }}
+                    className="text-xs sm:text-[13.5px] text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
                   >
                     {currentSteps[1].desc}
                   </motion.p>
@@ -420,38 +420,38 @@ export default function CreatorPublishingInfographic() {
             </div>
           </div>
 
-          {/* FEATURE POINT 03 (Bottom - Offset X=20px, Breathing Scale 1->1.04->1 & Subtle Glow) */}
-          <div className="absolute top-[461px] left-[20px] w-[570px] z-10">
-            <div className="relative flex items-start gap-6 group cursor-pointer py-1">
-              {/* Badge 03: Breathing scale 1 -> 1.04 -> 1 + subtle glow pulse */}
+          {/* FEATURE POINT 03 (Bottom) */}
+          <div className="absolute top-[402px] left-[20px] w-[530px] z-10">
+            <div className="relative flex items-start gap-5 group cursor-pointer py-1">
+              {/* Badge 03 */}
               <motion.div
                 key={activeTab + "-badge3"}
                 animate={{
                   scale: [1, 1.04, 1],
                   boxShadow: [
-                    "0 4px 16px rgba(191,243,227,0.35)",
-                    "0 0 20px rgba(13,148,136,0.45)",
-                    "0 4px 16px rgba(191,243,227,0.35)"
+                    "0 3px 14px rgba(191,243,227,0.3)",
+                    "0 0 18px rgba(13,148,136,0.4)",
+                    "0 3px 14px rgba(191,243,227,0.3)"
                   ]
                 }}
                 transition={{
                   scale: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
                   boxShadow: { duration: 4.5, repeat: Infinity, ease: "easeInOut" },
                 }}
-                className={`w-12 h-12 rounded-full border-2 ${currentSteps[2].nodeBorder} ${currentSteps[2].badgeBg} ${currentSteps[2].badgeText} flex items-center justify-center font-black text-sm flex-shrink-0 z-10`}
+                className={`w-10 h-10 rounded-full border-2 ${currentSteps[2].nodeBorder} ${currentSteps[2].badgeBg} ${currentSteps[2].badgeText} flex items-center justify-center font-black text-xs flex-shrink-0 z-10`}
               >
                 03
               </motion.div>
-              {/* Content 03: Title fade-up + Description 100ms delay fade-in */}
+              {/* Content 03 */}
               <div className="space-y-1 flex-1 pt-0.5">
                 <AnimatePresence mode="wait">
                   <motion.h3
                     key={activeTab + "-title3"}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 7 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, delay: 0.24, ease: "easeOut" }}
-                    className={`text-lg sm:text-xl font-extrabold text-slate-800 ${currentSteps[2].hoverTitle} transition-colors duration-300 leading-snug`}
+                    exit={{ opacity: 0, y: -7 }}
+                    transition={{ duration: 0.26, delay: 0.20, ease: "easeOut" }}
+                    className={`text-lg sm:text-xl font-bold text-slate-800 ${currentSteps[2].hoverTitle} transition-colors duration-300 leading-snug`}
                   >
                     {currentSteps[2].title}
                   </motion.h3>
@@ -462,8 +462,8 @@ export default function CreatorPublishingInfographic() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.28, delay: 0.34, ease: "easeOut" }}
-                    className="text-sm text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
+                    transition={{ duration: 0.26, delay: 0.28, ease: "easeOut" }}
+                    className="text-xs sm:text-[13.5px] text-slate-500 group-hover:text-slate-600 leading-relaxed transition-colors duration-300 max-w-lg"
                   >
                     {currentSteps[2].desc}
                   </motion.p>

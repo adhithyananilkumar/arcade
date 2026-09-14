@@ -4,13 +4,12 @@ import React from "react";
 import CreatorsBackground from "@/apps/public/components/landing/creators/CreatorsBackground";
 import CreatorHero from "@/apps/public/components/landing/creators/CreatorHero";
 import CreatorJourney from "@/apps/public/components/landing/creators/CreatorJourney";
-import JourneyToWorkflowTransition from "@/apps/public/components/landing/creators/JourneyToWorkflowTransition";
 import CreatorEverythingInOnePlace from "@/apps/public/components/landing/creators/CreatorEverythingInOnePlace";
 import CreatorPublishingInfographic from "@/apps/public/components/landing/creators/CreatorPublishingInfographic";
 import CreatorFormats from "@/apps/public/components/landing/creators/CreatorFormats";
-import CreatorEducators from "@/apps/public/components/landing/creators/CreatorEducators";
 import CreatorFAQ from "@/apps/public/components/landing/creators/CreatorFAQ";
 import CreatorEnquiry from "@/apps/public/components/landing/creators/CreatorEnquiry";
+import Footer from "@/apps/public/components/landing/Footer";
 
 import "./creators.css";
 
@@ -20,13 +19,12 @@ export default function CreatorsPage() {
       <CreatorsBackground />
       <CreatorHero />
       <CreatorJourney />
-      <JourneyToWorkflowTransition />
       <CreatorEverythingInOnePlace />
       <CreatorPublishingInfographic />
       <CreatorFormats />
-      <CreatorEducators />
       <CreatorEnquiry />
       <CreatorFAQ />
+      <Footer />
     </div>
   );
 }

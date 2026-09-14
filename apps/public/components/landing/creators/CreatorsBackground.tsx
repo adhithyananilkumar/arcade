@@ -20,13 +20,13 @@ export default function CreatorsBackground() {
             shouldReduceMotion
               ? {}
               : {
-                  x: [0, 40, -25, 0],
-                  y: [0, -50, 30, 0],
-                  scale: [1, 1.1, 0.95, 1],
+                  x: [0, 45, -30, 0],
+                  y: [0, -40, 35, 0],
+                  scale: [1, 1.12, 0.95, 1],
                 }
           }
           transition={{
-            duration: 20,
+            duration: 18,
             repeat: Infinity,
             repeatType: "mirror",
             ease: "easeInOut",
@@ -38,13 +38,13 @@ export default function CreatorsBackground() {
             shouldReduceMotion
               ? {}
               : {
-                  x: [0, -45, 30, 0],
-                  y: [0, 40, -35, 0],
-                  scale: [1, 0.92, 1.08, 1],
+                  x: [0, -50, 35, 0],
+                  y: [0, 45, -30, 0],
+                  scale: [1, 0.92, 1.1, 1],
                 }
           }
           transition={{
-            duration: 24,
+            duration: 22,
             repeat: Infinity,
             repeatType: "mirror",
             ease: "easeInOut",
@@ -56,13 +56,13 @@ export default function CreatorsBackground() {
             shouldReduceMotion
               ? {}
               : {
-                  x: [0, 35, -40, 0],
-                  y: [0, -30, 45, 0],
-                  scale: [1, 1.06, 0.94, 1],
+                  x: [0, 40, -45, 0],
+                  y: [0, -35, 40, 0],
+                  scale: [1, 1.08, 0.92, 1],
                 }
           }
           transition={{
-            duration: 22,
+            duration: 20,
             repeat: Infinity,
             repeatType: "mirror",
             ease: "easeInOut",
@@ -74,9 +74,81 @@ export default function CreatorsBackground() {
             shouldReduceMotion
               ? {}
               : {
-                  x: [0, -35, 35, 0],
-                  y: [0, 45, -30, 0],
-                  scale: [1, 0.95, 1.07, 1],
+                  x: [0, -40, 40, 0],
+                  y: [0, 50, -35, 0],
+                  scale: [1, 0.94, 1.08, 1],
+                }
+          }
+          transition={{
+            duration: 24,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="creators-blob blob-5"
+          animate={
+            shouldReduceMotion
+              ? {}
+              : {
+                  x: [0, 35, -35, 0],
+                  y: [0, -45, 30, 0],
+                  scale: [1, 1.1, 0.94, 1],
+                }
+          }
+          transition={{
+            duration: 21,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="creators-blob blob-6"
+          animate={
+            shouldReduceMotion
+              ? {}
+              : {
+                  x: [0, -45, 30, 0],
+                  y: [0, 35, -45, 0],
+                  scale: [1, 0.95, 1.09, 1],
+                }
+          }
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="creators-blob blob-7"
+          animate={
+            shouldReduceMotion
+              ? {}
+              : {
+                  x: [0, 40, -30, 0],
+                  y: [0, -40, 35, 0],
+                  scale: [1, 1.08, 0.93, 1],
+                }
+          }
+          transition={{
+            duration: 23,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="creators-blob blob-8"
+          animate={
+            shouldReduceMotion
+              ? {}
+              : {
+                  x: [0, -35, 45, 0],
+                  y: [0, 40, -30, 0],
+                  scale: [1, 0.92, 1.12, 1],
                 }
           }
           transition={{

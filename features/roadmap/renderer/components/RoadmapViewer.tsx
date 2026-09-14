@@ -1244,55 +1244,13 @@ export default async function BlogPost({ params }: { params: { slug: string } })
   return (
     <div className="relative w-full h-screen overflow-hidden flex bg-[#F8FAFC]">
 
-      {/* TOP NAVBAR (MATCHING SCREENSHOT LAYOUT) */}
-      <div className="absolute top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/60 px-6 py-3 flex items-center justify-between pointer-events-auto select-none">
-        {/* Left: arcade. Logo Pill + Search Capsule */}
-        <div className="flex items-center gap-3">
-          <div
-            onClick={() => router.push('/')}
-            className="cursor-pointer bg-white px-5 py-2 rounded-full border border-slate-200/80 shadow-2xs flex items-center justify-center hover:scale-[1.02] transition-all"
-          >
-            <img src="/arcade.svg" alt="arcade" className="h-5 w-auto" />
-          </div>
-
-          <div className="bg-white border border-slate-200/80 rounded-full px-3.5 py-1.5 shadow-2xs flex items-center gap-2 w-56">
-            <Search className="w-3.5 h-3.5 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search topics..."
-              className="w-full bg-transparent text-xs font-semibold text-slate-700 placeholder-slate-400 outline-none border-none leading-none"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="text-slate-400 hover:text-slate-600 text-xs font-black cursor-pointer"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Notification Bell & Profile Capsule */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/notifications')}
-            className="w-10 h-10 bg-white border border-slate-200/80 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all cursor-pointer shadow-2xs"
-          >
-            <Bell className="w-4 h-4" />
-          </button>
-
-          <div
-            onClick={() => router.push('/profile')}
-            className="bg-white border border-slate-200/80 rounded-full pl-4 pr-1 py-1 flex items-center gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs transition-all"
-          >
-            <span className="text-xs font-extrabold text-slate-700">athirabiju20...</span>
-            <div className="h-7 w-7 rounded-full bg-[#8D6E63] text-white flex items-center justify-center text-[10px] font-black uppercase shadow-2xs">
-              A
-            </div>
-          </div>
+      {/* Top Left: Logo */}
+      <div className="absolute top-4 left-6 z-40 pointer-events-auto select-none">
+        <div
+          onClick={() => router.push('/')}
+          className="cursor-pointer bg-white px-5 py-2 rounded-full border border-slate-200/80 shadow-xs flex items-center justify-center hover:scale-[1.02] transition-all"
+        >
+          <img src="/arcade.svg" alt="arcade" className="h-5 w-auto" />
         </div>
       </div>
 

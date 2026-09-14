@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────
-   Creators Page Global Continuous Canvas Background
+   Creators Page Global Continuous Canvas Background & Whisper-Light Gradient
    ──────────────────────────────────────────────────────────── */
 .creators-bg-canvas {
   position: absolute;
@@ -7,7 +7,7 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
 }
 
 .creators-bg-mesh {
@@ -16,23 +16,36 @@
   z-index: 1;
   pointer-events: none;
   background-image:
-    /* Top Hero & Statbar: Lavender & Sky Blue lighting */
-    radial-gradient(ellipse 70% 35% at 15% 5%, rgba(232, 236, 251, 0.90) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 40% at 85% 12%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    /* Top Hero & Nav: Barely-there Lavender & Indigo whisper */
+    radial-gradient(ellipse 75% 35% at 15% 3%, rgba(122, 90, 248, 0.04) 0%, transparent 68%),
+    radial-gradient(ellipse 70% 35% at 85% 6%, rgba(99, 102, 241, 0.035) 0%, transparent 68%),
+    radial-gradient(ellipse 60% 30% at 50% 11%, rgba(236, 72, 153, 0.025) 0%, transparent 65%),
     
-    /* Journey & Workflow: Mint & Soft Lavender lighting */
-    radial-gradient(ellipse 70% 45% at 20% 28%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 40% at 80% 38%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    /* Journey & Workflow: Ultra-soft Violet & Sky lighting */
+    radial-gradient(ellipse 70% 35% at 10% 21%, rgba(122, 90, 248, 0.035) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 35% at 90% 27%, rgba(99, 102, 241, 0.03) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 30% at 35% 33%, rgba(32, 184, 207, 0.025) 0%, transparent 65%),
     
-    /* Everything in One Place & Publishing: Cyan & Soft White */
-    radial-gradient(ellipse 75% 45% at 50% 52%, rgba(232, 236, 251, 0.75) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 40% at 15% 64%, rgba(227, 249, 245, 0.80) 0%, transparent 65%),
+    /* Everything in One Place & Publishing: Whisper Violet & Rose highlight */
+    radial-gradient(ellipse 75% 35% at 75% 43%, rgba(122, 90, 248, 0.035) 0%, transparent 68%),
+    radial-gradient(ellipse 65% 35% at 15% 51%, rgba(236, 72, 153, 0.025) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 35% at 60% 59%, rgba(99, 102, 241, 0.03) 0%, transparent 68%),
     
-    /* Formats, Educators, FAQ & CTA: Lavender & Mint tint */
-    radial-gradient(ellipse 70% 40% at 85% 78%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 35% at 20% 90%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 40% at 50% 98%, rgba(232, 236, 251, 0.70) 0%, transparent 65%),
-    #ffffff;
+    /* Formats & Educators: Subtle Lavender tint */
+    radial-gradient(ellipse 65% 35% at 20% 69%, rgba(122, 90, 248, 0.035) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 35% at 85% 75%, rgba(99, 102, 241, 0.03) 0%, transparent 68%),
+    
+    /* Enquiry & FAQ: Gentle Violet aura */
+    radial-gradient(ellipse 65% 35% at 22% 83%, rgba(122, 90, 248, 0.03) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 35% at 78% 88%, rgba(99, 102, 241, 0.03) 0%, transparent 68%),
+    
+    /* Footer: Seamless continuous ultra-light blend */
+    radial-gradient(ellipse 80% 45% at 18% 94%, rgba(122, 90, 248, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 75% 45% at 82% 96%, rgba(99, 102, 241, 0.035) 0%, transparent 70%),
+    radial-gradient(ellipse 90% 45% at 50% 99%, rgba(122, 90, 248, 0.045) 0%, transparent 70%),
+
+    /* Continuous flowing ultra-light airy base */
+    linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 15%, #FBFBFE 35%, #FAFCFD 55%, #FDFBFD 75%, #FAFBFD 90%, #F9FAFE 100%);
 }
 
 .creators-bg-blobs {
@@ -45,42 +58,74 @@
 .creators-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
+  filter: blur(140px);
   will-change: transform;
   pointer-events: none;
-  opacity: 0.65;
+  opacity: 0.25;
 }
 
 .blob-1 {
-  top: 4%;
-  left: 8%;
-  width: 580px;
-  height: 580px;
-  background: radial-gradient(circle, rgba(232, 236, 251, 0.85) 0%, transparent 70%);
+  top: 3%;
+  left: 6%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(122, 90, 248, 0.08) 0%, transparent 70%);
 }
 
 .blob-2 {
-  top: 26%;
-  right: 6%;
-  width: 620px;
-  height: 620px;
-  background: radial-gradient(circle, rgba(227, 249, 245, 0.80) 0%, transparent 70%);
+  top: 14%;
+  right: 5%;
+  width: 660px;
+  height: 660px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.07) 0%, transparent 70%);
 }
 
 .blob-3 {
-  top: 52%;
-  left: 10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(232, 236, 251, 0.75) 0%, transparent 70%);
+  top: 28%;
+  left: 8%;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
 }
 
 .blob-4 {
-  top: 76%;
+  top: 42%;
+  right: 8%;
+  width: 680px;
+  height: 680px;
+  background: radial-gradient(circle, rgba(122, 90, 248, 0.07) 0%, transparent 70%);
+}
+
+.blob-5 {
+  top: 56%;
+  left: 10%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
+}
+
+.blob-6 {
+  top: 70%;
   right: 10%;
-  width: 640px;
-  height: 640px;
-  background: radial-gradient(circle, rgba(227, 249, 245, 0.85) 0%, transparent 70%);
+  width: 670px;
+  height: 670px;
+  background: radial-gradient(circle, rgba(32, 184, 207, 0.04) 0%, transparent 70%);
+}
+
+.blob-7 {
+  top: 83%;
+  left: 7%;
+  width: 660px;
+  height: 660px;
+  background: radial-gradient(circle, rgba(122, 90, 248, 0.06) 0%, transparent 70%);
+}
+
+.blob-8 {
+  top: 94%;
+  right: 12%;
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(circle, rgba(122, 90, 248, 0.07) 0%, transparent 70%);
 }
 
 .creators-bg-noise {
@@ -90,6 +135,6 @@
   height: 100%;
   z-index: 3;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.012;
   mix-blend-mode: overlay;
 }
