@@ -136,7 +136,7 @@ export default function FlowingTimeline() {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-24 px-4 sm:px-6">
+    <div className="w-full max-w-7xl 2xl:max-w-[90rem] mx-auto py-24 px-4 sm:px-8 lg:px-12">
       
       <div className="text-center mb-16 md:mb-24 relative z-10">
         <h2 
@@ -192,30 +192,45 @@ export default function FlowingTimeline() {
               className={`flex flex-col md:flex-row items-start md:items-center w-full ${isEven ? "md:flex-row-reverse" : ""}`}
             >
               
-              {/* Empty space or Profiles for alternating layout on desktop */}
-              <div className={`hidden md:flex md:w-[45%] flex-row gap-4 md:gap-6 ${isEven ? "justify-start pl-16 lg:pl-24" : "justify-end pr-16 lg:pr-24"}`}>
+              {/* Mobile Profiles - Below Node */}
+              <div className="flex md:hidden flex-row flex-wrap gap-4 mt-8 w-full px-4 justify-center">
                 {item.profiles && item.profiles.map((profile, i) => {
-                  const needsZoom = profile.name.includes("Anandhulal") || profile.name.includes("Athira") || profile.name.includes("Kalyany");
+                  const needsZoom = ["Anandhulal", "Athira", "Kalyany", "Anandhu Pradeep", "Jaganath", "Anjali", "Anna", "Merin", "Amal", "Binumon", "Abel", "Neeraj", "Theresa", "Ann Mary"].some(name => profile.name.includes(name));
                   const isRubin = profile.name.includes("Rubin");
-                  
-                  let imageClasses = `transition-transform duration-300`;
-                  if (needsZoom) {
-                    imageClasses += ` mix-blend-multiply brightness-[1.15] contrast-[1.15] object-cover scale-[1.35] translate-y-2 hover:scale-[1.45]`;
-                  } else if (isRubin) {
-                    imageClasses += ` object-contain scale-[1.0] hover:scale-[1.05] drop-shadow-md`;
-                  } else {
-                    imageClasses += ` mix-blend-multiply brightness-[1.15] contrast-[1.15] object-cover scale-[1.15] hover:scale-[1.25]`;
-                  }
-                  
-                  const containerClasses = `relative shrink-0 rounded-xl overflow-hidden ${isRubin ? 'w-48 h-64 md:w-60 md:h-80' : 'bg-white border border-white w-16 h-16 md:w-20 md:h-20'}`;
-                  const textContainerClasses = `text-center ${isRubin ? '-mt-2 md:-mt-4 z-10 relative' : ''}`;
+                  const blendClasses = isRubin ? "" : "mix-blend-multiply brightness-[1.15] contrast-[1.15]";
+                  const imageClasses = `transition-transform duration-300 ${isRubin ? "object-contain" : "object-cover"} ${blendClasses} ${needsZoom ? "scale-[1.35] translate-y-4 hover:scale-[1.45]" : "scale-[1.0] hover:scale-[1.05]"}`;
+                  const isThreePerRow = item.profiles!.length % 2 !== 0 && item.profiles!.length > 1;
+                  const widthClass = isThreePerRow ? "w-[30%] min-w-[5rem] max-w-[11rem]" : "w-[45%] max-w-[11rem]";
                   
                   return (
-                    <div key={i} className="flex flex-col items-center gap-2 min-w-[80px]">
-                      <div className={containerClasses}>
+                    <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
                         <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
                       </div>
-                      <div className={textContainerClasses}>
+                      <div className="text-center pt-2">
+                        <p className="text-[11px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Empty space or Profiles for alternating layout on desktop */}
+              <div className={`hidden md:flex md:w-[48%] flex-row flex-wrap justify-center gap-4 md:gap-6 ${isEven ? "mr-auto pl-8 lg:pl-16" : "ml-auto pr-8 lg:pr-16"}`}>
+                {item.profiles && item.profiles.map((profile, i) => {
+                  const needsZoom = ["Anandhulal", "Athira", "Kalyany", "Anandhu Pradeep", "Jaganath", "Anjali", "Anna", "Merin", "Amal", "Binumon", "Abel", "Neeraj", "Theresa", "Ann Mary"].some(name => profile.name.includes(name));
+                  const isRubin = profile.name.includes("Rubin");
+                  const blendClasses = isRubin ? "" : "mix-blend-multiply brightness-[1.15] contrast-[1.15]";
+                  const imageClasses = `transition-transform duration-300 ${isRubin ? "object-contain" : "object-cover"} ${blendClasses} ${needsZoom ? "scale-[1.35] translate-y-4 hover:scale-[1.45]" : "scale-[1.0] hover:scale-[1.05]"}`;
+                  const isThreePerRow = item.profiles!.length % 2 !== 0 && item.profiles!.length > 1;
+                  const widthClass = isThreePerRow ? "w-[30%] max-w-[11rem]" : "w-[45%] max-w-[11rem]";
+                  
+                  return (
+                    <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
+                        <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
+                      </div>
+                      <div className="text-center pt-2">
                         <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
                       </div>
                     </div>
