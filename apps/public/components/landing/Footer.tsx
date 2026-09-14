@@ -67,6 +67,7 @@ export default function Footer() {
               <li><Link href="/explore">Explore Courses</Link></li>
               <li><Link href="/about">About Arcade</Link></li>
               <li><Link href="/founders">Meet Founders</Link></li>
+              <li><Link href="/contributors">Contributors</Link></li>
               <li><Link href="/forum">Community Forum</Link></li>
               <li><Link href="/reach-us">Reach Us</Link></li>
               <li><Link href="/docs">Developer API</Link></li>
