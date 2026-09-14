@@ -22,6 +22,15 @@ export const CATEGORY_DATA: Record<string, {
   resources: Array<{ title: string; type: string; readTime: string }>;
   colors: { primary: string; secondary: string };
 }> = {
+  "All": {
+    coursesCount: 50,
+    gradient: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+    colors: { primary: "#4F46E5", secondary: "rgba(79, 70, 229, 0.08)" },
+    desc: "Explore all comprehensive learning paths, bootcamps, workshops, and verified research articles across all academic disciplines and engineering domains.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
   "Computer Science": {
     coursesCount: 12,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
@@ -162,6 +171,7 @@ const WEBINARS_DATA = [
 ];
 
 const ILLUSTRATION_BGS: Record<string, string> = {
+  "All": "#4F46E5", // Solid vibrant indigo
   "Computer Science": "#7C3AED", // Solid vibrant purple
   "Artificial Intelligence": "#DB2777", // Solid vibrant pink
   "Information Technology": "#2563EB", // Solid vibrant blue

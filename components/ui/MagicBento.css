@@ -1,6 +1,9 @@
 :root {
-  --purple-glow: rgba(132, 0, 255, 0.15);
-  color-scheme: light dark;
+  --purple-primary: rgba(132, 0, 255, 1);
+  --purple-glow: rgba(132, 0, 255, 0.2);
+  --purple-border: rgba(132, 0, 255, 0.8);
+  --border-color: #E2E8F0;
+  --background-card: #FFFFFF;
 }
 
 .card-grid {
@@ -14,24 +17,36 @@
   flex-direction: column;
   justify-content: space-between;
   position: relative;
+  min-height: 300px;
   width: 100%;
   max-width: 100%;
+  padding: 1.75rem;
+  border-radius: 28px;
+  background: var(--background-card);
   overflow: hidden;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 
   --glow-x: 50%;
   --glow-y: 50%;
   --glow-intensity: 0;
-  --glow-radius: 200px;
+  --glow-radius: 300px;
+  --glow-color: 132, 0, 255;
+}
+
+.magic-bento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.06);
 }
 
 .magic-bento-card__header,
 .magic-bento-card__content {
   display: flex;
   position: relative;
+  z-index: 2;
 }
 
 .magic-bento-card__header {
-  gap: 0.75em;
+  gap: 0.75rem;
   justify-content: space-between;
 }
 
@@ -45,20 +60,20 @@
 
 .magic-bento-card__title,
 .magic-bento-card__description {
-  --clamp-title: 1;
-  --clamp-desc: 2;
+  --clamp-title: 2;
+  --clamp-desc: 3;
 }
 
 .magic-bento-card__title {
-  font-weight: 400;
-  font-size: 16px;
-  margin: 0 0 0.25em;
+  font-weight: 500;
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
 }
 
 .magic-bento-card__description {
-  font-size: 12px;
-  line-height: 1.2;
-  opacity: 0.9;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.85;
 }
 
 .magic-bento-card--text-autohide .magic-bento-card__title,
@@ -84,11 +99,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  padding: 2.5px;
+  padding: 2px;
   background: radial-gradient(
     var(--glow-radius) circle at var(--glow-x) var(--glow-y),
-    rgba(132, 0, 255, calc(var(--glow-intensity) * 1.0)) 0%,
-    rgba(132, 0, 255, calc(var(--glow-intensity) * 0.6)) 35%,
+    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.9)) 0%,
+    rgba(var(--glow-color), calc(var(--glow-intensity) * 0.5)) 35%,
     transparent 70%
   );
   border-radius: inherit;
@@ -115,6 +130,12 @@
   overflow: hidden;
 }
 
+.particle {
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 20;
+}
+
 .particle::before {
   content: '';
   position: absolute;
@@ -122,23 +143,19 @@
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: rgba(132, 0, 255, 0.2);
+  background: rgba(var(--glow-color, 132, 0, 255), 0.2);
   border-radius: 50%;
   z-index: -1;
 }
 
 /* Global spotlight styles */
 .global-spotlight {
-  mix-blend-mode: multiply;
   will-change: transform, opacity;
   z-index: 200 !important;
   pointer-events: none;
 }
 
-.dark .global-spotlight {
-  mix-blend-mode: screen;
-}
-
 .bento-section {
   position: relative;
+  user-select: none;
 }

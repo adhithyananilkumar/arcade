@@ -186,12 +186,12 @@ export default function ChannelHomePage() {
 
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative w-full min-h-screen"
       style={{
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
       }}
     >
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-28 pt-32 sm:px-8 sm:pt-36">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
 
         {/* Hero */}
         <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)]">

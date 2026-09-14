@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface AIInsightItem {
   id: string;
@@ -26,72 +27,7 @@ export interface AIInsightItem {
   impact: string;
 }
 
-const mockInsights: AIInsightItem[] = [
-  {
-    id: 'ins-1',
-    type: 'WARNING',
-    title: 'Completion Drop Detected',
-    insight: 'Course completion has decreased by 12% this week in "Deep Learning Math & Linear Algebra". Module 3 lab drop-off detected.',
-    actionText: 'Send Nudge & Offer Tutor Support',
-    impact: 'High Impact',
-  },
-  {
-    id: 'ins-2',
-    type: 'SUCCESS',
-    title: 'Unusually High Engagement',
-    insight: '"Prompt Engineering & Context Window Optimization" has achieved a 94.2% completion rate with 1.2k positive reviews.',
-    actionText: 'Feature on Arcade Homepage',
-    impact: '+24% Enrollments',
-  },
-  {
-    id: 'ins-3',
-    type: 'TIP',
-    title: 'Optimal Webinar Scheduling',
-    insight: 'Historical attendee analytics indicate that publishing webinars on Saturday at 6:00 PM EST yields 35% higher attendance.',
-    actionText: 'Schedule Weekend Event',
-    impact: '+35% Attendance',
-  },
-  {
-    id: 'ins-4',
-    type: 'MAINTENANCE',
-    title: 'Outdated Content Alert',
-    insight: '3 articles published over 6 months ago have outdated PyTorch 1.x syntax references.',
-    actionText: 'Review & Update Articles',
-    impact: 'Quality Boost',
-  },
-  {
-    id: 'ins-5',
-    type: 'PROMOTION',
-    title: 'Promote Highest Rated Content',
-    insight: '"Neural Networks from Scratch" holds a 4.98 ★ rating. Promoting it on social channels can boost monthly revenue by $14,000.',
-    actionText: 'Launch Ad Campaign',
-    impact: '+$14k Revenue',
-  },
-  {
-    id: 'ins-6',
-    type: 'STAFF',
-    title: 'Staff Availability Optimization',
-    insight: 'Dr. Sarah Chen has completed active cohort grading and has bandwidth available for 2 additional course assignments.',
-    actionText: 'Assign New Course',
-    impact: 'Efficiency',
-  },
-  {
-    id: 'ins-7',
-    type: 'DEMAND',
-    title: 'Surging Learner Demand',
-    insight: 'Over 420 learners submitted feedback requesting a dedicated beginner-level PyTorch 2.0 module.',
-    actionText: 'Create Beginner Draft',
-    impact: '420 Requests',
-  },
-  {
-    id: 'ins-8',
-    type: 'GROWTH',
-    title: 'High Growth Category Opportunity',
-    insight: 'Generative AI Architecture is the fastest-growing search category (+48% search volume). We suggest creating a 6-week bootcamp.',
-    actionText: 'Generate Bootcamp Curriculum',
-    impact: 'Growth Leader',
-  },
-];
+const mockInsights: AIInsightItem[] = [];
 
 const styleMap = {
   WARNING: { bg: 'bg-rose-50/80 border-rose-200/80', icon: TrendingDown, color: 'text-rose-600', badge: 'bg-rose-100 text-rose-700' },
@@ -139,7 +75,8 @@ export function AIInsightsPanel() {
 
       {/* Insights Cards Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        {insights.map((item) => {
+        {insights.length === 0 && <EmptyState title="No contents" message="No AI insights generated yet." />}
+        {insights.length > 0 && insights.map((item) => {
           const config = styleMap[item.type];
           const Icon = config.icon;
           const isDone = completedIds.includes(item.id);

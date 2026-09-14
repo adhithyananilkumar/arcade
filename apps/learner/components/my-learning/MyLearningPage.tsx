@@ -167,7 +167,7 @@ export default function MyLearningPage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-32 space-y-6">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-20 space-y-6">
         {/* HERO */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}

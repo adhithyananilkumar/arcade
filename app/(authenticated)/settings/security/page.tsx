@@ -58,10 +58,6 @@ export default function SecurityLogsPage() {
     },
   ]);
 
-  useEffect(() => {
-    loadLogs(0);
-  }, []);
-
   const loadLogs = async (pageNumber: number) => {
     setIsLoading(true);
     try {
@@ -75,6 +71,10 @@ export default function SecurityLogsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadLogs(0);
+  }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();

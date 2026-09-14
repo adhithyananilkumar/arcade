@@ -277,7 +277,7 @@ export default function LearnerHomePage() {
 
   return (
     <div
-      className="relative w-full"
+      className="relative w-full min-h-screen"
       style={{
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
       }}
@@ -293,7 +293,7 @@ export default function LearnerHomePage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-9 px-4 pb-8 pt-28 md:space-y-10 md:px-8 md:pt-32">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-9 px-4 pb-20 pt-28 md:space-y-10 md:px-8 md:pt-32">
         <section className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.85fr] lg:gap-8">
           <motion.div
             initial={{ opacity: 0, y: 14 }}

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface WebinarItem {
   id: string;
@@ -36,53 +37,7 @@ export interface WebinarItem {
   status: 'LIVE' | 'UPCOMING' | 'COMPLETED';
 }
 
-const mockWebinars: WebinarItem[] = [
-  {
-    id: 'web-1',
-    title: 'Future of Autonomous AI Agents & Real-World Deployments',
-    banner: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Dr. Sarah Chen',
-    speakerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    date: 'Aug 10, 2026',
-    time: '6:00 PM EST',
-    duration: '90 mins',
-    registrations: 1420,
-    attendanceRate: 88.5,
-    rating: 4.94,
-    feedbackScore: 96,
-    status: 'LIVE',
-  },
-  {
-    id: 'web-2',
-    title: 'Building Enterprise Search with Hybrid Vector & Sparse Retrieval',
-    banner: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Alex Rivera',
-    speakerAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    date: 'Aug 18, 2026',
-    time: '4:00 PM EST',
-    duration: '60 mins',
-    registrations: 890,
-    attendanceRate: 0,
-    rating: 0,
-    feedbackScore: 0,
-    status: 'UPCOMING',
-  },
-  {
-    id: 'web-3',
-    title: 'LLM Benchmarking & Evaluation Frameworks Masterclass',
-    banner: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
-    speaker: 'Prof. Michael Vance',
-    speakerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    date: 'Jul 24, 2026',
-    time: '5:00 PM EST',
-    duration: '75 mins',
-    registrations: 2100,
-    attendanceRate: 92.4,
-    rating: 4.98,
-    feedbackScore: 98,
-    status: 'COMPLETED',
-  },
-];
+const mockWebinars: WebinarItem[] = [];
 
 export function WebinarManagementSection() {
   const [webinars] = useState<WebinarItem[]>(mockWebinars);
@@ -196,7 +151,8 @@ export function WebinarManagementSection() {
       ) : (
         /* Webinar Cards Grid */
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredWebinars.map((webinar) => (
+          {filteredWebinars.length === 0 && <EmptyState title="No contents" message="No webinars scheduled." />}
+        {filteredWebinars.length > 0 && filteredWebinars.map((webinar) => (
             <motion.div
               key={webinar.id}
               initial={{ opacity: 0, y: 12 }}

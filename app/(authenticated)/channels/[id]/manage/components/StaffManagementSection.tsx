@@ -26,6 +26,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { StaffDetailsModal, ExtendedStaffMember } from './StaffDetailsModal';
+import { EmptyState } from './EmptyState';
 
 const LinkedinIcon = ({ size = 13, className = '' }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -41,76 +42,7 @@ const GithubIcon = ({ size = 13, className = '' }: { size?: number; className?: 
   </svg>
 );
 
-const mockStaff: ExtendedStaffMember[] = [
-  {
-    id: 'staff-1',
-    name: 'Dr. Sarah Chen',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    role: 'Lead AI Scientist & Professor',
-    department: 'AI & Data Science',
-    joiningDate: 'Jan 15, 2024',
-    assignedCourses: 12,
-    articlesPublished: 28,
-    webinarsConducted: 8,
-    bootcampsManaged: 4,
-    experience: '10+ years',
-    email: 'sarah.chen@arcade.ai',
-    phone: '+1 (555) 234-5678',
-    status: 'ACTIVE',
-    performanceScore: 98,
-  },
-  {
-    id: 'staff-2',
-    name: 'Alex Rivera',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    role: 'Senior Prompt Engineer',
-    department: 'Generative AI',
-    joiningDate: 'Mar 10, 2024',
-    assignedCourses: 8,
-    articlesPublished: 19,
-    webinarsConducted: 5,
-    bootcampsManaged: 2,
-    experience: '6 years',
-    email: 'alex.rivera@arcade.ai',
-    phone: '+1 (555) 876-5432',
-    status: 'ACTIVE',
-    performanceScore: 95,
-  },
-  {
-    id: 'staff-3',
-    name: 'Prof. Michael Vance',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    role: 'Head of Curriculum',
-    department: 'Educational Engineering',
-    joiningDate: 'Nov 01, 2023',
-    assignedCourses: 15,
-    articlesPublished: 42,
-    webinarsConducted: 14,
-    bootcampsManaged: 6,
-    experience: '14 years',
-    email: 'michael.vance@arcade.ai',
-    phone: '+1 (555) 345-6789',
-    status: 'ACTIVE',
-    performanceScore: 96,
-  },
-  {
-    id: 'staff-4',
-    name: 'Elena Rostova',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
-    role: 'MLOps Lead Instructor',
-    department: 'Cloud & Infrastructure',
-    joiningDate: 'Feb 20, 2025',
-    assignedCourses: 6,
-    articlesPublished: 14,
-    webinarsConducted: 4,
-    bootcampsManaged: 1,
-    experience: '8 years',
-    email: 'elena.rostova@arcade.ai',
-    phone: '+1 (555) 901-2345',
-    status: 'INACTIVE',
-    performanceScore: 92,
-  },
-];
+const mockStaff: ExtendedStaffMember[] = [];
 
 interface StaffManagementSectionProps {
   onInviteStaff?: () => void;
@@ -296,7 +228,8 @@ export function StaffManagementSection({ onInviteStaff }: StaffManagementSection
 
       {/* Staff Cards Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-        {filteredStaff.map((member) => {
+        {filteredStaff.length === 0 && <EmptyState title="No contents" message="No staff members found." />}
+        {filteredStaff.length > 0 && filteredStaff.map((member) => {
           const isInactive = member.status === 'INACTIVE';
           return (
             <motion.div

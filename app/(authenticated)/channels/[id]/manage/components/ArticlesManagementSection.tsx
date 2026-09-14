@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface ArticleItem {
   id: string;
@@ -35,53 +36,7 @@ export interface ArticleItem {
   status: 'PUBLISHED' | 'DRAFT' | 'SCHEDULED';
 }
 
-const mockArticles: ArticleItem[] = [
-  {
-    id: 'art-1',
-    title: 'Architecting Scalable RAG Systems with Vector Databases and Llama 3',
-    coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
-    author: 'Dr. Sarah Chen',
-    authorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    category: 'AI Architecture',
-    publishDate: 'Aug 2, 2026',
-    readingTime: '8 min read',
-    views: 14200,
-    likes: 1840,
-    comments: 240,
-    shares: 420,
-    status: 'PUBLISHED',
-  },
-  {
-    id: 'art-2',
-    title: 'Why Fine-Tuning is Replacing Generic Prompting in Enterprise Workflows',
-    coverImage: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=80',
-    author: 'Alex Rivera',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    category: 'Enterprise AI',
-    publishDate: 'Jul 28, 2026',
-    readingTime: '6 min read',
-    views: 9800,
-    likes: 1120,
-    comments: 135,
-    shares: 280,
-    status: 'PUBLISHED',
-  },
-  {
-    id: 'art-3',
-    title: 'Building Autonomous AI Agents with Tool Calling Capabilities',
-    coverImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
-    author: 'Elena Rostova',
-    authorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
-    category: 'Autonomous Agents',
-    publishDate: 'Scheduled Aug 12',
-    readingTime: '10 min read',
-    views: 0,
-    likes: 0,
-    comments: 0,
-    shares: 0,
-    status: 'SCHEDULED',
-  },
-];
+const mockArticles: ArticleItem[] = [];
 
 export function ArticlesManagementSection() {
   const [articles, setArticles] = useState<ArticleItem[]>(mockArticles);
@@ -129,7 +84,8 @@ export function ArticlesManagementSection() {
 
       {/* Article Cards Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {articles.map((article) => (
+        {articles.length === 0 && <EmptyState title="No contents" message="No articles published." />}
+        {articles.length > 0 && articles.map((article) => (
           <motion.div
             key={article.id}
             initial={{ opacity: 0, y: 12 }}
