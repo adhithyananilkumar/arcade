@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import BorderGlow from "./BorderGlow";
 import { gsap } from "gsap";
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 
 function hexToRgbStr(hex: string): string {
   hex = hex.replace(/^#/, "");
@@ -516,9 +517,18 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const descRef = useRef<HTMLParagraphElement>(null);
+  const { status } = useAuthStore();
 
   const enriched = getEnrichedCourse(course, index, activeCategoryName);
   const courseSlug = slugify(course.title);
+
+  const handleCourseClick = () => {
+    if (status === 'authenticated') {
+      router.push(course.id ? `/learn/${course.id}` : `/learn/${courseSlug}?title=${encodeURIComponent(course.title)}`);
+    } else {
+      router.push(`/sign?redirect=/learn/${course.id || courseSlug}`);
+    }
+  };
 
   useEffect(() => {
     if (descRef.current) {
@@ -659,7 +669,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
               <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
                 <button
-                  onClick={() => router.push(course.id ? `/courses/${course.id}` : `/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
+                  onClick={handleCourseClick}
                   style={{
                     width: "100%",
                     background: activeData.colors.secondary,
@@ -692,7 +702,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #E6E3F1", paddingTop: "10px", marginTop: "2px" }}>
               <span
-                onClick={() => router.push(course.id ? `/courses/${course.id}` : `/courses/${courseSlug}?title=${encodeURIComponent(course.title)}`)}
+                onClick={handleCourseClick}
                 style={{
                   fontSize: "0.85rem",
                   fontWeight: "700",
