@@ -3,23 +3,13 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
-import { useForumStore } from '../store/forum.store';
-import { useNotifications } from '../hooks/useNotifications';
-import { useNotifications as useNotificationQuery } from '../api/forum.queries';
-import { NotificationItem } from './NotificationItem';
+import Link from 'next/link';
+import { useNotifications, NotificationList } from '@/domains/notifications';
 
 export function NotificationPanel() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const unreadCount = useForumStore((s) => s.unreadNotificationCount);
-  const { notifications: wsNotifications, markAllRead } = useNotifications();
-  const { data: restData } = useNotificationQuery(0, 10);
-
-  // Merge WS and REST notifications, deduplicated by id
-  const allNotifications = [
-    ...wsNotifications,
-    ...(restData?.content || []),
-  ].filter((n, idx, arr) => arr.findIndex((x) => x.id === n.id) === idx);
+  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
 
   // Close on outside click
   useEffect(() => {
@@ -33,54 +23,25 @@ export function NotificationPanel() {
   }, []);
 
   return (
-    <div ref={panelRef} style={{ position: 'relative' }}>
+    <div ref={panelRef} className="relative">
       {/* Bell button */}
       <button
+        type="button"
         onClick={() => {
           const next = !open;
           setOpen(next);
           if (next) {
-            wsNotifications;
+            refresh();
           }
         }}
-        style={{
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 36,
-          height: 36,
-          borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border)',
-          backgroundColor: '#fff',
-          cursor: 'pointer',
-          color: 'var(--text-secondary)',
-        }}
+        className="relative flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 cursor-pointer text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+        title="Notifications"
       >
         <Bell size={16} />
         {unreadCount > 0 && (
-          <motion.span
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            style={{
-              position: 'absolute',
-              top: -4,
-              right: -4,
-              minWidth: 16,
-              height: 16,
-              borderRadius: 'var(--radius-full)',
-              backgroundColor: '#dc2626',
-              color: '#fff',
-              fontSize: 10,
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '0 3px',
-            }}
-          >
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </motion.span>
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white shadow-xs">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
         )}
       </button>
 
@@ -92,43 +53,18 @@ export function NotificationPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: 'calc(100% + 8px)',
-              width: 360,
-              backgroundColor: '#fff',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-md)',
-              overflow: 'hidden',
-              zIndex: 100,
-            }}
+            className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-xl overflow-hidden z-50"
           >
             {/* Header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 14px',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
+              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Notifications
               </span>
               {unreadCount > 0 && (
                 <button
+                  type="button"
                   onClick={markAllRead}
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--arcade-blue)',
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                  }}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
                 >
                   Mark all read
                 </button>
@@ -136,23 +72,29 @@ export function NotificationPanel() {
             </div>
 
             {/* Items */}
-            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-              {allNotifications.length === 0 ? (
-                <div
-                  style={{
-                    padding: 32,
-                    textAlign: 'center',
-                    fontSize: 13,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  No notifications yet
-                </div>
-              ) : (
-                allNotifications.slice(0, 10).map((n) => (
-                  <NotificationItem key={n.id} notification={n} />
-                ))
-              )}
+            <div className="max-h-[380px] overflow-y-auto">
+              <NotificationList
+                notifications={notifications}
+                onItemClick={(n) => {
+                  if (!n.read) {
+                    markRead(n.id);
+                  }
+                  setOpen(false);
+                }}
+                onNotificationAction={refresh}
+                emptyMessage="No notifications yet"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-slate-100 dark:border-neutral-800 p-2.5 text-center bg-slate-50/50 dark:bg-neutral-950/40">
+              <Link
+                href="/notifications"
+                onClick={() => setOpen(false)}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors"
+              >
+                See more
+              </Link>
             </div>
           </motion.div>
         )}

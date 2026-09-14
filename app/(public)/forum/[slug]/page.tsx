@@ -10,7 +10,7 @@ import { PostTypeBadge } from "@/domains/community";
 import { UserAvatar } from "@/domains/community";
 import { ShareButton } from "@/domains/community";
 import { usePost } from "@/domains/community";
-import { useWebSocket } from "@/domains/community";
+import { useWebSocket } from "@/infrastructure/websocket/useWebSocket";
 import { useToggleBookmark } from "@/domains/community";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { sanitizeHtml } from '@/shared/utils/sanitizeHtml';

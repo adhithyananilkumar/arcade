@@ -45,7 +45,7 @@ import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 
 import { ChannelStaffManager } from './ChannelStaffManager';
-import { ChannelNotificationsManager } from './ChannelNotificationsManager';
+import { ChannelAuditLogManager } from './ChannelAuditLogManager';
 import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -360,7 +360,7 @@ export default function ManageChannelPage() {
           {activeTab === 'LOGS' && <RecentActivityTimeline channelId={channelId} />}
 
           {/* TAB 9: NOTIFICATIONS */}
-          {activeTab === 'NOTIFICATIONS' && <ChannelNotificationsManager channel={channel} />}
+          {activeTab === 'NOTIFICATIONS' && <ChannelAuditLogManager channel={channel} />}
 
           {/* TAB 10: DANGER ZONE */}
           {activeTab === 'DANGER' && isOwner && (

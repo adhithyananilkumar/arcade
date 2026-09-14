@@ -206,7 +206,7 @@ export function OrganizationAnalyticsSection() {
     const height = 170;
     const chartBottom = 135;
 
-    const coords = pts.map((pt, idx) => {
+    const coords = pts.map((pt: number, idx: number) => {
       const x = (idx / (pts.length - 1)) * width;
       const y = chartBottom - ((pt - minVal) / range) * (chartBottom - 30);
       return { x: Math.round(x), y: Math.round(y), pt };
@@ -369,7 +369,7 @@ export function OrganizationAnalyticsSection() {
                   d={svgChart.smoothLine}
                   className="transition-all duration-300 ease-out"
                 />
-                {svgChart.coords.map((c, i) => (
+                {svgChart.coords.map((c: { x: number; y: number; pt: number }, i: number) => (
                   <g key={i} className="cursor-pointer" onMouseEnter={() => setHoverIdx(i)}>
                     <circle
                       cx={c.x}
@@ -395,7 +395,7 @@ export function OrganizationAnalyticsSection() {
                 ))}
 
                 {/* X-Axis Date Labels */}
-                {activeData.labels.map((lbl, i) => {
+                {activeData.labels.map((lbl: string, i: number) => {
                   const cx = (i / (activeData.labels.length - 1)) * 540;
                   const textAnchor =
                     i === 0 ? 'start' : i === activeData.labels.length - 1 ? 'end' : 'middle';

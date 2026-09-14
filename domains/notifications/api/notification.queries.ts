@@ -45,12 +45,22 @@ export function useMarkReadMutation() {
   return useMutation({
     mutationFn: (id: string) => NotificationService.markRead(id),
     onSuccess: (_data, id) => {
-      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) =>
-        prev ? prev.map((n) => (n.id === id ? { ...n, read: true } : n)) : prev
-      );
-      queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
-        typeof prev === 'number' ? Math.max(0, prev - 1) : prev
-      );
+      let wasUnread = false;
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) => {
+        if (!prev) return prev;
+        return prev.map((n) => {
+          if (n.id === id) {
+            if (!n.read) wasUnread = true;
+            return { ...n, read: true };
+          }
+          return n;
+        });
+      });
+      if (wasUnread) {
+        queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
+          typeof prev === 'number' ? Math.max(0, prev - 1) : prev
+        );
+      }
     },
   });
 }

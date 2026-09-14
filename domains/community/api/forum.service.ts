@@ -7,7 +7,6 @@ import type {
   CreatePostRequest,
   CreateTagRequest,
   FollowResponse,
-  NotificationResponse,
   PagedResponse,
   PostDetailResponse,
   PostSummaryResponse,
@@ -169,23 +168,6 @@ export class ForumService {
       `${BASE}/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`
     );
     return data;
-  }
-
-  // --- Notifications ---
-  static async getNotifications(page = 0, size = 20) {
-    const data = await api.get<PagedResponse<NotificationResponse>>(
-      `${BASE}/notifications?page=${page}&size=${size}`
-    );
-    return data;
-  }
-
-  static async getUnreadCount() {
-    const data = await api.get<number>(`${BASE}/notifications/unread-count`);
-    return data;
-  }
-
-  static async markAllRead() {
-    await api.post(`${BASE}/notifications/mark-all-read`);
   }
 
   // --- Reputation ---
