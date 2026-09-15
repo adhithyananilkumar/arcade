@@ -1,26 +1,7 @@
 'use client';
 
 /**
- * Learning Activity — now showing REAL learning time (D3).
- *
- * HISTORY, BECAUSE IT MATTERS
- * Originally this chart read `GET /api/v1/users/me/time-activity` (TimeLog / WebSocket session
- * presence) and rendered it as "Learning Time … Hours/Day". That measured how long a tab was open:
- * a tab left open overnight produced an eight-hour "learning" day. D2.5 removed that and fell back
- * to honest activity COUNTS, with a standing caption saying time was not tracked.
- *
- * D3 made time real. `GET /api/v1/me/activity` now carries `learningMinutes` per day, aggregated
- * server-side from interaction-gated, server-clamped, de-overlapped lesson-engagement segments.
- * This panel renders that.
- *
- * WHAT THIS COMPONENT IS STILL NOT ALLOWED TO DO
- * - It never computes duration. It sums per-day values the backend already decided, purely to
- *   render a range total — no inference, no estimation, no filling gaps.
- * - It never coalesces `learningMinutes: null` to 0. `null` means "no duration recorded for this
- *   day", which is a different statement from "zero minutes", and the UI says so.
- * - It keeps activity COUNTS as a genuine secondary signal rather than deleting the concept: time
- *   and completed actions answer different questions, and the backend deliberately models them as
- *   two separate fields.
+ * Learning Activity — showing real learning time (D3).
  */
 
 import { useMemo, useState } from 'react';
@@ -52,7 +33,6 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
   const [preset, setPreset] = useState<RangePreset>('7d');
   const [hovered, setHovered] = useState<number | null>(null);
 
-  // Bounded window, always. The learner cannot ask for an unbounded range from this UI.
   const { fromISO, toISO, days } = useMemo(() => {
     const end = new Date();
     const start = new Date();
@@ -87,8 +67,6 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
           key,
           label: d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' }),
           weekday: d.toLocaleDateString(undefined, { weekday: 'short' }),
-          // `null` is preserved through to render: a day the backend has no duration for shows no
-          // bar and no "0m", rather than a confident zero.
           minutes: row?.minutes ?? null,
           count: row?.count ?? 0,
         };
@@ -107,24 +85,24 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
   const hasAnything = activeDays > 0;
 
   return (
-    <section className="relative overflow-hidden rounded-tl-none rounded-br-none rounded-tr-[3rem] rounded-bl-[3rem] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-5 sm:p-6 space-y-4 shadow-xs">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-        <div className="space-y-1">
-          <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Activity size={18} className="text-[#2C83F5]" />
-            <span>Learning Activity</span>
+    <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(20,20,43,0.04)]">
+      {/* Header with Title & Date Range Toggle */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="space-y-1.5">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Activity size={22} className="text-[#2C83F5]" />
+            <span>Study Activity & Engagement</span>
           </h3>
-          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 flex items-start gap-1.5 max-w-lg">
-            <Info size={12} className="mt-0.5 shrink-0 text-slate-400" />
+          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 max-w-2xl leading-relaxed">
+            <Info size={16} className="shrink-0 text-slate-400" />
             <span>
-              Time you were actively engaged with lesson content. Idle time and background tabs are
-              not counted.
+              Time you were actively engaged with lesson content. Idle time and background tabs are not counted.
             </span>
           </p>
         </div>
 
         <div
-          className="inline-flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl border border-slate-200/90 dark:border-slate-700/80 shrink-0"
+          className="inline-flex items-center gap-1.5 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 shrink-0 self-start md:self-auto"
           role="group"
           aria-label="Activity date range"
         >
@@ -134,9 +112,9 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
               type="button"
               onClick={() => setPreset(p)}
               aria-pressed={preset === p}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
+              className={`px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 select-none cursor-pointer ${
                 preset === p
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-slate-700/80 font-bold'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/90 dark:border-slate-700/80'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
               }`}
             >
@@ -147,102 +125,115 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
       </div>
 
       {isLoading ? (
-        <div className="h-48 flex items-center justify-center text-slate-400">
-          <Loader2 className="animate-spin" size={22} />
+        <div className="h-56 flex items-center justify-center text-slate-400">
+          <Loader2 className="animate-spin" size={24} />
         </div>
       ) : isError ? (
-        <div className="h-48 flex items-center justify-center text-center px-6">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="h-56 flex items-center justify-center text-center px-6">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
             Your activity could not be loaded right now. Nothing is lost — try again shortly.
           </p>
         </div>
       ) : !hasAnything ? (
-        <div className="h-48 flex flex-col items-center justify-center text-center gap-2 px-6">
-          <Activity className="text-slate-300 dark:text-slate-700" size={28} />
-          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+        <div className="h-56 flex flex-col items-center justify-center text-center gap-2.5 px-6">
+          <Activity className="text-slate-300 dark:text-slate-700" size={32} />
+          <p className="text-base font-bold text-slate-700 dark:text-slate-300">
             No activity recorded in this range
           </p>
-          <p className="text-xs font-medium text-slate-400 dark:text-slate-500 max-w-sm">
+          <p className="text-xs sm:text-sm font-medium text-slate-400 dark:text-slate-500 max-w-sm">
             Open a lesson and your learning time will appear here.
           </p>
         </div>
       ) : (
         <>
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="flex items-baseline gap-1.5 text-slate-900 dark:text-white">
-              <Clock size={16} className="self-center text-[#2C83F5]" />
-              <span className="text-2xl font-black tracking-tight tabular-nums">
+          {/* Summary Stat Line */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 pt-1">
+            <div className="flex items-baseline gap-2.5 text-slate-900 dark:text-white">
+              <Clock size={20} className="self-center text-[#2C83F5]" />
+              <span className="text-3xl sm:text-4xl font-black tracking-tight tabular-nums">
                 {formatMinutes(totalMinutes)}
               </span>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
                 {rangeLabel}
               </span>
-            </p>
-            {/* Activity counts kept as a secondary, genuinely different signal — actions completed,
-                not time spent. */}
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            </div>
+
+            <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
               {totalActions} {totalActions === 1 ? 'learning action' : 'learning actions'} ·{' '}
               {daysWithTime} of {bars.length} days with recorded time
             </p>
           </div>
 
-          <div className="relative h-48 w-full flex items-end">
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
+          {/* Activity Bar Chart */}
+          <div className="relative h-60 w-full flex items-end pt-6">
+            {/* Y-axis grid lines & labels */}
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-xs font-bold text-slate-400 dark:text-slate-500">
               {[maxMinutes, Math.round(maxMinutes / 2), 0].map((val, i) => (
                 <div key={i} className="flex items-center gap-3 w-full">
-                  <span className="w-9 text-right shrink-0">{val}m</span>
-                  <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800" />
+                  <span className="w-10 text-right shrink-0">{val}m</span>
+                  <div className="w-full h-px bg-slate-200/80 dark:border-slate-800 dark:bg-slate-800/80" />
                 </div>
               ))}
             </div>
 
-            <div className="w-full pl-12 h-full flex items-end justify-between gap-1.5 z-10 pt-4">
+            {/* X-axis bars & dates */}
+            <div className="w-full pl-14 h-full flex items-end justify-between gap-2 sm:gap-3 z-10 pt-4">
               {bars.map((b, i) => (
                 <div
                   key={b.key}
-                  className="relative flex-1 flex flex-col items-center h-full justify-end group/bar"
+                  className="relative flex-1 flex flex-col items-center h-full justify-end group/bar cursor-pointer"
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(null)}
                 >
+                  {/* Tooltip */}
                   <AnimatePresence>
                     {hovered === i && (
                       <motion.div
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 4 }}
-                        className="absolute bottom-full mb-2 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-[10px] font-semibold shadow-md z-30 pointer-events-none whitespace-nowrap"
+                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full mb-3 px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold shadow-xl z-30 pointer-events-none whitespace-nowrap border border-slate-700/50"
                       >
-                        {b.label}:{' '}
-                        {b.minutes === null ? 'no time recorded' : formatMinutes(b.minutes)}
-                        {b.count > 0
-                          ? ` · ${b.count} ${b.count === 1 ? 'action' : 'actions'}`
-                          : ''}
+                        <div className="font-extrabold text-sky-400 mb-0.5">{b.label} ({b.weekday})</div>
+                        <div className="text-slate-200">
+                          {b.minutes === null ? 'No time recorded' : `${formatMinutes(b.minutes)} study time`}
+                        </div>
+                        {b.count > 0 && (
+                          <div className="text-slate-400 text-[11px] mt-0.5">
+                            {b.count} {b.count === 1 ? 'action' : 'actions'} completed
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
 
-                  <div className="w-full max-w-[36px] h-[82%] flex items-end justify-center">
+                  {/* Vertical Progress Bar */}
+                  <div className="w-full max-w-[48px] h-[78%] flex items-end justify-center">
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{
                         height:
                           (b.minutes ?? 0) > 0
-                            ? `${Math.max(((b.minutes as number) / maxMinutes) * 100, 4)}%`
+                            ? `${Math.max(((b.minutes as number) / maxMinutes) * 100, 6)}%`
                             : '0%',
                       }}
-                      transition={{ duration: 0.4, ease: 'easeOut', delay: Math.min(i * 0.02, 0.4) }}
-                      className="w-full rounded-t-sm bg-gradient-to-t from-blue-800 to-sky-300 dark:from-blue-900 dark:to-sky-400 opacity-80 group-hover/bar:opacity-100 transition-opacity"
+                      transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(i * 0.02, 0.4) }}
+                      className="w-full rounded-t-md bg-gradient-to-t from-[#2962D6] via-[#2C83F5] to-[#27C5D8] opacity-85 group-hover/bar:opacity-100 transition-all shadow-xs"
                     />
                   </div>
 
-                  <div className="mt-1.5 text-center">
+                  {/* Date labels below bar */}
+                  <div className="mt-2 text-center">
                     <p
-                      className={`font-semibold text-slate-700 dark:text-slate-300 ${isManyBars ? 'text-[8px] truncate max-w-[26px]' : 'text-[10px]'}`}
+                      className={`font-bold text-slate-800 dark:text-slate-200 ${
+                        isManyBars ? 'text-[10px] truncate max-w-[32px]' : 'text-xs sm:text-sm'
+                      }`}
                     >
                       {b.label}
                     </p>
                     {!isManyBars && (
-                      <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500">
+                      <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
                         {b.weekday}
                         {b.minutes !== null && b.minutes > 0 ? ` · ${formatMinutes(b.minutes)}` : ''}
                       </p>

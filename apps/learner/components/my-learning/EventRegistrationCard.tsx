@@ -39,13 +39,13 @@ export function EventRegistrationCard({
   return (
     <motion.div
       layout="position"
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
-      transition={{ duration: 0.35, ease: 'easeOut', delay: Math.min(index * 0.04, 0.2) }}
-      className="group relative flex flex-col sm:flex-row gap-4 sm:gap-5 overflow-hidden rounded-2xl sm:rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 shadow-xs hover:shadow-[0_12px_32px_rgba(15,23,42,0.08)] hover:-translate-y-1 transition-all duration-300"
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.04, 0.2) }}
+      className="group relative flex flex-col sm:flex-row gap-4 sm:gap-5 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.04)] hover:shadow-[0_12px_36px_rgba(20,20,43,0.07)] hover:-translate-y-1 transition-all duration-300"
     >
-      <div className="h-28 w-full sm:h-28 sm:w-28 shrink-0 rounded-xl sm:rounded-[14px] overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="h-28 w-full sm:h-28 sm:w-28 shrink-0 rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md overflow-hidden border border-slate-200/70 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-sm">
         {registration.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -59,7 +59,7 @@ export function EventRegistrationCard({
             aria-hidden
             className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${placeholderTintFor(registration.eventId)}`}
           >
-            <span className="text-2xl font-black text-slate-400/70 dark:text-slate-500/70 select-none">
+            <span className="text-2xl font-black text-slate-400 select-none">
               {initialFor(registration.title)}
             </span>
           </div>
@@ -69,12 +69,12 @@ export function EventRegistrationCard({
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-3">
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="text-[15px] font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            <h4 className="text-[15px] font-bold text-[#14142b] dark:text-white line-clamp-2 leading-snug group-hover:text-[#4C6FFF] dark:group-hover:text-indigo-400 transition-colors">
               {registration.title}
             </h4>
             <span
               title={badge.hint ?? undefined}
-              className={`shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-bold border ${STATUS_TONE_CLASSES[badge.tone]}`}
+              className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_TONE_CLASSES[badge.tone]}`}
             >
               {badge.label}
             </span>
@@ -85,7 +85,7 @@ export function EventRegistrationCard({
               {humanizeCode(registration.eventType)}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Calendar size={13} className="text-indigo-500 shrink-0" />
+              <Calendar size={13} className="text-[#4C6FFF] shrink-0" />
               {eventScheduleLabel(registration)}
             </span>
             <span className="inline-flex items-center gap-1.5">
@@ -98,7 +98,7 @@ export function EventRegistrationCard({
         <div className="flex items-center justify-end pt-2 border-t border-slate-100 dark:border-slate-800/80">
           <Link
             href={eventHrefFor(registration)}
-            className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white hover:bg-indigo-600 dark:hover:bg-indigo-50 text-white dark:text-slate-900 text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5"
+            className="inline-flex items-center gap-1.5 rounded-tr-lg rounded-bl-lg rounded-tl-xs rounded-br-xs bg-[#12141C] hover:bg-[#232735] dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 px-3.5 py-1.5 text-[12px] font-semibold transition-all shadow-sm hover:gap-2"
           >
             <span>{registration.upcoming ? 'View event' : 'View details'}</span>
             <ArrowRight size={13} />

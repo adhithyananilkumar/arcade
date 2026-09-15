@@ -67,7 +67,7 @@ function HangingLaurelMedalStamp({
   const numberText = place === 1 ? '1st' : place === 2 ? '2nd' : '3rd';
 
   return (
-    <div className="relative flex flex-col items-center justify-center select-none w-24 h-24 sm:w-28 sm:h-28 filter drop-shadow-xl transition-transform hover:scale-105">
+    <div className="relative flex flex-col items-center justify-center select-none w-24 h-24 sm:w-28 sm:h-28 filter drop-shadow-xl transition-transform duration-300 ease-out group-hover:scale-110">
       <svg
         viewBox="0 0 100 100"
         className="w-full h-full overflow-visible"
@@ -190,8 +190,7 @@ export function FabricPodiumCard({ user, place }: PodiumCardProps) {
       initial={{ opacity: 0, y: 28, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: place === 1 ? -6 : -4, transition: { duration: 0.2 } }}
-      className={`relative w-full max-w-[290px] mx-auto pt-14 sm:pt-16 ${elevationClass}`}
+      className={`group relative w-full max-w-[290px] mx-auto pt-14 sm:pt-16 ${elevationClass}`}
       style={{ filter: tone.dropShadow }}
     >
       {/* ── Top Hanging Circular Laurel Winner Medal Stamp (At Top V-Tip) ── */}
