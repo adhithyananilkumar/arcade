@@ -189,3 +189,121 @@ export interface QuizStatsResponse {
   maxScore: number | null;
   attemptCount: number;
 }
+
+// ── Central Exam capability ───────────────────────────────────────────────────
+// An exam is a first-class capability: standalone, or placed under a Course/Event (never both).
+// Placement is a location, not a type — `purpose` is a free-form, creator-set label, never an
+// enum the UI branches on. Mirrors arcade-backend exam/dto/{ExamRequest,ExamResponse}.java.
+
+export interface ExamResponse {
+  id: string;
+  authorId: string | null;
+  authorName: string | null;
+  authorUsername: string | null;
+  authorAvatarUrl: string | null;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  pricingModel: string;
+  priceAmount: number | null;
+  examSchedule: string | null;
+  rejectionReason: string | null;
+  status: string;
+  wasPublished: boolean;
+  hasDraftChanges: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  courseId: string | null;
+  eventId: string | null;
+  purpose: string | null;
+  requiredForCompletion: boolean;
+  questionCount: number;
+  easyPercent: number;
+  mediumPercent: number;
+  hardPercent: number;
+  examType: "BADGED" | "CERTIFIED";
+  proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
+  fullscreenRequired: boolean;
+  sameQuestionsForAllStudents: boolean;
+}
+
+export interface ExamRequest {
+  title: string;
+  description?: string;
+  coverImageUrl?: string;
+  pricingModel?: string;
+  priceAmount?: number;
+  examSchedule?: string;
+  channelId?: string;
+  courseId?: string;
+  eventId?: string;
+  purpose?: string;
+  requiredForCompletion?: boolean;
+  questionCount?: number;
+  easyPercent?: number;
+  mediumPercent?: number;
+  hardPercent?: number;
+  examType?: "BADGED" | "CERTIFIED";
+  proctoringRequired?: boolean;
+  identityVerificationRequired?: boolean;
+  fullscreenRequired?: boolean;
+  sameQuestionsForAllStudents?: boolean;
+}
+
+// ── Exam attempts (learner-facing, server-authoritative) ─────────────────────
+// The server owns time, scoring, and correctness. No response here ever carries an answer key.
+
+export interface AttemptQuestionOptionView {
+  id: string;
+  text: string;
+  position: number;
+}
+
+export interface AttemptQuestionResponse {
+  id: string;
+  position: number;
+  type: string;
+  points: number;
+  prompt: unknown; // Tiptap JSON document
+  options: AttemptQuestionOptionView[];
+  selectedOptionIds: string[];
+  textAnswer: string | null;
+}
+
+export interface AttemptResponse {
+  id: string;
+  examId: string;
+  examVersionId: string;
+  attemptNumber: number;
+  status: string;
+  startedAt: string;
+  expiresAt: string;
+  submittedAt: string | null;
+  serverTime: string;
+  secondsRemaining: number;
+  questions: AttemptQuestionResponse[];
+}
+
+export interface SaveAnswerRequest {
+  selectedOptionIds: string[];
+  textAnswer?: string | null;
+}
+
+export interface ExamResultResponse {
+  attemptId: string;
+  examId: string;
+  examVersionId: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  unanswered: number;
+  marksObtained: number;
+  maximumMarks: number;
+  percentage: number;
+  passPercentage: number;
+  passed: boolean;
+  scoringVersion: number;
+  calculatedAt: string;
+}

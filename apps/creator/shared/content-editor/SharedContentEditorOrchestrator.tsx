@@ -72,7 +72,13 @@ import {
   applyBase64Update,
   encodeStateBase64,
 } from "@/apps/creator/editor";
-import { QuizEditor } from "@/domains/assessments";
+import {
+  QuizEditor,
+  listExamsForCourse,
+  createExam,
+  detachExamFromCourse,
+  type ExamResponse,
+} from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
 import { CourseSubmitDialog } from "../../components/CourseSubmitDialog";
@@ -119,6 +125,7 @@ import {
   FileQuestion,
   Award,
   Users,
+  Loader2,
 } from "lucide-react";
 
 function SortableRow({ id, children, className }: { id: string, children: (dragHandleProps: any) => React.ReactNode, className?: string }) {
@@ -611,6 +618,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const publicCategories = usePublicCategories();
   const courseCategories = publicCategories.filter((c) => c.type === "COURSES");
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
+  // Exams attached to this course — real multiplicity, not the old single-boolean toggle. See
+  // ExamAuthoringService (backend) for the attach/detach model this list reflects.
+  const [exams, setExams] = useState<ExamResponse[]>([]);
+  const [addingExam, setAddingExam] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
   const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
@@ -964,6 +975,11 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         if (contentType === "course") {
           setCourseData(meta.raw);
           setCategoryId(meta.raw?.categoryId ?? null);
+          listExamsForCourse(initialContentId!)
+            .then(setExams)
+            .catch(() => {
+              // Best-effort — same pattern as the rest of this sidebar's supplementary data.
+            });
         }
         setModules(
           containers.map((m) => ({
@@ -1093,22 +1109,46 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     };
   }, [activeYDoc]);
 
-  // ── Final exam pinned row (course only, when Exam Settings is enabled) ────
+  // ── Exams attached to this course ─────────────────────────────────────────
 
-  const [openingExam, setOpeningExam] = useState(false);
+  const openExamConfig = useCallback(
+    (examId: string) => {
+      if (!contentId) return;
+      router.push(`/studio/course/${contentId}/exam/${examId}/config`);
+    },
+    [contentId, router]
+  );
 
-  const openExamConfig = useCallback(async () => {
+  const addExam = useCallback(async () => {
     if (!contentId) return;
-    setOpeningExam(true);
+    setAddingExam(true);
     try {
-      const exam = await api.get<{ id: string }>(`/api/courses/${contentId}/exam`);
-      router.push(`/studio/course/${contentId}/exam/${exam.id}/config`);
+      const nextIndex = exams.length + 1;
+      const exam = await createExam({ title: `Assessment ${nextIndex}`, courseId: contentId });
+      setExams((prev) => [...prev, exam]);
+      openExamConfig(exam.id);
     } catch {
-      // Swallow — same best-effort pattern as the rest of this sidebar's navigation actions.
+      toast.error("Failed to create exam");
     } finally {
-      setOpeningExam(false);
+      setAddingExam(false);
     }
-  }, [contentId, router]);
+  }, [contentId, exams.length, openExamConfig]);
+
+  const removeExam = useCallback(
+    async (examId: string) => {
+      if (!contentId) return;
+      const previous = exams;
+      setExams((prev) => prev.filter((e) => e.id !== examId));
+      try {
+        await detachExamFromCourse(contentId, examId);
+        toast.success("Exam removed from this course");
+      } catch {
+        setExams(previous);
+        toast.error("Failed to remove exam");
+      }
+    },
+    [contentId, exams]
+  );
 
   // ── Tree mutation: Add Module ──────────────────────────────────────────────
 
@@ -1364,6 +1404,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       confirmLabel: "Delete",
       danger: true,
       onConfirm: () => deleteBadgeNow(badge.id),
+    });
+
+  const askRemoveExam = (exam: ExamResponse) =>
+    setConfirm({
+      title: "Remove exam from this course?",
+      message: `"${exam.title}" will no longer be attached here. It becomes a standalone exam — nothing about the exam itself (questions, attempts, results) is deleted.`,
+      confirmLabel: "Remove",
+      danger: true,
+      onConfirm: () => removeExam(exam.id),
     });
 
 
@@ -1998,26 +2047,40 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     );
                   })}
 
-                {contentType === "course" && courseData?.hasExam && (
+                {/* ── Exams: course-level tree items, a sibling of Modules — placement, not
+                     a lesson. Any number of exams may be attached; each is independently
+                     configured, versioned, and published. ── */}
+                {contentType === "course" && exams.length > 0 && (
                   <div className="mb-2 flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={openExamConfig}
-                      disabled={openingExam}
-                      title="What students see once they finish every module — configure it from here"
-                      className="group flex items-center gap-2 rounded-2xl border border-dashed border-[#14142b]/15 bg-[#14142b]/[0.03] px-3 py-2 text-left shadow-sm transition-all hover:border-[#14142b]/25 hover:bg-[#14142b]/[0.06] disabled:opacity-60"
-                    >
-                      <GraduationCap size={14} className="flex-shrink-0 text-[#14142b]/50" />
-                      <span className="flex-1 truncate text-xs font-bold text-[#14142b]/70">
-                        Final Exam
-                      </span>
-                      <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#14142b]/50">
-                        Auto-added
-                      </span>
-                    </button>
+                    {exams.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="group flex items-center gap-2 rounded-2xl border border-dashed border-[#14142b]/15 bg-[#14142b]/[0.03] px-3 py-2 shadow-sm transition-all hover:border-[#14142b]/25 hover:bg-[#14142b]/[0.06]"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => openExamConfig(exam.id)}
+                          title="Configure this exam's blueprint, questions, and delivery settings"
+                          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        >
+                          <GraduationCap size={14} className="flex-shrink-0 text-[#14142b]/50" />
+                          <span className="flex-1 truncate text-xs font-bold text-[#14142b]/70" title={exam.title}>
+                            {exam.title}
+                          </span>
+                          <span className="flex-shrink-0 rounded-full bg-[#14142b]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#14142b]/50">
+                            {exam.wasPublished ? "Published" : "Draft"}
+                          </span>
+                        </button>
+                        {status !== "SUBMITTED" && (
+                          <IconBtn title="Remove from this course" danger onClick={() => askRemoveExam(exam)}>
+                            <Trash2 size={12} />
+                          </IconBtn>
+                        )}
+                      </div>
+                    ))}
                     <p className="pl-3 text-[10px] leading-relaxed text-slate-400">
-                      Shown to students as the last step after every module — not a real lesson,
-                      just a preview of what they&apos;ll see. Click to configure the exam.
+                      Shown to students on the course page&apos;s Assessments tab. Click an exam to
+                      configure its blueprint and questions.
                     </p>
                   </div>
                 )}
@@ -2120,6 +2183,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     >
                       <Plus size={14} />
                       Add {adapter.terminology.leafBadge ?? "Badge"}
+                    </button>
+                  )}
+                  {contentType === "course" && (
+                    <button
+                      type="button"
+                      onClick={addExam}
+                      disabled={addingExam}
+                      title="Create a new exam and attach it to this course, or attach one you already own from Studio → Exams"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow disabled:opacity-60"
+                    >
+                      {addingExam ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                      Add Exam
                     </button>
                   )}
                 </div>

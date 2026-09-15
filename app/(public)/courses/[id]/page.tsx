@@ -26,6 +26,7 @@ import {
   useMyEnrollmentForResourceQuery,
   type UIEnrollmentState,
 } from "@/domains/enrollment"
+import { listAvailableExamsForCourse, type ExamResponse } from "@/domains/assessments"
 import { toast } from "sonner"
 import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
@@ -247,6 +248,18 @@ export default function CoursePreviewPage() {
     course?.id,
     Boolean(user)
   )
+
+  // Published exams attached to this course that this learner is eligible to see — shown on the
+  // Assessments tab below. Not fetched for anonymous visitors (the endpoint requires enrollment).
+  const [availableExams, setAvailableExams] = useState<ExamResponse[]>([])
+  useEffect(() => {
+    if (!course?.id || !user) return
+    listAvailableExamsForCourse(course.id)
+      .then(setAvailableExams)
+      .catch(() => {
+        // Best-effort supplementary content — the page works fine without it.
+      })
+  }, [course?.id, user])
 
   const handleReportSubmit = async (combinedNote: string) => {
     await api.post("/api/v1/reports", {
@@ -499,6 +512,39 @@ export default function CoursePreviewPage() {
             </div>
           )
         },
+        ...(availableExams.length > 0
+          ? [
+              {
+                id: "Assessments",
+                label: "Assessments",
+                content: (
+                  <div className="mx-auto flex max-w-3xl flex-col gap-3">
+                    {availableExams.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-paper p-5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-[15px] font-semibold text-ink">{exam.title}</p>
+                          <p className="mt-1 text-[13px] text-subtle">
+                            {exam.purpose ?? "Assessment"} · {exam.questionCount} question
+                            {exam.questionCount === 1 ? "" : "s"}
+                            {exam.requiredForCompletion ? " · Required for completion" : ""}
+                          </p>
+                        </div>
+                        <Link
+                          href={`/learn/exam/${exam.id}`}
+                          className="flex-shrink-0 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+            ]
+          : []),
         {
           id: "Certificate",
           label: "Certificate",

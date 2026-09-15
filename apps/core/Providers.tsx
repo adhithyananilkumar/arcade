@@ -19,7 +19,7 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/infrastructure/state/queryClient';
-import { Toaster } from 'sonner';
+import { Toaster } from '@/shared/design-system/ui/sonner';
 import { AuthInitializer } from '@/apps/core/components/AuthInitializer';
 
 
@@ -28,8 +28,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthInitializer />
       {children}
-      <Toaster position="top-right" richColors />
-
+      <Toaster />
     </QueryClientProvider>
   );
 }

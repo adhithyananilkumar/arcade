@@ -84,7 +84,7 @@ const EditorNumberInput = ({ value, onChange }: { value: number; onChange: (val:
   </div>
 );
 
-export function ExamBlueprintEditor({ examId, courseId }: { examId: string; courseId: string }) {
+export function ExamBlueprintEditor({ examId, courseId }: { examId: string; courseId?: string }) {
   const [sections, setSections] = useState<SectionWire[]>([]);
   const [pools, setPools] = useState<QuestionPoolResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,13 +95,16 @@ export function ExamBlueprintEditor({ examId, courseId }: { examId: string; cour
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [sectionList, bank] = await Promise.all([
-        api.get<SectionWire[]>(`/api/exams/${examId}/sections`),
-        getOrCreateCourseQuestionBank(courseId),
-      ]);
+      const sectionList = await api.get<SectionWire[]>(`/api/exams/${examId}/sections`);
       setSections(sectionList);
-      const poolList = await listPools(bank.id);
-      setPools(poolList);
+      // The question bank is course-scoped today — a standalone exam has none to draw from yet.
+      // Attach it to a course to pick pools/rules; sections themselves are still creatable and
+      // travel with the exam once it's attached.
+      if (courseId) {
+        const bank = await getOrCreateCourseQuestionBank(courseId);
+        const poolList = await listPools(bank.id);
+        setPools(poolList);
+      }
     } catch (e) {
       console.warn("Failed to load exam blueprint", e);
     } finally {
@@ -228,6 +231,13 @@ export function ExamBlueprintEditor({ examId, courseId }: { examId: string; cour
         &quot;N questions of a given difficulty from a pool (or the whole bank)&quot;. The actual
         paper is sampled per student at attempt time.
       </p>
+
+      {!courseId && (
+        <p className="rounded-xl border border-dashed border-amber-200 bg-amber-50/60 px-4 py-3 text-sm text-amber-800">
+          This exam is standalone and has no question bank yet. Attach it to a course to pick
+          pools and add selection rules — sections you create now are kept.
+        </p>
+      )}
 
       {sections.length === 0 && (
         <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center text-sm text-slate-500">

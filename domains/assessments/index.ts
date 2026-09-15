@@ -22,6 +22,25 @@ export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionBankEditor } from "./components/QuestionBankEditor";
 export { getQuizStats, getOrCreateCourseQuestionBank, listPools } from "./api";
+export {
+  createExam,
+  getExam,
+  updateExam,
+  listMyExams,
+  listExamsForCourse,
+  listAvailableExamsForCourse,
+  attachExamToCourse,
+  detachExamFromCourse,
+  listExamsForEvent,
+  attachExamToEvent,
+  detachExamFromEvent,
+  startExamAttempt,
+  getExamAttempt,
+  getExamAttemptQuestions,
+  saveExamAnswer,
+  submitExamAttempt,
+  getExamResult,
+} from "./api";
 export type {
   QuestionType,
   QuestionResponse,
@@ -36,4 +55,10 @@ export type {
   QuestionBankSummary,
   SectionResponse,
   QuestionPoolResponse,
+  ExamRequest,
+  ExamResponse,
+  AttemptResponse,
+  AttemptQuestionResponse,
+  SaveAnswerRequest,
+  ExamResultResponse,
 } from "./types";

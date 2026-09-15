@@ -12,50 +12,64 @@ import {
   Clock,
   ListOrdered,
 } from 'lucide-react';
+import { getExam, type ExamResponse } from '@/domains/assessments';
 
 const pageBg = {
   background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 32%, #FFFFFF 70%)',
 };
 
-const RULES = [
-  {
-    icon: Monitor,
-    title: 'Fullscreen required',
-    body: 'The exam runs in fullscreen. Starting will enter fullscreen mode automatically.',
-  },
-  {
-    icon: Eye,
-    title: 'Anti-cheat monitoring',
-    body: 'Window focus and fullscreen are monitored. Leaving fullscreen registers a strike.',
-  },
-  {
-    icon: AlertTriangle,
-    title: 'Three strikes',
-    body: 'Two warnings are allowed. A third violation terminates the exam and marks it failed.',
-  },
-  {
-    icon: Clock,
-    title: '60 minutes · 25 questions',
-    body: 'The timer starts when you begin. Progress auto-submits if time runs out.',
-  },
-  {
-    icon: ListOrdered,
-    title: 'Navigation',
-    body: 'Mark questions for review and jump via the progress panel. Answer everything before submit.',
-  },
-];
+function buildRules(exam: ExamResponse | null) {
+  const questionCountLabel = exam
+    ? `${exam.questionCount} question${exam.questionCount === 1 ? '' : 's'}`
+    : 'Loading…';
+  return [
+    {
+      icon: Monitor,
+      title: 'Fullscreen required',
+      body: 'The exam runs in fullscreen. Starting will enter fullscreen mode automatically.',
+    },
+    {
+      icon: Eye,
+      title: 'Anti-cheat monitoring',
+      body: 'Window focus and fullscreen are monitored. Leaving fullscreen registers a strike.',
+    },
+    {
+      icon: AlertTriangle,
+      title: 'Three strikes',
+      body: 'Two warnings are allowed. A third violation terminates the exam and marks it failed.',
+    },
+    {
+      icon: Clock,
+      title: questionCountLabel,
+      body: 'The timer starts when you begin. Progress auto-submits if time runs out.',
+    },
+    {
+      icon: ListOrdered,
+      title: 'Navigation',
+      body: 'Mark questions for review and jump via the progress panel. Answer everything before submit.',
+    },
+  ];
+}
 
 export default function ExamAcknowledgementPage() {
   const router = useRouter();
   const params = useParams();
+  const examId = params.examId as string;
   const [agreed, setAgreed] = useState(false);
   const [isTerminated, setIsTerminated] = useState(false);
+  const [exam, setExam] = useState<ExamResponse | null>(null);
 
   useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${params.examId}`)) {
+    if (sessionStorage.getItem(`exam_terminated_${examId}`)) {
       setIsTerminated(true);
     }
-  }, [params.examId]);
+  }, [examId]);
+
+  useEffect(() => {
+    getExam(examId).then(setExam).catch(() => {});
+  }, [examId]);
+
+  const RULES = buildRules(exam);
 
   const canStart = agreed && !isTerminated;
 

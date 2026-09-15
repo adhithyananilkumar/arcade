@@ -4,8 +4,12 @@
 import { api } from "@/infrastructure/http/api";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import type {
+  AttemptResponse,
   BankQuestionRequest,
   BankQuestionResponse,
+  ExamRequest,
+  ExamResponse,
+  ExamResultResponse,
   QuestionBankQuestionsRequest,
   QuestionBankSummary,
   QuestionPoolMembersRequest,
@@ -19,6 +23,7 @@ import type {
   QuizSubmitAnswers,
   QuizTakeResponse,
   ReorderSectionsRequest,
+  SaveAnswerRequest,
   SectionRequest,
   SectionResponse,
 } from "./types";
@@ -160,4 +165,87 @@ export function getPoolMembers(poolId: string) {
 
 export function setPoolMembers(poolId: string, req: QuestionPoolMembersRequest) {
   return api.put<QuestionPoolResponse>(`/api/question-banks/pools/${poolId}/members`, req);
+}
+
+// ── Central Exam capability: authoring, placement ─────────────────────────────
+
+export function createExam(req: ExamRequest) {
+  return api.post<ExamResponse>(`/api/exams`, req);
+}
+
+export function getExam(examId: string) {
+  return api.get<ExamResponse>(`/api/exams/${examId}`);
+}
+
+export function updateExam(examId: string, req: Partial<ExamRequest>) {
+  return api.patch<ExamResponse>(`/api/exams/${examId}`, req);
+}
+
+/** Every exam a channel has authored (standalone or placed), for the Studio "Exams" listing. */
+export function listMyExams() {
+  return api.get<Array<{ id: string; type: string; title: string; status: string; updatedAt: string | null }>>(
+    `/api/content?type=EXAM`
+  );
+}
+
+export function listExamsForCourse(courseId: string) {
+  return api.get<ExamResponse[]>(`/api/courses/${courseId}/exams`);
+}
+
+/** Learner-facing: published exams an enrolled learner is eligible to see — for a course preview's "Assessments" section. */
+export function listAvailableExamsForCourse(courseId: string) {
+  return api.get<ExamResponse[]>(`/api/courses/${courseId}/exams/available`);
+}
+
+/** Attaches an existing standalone exam the caller owns to this course. */
+export function attachExamToCourse(courseId: string, examId: string) {
+  return api.post<ExamResponse>(`/api/courses/${courseId}/exams`, { examId });
+}
+
+export function detachExamFromCourse(courseId: string, examId: string) {
+  return api.delete<ExamResponse>(`/api/courses/${courseId}/exams/${examId}`);
+}
+
+export function listExamsForEvent(eventId: string) {
+  return api.get<ExamResponse[]>(`/api/events/${eventId}/exams`);
+}
+
+export function attachExamToEvent(eventId: string, examId: string) {
+  return api.post<ExamResponse>(`/api/events/${eventId}/exams`, { examId });
+}
+
+export function detachExamFromEvent(eventId: string, examId: string) {
+  return api.delete<ExamResponse>(`/api/events/${eventId}/exams/${examId}`);
+}
+
+// ── Exam attempts (learner-facing) ────────────────────────────────────────────
+// Every mutation here is authoritative server-side — score, pass/fail, remaining time, and
+// question correctness are never computed or trusted from the client.
+
+/** Starts a new attempt, or resumes the caller's already-open one. */
+export function startExamAttempt(examId: string) {
+  return api.post<AttemptResponse>(`/api/exam-attempts/exams/${examId}/start`, {});
+}
+
+export function getExamAttempt(attemptId: string) {
+  return api.get<AttemptResponse>(`/api/exam-attempts/${attemptId}`);
+}
+
+/** The attempt's frozen paper plus any answers already saved. Never includes an answer key. */
+export function getExamAttemptQuestions(attemptId: string) {
+  return api.get<AttemptResponse>(`/api/exam-attempts/${attemptId}/questions`);
+}
+
+/** Saves or replaces one answer. Idempotent — safe to call on every selection change. */
+export function saveExamAnswer(attemptId: string, attemptQuestionId: string, answer: SaveAnswerRequest) {
+  return api.put<void>(`/api/exam-attempts/${attemptId}/questions/${attemptQuestionId}/answer`, answer);
+}
+
+/** Idempotent: resubmitting an already-terminal attempt returns the same authoritative result. */
+export function submitExamAttempt(attemptId: string) {
+  return api.post<ExamResultResponse>(`/api/exam-attempts/${attemptId}/submit`, {});
+}
+
+export function getExamResult(attemptId: string) {
+  return api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
 }

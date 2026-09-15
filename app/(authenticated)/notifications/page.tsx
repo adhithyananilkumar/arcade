@@ -720,7 +720,7 @@ export default function NotificationsHubPage() {
 
             <div className="space-y-1">
               <h3 className="text-sm font-black text-slate-855 dark:text-slate-200">
-                {activeTab === "unread" ? "No unread notifications" : "You&apos;re all caught up!"}
+                {activeTab === "unread" ? "No unread notifications" : "You’re all caught up!"}
               </h3>
               <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                 We&apos;ll notify you when something new arrives.
