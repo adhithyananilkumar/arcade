@@ -36,8 +36,6 @@ import {
   type EventCard,
   type ResumeCourse,
 } from './ResumeAndEventsSection';
-import { HomeRoadmapPreview } from './HomeRoadmapPreview';
-
 const NAME_GRADIENT = [
   '#4C6FFF',
   '#0EA5E9',
@@ -384,8 +382,6 @@ export default function LearnerHomePage() {
             </div>
           </div>
         </section>
-
-        <HomeRoadmapPreview />
 
         <ResumeAndEventsSection
           resumeCourse={resumeCourse}

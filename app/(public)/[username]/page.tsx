@@ -66,7 +66,7 @@ export default function PublicProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'courses' | 'roadmaps' | 'workshops' | 'enrolled' | 'certificates'>('courses');
+  const [activeTab, setActiveTab] = useState<'courses' | 'workshops' | 'enrolled' | 'certificates'>('courses');
   const lottieRef = useRef<any>(null);
 
   useEffect(() => {
@@ -339,27 +339,6 @@ export default function PublicProfilePage() {
       </div>
 
     </motion.div>
-            {activeTab === 'roadmaps' && (
-              <motion.div
-                key="roadmaps"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
-                {profileData.roadmaps && profileData.roadmaps.length > 0 ? (
-                  profileData.roadmaps.map((roadmap: any, idx: number) => (
-                    <AuthoredContentCard key={idx} item={roadmap} />
-                  ))
-                ) : (
-                  <div className="col-span-2 text-center py-10 border-2 border-dashed border-slate-100 dark:border-neutral-800 rounded-3xl text-slate-400 text-sm font-bold bg-slate-50/20 dark:bg-neutral-900/30">
-                    No authored roadmaps found for this user.
-                  </div>
-                )}
-              </motion.div>
-            )}
-
             {activeTab === 'workshops' && (
               <motion.div
                 key="workshops"

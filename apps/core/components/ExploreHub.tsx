@@ -9,7 +9,6 @@ import Link from "next/link";
 import EventDiscoveryPage from "@/apps/public/components/explore/EventDiscoveryPage";
 import CategoryDetailedView from "@/components/explore/CategoryDetailedView";
 import "@/apps/public/landing.css";
-import { roadmapService, roadmapProgressService, type RoadmapData } from "@/domains/roadmaps";
 import { CourseCard } from "@/components/explore/CategoryDetailedView";
 import { usePublicCategories, type PublicCategory } from "@/shared/hooks/usePublicCategories";
 
@@ -1077,50 +1076,6 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
   );
 }
 
-function getRoadmapTheme(title: string) {
-  const t = title.toLowerCase();
-  if (t.includes('front') || t.includes('react') || t.includes('css')) return { primary: "#2563EB", gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)" };
-  if (t.includes('back') || t.includes('node') || t.includes('api')) return { primary: "#7C3AED", gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)" };
-  if (t.includes('ai') || t.includes('machine') || t.includes('data')) return { primary: "#EC4899", gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)" };
-  if (t.includes('cloud') || t.includes('aws') || t.includes('azure')) return { primary: "#06B6D4", gradient: "linear-gradient(135deg, #06B6D4 0%, #0369A1 100%)" };
-  if (t.includes('cyber') || t.includes('security')) return { primary: "#EF4444", gradient: "linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)" };
-  if (t.includes('devops') || t.includes('docker') || t.includes('k8s')) return { primary: "#F59E0B", gradient: "linear-gradient(135deg, #F59E0B 0%, #C2410C 100%)" };
-  if (t.includes('mobile') || t.includes('ios') || t.includes('android')) return { primary: "#10B981", gradient: "linear-gradient(135deg, #10B981 0%, #047857 100%)" };
-  return { primary: "#4B6189", gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)" };
-}
-
-function parseRoadmapMetadata(graphJson: string) {
-  try {
-    const raw = JSON.parse(graphJson);
-    const nodes = Array.isArray(raw.nodes) ? raw.nodes : [];
-    const totalTopics = nodes.length;
-    let duration = 0;
-    const diffCounts: Record<string, number> = {};
-    for (const node of nodes) {
-      if (node.data?.durationMinutes) duration += node.data.durationMinutes;
-      if (node.data?.difficulty) {
-        diffCounts[node.data.difficulty] = (diffCounts[node.data.difficulty] || 0) + 1;
-      }
-    }
-    const hours = Math.floor(duration / 60);
-    const mins = duration % 60;
-    const durationStr = duration > 0 ? `${hours > 0 ? `${hours}h ` : ''}${mins > 0 ? `${mins}m` : ''}`.trim() : null;
-
-    let difficulty = null;
-    if (Object.keys(diffCounts).length > 0) {
-      let max = 0;
-      let mostFreq = "";
-      for (const [k, v] of Object.entries(diffCounts)) {
-        if (v > max) { max = v; mostFreq = k; }
-      }
-      difficulty = mostFreq.charAt(0).toUpperCase() + mostFreq.slice(1);
-    }
-    return { totalTopics, durationStr, difficulty };
-  } catch (e) {
-    return { totalTopics: 0, durationStr: null, difficulty: null };
-  }
-}
-
 function CoursesContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
@@ -1160,7 +1115,7 @@ function ExploreCatalog() {
   };
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">("courses");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -1168,43 +1123,11 @@ function ExploreCatalog() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
-  const [roadmaps, setRoadmaps] = useState<RoadmapData[]>([]);
-  const [roadmapsProgress, setRoadmapsProgress] = useState<Record<string, boolean>>({});
-  const [isRoadmapsLoading, setIsRoadmapsLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeTab === "roadmaps") {
-      setIsRoadmapsLoading(true);
-      roadmapService.getPublishedRoadmaps()
-        .then(async (data) => {
-          const published = data.filter(r => r.status?.toLowerCase() === 'published');
-          setRoadmaps(published);
-
-          const progressMap: Record<string, boolean> = {};
-          try {
-            await Promise.all(published.map(async (r) => {
-              try {
-                const prog = await roadmapProgressService.getProgress(r.id);
-                const started = prog?.nodes?.some((n: any) => n.status === 'COMPLETED' || n.status === 'IN_PROGRESS');
-                progressMap[r.id] = started || false;
-              } catch (e) {
-                progressMap[r.id] = false;
-              }
-            }));
-          } catch (e) {
-            console.error("Failed to load progress for roadmaps catalog", e);
-          }
-          setRoadmapsProgress(progressMap);
-        })
-        .catch(console.error)
-        .finally(() => setIsRoadmapsLoading(false));
-    }
-  }, [activeTab]);
 
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "articles") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -1218,7 +1141,6 @@ function ExploreCatalog() {
     if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
     else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
     else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
-    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
   };
 
   // RENDER MAIN EXPLORE HUB DASHBOARD
@@ -1269,21 +1191,6 @@ function ExploreCatalog() {
         }
         .tab-content-panel {
           animation: tabContentEnter 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .lp-roadmap-premium-card {
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        .lp-roadmap-premium-card:hover {
-          transform: translateY(-8px);
-          border-color: var(--hover-color) !important;
-          box-shadow: 0 20px 30px -10px var(--hover-shadow) !important;
-        }
-        .lp-roadmap-premium-card:hover .lp-roadmap-premium-banner {
-          transform: scale(1.05);
-        }
-        .lp-roadmap-premium-card:hover .lp-roadmap-arrow {
-          stroke: var(--hover-color) !important;
-          transform: translateX(6px);
         }
       `}</style>
 
@@ -1615,77 +1522,6 @@ function ExploreCatalog() {
             </motion.div>
           </motion.div>
 
-          {/* Card: Roadmaps */}
-          <motion.div
-            onClick={() => handleTabSwitch("roadmaps")}
-            whileHover={{ y: -6, scale: 1.02, opacity: 1 }}
-            animate={{
-              scale: activeTab === "roadmaps" ? 1.03 : 0.97,
-              opacity: activeTab === "roadmaps" ? 1 : 0.7,
-              rotate: activeTab === "roadmaps" ? -0.5 : 0
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            style={{
-              position: "relative",
-              background: activeTab === "roadmaps" ? "#ECFDF5" : "#FFFFFF",
-              border: activeTab === "roadmaps" ? "3px solid #10B981" : "2px solid #E5E7EB",
-              borderRadius: "20px",
-              padding: "24px 20px",
-              cursor: "pointer",
-              textAlign: "left",
-              boxShadow: activeTab === "roadmaps" ? "8px 8px 0px #10B981" : "2px 2px 0px rgba(0, 0, 0, 0.05)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              minHeight: "260px",
-              zIndex: activeTab === "roadmaps" ? 3 : 1,
-              transition: "background-color 0.3s, border-color 0.3s, box-shadow 0.3s"
-            }}
-          >
-            <div>
-              <div style={{
-                fontSize: "0.68rem",
-                fontWeight: "800",
-                color: activeTab === "roadmaps" ? "#047857" : "#6B7280",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-                transition: "color 0.3s"
-              }}>
-                04 // GUIDED PATHS
-              </div>
-              <h3 style={{
-                fontSize: "1.15rem",
-                fontWeight: "800",
-                color: activeTab === "roadmaps" ? "#064E3B" : "#1A1A1A",
-                margin: "0 0 8px",
-                lineHeight: "1.2",
-                transition: "color 0.3s"
-              }}>
-                Learning Roadmaps
-              </h3>
-              <p style={{ fontSize: "0.78rem", color: "#4B5563", margin: "0 0 16px", lineHeight: "1.5" }}>
-                Follow structured learning paths and visually track your progress.
-              </p>
-            </div>
-            {/* Minimalist Sketch Illustration */}
-            <motion.div
-              animate={{
-                scale: activeTab === "roadmaps" ? 1.15 : 1,
-                y: activeTab === "roadmaps" ? -5 : 0
-              }}
-              transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              style={{ width: "100%", height: "65px" }}
-            >
-              <svg viewBox="0 0 160 120" width="100%" height="65" style={{ display: "block", margin: "0 auto", overflow: "visible" }}>
-                <path d="M 30,80 Q 80,40 130,80" fill="none" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" strokeDasharray="6 4" style={{ transition: "stroke 0.3s" }} />
-                <motion.circle cx="30" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.circle cx="80" cy="60" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 0.6 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <motion.circle cx="130" cy="80" r="8" fill={activeTab === "roadmaps" ? "rgba(16, 185, 129, 0.2)" : "none"} stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" animate={activeTab === "roadmaps" ? { scale: [1, 1.3, 1] } : {}} transition={{ repeat: Infinity, duration: 2, ease: "easeInOut", delay: 1.2 }} style={{ transition: "stroke 0.3s, fill 0.3s" }} />
-                <path d="M 30,80 L 26,76 M 30,80 L 34,76 M 30,80 L 30,86" stroke={activeTab === "roadmaps" ? "#10B981" : "#1A1A1A"} strokeWidth="2" strokeLinecap="round" style={{ transition: "stroke 0.3s" }} />
-              </svg>
-            </motion.div>
-          </motion.div>
         </div>
 
         {/* Full-Width Search and Filters Row */}

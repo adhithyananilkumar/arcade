@@ -20,7 +20,6 @@ export type Capability =
   | "LEARNERS"
   | "DISCUSSION"
   | "LEARNER_REVIEWS"
-  | "ACTIVITY"
   | "PUBLISHING";
 
 export type CapabilityGroup = "analytics" | "people" | "publishing" | "more";
@@ -60,14 +59,6 @@ export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> =
     { id: "ATTENDANCE", label: "Attendance", group: "people", availability: "planned" },
     { id: "DISCUSSION", label: "Discussion", group: "more", availability: "planned" },
     { id: "LEARNER_REVIEWS", label: "Learner reviews", group: "more", availability: "planned" },
-  ],
-  roadmap: [
-    { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "available" },
-    { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "available" },
-    { id: "ACTIVITY", label: "Activity", group: "more", availability: "available" },
-    { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
-    // Planned — /progress returns the caller's own progress, not a learner list.
-    { id: "LEARNERS", label: "Learners", group: "people", availability: "planned" },
   ],
 };
 

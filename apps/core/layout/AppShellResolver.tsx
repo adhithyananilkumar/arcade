@@ -18,14 +18,15 @@ export default function AppShellResolver() {
   }, []);
 
   if (!mounted || status === 'loading') {
-    // Return a neutral loading state that avoids flashing either shell
+    // Clean blank screen matching the intro radial gradient (no skeleton/block)
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-background text-foreground transition-colors duration-300">
-        <div className="animate-pulse">
-          {/* Neutral Arcade Logo Placeholder */}
-          <div className="h-8 w-32 bg-slate-200 dark:bg-neutral-800 rounded-lg"></div>
-        </div>
-      </div>
+      <div
+        className="fixed inset-0 z-[9999] pointer-events-none select-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%)",
+        }}
+      />
     );
   }
 

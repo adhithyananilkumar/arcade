@@ -6,7 +6,7 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
-import { Loader2, Camera, CheckCircle2, AlertCircle, X, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase, Search } from 'lucide-react';
+import { Loader2, Camera, CheckCircle2, AlertCircle, X, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase, Search, ArrowLeft } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
 import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
@@ -144,6 +144,17 @@ export default function OnboardingPage() {
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+  const handleBack = () => {
+    if (step > 1) {
+      prevStep();
+    } else {
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/sign');
+      }
+    }
+  };
 
   const isStep1Valid = username.length >= 3 && usernameStatus === 'available';
   const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && gender !== '' && mobileNumber.trim() !== '';
@@ -494,10 +505,11 @@ export default function OnboardingPage() {
           <div className="mt-8 flex items-center gap-3 pt-4">
             <Button 
               variant="ghost" 
-              onClick={prevStep} 
-              disabled={step === 1 || isSubmitting}
-              className={`h-[52px] px-8 rounded-[26px] font-bold text-[14px] text-[#A5B3CA] bg-[#F7F9FB] hover:bg-slate-100 hover:text-slate-700 transition-all w-1/2 flex-1 ${step === 1 ? 'invisible' : ''}`}
+              onClick={handleBack} 
+              disabled={isSubmitting}
+              className="group flex h-[52px] w-1/2 flex-1 items-center justify-center gap-2 rounded-[26px] bg-[#F7F9FB] px-8 text-[14px] font-bold text-[#A5B3CA] transition-all hover:bg-slate-100 hover:text-slate-700"
             >
+              <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Go back
             </Button>
             

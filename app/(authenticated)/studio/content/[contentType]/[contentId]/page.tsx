@@ -21,11 +21,10 @@ import { ReadinessCard } from "./components/sections/ReadinessCard";
 import { ActivitySection, getActivityTheme, cleanActivityTitle } from "./components/sections/ActivitySection";
 import { CourseOverviewTab, getCourseMetrics } from "./components/content-types/CourseOverview";
 import { EventOverviewTab, getEventMetrics } from "./components/content-types/EventOverview";
-import { RoadmapOverviewTab, getRoadmapMetrics } from "./components/content-types/RoadmapOverview";
 import { KeyInfoCard } from "./components/sections/KeyInfoCard";
 import { LearnersAnalyticsSection } from "./components/sections/LearnersAnalyticsSection";
 
-const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "roadmap", "event"];
+const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event"];
 
 type LoadState =
   | { status: "loading" }
@@ -187,8 +186,7 @@ export default function ContentOverviewPage() {
   const groups = availableGroups(segment!);
   const review = data.review.status === "ok" ? data.review.data : null;
 
-  const metrics =
-    segment === "course" ? getCourseMetrics(data) : segment === "event" ? getEventMetrics(data) : getRoadmapMetrics(data);
+  const metrics = segment === "course" ? getCourseMetrics(data) : getEventMetrics(data);
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -207,9 +205,7 @@ export default function ContentOverviewPage() {
   const activityPreview =
     data.statusHistory.status === "ok"
       ? data.statusHistory.data.slice(0, 3).map((e, i) => ({ id: `${e.createdAt}-${i}`, title: cleanActivityTitle(e.label), actorName: e.actorName, createdAt: e.createdAt }))
-      : segment === "roadmap" && data.roadmapActivity?.status === "ok"
-        ? data.roadmapActivity.data.slice(0, 3).map((e) => ({ id: e.id, title: e.description, actorName: e.userName, createdAt: e.createdAt }))
-        : [];
+      : [];
 
   return (
     <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/40">
@@ -254,18 +250,8 @@ export default function ContentOverviewPage() {
             onSubmit={handleSubmit}
             submitting={submitting}
           />
-        ) : segment === "event" ? (
-          <EventOverviewTab
-            tab={activeTab}
-            data={data}
-            contentId={contentId}
-            currentUserId={currentUserId}
-            onChanged={reload}
-            onSubmit={handleSubmit}
-            submitting={submitting}
-          />
         ) : (
-          <RoadmapOverviewTab
+          <EventOverviewTab
             tab={activeTab}
             data={data}
             contentId={contentId}

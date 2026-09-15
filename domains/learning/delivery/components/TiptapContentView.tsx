@@ -441,7 +441,7 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       if (BlockRenderer) {
         return <BlockRenderer key={key} node={node} children={children} />;
       }
-      // Authoring-only node type with no learner renderer yet (e.g. roadmap) —
+      // Authoring-only node type with no learner renderer yet —
       // render its children if any, else skip.
       return children ? <div key={key}>{children}</div> : null;
     }

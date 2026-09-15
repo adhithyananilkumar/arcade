@@ -26,6 +26,14 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Welcome";
+  src: url("/fonts/Welcome.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));

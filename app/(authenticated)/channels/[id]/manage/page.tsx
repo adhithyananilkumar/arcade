@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   BookOpen,
   Users,
-  FileText,
   CheckCircle2,
   Clock,
   Send,
@@ -382,7 +381,6 @@ export default function ManageChannelPage() {
 
 function editHref(item: ChannelContentItem) {
   if (item.type === 'COURSE') return `/studio/courses/${item.id}`;
-  if (item.type === 'ROADMAP') return `/studio/roadmaps/${item.id}`;
   return `/studio`;
 }
 
@@ -401,7 +399,6 @@ function statusTone(status: string) {
 
 function TypeIcon({ type }: { type: string }) {
   if (type === 'COURSE') return <BookOpen size={18} />;
-  if (type === 'ROADMAP') return <FileText size={18} />;
   return <Video size={18} />;
 }
 

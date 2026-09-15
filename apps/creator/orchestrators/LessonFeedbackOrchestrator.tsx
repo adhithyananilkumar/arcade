@@ -24,7 +24,7 @@ export function LessonFeedbackOrchestrator({
       api
         .get<any[]>(`/api/v1/lessons/${lessonId}/comments`) // Wait, is it /api/v1/lessons or /api/lessons?
         // CoursePlayerOrchestrator used `/api/lessons/${selectedItem.id}/comments`
-        // so I'll use `/api/lessons` which points to `ContentDraftController` or `RoadmapCommentController`
+        // so I'll use `/api/lessons` which points to `ContentDraftController`
         // Actually, let's use `/api/lessons/${lessonId}/comments`
         .then(setComments)
         .catch(() => setCommentsError("You do not have access to view reviewer feedback."))

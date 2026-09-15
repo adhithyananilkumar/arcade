@@ -30,7 +30,7 @@ interface ContentStatusHistoryResponse {
 
 interface ContentStatusHistoryModalProps {
   contentId: string;
-  contentType: "course" | "roadmap" | "workshop";
+  contentType: "course" | "workshop";
   open: boolean;
   onClose: () => void;
 }
@@ -49,9 +49,7 @@ export function ContentStatusHistoryModal({
     setLoading(true);
     setError(null);
     try {
-      const endpoint = contentType === "roadmap"
-        ? `/api/roadmaps/${contentId}/status-history`
-        : contentType === "workshop"
+      const endpoint = contentType === "workshop"
         ? `/api/v1/events/${contentId}/status-history`
         : `/api/courses/${contentId}/status-history`;
       const data = await api.get<ContentStatusHistoryResponse[]>(endpoint);

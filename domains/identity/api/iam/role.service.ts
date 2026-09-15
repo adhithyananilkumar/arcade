@@ -17,16 +17,18 @@ export interface RoleRequest {
   permissionIds: string[];
 }
 
+// Platform-role policies have no scope concept of their own — a PlatformRole is always
+// platform-scoped; only its constituent permissions carry a scope (enforced server-side, see
+// PlatformRoleService#assignPermissions). Channel-scope policies are a separate resource
+// (ChannelRole, below) with their own endpoints, not a variant of this one.
 export const roleService = {
-  getAllRoles: async (scope?: string): Promise<Role[]> => {
-    const query = scope ? `?scope=${scope}` : '';
-    const response = await api.get<Role[]>(`/api/v1/platform/roles${query}`);
+  getAllRoles: async (): Promise<Role[]> => {
+    const response = await api.get<Role[]>('/api/v1/platform/roles');
     return response;
   },
 
-  createRole: async (request: RoleRequest, scope?: string): Promise<Role> => {
-    const query = scope ? `?scope=${scope}` : '';
-    const response = await api.post<Role>(`/api/v1/platform/roles${query}`, request);
+  createRole: async (request: RoleRequest): Promise<Role> => {
+    const response = await api.post<Role>('/api/v1/platform/roles', request);
     return response;
   },
 

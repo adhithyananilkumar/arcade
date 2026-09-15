@@ -102,7 +102,7 @@ export function UserAccessDrawer({
         <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-6">
           {loading || !status ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
             </div>
           ) : (
             <UserPipelinePanel

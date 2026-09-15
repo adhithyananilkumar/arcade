@@ -170,7 +170,7 @@ function PoliciesSection({
 
       {status.availablePolicies.length > 0 && (
         <details className="group">
-          <summary className="cursor-pointer text-xs font-semibold text-indigo-600 hover:text-indigo-700 list-none flex items-center gap-1">
+          <summary className="cursor-pointer text-xs font-semibold text-[#14142b] hover:text-[#232735] list-none flex items-center gap-1">
             <ChevronRight size={12} className="group-open:hidden" />
             <ChevronDown size={12} className="hidden group-open:block" />
             {status.availablePolicies.length} more available polic
@@ -275,7 +275,7 @@ function GranularPermissionsSection({
         className="w-full flex items-center justify-between gap-2 text-left"
       >
         <div className="flex items-center gap-2">
-          <Sparkles size={14} className="text-indigo-500" />
+          <Sparkles size={14} className="text-slate-400" />
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Customize Individual Permissions
           </h3>
@@ -297,7 +297,7 @@ function GranularPermissionsSection({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search permissions…"
-              className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/80 text-xs font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200 outline-none"
             />
           </div>
 
@@ -319,9 +319,9 @@ function GranularPermissionsSection({
                         onClick={() => toggleGroup(ids, !allSelected)}
                         className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
                           allSelected
-                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                            ? 'bg-[#14142b] border-[#14142b] text-white'
                             : someSelected
-                            ? 'bg-indigo-200 border-indigo-400'
+                            ? 'bg-slate-300 border-slate-400'
                             : 'border-gray-300 bg-white'
                         }`}
                       >
@@ -339,7 +339,7 @@ function GranularPermissionsSection({
                           <label
                             key={perm.id}
                             className={`flex items-center gap-2.5 px-3 py-1.5 cursor-pointer transition-colors ${
-                              isSelected ? 'bg-indigo-50/40' : 'hover:bg-gray-50/60'
+                              isSelected ? 'bg-slate-50' : 'hover:bg-gray-50/60'
                             }`}
                           >
                             <input
@@ -351,7 +351,7 @@ function GranularPermissionsSection({
                             <div
                               className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
                                 isSelected
-                                  ? 'bg-indigo-600 border-indigo-600 text-white'
+                                  ? 'bg-[#14142b] border-[#14142b] text-white'
                                   : 'border-gray-300 bg-white'
                               }`}
                             >
@@ -374,7 +374,7 @@ function GranularPermissionsSection({
               type="button"
               disabled={!dirty || saving || busy}
               onClick={handleSave}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#14142b] rounded-lg hover:bg-[#232735] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               Save Permissions
@@ -445,7 +445,7 @@ function TasksSection({
 
       {status.availableTasks.length > 0 && (
         <details className="group">
-          <summary className="cursor-pointer text-xs font-semibold text-indigo-600 hover:text-indigo-700 list-none flex items-center gap-1">
+          <summary className="cursor-pointer text-xs font-semibold text-[#14142b] hover:text-[#232735] list-none flex items-center gap-1">
             <ChevronRight size={12} className="group-open:hidden" />
             <ChevronDown size={12} className="hidden group-open:block" />
             {status.availableTasks.length} more available task{status.availableTasks.length === 1 ? '' : 's'}

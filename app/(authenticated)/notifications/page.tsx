@@ -17,7 +17,6 @@ import {
   EyeOff,
   CheckCircle2,
   GitBranch,
-  BookOpen,
   CheckSquare,
   MessageSquare,
   Users,
@@ -33,7 +32,7 @@ const alexBrush = Alex_Brush({
 // Notification model interface representing the items
 interface NotificationItem {
   id: string;
-  type: "roadmap" | "review" | "grade" | "comment" | "invite" | "system" | "profile";
+  type: "review" | "grade" | "comment" | "invite" | "system" | "profile";
   title: string;
   description: string;
   details?: string; // Human feedback or logs
@@ -47,21 +46,10 @@ export default function NotificationsHubPage() {
   // Pre-seed items with human-written, developer-platform notifications
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
-      id: "1",
-      type: "roadmap",
-      title: "Roadmap Published",
-      description: 'Your custom "Full Stack React Developer" roadmap has been reviewed, approved, and published to the discover feed.',
-      details: "Admin Review: 'Excellent sequence of state management and testing topics. The layout is clean and learning resources are highly relevant. We have pinned this to the React community dashboard.'",
-      actionLabel: "View Live Roadmap",
-      timestamp: "10 minutes ago",
-      read: false,
-      category: "Today"
-    },
-    {
       id: "2",
       type: "review",
       title: "New Review Request",
-      description: "You have a new request to review a submitted branch on the 'Docker Fundamentals' study roadmap.",
+      description: "You have a new request to review a submitted branch on the 'Docker Fundamentals' course.",
       details: "Request details: User 'Sanjay K.' has proposed a new side branch containing 'Kubernetes local setups (Minikube & Kind)' and requested moderator approval to merge it into the central learning path.",
       actionLabel: "Open Review Studio",
       timestamp: "1 hour ago",
@@ -83,7 +71,7 @@ export default function NotificationsHubPage() {
       id: "4",
       type: "comment",
       title: "New Comment on Node",
-      description: "Sarah Jenkins left a comment on your roadmap node 'Docker Compose' in the React Hub channel.",
+      description: "Sarah Jenkins left a comment on your lesson 'Docker Compose' in the React Hub channel.",
       details: "\"Hey! Quick question: do you recommend using Docker Compose for local microservices development, or should we go ahead and configure a local Kubernetes cluster right from the start?\"",
       actionLabel: "Reply to Comment",
       timestamp: "5 hours ago",
@@ -95,7 +83,7 @@ export default function NotificationsHubPage() {
       type: "invite",
       title: "Channel Staff Invite",
       description: "Alex Rivera invited you to join the moderator team for the 'Next.js Study Group' workspace.",
-      details: "As a channel moderator, you will be able to manage submitted roadmaps, pin learning resources to nodes, answer student questions, and schedule interactive live review sessions.",
+      details: "As a channel moderator, you will be able to manage submitted courses, pin learning resources, answer student questions, and schedule interactive live review sessions.",
       actionLabel: "Accept Staff Role",
       timestamp: "Yesterday, 6:30 PM",
       read: true,
@@ -106,7 +94,7 @@ export default function NotificationsHubPage() {
       type: "system",
       title: "GitHub Sync Completed",
       description: "Your workspace profile has successfully synced commits with the GitHub repository 'arcade-learning-hub'.",
-      details: "Sync Log:\n- Latest commit: 'refactored roadmap node canvas interactions (#342)'\n- Status: Success\n- Execution time: 2.4 seconds\n- 14 nodes updated.",
+      details: "Sync Log:\n- Latest commit: 'refactored content editor canvas interactions (#342)'\n- Status: Success\n- Execution time: 2.4 seconds\n- 14 files updated.",
       actionLabel: "View Sync Telemetry",
       timestamp: "Yesterday, 10:15 AM",
       read: true,
@@ -135,20 +123,6 @@ export default function NotificationsHubPage() {
   // Helper functions to retrieve style attributes
   const getTypeStyles = (type: NotificationItem["type"]) => {
     switch (type) {
-      case "roadmap":
-        return {
-          iconBg: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30",
-          cardHoverEffect: "hover:shadow-lg hover:shadow-blue-100/40 hover:border-blue-300 dark:hover:border-blue-800",
-          cardBg: "bg-gradient-to-br from-white to-blue-50/30 dark:from-neutral-900 dark:to-blue-950/10",
-          cardUnreadBg: "bg-gradient-to-br from-blue-50/20 to-blue-100/10 dark:from-blue-950/20 dark:to-blue-900/10",
-          leftBar: "bg-gradient-to-b from-blue-500 to-indigo-600",
-          btnGradient: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-200/50 dark:shadow-none",
-          detailsBg: "bg-blue-50/40 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/20",
-          accentColor: "text-blue-600 dark:text-blue-400",
-          badgeBg: "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300",
-          badgeText: "ROADMAP",
-          borderColor: "border-blue-100 dark:border-blue-900/30",
-        };
       case "review":
         return {
           iconBg: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/30",
@@ -276,21 +250,10 @@ export default function NotificationsHubPage() {
   const handleResetDemo = () => {
     setNotifications([
       {
-        id: "1",
-        type: "roadmap",
-        title: "Roadmap Published",
-        description: 'Your custom "Full Stack React Developer" roadmap has been reviewed, approved, and published to the discover feed.',
-        details: "Admin Review: 'Excellent sequence of state management and testing topics. The layout is clean and learning resources are highly relevant. We have pinned this to the React community dashboard.'",
-        actionLabel: "View Live Roadmap",
-        timestamp: "10 minutes ago",
-        read: false,
-        category: "Today"
-      },
-      {
         id: "2",
         type: "review",
         title: "New Review Request",
-        description: "You have a new request to review a submitted branch on the 'Docker Fundamentals' study roadmap.",
+        description: "You have a new request to review a submitted branch on the 'Docker Fundamentals' course.",
         details: "Request details: User 'Sanjay K.' has proposed a new side branch containing 'Kubernetes local setups (Minikube & Kind)' and requested moderator approval to merge it into the central learning path.",
         actionLabel: "Open Review Studio",
         timestamp: "1 hour ago",
@@ -312,7 +275,7 @@ export default function NotificationsHubPage() {
         id: "4",
         type: "comment",
         title: "New Comment on Node",
-        description: "Sarah Jenkins left a comment on your roadmap node 'Docker Compose' in the React Hub channel.",
+        description: "Sarah Jenkins left a comment on your lesson 'Docker Compose' in the React Hub channel.",
         details: "\"Hey! Quick question: do you recommend using Docker Compose for local microservices development, or should we go ahead and configure a local Kubernetes cluster right from the start?\"",
         actionLabel: "Reply to Comment",
         timestamp: "5 hours ago",
@@ -324,7 +287,7 @@ export default function NotificationsHubPage() {
         type: "invite",
         title: "Channel Staff Invite",
         description: "Alex Rivera invited you to join the moderator team for the 'Next.js Study Group' workspace.",
-        details: "As a channel moderator, you will be able to manage submitted roadmaps, pin learning resources to nodes, answer student questions, and schedule interactive live review sessions.",
+        details: "As a channel moderator, you will be able to manage submitted courses, pin learning resources, answer student questions, and schedule interactive live review sessions.",
         actionLabel: "Accept Staff Role",
         timestamp: "Yesterday, 6:30 PM",
         read: true,
@@ -335,7 +298,7 @@ export default function NotificationsHubPage() {
         type: "system",
         title: "GitHub Sync Completed",
         description: "Your workspace profile has successfully synced commits with the GitHub repository 'arcade-learning-hub'.",
-        details: "Sync Log:\n- Latest commit: 'refactored roadmap node canvas interactions (#342)'\n- Status: Success\n- Execution time: 2.4 seconds\n- 14 nodes updated.",
+        details: "Sync Log:\n- Latest commit: 'refactored content editor canvas interactions (#342)'\n- Status: Success\n- Execution time: 2.4 seconds\n- 14 files updated.",
         actionLabel: "View Sync Telemetry",
         timestamp: "Yesterday, 10:15 AM",
         read: true,
@@ -363,9 +326,6 @@ export default function NotificationsHubPage() {
     let iconElement = <Bell size={16} className={iconClass} />;
 
     switch (type) {
-      case "roadmap":
-        iconElement = <BookOpen size={16} className={iconClass} />;
-        break;
       case "review":
         iconElement = <GitBranch size={16} className={iconClass} />;
         break;
@@ -399,24 +359,6 @@ export default function NotificationsHubPage() {
     const ctaButtonClass = `px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all inline-flex items-center gap-1.5 shadow-xs rounded-xl hover:-translate-y-0.5 active:translate-y-0 ${style.btnGradient}`;
 
     switch (item.type) {
-      case "roadmap":
-        return (
-          <div className="space-y-4 text-left pt-3">
-            <div className={`p-4 rounded-xl ${style.detailsBg}`}>
-              <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block mb-1">Moderator Review Logs</span>
-              <p className="text-[11px] text-slate-750 font-semibold leading-relaxed">
-                {item.details}
-              </p>
-            </div>
-            <button
-              onClick={(e) => { e.stopPropagation(); alert("Redirecting to published roadmap path..."); }}
-              className={ctaButtonClass}
-            >
-              {item.actionLabel} <ArrowRight size={11} />
-            </button>
-          </div>
-        );
-
       case "review":
         return (
           <div className="space-y-4 text-left pt-3">

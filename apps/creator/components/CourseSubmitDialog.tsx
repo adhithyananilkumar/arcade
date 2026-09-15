@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/shared/design-system/ui/button";
 import { Input } from "@/shared/design-system/ui/input";
 import { CourseResponse } from "@/shared/types/api.types";
-import { RoadmapData } from "@/domains/roadmaps/types";
 import { X, Plus, Clock, CalendarDays, IndianRupee, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
@@ -19,14 +18,13 @@ interface ExamScheduleSlot {
 
 interface CourseSubmitDialogProps {
   course?: CourseResponse;
-  roadmap?: RoadmapData;
-  contentType?: 'course' | 'roadmap' | 'workshop' | 'question-bank';
+  contentType?: 'course' | 'workshop' | 'question-bank';
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
 }
 
-export function CourseSubmitDialog({ course, roadmap, contentType = 'course', open, onClose, onSubmit }: CourseSubmitDialogProps) {
+export function CourseSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit }: CourseSubmitDialogProps) {
   const [coverImageUrl, setCoverImageUrl] = useState(course?.coverImageUrl || "");
   const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course?.pricingModel || 'FREE');
   // Displayed/edited as a decimal amount; converted to minor units at the API boundary.
@@ -119,9 +117,9 @@ export function CourseSubmitDialog({ course, roadmap, contentType = 'course', op
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit {contentType === 'roadmap' ? 'Roadmap' : contentType === 'workshop' ? 'Event' : 'Course'} for Review</DialogTitle>
+          <DialogTitle className="text-xl">Submit {contentType === 'workshop' ? 'Event' : 'Course'} for Review</DialogTitle>
           <DialogDescription>
-            Configure the final details before sending your {contentType === 'roadmap' ? 'roadmap' : contentType === 'workshop' ? 'workshop' : 'course'} for approval.
+            Configure the final details before sending your {contentType === 'workshop' ? 'workshop' : 'course'} for approval.
           </DialogDescription>
         </DialogHeader>
 

@@ -1,5 +1,15 @@
 import { api } from '@/infrastructure/http/api';
 import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
+import type { Page } from './iam/pipeline.service';
+
+function buildQuery(params: Record<string, string | number | undefined>): string {
+  const usp = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') usp.set(key, String(value));
+  }
+  const qs = usp.toString();
+  return qs ? `?${qs}` : '';
+}
 
 export class UserService {
   static async getMe(): Promise<User> {
@@ -7,14 +17,24 @@ export class UserService {
     return data;
   }
 
-  static async getAllUsers(): Promise<User[]> {
-    const data = await api.get<User[]>('/api/v1/users');
-    return data;
+  /** Users who currently hold platform governance access (any policy, including custom ones). */
+  static async getPlatformAccessUsers(
+    search?: string,
+    page = 0,
+    size = 20
+  ): Promise<Page<User>> {
+    return api.get<Page<User>>(`/api/v1/users/admins${buildQuery({ search, page, size })}`);
   }
 
-  static async getUsersByRole(roleId: string): Promise<User[]> {
-    const data = await api.get<User[]>(`/api/v1/users/by-role/${roleId}`);
-    return data;
+  /** Users with no platform access yet — the search pool for granting someone new access. */
+  static async searchGrantCandidates(
+    search: string,
+    page = 0,
+    size = 20
+  ): Promise<Page<User>> {
+    return api.get<Page<User>>(
+      `/api/v1/users/eligible-admins${buildQuery({ search, page, size })}`
+    );
   }
 
   static async assignRolesToUser(userId: string, roleIds: string[]): Promise<User> {

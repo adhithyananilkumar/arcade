@@ -3,7 +3,7 @@
 // domains/assessments/components/prompt-editor/PromptView.tsx
 // Read-only renderer for a question prompt's Tiptap document. Deliberately NOT
 // domains/learning/delivery/components/TiptapContentView.tsx — that renderer is wired to the
-// content engine's full block registry (quiz/exam/roadmap/etc custom nodes), which would
+// content engine's full block registry (quiz/exam/etc custom nodes), which would
 // reintroduce the exact content-engine coupling this feature is meant to avoid. This renders
 // only the small, fixed node/mark set QuestionPromptEditor actually produces.
 

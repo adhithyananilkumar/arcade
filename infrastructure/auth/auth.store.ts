@@ -28,9 +28,8 @@ export interface User {
   // `useMyEnrollmentsQuery` / `useMyEnrollmentForResourceQuery` from `@/domains/enrollment`.
   // Do not re-add it here: a cached copy on the auth store cannot be invalidated when an
   // enrollment changes, which is exactly why My Learning used to need a full page reload.
-  // "Body of work" — content the user authored (backend: ProfileResponse.CourseDto/RoadmapDto/AuthoredWorkshopDto/CertificateDto)
+  // "Body of work" — content the user authored (backend: ProfileResponse.CourseDto/AuthoredWorkshopDto/CertificateDto)
   courses?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
-  roadmaps?: { id: string; title: string; description?: string; status?: string; createdAt?: string }[];
   workshops?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
   certificates?: { name: string; issuer?: string; date?: string; idCode?: string }[];
   // Legacy fields (kept for fallback)

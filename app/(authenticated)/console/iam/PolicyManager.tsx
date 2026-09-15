@@ -44,7 +44,7 @@ export function PolicyManager() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const rolesData = await roleService.getAllRoles('PLATFORM');
+      const rolesData = await roleService.getAllRoles();
       setRoles(rolesData);
     } catch (error) {
       toast.error('Failed to load policies');
@@ -74,7 +74,7 @@ export function PolicyManager() {
           displayName: data.name,
           description: data.description,
           permissionIds: data.effectivePermissionIds,
-        }, 'PLATFORM');
+        });
         toast.success('Policy created successfully');
       }
       setIsModalOpen(false);

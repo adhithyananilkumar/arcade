@@ -56,6 +56,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preload" href="/ajce.svg" as="image" type="image/svg+xml" />
+        <link rel="preload" href="/arcade.svg" as="image" type="image/svg+xml" />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <TooltipProvider>
           <Providers>

@@ -1,5 +1,5 @@
 // features/content/blocks/types.ts
-// Contract every custom block type (button, toggle, callout, roadmap, ...) implements.
+// Contract every custom block type (button, toggle, callout, ...) implements.
 // A block that satisfies BlockDefinition is wired into authoring, the command palette, and
 // learner playback from a single object — see registry.ts.
 

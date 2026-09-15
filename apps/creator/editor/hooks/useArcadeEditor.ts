@@ -54,7 +54,7 @@ export interface UseArcadeEditorOptions {
    */
   seedContent?: TiptapDocument;
   documentId?: string;
-  contentType?: "course" | "workshop" | "roadmap";
+  contentType?: "course" | "workshop";
   /** Selection update callback */
   onSelectionUpdate?: (props: { editor: any }) => void;
   /** Document name/identifier for Hocuspocus collaboration (e.g. `lesson:<uuid>`) */

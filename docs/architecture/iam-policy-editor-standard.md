@@ -1,5 +1,18 @@
 # Arcade Policy Editor UI Redesign (AWS IAM Inspired)
 
+> **Status (2026-09-15): aspirational, not current.** An earlier attempt at this spec (Managed
+> Policy Bundles, Permission Tree, Dependency Validation, Policy Simulator — `domains/iam/policy-editor/{ManagedBundles,PermissionTree,EffectivePermissionsModal,PermissionDetails,PermissionDetailsDrawer}.tsx`,
+> `domains/iam/store/policy-editor.store.ts`, `domains/iam/{bundle-engine,dependency-engine}/`)
+> was built against fabricated data (`RICH_CHANNEL_PERMISSIONS`, a hardcoded 11-permission array
+> substituted whenever the real catalog returned fewer than 6 rows — which was *always* true for
+> CHANNEL scope, since it only ever defined 5 real permissions) and had no backend support for
+> bundles, a dependency graph, or a simulator. It was unreachable from the app and has been
+> removed. The current `domains/iam/policy-editor/PolicyEditor.tsx` is the simple, real-data
+> version: grouped-by-module checkboxes sourced entirely from `GET /api/v1/permissions`, no
+> placeholder fallback. Revisit this doc's full scope only once the permission catalog and a real
+> backend model for bundles/dependencies justify the complexity — today's catalog (17 GLOBAL + 5
+> CHANNEL permissions) does not.
+
 Redesign the Arcade Policy Editor to be a professional, enterprise-grade permission management interface inspired by AWS IAM, GitHub Enterprise, Azure RBAC, and Google Cloud IAM.
 
 This is **not** a simple checkbox list. It should be a scalable permission management system capable of handling hundreds or thousands of permissions across Platform, Publisher, and Channel scopes.

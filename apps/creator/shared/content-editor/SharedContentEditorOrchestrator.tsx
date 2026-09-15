@@ -155,13 +155,10 @@ function scheduleIdle(fn: () => void) {
 
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
-import { RoadmapAdapter } from "./adapters/RoadmapAdapter";
 import type { ContentDataAdapter } from "./types";
-import { RoadmapCanvas } from "@/domains/roadmaps";
-import { roadmapService } from "@/domains/roadmaps/services/roadmap";
 
 interface SharedContentEditorOrchestratorProps {
-  contentType: "course" | "workshop" | "roadmap";
+  contentType: "course" | "workshop";
   contentId?: string;
 }
 
@@ -596,9 +593,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   const adapter = useMemo((): ContentDataAdapter => {
     return contentType === "course"
       ? new CourseAdapter()
-      : contentType === "roadmap"
-        ? new RoadmapAdapter()
-        : new EventAdapter(contentId || "");
+      : new EventAdapter(contentId || "");
   }, [contentType, contentId]);
 
   const [title, setTitle] = useState("Untitled Course");
@@ -615,7 +610,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // to COURSES-type categories only — this is the Studio course editor, not events/articles.
   const publicCategories = usePublicCategories();
   const courseCategories = publicCategories.filter((c) => c.type === "COURSES");
-  const [roadmapData, setRoadmapData] = useState<any>(null);
   const [contentChannelId, setContentChannelId] = useState<string | null>(null);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
@@ -690,7 +684,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const collabApiBasePath = useMemo(() => {
     if (contentType === "course") return `/api/v1/courses/${contentId}/collaborators`;
-    if (contentType === "roadmap") return `/api/roadmaps/${contentId}/collaborators`;
     return `/api/v1/events/${contentId}/collaborators`;
   }, [contentType, contentId]);
 
@@ -714,7 +707,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }, [rightPanelOpen, rightPanelTab, contentId, loadCollaborators]);
 
   const statusHistoryApiPath = useMemo(() => {
-    if (contentType === "roadmap") return `/api/roadmaps/${contentId}/status-history`;
     if (contentType === "workshop") return `/api/v1/events/${contentId}/status-history`;
     return `/api/courses/${contentId}/status-history`;
   }, [contentType, contentId]);
@@ -972,8 +964,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         if (contentType === "course") {
           setCourseData(meta.raw);
           setCategoryId(meta.raw?.categoryId ?? null);
-        } else if (contentType === "roadmap") {
-          setRoadmapData(meta.raw);
         }
         setModules(
           containers.map((m) => ({
@@ -986,7 +976,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         );
         setBadges(loadedBadges ?? []);
         const firstLeaf = containers[0]?.leaves?.[0];
-        if (firstLeaf && firstLeaf.type === "document" && contentType !== "roadmap") {
+        if (firstLeaf && firstLeaf.type === "document") {
           await openLesson(firstLeaf as any);
         }
       } catch (e) {
@@ -1474,7 +1464,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   // ── Submit for review ─────────────────────────────────────────────────────
 
   const askSubmit = () => {
-    if (contentType === "course" || contentType === "roadmap" || contentType === "workshop") {
+    if (contentType === "course" || contentType === "workshop") {
       setSubmitDialogOpen(true);
       return;
     }
@@ -1506,10 +1496,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         setStatus(updated.status);
         setUpdatedAt(updated.updatedAt);
         setPricingModel(updated.pricingModel as "FREE" | "PAID");
-      } else if (contentType === "roadmap") {
-        const updated = await api.post<any>(`/api/roadmaps/${contentId}/submit`, { message: data.message });
-        setStatus(updated.status);
-        setUpdatedAt(updated.updatedAt);
       } else if (contentType === "workshop") {
         const { submitEvent } = await import(
           "@/app/(authenticated)/studio/events/api/publish"
@@ -1580,7 +1566,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
-          roadmap={roadmapData}
           contentType={contentType}
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
@@ -1832,9 +1817,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
       {/* ── Canvas + floating overlays ────────────────────────────────────── */}
       <div className="relative min-h-0 flex-1 flex flex-col pt-36">
-        {/* ── Floating collapsible sidebar: course tree (hidden for roadmaps) ─────────── */}
-        {contentType !== "roadmap" && (
-          <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
+        {/* ── Floating collapsible sidebar: course tree ─────────── */}
+        <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
               {/* ── Sidebar header ───────────────── */}
               <div className="flex flex-shrink-0 items-center justify-between mb-3">
@@ -2143,7 +2127,6 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
             </div>
           </aside>
-        )}
 
         {/* ── Canvas: wide, centered pane. Fixed in place — only its own inner
              content scrolls, so the panel itself never shifts and the scrollbar
@@ -2158,28 +2141,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </div>
             </div>
           )}
-          {contentType === "roadmap" && roadmapData ? (
-            <div className="absolute inset-0 z-0 pt-[49px]">
-              <RoadmapCanvas
-                roadmap={roadmapData}
-                readOnly={status === "SUBMITTED"}
-                onGraphChange={async (graphJson) => {
-                  try {
-                    await roadmapService.updateRoadmap(contentId!, { graphJson });
-                    setHasDraftChanges(true);
-                  } catch (err: any) {
-                    // If it's a 409 Conflict (optimistic locking), we might ignore or just log it
-                    // as a subsequent save will likely catch up if it's rapid typing.
-                    if (err?.status === 409 || err?.response?.status === 409) {
-                      console.warn("Optimistic locking failure during roadmap autosave. Ignoring.");
-                    } else {
-                      console.error("Failed to save roadmap graph", err);
-                    }
-                  }
-                }}
-              />
-            </div>
-          ) : activeBadgeId ? (
+          {activeBadgeId ? (
             // No glass card, no dark canvas card — the badge geometry itself is the canvas,
             // rendered directly against the Studio workspace background. The toolbar is the
             // same floating shell as the Lesson editor's (FloatingToolbar); Design/Properties/

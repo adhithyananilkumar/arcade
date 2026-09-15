@@ -90,7 +90,7 @@ interface ArcadeEditorProps {
    */
   chromeless?: boolean;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap";
+  contentType?: "course" | "workshop";
   /** Callback for selection updates */
   onSelectionUpdate?: (props: { editor: Editor }) => void;
   /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
@@ -174,31 +174,28 @@ export const ArcadeEditor = memo(
     );
   }
 
-  const isRoadmap = contentType === "roadmap";
-  const hideToolbar = isRoadmap;
-
   return (
     <div
       className={
         chromeless
-          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
+          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !hideToolbar && <RichTextToolbar editor={editor} />}
+        {!readOnly && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
           className={
             chromeless
-              ? `flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
+              ? "flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none"
               : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
           }
         />
-        {!readOnly && !isRoadmap && <RichTextBubbles editor={editor} />}
+        {!readOnly && <RichTextBubbles editor={editor} />}
       </RichTextProvider>
       {/* Autosave status — subtle footer (card mode only) */}
-      {!readOnly && !chromeless && !isRoadmap && (
+      {!readOnly && !chromeless && (
         <SaveStatusFooter store={statusStore} editor={editor} />
       )}
     </div>

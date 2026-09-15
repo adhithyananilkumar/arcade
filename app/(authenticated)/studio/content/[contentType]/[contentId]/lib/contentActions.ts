@@ -1,5 +1,4 @@
 import { api } from "@/infrastructure/http/api";
-import { roadmapService } from "@/domains/roadmaps";
 import { submitEvent, duplicateEvent, archiveEvent } from "@/app/(authenticated)/studio/events/api/publish";
 import { deleteEvent } from "@/app/(authenticated)/studio/events/api/dashboardApi";
 import type { ContentTypeSegment } from "./contentTypeRouting";
@@ -9,7 +8,6 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 
 export function submitForReview(segment: ContentTypeSegment, contentId: string): Promise<unknown> {
   if (segment === "course") return api.post(`/api/courses/${contentId}/submit`);
-  if (segment === "roadmap") return roadmapService.submitRoadmap(contentId);
   return submitEvent(contentId);
 }
 
@@ -19,7 +17,6 @@ export interface DuplicateAction {
 
 // Only content types with a real duplicate endpoint get one — course has none.
 export const DUPLICATE_ACTION: Partial<Record<ContentTypeSegment, DuplicateAction>> = {
-  roadmap: { run: (id) => roadmapService.duplicateRoadmap(id) as Promise<{ id: string }> },
   event: { run: (id) => duplicateEvent(id) as Promise<{ id: string }> },
 };
 
@@ -36,7 +33,6 @@ export function deleteContent(
   confirmTitle: string
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
-  if (segment === "roadmap") return roadmapService.deleteRoadmap(contentId);
   if (segment === "event") return deleteEvent(contentId);
   return null;
 }
@@ -47,12 +43,11 @@ export const SUPPORTS_TITLE_CONFIRM_DELETE: Partial<Record<ContentTypeSegment, b
 
 const COLLABORATORS_BASE: Record<ContentTypeSegment, (id: string) => string> = {
   course: (id) => `/api/v1/courses/${id}/collaborators`,
-  roadmap: (id) => `/api/roadmaps/${id}/collaborators`,
   event: (id) => `/api/v1/events/${id}/collaborators`,
 };
 
-// All three domains share the exact same {email, role} invite contract —
-// see InviteCollaboratorRequest, reused verbatim across course/roadmap/event.
+// Both domains share the exact same {email, role} invite contract —
+// see InviteCollaboratorRequest, reused verbatim across course/event.
 export function inviteCollaborator(
   segment: ContentTypeSegment,
   contentId: string,

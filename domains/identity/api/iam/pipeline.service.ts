@@ -147,13 +147,13 @@ export const pipelineService = {
     );
   },
 
+  /** Compliance scan over the IAM governance cohort — users holding a policy or admin task. */
   getIncompleteUsers: async (
-    filter: 'ALL' | 'UNASSIGNED' = 'ALL',
     page = 0,
     size = 50
   ): Promise<Page<IncompleteUserSummary>> => {
     return api.get<Page<IncompleteUserSummary>>(
-      `/api/v1/iam/pipeline/incomplete?filter=${filter}&page=${page}&size=${size}`
+      `/api/v1/iam/pipeline/incomplete?page=${page}&size=${size}`
     );
   },
 };

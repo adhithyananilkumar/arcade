@@ -2,7 +2,6 @@ import { api } from "@/infrastructure/http/api";
 
 export type ContentType =
   | "COURSE"
-  | "ROADMAP"
   | "EVENT"
   | "WORKSHOP"
   | "ARTICLE"

@@ -1044,24 +1044,20 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
     ? "bootcamps"
     : tabParam === "articles"
       ? "articles"
-      : tabParam === "roadmaps"
-        ? "roadmaps"
-        : "courses";
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">(initialTab);
+      : "courses";
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">(initialTab);
 
   useEffect(() => {
     if (tabParam) {
       if (tabParam === "bootcamps" || tabParam === "events") setActiveTab("bootcamps");
       else if (tabParam === "articles") setActiveTab("articles");
-      else if (tabParam === "roadmaps") setActiveTab("roadmaps");
       else if (tabParam === "courses") setActiveTab("courses");
     }
   }, [tabParam]);
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
-  // Each admin category is scoped to one section (courses/events/articles) via its `type`;
-  // there's no admin-category equivalent for the roadmaps tab.
+  // Each admin category is scoped to one section (courses/events/articles) via its `type`.
   const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
   const allPublicCategories = usePublicCategories();
   const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
@@ -1174,7 +1170,7 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "articles") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -1204,7 +1200,6 @@ function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
       if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
       else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
       else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
-      else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
     }
   };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Eye, EyeOff, Mail, User, CheckCircle2, ArrowLeft, XCircle } from 'lucide-react';
 import { PebbleLoader } from './PebbleLoader';
@@ -286,10 +287,28 @@ export default function AuthForm({
     }
   }, [mode, email, showVerifyEmail, hasToken, isRestoring]);
 
+  const router = useRouter();
+
   const handleModeChange = (next: AuthView) => {
     setErrors({});
     setDismissedGlobal(true);
     onModeChange(next);
+  };
+
+  const handleBack = () => {
+    if (mode === 'signup') {
+      handleModeChange('login');
+    } else if (mode === 'forgot' || mode === 'reset') {
+      handleModeChange('login');
+    } else if (mode === 'verify') {
+      handleModeChange('signup');
+    } else if (mode === 'login') {
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/');
+      }
+    }
   };
 
   const validateForm = () => {
@@ -532,16 +551,6 @@ export default function AuthForm({
       transition={{ duration: 0.55, ease: easeOut }}
     >
       <div className="mb-8 text-center sm:text-left">
-          {(mode === 'forgot' || mode === 'reset' || mode === 'verify') && (
-            <button
-              type="button"
-              onClick={() => handleModeChange(mode === 'verify' ? 'signup' : 'login')}
-              className="mb-5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-[#14142b]"
-            >
-              <ArrowLeft size={16} /> {mode === 'verify' ? 'Back to sign up' : 'Back to sign in'}
-            </button>
-          )}
-
           <AuthHeading title={heading} />
 
           <AnimatePresence mode="wait" initial={false}>
@@ -771,6 +780,17 @@ export default function AuthForm({
             )}
           </div>
         </form>
+
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="group inline-flex items-center gap-2 text-[13px] font-semibold text-slate-400 transition-colors duration-200 hover:text-slate-700"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            <span>Go back</span>
+          </button>
+        </div>
     </motion.div>
   );
 }

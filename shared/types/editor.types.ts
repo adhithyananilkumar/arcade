@@ -33,7 +33,6 @@ export type TiptapNodeType =
   | "pdf-viewer"
   | "quiz-block"
   | "resource-card"
-  | "roadmap"
   // Registry-backed blocks — see features/content/blocks/registry.ts:
   | "cta-button"
   | "toggle"

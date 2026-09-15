@@ -177,14 +177,14 @@ export function IntroScreen({ onAppReady, onDone }: IntroScreenProps) {
 
 
 
-        {/* ── Welcome — Amira Grace, minimal fade-in ─────────────────── */}
+        {/* ── Welcome — Welcome font, minimal fade-in ─────────────────── */}
         <motion.span
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: welcomeIn ? 1 : 0, y: welcomeIn ? 0 : 6 }}
           transition={{ duration: 0.9, ease: EASE }}
           style={{
             display: "block",
-            fontFamily: '"Amira Grace", cursive',
+            fontFamily: '"Welcome", "Amira Grace", cursive',
             fontSize: "clamp(46px, 6vw, 62px)",
             lineHeight: 1.15,
             color: "#205CA8",

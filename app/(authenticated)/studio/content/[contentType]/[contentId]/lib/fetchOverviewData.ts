@@ -1,5 +1,4 @@
 import { api, ApiError } from "@/infrastructure/http/api";
-import { roadmapService } from "@/domains/roadmaps";
 import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/studio/events/api/publish";
 import { getCollaborators as getEventCollaborators } from "@/app/(authenticated)/studio/events/api/collaboration";
 import { platformReviewApi, type ContentType as ReviewContentType, type ReviewResponse } from "@/domains/publishing/api/platformReview";
@@ -65,22 +64,6 @@ export interface CollaboratorLite {
   status: string;
 }
 
-export interface RoadmapAnalytics {
-  totalLearners: number;
-  activeLearners: number;
-  completedLearners: number;
-  completionRate: number;
-  averageCompletionTimeSeconds: number;
-}
-
-export interface ActivityEntry {
-  id: string;
-  userName: string;
-  actionType: string;
-  description: string;
-  createdAt: string;
-}
-
 export interface EventParticipant {
   id: string;
   name: string;
@@ -91,7 +74,6 @@ export interface EventParticipant {
 
 const REVIEW_CONTENT_TYPE: Record<ContentTypeSegment, ReviewContentType> = {
   course: "COURSE",
-  roadmap: "ROADMAP",
   event: "EVENT",
 };
 
@@ -100,8 +82,6 @@ export interface OverviewData {
   statusHistory: FetchResult<StatusHistoryEntry[]>;
   collaborators: FetchResult<CollaboratorLite[]>;
   review: FetchResult<ReviewResponse>;
-  roadmapAnalytics?: FetchResult<RoadmapAnalytics>;
-  roadmapActivity?: FetchResult<ActivityEntry[]>;
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
@@ -137,17 +117,6 @@ export async function fetchOverviewData(
       reviewPromise,
     ]);
     return { content, statusHistory, collaborators, review };
-  }
-
-  if (segment === "roadmap") {
-    const [statusHistory, collaborators, roadmapAnalytics, roadmapActivity, review] = await Promise.all([
-      settle(roadmapService.getRoadmapStatusHistory(contentId), { isEmpty: isEmptyArray }),
-      settle(api.get<CollaboratorLite[]>(`/api/roadmaps/${contentId}/collaborators`), { isEmpty: isEmptyArray }),
-      settle(api.get<RoadmapAnalytics>(`/api/roadmaps/${contentId}/analytics`)),
-      settle(api.get<ActivityEntry[]>(`/api/roadmaps/${contentId}/activity`), { isEmpty: isEmptyArray }),
-      reviewPromise,
-    ]);
-    return { content, statusHistory, collaborators, roadmapAnalytics, roadmapActivity, review };
   }
 
   // event
