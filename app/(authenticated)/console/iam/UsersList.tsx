@@ -1,82 +1,75 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { UserService } from "@/domains/identity";
-import { roleService, Role } from "@/domains/identity";
-import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
-import { AuthService } from '@/infrastructure/auth/auth.service';
+import { UserService, pipelineService, usePermissions, type IncompleteUserSummary } from '@/domains/identity';
+import { User } from '@/infrastructure/auth/auth.store';
 import { toast } from 'sonner';
-import { Shield, Plus, X, Edit3, Search } from 'lucide-react';
+import { Shield, Search, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
 import { getAvatarUrl } from '@/shared/utils/avatar';
+import { UserAccessDrawer } from './UserAccessDrawer';
 
 export function UsersList() {
-  const currentUser = useAuthStore(state => state.user);
   const [users, setUsers] = useState<User[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [drawerUserId, setDrawerUserId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const fetchData = async () => {
+  const [showIncomplete, setShowIncomplete] = useState(false);
+  const [incompleteUsers, setIncompleteUsers] = useState<IncompleteUserSummary[]>([]);
+  const [incompleteLoading, setIncompleteLoading] = useState(false);
+
+  const { hasPermission } = usePermissions();
+  const canManageAdminRole = hasPermission('platform.users.manage');
+
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const [usersData, rolesData] = await Promise.all([
-        UserService.getAllUsers(),
-        roleService.getAllRoles()
-      ]);
+      const usersData = await UserService.getAllUsers();
       setUsers(usersData);
-      setRoles(rolesData);
-    } catch (error) {
-      toast.error('Failed to fetch data');
+    } catch {
+      toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const openAssignModal = (user: User) => {
-    setSelectedUser(user);
-    // Assuming user object has roles array like { id, name }
-    const userRoleIds = (user as any).platformRoles?.map((r: any) => r.id).filter(Boolean) || [];
-    setSelectedRoles(userRoleIds);
-    setIsModalOpen(true);
-  };
-
-  const handleAssignRoles = async () => {
-    if (!selectedUser) return;
+  const fetchComplianceReport = useCallback(async () => {
+    setIncompleteLoading(true);
     try {
-      await UserService.assignRolesToUser(selectedUser.id, selectedRoles);
-      toast.success('Roles assigned successfully');
-      setIsModalOpen(false);
-      fetchData(); // refresh list
-      await AuthService.refresh();
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error('Failed to assign roles');
-      }
+      const page = await pipelineService.getIncompleteUsers('ALL', 0, 100);
+      setIncompleteUsers(page.content);
+    } catch {
+      toast.error('Failed to load compliance report');
+    } finally {
+      setIncompleteLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    if (showIncomplete) fetchComplianceReport();
+  }, [showIncomplete, fetchComplianceReport]);
+
+  const openAccessDrawer = (user: User) => {
+    setDrawerUserId(user.id);
+    setDrawerOpen(true);
   };
 
-  const toggleRoleSelection = (roleId: string) => {
-    if (selectedRoles.includes(roleId)) {
-      setSelectedRoles(selectedRoles.filter(id => id !== roleId));
-    } else {
-      setSelectedRoles([...selectedRoles, roleId]);
-    }
+  const handleAccessChanged = () => {
+    fetchUsers();
+    if (showIncomplete) fetchComplianceReport();
   };
 
   if (loading) return <div className="text-sm text-gray-500">Loading users...</div>;
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (user.username && user.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (user.firstName && user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -99,117 +92,109 @@ export function UsersList() {
         />
       </div>
 
+      {/* Compliance report toggle */}
+      {canManageAdminRole && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50/40 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowIncomplete((s) => !s)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left"
+          >
+            <span className="flex items-center gap-2 text-xs font-bold text-amber-700">
+              <AlertTriangle size={13} />
+              Access Compliance Report
+            </span>
+            {showIncomplete ? <ChevronUp size={14} className="text-amber-600" /> : <ChevronDown size={14} className="text-amber-600" />}
+          </button>
+          {showIncomplete && (
+            <div className="px-4 pb-3 space-y-2">
+              {incompleteLoading ? (
+                <p className="text-xs text-amber-700/70">Loading…</p>
+              ) : incompleteUsers.length === 0 ? (
+                <p className="text-xs text-amber-700/70">No IAM configuration issues found.</p>
+              ) : (
+                incompleteUsers.map((u) => {
+                  const user = users.find((x) => x.id === u.id);
+                  return (
+                    <div
+                      key={u.id}
+                      className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white border border-amber-100"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{u.fullName || u.email}</p>
+                        <p className="text-[11px] text-amber-700/80">{u.description}</p>
+                      </div>
+                      {user && (
+                        <button
+                          type="button"
+                          onClick={() => openAccessDrawer(user)}
+                          className="shrink-0 px-2.5 py-1 text-[11px] font-bold text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                        >
+                          Review
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {filteredUsers.length === 0 ? (
         <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-          No users found matching "{searchQuery}"
+          No users found matching &quot;{searchQuery}&quot;
         </div>
       ) : (
         filteredUsers.map(user => (
           <div key={user.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-slate-200">
-              <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
-              <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
-                {user.firstName ? user.firstName.charAt(0) : 'U'}
-                {user.lastName ? user.lastName.charAt(0) : ''}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h4 className="font-semibold text-gray-900">
-                <Link 
-                  href={`/${user.username}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-[#14142b] hover:underline transition-colors"
-                >
-                  {user.firstName} {user.lastName}
-                </Link>
-              </h4>
-              <p className="text-sm text-gray-500">{user.email}</p>
-              <div className="mt-2 flex gap-2 flex-wrap">
-                {(user as any).platformRoles?.map((role: any) => (
-                  <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-[#14142b] ring-1 ring-inset ring-slate-300">
-                    {role.name}
-                  </span>
-                ))}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-slate-200">
+                <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
+                <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
+                  {user.firstName ? user.firstName.charAt(0) : 'U'}
+                  {user.lastName ? user.lastName.charAt(0) : ''}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h4 className="font-semibold text-gray-900">
+                  <Link
+                    href={`/${user.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#14142b] hover:underline transition-colors"
+                  >
+                    {user.firstName} {user.lastName}
+                  </Link>
+                </h4>
+                <p className="text-sm text-gray-500">{user.email}</p>
+                <div className="mt-2 flex gap-2 flex-wrap">
+                  {user.platformRoles?.map((role) => (
+                    <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-[#14142b] ring-1 ring-inset ring-slate-300">
+                      {role.name}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => openAccessDrawer(user)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+            >
+              <Shield size={16} /> Manage Access
+            </button>
           </div>
-          <button 
-            onClick={() => openAssignModal(user)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-          >
-            <Shield size={16} /> Assign Policy
-          </button>
-        </div>
-      )))}
-
-      {isModalOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Assign Policies</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <p className="text-sm text-gray-500 mb-4">Select policies for {selectedUser.firstName} {selectedUser.lastName}.</p>
-            
-            <div className="space-y-2 max-h-60 overflow-y-auto mb-6">
-              {roles.map(role => {
-                const targetHighestLevel = (selectedUser as any).platformRoles
-                  ?.filter((r: any) => r.scopeType === 'PLATFORM')
-                  .map((r: any) => r.level || 0)
-                  .sort((a: number, b: number) => b - a)[0] || 0;
-                  
-                const currentUserHighestLevel = currentUser?.platformRoles
-                  ?.filter((r: any) => r.scopeType === 'PLATFORM')
-                  .map((r: any) => r.level || 0)
-                  .sort((a: number, b: number) => b - a)[0] || 0;
-
-                const isTargetHigherOrEqual = targetHighestLevel >= currentUserHighestLevel && currentUser?.id !== selectedUser.id && targetHighestLevel > 0;
-                const isRoleHigherOrEqual = currentUserHighestLevel > 0 && (role.level || 0) >= currentUserHighestLevel;
-                const disabled = isTargetHigherOrEqual || isRoleHigherOrEqual;
-
-                return (
-                  <label key={role.id} className={`flex items-center gap-3 p-3 rounded-lg border ${disabled ? 'border-gray-50 bg-gray-50 opacity-50 cursor-not-allowed' : 'border-gray-100 hover:bg-gray-50 cursor-pointer'}`}>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedRoles.includes(role.id)}
-                      onChange={() => !disabled && toggleRoleSelection(role.id)}
-                      disabled={disabled}
-                      className="h-4 w-4 rounded border-gray-300 text-[#14142b] focus:ring-slate-300 disabled:opacity-50"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {role.displayName}
-                        {disabled && <span className="ml-2 text-[10px] uppercase text-red-500 font-semibold bg-red-50 px-1.5 py-0.5 rounded">Not Allowed</span>}
-                      </div>
-                      <div className="text-xs text-gray-500">{role.description}</div>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAssignRoles}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg"
-              >
-                Save Assignments
-              </button>
-            </div>
-          </div>
-        </div>
+        ))
       )}
+
+      <UserAccessDrawer
+        userId={drawerUserId}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        canManageAdminRole={canManageAdminRole}
+        onChanged={handleAccessChanged}
+      />
     </div>
   );
 }
