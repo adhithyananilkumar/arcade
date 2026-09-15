@@ -72,7 +72,9 @@ export interface EventParticipant {
   registrationDate?: string;
 }
 
-const REVIEW_CONTENT_TYPE: Record<ContentTypeSegment, ReviewContentType> = {
+// Exam is absent on purpose: exams never enter a Platform Review round (they self-publish an
+// immutable ExamVersion), so there is no review to fetch for one.
+const REVIEW_CONTENT_TYPE: Partial<Record<ContentTypeSegment, ReviewContentType>> = {
   course: "COURSE",
   event: "EVENT",
 };
@@ -92,11 +94,43 @@ async function findContentSummary(contentId: string): Promise<ContentSummaryLite
   return items.find((item) => item.id === contentId) ?? null;
 }
 
+/**
+ * An exam is resolved from the Exam API rather than the content listing: an exam attached to a
+ * course/event is deliberately not listed in "my content" (it's reached through its parent), so
+ * findContentSummary would return null for exactly the exams that do have a parent.
+ */
+async function findExamSummary(contentId: string): Promise<ContentSummaryLite | null> {
+  const exam = await api.get<{
+    id: string;
+    title: string;
+    description: string | null;
+    coverImageUrl: string | null;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>(`/api/exams/${contentId}`);
+  if (!exam) return null;
+  // channelName/authorName aren't on ExamResponse; the header renders its own fallbacks.
+  return {
+    id: exam.id,
+    type: "EXAM",
+    title: exam.title,
+    description: exam.description,
+    coverImageUrl: exam.coverImageUrl,
+    status: exam.status,
+    createdAt: exam.createdAt,
+    updatedAt: exam.updatedAt,
+    channelId: "",
+    channelName: "",
+  };
+}
+
 export async function fetchOverviewData(
   segment: ContentTypeSegment,
   contentId: string
 ): Promise<OverviewData> {
-  const content = await findContentSummary(contentId);
+  const content =
+    segment === "exam" ? await findExamSummary(contentId) : await findContentSummary(contentId);
   if (!content) {
     return {
       content: null,
@@ -106,9 +140,21 @@ export async function fetchOverviewData(
     };
   }
 
-  const reviewPromise = settle(platformReviewApi.byContent(REVIEW_CONTENT_TYPE[segment], contentId), {
-    emptyStatuses: [404],
-  });
+  if (segment === "exam") {
+    // Everything else an exam needs (plans, attempts) is loaded by the tab that
+    // shows it — there is no cross-capability fan-out to do here.
+    return {
+      content,
+      statusHistory: { status: "empty" },
+      collaborators: { status: "empty" },
+      review: { status: "empty" },
+    };
+  }
+
+  const reviewContentType = REVIEW_CONTENT_TYPE[segment];
+  const reviewPromise: Promise<FetchResult<ReviewResponse>> = reviewContentType
+    ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [404] })
+    : Promise.resolve({ status: "empty" });
 
   if (segment === "course") {
     const [statusHistory, collaborators, review] = await Promise.all([

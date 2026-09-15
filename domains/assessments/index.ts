@@ -20,8 +20,54 @@
 export { QuizEditor } from "./components/QuizEditor";
 export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
-export { QuestionBankEditor } from "./components/QuestionBankEditor";
+export { SaveIndicator } from "./components/SaveIndicator";
+export { QuestionTagEditor } from "./components/QuestionTagEditor";
+// The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
+// Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives
+// at the apps layer (apps/creator/editor). The domain owns the state machine; the Studio owns the
+// writing surface, and there is exactly one of those in the platform.
+export {
+  useSectionQuestions,
+  promptToPlainText,
+  DIFFICULTIES,
+  DIFFICULTIES_BG,
+  TYPE_LABELS,
+} from "./components/useSectionQuestions";
+export type { LocalQuestion, LocalOption, SaveState, SectionQuestionsController } from "./components/useSectionQuestions";
+export { listSections, createSection, renameSection, deleteSection } from "./api";
+export { planReadiness, isPlanPublishable } from "./lib/planReadiness";
+export type { PlanReadiness } from "./lib/planReadiness";
+export { buildQuestionSearchParams } from "./api";
 export { getQuizStats, getOrCreateCourseQuestionBank, listPools } from "./api";
+export {
+  searchBankQuestions,
+  getAllBankQuestions,
+  saveSectionQuestions,
+  getSectionQuestions,
+  reorderSections,
+  listPoolDetails,
+  createPoolWithFilter,
+  updatePool,
+  deletePool,
+  previewPool,
+  previewPoolDraft,
+  getPoolMembers,
+  setPoolMembers,
+} from "./api";
+export {
+  listExamPlans,
+  createExamPlan,
+  getExamPlan,
+  updateExamPlan,
+  duplicateExamPlan,
+  deleteExamPlan,
+  validateExamPlan,
+  createPlanSection,
+  renamePlanSection,
+  deletePlanSection,
+  savePlanSectionRules,
+  previewExamPaper,
+} from "./api";
 export {
   createExam,
   getExam,
@@ -40,8 +86,28 @@ export {
   saveExamAnswer,
   submitExamAttempt,
   getExamResult,
+  listAttemptsForExam,
+  getExamQuestionBank,
+  listExamVersions,
+  publishExam,
 } from "./api";
 export type {
+  DeliveryMode,
+  SelectionMode,
+  PoolMode,
+  ExamPlanRequest,
+  ExamPlanResponse,
+  ExamPlanSectionResponse,
+  ExamPlanValidationResponse,
+  ExamSelectionRuleRequest,
+  ExamSelectionRuleResponse,
+  QuestionPoolDetail,
+  QuestionPoolFilterRequest,
+  QuestionPoolPreviewResponse,
+  QuestionSearchCriteria,
+  QuestionSearchResponse,
+  BankQuestionResponse,
+  BankQuestionRequest,
   QuestionType,
   QuestionResponse,
   OptionResponse,
@@ -61,4 +127,5 @@ export type {
   AttemptQuestionResponse,
   SaveAnswerRequest,
   ExamResultResponse,
+  ExamAttemptSummaryResponse,
 } from "./types";

@@ -38,7 +38,6 @@ import {
   Archive,
   Tv,
   Loader2,
-  HelpCircle,
   Check,
 } from "lucide-react";
 
@@ -95,19 +94,13 @@ const CONTENT_TYPES = [
     bg: "bg-emerald-50",
   },
   {
-    id: "quiz",
-    icon: HelpCircle,
-    label: "Quiz",
-    desc: "Standalone question bank with automated grading",
-    href: "/studio/quiz/new",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
-  },
-  {
+    // One assessment capability, not two. A quiz is an exam configured lightly (short duration,
+    // generous attempts, no proctoring) — see the Exam settings — so there is no separate Quiz
+    // content type to create. Existing quizzes keep working; nothing new is created as one.
     id: "exam",
     icon: ClipboardCheck,
     label: "Exam",
-    desc: "Standalone exam or quiz",
+    desc: "Questions, pools, plans, attempts & results",
     href: "/studio/exam/new",
     color: "text-orange-600",
     bg: "bg-orange-50",
@@ -137,6 +130,15 @@ function TypeBadge({ type }: { type: string }) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
         <Calendar size={10} /> Event
+      </span>
+    );
+  }
+  if (type === "EXAM") {
+    // Only standalone exams reach this list at all — an exam attached to a course/event is
+    // surfaced inside that parent's editor instead (see ContentService.listContent).
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-orange-50 text-orange-700 border-orange-200">
+        <ClipboardCheck size={10} /> Exam
       </span>
     );
   }
@@ -253,113 +255,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ── New Quiz creation modal ──────────────────────────────────────────────────
-
-function CreateQuizModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { channels, loading: channelsLoading } = useEligibleChannels();
-  const [channelId, setChannelId] = useState("");
-
-  useEffect(() => {
-    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
-  }, [channels, channelId]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !channelId) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const quiz = await api.post<{ id: string }>("/api/quizzes", {
-        title: name.trim(),
-        channelId,
-      });
-      toast.success(`"${name.trim()}" created`);
-      router.push(`/studio/quiz/${quiz.id}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create quiz";
-      setError(message);
-      toast.error(message);
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <HelpCircle size={20} className="text-[#14142b]" />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Quiz name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="quiz-name"
-              type="text"
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Chapter 1 Quiz"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a quiz.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
-            >
-              {creating ? "Creating…" : "Create Quiz"}
             </button>
           </div>
         </form>
@@ -530,11 +425,11 @@ function ContentCard({
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
-  const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
+  // Legacy standalone quizzes have no split overview/editor — their "editor" is the detail page
+  // itself. Exam, Course and Event all open the shared Content Overview.
+  const isLegacyQuiz = item.type === "QUIZ";
   const segment = toContentTypeSegment(item.type);
-  // Quiz / Exam has no split overview/editor yet — its "editor" is the detail page itself.
-  // Every other type opens the Content Overview, not a direct editor route.
-  const openHref = isQuiz
+  const openHref = isLegacyQuiz
     ? `/studio/quiz/${item.id}`
     : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
@@ -543,11 +438,11 @@ function ContentCard({
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
-  const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
+  const preview = segment && !isLegacyQuiz ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
-  const hasSecondaryMenu = !isQuiz && segment != null && !isPendingInvitation;
+  const hasSecondaryMenu = !isLegacyQuiz && segment != null && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -764,7 +659,7 @@ function ContentCard({
           onClick={(e) => e.stopPropagation()}
           className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {!isQuiz && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
+          {!isLegacyQuiz && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
         </Link>
       )}
 
@@ -869,7 +764,7 @@ export default function DashboardPage() {
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "EVENT">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "EVENT" | "EXAM">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
 
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -891,7 +786,7 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "event" || typeId === "quiz") {
+    if (typeId === "course" || typeId === "event") {
       setCreateOpen(typeId as any);
     } else if (href) {
       router.push(href);
@@ -978,6 +873,7 @@ export default function DashboardPage() {
     { id: "ALL" as const, label: "All types" },
     { id: "COURSE" as const, label: "Courses" },
     { id: "EVENT" as const, label: "Events" },
+    { id: "EXAM" as const, label: "Exams" },
   ];
 
   return (
@@ -992,7 +888,6 @@ export default function DashboardPage() {
         onClose={() => setChannelRequiredModalOpen(false)}
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">

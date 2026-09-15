@@ -108,6 +108,14 @@ interface EditorRightSidebarProps {
   editorContextNode?: React.ReactNode;
   /** Overrides the footer's "Document ID" row — e.g. a Badge ID instead of a lesson ID. */
   footerOverride?: { label: string; value: string } | null;
+
+  /**
+   * Tabs this content type has no backing endpoint for, mapped to the explanation to show
+   * instead. A content type that cannot yet list per-item collaborators must say so plainly —
+   * rendering an empty list with a working-looking invite form would be a lie about what the
+   * platform does. The tab stays visible so the Studio's shape is the same everywhere.
+   */
+  unavailableNotes?: Partial<Record<RightSidebarTab, string>>;
 }
 
 const BASE_TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] = [
@@ -175,6 +183,15 @@ export function EditorRightSidebar(props: EditorRightSidebarProps) {
       >
         {mode === "editor" ? (
           editorContextNode
+        ) : props.unavailableNotes?.[tab as RightSidebarTab] ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-white/60">
+              <Shield className="h-6 w-6 text-slate-300" />
+            </span>
+            <p className="max-w-[240px] text-xs leading-relaxed text-slate-500">
+              {props.unavailableNotes[tab as RightSidebarTab]}
+            </p>
+          </div>
         ) : tab === "history" ? (
           props.historyContent
         ) : tab === "status" ? (

@@ -24,8 +24,6 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import type * as Y from "yjs";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
@@ -62,6 +60,13 @@ import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/Version
 import { encodeSnapshotBase64 } from "@/apps/creator/editor";
 import { SessionSettingsDialog } from "./SessionSettingsDialog";
 import { EditorRightSidebar, type SidebarExtraPanel } from "./EditorRightSidebar";
+import {
+  StudioPresenceStack,
+  StudioShareControl,
+  StudioPanelToggle,
+  StudioActionButton,
+  StudioIconAction,
+} from "./StudioHeaderActions";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
 
 import { LessonFeedbackOrchestrator } from "@/apps/creator/orchestrators/LessonFeedbackOrchestrator";
@@ -75,8 +80,10 @@ import {
 import {
   QuizEditor,
   listExamsForCourse,
+  listExamsForEvent,
   createExam,
   detachExamFromCourse,
+  detachExamFromEvent,
   type ExamResponse,
 } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
@@ -115,7 +122,6 @@ import {
   Settings,
   Copy,
   Check,
-  ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
@@ -160,6 +166,12 @@ function scheduleIdle(fn: () => void) {
   else setTimeout(fn, 0);
 }
 
+import {
+  StudioEditorFrame,
+  StudioEditorTopBar,
+  StudioEditorBody,
+  TREE_SIDEBAR_ACTIONS_CLASS,
+} from "./StudioEditorShell";
 import { CourseAdapter } from "./adapters/CourseAdapter";
 import { EventAdapter } from "./adapters/EventAdapter";
 import type { ContentDataAdapter } from "./types";
@@ -322,104 +334,6 @@ function StatusPill({ status }: { status: string }) {
     >
       {status}
     </span>
-  );
-}
-
-// ── Google Docs Style Live Active Collaborator Avatar Stack ─────────────────
-
-function LiveCollaboratorStack({ collaborators }: { collaborators: ActiveCollaborator[] }) {
-  const [popoverOpen, setPopoverOpen] = useState(false);
-
-  const activeList = useMemo(() => {
-    if (!collaborators || collaborators.length === 0) return [];
-    const map = new Map<string, ActiveCollaborator>();
-    for (const c of collaborators) {
-      const key = c.user?.id || c.user?.name || String(c.clientId);
-      if (!map.has(key)) {
-        map.set(key, c);
-      }
-    }
-    return Array.from(map.values());
-  }, [collaborators]);
-
-  if (activeList.length === 0) return null;
-
-  const MAX_VISIBLE = 3;
-  const visible = activeList.slice(0, MAX_VISIBLE);
-  const overflowCount = activeList.length - MAX_VISIBLE;
-
-  return (
-    <div className="relative flex items-center">
-      {/* Overlapped Avatar Stack */}
-      <div
-        onClick={() => setPopoverOpen((prev) => !prev)}
-        className="flex items-center -space-x-2 cursor-pointer transition-transform hover:scale-[1.02]"
-        title="View live connected collaborators"
-      >
-        {visible.map((c, i) => {
-          const name = c.user?.name || "Collaborator";
-          const initial = name.charAt(0).toUpperCase();
-          const bgColor = c.user?.color || ["#7c3aed", "#2563eb", "#059669", "#d97706"][i % 4];
-
-          return (
-            <div
-              key={c.user?.id || c.clientId}
-              title={`${name} (Editing now)`}
-              style={{ backgroundColor: bgColor }}
-              className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
-            >
-              {initial}
-            </div>
-          );
-        })}
-
-        {overflowCount > 0 && (
-          <div
-            title={`${overflowCount} more active collaborator${overflowCount > 1 ? "s" : ""}`}
-            className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-700 text-xs font-semibold text-white shadow-sm ring-1 ring-black/5"
-          >
-            +{overflowCount}
-          </div>
-        )}
-      </div>
-
-      {/* Popover list of connected active collaborators */}
-      {popoverOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setPopoverOpen(false)} />
-          <div className="absolute right-0 top-10 z-50 w-56 rounded-2xl border border-slate-100 bg-white p-3 shadow-xl ring-1 ring-black/5">
-            <div className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Active Collaborators ({activeList.length})
-            </div>
-            <div className="space-y-1.5 max-h-48 overflow-y-auto">
-              {activeList.map((c, i) => {
-                const name = c.user?.name || "Collaborator";
-                const initial = name.charAt(0).toUpperCase();
-                const bgColor = c.user?.color || ["#7c3aed", "#2563eb", "#059669", "#d97706"][i % 4];
-
-                return (
-                  <div key={c.user?.id || c.clientId} className="flex items-center gap-2.5 rounded-lg p-1.5 hover:bg-slate-50">
-                    <div
-                      style={{ backgroundColor: bgColor }}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white shrink-0"
-                    >
-                      {initial}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-xs font-semibold text-slate-800">{name}</div>
-                      <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Editing now
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
   );
 }
 
@@ -975,7 +889,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         if (contentType === "course") {
           setCourseData(meta.raw);
           setCategoryId(meta.raw?.categoryId ?? null);
-          listExamsForCourse(initialContentId!)
+        }
+        if (contentType === "course" || contentType === "workshop") {
+          const listExams = contentType === "workshop" ? listExamsForEvent : listExamsForCourse;
+          listExams(initialContentId!)
             .then(setExams)
             .catch(() => {
               // Best-effort — same pattern as the rest of this sidebar's supplementary data.
@@ -1111,10 +1028,16 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   // ── Exams attached to this course ─────────────────────────────────────────
 
+  /**
+   * Opens the exam's own Studio workspace — the same Studio this editor is running in, with the
+   * exam's questions/pools/plans inside it. Going to the exam's overview instead (as this used to)
+   * dropped the author out of authoring and into a summary page, which is the long way round to
+   * the thing they just clicked.
+   */
   const openExamConfig = useCallback(
     (examId: string) => {
       if (!contentId) return;
-      router.push(`/studio/course/${contentId}/exam/${examId}/config`);
+      router.push(`/studio/exam/${examId}/edit`);
     },
     [contentId, router]
   );
@@ -1124,7 +1047,8 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     setAddingExam(true);
     try {
       const nextIndex = exams.length + 1;
-      const exam = await createExam({ title: `Assessment ${nextIndex}`, courseId: contentId });
+      const placementField = contentType === "workshop" ? { eventId: contentId } : { courseId: contentId };
+      const exam = await createExam({ title: `Assessment ${nextIndex}`, ...placementField });
       setExams((prev) => [...prev, exam]);
       openExamConfig(exam.id);
     } catch {
@@ -1132,7 +1056,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
     } finally {
       setAddingExam(false);
     }
-  }, [contentId, exams.length, openExamConfig]);
+  }, [contentId, contentType, exams.length, openExamConfig]);
 
   const removeExam = useCallback(
     async (examId: string) => {
@@ -1140,14 +1064,18 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
       const previous = exams;
       setExams((prev) => prev.filter((e) => e.id !== examId));
       try {
-        await detachExamFromCourse(contentId, examId);
-        toast.success("Exam removed from this course");
+        if (contentType === "workshop") {
+          await detachExamFromEvent(contentId, examId);
+        } else {
+          await detachExamFromCourse(contentId, examId);
+        }
+        toast.success("Exam removed");
       } catch {
         setExams(previous);
         toast.error("Failed to remove exam");
       }
     },
-    [contentId, exams]
+    [contentId, contentType, exams]
   );
 
   // ── Tree mutation: Add Module ──────────────────────────────────────────────
@@ -1408,7 +1336,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
 
   const askRemoveExam = (exam: ExamResponse) =>
     setConfirm({
-      title: "Remove exam from this course?",
+      title: "Remove this exam?",
       message: `"${exam.title}" will no longer be attached here. It becomes a standalone exam — nothing about the exam itself (questions, attempts, results) is deleted.`,
       confirmLabel: "Remove",
       danger: true,
@@ -1600,18 +1528,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
   }
 
   return (
-    // `fixed inset-0` rather than `h-screen` — a height utility still lets this box
-    // contribute to the document's scrollable area if any ancestor's height
-    // resolution is off (e.g. the immersive-route check in LearnerShell misses this
-    // path), which is what produced the page-wide scrollbar on top of the canvas's
-    // own. Taking it out of flow entirely removes that possibility outright: the
-    // canvas's `overflow-y-auto` below is the only scroll container left.
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#fafafa]">
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -left-[10%] -top-[20%] h-[70%] w-[50%] animate-pulse rounded-full bg-indigo-500/15 blur-[120px] duration-10000" />
-        <div className="absolute -right-[10%] top-[10%] h-[60%] w-[45%] animate-pulse rounded-full bg-rose-500/15 blur-[120px] duration-7000" />
-        <div className="absolute -bottom-[20%] left-[20%] h-[60%] w-[60%] animate-pulse rounded-full bg-emerald-500/15 blur-[120px] duration-10000" />
-      </div>
+    <StudioEditorFrame>
       {submitDialogOpen && (
         <CourseSubmitDialog
           course={courseData}
@@ -1650,40 +1567,12 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         }}
       />
 
-      {/* ── Floating Editor Top Bar (Invisible Wrapper) ───── */}
-      <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
-        <div className="relative flex w-full items-center justify-between">
-          {/* Left: Logo & Back Button */}
-          <div className="pointer-events-auto flex items-center gap-2">
-            {/* Logo Island */}
-            <div className="flex h-10 shrink-0 items-center rounded-full px-5 bg-white/60 shadow-sm border border-white/40 backdrop-blur-md">
-              <Link href="/" className="group flex cursor-pointer items-center">
-                <Image
-                  src="/arcade.svg"
-                  alt="Arcade"
-                  width={85}
-                  height={24}
-                  className="h-5 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
-                />
-              </Link>
-            </div>
-            
-            {/* Back Button */}
-            <button
-              type="button"
-              onClick={handleBack}
-              disabled={navigatingBack}
-              title="Save and return to Content Studio"
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/60 text-[#14142b] shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md disabled:opacity-60 backdrop-blur-md"
-            >
-              <ArrowLeft size={16} />
-            </button>
-          </div>
-
-          {/* Center: Title and Status */}
-          <div className="pointer-events-auto absolute left-1/2 flex -translate-x-1/2 items-center gap-2">
-            <div className="flex h-8 items-center justify-center rounded-full border border-white/40 bg-white/60 px-4 py-1 text-xs font-bold tracking-tight text-[#14142b] shadow-sm backdrop-blur-md">
-              {activeLessonId || activeBadgeId ? (
+      <StudioEditorTopBar
+        onBack={handleBack}
+        backDisabled={navigatingBack}
+        breadcrumb={
+          <>
+            {activeLessonId || activeBadgeId ? (
                 <div className="flex items-center gap-1.5 text-gray-500">
                   {/* Badges are course-level (no module parent), so only a lesson gets a
                       "Module / Lesson" breadcrumb prefix. */}
@@ -1704,102 +1593,43 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                   {title || adapter.terminology.root}
                 </span>
               )}
-            </div>
-          </div>
+          </>
+        }
+        actions={
+          <>
+            <StudioPresenceStack collaborators={collabState.collaborators} />
 
-          {/* Right actions */}
-          <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-3.5">
-            {/* Live Active Collaborator Avatars (Google Docs Style) */}
-            <LiveCollaboratorStack collaborators={collabState.collaborators} />
-
-            {/* Google Docs style Share / Add Collaborators Split Pill Button */}
-            {contentId && (
-              <div className="relative inline-flex items-center overflow-hidden rounded-full bg-[#c2e7ff] text-[#001d35] shadow-sm transition-all hover:bg-[#b5e0ff] hover:shadow-md">
-                <button
-                  type="button"
-                  onClick={() => setCollaboratorsModalOpen(true)}
-                  className="flex items-center gap-2 py-2.5 pl-4 pr-3 text-xs font-semibold tracking-tight text-[#001d35] transition-colors cursor-pointer"
-                  title="Add Collaborators"
-                >
-                  <Users size={15} className="text-[#001d35]" />
-                  <span>Share</span>
-                </button>
-                <div className="h-4 w-[1px] bg-white/90" />
-                <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <div
-                      className="flex items-center justify-center py-2.5 pl-2 pr-3 text-xs text-[#001d35] hover:bg-[#a6d9ff] transition-colors cursor-pointer"
-                      title="Share options"
-                    >
-                      <ChevronDown size={14} />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5 shadow-lg border border-slate-100 bg-white z-50">
-                    <DropdownMenuItem
-                      onClick={() => setCollaboratorsModalOpen(true)}
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
-                    >
-                      <Users size={14} className="text-indigo-600" />
-                      View Collaborators
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        toast.success("Editor link copied to clipboard!");
-                      }}
-                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
-                    >
-                      <Copy size={14} className="text-slate-500" />
-                      Copy Link
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
+            {contentId && <StudioShareControl onOpenCollaborators={() => setCollaboratorsModalOpen(true)} />}
 
             {/* Single entry point into EditorRightSidebar — its own pill tabs
                 (Status / History / Team) switch what's shown inside; this just
                 toggles the panel open/closed, mirroring a standard hamburger menu. */}
-            <button
-              type="button"
-              onClick={() => setRightPanelOpen((prev: boolean) => !prev)}
-              title={rightPanelOpen ? "Close panel" : "Open panel"}
-              aria-expanded={rightPanelOpen}
-              className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full shadow-sm border transition-all duration-300 ease-in-out ${
-                rightPanelOpen
-                  ? "bg-[#14142b] text-white border-[#14142b]"
-                  : "bg-white/60 text-[#14142b] border-white/40 backdrop-blur-md hover:bg-[#14142b] hover:text-white hover:border-[#14142b]"
-              }`}
-            >
-              <Menu size={16} />
-            </button>
+            <StudioPanelToggle
+              open={rightPanelOpen}
+              onToggle={() => setRightPanelOpen((prev: boolean) => !prev)}
+            />
 
             {activeLessonId && contentType === "workshop" && activeModuleId && (
-              <button
-                type="button"
+              <StudioIconAction
                 onClick={() => setSessionSettingsSessionId(activeModuleId)}
                 title="Day Schedule & Settings"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-white/60 text-slate-600 shadow-sm border border-white/40 transition-colors hover:bg-white hover:text-[#14142b]"
               >
                 <Settings size={16} />
-              </button>
+              </StudioIconAction>
             )}
 
             {status !== "SUBMITTED" && (
-              <button
-                type="button"
+              <StudioActionButton
                 onClick={askSubmit}
-                className="flex h-10 flex-shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-white/40 bg-white/60 px-5 py-2 text-sm font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all duration-300 ease-in-out hover:bg-[#14142b] hover:text-white hover:border-[#14142b] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Send size={14} />
-                <span className="hidden sm:inline">
-                  {status === "PUBLISHED" || status === "APPROVED"
+                icon={<Send size={14} />}
+                label={
+                  status === "PUBLISHED" || status === "APPROVED"
                     ? "Submit Updates"
                     : status === "REJECTED"
                       ? "Resubmit"
-                      : "Submit"}
-                </span>
-              </button>
+                      : "Submit"
+                }
+              />
             )}
 
             {contentType === "workshop" && contentId && (
@@ -1811,10 +1641,9 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                 <span className="hidden sm:inline">Manage</span>
               </button>
             )}
-
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <EditorRightSidebar
         mode={rightPanelOpen ? "workflow" : activeBadgeId ? "editor" : "closed"}
@@ -1864,22 +1693,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
         }
       />
 
-      {/* ── Canvas + floating overlays ────────────────────────────────────── */}
-      <div className="relative min-h-0 flex-1 flex flex-col pt-36">
-        {/* ── Floating collapsible sidebar: course tree ─────────── */}
-        <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
-            <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
-              {/* ── Sidebar header ───────────────── */}
-              <div className="flex flex-shrink-0 items-center justify-between mb-3">
-                <span className="min-w-0 flex-1 truncate px-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#14142b]/60">
-                  {adapter.terminology.root} structure
-                </span>
-              </div>
-
-              {/* ── Sidebar actions ───────────────── */}
-
-              {/* ── Body ──────────────────────────────── */}
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pr-1 arcade-scrollbar-mini">
+      <StudioEditorBody
+        sidebarTitle={`${adapter.terminology.root} structure`}
+        sidebarTree={
+              <>
                 {modules.length === 0 && badges.length === 0 && (
                   <div className="flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
                     <Layers size={24} className="text-[#14142b]/40" />
@@ -2047,10 +1864,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                     );
                   })}
 
-                {/* ── Exams: course-level tree items, a sibling of Modules — placement, not
-                     a lesson. Any number of exams may be attached; each is independently
+                {/* ── Exams: a sibling of Modules — placement, not a lesson. Any number of
+                     exams may be attached to a course or event; each is independently
                      configured, versioned, and published. ── */}
-                {contentType === "course" && exams.length > 0 && (
+                {(contentType === "course" || contentType === "workshop") && exams.length > 0 && (
                   <div className="mb-2 flex flex-col gap-1">
                     {exams.map((exam) => (
                       <div
@@ -2060,7 +1877,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                         <button
                           type="button"
                           onClick={() => openExamConfig(exam.id)}
-                          title="Configure this exam's blueprint, questions, and delivery settings"
+                          title="Open this exam in Studio — questions, pools, plans and settings"
                           className="flex min-w-0 flex-1 items-center gap-2 text-left"
                         >
                           <GraduationCap size={14} className="flex-shrink-0 text-[#14142b]/50" />
@@ -2072,15 +1889,15 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                           </span>
                         </button>
                         {status !== "SUBMITTED" && (
-                          <IconBtn title="Remove from this course" danger onClick={() => askRemoveExam(exam)}>
+                          <IconBtn title="Remove" danger onClick={() => askRemoveExam(exam)}>
                             <Trash2 size={12} />
                           </IconBtn>
                         )}
                       </div>
                     ))}
                     <p className="pl-3 text-[10px] leading-relaxed text-slate-400">
-                      Shown to students on the course page&apos;s Assessments tab. Click an exam to
-                      configure its blueprint and questions.
+                      Shown to students on the course page&apos;s Assessments tab. Open an exam to
+                      edit its questions and plans.
                     </p>
                   </div>
                 )}
@@ -2132,30 +1949,67 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       })}
                   </div>
                 )}
-              </div>
+              </>
+        }
+        sidebarActions={
+              status !== "SUBMITTED" ? (
+                <div className={TREE_SIDEBAR_ACTIONS_CLASS}>
+                  {/* One primary action plus a menu, rather than a column of equally-weighted
+                      buttons that grows by one every time the content model gains a capability.
+                      Adding a module is what an author does constantly; adding a badge or an exam
+                      is occasional, so those sit one click away instead of competing for the same
+                      visual weight. */}
+                  <div className="flex items-stretch gap-1.5">
+                    <button
+                      type="button"
+                      onClick={contentType === "workshop" ? addEventDay : addModule}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                    >
+                      <Plus size={14} />
+                      Add {contentType === "workshop" ? "Day" : adapter.terminology.container}
+                    </button>
 
-              {/* ── Sidebar actions (Fixed at bottom) ───────────────── */}
-              {status !== "SUBMITTED" && (
-                <div className="flex shrink-0 flex-col gap-2 mt-auto pt-4 pb-2 px-1 border-t border-slate-100/50">
-                  {contentType === "workshop" ? (
-                    <button
-                      type="button"
-                      onClick={addEventDay}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
-                    >
-                      <Plus size={14} />
-                      Add Day
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={addModule}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
-                    >
-                      <Plus size={14} />
-                      Add {adapter.terminology.container}
-                    </button>
-                  )}
+                    {(typeof adapter.addBadge === "function" ||
+                      contentType === "course" ||
+                      contentType === "workshop") && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          title="Add something else to this content"
+                          className="flex w-10 shrink-0 items-center justify-center rounded-2xl border border-white/40 bg-white/70 text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
+                        >
+                          <ChevronDown size={14} />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="z-50 w-56 rounded-xl border border-slate-100 bg-white p-1.5 shadow-lg"
+                        >
+                          {typeof adapter.addBadge === "function" && (
+                            <DropdownMenuItem
+                              onClick={addBadge}
+                              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              <Award size={14} className="text-amber-500" />
+                              Add {adapter.terminology.leafBadge ?? "Badge"}
+                            </DropdownMenuItem>
+                          )}
+                          {(contentType === "course" || contentType === "workshop") && (
+                            <DropdownMenuItem
+                              onClick={addExam}
+                              className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            >
+                              {addingExam ? (
+                                <Loader2 size={14} className="animate-spin text-indigo-500" />
+                              ) : (
+                                <GraduationCap size={14} className="text-indigo-500" />
+                              )}
+                              Add Exam
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+
                   {contentType === "course" && (
                     <div className="flex flex-col gap-1 rounded-2xl border border-white/40 bg-white/70 px-3 py-2 shadow-sm backdrop-blur-md">
                       <label htmlFor="course-category-select" className="text-[10px] font-bold uppercase tracking-wide text-[#14142b]/50">
@@ -2175,38 +2029,10 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
                       </select>
                     </div>
                   )}
-                  {typeof adapter.addBadge === "function" && (
-                    <button
-                      type="button"
-                      onClick={addBadge}
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow"
-                    >
-                      <Plus size={14} />
-                      Add {adapter.terminology.leafBadge ?? "Badge"}
-                    </button>
-                  )}
-                  {contentType === "course" && (
-                    <button
-                      type="button"
-                      onClick={addExam}
-                      disabled={addingExam}
-                      title="Create a new exam and attach it to this course, or attach one you already own from Studio → Exams"
-                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/70 px-4 py-2.5 text-xs font-bold text-[#14142b] shadow-sm backdrop-blur-md transition-all hover:bg-white/90 hover:shadow disabled:opacity-60"
-                    >
-                      {addingExam ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                      Add Exam
-                    </button>
-                  )}
                 </div>
-              )}
-
-            </div>
-          </aside>
-
-        {/* ── Canvas: wide, centered pane. Fixed in place — only its own inner
-             content scrolls, so the panel itself never shifts and the scrollbar
-             sits at the panel's own edge instead of the browser window's. ── */}
-        <main className="z-0 flex flex-col min-h-0 absolute inset-0 items-center">
+              ) : undefined
+        }
+      >
           {status === "SUBMITTED" && (
             <div className="flex justify-center pointer-events-none fixed top-20 inset-x-0 z-[70]">
               <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-5 py-2 rounded-full bg-white border border-slate-200 shadow-md">
@@ -2278,8 +2104,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               </div>
             </div>
           )}
-        </main>
-      </div>
-    </div>
+      </StudioEditorBody>
+    </StudioEditorFrame>
   );
 }

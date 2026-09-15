@@ -19,6 +19,9 @@ const IMMERSIVE_ROUTES = [
   /^\/studio\/workshop\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/events\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/content\/[^/]+\/[^/]+\/edit\/?$/,
+  // The exam editor is the same full-screen Studio surface as the course editor: it draws its own
+  // top bar, so the app navbar sitting above it produced two overlapping rows of pills.
+  /^\/studio\/exam\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
 ];

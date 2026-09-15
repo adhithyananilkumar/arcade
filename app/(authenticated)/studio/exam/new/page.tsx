@@ -21,7 +21,7 @@ export default function NewExamPage() {
     try {
       const exam = await createExam({ title: title.trim(), purpose: purpose.trim() || undefined });
       toast.success("Exam created");
-      router.push(`/studio/exam/${exam.id}/config`);
+      router.push(`/studio/content/exam/${exam.id}`);
     } catch {
       toast.error("Failed to create exam");
     } finally {

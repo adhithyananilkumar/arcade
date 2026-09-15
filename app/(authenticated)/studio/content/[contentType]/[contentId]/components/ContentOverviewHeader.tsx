@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ import { CONTENT_TYPE_LABEL, editorHref, previewHref } from "../lib/contentTypeR
 import type { ReviewResponse } from "@/domains/publishing/api/platformReview";
 import {
   submitForReview,
+  supportsReviewSubmission,
   DUPLICATE_ACTION,
   archiveContent,
   deleteContent,
@@ -123,17 +124,6 @@ export function ContentOverviewHeader({
   const [confirmAction, setConfirmAction] = useState<"delete" | "archive" | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const [liveCount, setLiveCount] = useState(14);
-
-  // Dynamic real-time heartbeat ticker for live active learners
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
-      setLiveCount((prev) => Math.min(22, Math.max(11, prev + delta)));
-    }, 3200);
-    return () => clearInterval(interval);
-  }, []);
-
   const statusKey = status?.toUpperCase();
   const reviewStatus = review?.status ?? null;
   const preview = previewHref(segment, contentId);
@@ -199,7 +189,11 @@ export function ContentOverviewHeader({
     primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
   } else {
     primaryActions.push({ key: "edit", label: "Edit Content", icon: Pencil, href: editorHref(segment, contentId), variant: "primary" });
-    primaryActions.push({ key: "submit", label: "Submit for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
+    // Exams self-publish an immutable version instead of entering a review round — publishing
+    // lives on the Publishing tab, so there is nothing to submit here.
+    if (supportsReviewSubmission(segment)) {
+      primaryActions.push({ key: "submit", label: "Submit for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
+    }
   }
 
   const createdParts = formatDateParts(createdAt);
@@ -243,16 +237,13 @@ export function ContentOverviewHeader({
           </span>
         </div>
 
-        {/* SINGLE ROW BELOW HEADING: Active Learners, Preview, Edit Content, 3-Dots Menu */}
+        {/* SINGLE ROW BELOW HEADING: Preview, Edit Content, 3-Dots Menu.
+            There used to be an "Active Learners N" badge here driven by a Math.random() ticker —
+            removed rather than kept as decoration. Real learner counts belong here only once a
+            live-activity endpoint exists to source them. */}
         {showMetadataRail && (
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-            {/* 1. Active Learners Badge (No Inner Oval) */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-300/90 bg-gradient-to-r from-emerald-50 via-teal-50/40 to-white px-3.5 py-2 shadow-2xs">
-              <span className="text-xs font-black text-slate-900 tracking-tight">Active Learners</span>
-              <span className="text-xs font-black text-emerald-600 transition-all duration-300">{liveCount}</span>
-            </div>
-
-            {/* 2. Action Buttons: Preview & Edit Content */}
+            {/* Action Buttons: Preview & Edit Content */}
             {channelSuspended ? (
               <span
                 className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700"
@@ -273,7 +264,7 @@ export function ContentOverviewHeader({
               ))
             )}
 
-            {/* 3. 3-Dots Overflow Menu Button */}
+            {/* 3-Dots Overflow Menu Button */}
             {(duplicate || canArchive || canDelete) && !channelSuspended && (
               <div className="relative">
                 <button

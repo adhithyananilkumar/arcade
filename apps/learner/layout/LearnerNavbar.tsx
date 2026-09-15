@@ -28,7 +28,7 @@ export default function LearnerNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
-  const { notifications, unreadCount, markAllRead, refresh } = useNotifications();
+  const { notifications, unreadCount, markAllRead, markRead, refresh } = useNotifications();
   const [hasChannels, setHasChannels] = useState(false);
   const [collaboratedEventId, setCollaboratedEventId] = useState<string | null>(null);
   const [hasMultipleCollabs, setHasMultipleCollabs] = useState<boolean>(false);
@@ -274,11 +274,14 @@ export default function LearnerNavbar() {
       {/* Center: small Console breadcrumbs */}
       {isConsole && (
         <div className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full px-3.5 py-2 apple-glass-dock sm:flex">
-          <Link
-            href="/console"
-            className="text-[11px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
+          <Link 
+            href="/console" 
+            className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5"
           >
             Console
+            {pendingAdminTasks.length > 0 && (
+              <span className="flex h-1.5 w-1.5 rounded-full bg-amber-500" title={`${pendingAdminTasks.length} pending admin task${pendingAdminTasks.length === 1 ? '' : 's'}`} />
+            )}
           </Link>
           {consoleCrumb && (
             <>
@@ -306,9 +309,9 @@ export default function LearnerNavbar() {
               title="Notifications"
             >
               <Bell size={20} strokeWidth={2} />
-              {(invitations.length + unreadCount + pendingAdminTasks.length) > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-[3px] text-[9px] font-bold text-white border border-white dark:border-neutral-900 shadow-sm">
-                  {invitations.length + unreadCount + pendingAdminTasks.length > 99 ? '99+' : invitations.length + unreadCount + pendingAdminTasks.length}
+                  {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
             </button>
@@ -366,34 +369,14 @@ export default function LearnerNavbar() {
                         </div>
                       </div>
                     )}
-                    {pendingAdminTasks.length > 0 && (
-                      <div className="border-b border-black/5 dark:border-white/5">
-                        <p className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">Admin Tasks</p>
-                        <div className="divide-y divide-black/5 dark:divide-white/5">
-                          {pendingAdminTasks.map(task => (
-                            <Link 
-                              href={task.href} 
-                              key={task.id} 
-                              onClick={() => setIsNotificationsOpen(false)} 
-                              className="block p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                            >
-                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium mb-1">
-                                {task.title}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                {task.subtitle}
-                              </p>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                                {new Date(task.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                              </p>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     <NotificationList
                       notifications={notifications}
-                      onItemClick={() => setIsNotificationsOpen(false)}
+                      onItemClick={(notif) => {
+                        if (notif && !notif.read) {
+                          markRead(notif.id);
+                        }
+                        setIsNotificationsOpen(false);
+                      }}
                       onNotificationAction={refresh}
                       emptyMessage={invitations.length > 0 ? undefined : 'No new notifications'}
                     />

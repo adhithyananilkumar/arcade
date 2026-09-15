@@ -60,6 +60,15 @@ export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> =
     { id: "DISCUSSION", label: "Discussion", group: "more", availability: "planned" },
     { id: "LEARNER_REVIEWS", label: "Learner reviews", group: "more", availability: "planned" },
   ],
+  exam: [
+    // Publishing is real: ExamPublishService cuts an immutable ExamVersion, and past versions
+    // are listable. Exams self-publish (no platform review round), so no review capability.
+    { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
+    // Planned — an exam has no collaborator table of its own; authority comes from the channel
+    // (channel.exams.manage[.own]), so there is nothing per-exam to list yet.
+    { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "planned" },
+    { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "planned" },
+  ],
 };
 
 export function availableCapabilities(segment: ContentTypeSegment): CapabilityDef[] {

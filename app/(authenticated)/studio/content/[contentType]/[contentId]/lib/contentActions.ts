@@ -8,7 +8,21 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 
 export function submitForReview(segment: ContentTypeSegment, contentId: string): Promise<unknown> {
   if (segment === "course") return api.post(`/api/courses/${contentId}/submit`);
+  if (segment === "exam") {
+    // Exams are not review-gated — they self-publish an immutable ExamVersion. Nothing should
+    // offer "submit for review" for one; see supportsReviewSubmission.
+    return Promise.reject(new Error("Exams are published directly, not submitted for review."));
+  }
   return submitEvent(contentId);
+}
+
+/** Whether this content type goes through the Platform Review round before publishing. */
+export function supportsReviewSubmission(segment: ContentTypeSegment): boolean {
+  return segment !== "exam";
+}
+
+export function publishExam(contentId: string): Promise<unknown> {
+  return api.post(`/api/exams/${contentId}/publish`, {});
 }
 
 export interface DuplicateAction {
@@ -34,6 +48,8 @@ export function deleteContent(
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
   if (segment === "event") return deleteEvent(contentId);
+  // Exam has no delete endpoint yet (DELETE /api/exams/{id} doesn't exist) — returning null keeps
+  // the action out of the menu rather than wiring a button to a 404.
   return null;
 }
 
@@ -41,7 +57,9 @@ export const SUPPORTS_TITLE_CONFIRM_DELETE: Partial<Record<ContentTypeSegment, b
   course: true,
 };
 
-const COLLABORATORS_BASE: Record<ContentTypeSegment, (id: string) => string> = {
+// Exam is deliberately absent: authority over an exam comes from the channel
+// (channel.exams.manage[.own]), not a per-exam collaborator list, so there is no endpoint here.
+const COLLABORATORS_BASE: Partial<Record<ContentTypeSegment, (id: string) => string>> = {
   course: (id) => `/api/v1/courses/${id}/collaborators`,
   event: (id) => `/api/v1/events/${id}/collaborators`,
 };
@@ -54,5 +72,9 @@ export function inviteCollaborator(
   email: string,
   role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER"
 ) {
-  return api.post(COLLABORATORS_BASE[segment](contentId), { email, role });
+  const base = COLLABORATORS_BASE[segment];
+  if (!base) {
+    return Promise.reject(new Error(`${segment} content has no collaborator list.`));
+  }
+  return api.post(base(contentId), { email, role });
 }

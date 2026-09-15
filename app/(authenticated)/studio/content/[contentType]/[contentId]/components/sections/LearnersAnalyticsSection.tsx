@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, GraduationCap, Star, Award, CheckCircle2, Radio, FileText, Search, ExternalLink, MessageSquare, BookOpen, Download, FolderArchive, Clock, Code2, Trophy } from "lucide-react";
+import Link from "next/link";
+import { Users, GraduationCap, Star, Award, CheckCircle2, Radio, FileText, Search, ExternalLink, MessageSquare, BookOpen, Download, FolderArchive, Clock, Code2, Trophy, Loader2 } from "lucide-react";
+import { listExamsForCourse, listExamsForEvent, type ExamResponse } from "@/domains/assessments";
+import type { ContentTypeSegment } from "../../lib/contentTypeRouting";
 
 export interface LearnerRecord {
   id: string;
@@ -11,13 +14,6 @@ export interface LearnerRecord {
   progress: number;
   isLive: boolean;
   status: "Active" | "Completed" | "In Progress";
-}
-
-export interface AssessmentRecord {
-  name: string;
-  takers: number;
-  passRate: number;
-  avgScore: number;
 }
 
 export interface FeedbackRecord {
@@ -44,12 +40,6 @@ const MOCK_LEARNERS: LearnerRecord[] = [
   { id: "4", name: "Elena Rostova", email: "elena.r@example.com", enrolledAt: "2026-08-14", progress: 42, isLive: true, status: "In Progress" },
   { id: "5", name: "Marcus Vance", email: "marcus.vance@example.com", enrolledAt: "2026-08-05", progress: 92, isLive: true, status: "Active" },
   { id: "6", name: "Amina Al-Mansoor", email: "amina.m@example.com", enrolledAt: "2026-08-03", progress: 100, isLive: false, status: "Completed" },
-];
-
-const MOCK_ASSESSMENTS: AssessmentRecord[] = [
-  { name: "Module 1: Foundations Quiz", takers: 1240, passRate: 96, avgScore: 92 },
-  { name: "Module 2: Midterm Evaluation", takers: 980, passRate: 91, avgScore: 86 },
-  { name: "Final Capstone Certification Exam", takers: 892, passRate: 88, avgScore: 84 },
 ];
 
 const MOCK_FEEDBACKS: FeedbackRecord[] = [
@@ -85,10 +75,23 @@ const MOCK_CERTIFICATES: CertificateRecord[] = [
   { id: "c3", studentName: "Amina Al-Mansoor", certificateCode: "CERT-2026-8912", earnedAt: "05 Aug 2026", score: 98 },
 ];
 
-export function LearnersAnalyticsSection() {
+export function LearnersAnalyticsSection({
+  contentId,
+  segment,
+}: {
+  contentId?: string;
+  segment?: ContentTypeSegment | null;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSubTab, setActiveSubTab] = useState<"learners" | "exams" | "feedback" | "certificates" | "curriculum">("learners");
   const [liveCount, setLiveCount] = useState(14);
+
+  const [exams, setExams] = useState<ExamResponse[] | null>(null);
+  useEffect(() => {
+    if (!contentId || !segment) return;
+    const request = segment === "event" ? listExamsForEvent(contentId) : listExamsForCourse(contentId);
+    request.then(setExams).catch(() => setExams([]));
+  }, [contentId, segment]);
 
   // Dynamic real-time heartbeat ticker for live active learners
   useEffect(() => {
@@ -249,47 +252,44 @@ export function LearnersAnalyticsSection() {
           </div>
         )}
 
-        {/* TAB 2: Assessments & Exam Performance */}
+        {/* TAB 2: Real attached exams — no fabricated pass-rate/avg-score numbers. Attempt-level
+             stats live in each exam's own "Attempts & Results" tab, not summarized here. */}
         {activeSubTab === "exams" && (
           <div className="rounded-[24px] border-[1.5px] border-indigo-400/80 bg-gradient-to-b from-indigo-50/30 via-white to-white p-6 shadow-[4px_-4px_0px_0px_#C7D2FE] flex flex-col gap-4">
             <h3 className="text-base font-black tracking-tight text-slate-900 flex items-center gap-2">
               <FileText size={18} className="text-indigo-600" />
-              Assessment & Exam Performance
+              Assessments & Exams
             </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {MOCK_ASSESSMENTS.map((exam, idx) => {
-                const colors = [
-                  "from-blue-600 via-indigo-600 to-purple-600",
-                  "from-indigo-600 via-purple-600 to-pink-600",
-                  "from-emerald-500 via-teal-600 to-indigo-600",
-                ];
-                const cornerBg = colors[idx % colors.length];
-                return (
-                  <div
-                    key={exam.name}
-                    className="relative overflow-hidden flex flex-col justify-between p-5 rounded-[22px] border border-indigo-200/90 bg-gradient-to-b from-indigo-50/20 via-white to-white shadow-[3px_-3px_0px_0px_#C7D2FE] transition-all duration-200 hover:scale-[1.01]"
+            {exams === null ? (
+              <div className="flex items-center justify-center py-10 text-slate-400">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : exams.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-indigo-200 bg-white px-4 py-8 text-center text-xs font-semibold text-slate-500">
+                No assessments attached yet. Add one from the content editor.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {exams.map((exam) => (
+                  <Link
+                    key={exam.id}
+                    href={`/studio/content/exam/${exam.id}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
                   >
-                    {/* Top-Right Side Triangular Color Accent */}
-                    <div className={`absolute top-0 right-0 size-8 bg-gradient-to-bl ${cornerBg} [clip-path:polygon(100%_0,0_0,100%_100%)] shadow-2xs`} />
-
-                    <div className="flex flex-col gap-1 pr-6">
-                      <span className="text-xs font-black text-slate-900 leading-snug">{exam.name}</span>
-                      <span className="text-[11px] font-medium text-slate-400">{exam.takers} students evaluated</span>
+                    <div className="min-w-0">
+                      <span className="block truncate text-xs font-black text-slate-900">{exam.title}</span>
+                      <span className="text-[11px] font-medium text-slate-400">
+                        {exam.purpose ?? "Assessment"} · {exam.questionCount} question
+                        {exam.questionCount === 1 ? "" : "s"}
+                      </span>
                     </div>
-                    <div className="pt-4 flex items-center justify-between border-t border-indigo-100/70 mt-3">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Pass Rate</span>
-                        <span className="text-xl font-black text-slate-900">{exam.passRate}%</span>
-                      </div>
-                      <div className="flex flex-col text-right">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">Avg Score</span>
-                        <span className="text-xl font-black text-slate-900">{exam.avgScore}%</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    <span className="flex-shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">
+                      {exam.wasPublished ? "Published" : "Draft"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

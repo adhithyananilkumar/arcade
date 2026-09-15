@@ -7,15 +7,27 @@ import type {
   AttemptResponse,
   BankQuestionRequest,
   BankQuestionResponse,
+  ExamAttemptSummaryResponse,
+  ExamPlanRequest,
+  ExamPlanResponse,
+  ExamPlanSectionResponse,
+  ExamPlanValidationResponse,
   ExamRequest,
   ExamResponse,
   ExamResultResponse,
+  ExamSelectionRuleRequest,
+  ExamSelectionRuleResponse,
   QuestionBankQuestionsRequest,
   QuestionBankSummary,
+  QuestionPoolDetail,
+  QuestionPoolFilterRequest,
   QuestionPoolMembersRequest,
+  QuestionPoolPreviewResponse,
   QuestionPoolRequest,
   QuestionPoolResponse,
   QuestionResponse,
+  QuestionSearchCriteria,
+  QuestionSearchResponse,
   QuizAttemptResponse,
   QuizAttemptSummaryResponse,
   QuizQuestionsRequest,
@@ -83,6 +95,10 @@ function fromWire(q: WireBankQuestionResponse): BankQuestionResponse {
   return { ...q, prompt: parsePrompt(q.prompt) };
 }
 
+type WirePoolPreview = Omit<QuestionPoolPreviewResponse, "questions"> & {
+  questions: WireBankQuestionResponse[];
+};
+
 function toWire(q: BankQuestionRequest): WireBankQuestionRequest {
   return { ...q, prompt: JSON.stringify(q.prompt ?? EMPTY_DOC) };
 }
@@ -141,6 +157,36 @@ export async function saveSectionQuestions(
   return wire.map(fromWire);
 }
 
+/**
+ * One filtered page of the bank's questions. Always paginated — the authoring table must stay
+ * usable on a bank with tens of thousands of questions, so the browser never holds them all.
+ */
+export function buildQuestionSearchParams(criteria: QuestionSearchCriteria = {}): URLSearchParams {
+  const params = new URLSearchParams();
+  // Repeated keys rather than comma-joined values: the endpoint binds each facet to a List, and a
+  // tag containing a comma would otherwise silently split into two filters.
+  criteria.sectionIds?.forEach((id) => params.append("sectionId", id));
+  criteria.difficulties?.forEach((d) => params.append("difficulty", d));
+  criteria.types?.forEach((t) => params.append("type", t));
+  criteria.tags?.forEach((t) => params.append("tag", t));
+  if (criteria.search?.trim()) params.set("q", criteria.search.trim());
+  params.set("offset", String(criteria.offset ?? 0));
+  params.set("limit", String(criteria.limit ?? 25));
+  return params;
+}
+
+export async function searchBankQuestions(
+  bankId: string,
+  criteria: QuestionSearchCriteria = {}
+): Promise<QuestionSearchResponse> {
+  const params = buildQuestionSearchParams(criteria);
+
+  const wire = await api.get<Omit<QuestionSearchResponse, "questions"> & { questions: WireBankQuestionResponse[] }>(
+    `/api/question-banks/${bankId}/questions/search?${params.toString()}`
+  );
+  return { ...wire, questions: wire.questions.map(fromWire) };
+}
+
 // ── Question pools ────────────────────────────────────────────────────────────
 
 export function listPools(bankId: string) {
@@ -151,8 +197,36 @@ export function createPool(bankId: string, req: QuestionPoolRequest = {}) {
   return api.post<QuestionPoolResponse>(`/api/question-banks/${bankId}/pools`, req);
 }
 
+export function listPoolDetails(bankId: string) {
+  return api.get<QuestionPoolDetail[]>(`/api/question-banks/${bankId}/pools`);
+}
+
+export function createPoolWithFilter(bankId: string, req: QuestionPoolFilterRequest) {
+  return api.post<QuestionPoolDetail>(`/api/question-banks/${bankId}/pools`, req);
+}
+
+/** Partial update — title, description, mode and filter facets, each independently optional. */
+export function updatePool(poolId: string, req: QuestionPoolFilterRequest) {
+  return api.patch<QuestionPoolDetail>(`/api/question-banks/pools/${poolId}`, req);
+}
+
 export function renamePool(poolId: string, title: string) {
   return api.patch<QuestionPoolResponse>(`/api/question-banks/pools/${poolId}`, { title });
+}
+
+/** What a saved pool matches right now. */
+export async function previewPool(poolId: string): Promise<QuestionPoolPreviewResponse> {
+  const wire = await api.get<WirePoolPreview>(`/api/question-banks/pools/${poolId}/preview`);
+  return { ...wire, questions: wire.questions.map(fromWire) };
+}
+
+/** What an unsaved filter would match — drives the live count while the author edits facets. */
+export async function previewPoolDraft(
+  bankId: string,
+  req: QuestionPoolFilterRequest
+): Promise<QuestionPoolPreviewResponse> {
+  const wire = await api.post<WirePoolPreview>(`/api/question-banks/${bankId}/pools/preview`, req);
+  return { ...wire, questions: wire.questions.map(fromWire) };
 }
 
 export function deletePool(poolId: string) {
@@ -222,9 +296,13 @@ export function detachExamFromEvent(eventId: string, examId: string) {
 // Every mutation here is authoritative server-side — score, pass/fail, remaining time, and
 // question correctness are never computed or trusted from the client.
 
-/** Starts a new attempt, or resumes the caller's already-open one. */
-export function startExamAttempt(examId: string) {
-  return api.post<AttemptResponse>(`/api/exam-attempts/exams/${examId}/start`, {});
+/**
+ * Starts a new attempt, or resumes the caller's already-open one. `planId` picks which of the
+ * exam's plans to sit; omitted, the server uses the exam's first active plan.
+ */
+export function startExamAttempt(examId: string, planId?: string | null) {
+  const query = planId ? `?planId=${encodeURIComponent(planId)}` : "";
+  return api.post<AttemptResponse>(`/api/exam-attempts/exams/${examId}/start${query}`, {});
 }
 
 export function getExamAttempt(attemptId: string) {
@@ -248,4 +326,94 @@ export function submitExamAttempt(attemptId: string) {
 
 export function getExamResult(attemptId: string) {
   return api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
+}
+
+/** Creator-facing: every learner's attempts at this exam. */
+export function listAttemptsForExam(examId: string) {
+  return api.get<ExamAttemptSummaryResponse[]>(`/api/exam-attempts/exams/${examId}/all`);
+}
+
+/** Get-or-create the question bank this exam draws from (its course's, or its own if standalone). */
+export function getExamQuestionBank(examId: string) {
+  return api.get<QuestionBankSummary>(`/api/exams/${examId}/question-bank`);
+}
+
+/** Immutable published versions of this exam, newest first. */
+export function listExamVersions(examId: string) {
+  return api.get<Array<{ id: string; versionNumber: number; label: string | null; publishedAt: string }>>(
+    `/api/exams/${examId}/versions`
+  );
+}
+
+/** Cuts a new immutable published version from the exam's current draft configuration. */
+export function publishExam(examId: string, label?: string) {
+  return api.post<{ versionId: string; versionNumber: number; publishedAt: string }>(
+    `/api/exams/${examId}/publish`,
+    label ? { label } : {}
+  );
+}
+
+// ── Exam plans ────────────────────────────────────────────────────────────────
+// A plan is one way of offering an exam. Sections and selection rules belong to a plan, because
+// the same examination can be run several different ways over the same questions.
+
+export function listExamPlans(examId: string) {
+  return api.get<ExamPlanResponse[]>(`/api/exams/${examId}/plans`);
+}
+
+export function createExamPlan(examId: string, req: ExamPlanRequest = {}) {
+  return api.post<ExamPlanResponse>(`/api/exams/${examId}/plans`, req);
+}
+
+export function getExamPlan(planId: string) {
+  return api.get<ExamPlanResponse>(`/api/exam-plans/${planId}`);
+}
+
+export function updateExamPlan(planId: string, req: ExamPlanRequest) {
+  return api.patch<ExamPlanResponse>(`/api/exam-plans/${planId}`, req);
+}
+
+export function duplicateExamPlan(planId: string) {
+  return api.post<ExamPlanResponse>(`/api/exam-plans/${planId}/duplicate`, {});
+}
+
+export function deleteExamPlan(planId: string) {
+  return api.delete<void>(`/api/exam-plans/${planId}`);
+}
+
+/** Per-rule "asked for N, N available" check. Run before publishing, and live while editing. */
+export function validateExamPlan(planId: string) {
+  return api.get<ExamPlanValidationResponse>(`/api/exam-plans/${planId}/validate`);
+}
+
+export function createPlanSection(planId: string, title?: string) {
+  return api.post<ExamPlanSectionResponse>(`/api/exam-plans/${planId}/sections`, title ? { title } : {});
+}
+
+export function renamePlanSection(sectionId: string, title: string) {
+  return api.patch<ExamPlanSectionResponse>(`/api/exams/sections/${sectionId}`, { title });
+}
+
+export function deletePlanSection(sectionId: string) {
+  return api.delete<void>(`/api/exams/sections/${sectionId}`);
+}
+
+/** Replaces a section's entire rule set. */
+export function savePlanSectionRules(sectionId: string, rules: ExamSelectionRuleRequest[]) {
+  return api.put<ExamSelectionRuleResponse[]>(`/api/exams/sections/${sectionId}/rules`, { rules });
+}
+
+/**
+ * Creator-facing preview of the paper a plan would produce. Distinct from the learner endpoint,
+ * which generates and keeps the caller's own paper — previewing must never consume that.
+ */
+export async function previewExamPaper(
+  examId: string,
+  planId?: string | null
+): Promise<Array<{ id: string; level: string; question: TiptapDocument; options: string[]; marks: number | null }>> {
+  const query = planId ? `?planId=${encodeURIComponent(planId)}` : "";
+  const wire = await api.get<Array<{ id: string; level: string; question: string; options: string[]; marks: number | null }>>(
+    `/api/exams/${examId}/preview-paper${query}`
+  );
+  return wire.map((q) => ({ ...q, question: parsePrompt(q.question) }));
 }

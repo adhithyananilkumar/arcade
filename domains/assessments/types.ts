@@ -66,6 +66,8 @@ export interface BankQuestionResponse {
   position: number;
   options: BankOptionResponse[];
   sampleAnswer: string;
+  /** Free-form author-set topic tags. Dynamic pools and selection rules filter on these. */
+  tags: string[];
 }
 
 export interface BankOptionRequest {
@@ -81,6 +83,8 @@ export interface BankQuestionRequest {
   points?: number;
   options: BankOptionRequest[];
   sampleAnswer?: string;
+  /** Omit to leave the question's existing tags untouched. */
+  tags?: string[];
 }
 
 export interface QuestionBankQuestionsRequest {
@@ -223,6 +227,9 @@ export interface ExamResponse {
   mediumPercent: number;
   hardPercent: number;
   examType: "BADGED" | "CERTIFIED";
+  durationMinutes: number;
+  passPercentage: number;
+  maxAttempts: number;
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
@@ -246,6 +253,9 @@ export interface ExamRequest {
   mediumPercent?: number;
   hardPercent?: number;
   examType?: "BADGED" | "CERTIFIED";
+  durationMinutes?: number;
+  passPercentage?: number;
+  maxAttempts?: number;
   proctoringRequired?: boolean;
   identityVerificationRequired?: boolean;
   fullscreenRequired?: boolean;
@@ -291,6 +301,21 @@ export interface SaveAnswerRequest {
   textAnswer?: string | null;
 }
 
+/** Creator-facing: one learner's attempt row in an exam's Attempts & Results tab. */
+export interface ExamAttemptSummaryResponse {
+  attemptId: string;
+  userId: string;
+  userName: string;
+  attemptNumber: number;
+  status: string;
+  startedAt: string;
+  submittedAt: string | null;
+  marksObtained: number | null;
+  maximumMarks: number | null;
+  percentage: number | null;
+  passed: boolean | null;
+}
+
 export interface ExamResultResponse {
   attemptId: string;
   examId: string;
@@ -306,4 +331,175 @@ export interface ExamResultResponse {
   passed: boolean;
   scoringVersion: number;
   calculatedAt: string;
+}
+
+// ── Exam Plans ────────────────────────────────────────────────────────────────
+// An Exam Content is the examination itself. An Exam Plan is one way of offering it — its own
+// question selection, timing, attempt allowance, scoring, delivery, security and completion
+// behaviour. One exam may carry several ("Course Completion", "Certification", "Practice").
+// `name` is free text the creator authors; nothing in the platform branches on it, so a new kind
+// of examination never needs a code change. Mirrors exam/dto/ExamPlan{Request,Response}.java.
+
+export type DeliveryMode = "ON_DEMAND" | "SCHEDULED";
+
+export type SelectionMode = "RULE_BASED" | "MANUAL";
+
+export interface ExamSelectionRuleResponse {
+  id: string;
+  sectionId: string;
+  selectionMode: SelectionMode;
+  /** Draw from this pool; null means the question bank itself. */
+  poolId: string | null;
+  /** Restrict to one question-bank section; null means no section constraint. */
+  bankSectionId: string | null;
+  difficulty: Difficulty | null;
+  tags: string[];
+  /** Marks each drawn question is worth; null means "the question's own points". */
+  marksPerQuestion: number | null;
+  count: number;
+  position: number;
+  /** Server-rendered description of the source, e.g. "Java Medium" or "Question Bank · OOP". */
+  sourceLabel: string;
+  manualQuestionIds: string[];
+}
+
+export interface ExamSelectionRuleRequest {
+  selectionMode?: SelectionMode;
+  poolId?: string | null;
+  bankSectionId?: string | null;
+  difficulty?: Difficulty | null;
+  tags?: string[];
+  marksPerQuestion?: number | null;
+  count?: number;
+  manualQuestionIds?: string[];
+}
+
+export interface ExamPlanSectionResponse {
+  id: string;
+  examId: string;
+  planId: string;
+  title: string;
+  position: number;
+  rules: ExamSelectionRuleResponse[];
+}
+
+export interface ExamPlanResponse {
+  id: string;
+  examId: string;
+  name: string;
+  description: string | null;
+  position: number;
+  active: boolean;
+  durationMinutes: number;
+  maxAttempts: number;
+  passPercentage: number;
+  deliveryMode: DeliveryMode;
+  opensAt: string | null;
+  closesAt: string | null;
+  fixedPaper: boolean;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  registrationRequired: boolean;
+  proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
+  fullscreenRequired: boolean;
+  grantsCompletion: boolean;
+  grantsCertificate: boolean;
+  /** Sum of every rule's count — the size of the paper this plan builds. */
+  totalQuestions: number;
+  totalMarks: number;
+  sections: ExamPlanSectionResponse[];
+}
+
+/** Every field optional: a null/absent field leaves that part of the plan unchanged. */
+export type ExamPlanRequest = Partial<{
+  name: string;
+  description: string;
+  active: boolean;
+  durationMinutes: number;
+  maxAttempts: number;
+  passPercentage: number;
+  deliveryMode: DeliveryMode;
+  opensAt: string | null;
+  closesAt: string | null;
+  fixedPaper: boolean;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  registrationRequired: boolean;
+  proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
+  fullscreenRequired: boolean;
+  grantsCompletion: boolean;
+  grantsCertificate: boolean;
+}>;
+
+export interface ExamPlanValidationResponse {
+  ok: boolean;
+  planId: string;
+  totalRequired: number;
+  rules: Array<{
+    ruleId: string;
+    sectionId: string;
+    sectionTitle: string;
+    sourceLabel: string;
+    required: number;
+    available: number;
+    ok: boolean;
+  }>;
+}
+
+// ── Question pools, dynamic ───────────────────────────────────────────────────
+// A MANUAL pool is a curated list of questions. A DYNAMIC pool is a saved filter whose matching
+// set changes on its own as the question bank changes. `questionCount` is always the live count.
+
+export type PoolMode = "MANUAL" | "DYNAMIC";
+
+export interface QuestionPoolDetail {
+  id: string;
+  bankId: string;
+  title: string;
+  description: string | null;
+  mode: PoolMode;
+  sectionIds: string[];
+  difficulties: Difficulty[];
+  questionTypes: BankQuestionType[];
+  tags: string[];
+  questionCount: number;
+}
+
+export interface QuestionPoolFilterRequest {
+  title?: string;
+  description?: string;
+  mode?: PoolMode;
+  sectionIds?: string[];
+  difficulties?: Difficulty[];
+  questionTypes?: BankQuestionType[];
+  tags?: string[];
+}
+
+export interface QuestionPoolPreviewResponse {
+  matchingCount: number;
+  questions: BankQuestionResponse[];
+  hasMore: boolean;
+}
+
+// ── Question bank search ──────────────────────────────────────────────────────
+
+export interface QuestionSearchCriteria {
+  sectionIds?: string[];
+  difficulties?: Difficulty[];
+  types?: BankQuestionType[];
+  tags?: string[];
+  search?: string;
+  offset?: number;
+  limit?: number;
+}
+
+export interface QuestionSearchResponse {
+  questions: BankQuestionResponse[];
+  total: number;
+  offset: number;
+  limit: number;
+  /** Every tag in use anywhere in the bank — the tag filter's options. */
+  availableTags: string[];
 }

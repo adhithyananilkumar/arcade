@@ -21,10 +21,13 @@ import { ReadinessCard } from "./components/sections/ReadinessCard";
 import { ActivitySection, getActivityTheme, cleanActivityTitle } from "./components/sections/ActivitySection";
 import { CourseOverviewTab, getCourseMetrics } from "./components/content-types/CourseOverview";
 import { EventOverviewTab, getEventMetrics } from "./components/content-types/EventOverview";
+import { ExamOverviewTab } from "./components/content-types/ExamOverview";
 import { KeyInfoCard } from "./components/sections/KeyInfoCard";
 import { LearnersAnalyticsSection } from "./components/sections/LearnersAnalyticsSection";
+import { ExamOverviewSections } from "./components/sections/exam/ExamOverviewSections";
+import { getExam, type ExamResponse } from "@/domains/assessments";
 
-const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event"];
+const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event", "exam"];
 
 type LoadState =
   | { status: "loading" }
@@ -92,8 +95,26 @@ export default function ContentOverviewPage() {
   const [activeTab, setActiveTab] = useState<OverviewTab>("OVERVIEW");
   const [submitting, setSubmitting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // The exam's full configuration (duration, pass mark, proctoring, placement …) — only the
+  // summary fields are on ContentSummaryLite, and the Settings sub-tab edits the real record.
+  const [exam, setExam] = useState<ExamResponse | null>(null);
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
+
+  useEffect(() => {
+    if (segment !== "exam") return;
+    let cancelled = false;
+    getExam(contentId)
+      .then((data) => {
+        if (!cancelled) setExam(data);
+      })
+      .catch(() => {
+        // The page-level fetch below already surfaces not-found/forbidden for this exam.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [segment, contentId, reloadKey]);
 
   useEffect(() => {
     if (!segment) {
@@ -186,7 +207,7 @@ export default function ContentOverviewPage() {
   const groups = availableGroups(segment!);
   const review = data.review.status === "ok" ? data.review.data : null;
 
-  const metrics = segment === "course" ? getCourseMetrics(data) : getEventMetrics(data);
+  const metrics = segment === "course" ? getCourseMetrics(data) : segment === "event" ? getEventMetrics(data) : [];
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -230,16 +251,24 @@ export default function ContentOverviewPage() {
           onJumpToPublishing={() => setActiveTab("publishing")}
         />
 
-        {activeTab === "OVERVIEW" ? (
+        {activeTab === "OVERVIEW" && segment === "exam" ? (
+          exam ? (
+            <ExamOverviewSections exam={exam} onExamChange={setExam} />
+          ) : (
+            <Skeleton className="h-64 w-full rounded-3xl" />
+          )
+        ) : activeTab === "OVERVIEW" ? (
           <div className="flex flex-col gap-6">
             {segment === "event" && data.eventReadiness?.status === "ok" && (
               <ReadinessCard readiness={data.eventReadiness.data} continueHref={editorHref("event", contentId)} />
             )}
 
-            <LearnersAnalyticsSection />
+            <LearnersAnalyticsSection contentId={contentId} segment={segment} />
           </div>
+        ) : segment === "exam" ? (
+          <ExamOverviewTab tab={activeTab} contentId={contentId} />
         ) : activeTab === "analytics" ? (
-          <LearnersAnalyticsSection />
+          <LearnersAnalyticsSection contentId={contentId} segment={segment} />
         ) : segment === "course" ? (
           <CourseOverviewTab
             tab={activeTab}
