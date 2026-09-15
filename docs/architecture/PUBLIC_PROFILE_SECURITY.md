@@ -9,9 +9,9 @@ These are already the canonical, non-duplicated routes the task asked to verify 
 
 ## Public vs. private DTO separation (already existed, verified correct)
 
-`PublicProfileResponse` (constructed via `new PublicProfileResponse(User user)`, never a raw `User` serialization) exposes: `firstName, lastName, fullName, avatarUrl, createdAt, username, bio, linkedinUrl, githubUrl, courses, roadmaps, workshops, enrolledCourses, certificates, socialLinks, workingAt`.
+`PublicProfileResponse` (constructed via `new PublicProfileResponse(User user)`, never a raw `User` serialization) exposes: `firstName, lastName, fullName, avatarUrl, createdAt, username, bio, linkedinUrl, githubUrl, courses, workshops, enrolledCourses, certificates, socialLinks, workingAt`. (`roadmaps` was removed along with the Roadmap feature.)
 
-**Never exposed**: `email`, `mobileNumber`, `gender`, `address`, `passwordHash`, `platformRoles`, `channelMemberships`, `permissions`, `preferences`, `onboardingCompleted`, `failedLoginAttempts`, `lockoutEnd`, `deletedAt`, `provider`/`providerId`, or any internal database ID beyond the resource IDs the public DTOs' nested course/roadmap/workshop entries legitimately need.
+**Never exposed**: `email`, `mobileNumber`, `gender`, `address`, `passwordHash`, `platformRoles`, `channelMemberships`, `permissions`, `preferences`, `onboardingCompleted`, `failedLoginAttempts`, `lockoutEnd`, `deletedAt`, `provider`/`providerId`, or any internal database ID beyond the resource IDs the public DTOs' nested course/workshop entries legitimately need.
 
 No accidental serialization risk: `PublicProfileResponse` is a hand-built class with an explicit constructor reading specific `User` getters, not a Jackson `@JsonIgnore`-based filter over the full entity — there's no field that could silently start leaking just because a new column gets added to `User` later. (Confirmed: adding `users.timezone` in this pass did **not** require touching `PublicProfileResponse` at all, and the new column does not appear in it.)
 
@@ -29,7 +29,7 @@ Fix: the endpoint was deleted from `PublicProfileController`. A new self-service
 
 ## Public profile: no badges, no heatmap, no streak
 
-The public profile page (`app/(public)/[username]/page.tsx`) previously rendered: a static array of 15 fabricated badges (fake XP thresholds, future achievement dates like "Dec 15, 2027", fake `/courses/...` links) spliced with a client-computed "Streak N Days" badge name, plus a full TimeLog-backed contribution heatmap fetched via the now-removed public endpoint above. All of it was removed — none of it was backed by a real, intentionally-public data source. Real, backend-sourced sections (courses/roadmaps/workshops/enrolled/pinned certificates, all read from `PublicProfileResponse`) are unchanged.
+The public profile page (`app/(public)/[username]/page.tsx`) previously rendered: a static array of 15 fabricated badges (fake XP thresholds, future achievement dates like "Dec 15, 2027", fake `/courses/...` links) spliced with a client-computed "Streak N Days" badge name, plus a full TimeLog-backed contribution heatmap fetched via the now-removed public endpoint above. All of it was removed — none of it was backed by a real, intentionally-public data source. Real, backend-sourced sections (courses/workshops/enrolled/pinned certificates, all read from `PublicProfileResponse`) are unchanged.
 
 If a future task wants a real public streak or activity view, that requires a new, explicitly-public, backend-owned endpoint over `LearnerActivitySummary`/`LearnerDailyActivity` (with a decision on whether learners can opt out) — not a default this pass took.
 
