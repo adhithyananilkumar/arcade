@@ -25,7 +25,7 @@
   background: linear-gradient(to bottom, #E9EEFB 0%, #F8FAFC 25%, #FFFFFF 50%, #FFFFFF 75%, #EAF7EF 100%);
   color: var(--l-ink);
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .landing-root::before {
