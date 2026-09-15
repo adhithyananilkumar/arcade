@@ -18,7 +18,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { EventCollaboratorsManager } from './EventCollaboratorsManager';
-import { EnrollmentButton } from '@/domains/enrollment/components/EnrollmentButton';
+import { EnrollmentButton } from '@/domains/enrollment';
 import { toast } from 'sonner';
 import { EventPreviewDto, PricingModel } from '@/app/(authenticated)/studio/events/types';
 import { getMyRegistrationStatus, registerForEvent } from '@/app/(public)/workshop/api/registration';

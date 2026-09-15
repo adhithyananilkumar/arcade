@@ -1,20 +1,13 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import {
-  motion,
-  AnimatePresence,
-  Variants,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useReducedMotion,
-} from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowUpRight,
   Sparkles,
+  X,
   Award,
   ShieldCheck,
   BadgeCheck,
@@ -29,7 +22,25 @@ import {
   Globe,
   Code2,
   Quote,
+  Star,
+  GraduationCap,
+  Laptop,
+  BookOpen,
+  Lightbulb,
+  Brain,
+  MonitorPlay,
+  Presentation,
+  Headset,
+  Library,
+  PencilRuler,
+  Video
 } from "lucide-react";
+
+import BlurText from "@/components/ui/BlurText";
+import MagicBento, { ParticleCard } from "@/components/ui/MagicBento";
+import OrbitImages from "@/components/ui/OrbitImages";
+import FoldText from "@/components/ui/FoldText";
+import DepthCarousel from "@/components/ui/DepthCarousel";
 
 import {
   FOUNDERS_DATA,
@@ -39,7 +50,6 @@ import {
   Founder,
 } from "./foundersData";
 import FounderModal from "./FounderModal";
-import "@/apps/public/landing.css";
 
 function LinkedinIcon({ className }: { className?: string }) {
   return (
@@ -57,450 +67,489 @@ function GithubIcon({ className }: { className?: string }) {
   );
 }
 
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+function FlourishLine({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 240 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <motion.path
+        d="M 4 16 C 24 9, 42 21, 62 16 C 74 13, 78 4, 80 7 C 83 12, 75 19, 70 13 C 66 8, 74 7, 96 13 C 114 18, 118 5, 121 8 C 124 13, 116 20, 111 14 C 107 9, 117 8, 144 14 C 170 20, 196 9, 218 15 C 228 17, 234 14, 236 14"
+        stroke="currentColor"
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 1 }}
+        viewport={{ once: false, margin: "-50px" }}
+        transition={{
+          duration: 1.5,
+          ease: "easeInOut"
+        }}
+      />
+    </svg>
+  );
+}
+
+const ERA_HEADERS: Record<number, string> = {
+  0: "ERA ARCHITECTURE",
+  1: "THE FOUNDATION",
+  2: "THE EXPERIENCE",
+  3: "THE HORIZON"
 };
 
+const ERA_TITLE_COLORS: Record<number, string> = {
+  0: "text-rose-800",
+  1: "text-amber-700",
+  2: "text-purple-600",
+  3: "text-emerald-600"
+};
+
+const ERA_OUTER_THEMES: Record<number, { mainCard: string; rightCard: string }> = {
+  0: {
+    mainCard: "bg-gradient-to-br from-blue-50/70 via-sky-50/40 to-slate-50/70 border-blue-100/90",
+    rightCard: "bg-blue-50/40 border-blue-100/80"
+  },
+  1: {
+    mainCard: "bg-gradient-to-br from-amber-50/70 via-orange-50/40 to-slate-50/70 border-amber-100/90",
+    rightCard: "bg-amber-50/40 border-amber-100/80"
+  },
+  2: {
+    mainCard: "bg-gradient-to-br from-purple-50/70 via-fuchsia-50/40 to-slate-50/70 border-purple-100/90",
+    rightCard: "bg-purple-50/40 border-purple-100/80"
+  },
+  3: {
+    mainCard: "bg-gradient-to-br from-emerald-50/70 via-teal-50/40 to-slate-50/70 border-emerald-100/90",
+    rightCard: "bg-emerald-50/40 border-emerald-100/80"
+  }
+};
+
+const PLACARD_THEMES = [
+  {
+    // 0: Vibrant Blue
+    boxBg: "bg-gradient-to-r from-blue-100 via-sky-100 to-indigo-100",
+    border: "border-blue-300",
+    text: "text-blue-950 font-bold",
+    numberColor: "text-blue-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-blue-400"
+  },
+  {
+    // 1: Vibrant Warm Amber
+    boxBg: "bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100",
+    border: "border-amber-300",
+    text: "text-amber-950 font-bold",
+    numberColor: "text-amber-700",
+    shadow: "shadow-xs hover:shadow-md hover:border-amber-400"
+  },
+  {
+    // 2: Vibrant Purple
+    boxBg: "bg-gradient-to-r from-purple-100 via-fuchsia-100 to-violet-100",
+    border: "border-purple-300",
+    text: "text-purple-950 font-bold",
+    numberColor: "text-purple-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-purple-400"
+  },
+  {
+    // 3: Vibrant Emerald Green
+    boxBg: "bg-gradient-to-r from-emerald-100 via-teal-100 to-green-100",
+    border: "border-emerald-300",
+    text: "text-emerald-950 font-bold",
+    numberColor: "text-emerald-600",
+    shadow: "shadow-xs hover:shadow-md hover:border-emerald-400"
+  }
+];
+
+const ERA_STANDARDS: Record<number, string[]> = {
+  0: [
+    "A learning space without boundaries",
+    "Built around the learner",
+    "Beyond the traditional classroom",
+    "A vision for accessible education"
+  ],
+  1: [
+    "Learning, structured for every journey",
+    "One platform, many possibilities",
+    "Learning beyond the lecture",
+    "Designed to grow"
+  ],
+  2: [
+    "Learn at your own pace",
+    "Progress becomes visible",
+    "Classrooms find a digital home",
+    "Learning becomes engaging"
+  ],
+  3: [
+    "Learning that understands you",
+    "Every learner, a different journey",
+    "A connected learning ecosystem",
+    "From learning to possibility"
+  ]
+};
+
+const PHILOSOPHY_THEMES = [
+  {
+    // Card 1: Vibrant Blue (Design Systems theme)
+    heading: "text-blue-600",
+    border: "border-blue-300/90 hover:border-blue-400",
+    badge: "bg-blue-50/90 text-blue-600 border border-blue-200/80",
+    glowColor: "37, 99, 235"
+  },
+  {
+    // Card 2: Warm Amber (Interaction & Motion theme)
+    heading: "text-amber-800",
+    border: "border-amber-300/90 hover:border-amber-400",
+    badge: "bg-amber-50/90 text-amber-800 border border-amber-200/80",
+    glowColor: "180, 83, 9"
+  },
+  {
+    // Card 3: Soft Purple (Figma theme)
+    heading: "text-purple-600",
+    border: "border-purple-300/90 hover:border-purple-400",
+    badge: "bg-purple-50/90 text-purple-600 border border-purple-200/80",
+    glowColor: "147, 51, 234"
+  },
+  {
+    // Card 4: Mint / Emerald Green (Prototyping theme)
+    heading: "text-emerald-700",
+    border: "border-emerald-300/90 hover:border-emerald-400",
+    badge: "bg-emerald-50/90 text-emerald-700 border border-emerald-200/80",
+    glowColor: "4, 120, 87"
+  }
+];
+
 export default function FoundersPage() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
   const [selectedFounder, setSelectedFounder] = useState<Founder | null>(null);
   const [activeEraIndex, setActiveEraIndex] = useState<number>(0);
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
 
-  // Mouse Parallax values
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springConfig = { damping: 25, stiffness: 120 };
-  const mouseXSpring = useSpring(mouseX, springConfig);
-  const mouseYSpring = useSpring(mouseY, springConfig);
-
-  const bgX = useTransform(mouseXSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-8, 8]);
-  const bgY = useTransform(mouseYSpring, [-0.5, 0.5], shouldReduceMotion ? [0, 0] : [-5, 5]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    if (shouldReduceMotion) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
-
-  const activeMilestone = TIMELINE_MILESTONES[activeEraIndex];
+  const activeMilestone = TIMELINE_MILESTONES[activeEraIndex] || TIMELINE_MILESTONES[0];
 
   return (
-    <div className="landing-root min-h-screen flex flex-col relative z-10 bg-slate-50 overflow-hidden font-sans text-slate-900">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
+    <main className="min-h-screen bg-white text-slate-900 font-sans relative">
 
-        @keyframes gradientShift15s {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .animate-gradient-15s {
-          background-size: 200% 200%;
-          animation: gradientShift15s 15s ease-in-out infinite;
-        }
-      `}</style>
+      {/* ── HERO SECTION WITH SOFT GRADIENT WASH ── */}
+      <div className="relative w-full arcade-wash border-b border-slate-100 min-h-[95vh] flex flex-col items-center justify-center pt-16 overflow-hidden">
+        
+        {/* Floating Decorative Icons (Educational Theme) - Contained within Hero */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0 }} className="absolute top-[20%] left-[10%] sm:left-[15%] text-slate-400/20">
+            <GraduationCap size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 15, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[60%] left-[5%] sm:left-[10%] text-slate-400/20">
+            <Laptop size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[15%] left-[20%] sm:left-[25%] text-slate-400/20">
+            <BookOpen size={48} strokeWidth={1.5} />
+          </motion.div>
+          
+          <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }} className="absolute top-[15%] right-[15%] sm:right-[20%] text-slate-400/20">
+            <Lightbulb size={56} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }} className="absolute top-[50%] right-[5%] sm:right-[10%] text-slate-400/20">
+            <Brain size={64} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -15, 0] }} transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 2.5 }} className="absolute bottom-[20%] right-[20%] sm:right-[25%] text-slate-400/20">
+            <Award size={48} strokeWidth={1.5} />
+          </motion.div>
 
-      {/* Background Radial Glow Blobs */}
-      <div className="fixed inset-0 pointer-events-none -z-10 bg-slate-50">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-100/60 rounded-full blur-[120px] opacity-70" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-indigo-50/60 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 left-0 w-[600px] h-[600px] bg-teal-50/50 rounded-full blur-[100px]" />
-      </div>
-
-      {/* --- HERO SECTION --- */}
-      <section
-        ref={headerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="relative w-full min-h-[85vh] flex flex-col justify-center items-center text-center px-6 overflow-hidden z-10 bg-white/80 backdrop-blur-md pt-28 pb-12"
-      >
-        {/* Decorative Light Radial Rings */}
-        <motion.div
-          style={{ x: bgX, y: bgY }}
-          className="absolute inset-0 pointer-events-none flex items-center justify-center -z-10 opacity-40"
-        >
-          <div className="w-[700px] h-[700px] sm:w-[950px] sm:h-[950px] rounded-full border border-blue-200/60 absolute" />
-          <div className="w-[450px] h-[450px] sm:w-[680px] sm:h-[680px] rounded-full border border-teal-200/60 absolute" />
-          <div className="w-[250px] h-[250px] sm:w-[420px] sm:h-[420px] rounded-full border border-indigo-200/60 absolute" />
-        </motion.div>
-
-        <div className="relative z-10 max-w-[920px] mx-auto text-center space-y-8 py-4">
-          {/* HEADLINE */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[48px] sm:text-[68px] md:text-[80px] lg:text-[90px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-sm text-center"
-            style={{
-              fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
-              fontWeight: 600,
-            }}
-          >
-            Minds Behind{" "}
-            <span className="relative inline-block">
-              <span
-                className="inline-block animate-gradient-15s"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Arcade.
-              </span>
-              <motion.span
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] origin-left"
-              />
-            </span>
-          </motion.h1>
-
-          {/* SUBTITLE */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            className="text-[17px] sm:text-[19px] leading-[1.75] text-[#475569] max-w-[640px] mx-auto font-sans font-normal"
-          >
-            Meet the visionaries, educators, and engineers behind Arcade—redefining digital learning, verifiable credentials, and hands-on campus innovation at Amal Jyothi College of Engineering.
-          </motion.p>
-
-          {/* ACTION BUTTONS */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
-            className="pt-2 flex flex-wrap justify-center items-center gap-4"
-          >
-            <a
-              href="#founders-deck"
-              className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-full bg-[#0B132B] hover:bg-[#121E42] text-white font-medium text-base shadow-[0_10px_30px_-8px_rgba(11,19,43,0.35)] hover:shadow-[0_16px_36px_-6px_rgba(11,19,43,0.45)] border-t border-white/20 hover:-translate-y-[2px] transition-all duration-200 group"
-            >
-              <span>Meet Founders</span>
-              <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-inner group-hover:translate-x-1 transition-transform">
-                <ArrowUpRight className="w-4 h-4 text-[#0B132B] stroke-[2.5]" />
-              </span>
-            </a>
-
-            <a
-              href="#story-canvas"
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-medium text-base shadow-sm hover:shadow transition-all duration-200"
-            >
-              <span>How It Started</span>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </a>
+          <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute top-[30%] left-[25%] sm:left-[30%] text-slate-400/15">
+            <Presentation size={40} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -12, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute top-[35%] right-[30%] sm:right-[35%] text-slate-400/15">
+            <MonitorPlay size={40} strokeWidth={1.5} />
+          </motion.div>
+          
+          <motion.div animate={{ y: [0, 18, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }} className="absolute bottom-[40%] left-[15%] sm:left-[20%] text-slate-400/15">
+            <Library size={44} strokeWidth={1.5} />
+          </motion.div>
+          <motion.div animate={{ y: [0, -18, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.8 }} className="absolute bottom-[35%] right-[10%] sm:right-[15%] text-slate-400/15">
+            <PencilRuler size={44} strokeWidth={1.5} />
           </motion.div>
         </div>
-      </section>
 
-      {/* --- MEET THE FOUNDERS SECTION --- */}
-      <section id="founders-deck" className="py-20 px-6 bg-slate-50 relative z-10">
-        <div className="max-w-7xl mx-auto space-y-16">
-          {/* SECTION HEADER */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-200">
-              The 10 Founders of Arcade
-            </span>
-            <h2
-              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              Meet The Founders
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-              The engineers, educators, and creators who designed Arcade from the ground up to empower students and faculty.
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 w-full relative z-10">
+          <div className="max-w-3xl mx-auto space-y-6 text-center">
+            <BlurText
+              as="h1"
+              text="The Minds Behind Arcade."
+              delay={150}
+              animateBy="words"
+              direction="top"
+              stepDuration={0.35}
+              className="text-6xl sm:text-7xl lg:text-8xl tracking-normal text-slate-900 leading-[1.15] justify-center"
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
+              wordClasses={{
+                "Arcade.": "bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent pb-1"
+              }}
+            />
+
+            {/* Description */}
+            <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto">
+              Meet the 10 engineers, educators, and creators who designed Arcade at Amal Jyothi College of Engineering—building verifiable digital credentials, interactive workshops, and modern outcome-based learning.
             </p>
+
+
           </div>
+        </div>
+        
+        {/* Decorative Center Icon */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="absolute bottom-12 sm:bottom-16 left-1/2 -translate-x-1/2 text-slate-300/30 z-10 pointer-events-none"
+        >
+          <GraduationCap size={120} strokeWidth={1} />
+        </motion.div>
+      </div>
+      {/* ── MAIN BODY (PURE WHITE BACKGROUND) ── */}
+      <div className="w-full bg-white">
+        <div className="mx-auto max-w-6xl px-5 pt-10 sm:pt-12 pb-20 sm:px-8 space-y-28">
+          {/* --- FOUNDERS CIRCULAR GRID SECTION (MATCHING REFERENCE IMAGE) --- */}
+          <section className="space-y-16 pt-6 pb-4">
+            {/* Section Header */}
+            <div className="text-center space-y-3 max-w-2xl mx-auto">
+              <BlurText
+                as="h2"
+                text="The Ones Who Built With Us"
+                delay={150}
+                animateBy="words"
+                direction="top"
+                className="text-4xl sm:text-6xl font-bold text-slate-900 tracking-tight font-['Dancing_Script'] justify-center"
+              />
+              <p className="text-sm sm:text-base text-slate-500 font-normal leading-relaxed">
+                Meet our outstanding team — a synergy of talent, creativity, and dedication, crafting success together.
+              </p>
+            </div>
 
-          {/* 10 FOUNDERS CLEAN GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 sm:gap-8 items-stretch">
-            {FOUNDERS_DATA.map((founder, index) => (
-              <motion.div
-                key={founder.id}
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: (index % 5) * 0.1 }}
-                className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
-                onClick={() => setSelectedFounder(founder)}
-              >
-                <div>
-                  {/* CLEAR PORTRAIT IMAGE CONTAINER */}
-                  <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-4 bg-slate-100 shadow-inner">
-                    <Image
-                      src={founder.image}
-                      alt={founder.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
-                      priority={index < 5}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  </div>
+            {/* Circular Team Cards Grid (Top 8 + Bottom 2 with Flourish Lines) */}
+            <div className="space-y-12 max-w-6xl mx-auto">
+              {/* First 8 Founders (4 per row) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 sm:gap-x-10 items-start justify-items-center">
+                {FOUNDERS_DATA.slice(0, 8).map((founder, index) => (
+                  <motion.div
+                    key={founder.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: (index % 4) * 0.1 }}
+                    onClick={() => setSelectedFounder(founder)}
+                    className="group flex flex-col items-center text-center cursor-pointer max-w-[240px]"
+                  >
+                    {/* Large Circular Portrait Image */}
+                    <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
+                      <Image
+                        src={founder.image}
+                        alt={founder.name}
+                        fill
+                        className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
+                        sizes="200px"
+                        priority={index < 4}
+                      />
+                    </div>
 
-                  {/* DETAILS */}
-                  <div className="space-y-2">
-                    <span className="inline-block text-[10px] font-extrabold tracking-wider uppercase text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
-                      {founder.role}
-                    </span>
-
-                    <h3 className="text-xl font-bold text-slate-900 font-serif leading-tight group-hover:text-blue-600 transition-colors">
+                    {/* Name */}
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
                       {founder.name}
                     </h3>
 
-                    <p className="text-slate-600 text-xs leading-relaxed line-clamp-3">
-                      "{founder.quote}"
+                    {/* Role */}
+                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                      {founder.role}
                     </p>
-                  </div>
-                </div>
 
-                {/* BOTTOM ACTION BAR */}
-                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                  {/* Social Links */}
-                  <div className="flex items-center gap-1.5">
-                    {founder.social.linkedin && (
-                      <a
-                        href={founder.social.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-full bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-500 transition-colors shadow-sm"
-                        title="LinkedIn"
-                      >
-                        <LinkedinIcon className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                    {founder.social.github && (
-                      <a
-                        href={founder.social.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-500 transition-colors shadow-sm"
-                        title="GitHub"
-                      >
-                        <GithubIcon className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                    {founder.social.email && (
-                      <a
-                        href={`mailto:${founder.social.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-full bg-slate-100 hover:bg-teal-600 hover:text-white text-slate-500 transition-colors shadow-sm"
-                        title="Email"
-                      >
-                        <Mail className="w-3.5 h-3.5" />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Full Bio Modal Trigger */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFounder(founder);
-                    }}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 transition-all group-hover:translate-x-0.5"
-                  >
-                    <span>Full Bio</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* --- HOW IT STARTED: UNIQUE INTERACTIVE ERA CANVAS --- */}
-      <section id="story-canvas" className="py-24 px-6 bg-white relative z-10">
-        <div className="max-w-6xl mx-auto space-y-16">
-          {/* SECTION HEADER */}
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-200/80">
-              Interactive Story Canvas
-            </span>
-            <h2
-              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              How Arcade Started
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-              Select an era below to explore how Arcade evolved from a campus idea into an institutional education platform.
-            </p>
-          </div>
-
-          {/* ERA SELECTION PILLS */}
-          <div className="flex flex-wrap justify-center items-center gap-3">
-            {TIMELINE_MILESTONES.map((m, idx) => {
-              const isActive = activeEraIndex === idx;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setActiveEraIndex(idx)}
-                  className={`px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 border ${
-                    isActive
-                      ? "bg-[#0B132B] text-white border-[#0B132B] shadow-lg"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${isActive ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"}`}>
-                    {idx + 1}
-                  </span>
-                  <span>{m.badge}</span>
-                  <span className="text-xs opacity-75 hidden sm:inline">({m.year.split(" - ")[0]})</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ACTIVE ERA CARD DISPLAY */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeEraIndex}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
-              className="p-8 sm:p-12 rounded-3xl bg-slate-50 border border-slate-200/80 shadow-xl relative overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
-            >
-              <div className="lg:col-span-7 space-y-5">
-                <div className="flex items-center gap-3">
-                  <span className="px-3.5 py-1 rounded-full text-xs font-mono bg-blue-100 text-blue-900 border border-blue-200">
-                    {activeMilestone.year}
-                  </span>
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-700">
-                    {activeMilestone.badge}
-                  </span>
-                </div>
-
-                <h3 className="text-2xl sm:text-4xl font-bold text-slate-900 font-serif leading-tight">
-                  {activeMilestone.title}
-                </h3>
-                <p className="text-sm sm:text-base font-semibold text-blue-600">
-                  {activeMilestone.subtitle}
-                </p>
-
-                <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-sans pt-2">
-                  {activeMilestone.description}
-                </p>
+                    {/* Social Icons Row (Only LinkedIn & GitHub) */}
+                    <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
+                      {founder.social.linkedin && (
+                        <a
+                          href={founder.social.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-slate-900 transition-colors p-1"
+                          title="LinkedIn"
+                        >
+                          <LinkedinIcon className="w-4 h-4" />
+                        </a>
+                      )}
+                      {founder.social.github && (
+                        <a
+                          href={founder.social.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:text-slate-900 transition-colors p-1"
+                          title="GitHub"
+                        >
+                          <GithubIcon className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
 
-              <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between text-xs text-slate-500 font-mono border-b border-slate-100 pb-3">
-                  <span>ERA ARCHITECTURE</span>
-                  <span className="text-blue-600 font-bold">AJCE STANDARDS</span>
+              {/* Bottom Row: Centered Founder Cards Flanked by Animated Flourish Lines */}
+              <div className="relative flex items-center justify-center pt-4 w-full max-w-6xl mx-auto">
+                {/* Left Flourish Line */}
+                <div className="hidden lg:block absolute -left-8 xl:-left-20 top-[235px] -translate-y-1/2 group">
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md" />
                 </div>
 
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-700 leading-snug">
-                      High scalability and verifiable credential pipelines built-in.
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-700 leading-snug">
-                      Collaborative workshop engines for faculty mentors and student creators.
-                    </span>
+                {/* Centered Founders */}
+                <div className="flex flex-wrap justify-center gap-y-12 gap-x-6 sm:gap-x-10 relative z-10">
+                  {FOUNDERS_DATA.slice(8).map((founder, index) => (
+                    <motion.div
+                      key={founder.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      onClick={() => setSelectedFounder(founder)}
+                      className="group flex flex-col items-center text-center cursor-pointer max-w-[240px]"
+                    >
+                      <div className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-slate-100 shadow-sm border-4 border-slate-50 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-md">
+                        <Image
+                          src={founder.image}
+                          alt={founder.name}
+                          fill
+                          className="object-cover grayscale contrast-105 group-hover:grayscale-0 transition-all duration-500"
+                          sizes="200px"
+                        />
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 font-sans mt-4 group-hover:text-indigo-600 transition-colors">
+                        {founder.name}
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                        {founder.role}
+                      </p>
+
+                      <div className="flex items-center justify-center gap-3.5 mt-3 text-slate-400">
+                        {founder.social.linkedin && (
+                          <a
+                            href={founder.social.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-slate-900 transition-colors p-1"
+                            title="LinkedIn"
+                          >
+                            <LinkedinIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                        {founder.social.github && (
+                          <a
+                            href={founder.social.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hover:text-slate-900 transition-colors p-1"
+                            title="GitHub"
+                          >
+                            <GithubIcon className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Right Flourish Line (Flipped) */}
+                <div className="hidden lg:block absolute -right-8 xl:-right-20 top-[235px] -translate-y-1/2 group">
+                  <FlourishLine className="w-[120px] xl:w-[220px] h-auto text-slate-700/60 drop-shadow-sm transition-all duration-700 group-hover:text-indigo-600 group-hover:opacity-100 group-hover:drop-shadow-md transform scale-x-[-1]" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+
+          {/* --- PLATFORM MILESTONES (HORIZONTAL CARDS) --- */}
+          <section className="space-y-12 pt-4 pb-20 relative overflow-hidden">
+            {/* Section Header moved inside grid */}
+
+            <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+                <div className="lg:col-span-7 text-left space-y-6">
+                  <BlurText
+                    text="How Arcade Started ?"
+                    delay={150}
+                    animateBy="words"
+                    direction="top"
+                    className="text-4xl sm:text-6xl lg:text-7xl font-bold text-slate-900 tracking-tight font-['Dancing_Script'] mb-8"
+                  />
+                  {TIMELINE_MILESTONES[0].description.split("\n\n").map((para, idx) => (
+                    <p key={idx} className="text-base sm:text-lg text-slate-700 font-normal leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+                <div className="lg:col-span-5 relative">
+                  <div className="w-full h-[500px] sm:h-[600px] lg:h-[700px] relative">
+                    <DepthCarousel
+                      items={FOUNDERS_DATA.slice(0, 6).map(founder => ({ image: founder.image, alt: founder.name }))}
+                      depth={220}
+                      spread={165}
+                      tilt={22}
+                      tiltDirection="right"
+                      perspective={1400}
+                      visibleCards={4}
+                      falloff={0.2}
+                      blur={6}
+                      cardWidth={750}
+                      cardHeight={500}
+                      autoplay
+                      loop
+                      showControls={false}
+                      showIndicators={false}
+                    />
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
-      {/* --- FOUNDERS' PHILOSOPHY BENTO SECTION --- */}
-      <section className="py-24 px-6 bg-white relative z-10">
-        <div className="max-w-6xl mx-auto space-y-16">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
-              Guiding Principles
-            </span>
-            <h2
-              className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-            >
-              Our Core Philosophy
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-              Values that dictate every architectural decision, user interface, and academic partnership on Arcade.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PHILOSOPHY_CARDS.map((card, idx) => (
-              <div
-                key={idx}
-                className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow space-y-3"
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${card.color}`}>
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900 font-serif">
-                  {card.title}
-                </h3>
-                <p className="text-slate-600 text-sm leading-relaxed">
-                  {card.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* --- CALL TO ACTION BANNER --- */}
-      <section className="py-20 px-6 relative z-10 bg-[#0B132B] text-white overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-          <h2
-            className="text-4xl sm:text-6xl font-bold tracking-tight"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-          >
-            Ready to Experience the Future of Campus Learning?
-          </h2>
-          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            Explore certified courses, join student workshops, or become a creator on Arcade at Amal Jyothi College of Engineering.
-          </p>
-
-          <div className="flex flex-wrap justify-center items-center gap-4 pt-2">
-            <Link
-              href="/explore"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-semibold text-base shadow-xl hover:shadow-blue-500/25 transition-all"
-            >
-              <span>Explore Courses</span>
-              <ArrowUpRight className="w-5 h-5" />
-            </Link>
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-semibold text-base border border-slate-700 transition-all"
-            >
-              <span>About Platform</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Founder Details Modal */}
+      {/* ── FOUNDER DETAILS MODAL ── */}
       <FounderModal
         founder={selectedFounder}
         onClose={() => setSelectedFounder(null)}
       />
-    </div>
+
+      {/* ── FULL SCREEN IMAGE VIEWER ── */}
+      <AnimatePresence>
+        {fullScreenImage && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8 cursor-pointer"
+            onClick={() => setFullScreenImage(null)}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setFullScreenImage(null)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img 
+                src={fullScreenImage} 
+                alt="Full View" 
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </main>
   );
 }

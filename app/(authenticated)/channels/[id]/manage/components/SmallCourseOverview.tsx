@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { mockContent } from './CourseManagementSection';
+import { EmptyState } from './EmptyState';
 import {
   Select,
   SelectContent,
@@ -124,10 +125,18 @@ export function SmallCourseOverview({
             </div>
             <div>
               <h2 className="text-sm font-bold tracking-tight text-slate-900">
-                Top Performing Content
+                {topPerformanceFilter === 'TOP_COMPLETION' ? 'Top Performing Content'
+                  : topPerformanceFilter === 'MOST_ENROLLED' ? 'Most Popular Content'
+                  : topPerformanceFilter === 'HIGHEST_RATED' ? 'Highest Rated Content'
+                  : topPerformanceFilter === 'NEEDS_ATTENTION' ? 'Needs Attention'
+                  : 'Recently Updated Content'}
               </h2>
               <p className="text-[11px] font-medium text-slate-400">
-                Rankings based on real-time engagement
+                {topPerformanceFilter === 'TOP_COMPLETION' ? 'Rankings based on completion rate metrics'
+                  : topPerformanceFilter === 'MOST_ENROLLED' ? 'Rankings based on total student enrollments'
+                  : topPerformanceFilter === 'HIGHEST_RATED' ? 'Rankings based on aggregate learner reviews'
+                  : topPerformanceFilter === 'NEEDS_ATTENTION' ? 'Content with lowest completion rates needing updates'
+                  : 'Sorted by most recent modifications'}
               </p>
             </div>
           </div>
@@ -190,7 +199,8 @@ export function SmallCourseOverview({
         {/* Horizontal Full-Width Rows Stack with 3D Offset Effect */}
         <div className="flex flex-col gap-3 pt-1 pb-2">
           <AnimatePresence mode="popLayout">
-            {rankedTopCourses.slice(0, 5).map((course, idx) => {
+            {rankedTopCourses.length === 0 && <EmptyState title="No contents" message="No top performing courses yet." />}
+            {rankedTopCourses.length > 0 && rankedTopCourses.slice(0, 5).map((course, idx) => {
               const theme = RANK_THEMES[idx % RANK_THEMES.length];
 
               return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   BookOpen,
   UserPlus,
@@ -11,8 +11,12 @@ import {
   Award,
   Edit3,
   Clock,
+  Loader2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { EmptyState } from './EmptyState';
+import { channelService, ChannelAuditLogEntry } from '@/domains/channels';
+import { formatDistanceToNow } from 'date-fns';
 
 export interface ActivityFeedItem {
   id: string;
@@ -23,75 +27,6 @@ export interface ActivityFeedItem {
   user: string;
   userAvatar?: string;
 }
-
-const mockActivities: ActivityFeedItem[] = [
-  {
-    id: 'act-1',
-    type: 'COURSE',
-    title: 'New Course Published',
-    description: '"AI Agent Architecture & Tool Use Masterclass" was published by Dr. Sarah Chen.',
-    timestamp: '10 mins ago',
-    user: 'Dr. Sarah Chen',
-    userAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-  },
-  {
-    id: 'act-2',
-    type: 'STAFF',
-    title: 'New Staff Member Joined',
-    description: 'Elena Rostova accepted invitation to join as MLOps Lead Instructor.',
-    timestamp: '1 hour ago',
-    user: 'Elena Rostova',
-    userAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80',
-  },
-  {
-    id: 'act-3',
-    type: 'WEBINAR',
-    title: 'Webinar Completed',
-    description: '"Future of Autonomous AI Agents" completed with 1,420 live attendees (96% feedback score).',
-    timestamp: '3 hours ago',
-    user: 'Dr. Sarah Chen',
-  },
-  {
-    id: 'act-4',
-    type: 'BOOTCAMP',
-    title: 'Bootcamp Cohort Started',
-    description: '"Full-Stack AI Engineer Cohort 8" commenced with 240 active students.',
-    timestamp: '5 hours ago',
-    user: 'Prof. Michael Vance',
-  },
-  {
-    id: 'act-5',
-    type: 'REVIEW',
-    title: 'New 5-Star Review Received',
-    description: 'Marcus Vance left a 5-star review: "Single best enterprise AI course I have taken!"',
-    timestamp: '6 hours ago',
-    user: 'Marcus Vance',
-  },
-  {
-    id: 'act-6',
-    type: 'ARTICLE',
-    title: 'Article Published',
-    description: '"Architecting Scalable RAG Systems with Vector Databases" published in Publications.',
-    timestamp: '1 day ago',
-    user: 'Dr. Sarah Chen',
-  },
-  {
-    id: 'act-7',
-    type: 'CERTIFICATE',
-    title: 'Certificates Generated',
-    description: '150 accredited completion certificates generated for Machine Learning Fundamentals.',
-    timestamp: '1 day ago',
-    user: 'Arcade System',
-  },
-  {
-    id: 'act-8',
-    type: 'UPDATE',
-    title: 'Content Module Updated',
-    description: 'Updated Module 4 lab exercises in "Neural Networks from Scratch".',
-    timestamp: '2 days ago',
-    user: 'Prof. Michael Vance',
-  },
-];
 
 const iconMap = {
   COURSE: {
@@ -146,14 +81,44 @@ const iconMap = {
 
 const TRIANGLE_RIGHT_CLIP = 'polygon(0% 0%, calc(100% - 24px) 0%, 100% 50%, calc(100% - 24px) 100%, 0% 100%)';
 
-export function RecentActivityTimeline() {
-  const [filterType, setFilterType] = useState<string>('ALL');
+function mapAuditActionToType(action: string): ActivityFeedItem['type'] {
+  const a = action.toUpperCase();
+  if (a.includes('COURSE')) return 'COURSE';
+  if (a.includes('STAFF') || a.includes('MEMBER') || a.includes('USER')) return 'STAFF';
+  if (a.includes('WEBINAR')) return 'WEBINAR';
+  if (a.includes('BOOTCAMP')) return 'BOOTCAMP';
+  if (a.includes('REVIEW')) return 'REVIEW';
+  if (a.includes('ARTICLE')) return 'ARTICLE';
+  if (a.includes('CERTIFICATE')) return 'CERTIFICATE';
+  return 'UPDATE';
+}
 
-  const filteredActivities = useMemo(() => {
-    return filterType === 'ALL'
-      ? mockActivities
-      : mockActivities.filter((a) => a.type === filterType);
-  }, [filterType]);
+export function RecentActivityTimeline({ channelId }: { channelId: string }) {
+  const [filterType, setFilterType] = useState<string>('ALL');
+  const [logs, setLogs] = useState<ChannelAuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!channelId) return;
+    setLoading(true);
+    channelService.getChannelAuditLog(channelId, filterType)
+      .then(setLogs)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [channelId, filterType]);
+
+  const activities: ActivityFeedItem[] = useMemo(() => {
+    return logs.map(log => ({
+      id: log.id,
+      type: mapAuditActionToType(log.action),
+      title: log.action,
+      description: log.details || 'No additional details',
+      timestamp: log.createdAt ? formatDistanceToNow(new Date(log.createdAt), { addSuffix: true }) : 'Recently',
+      user: log.actorName || 'System',
+    }));
+  }, [logs]);
+
+  const filteredActivities = activities;
 
   const itemSpacing = 118;
   const startY = 20;
@@ -182,10 +147,10 @@ export function RecentActivityTimeline() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-black tracking-tight text-[#14142b]">
-            Recent Activity Timeline
+            Channel Logs
           </h2>
           <p className="text-xs font-semibold text-slate-500">
-            Real-time audit log of content releases, staff actions, and learner engagements
+            Real-time audit log of all channel events, content releases, and staff actions
           </p>
         </div>
 
@@ -199,7 +164,7 @@ export function RecentActivityTimeline() {
                 : 'text-slate-500 hover:text-slate-900 border-b-2 border-transparent'
               }`}
           >
-            All Activity
+            All Logs
           </button>
           <button
             type="button"
@@ -276,8 +241,33 @@ export function RecentActivityTimeline() {
           </svg>
         </div>
 
+        {/* Loading / Empty States */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-indigo-500 mb-2" />
+            <p className="text-xs font-semibold text-slate-500">Loading audit logs...</p>
+          </div>
+        )}
+        
+        {!loading && filteredActivities.length === 0 && (
+          <EmptyState 
+            title={
+              filterType === 'COURSE' ? 'No course logs found' :
+              filterType === 'STAFF' ? 'No staff logs found' :
+              filterType === 'WEBINAR' ? 'No webinar logs found' :
+              'No logs found'
+            }
+            message={
+              filterType === 'COURSE' ? 'There are no course-related audit logs to display.' :
+              filterType === 'STAFF' ? 'There are no staff-related audit logs to display.' :
+              filterType === 'WEBINAR' ? 'There are no webinar-related audit logs to display.' :
+              'There are no audit logs to display for this channel.'
+            } 
+          />
+        )}
+
         {/* Timeline Event Feed Cards */}
-        {filteredActivities.map((act, index) => {
+        {!loading && filteredActivities.length > 0 && filteredActivities.map((act, index) => {
           const config = iconMap[act.type];
           const Icon = config.icon;
 
@@ -311,7 +301,7 @@ export function RecentActivityTimeline() {
                   style={{ clipPath: TRIANGLE_RIGHT_CLIP }}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-xs font-black text-[#14142b]">{act.title}</h4>
+                    <h4 className="text-xs font-black text-[#14142b] capitalize">{act.title.replace(/_/g, ' ').toLowerCase()}</h4>
                     <span className="flex items-center gap-1 text-[11px] font-bold text-slate-400">
                       <Clock size={12} />
                       {act.timestamp}

@@ -3,8 +3,8 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { roadmapService } from "@/domains/roadmaps";
-import type { RoadmapData } from "@/domains/roadmaps";
+// import { roadmapService } from "@/domains/roadmaps";
+// import type { RoadmapData } from "@/domains/roadmaps";
 import { RoadmapViewer } from "@/features/roadmap/renderer/components/RoadmapViewer";
 
 export default function RoadmapViewPage({
@@ -13,6 +13,11 @@ export default function RoadmapViewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+
+  // TODO: Wire backend up later
+  // We are currently using the RoadmapViewer preview UI directly
+  // without fetching the actual roadmap data from the backend.
+  /*
   const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,14 +61,15 @@ export default function RoadmapViewPage({
       </div>
     );
   }
+  */
 
   return (
     <div className="flex-1 flex flex-col w-full h-screen relative m-0 p-0 overflow-hidden">
       <RoadmapViewer
-        roadmapId={roadmap.id}
-        title={roadmap.title}
-        description={roadmap.description}
-        graphJson={roadmap.graphJson}
+        roadmapId={id}
+        title="Frontend Developer Roadmap"
+        description="Step by step guide to become a modern frontend developer."
+        graphJson=""
       />
     </div>
   );

@@ -73,7 +73,7 @@ export default function LearnerShell({
         */}
         <div className="flex flex-col flex-1 relative z-10 bg-transparent text-slate-900 dark:text-white h-full">
           {!immersive && <LearnerNavbar />}
-          <main className={`relative bg-transparent flex flex-col flex-1 ${!hideDock ? 'pb-28' : ''}`}>
+          <main className="relative bg-transparent flex flex-col flex-1">
             {children}
           </main>
           {!hideDock && <LearnerDock />}

@@ -22,8 +22,9 @@
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthService } from "@/infrastructure/auth/auth.service";
 import { queryClient } from "../state/queryClient";
+import { API_ORIGIN } from "@/infrastructure/config/env";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const BASE_URL = API_ORIGIN;
 
 // Thrown instead of a plain Error so callers that need to branch on HTTP
 // status (e.g. distinguishing 404 from 403) don't have to string-match messages.
@@ -139,6 +140,18 @@ async function request<T>(
         }
       }
     }
+
+    // 5xx bodies may contain the backend's raw exception message (and, in a
+    // dev-mode backend config, a full stack trace — see
+    // GlobalExceptionHandler's catch-all handler). The parsed message above
+    // is still logged to the console for debugging, but callers across the
+    // app widely do `toast.error(error.message)` directly, so anything not
+    // safe to show a user must be replaced here rather than at each of
+    // those call sites individually.
+    if (res.status >= 500) {
+      message = 'Something went wrong on our end. Please try again in a moment.';
+    }
+
     throw new ApiError(res.status, message);
   }
 

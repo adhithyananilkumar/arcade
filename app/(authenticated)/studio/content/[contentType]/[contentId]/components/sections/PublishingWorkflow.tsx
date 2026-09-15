@@ -75,47 +75,33 @@ export function PublishingWorkflow({
         </Link>
       </>
     );
-  } else if (statusKey === "PUBLISHED") {
-    body = (
-      <>
-        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#14142b]">
-          <StateDot tone="published" /> Published
-        </p>
-        <p className="text-xs text-slate-500">Published {formatDate(publishedEntry?.createdAt)}</p>
-      </>
-    );
-  } else if (statusKey === "ARCHIVED") {
-    body = (
-      <p className="flex items-center gap-2 text-sm font-semibold text-[#14142b]">
-        <StateDot tone="archived" /> Archived
-      </p>
-    );
+  } else if (statusKey === "PUBLISHED" || statusKey === "ARCHIVED") {
+    body = null;
   } else {
     body = (
-      <>
-        <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-[#14142b]">
-          <StateDot tone="draft" /> Draft
-        </p>
+      <div className="mb-4">
+        <p className="mb-1 text-sm font-bold text-amber-600">Draft</p>
         <p className="mb-3 text-xs text-slate-500">This content has not been submitted for platform review.</p>
         <button
           type="button"
           onClick={onSubmit}
           disabled={submitting}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#232735] disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
         >
           <Send size={13} /> {submitting ? "Submitting…" : "Submit for Review"}
         </button>
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)]">{body}</div>
+    <div className="flex flex-col gap-6">
+      {body}
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">History</h3>
+        <h3 className="mb-3 text-xs font-black uppercase tracking-wider text-slate-400">Publishing History</h3>
         <ActivitySection
           entries={historyEntries}
+          hideBadges
           emptyTitle="No publishing history yet"
           emptyDescription="This content is still in draft and has not entered the platform review process."
         />
@@ -123,3 +109,4 @@ export function PublishingWorkflow({
     </div>
   );
 }
+

@@ -9,7 +9,7 @@
 //   /dev-editor-perf?mode=barenoydoc→ EditorContent only, no ydoc
 
 import { Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 import { EditorContent } from "@tiptap/react";
 import { RichTextProvider } from "reactjs-tiptap-editor";
 import { ArcadeEditor, useArcadeEditor, createYDoc, encodeStateBase64 } from "@/apps/creator/editor";
@@ -150,6 +150,13 @@ function PerfHarness() {
 }
 
 export default function DevEditorPerfPage() {
+  // Unauthenticated diagnostic harness — never reachable outside local
+  // development. Delete this route entirely once the latency investigation
+  // it supports is finished (see the file-header comment).
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <Suspense fallback={null}>
       <PerfHarness />

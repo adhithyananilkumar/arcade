@@ -17,6 +17,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MenuContainer, MenuItem } from '@/shared/design-system/ui/fluid-menu';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { getAvatarUrl } from '@/shared/utils/avatar';
 
 export default function LearnerNavbar() {
   const { user, clearAuth } = useAuthStore();
@@ -149,18 +150,6 @@ export default function LearnerNavbar() {
     }
   };
 
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
 
   const handleLogout = async () => {
     if (isLoggingOut) return;

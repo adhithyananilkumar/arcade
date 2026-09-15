@@ -9,6 +9,7 @@ import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
+import { COLLAB_WS_URL } from "@/infrastructure/config/env";
 
 export type CollabStatus = "disabled" | "connecting" | "connected" | "disconnected";
 
@@ -81,7 +82,7 @@ export function useArcadeEditor({
   const provider = useMemo(() => {
     if (!effectiveDocumentName || typeof window === "undefined") return null;
 
-    const wsUrl = process.env.NEXT_PUBLIC_COLLABORATION_URL || process.env.NEXT_PUBLIC_COLLAB_WS_URL || "ws://localhost:1234";
+    const wsUrl = COLLAB_WS_URL;
     const p = new HocuspocusProvider({
       url: wsUrl,
       name: effectiveDocumentName,

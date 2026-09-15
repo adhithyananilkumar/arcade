@@ -13,6 +13,7 @@ import { usePost } from "@/domains/community";
 import { useWebSocket } from "@/domains/community";
 import { useToggleBookmark } from "@/domains/community";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { sanitizeHtml } from '@/shared/utils/sanitizeHtml';
 import { Bookmark, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { timeAgo } from "@/domains/community";
@@ -148,7 +149,7 @@ export default function PostDetailPage({ params }: Props) {
                 className="post-html-content"
                 style={{ fontSize: 16, lineHeight: 1.75, color: 'var(--text-primary)' }}
                 dangerouslySetInnerHTML={{
-                  __html: post.body.replace(/<script[\s\S]*?<\/script>/gi, '')
+                  __html: sanitizeHtml(post.body)
                 }}
               />
             ) : (

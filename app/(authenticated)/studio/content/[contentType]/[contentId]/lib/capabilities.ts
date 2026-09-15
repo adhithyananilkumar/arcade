@@ -21,10 +21,9 @@ export type Capability =
   | "DISCUSSION"
   | "LEARNER_REVIEWS"
   | "ACTIVITY"
-  | "PUBLISHING"
-  | "PRICING";
+  | "PUBLISHING";
 
-export type CapabilityGroup = "analytics" | "people" | "members" | "pricing" | "publishing" | "more";
+export type CapabilityGroup = "analytics" | "people" | "publishing" | "more";
 
 export interface CapabilityDef {
   id: Capability;
@@ -36,13 +35,11 @@ export interface CapabilityDef {
 export const GROUP_LABEL: Record<CapabilityGroup, string> = {
   analytics: "Analytics",
   people: "People",
-  members: "Members",
-  pricing: "Pricing",
   publishing: "Publishing",
   more: "More",
 };
 
-export const GROUP_ORDER: CapabilityGroup[] = ["analytics", "people", "members", "pricing", "publishing", "more"];
+export const GROUP_ORDER: CapabilityGroup[] = ["analytics", "people", "publishing", "more"];
 
 export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> = {
   course: [
@@ -56,12 +53,9 @@ export const CONTENT_CAPABILITIES: Record<ContentTypeSegment, CapabilityDef[]> =
   ],
   event: [
     { id: "ANALYTICS", label: "Analytics", group: "analytics", availability: "available" },
+    { id: "REGISTRATIONS", label: "Registrations", group: "people", availability: "available" },
     { id: "COLLABORATORS", label: "Collaborators", group: "people", availability: "available" },
     { id: "PUBLISHING", label: "Publishing", group: "publishing", availability: "available" },
-    // Registered attendees — distinct from organizers/collaborators in the people tab
-    { id: "REGISTRATIONS", label: "Members", group: "members", availability: "available" },
-    // Pricing & registration lifecycle
-    { id: "PRICING", label: "Pricing", group: "pricing", availability: "available" },
     // Planned — event_attendance/event_certificates tables are orphaned, no API.
     { id: "ATTENDANCE", label: "Attendance", group: "people", availability: "planned" },
     { id: "DISCUSSION", label: "Discussion", group: "more", availability: "planned" },
@@ -94,5 +88,3 @@ export function availableGroups(segment: ContentTypeSegment): CapabilityGroup[] 
 export function capabilitiesInGroup(segment: ContentTypeSegment, group: CapabilityGroup): CapabilityDef[] {
   return availableCapabilities(segment).filter((c) => c.group === group);
 }
-
-
