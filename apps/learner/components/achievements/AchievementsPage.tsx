@@ -509,86 +509,93 @@ export default function AchievementsPage() {
               }
             `}</style>
 
-            {/* Badges Grid — Multi-Colored Moving Dotted Line Squares */}
+            {/* Badges Grid — Diagonal Curve/Sharp Leaf Shape Cards with Gradient Fills */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredBadges.map((badge, idx) => {
-                // Vibrant, distinct colors for each dotted square box
-                const dottedColors = [
+                const cardColors = [
                   '#eb8467', // Coral
-                  '#bde643', // Lime Green
-                  '#3b82f6', // Royal Blue
+                  '#0284c7', // Sky Blue
                   '#8b5cf6', // Violet Purple
-                  '#06b6d4', // Cyan
-                  '#f59e0b', // Golden Amber
                   '#10b981', // Emerald Green
-                  '#f43f5e', // Vivid Rose
-                  '#6366f1', // Indigo
-                  '#f97316', // Bright Orange
+                  '#f59e0b', // Golden Amber
+                  '#06b6d4', // Cyan
+                  '#84cc16', // Lime Green
+                  '#ec4899', // Pink
                 ];
-                const cardDottedColor = dottedColors[idx % dottedColors.length];
+                const cardColor = cardColors[idx % cardColors.length];
 
                 return (
                   <div
                     key={badge.id}
                     onClick={() => setSelectedBadge(badge)}
-                    className="group relative bg-white dark:bg-neutral-900 p-2.5 sm:p-3 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col hover:scale-[1.02] rounded-none"
+                    className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between hover:scale-[1.02]"
+                    style={{
+                      background: `linear-gradient(160deg, ${cardColor}18 0%, rgba(255,255,255,0.98) 50%, ${cardColor}0c 100%)`,
+                      borderColor: `${cardColor}40`
+                    }}
                   >
-                    {/* Inset Animated Moving Dotted Line Square Frame with Individual Distinct Color */}
-                    <div 
-                      className="relative p-4 sm:p-5 flex flex-col items-center justify-between text-center h-full w-full min-h-[270px] sm:min-h-[290px] transition-all duration-300"
-                    >
-                      {/* Animated Marching Dots SVG Border */}
-                      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                        <rect
-                          x="2"
-                          y="2"
-                          width="calc(100% - 4px)"
-                          height="calc(100% - 4px)"
-                          fill="none"
-                          stroke={cardDottedColor}
-                          strokeWidth="2.5"
-                          strokeDasharray="6 6"
-                          className="animate-marching-dots"
-                        />
-                      </svg>
+                    <div>
+                      {/* Top Header with Pill & Badge Graphic */}
+                      <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
+                        {/* Top-Left Dark Pill Badge */}
+                        <div className="self-start mb-2 bg-slate-900/85 dark:bg-white/90 backdrop-blur-md text-white dark:text-slate-900 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
+                          {badge.unlocked ? 'UNLOCKED' : 'IN PROGRESS'}
+                        </div>
 
-                      {/* Badge Hexagon Graphic */}
-                      <div className="w-24 h-28 sm:w-28 sm:h-32 relative flex items-center justify-center my-1 drop-shadow-md group-hover:scale-105 transition-all duration-300 z-10">
-                        <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
-                        {!badge.unlocked && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-xl">
-                            <Lock className="w-7 h-7 text-white drop-shadow-md" />
-                          </div>
-                        )}
+                        {/* Hexagon Badge Graphic */}
+                        <div className="w-24 h-28 sm:w-28 sm:h-32 relative flex items-center justify-center drop-shadow-md group-hover:scale-105 transition-all duration-300 my-2">
+                          <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
+                          {!badge.unlocked && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-2xl">
+                              <Lock className="w-7 h-7 text-white drop-shadow-md" />
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Badge Title & Unlocked Status / Progress Sub-line */}
-                      <div className="my-1.5 z-10 w-full">
-                        <h3 className="font-extrabold text-sm sm:text-base text-black dark:text-white leading-snug group-hover:text-black transition-colors">
-                          {badge.name}
-                        </h3>
+                      {/* Category & Tier Label */}
+                      <span 
+                        className="text-[11px] font-black uppercase tracking-wider block mb-1"
+                        style={{ color: cardColor }}
+                      >
+                        {badge.category} • {badge.tier}
+                      </span>
 
-                        {badge.unlocked ? (
-                          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
-                            <span>{badge.achievedDate}</span>
+                      {/* Main Title */}
+                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug mb-1.5 line-clamp-1">
+                        {badge.name}
+                      </h3>
+
+                      {/* Subtitle / Description / Progress */}
+                      {badge.unlocked ? (
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium line-clamp-2 leading-relaxed">
+                          {badge.description}
+                        </p>
+                      ) : (
+                        <div className="w-full mt-2">
+                          <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300 font-extrabold mb-1">
+                            <span>{badge.progressText}</span>
+                            <span>{badge.progress}%</span>
                           </div>
-                        ) : (
-                          <div className="w-full max-w-[150px] mx-auto mt-2">
-                            <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 font-extrabold mb-1">
-                              <span>Progress</span>
-                              <span>{badge.progressText}</span>
-                            </div>
-                            <div className="w-full bg-slate-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{ width: `${badge.progress || 0}%`, backgroundColor: cardDottedColor }}
-                              />
-                            </div>
+                          <div className="w-full bg-slate-200/80 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${badge.progress || 0}%`, backgroundColor: cardColor }}
+                            />
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Bottom Full-Width CTA Button with Matching Diagonal Curves */}
+                    <button
+                      type="button"
+                      className="w-full py-3 px-4 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mt-5 cursor-pointer"
+                      style={{ backgroundColor: cardColor }}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>{badge.unlocked ? 'View Badge Details' : 'Continue Learning'}</span>
+                    </button>
                   </div>
                 );
               })}
@@ -596,10 +603,10 @@ export default function AchievementsPage() {
           </div>
         )}
 
-        {/* ── TAB 2: CERTIFICATES (Slightly Larger Scale & Refined Spacing) ── */}
+        {/* ── TAB 2: CERTIFICATES (Diagonal Curve/Sharp Shape Cards with Gradient Fills) ── */}
         {activeTab === 'certificates' && (
           <div>
-            {/* Certificate Filter Pills — Identical Style to Badges Tab */}
+            {/* Certificate Filter Pills */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
               {['All', 'Passed', 'Failed'].map((filter) => (
                 <button
@@ -616,131 +623,96 @@ export default function AchievementsPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4 w-full">
-            {filteredCertificates.map((cert) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-2 w-full">
+            {filteredCertificates.map((cert, idx) => {
               const isPassed = cert.status !== 'FAILED';
+              
+              const certColors = [
+                '#eb8467', // Coral
+                '#0284c7', // Sky Blue
+                '#8b5cf6', // Violet Purple
+                '#10b981', // Emerald Green
+                '#f59e0b', // Golden Amber
+                '#06b6d4', // Cyan
+                '#84cc16', // Lime Green
+                '#ec4899', // Pink
+              ];
+              const cardColor = isPassed ? certColors[idx % certColors.length] : '#e11d48';
 
               return (
-                <TiltedCard
+                <div
                   key={cert.id}
-                  rotateAmplitude={6}
-                  scaleOnHover={1.02}
-                  showTooltip={false}
+                  className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:scale-[1.02]"
+                  style={{
+                    background: `linear-gradient(160deg, ${cardColor}18 0%, rgba(255,255,255,0.98) 50%, ${cardColor}0c 100%)`,
+                    borderColor: `${cardColor}40`
+                  }}
                 >
-                  <div className={`relative flex flex-col justify-between rounded-none bg-white dark:bg-neutral-900 border-2 ${
-                    isPassed ? 'border-[#eb8467] dark:border-[#f0937a]/80' : 'border-rose-500/80 dark:border-rose-400/80'
-                  } shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden min-h-[250px] h-full group p-5 sm:p-6`}>
-
-                    {/* Top Bar: Left Ribbon Tag (PASSED vs FAILED) */}
-                    <div className="flex items-center justify-between w-full relative z-10">
-                      <div className="flex items-center gap-2">
-                        {/* Hanging Ribbon Banner */}
-                        <div
-                          className={`w-7 h-8 shadow-2xs flex items-center justify-center text-white shrink-0 -mt-6 ${
-                            isPassed ? 'bg-[#eb8467]' : 'bg-rose-600'
-                          }`}
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}
-                        >
-                          <div className={`w-4 h-4 rounded-full bg-white flex items-center justify-center ${
-                            isPassed ? 'text-[#eb8467]' : 'text-rose-600'
-                          }`}>
-                            {isPassed ? <Check className="w-3 h-3 stroke-[3.5]" /> : <X className="w-3 h-3 stroke-[3.5]" />}
-                          </div>
-                        </div>
-                        <span className={`text-xs font-black tracking-wider uppercase -mt-2 ${
-                          isPassed ? 'text-[#eb8467] dark:text-[#f0937a]' : 'text-rose-600 dark:text-rose-400'
-                        }`}>
-                          {cert.status || 'PASSED'}
-                        </span>
+                  <div>
+                    {/* Top Header with Pill & Medal Seal */}
+                    <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
+                      {/* Top-Left Dark Pill Badge */}
+                      <div className="self-start mb-2 bg-slate-900/85 dark:bg-white/90 backdrop-blur-md text-white dark:text-slate-900 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
+                        {cert.status || 'PASSED'}
                       </div>
-                    </div>
 
-                    {/* Center Graphic: Scalloped Medal Seal + 3 Stars */}
-                    <div className="flex flex-col items-center justify-center my-2 relative z-10">
-                      {/* Circular Scalloped Medal Seal */}
-                      <div className={`w-16 h-16 rounded-full border flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300 ${
-                        isPassed
-                          ? 'bg-orange-50/70 dark:bg-neutral-800 border-orange-200/80 dark:border-neutral-700'
-                          : 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200/80 dark:border-rose-900/60'
-                      }`}>
-                        <Award className={`w-8 h-8 stroke-[2] ${
-                          isPassed ? 'text-[#eb8467]' : 'text-rose-400 dark:text-rose-500 opacity-60'
-                        }`} />
+                      {/* Scalloped Medal Seal */}
+                      <div 
+                        className="w-16 h-16 rounded-full border flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300 bg-white/90 dark:bg-neutral-800 my-2"
+                        style={{ borderColor: `${cardColor}40` }}
+                      >
+                        <Award className="w-8 h-8 stroke-[2]" style={{ color: cardColor }} />
                       </div>
 
                       {/* 3 Stars Underneath */}
-                      <div className={`flex items-center gap-1 mt-1.5 ${
-                        isPassed ? 'text-[#f0937a] dark:text-[#eb8467]' : 'text-slate-300 dark:text-neutral-700'
-                      }`}>
-                        <Star className="w-2.5 h-2.5 fill-current" />
+                      <div 
+                        className="flex items-center gap-1 mt-1"
+                        style={{ color: isPassed ? cardColor : '#94a3b8' }}
+                      >
                         <Star className="w-3 h-3 fill-current" />
-                        <Star className="w-2.5 h-2.5 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <Star className="w-3 h-3 fill-current" />
                       </div>
                     </div>
+
+                    {/* Category Label */}
+                    <span 
+                      className="text-[11px] font-black uppercase tracking-wider block mb-1"
+                      style={{ color: cardColor }}
+                    >
+                      {cert.issuer || 'ACCREDITED CERTIFICATE'}
+                    </span>
 
                     {/* Course Title */}
-                    <div className="text-center my-1.5 relative z-10 px-1">
-                      <h3 className={`text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-snug tracking-tight transition-colors ${
-                        isPassed
-                          ? 'group-hover:text-[#eb8467] dark:group-hover:text-[#f0937a]'
-                          : 'group-hover:text-rose-600 dark:group-hover:text-rose-400'
-                      }`}>
-                        {cert.title}
-                      </h3>
-                    </div>
+                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug mb-1.5 line-clamp-1">
+                      {cert.title}
+                    </h3>
 
-                    {/* Footer Bar: Date Left | Share & Download Right */}
-                    <div className="pt-2.5 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span>{cert.issueDate}</span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-px h-4 bg-slate-200 dark:bg-neutral-800" />
-
-                        {/* Share Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard?.writeText(window.location.href);
-                            toast.success(`Share link copied for "${cert.title}" 🚀`);
-                          }}
-                          title="Share Certificate"
-                          className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                            isPassed
-                              ? 'text-slate-400 hover:text-[#eb8467] dark:hover:text-[#f0937a] hover:bg-orange-50 dark:hover:bg-neutral-800'
-                              : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-neutral-800'
-                          }`}
-                        >
-                          <Share2 className="w-4 h-4 stroke-[2]" />
-                        </button>
-
-                        {/* Download PDF Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isPassed) {
-                              toast.error(`Certificate unavailable. Minimum passing score required for "${cert.title}".`);
-                            } else {
-                              toast.info(`Downloading certificate for "${cert.title}"...`);
-                            }
-                          }}
-                          title={isPassed ? "Download Certificate PDF" : "Exam Not Passed"}
-                          className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                            isPassed
-                              ? 'text-slate-400 hover:text-[#eb8467] dark:hover:text-[#f0937a] hover:bg-orange-50 dark:hover:bg-neutral-800'
-                              : 'text-slate-300 dark:text-neutral-700 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-neutral-800'
-                          }`}
-                        >
-                          <Download className="w-4 h-4 stroke-[2]" />
-                        </button>
-                      </div>
+                    {/* Issue Date Details */}
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Issued on {cert.issueDate}</span>
                     </div>
                   </div>
-                </TiltedCard>
+
+                  {/* Bottom Full-Width CTA Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isPassed) {
+                        toast.error(`Certificate unavailable. Minimum passing score required for "${cert.title}".`);
+                      } else {
+                        toast.info(`Downloading certificate for "${cert.title}"...`);
+                      }
+                    }}
+                    className="w-full py-3 px-4 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mt-5 cursor-pointer"
+                    style={{ backgroundColor: cardColor }}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{isPassed ? 'Download Certificate' : 'Retake Assessment'}</span>
+                  </button>
+                </div>
               );
             })}
           </div>
