@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type Props = {
   /** ISO date keys (YYYY-MM-DD) mapped to backend-computed qualifying-activity count for that day */
@@ -40,6 +42,7 @@ function isActiveDay(iso: string, map: Record<string, number>) {
  * top header streak badge, perforated dashed line, and scalloped ticket bottom edge.
  */
 export function StreakCalendar({ activityByDate, streak }: Props) {
+  const router = useRouter();
   const today = useMemo(() => {
     const t = new Date();
     t.setHours(0, 0, 0, 0);
@@ -214,24 +217,25 @@ export function StreakCalendar({ activityByDate, streak }: Props) {
                         const isToday = cell.iso === todayIso;
 
                         return (
-                          <div
+                          <Link
+                            href={`/calendar?date=${cell.iso}`}
                             key={cell.iso}
-                            className="relative z-[1] flex h-8 items-center justify-center"
+                            className="relative z-[1] flex h-8 items-center justify-center cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors"
                           >
                             {isToday ? (
-                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30">
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF] text-sm font-bold text-white shadow-md shadow-[#4C6FFF]/30 pointer-events-none">
                                 {cell.day}
                               </span>
                             ) : active ? (
-                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF]">
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full bg-[#4C6FFF]/20 text-sm font-extrabold text-[#4C6FFF] dark:bg-[#4C6FFF]/30 dark:text-[#7C98FF] pointer-events-none">
                                 {cell.day}
                               </span>
                             ) : (
-                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors">
+                              <span className="flex h-7.5 w-7.5 items-center justify-center rounded-full text-sm font-semibold text-stone-500 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors pointer-events-none">
                                 {cell.day}
                               </span>
                             )}
-                          </div>
+                          </Link>
                         );
                       })}
                     </div>
