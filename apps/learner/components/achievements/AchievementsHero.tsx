@@ -64,7 +64,7 @@ function ProfessionalPartyPopperCanvas() {
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    const colors = ['#2962D6', '#38BDF8', '#27C5D8', '#F59E0B', '#A855F7', '#10B981', '#EC4899', '#FFFFFF'];
+    const colors = ['#eb8467', '#f0937a', '#f7a88f', '#e26a4a', '#fbbf24', '#f97316', '#fda4af', '#FFFFFF'];
 
     interface Particle {
       x: number;
@@ -238,13 +238,13 @@ export default function AchievementsHero({
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 2.2], opacity: [1, 0] }}
         transition={{ duration: 0.7, delay: 0.05 }}
-        className="absolute top-12 left-[12%] w-10 h-10 rounded-full border-2 border-cyan-400 pointer-events-none hidden md:block"
+        className="absolute top-12 left-[12%] w-10 h-10 rounded-full border-2 border-[#eb8467] pointer-events-none hidden md:block"
       />
       <motion.div
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 2.2], opacity: [1, 0] }}
         transition={{ duration: 0.7, delay: 0.05 }}
-        className="absolute top-12 right-[12%] w-10 h-10 rounded-full border-2 border-blue-500 pointer-events-none hidden md:block"
+        className="absolute top-12 right-[12%] w-10 h-10 rounded-full border-2 border-[#e26a4a] pointer-events-none hidden md:block"
       />
 
       {/* ── 3. Centered Main Hero Composition ── */}
@@ -262,19 +262,19 @@ export default function AchievementsHero({
             My
           </motion.span>
 
-          {/* "Achievements" in Dancing Script with Blue-to-Cyan Gradient & Curved Underline */}
+          {/* "Achievements" in Dancing Script with #eb8467 Coral Gradient & Curved Underline */}
           <div className="relative inline-block pb-2">
             <motion.span
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.22, ease: cubicEase }}
-              className="inline-block bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] bg-clip-text text-transparent px-1 text-5xl sm:text-6xl lg:text-7xl font-bold italic"
+              className="inline-block bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] bg-clip-text text-transparent px-1 text-5xl sm:text-6xl lg:text-7xl font-bold italic"
               style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Amira-Grace', cursive" }}
             >
               Achievements
             </motion.span>
 
-            {/* Blue-to-Cyan Gradient Curved Underline Stroke */}
+            {/* Coral Gradient Curved Underline Stroke */}
             <motion.svg
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
@@ -291,9 +291,9 @@ export default function AchievementsHero({
               />
               <defs>
                 <linearGradient id="titleBrushGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#2962D6" />
-                  <stop offset="55%" stopColor="#2C83F5" />
-                  <stop offset="100%" stopColor="#27C5D8" />
+                  <stop offset="0%" stopColor="#eb8467" />
+                  <stop offset="50%" stopColor="#f0937a" />
+                  <stop offset="100%" stopColor="#e26a4a" />
                 </linearGradient>
               </defs>
             </motion.svg>
@@ -322,7 +322,7 @@ export default function AchievementsHero({
           />
         </motion.div>
 
-        {/* ── Centered 3-Column Statistics Row (Exact 1:1 Match to Reference Image) ── */}
+        {/* ── Centered 3-Column Statistics Row ── */}
         <div className="grid grid-cols-3 gap-2 sm:gap-6 w-full max-w-lg mx-auto mt-3 pt-1">
 
           {/* Stat 1: Badges Unlocked */}
@@ -332,7 +332,7 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.5, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-[#1877F2] dark:text-blue-400 tracking-tight mt-1">
+            <div className="text-xl sm:text-3xl font-black text-[#eb8467] dark:text-[#f0937a] tracking-tight mt-1">
               <SmoothCounter value={unlockedCount} delay={0.55} />
               <span className="text-base sm:text-xl font-bold text-slate-400 font-sans ml-1.5">/ {totalBadges}</span>
             </div>
@@ -348,7 +348,7 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.62, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-[#F43F5E] dark:text-rose-400 tracking-tight mt-1">
+            <div className="text-xl sm:text-3xl font-black text-[#e26a4a] dark:text-[#f39c82] tracking-tight mt-1">
               <SmoothCounter value={streakDays} delay={0.67} />
               <span className="text-sm sm:text-base font-bold text-slate-500 dark:text-slate-400 font-sans ml-1.5">Days</span>
             </div>
@@ -364,7 +364,7 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.74, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-[#10B981] dark:text-emerald-400 tracking-tight mt-1">
+            <div className="text-xl sm:text-3xl font-black text-[#ea580c] dark:text-[#eb8467] tracking-tight mt-1">
               <SmoothCounter value={certificatesCount} delay={0.78} />
             </div>
             <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">

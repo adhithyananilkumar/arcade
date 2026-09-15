@@ -1275,25 +1275,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           </div>
         </div>
 
-        {/* Right: Notification Bell & Profile Capsule */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.push('/notifications')}
-            className="w-10 h-10 bg-white border border-slate-200/80 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 transition-all cursor-pointer shadow-2xs"
-          >
-            <Bell className="w-4 h-4" />
-          </button>
-
-          <div
-            onClick={() => router.push('/profile')}
-            className="bg-white border border-slate-200/80 rounded-full pl-4 pr-1 py-1 flex items-center gap-2.5 cursor-pointer shadow-2xs hover:shadow-xs transition-all"
-          >
-            <span className="text-xs font-extrabold text-slate-700">athirabiju20...</span>
-            <div className="h-7 w-7 rounded-full bg-[#8D6E63] text-white flex items-center justify-center text-[10px] font-black uppercase shadow-2xs">
-              A
-            </div>
-          </div>
-        </div>
+        {/* Right Section */}
+        <div className="flex items-center gap-3"></div>
       </div>
 
       {/* Main Canvas Container */}

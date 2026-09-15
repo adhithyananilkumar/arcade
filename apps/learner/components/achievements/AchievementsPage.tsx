@@ -401,7 +401,10 @@ export default function AchievementsPage() {
   }, [certFilter, searchQuery]);
 
   return (
-    <div className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans">
+    <div 
+      className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300"
+      style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(235, 132, 103, 0.16) 0%, rgba(254, 245, 242, 0.6) 40%, rgba(255, 255, 255, 1) 100%)' }}
+    >
       <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8">
 
         {/* ── Desktop Hero Celebration Section (Image 2 Exact Mock) ── */}
@@ -418,7 +421,7 @@ export default function AchievementsPage() {
             <button
               onClick={() => setActiveTab('badges')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'badges'
-                ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-md shadow-blue-500/25'
+                ? 'bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] text-white shadow-md shadow-[#eb8467]/30'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
                 }`}
             >
@@ -429,7 +432,7 @@ export default function AchievementsPage() {
             <button
               onClick={() => setActiveTab('certificates')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'certificates'
-                ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-md shadow-blue-500/25'
+                ? 'bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] text-white shadow-md shadow-[#eb8467]/30'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
                 }`}
             >
@@ -446,7 +449,7 @@ export default function AchievementsPage() {
                 placeholder={activeTab === 'certificates' ? "Search certificates..." : "Search badges..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#2962D6]"
+                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#eb8467]"
               />
             </div>
           )}
@@ -463,7 +466,7 @@ export default function AchievementsPage() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${selectedCategory === cat
                     ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                    : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#2962D6]'
+                    : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#eb8467]'
                     }`}
                 >
                   {cat}
@@ -482,14 +485,14 @@ export default function AchievementsPage() {
               clickEffect={true}
               spotlightRadius={300}
               particleCount={0}
-              glowColor="41, 98, 214"
+              glowColor="235, 132, 103"
             >
               {filteredBadges.map((badge) => (
                 <ParticleCard
                   key={badge.id}
                   onClick={() => setSelectedBadge(badge)}
                   className="magic-bento-card magic-bento-card--border-glow group relative flex flex-col items-center justify-between text-center cursor-pointer p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 transition-all duration-300 shadow-sm hover:shadow-xl"
-                  glowColor="41, 98, 214"
+                  glowColor="235, 132, 103"
                   particleCount={0}
                   enableTilt={true}
                   clickEffect={true}
@@ -507,7 +510,7 @@ export default function AchievementsPage() {
 
                   {/* Badge Title & Unlocked Status Sub-line */}
                   <div className="my-2 z-10">
-                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug group-hover:text-[#2962D6] dark:group-hover:text-[#2C83F5] transition-colors">
+                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug group-hover:text-[#eb8467] dark:group-hover:text-[#f0937a] transition-colors">
                       {badge.name}
                     </h3>
 
@@ -524,7 +527,7 @@ export default function AchievementsPage() {
                         </div>
                         <div className="w-full bg-slate-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
                           <div
-                            className="bg-[#2962D6] h-full rounded-full transition-all duration-500"
+                            className="bg-gradient-to-r from-[#eb8467] to-[#e26a4a] h-full rounded-full transition-all duration-500"
                             style={{ width: `${badge.progress || 0}%` }}
                           />
                         </div>
@@ -549,7 +552,7 @@ export default function AchievementsPage() {
                   className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                     certFilter === filter
                       ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                      : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#2962D6]'
+                      : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#eb8467]'
                   }`}
                 >
                   {filter}
@@ -569,7 +572,7 @@ export default function AchievementsPage() {
                   showTooltip={false}
                 >
                   <div className={`relative flex flex-col justify-between rounded-none bg-white dark:bg-neutral-900 border-2 ${
-                    isPassed ? 'border-[#2962D6] dark:border-[#38BDF8]/80' : 'border-rose-500/80 dark:border-rose-400/80'
+                    isPassed ? 'border-[#eb8467] dark:border-[#f0937a]/80' : 'border-rose-500/80 dark:border-rose-400/80'
                   } shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden min-h-[250px] h-full group p-5 sm:p-6`}>
 
                     {/* Top Bar: Left Ribbon Tag (PASSED vs FAILED) */}
@@ -578,18 +581,18 @@ export default function AchievementsPage() {
                         {/* Hanging Ribbon Banner */}
                         <div
                           className={`w-7 h-8 shadow-2xs flex items-center justify-center text-white shrink-0 -mt-6 ${
-                            isPassed ? 'bg-[#2962D6]' : 'bg-rose-600'
+                            isPassed ? 'bg-[#eb8467]' : 'bg-rose-600'
                           }`}
                           style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}
                         >
                           <div className={`w-4 h-4 rounded-full bg-white flex items-center justify-center ${
-                            isPassed ? 'text-[#2962D6]' : 'text-rose-600'
+                            isPassed ? 'text-[#eb8467]' : 'text-rose-600'
                           }`}>
                             {isPassed ? <Check className="w-3 h-3 stroke-[3.5]" /> : <X className="w-3 h-3 stroke-[3.5]" />}
                           </div>
                         </div>
                         <span className={`text-xs font-black tracking-wider uppercase -mt-2 ${
-                          isPassed ? 'text-[#2962D6] dark:text-[#38BDF8]' : 'text-rose-600 dark:text-rose-400'
+                          isPassed ? 'text-[#eb8467] dark:text-[#f0937a]' : 'text-rose-600 dark:text-rose-400'
                         }`}>
                           {cert.status || 'PASSED'}
                         </span>
@@ -601,17 +604,17 @@ export default function AchievementsPage() {
                       {/* Circular Scalloped Medal Seal */}
                       <div className={`w-16 h-16 rounded-full border flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300 ${
                         isPassed
-                          ? 'bg-slate-100/90 dark:bg-neutral-800 border-slate-200/80 dark:border-neutral-700'
+                          ? 'bg-orange-50/70 dark:bg-neutral-800 border-orange-200/80 dark:border-neutral-700'
                           : 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200/80 dark:border-rose-900/60'
                       }`}>
                         <Award className={`w-8 h-8 stroke-[2] ${
-                          isPassed ? 'text-amber-500' : 'text-rose-400 dark:text-rose-500 opacity-60'
+                          isPassed ? 'text-[#eb8467]' : 'text-rose-400 dark:text-rose-500 opacity-60'
                         }`} />
                       </div>
 
                       {/* 3 Stars Underneath */}
                       <div className={`flex items-center gap-1 mt-1.5 ${
-                        isPassed ? 'text-blue-300 dark:text-blue-400' : 'text-slate-300 dark:text-neutral-700'
+                        isPassed ? 'text-[#f0937a] dark:text-[#eb8467]' : 'text-slate-300 dark:text-neutral-700'
                       }`}>
                         <Star className="w-2.5 h-2.5 fill-current" />
                         <Star className="w-3 h-3 fill-current" />
@@ -623,7 +626,7 @@ export default function AchievementsPage() {
                     <div className="text-center my-1.5 relative z-10 px-1">
                       <h3 className={`text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-snug tracking-tight transition-colors ${
                         isPassed
-                          ? 'group-hover:text-[#2962D6] dark:group-hover:text-[#38BDF8]'
+                          ? 'group-hover:text-[#eb8467] dark:group-hover:text-[#f0937a]'
                           : 'group-hover:text-rose-600 dark:group-hover:text-rose-400'
                       }`}>
                         {cert.title}
@@ -651,7 +654,7 @@ export default function AchievementsPage() {
                           title="Share Certificate"
                           className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                             isPassed
-                              ? 'text-slate-400 hover:text-[#2962D6] dark:hover:text-[#38BDF8] hover:bg-blue-50 dark:hover:bg-neutral-800'
+                              ? 'text-slate-400 hover:text-[#eb8467] dark:hover:text-[#f0937a] hover:bg-orange-50 dark:hover:bg-neutral-800'
                               : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-neutral-800'
                           }`}
                         >
@@ -672,7 +675,7 @@ export default function AchievementsPage() {
                           title={isPassed ? "Download Certificate PDF" : "Exam Not Passed"}
                           className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                             isPassed
-                              ? 'text-slate-400 hover:text-[#2962D6] dark:hover:text-[#38BDF8] hover:bg-blue-50 dark:hover:bg-neutral-800'
+                              ? 'text-slate-400 hover:text-[#eb8467] dark:hover:text-[#f0937a] hover:bg-orange-50 dark:hover:bg-neutral-800'
                               : 'text-slate-300 dark:text-neutral-700 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-neutral-800'
                           }`}
                         >
@@ -732,16 +735,16 @@ export default function AchievementsPage() {
                   {/* ── Main Inner Card with V-Tear Reveal Header ── */}
                   <div className="relative my-4 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-xl overflow-hidden flex flex-col items-center text-center p-6 sm:p-8">
 
-                    {/* V-Tear Sky Reveal Stage */}
-                    <div className="relative w-full -mt-8 -mx-8 mb-6 pt-10 pb-16 bg-gradient-to-b from-[#EBF3FF] via-[#F4F8FF] to-white dark:from-[#132247] dark:via-[#192B54] dark:to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
+                    {/* V-Tear Reveal Stage */}
+                    <div className="relative w-full -mt-8 -mx-8 mb-6 pt-10 pb-16 bg-gradient-to-b from-[#FFF2EE] via-[#FFF8F5] to-white dark:from-[#2e1812] dark:via-[#20110c] dark:to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
 
                       {/* Floating Sparkle Elements */}
-                      <div className="absolute top-4 left-10 text-blue-400 text-sm animate-pulse">✦</div>
-                      <div className="absolute top-8 right-12 text-cyan-400 text-xs animate-ping">✦</div>
-                      <div className="absolute top-16 left-16 text-purple-300 text-xs">✦</div>
+                      <div className="absolute top-4 left-10 text-[#eb8467] text-sm animate-pulse">✦</div>
+                      <div className="absolute top-8 right-12 text-[#f0937a] text-xs animate-ping">✦</div>
+                      <div className="absolute top-16 left-16 text-[#f7a88f] text-xs">✦</div>
 
                       {/* Center Hexagonal Badge Graphic */}
-                      <div className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_15px_30px_rgba(41,98,214,0.35)] z-20">
+                      <div className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_15px_30px_rgba(235,132,103,0.35)] z-20">
                         <BadgeGraphic type={selectedBadge.type} unlocked={selectedBadge.unlocked} />
                       </div>
 
@@ -973,7 +976,7 @@ export default function AchievementsPage() {
                         }}
                         className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-800 dark:text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                       >
-                        <Download className="w-4 h-4 text-[#2962D6]" />
+                        <Download className="w-4 h-4 text-[#eb8467]" />
                         <span>Download</span>
                       </button>
                     ) : (
@@ -997,7 +1000,7 @@ export default function AchievementsPage() {
                           navigator.clipboard?.writeText(window.location.href);
                           toast.success(`Share link for "${selectedBadge.name}" copied to clipboard! 🚀`);
                         }}
-                        className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#eb8467]/25"
                       >
                         <Share2 className="w-4 h-4" />
                         <span>Share</span>
@@ -1006,7 +1009,7 @@ export default function AchievementsPage() {
                       <Link
                         href="/my-learning"
                         onClick={() => setSelectedBadge(null)}
-                        className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20 text-center"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#eb8467]/25 text-center"
                       >
                         <span>Continue</span>
                         <ArrowRight className="w-4 h-4" />

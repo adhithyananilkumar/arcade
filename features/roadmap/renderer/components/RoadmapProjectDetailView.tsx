@@ -30,6 +30,7 @@ import {
   MapPin,
   ChevronRight,
   Link as LinkIcon,
+  Layout,
 } from "lucide-react";
 
 export interface RoadmapProjectTask {
@@ -91,47 +92,52 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
 
   const techTags = ["HTML5", "Semantic HTML", "Responsive Layout", "SEO"];
 
-  // Step card color themes matching the 4 step color palette (Blue, Amber, Purple, Emerald)
-  const stepColorThemes = [
+  // Color configurations strictly matching the reference images:
+  // Step 1: Blue, Step 2: Amber/Orange, Step 3: Purple, Step 4: Mint/Green
+  const stepThemes = [
     {
-      cardBg: "bg-[#eff6ff]",
-      cardBorder: "border-[#bfdbfe]",
-      cardBorderDone: "border-[#93c5fd]",
-      numberCircle: "bg-[#2563eb] text-white",
-      titleColor: "text-[#1e3a8a]",
-      descColor: "text-[#1e40af]/80",
-      stepLabel: "text-[#3b82f6]",
-      doneBadge: "bg-[#dbeafe] text-[#1e40af]",
+      bg: "#eff6ff",
+      border: "#bfdbfe",
+      borderDone: "#93c5fd",
+      circleBg: "#2563eb",
+      stepColor: "#2563eb",
+      titleColor: "#1e3a8a",
+      descColor: "#1e40af",
+      badgeBg: "#dbeafe",
+      badgeText: "#1e3a8a",
     },
     {
-      cardBg: "bg-[#fffbeb]",
-      cardBorder: "border-[#fde68a]",
-      cardBorderDone: "border-[#fcd34d]",
-      numberCircle: "bg-[#d97706] text-white",
-      titleColor: "text-[#78350f]",
-      descColor: "text-[#92400e]/80",
-      stepLabel: "text-[#f59e0b]",
-      doneBadge: "bg-[#fef3c7] text-[#92400e]",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      borderDone: "#fcd34d",
+      circleBg: "#d97706",
+      stepColor: "#d97706",
+      titleColor: "#78350f",
+      descColor: "#92400e",
+      badgeBg: "#fef3c7",
+      badgeText: "#78350f",
     },
     {
-      cardBg: "bg-[#faf5ff]",
-      cardBorder: "border-[#e9d5ff]",
-      cardBorderDone: "border-[#d8b4fe]",
-      numberCircle: "bg-[#9333ea] text-white",
-      titleColor: "text-[#581c87]",
-      descColor: "text-[#6b21a8]/80",
-      stepLabel: "text-[#a855f7]",
-      doneBadge: "bg-[#f3e8ff] text-[#6b21a8]",
+      bg: "#faf5ff",
+      border: "#e9d5ff",
+      borderDone: "#d8b4fe",
+      circleBg: "#9333ea",
+      stepColor: "#9333ea",
+      titleColor: "#581c87",
+      descColor: "#6b21a8",
+      badgeBg: "#f3e8ff",
+      badgeText: "#581c87",
     },
     {
-      cardBg: "bg-[#ecfdf5]",
-      cardBorder: "border-[#a7f3d0]",
-      cardBorderDone: "border-[#6ee7b7]",
-      numberCircle: "bg-[#059669] text-white",
-      titleColor: "text-[#064e3b]",
-      descColor: "text-[#065f46]/80",
-      stepLabel: "text-[#10b981]",
-      doneBadge: "bg-[#d1fae5] text-[#065f46]",
+      bg: "#ecfdf5",
+      border: "#a7f3d0",
+      borderDone: "#6ee7b7",
+      circleBg: "#059669",
+      stepColor: "#059669",
+      titleColor: "#064e3b",
+      descColor: "#065f46",
+      badgeBg: "#d1fae5",
+      badgeText: "#064e3b",
     },
   ];
 
@@ -139,40 +145,44 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
     {
       title: "Semantic HTML5",
       icon: Code2,
-      cardBg: "bg-[#eff6ff] border-[#bfdbfe]",
-      numberCircle: "bg-[#2563eb] text-white",
-      textColor: "text-[#1e3a8a]",
-      descColor: "text-[#1e40af]/80",
+      bg: "#eff6ff",
+      border: "#bfdbfe",
+      circleBg: "#2563eb",
+      titleColor: "#1e3a8a",
+      descColor: "#1e40af",
       description:
         "Utilize meaningful landmark tags (<header>, <nav>, <main>, <section>, <article>, <footer>) instead of generic <div> containers.",
     },
     {
       title: "SEO Meta Tags",
       icon: Globe,
-      cardBg: "bg-[#fffbeb] border-[#fde68a]",
-      numberCircle: "bg-[#d97706] text-white",
-      textColor: "text-[#78350f]",
-      descColor: "text-[#92400e]/80",
+      bg: "#fffbeb",
+      border: "#fde68a",
+      circleBg: "#d97706",
+      titleColor: "#78350f",
+      descColor: "#92400e",
       description:
         "Include essential document meta tags in <head>: title, description, viewport configuration, and charset for search indexing.",
     },
     {
       title: "Open Graph (OG) Tags",
       icon: Share2,
-      cardBg: "bg-[#faf5ff] border-[#e9d5ff]",
-      numberCircle: "bg-[#9333ea] text-white",
-      textColor: "text-[#581c87]",
-      descColor: "text-[#6b21a8]/80",
+      bg: "#faf5ff",
+      border: "#e9d5ff",
+      circleBg: "#9333ea",
+      titleColor: "#581c87",
+      descColor: "#6b21a8",
       description:
         "Configure og:title, og:description, and og:image tags to ensure rich snippet previews when sharing your resume link.",
     },
     {
       title: "Favicon & Icons",
       icon: Compass,
-      cardBg: "bg-[#ecfdf5] border-[#a7f3d0]",
-      numberCircle: "bg-[#059669] text-white",
-      textColor: "text-[#064e3b]",
-      descColor: "text-[#065f46]/80",
+      bg: "#ecfdf5",
+      border: "#a7f3d0",
+      circleBg: "#059669",
+      titleColor: "#064e3b",
+      descColor: "#065f46",
       description:
         "Link a custom favicon icon in the <head> element so the browser tab renders a branded, professional tab icon.",
     },
@@ -216,38 +226,63 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
 
       {/* 2. Hero Section */}
       <div className="flex flex-col gap-4">
-        {/* Badges Bar */}
+        {/* Badges Bar (Mapped to 4 Colors: Blue, Yellow, Purple, Green) */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            {techTags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-[#eff6ff] text-[#4338ca] border border-[#dbeafe] rounded-full px-3.5 py-0.5 text-xs font-bold tracking-wide shadow-2xs"
-              >
-                {tag}
-              </span>
-            ))}
+            {techTags.map((tag, idx) => {
+              const tagColorThemes = [
+                { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" }, // 1. Blue
+                { bg: "#fffbeb", border: "#fde68a", text: "#d97706" }, // 2. Yellow/Amber
+                { bg: "#faf5ff", border: "#e9d5ff", text: "#9333ea" }, // 3. Purple
+                { bg: "#ecfdf5", border: "#a7f3d0", text: "#059669" }, // 4. Mint/Green
+              ];
+              const color = tagColorThemes[idx % tagColorThemes.length];
+
+              return (
+                <span
+                  key={tag}
+                  style={{
+                    backgroundColor: color.bg,
+                    borderColor: color.border,
+                    color: color.text,
+                  }}
+                  className="border rounded-full px-4 py-1 text-xs font-extrabold tracking-wide shadow-2xs"
+                >
+                  {tag}
+                </span>
+              );
+            })}
           </div>
 
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/90 rounded-full px-4 py-0.5 text-xs font-extrabold uppercase tracking-wider shadow-2xs">
+          <span
+            style={{
+              backgroundColor: "#fffbeb",
+              borderColor: "#fde68a",
+              color: "#92400e",
+            }}
+            className="border rounded-full px-4 py-1 text-xs font-black uppercase tracking-wider shadow-2xs"
+          >
             {project.difficulty || "BEGINNER"}
           </span>
         </div>
 
-        {/* Title in Running Letters (Handwritten/Cursive Script) */}
+        {/* Title in Running Letters (Handwritten/Cursive Script) in BLACK */}
         <div className="flex flex-col gap-1">
           <div className="relative inline-block self-start">
             <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-normal text-[#2563eb] leading-tight tracking-normal select-none"
-              style={{ fontFamily: "'Dancing Script', 'Caveat', 'Brush Script MT', cursive" }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight tracking-normal select-none"
+              style={{
+                fontFamily: "'Dancing Script', 'Caveat', 'Brush Script MT', cursive",
+                color: "#000000",
+              }}
             >
               {project.title.toLowerCase()}
             </h1>
-            {/* Curved Blue Underline Accent */}
-            <svg className="w-48 sm:w-60 h-3 text-[#2563eb] -mt-1" viewBox="0 0 200 12" fill="none">
+            {/* Curved Black Underline Accent */}
+            <svg className="w-48 sm:w-60 h-3 -mt-1" viewBox="0 0 200 12" fill="none">
               <path
                 d="M 5 6 C 60 11, 140 11, 195 4"
-                stroke="#2563eb"
+                stroke="#000000"
                 strokeWidth="3.5"
                 strokeLinecap="round"
               />
@@ -261,17 +296,32 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
       </div>
 
       {/* 3. Objective Callout Card */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#faf5ff] border border-[#e9d5ff] p-5 sm:p-6 shadow-xs">
-        <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-[#9333ea]" />
+      <div
+        style={{
+          backgroundColor: "#faf5ff",
+          borderColor: "#e9d5ff",
+        }}
+        className="relative overflow-hidden rounded-2xl border p-5 sm:p-6 shadow-xs"
+      >
+        <div className="absolute top-0 left-0 bottom-0 w-1.5" style={{ backgroundColor: "#9333ea" }} />
         <div className="flex items-start gap-3.5">
-          <div className="w-9 h-9 rounded-full bg-[#9333ea] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+          <div
+            style={{ backgroundColor: "#9333ea" }}
+            className="w-9 h-9 rounded-full text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5"
+          >
             <Target className="w-5 h-5" />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-black uppercase tracking-wider text-[#581c87]">
+            <span
+              style={{ color: "#581c87" }}
+              className="text-xs font-black uppercase tracking-wider"
+            >
               Project Goal & Focus
             </span>
-            <p className="text-xs sm:text-sm text-[#581c87]/90 leading-relaxed font-medium">
+            <p
+              style={{ color: "#581c87" }}
+              className="text-xs sm:text-sm leading-relaxed font-medium"
+            >
               "The goal of this project is to teach you how to create a structured, single-page CV
               using only HTML. You will focus on laying out your education, skills, and career
               history in a clean, semantic manner. Styling will be addressed in a later project."
@@ -280,221 +330,422 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
         </div>
       </div>
 
-      {/* 4. Interactive Live CV Mockup Preview */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col">
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+      {/* 4. Interactive Live CV Mockup Preview (Redesigned & Highly Designful) */}
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="bg-blue-50 text-blue-700 border border-blue-200/80 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                Specification Canvas
+              </span>
+            </div>
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 mt-1">
               <Eye className="w-5 h-5 text-blue-600" />
               Target Visual Layout Specification
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Your HTML webpage output should match the structural hierarchy below:
+              Your HTML output should structure content matching this professional resume architecture:
             </p>
           </div>
 
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80 text-xs font-bold">
+          {/* Segmented Tab Switcher */}
+          <div className="flex items-center bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/80 text-xs font-bold shadow-2xs">
             <button
               onClick={() => setPreviewTab("preview")}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition-all cursor-pointer ${
                 previewTab === "preview"
-                  ? "bg-white text-slate-900 shadow-2xs font-extrabold"
+                  ? "bg-white text-slate-900 shadow-xs font-extrabold"
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              Rendered Preview
+              <Layout className="w-3.5 h-3.5 text-blue-600" />
+              <span>Visual Layout</span>
             </button>
             <button
               onClick={() => setPreviewTab("specs")}
-              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition-all cursor-pointer ${
                 previewTab === "specs"
-                  ? "bg-white text-slate-900 shadow-2xs font-extrabold"
+                  ? "bg-white text-slate-900 shadow-xs font-extrabold"
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              Structure Specs
+              <Code2 className="w-3.5 h-3.5 text-purple-600" />
+              <span>HTML Architecture</span>
             </button>
           </div>
         </div>
 
         {/* Browser Mockup Window Container */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md">
+        <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl">
           {/* Browser Window Chrome Topbar */}
-          <div className="bg-slate-50/90 border-b border-slate-200/80 px-4 py-2.5 flex items-center justify-between gap-3">
+          <div className="bg-slate-50/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-rose-400 border border-rose-500/20 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500/20 inline-block" />
-              <span className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500/20 inline-block" />
+              <span className="w-3 h-3 rounded-full bg-rose-400 border border-rose-500/20 inline-block shadow-2xs" />
+              <span className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500/20 inline-block shadow-2xs" />
+              <span className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500/20 inline-block shadow-2xs" />
             </div>
 
-            <div className="flex-1 max-w-sm mx-auto bg-white border border-slate-200/90 rounded-lg px-3 py-1 text-[11px] font-mono text-slate-500 text-center truncate shadow-2xs flex items-center justify-center gap-1.5">
-              <Globe className="w-3 h-3 text-slate-400" />
-              <span>http://localhost:3000/index.html</span>
+            <div className="flex-1 max-w-md mx-auto bg-white border border-slate-200/90 rounded-xl px-4 py-1.5 text-[11px] font-mono text-slate-600 text-center truncate shadow-2xs flex items-center justify-center gap-2">
+              <Globe className="w-3.5 h-3.5 text-slate-400" />
+              <span>http://localhost:3000/alex-rivera-cv.html</span>
             </div>
 
-            <div className="text-[11px] font-semibold text-slate-400 hidden sm:block">
-              HTML5 Canvas
+            <div className="flex items-center gap-2">
+              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-2xs">
+                W3C Valid
+              </span>
             </div>
           </div>
 
-          {/* Canvas Content */}
-          <div className="p-6 sm:p-10 bg-gradient-to-b from-slate-50/40 via-white to-white min-h-[460px]">
+          {/* Canvas Background Area */}
+          <div className="p-4 sm:p-8 lg:p-10 bg-gradient-to-b from-slate-100/60 via-slate-50/30 to-white min-h-[500px]">
             {previewTab === "preview" ? (
-              <div className="max-w-3xl mx-auto bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-10 shadow-sm flex flex-col gap-6 text-slate-800">
-                {/* CV Top Header */}
-                <div className="border-b border-slate-200 pb-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                      Alex Rivera
-                    </h3>
-                    <p className="text-sm font-bold text-emerald-700">Junior Frontend Developer</p>
-                    <p className="text-xs text-slate-500 max-w-md mt-1 leading-relaxed">
-                      Passionate and detail-oriented web developer dedicated to building semantic,
-                      accessible, and high-performance user interfaces.
-                    </p>
+              /* High-End Modern CV Sheet */
+              <div className="max-w-4xl mx-auto bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-lg flex flex-col gap-8 text-slate-800 relative overflow-hidden">
+                {/* Decorative Top Gradient Stripe */}
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
+
+                {/* CV Header: Profile Avatar, Title, and Contact Grid with Subtle Transparent Black Doodles */}
+                <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-200/80 overflow-hidden">
+                  {/* Background Floating Hand-drawn Doodles - Transparent Black */}
+                  <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
+                    {/* Top Right Floating Diamond Doodle */}
+                    <svg className="absolute top-2.5 right-44 w-7 h-7 text-black/20 rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M 6 3 L 18 3 L 22 9 L 12 21 L 2 9 Z" />
+                      <path d="M 2 9 L 22 9" />
+                      <path d="M 12 21 L 9 9 L 6 3" />
+                      <path d="M 12 21 L 15 9 L 18 3" />
+                    </svg>
+
+                    {/* Sparkle Cluster near Center */}
+                    <svg className="absolute top-3 left-[340px] w-6 h-6 text-black/20 -rotate-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M 12 2 L 13.5 8.5 L 20 10 L 13.5 11.5 L 12 18 L 10.5 11.5 L 4 10 L 10.5 8.5 Z" />
+                      <circle cx="19" cy="4" r="1" fill="currentColor" />
+                      <circle cx="5" cy="18" r="1" fill="currentColor" />
+                    </svg>
+
+                    {/* Squiggle Waves Doodle */}
+                    <svg className="absolute bottom-2.5 left-64 w-12 h-5 text-black/20" viewBox="0 0 32 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M 2 6 Q 8 1 14 6 T 26 6" />
+                      <path d="M 2 11 Q 8 6 14 11 T 26 11" />
+                    </svg>
+
+                    {/* Cute Botanical Sprout in bottom right */}
+                    <svg className="absolute -bottom-1 right-2 w-14 h-14 text-black/15 rotate-12" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M 6 34 C 14 26, 24 20, 34 12" />
+                      <path d="M 16 28 C 14 22, 18 20, 20 25" />
+                      <path d="M 24 20 C 22 14, 26 12, 28 17" />
+                      <path d="M 30 14 C 28 8, 33 7, 34 12" />
+                    </svg>
+
+                    {/* Little Splash Drops on Top Left */}
+                    <svg className="absolute top-2 left-2 w-6 h-6 text-black/20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M 4 14 C 4 14, 2 10, 5 8 C 8 10, 6 14, 4 14 Z" />
+                      <path d="M 12 8 C 12 8, 11 5, 13 4 C 15 5, 14 8, 12 8 Z" />
+                    </svg>
+
+                    {/* Hand-drawn Cute Lightbulb/Idea Doodle */}
+                    <svg className="absolute bottom-2 right-[270px] w-6 h-6 text-black/20 -rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M 9 18h6" />
+                      <path d="M 10 21h4" />
+                      <path d="M 12 2a6 6 0 0 0-4.5 10c.8.9 1.5 2 1.5 3h6c0-1 .7-2.1 1.5-3A6 6 0 0 0 12 2z" />
+                    </svg>
+
+                    {/* Hand-drawn Cute Starburst */}
+                    <svg className="absolute top-8 right-6 w-5 h-5 text-black/20 rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" />
+                    </svg>
                   </div>
 
-                  <div className="flex flex-col gap-1.5 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      <span>San Francisco, CA 94105</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span>(415) 555-0199</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="text-blue-600 font-medium">alex.rivera@example.com</span>
-                    </div>
-                  </div>
-                </div>
+                  {/* Left Side: Avatar + Info */}
+                  <div className="relative z-10 flex items-start sm:items-center gap-4">
+                    {/* Avatar Initials Badge with Doodle Crown */}
+                    <div className="relative">
+                      {/* Hand-drawn Doodle Crown on Avatar - Transparent Black */}
+                      <svg className="absolute -top-4 -left-2 w-8 h-7 text-black/30 -rotate-12 pointer-events-none z-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M 3 17 L 5 7 L 10 12 L 15 6 L 19 17 Z" />
+                        <circle cx="5" cy="5" r="1.2" fill="currentColor" />
+                        <circle cx="15" cy="4" r="1.2" fill="currentColor" />
+                        <circle cx="10" cy="10" r="1.2" fill="currentColor" />
+                      </svg>
 
-                {/* Technical Skills Section */}
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
-                    <Code2 className="w-3.5 h-3.5" /> Technical Skills
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      "HTML5 Semantics",
-                      "CSS3 Flexbox & Grid",
-                      "JavaScript (ES6+)",
-                      "Web Accessibility (WCAG)",
-                      "Responsive UI",
-                      "Git & GitHub",
-                      "SEO Fundamentals",
-                      "Lighthouse Auditing",
-                    ].map((skill) => (
-                      <span
-                        key={skill}
-                        className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 transition-colors text-slate-700 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200/70"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Experience Timeline Section */}
-                <div className="flex flex-col gap-3">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
-                    <Briefcase className="w-3.5 h-3.5" /> Professional Experience
-                  </h4>
-
-                  <div className="flex flex-col gap-4 border-l-2 border-slate-100 pl-4 ml-1">
-                    {/* Role 1 */}
-                    <div className="flex flex-col gap-1 relative">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-600 absolute -left-[21px] top-1.5 ring-4 ring-blue-50" />
-                      <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-slate-900">
-                          Frontend Developer Intern — TechFlow Labs
-                        </span>
-                        <span className="text-[11px] font-semibold text-slate-400">
-                          Jun 2024 – Present
-                        </span>
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-700 text-white font-black text-xl sm:text-2xl flex items-center justify-center shadow-md ring-4 ring-blue-50 shrink-0">
+                        AR
                       </div>
-                      <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside mt-1 leading-relaxed">
-                        <li>
-                          Refactored 12+ legacy landing pages to 100% semantic HTML5, boosting
-                          Lighthouse accessibility scores from 72 to 98.
-                        </li>
-                        <li>
-                          Implemented Open Graph meta tags across blog articles, enhancing social
-                          click-through rate by 14%.
-                        </li>
-                      </ul>
                     </div>
 
-                    {/* Role 2 */}
-                    <div className="flex flex-col gap-1 relative">
-                      <span className="w-2.5 h-2.5 rounded-full bg-slate-300 absolute -left-[21px] top-1.5 ring-4 ring-slate-50" />
-                      <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-slate-900">
-                          Web Coordinator — University Coding Club
-                        </span>
-                        <span className="text-[11px] font-semibold text-slate-400">
-                          Sep 2023 – May 2024
-                        </span>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none">
+                          Alex Rivera
+                        </h3>
+
+                        {/* Hand-drawn 8-point sparkle star - Transparent Black */}
+                        <svg className="w-5 h-5 text-black/25 pointer-events-none" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M 10 2 L 10 18 M 2 10 L 18 10 M 4 4 L 16 16 M 4 16 L 16 4" />
+                        </svg>
                       </div>
-                      <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside mt-1 leading-relaxed">
-                        <li>
-                          Maintained club website schedule and workshop announcements for 400+
-                          active members.
-                        </li>
-                      </ul>
+
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm sm:text-base font-bold text-indigo-700">
+                          Junior Frontend Developer & UI Specialist
+                        </p>
+                        {/* Little Doodle Sparkle - Transparent Black */}
+                        <svg className="w-4 h-4 text-black/25 pointer-events-none" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M 8 1 L 9.5 5.5 L 14 7 L 9.5 8.5 L 8 13 L 6.5 8.5 L 2 7 L 6.5 5.5 Z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Education Section */}
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
-                    <GraduationCap className="w-3.5 h-3.5" /> Education
-                  </h4>
-                  <div className="flex flex-wrap items-center justify-between gap-1 bg-slate-50/70 p-3 rounded-xl border border-slate-100">
-                    <div>
-                      <p className="text-xs font-bold text-slate-900">
-                        B.S. in Computer Science — University of Technology
-                      </p>
-                      <p className="text-[11px] text-slate-500">Dean's Honor List • GPA 3.85/4.0</p>
+                  {/* Right Side: Contact Info */}
+                  <div className="relative z-10 flex flex-col gap-2 shrink-0 text-xs">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span className="font-medium">San Francisco, CA 94105</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-slate-400">2021 – 2025</span>
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="font-medium">(415) 555-0199</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-700">
+                      <Mail className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                      <span className="font-semibold text-slate-800">alex.rivera@example.com</span>
+                    </div>
                   </div>
-                </div>
+                </header>
 
-                {/* Online Profiles Footer */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
-                  <span className="font-bold text-slate-500">Across the Web:</span>
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 text-slate-700 font-semibold hover:text-blue-600 cursor-pointer">
-                      <Globe className="w-3.5 h-3.5 text-blue-600" />
-                      <span>linkedin.com/in/alexrivera</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-slate-700 font-semibold hover:text-blue-600 cursor-pointer">
-                      <LinkIcon className="w-3.5 h-3.5 text-slate-700" />
-                      <span>github.com/alexrivera</span>
-                    </span>
+                {/* 2-Column CV Main Body Grid */}
+                <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  {/* LEFT COLUMN: Skills, Education, & Web Links (5 Cols) */}
+                  <div className="lg:col-span-5 flex flex-col gap-6">
+                    {/* Technical Skills Section */}
+                    <section className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200/70">
+                        <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <Code2 className="w-3.5 h-3.5" />
+                        </div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                          Technical Skills
+                        </h4>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { name: "HTML5 Semantics", color: "bg-blue-50 text-blue-700 border-blue-200" },
+                          { name: "CSS3 Flexbox", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                          { name: "CSS Grid Layout", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                          { name: "JavaScript (ES6+)", color: "bg-amber-50 text-amber-800 border-amber-200" },
+                          { name: "Web Accessibility (a11y)", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                          { name: "Responsive UI Design", color: "bg-sky-50 text-sky-700 border-sky-200" },
+                          { name: "Git & Version Control", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                          { name: "SEO Meta Standards", color: "bg-teal-50 text-teal-700 border-teal-200" },
+                        ].map((skill) => (
+                          <span
+                            key={skill.name}
+                            className={`border rounded-lg px-2.5 py-1 text-xs font-semibold shadow-2xs transition-all hover:scale-[1.02] cursor-default ${skill.color}`}
+                          >
+                            {skill.name}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Education Section */}
+                    <section className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200/70">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <GraduationCap className="w-3.5 h-3.5" />
+                        </div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                          Education
+                        </h4>
+                      </div>
+
+                      <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-1.5 shadow-2xs">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-black text-slate-900">
+                            B.S. in Computer Science
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+                            2021 – 2025
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-indigo-600">University of Technology</p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          Dean's Honor List • Focus on Web Engineering & HCI
+                        </p>
+                      </div>
+                    </section>
+
+                    {/* Across the Web Section */}
+                    <section className="flex flex-col gap-3">
+                      <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200/70">
+                        <div className="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                          <Globe className="w-3.5 h-3.5" />
+                        </div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                          Across the Web
+                        </h4>
+                      </div>
+
+                      <div className="flex flex-col gap-2 text-xs">
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200/70 transition-colors">
+                          <span className="flex items-center gap-2 font-bold text-slate-700">
+                            <Globe className="w-4 h-4 text-blue-600" />
+                            <span>LinkedIn Profile</span>
+                          </span>
+                          <span className="text-[11px] text-blue-600 font-medium">
+                            /in/alexrivera
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/70 transition-colors">
+                          <span className="flex items-center gap-2 font-bold text-slate-700">
+                            <LinkIcon className="w-4 h-4 text-slate-800" />
+                            <span>GitHub Repositories</span>
+                          </span>
+                          <span className="text-[11px] text-slate-600 font-mono">
+                            @alexrivera
+                          </span>
+                        </div>
+                      </div>
+                    </section>
                   </div>
-                </div>
+
+                  {/* RIGHT COLUMN: Professional Experience Timeline (7 Cols) */}
+                  <div className="lg:col-span-7 flex flex-col gap-4">
+                    <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200/70">
+                      <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <Briefcase className="w-3.5 h-3.5" />
+                      </div>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                        Professional Experience
+                      </h4>
+                    </div>
+
+                    <div className="flex flex-col gap-5 border-l-2 border-indigo-100 pl-5 ml-2 mt-1">
+                      {/* Job 1 */}
+                      <div className="flex flex-col gap-2 relative">
+                        <span className="w-3.5 h-3.5 rounded-full bg-indigo-600 absolute -left-[27px] top-1 ring-4 ring-indigo-50 shadow-xs" />
+                        <div className="flex flex-wrap items-center justify-between gap-1">
+                          <span className="text-sm font-black text-slate-900">
+                            Frontend Developer Intern
+                          </span>
+                          <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
+                            Jun 2024 – Present
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-600">
+                          TechFlow Labs • San Francisco, CA
+                        </p>
+                        <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-outside ml-4 leading-relaxed mt-1">
+                          <li>
+                            Re-architected 15+ marketing landing pages using 100% semantic HTML5
+                            landmarks, accelerating SEO discovery and accessibility scores to 99/100.
+                          </li>
+                          <li>
+                            Implemented dynamic Open Graph (OG) and Twitter card meta configurations,
+                            increasing rich preview engagement across socials by 22%.
+                          </li>
+                          <li>
+                            Collaborated with UI designers in Figma to faithfully translate wireframes
+                            into pixel-perfect responsive layouts.
+                          </li>
+                        </ul>
+                      </div>
+
+                      {/* Job 2 */}
+                      <div className="flex flex-col gap-2 relative pt-2">
+                        <span className="w-3.5 h-3.5 rounded-full bg-slate-300 absolute -left-[27px] top-3 ring-4 ring-slate-100" />
+                        <div className="flex flex-wrap items-center justify-between gap-1">
+                          <span className="text-sm font-black text-slate-900">
+                            Web Coordinator & Developer
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full">
+                            Sep 2023 – May 2024
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-600">
+                          University Coding Club • Campus Chapter
+                        </p>
+                        <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-outside ml-4 leading-relaxed mt-1">
+                          <li>
+                            Built and maintained the single-page event portal used by 500+ active
+                            engineering students during annual hackathons.
+                          </li>
+                          <li>
+                            Conducted weekly beginner workshops on semantic markup and CSS styling.
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+
+                {/* CV Footer */}
+                <footer className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-slate-400 text-[11px]">
+                  <span>Designed & Built with Semantic HTML5</span>
+                  <span>Portfolio Version 1.0 • 2025</span>
+                </footer>
               </div>
             ) : (
-              <div className="max-w-2xl mx-auto bg-slate-900 text-slate-200 rounded-xl p-6 font-mono text-xs leading-relaxed space-y-3 shadow-inner">
-                <p className="text-emerald-400 font-bold">// HTML5 Semantic Structure Outline</p>
-                <div className="pl-2 border-l border-slate-700 space-y-1 text-slate-300">
-                  <p>&lt;!DOCTYPE html&gt;</p>
-                  <p>&lt;html lang="en"&gt;</p>
-                  <p className="pl-4 text-purple-300">&lt;head&gt; (meta charset, viewport, SEO, OG, favicon, title) &lt;/head&gt;</p>
-                  <p className="pl-4 text-sky-300">&lt;body&gt;</p>
-                  <p className="pl-8 text-amber-300">&lt;header&gt; (Name, Job Title, Bio & Contact Details) &lt;/header&gt;</p>
-                  <p className="pl-8 text-emerald-300">&lt;main&gt;</p>
-                  <p className="pl-12 text-slate-400">&lt;section id="skills"&gt; ... &lt;/section&gt;</p>
-                  <p className="pl-12 text-slate-400">&lt;section id="experience"&gt; ... &lt;/section&gt;</p>
-                  <p className="pl-12 text-slate-400">&lt;section id="education"&gt; ... &lt;/section&gt;</p>
-                  <p className="pl-8 text-emerald-300">&lt;/main&gt;</p>
-                  <p className="pl-8 text-rose-300">&lt;footer&gt; (Social profiles & copyright) &lt;/footer&gt;</p>
-                  <p className="pl-4 text-sky-300">&lt;/body&gt;</p>
-                  <p>&lt;/html&gt;</p>
+              /* High-End Interactive DOM Architecture Tree */
+              <div className="max-w-3xl mx-auto bg-slate-950 text-slate-100 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800 flex flex-col gap-5">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <FileCode className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold font-mono text-emerald-400">
+                      DOM Hierarchy Architecture Map
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-mono">index.html</span>
+                </div>
+
+                <div className="font-mono text-xs leading-loose space-y-2 text-slate-300">
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col gap-1">
+                    <span className="text-purple-400 font-bold">&lt;head&gt;</span>
+                    <span className="text-slate-400 text-[11px] pl-4">
+                      ├── &lt;meta charset="UTF-8"&gt;<br />
+                      ├── &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;<br />
+                      ├── &lt;title&gt;Alex Rivera — Frontend Developer CV&lt;/title&gt;<br />
+                      ├── &lt;meta name="description" content="..."&gt;<br />
+                      ├── &lt;meta property="og:title" content="..."&gt;<br />
+                      └── &lt;link rel="icon" type="image/x-icon" href="/favicon.ico"&gt;
+                    </span>
+                    <span className="text-purple-400 font-bold">&lt;/head&gt;</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col gap-1">
+                    <span className="text-sky-400 font-bold">&lt;body&gt;</span>
+                    <div className="pl-4 space-y-2">
+                      <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60">
+                        <span className="text-amber-400 font-bold">&lt;header&gt;</span>
+                        <p className="text-[11px] text-slate-400">
+                          Bio avatar, Name &lt;h1&gt;, Job Title &lt;p&gt;, and Contact info list
+                        </p>
+                        <span className="text-amber-400 font-bold">&lt;/header&gt;</span>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60">
+                        <span className="text-emerald-400 font-bold">&lt;main&gt;</span>
+                        <div className="pl-4 space-y-1 text-[11px] text-slate-400">
+                          <p>&lt;section id="skills"&gt; Technical Skills list &lt;/section&gt;</p>
+                          <p>&lt;section id="experience"&gt; Career history &lt;/section&gt;</p>
+                          <p>&lt;section id="education"&gt; Degree & coursework &lt;/section&gt;</p>
+                          <p>&lt;section id="links"&gt; Online web profiles &lt;/section&gt;</p>
+                        </div>
+                        <span className="text-emerald-400 font-bold">&lt;/main&gt;</span>
+                      </div>
+
+                      <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60">
+                        <span className="text-rose-400 font-bold">&lt;footer&gt;</span>
+                        <p className="text-[11px] text-slate-400">Copyright & build metadata</p>
+                        <span className="text-rose-400 font-bold">&lt;/footer&gt;</span>
+                      </div>
+                    </div>
+                    <span className="text-sky-400 font-bold">&lt;/body&gt;</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -502,7 +753,7 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
         </div>
       </div>
 
-      {/* 5. Key Requirements Grid (Styled with Coordinated Pastel Colors) */}
+      {/* 5. Key Requirements Grid (Styled with Coordinated Pastel Colors & Direct Color Styles) */}
       <div className="flex flex-col gap-4">
         <div>
           <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
@@ -516,19 +767,33 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {requirementsList.map((req, idx) => {
-            const Icon = req.icon;
             return (
               <div
                 key={req.title}
-                className={`${req.cardBg} border rounded-2xl p-5 shadow-xs transition-all flex flex-col gap-2.5`}
+                style={{
+                  backgroundColor: req.bg,
+                  borderColor: req.border,
+                }}
+                className="border rounded-2xl p-5 shadow-xs transition-all flex flex-col gap-2.5"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full ${req.numberCircle} flex items-center justify-center shrink-0 shadow-xs font-bold text-xs`}>
+                  <div
+                    style={{ backgroundColor: req.circleBg }}
+                    className="w-8 h-8 rounded-full text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-xs"
+                  >
                     {idx + 1}
                   </div>
-                  <h3 className={`text-sm font-bold ${req.textColor}`}>{req.title}</h3>
+                  <h3
+                    style={{ color: req.titleColor }}
+                    className="text-sm font-bold"
+                  >
+                    {req.title}
+                  </h3>
                 </div>
-                <p className={`text-xs leading-relaxed font-normal ${req.descColor}`}>
+                <p
+                  style={{ color: req.descColor }}
+                  className="text-xs leading-relaxed font-normal"
+                >
                   {req.description}
                 </p>
               </div>
@@ -537,7 +802,7 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
         </div>
       </div>
 
-      {/* 6. Step-by-Step Task Checklist (Using 4-Color Pastel Theme Matching Image 2) */}
+      {/* 6. Step-by-Step Task Checklist (Using 4-Color Theme Matching Image 2) */}
       {project.tasks && project.tasks.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
@@ -573,20 +838,22 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
           <div className="flex flex-col gap-3">
             {project.tasks.map((task, idx) => {
               const isDone = !!completedTasks[task.id];
-              const theme = stepColorThemes[idx % stepColorThemes.length];
+              const theme = stepThemes[idx % stepThemes.length];
 
               return (
                 <motion.div
                   key={task.id}
                   whileHover={{ scale: 1.003 }}
                   onClick={() => toggleTask(task.id)}
+                  style={{
+                    backgroundColor: theme.bg,
+                    borderColor: isDone ? theme.borderDone : theme.border,
+                  }}
                   className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 shadow-2xs ${
-                    isDone
-                      ? `${theme.cardBg} ${theme.cardBorderDone} opacity-90`
-                      : `${theme.cardBg} ${theme.cardBorder} hover:shadow-xs`
+                    isDone ? "opacity-90" : "hover:shadow-xs"
                   }`}
                 >
-                  {/* Step Number Circle (e.g. 1 Blue, 2 Amber, 3 Purple, 4 Green) */}
+                  {/* Step Number Circle (1 Blue, 2 Amber, 3 Purple, 4 Green) */}
                   <div className="mt-0.5 shrink-0 flex items-center justify-center">
                     {isDone ? (
                       <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
@@ -594,7 +861,8 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
                       </div>
                     ) : (
                       <div
-                        className={`w-7 h-7 rounded-full ${theme.numberCircle} flex items-center justify-center font-bold text-xs shadow-xs`}
+                        style={{ backgroundColor: theme.circleBg }}
+                        className="w-7 h-7 rounded-full text-white flex items-center justify-center font-bold text-xs shadow-xs"
                       >
                         {idx + 1}
                       </div>
@@ -603,25 +871,40 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
 
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center justify-between">
-                      <span className={`text-[11px] font-black uppercase tracking-wider ${theme.stepLabel}`}>
+                      <span
+                        style={{ color: theme.stepColor }}
+                        className="text-[11px] font-black uppercase tracking-wider"
+                      >
                         Step {idx + 1}
                       </span>
                       {isDone && (
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${theme.doneBadge}`}>
+                        <span
+                          style={{
+                            backgroundColor: theme.badgeBg,
+                            color: theme.badgeText,
+                          }}
+                          className="text-[10px] font-black px-2 py-0.5 rounded-md"
+                        >
                           Done
                         </span>
                       )}
                     </div>
 
                     <h3
-                      className={`text-sm font-bold leading-snug ${
-                        isDone ? "line-through opacity-70" : theme.titleColor
+                      style={{ color: isDone ? undefined : theme.titleColor }}
+                      className={`text-sm sm:text-base font-extrabold leading-snug ${
+                        isDone ? "line-through opacity-70 text-slate-500" : ""
                       }`}
                     >
                       {task.title}
                     </h3>
 
-                    <p className={`text-xs leading-relaxed ${theme.descColor}`}>
+                    <p
+                      style={{ color: isDone ? undefined : theme.descColor }}
+                      className={`text-xs leading-relaxed font-medium ${
+                        isDone ? "opacity-70 text-slate-500" : ""
+                      }`}
+                    >
                       {task.description}
                     </p>
                   </div>
@@ -709,31 +992,6 @@ export const RoadmapProjectDetailView: React.FC<RoadmapProjectDetailViewProps> =
           </div>
         </div>
       )}
-
-      {/* 9. Next Steps / Conclusion Banner */}
-      <div className="rounded-2xl bg-slate-900 text-white p-5 sm:p-6 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-bold text-white">What's Next?</h3>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
-              Completing this semantic HTML project builds the fundamental document hierarchy. Next,
-              you will learn CSS Flexbox, Grid, and responsive layout styling to transform this
-              document into a modern portfolio!
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={onBack}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
-        >
-          <span>View Next Project</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
     </motion.div>
   );
 };
