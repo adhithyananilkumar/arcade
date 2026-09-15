@@ -402,10 +402,27 @@ export default function AchievementsPage() {
 
   return (
     <div 
-      className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300"
-      style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(235, 132, 103, 0.16) 0%, rgba(254, 245, 242, 0.6) 40%, rgba(255, 255, 255, 1) 100%)' }}
+      className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 relative overflow-hidden"
+      style={{ 
+        background: `
+          radial-gradient(at 10% 10%, rgba(189, 230, 67, 0.20) 0px, transparent 55%),
+          radial-gradient(at 90% 15%, rgba(16, 185, 129, 0.16) 0px, transparent 55%),
+          radial-gradient(at 50% 28%, rgba(132, 204, 22, 0.12) 0px, transparent 50%),
+          radial-gradient(at 85% 55%, rgba(235, 132, 103, 0.10) 0px, transparent 50%),
+          radial-gradient(at 15% 75%, rgba(52, 211, 153, 0.15) 0px, transparent 55%),
+          radial-gradient(at 60% 85%, rgba(189, 230, 67, 0.14) 0px, transparent 50%),
+          radial-gradient(at 90% 95%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
+          linear-gradient(135deg, #fbfef7 0%, #f4fdf8 35%, #f6fdf7 70%, #fefcf9 100%)
+        `
+      }}
     >
-      <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8">
+      {/* Ambient Dim Multi-Color Glow Orbs */}
+      <div className="absolute -top-10 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-[#bde643]/15 via-[#84cc16]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-10 -right-10 w-[550px] h-[550px] bg-gradient-to-bl from-[#10b981]/12 via-[#34d399]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-[45%] -left-10 w-[450px] h-[450px] bg-gradient-to-tr from-[#84cc16]/12 via-[#bde643]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute -bottom-10 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-[#10b981]/10 via-[#eb8467]/08 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+
+      <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* ── Desktop Hero Celebration Section (Image 2 Exact Mock) ── */}
         <AchievementsHero
@@ -416,13 +433,13 @@ export default function AchievementsPage() {
         />
 
         {/* ── Main Navigation Tabs ── */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 mb-8 pb-4 mt-6">
+        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-neutral-800 mb-8 pb-4 mt-6">
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveTab('badges')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'badges'
-                ? 'bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] text-white shadow-md shadow-[#eb8467]/30'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+                ? 'bg-gradient-to-r from-[#16a34a] via-[#84cc16] via-[#bde643] to-[#10b981] text-slate-950 font-black shadow-md shadow-emerald-500/25'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-neutral-900'
                 }`}
             >
               <Trophy size={16} />
@@ -432,8 +449,8 @@ export default function AchievementsPage() {
             <button
               onClick={() => setActiveTab('certificates')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'certificates'
-                ? 'bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] text-white shadow-md shadow-[#eb8467]/30'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
+                ? 'bg-gradient-to-r from-[#16a34a] via-[#84cc16] via-[#bde643] to-[#10b981] text-slate-950 font-black shadow-md shadow-emerald-500/25'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-neutral-900'
                 }`}
             >
               <Award size={16} />
@@ -474,69 +491,108 @@ export default function AchievementsPage() {
               ))}
             </div>
 
-            {/* Badges Grid — Magic Bento Grid with Cursor Spotlight & Border Glow (Particle dots disabled) */}
-            <MagicBento
-              textAutoHide={false}
-              enableStars={false}
-              enableSpotlight={true}
-              enableBorderGlow={true}
-              enableTilt={true}
-              enableMagnetism={true}
-              clickEffect={true}
-              spotlightRadius={300}
-              particleCount={0}
-              glowColor="235, 132, 103"
-            >
-              {filteredBadges.map((badge) => (
-                <ParticleCard
-                  key={badge.id}
-                  onClick={() => setSelectedBadge(badge)}
-                  className="magic-bento-card magic-bento-card--border-glow group relative flex flex-col items-center justify-between text-center cursor-pointer p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 transition-all duration-300 shadow-sm hover:shadow-xl"
-                  glowColor="235, 132, 103"
-                  particleCount={0}
-                  enableTilt={true}
-                  clickEffect={true}
-                  enableMagnetism={true}
-                >
-                  {/* Badge Hexagon Graphic */}
-                  <div className="w-28 h-32 relative flex items-center justify-center my-2 drop-shadow-lg group-hover:drop-shadow-2xl transition-all duration-300">
-                    <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
-                    {!badge.unlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-2xl">
-                        <Lock className="w-7 h-7 text-white drop-shadow-md" />
-                      </div>
-                    )}
-                  </div>
+            {/* Keyframe animation for moving dotted lines */}
+            <style>{`
+              @keyframes marchingDots {
+                from {
+                  stroke-dashoffset: 0;
+                }
+                to {
+                  stroke-dashoffset: -24;
+                }
+              }
+              .animate-marching-dots {
+                animation: marchingDots 2.5s linear infinite;
+              }
+              .group:hover .animate-marching-dots {
+                animation-duration: 1.2s;
+              }
+            `}</style>
 
-                  {/* Badge Title & Unlocked Status Sub-line */}
-                  <div className="my-2 z-10">
-                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug group-hover:text-[#eb8467] dark:group-hover:text-[#f0937a] transition-colors">
-                      {badge.name}
-                    </h3>
+            {/* Badges Grid — Multi-Colored Moving Dotted Line Squares */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredBadges.map((badge, idx) => {
+                // Vibrant, distinct colors for each dotted square box
+                const dottedColors = [
+                  '#eb8467', // Coral
+                  '#bde643', // Lime Green
+                  '#3b82f6', // Royal Blue
+                  '#8b5cf6', // Violet Purple
+                  '#06b6d4', // Cyan
+                  '#f59e0b', // Golden Amber
+                  '#10b981', // Emerald Green
+                  '#f43f5e', // Vivid Rose
+                  '#6366f1', // Indigo
+                  '#f97316', // Bright Orange
+                ];
+                const cardDottedColor = dottedColors[idx % dottedColors.length];
 
-                    {badge.unlocked ? (
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />
-                        <span>{badge.achievedDate}</span>
+                return (
+                  <div
+                    key={badge.id}
+                    onClick={() => setSelectedBadge(badge)}
+                    className="group relative bg-white dark:bg-neutral-900 p-2.5 sm:p-3 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col hover:scale-[1.02] rounded-none"
+                  >
+                    {/* Inset Animated Moving Dotted Line Square Frame with Individual Distinct Color */}
+                    <div 
+                      className="relative p-4 sm:p-5 flex flex-col items-center justify-between text-center h-full w-full min-h-[270px] sm:min-h-[290px] transition-all duration-300"
+                    >
+                      {/* Animated Marching Dots SVG Border */}
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+                        <rect
+                          x="2"
+                          y="2"
+                          width="calc(100% - 4px)"
+                          height="calc(100% - 4px)"
+                          fill="none"
+                          stroke={cardDottedColor}
+                          strokeWidth="2.5"
+                          strokeDasharray="6 6"
+                          className="animate-marching-dots"
+                        />
+                      </svg>
+
+                      {/* Badge Hexagon Graphic */}
+                      <div className="w-24 h-28 sm:w-28 sm:h-32 relative flex items-center justify-center my-1 drop-shadow-md group-hover:scale-105 transition-all duration-300 z-10">
+                        <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
+                        {!badge.unlocked && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-xl">
+                            <Lock className="w-7 h-7 text-white drop-shadow-md" />
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="w-full max-w-[160px] mx-auto mt-2">
-                        <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-extrabold mb-1">
-                          <span>Progress</span>
-                          <span>{badge.progressText}</span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-[#eb8467] to-[#e26a4a] h-full rounded-full transition-all duration-500"
-                            style={{ width: `${badge.progress || 0}%` }}
-                          />
-                        </div>
+
+                      {/* Badge Title & Unlocked Status / Progress Sub-line */}
+                      <div className="my-1.5 z-10 w-full">
+                        <h3 className="font-extrabold text-sm sm:text-base text-black dark:text-white leading-snug group-hover:text-black transition-colors">
+                          {badge.name}
+                        </h3>
+
+                        {badge.unlocked ? (
+                          <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                            <span>{badge.achievedDate}</span>
+                          </div>
+                        ) : (
+                          <div className="w-full max-w-[150px] mx-auto mt-2">
+                            <div className="flex justify-between text-[10px] text-slate-600 dark:text-slate-400 font-extrabold mb-1">
+                              <span>Progress</span>
+                              <span>{badge.progressText}</span>
+                            </div>
+                            <div className="w-full bg-slate-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-500"
+                                style={{ width: `${badge.progress || 0}%`, backgroundColor: cardDottedColor }}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </ParticleCard>
-              ))}
-            </MagicBento>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -706,17 +762,17 @@ export default function AchievementsPage() {
                 className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm cursor-pointer"
               />
 
-              {/* Slide-Over Drawer Panel */}
+              {/* Slide-Over Drawer Panel — Clean White Main Box */}
               <div className="absolute inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
                 <motion.div
                   initial={{ x: '100%' }}
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                  className="w-screen max-w-md sm:max-w-[480px] bg-slate-50/90 dark:bg-neutral-950/90 backdrop-blur-md border-l border-slate-200/80 dark:border-neutral-800 shadow-2xl flex flex-col justify-between p-4 sm:p-6 overflow-y-auto"
+                  className="w-screen max-w-md sm:max-w-[480px] bg-white dark:bg-neutral-900 border-l border-slate-200/80 dark:border-neutral-800 shadow-2xl flex flex-col justify-between p-6 sm:p-8 overflow-y-auto"
                 >
                   {/* ── Top Header ── */}
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-neutral-800">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
                     <div>
                       <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
                         Badge Spotlight
@@ -726,43 +782,26 @@ export default function AchievementsPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedBadge(null)}
-                      className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* ── Main Inner Card with V-Tear Reveal Header ── */}
-                  <div className="relative my-4 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-xl overflow-hidden flex flex-col items-center text-center p-6 sm:p-8">
+                  {/* ── Main Blended Content (No Inner Box) ── */}
+                  <div className="flex-1 flex flex-col items-center text-center py-6">
 
-                    {/* V-Tear Reveal Stage */}
-                    <div className="relative w-full -mt-8 -mx-8 mb-6 pt-10 pb-16 bg-gradient-to-b from-[#FFF2EE] via-[#FFF8F5] to-white dark:from-[#2e1812] dark:via-[#20110c] dark:to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
-
+                    {/* Badge Hero Presentation */}
+                    <div className="relative w-full mb-6 pt-4 pb-4 flex flex-col items-center justify-center overflow-hidden">
                       {/* Floating Sparkle Elements */}
-                      <div className="absolute top-4 left-10 text-[#eb8467] text-sm animate-pulse">✦</div>
-                      <div className="absolute top-8 right-12 text-[#f0937a] text-xs animate-ping">✦</div>
-                      <div className="absolute top-16 left-16 text-[#f7a88f] text-xs">✦</div>
+                      <div className="absolute top-2 left-8 text-[#eb8467] text-sm animate-pulse">✦</div>
+                      <div className="absolute top-6 right-10 text-[#f0937a] text-xs animate-ping">✦</div>
+                      <div className="absolute bottom-2 left-12 text-[#f7a88f] text-xs">✦</div>
 
                       {/* Center Hexagonal Badge Graphic */}
                       <div className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_15px_30px_rgba(235,132,103,0.35)] z-20">
                         <BadgeGraphic type={selectedBadge.type} unlocked={selectedBadge.unlocked} />
                       </div>
-
-                      {/* V-Shaped Torn Paper Fold Overlay */}
-                      <div className="absolute bottom-0 inset-x-0 w-full z-10 pointer-events-none">
-                        <svg
-                          viewBox="0 0 400 130"
-                          fill="none"
-                          className="w-full h-auto text-white dark:text-neutral-900 drop-shadow-md overflow-visible"
-                          preserveAspectRatio="none"
-                        >
-                          <path
-                            d="M 0 0 Q 100 45 200 115 Q 300 45 400 0 L 400 130 L 0 130 Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </div>
-
                     </div>
 
                     <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -785,13 +824,13 @@ export default function AchievementsPage() {
 
                     {/* Description Paragraph */}
                     {selectedBadge.description && (
-                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-sm mx-auto mb-2 mt-2">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-sm mx-auto mb-3 mt-3">
                         {selectedBadge.description}
                       </p>
                     )}
 
-                    {/* ── 3-Column Circular Arc Gauge Statistics Box ── */}
-                    <div className="w-full rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm p-4 sm:p-5 mt-4 grid grid-cols-3 gap-2 text-center">
+                    {/* ── 3-Column Circular Arc Gauge Statistics — Seamlessly Blended ── */}
+                    <div className="w-full pt-4 pb-2 mt-2 grid grid-cols-3 gap-2 text-center">
 
                       {/* Column 1: Modules Completed */}
                       <div className="flex flex-col items-center justify-between px-1">
