@@ -1,7 +1,24 @@
 "use client";
 
-import { useState, createContext, useContext } from "react";
-import { Eye, EyeOff, Trash2, Lock, Palette, SlidersHorizontal, Layers as LayersIcon, ChevronRight } from "lucide-react";
+import { useState, createContext, useContext, useEffect } from "react";
+import { Eye, EyeOff, Trash2, Lock, Palette, SlidersHorizontal, Layers as LayersIcon, ChevronRight, GripVertical, Pencil } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSS } from "@dnd-kit/utilities";
 import type { BadgeEditorPanel, BadgeEditorState } from "../hooks/useBadgeEditor";
 import type { BadgeBackground, BadgeBorderStyle, BadgePatternKind } from "..";
 
@@ -14,14 +31,15 @@ function StaticPanelSection({ title, children }: { title: string; children: Reac
   );
 }
 
-function PanelSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+function PanelSection({ title, children, defaultOpen = false, isOpen: controlledIsOpen, onToggle }: { title: string; children: React.ReactNode; defaultOpen?: boolean; isOpen?: boolean; onToggle?: () => void }) {
+  const [internalIsOpen, setInternalIsOpen] = useState(defaultOpen);
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   return (
     <div className="border-b border-white/40 last:border-b-0">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => onToggle ? onToggle() : setInternalIsOpen(!internalIsOpen)}
         className="flex w-full items-center gap-2 py-2.5 px-1 text-left hover:bg-white/40 transition-colors"
       >
         <ChevronRight size={14} className={`text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`} />
@@ -47,14 +65,53 @@ function ColorField({ value, onChange }: { value: string; onChange: (v: string) 
 }
 
 function NumberField({ value, onChange, min, max, step, width = "w-20" }: { value: number; onChange: (v: number) => void; min?: number; max?: number; step?: number; width?: string }) {
+  const [localValue, setLocalValue] = useState<string>(String(value));
+
+  useEffect(() => {
+    setLocalValue((prev) => {
+      const parsed = Number(prev);
+      if (parsed === value) return prev;
+      if (prev === "" && value === 0) return prev;
+      if (prev === "-" && value === 0) return prev;
+      return String(value);
+    });
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setLocalValue(val);
+    
+    if (val === "" || val === "-") {
+      onChange(0);
+      return;
+    }
+    
+    const parsed = Number(val);
+    if (!isNaN(parsed)) {
+      onChange(parsed);
+    }
+  };
+
+  const handleBlur = () => {
+    let finalValue = value;
+    if (min !== undefined && finalValue < min) finalValue = min;
+    if (max !== undefined && finalValue > max) finalValue = max;
+    
+    if (finalValue !== value) {
+      onChange(finalValue);
+    }
+    setLocalValue(String(finalValue));
+  };
+
   return (
     <input
       type="number"
-      value={value}
+      value={localValue}
       min={min}
       max={max}
       step={step}
-      onChange={(e) => onChange(Number(e.target.value) || 0)}
+      onChange={handleChange}
+      onBlur={handleBlur}
       className={`${width} min-w-0 rounded-xl border border-white/50 bg-white/60 px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:border-[#14142b]/30`}
     />
   );
@@ -108,7 +165,11 @@ function BackgroundSection({ editor }: { editor: BadgeEditorState }) {
   };
 
   return (
-    <PanelSection title="Background">
+    <PanelSection 
+      title="Background" 
+      isOpen={editor.openDesignSections.background} 
+      onToggle={() => editor.setOpenDesignSections(prev => ({ ...prev, background: !prev.background }))}
+    >
       <div className="mb-2 flex flex-wrap gap-1">
         {BACKGROUND_TYPES.map((t) => (
           <button
@@ -210,7 +271,11 @@ function FrameSection({ editor }: { editor: BadgeEditorState }) {
   };
 
   return (
-    <PanelSection title="Frame">
+    <PanelSection 
+      title="Frame" 
+      isOpen={editor.openDesignSections.frame} 
+      onToggle={() => editor.setOpenDesignSections(prev => ({ ...prev, frame: !prev.frame }))}
+    >
       <div className="space-y-2.5">
         <div className="mb-2 flex flex-wrap gap-1">
           {BORDER_TYPES.map((t) => (
@@ -470,34 +535,138 @@ export function BadgePropertiesPanel({ editor }: { editor: BadgeEditorState }) {
   );
 }
 
+function SortableLayerItem({
+  obj,
+  editor,
+}: {
+  obj: import("..").BadgeObject;
+  editor: BadgeEditorState;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: obj.id });
+  const [isEditing, setIsEditing] = useState(false);
+  const defaultName = obj.type === "text" ? obj.text || "Text" : obj.type;
+  const displayName = obj.name || defaultName;
+  const [tempName, setTempName] = useState(displayName);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1 : 0,
+    position: "relative" as const,
+  };
+
+  const handleRenameSubmit = () => {
+    setIsEditing(false);
+    if (tempName.trim() !== "" && tempName !== displayName) {
+      editor.updateObject(obj.id, { name: tempName.trim() });
+    } else {
+      setTempName(displayName);
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs ${
+        editor.selectedId === obj.id ? "bg-[#14142b] text-white" : "text-slate-600 hover:bg-white/60"
+      }`}
+    >
+      <button type="button" onClick={() => editor.toggleVisibility(obj.id)} className="flex-shrink-0 opacity-60 hover:opacity-100">
+        {obj.visible ? <Eye size={13} /> : <EyeOff size={13} />}
+      </button>
+      
+      {isEditing ? (
+        <input
+          autoFocus
+          value={tempName}
+          onChange={(e) => setTempName(e.target.value)}
+          onBlur={handleRenameSubmit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleRenameSubmit();
+            if (e.key === "Escape") {
+              setTempName(displayName);
+              setIsEditing(false);
+            }
+          }}
+          className="min-w-0 flex-1 truncate rounded bg-white px-1 py-0.5 text-slate-800 outline-none ring-1 ring-[#14142b]/30"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => editor.handleSelect(obj.id)}
+          onDoubleClick={() => {
+            setTempName(displayName);
+            setIsEditing(true);
+          }}
+          className="min-w-0 flex-1 truncate text-left"
+          title="Double-click to rename"
+        >
+          {displayName}
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          setTempName(displayName);
+          setIsEditing(true);
+        }}
+        className="flex-shrink-0 opacity-0 hover:text-[#14142b] group-hover:opacity-60"
+        title="Rename layer"
+      >
+        <Pencil size={13} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => editor.deleteObject(obj.id)}
+        className="flex-shrink-0 opacity-0 hover:text-red-400 group-hover:opacity-60"
+      >
+        <Trash2 size={13} />
+      </button>
+      <button
+        type="button"
+        className="flex-shrink-0 cursor-grab active:cursor-grabbing text-slate-400 opacity-60 hover:opacity-100 focus:outline-none"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={13} />
+      </button>
+    </div>
+  );
+}
+
 export function BadgeLayersPanel({ editor }: { editor: BadgeEditorState }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   if (!editor.doc) return null;
   const objects = editor.doc.objects.slice().sort((a, b) => b.zIndex - a.zIndex);
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = objects.findIndex((item) => item.id === active.id);
+      const newIndex = objects.findIndex((item) => item.id === over.id);
+      editor.reorderObjects(oldIndex, newIndex);
+    }
+  };
+
   return (
     <div className="space-y-1">
-      {objects.map((obj) => (
-        <div
-          key={obj.id}
-          className={`group flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs ${
-            editor.selectedId === obj.id ? "bg-[#14142b] text-white" : "text-slate-600 hover:bg-white/60"
-          }`}
-        >
-          <button type="button" onClick={() => editor.toggleVisibility(obj.id)} className="flex-shrink-0 opacity-60 hover:opacity-100">
-            {obj.visible ? <Eye size={13} /> : <EyeOff size={13} />}
-          </button>
-          <button type="button" onClick={() => editor.handleSelect(obj.id)} className="min-w-0 flex-1 truncate text-left">
-            {obj.type === "text" ? obj.text || "Text" : obj.name || obj.type}
-          </button>
-          <button
-            type="button"
-            onClick={() => editor.deleteObject(obj.id)}
-            className="flex-shrink-0 opacity-0 hover:text-red-400 group-hover:opacity-60"
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
+        <SortableContext items={objects.map((o) => o.id)} strategy={verticalListSortingStrategy}>
+          {objects.map((obj) => (
+            <SortableLayerItem key={obj.id} obj={obj} editor={editor} />
+          ))}
+        </SortableContext>
+      </DndContext>
       {objects.length === 0 && <p className="px-2 text-xs text-slate-400">No objects yet.</p>}
       <div className="mt-2 flex items-center gap-1.5 border-t border-white/50 px-2 pt-2 text-xs text-slate-400">
         <Lock size={12} />

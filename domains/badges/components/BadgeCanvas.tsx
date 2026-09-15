@@ -75,6 +75,7 @@ interface BadgeCanvasProps {
   size: number;
   showGuides: boolean;
   readOnly?: boolean;
+  onCanvasClick?: (target: "background" | "frame" | "stage") => void;
 }
 
 /**
@@ -91,7 +92,7 @@ interface BadgeCanvasProps {
  * height the way Rect/Text do, so the wrapper group is what makes "resize this object" mean the
  * same thing regardless of what's inside it.
  */
-export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, size, showGuides, readOnly }: BadgeCanvasProps) {
+export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, size, showGuides, readOnly, onCanvasClick }: BadgeCanvasProps) {
   const stageRef = useRef<Konva.Stage>(null);
   const trRef = useRef<Konva.Transformer>(null);
   const nodeRefs = useRef<Map<string, Konva.Node>>(new Map());
@@ -109,11 +110,24 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
 
   const handleEditComplete = () => {
     if (editingTextId) {
-      updateObject(editingTextId, { text: editingValue || " " });
+      const node = nodeRefs.current.get(editingTextId);
+      const textHeight = node ? node.height() : undefined;
+      updateObject(editingTextId, { 
+        text: editingValue || " ",
+        ...(textHeight ? { height: textHeight } : {})
+      });
       setEditingTextId(null);
       onSelect(null);
     }
   };
+
+  // Auto-resize textarea height as user types
+  useEffect(() => {
+    if (textareaRef.current && editingTextId) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  }, [editingValue, editingTextId]);
 
   const shape = useMemo(() => getBadgeShapeDefinition(doc.shape.type), [doc.shape.type]);
   const scale = size / doc.canvas.width;
@@ -132,7 +146,7 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
       top: absPos.y + "px",
       left: absPos.x + "px",
       width: obj.width * scale + "px",
-      height: obj.height * scale + "px",
+      minHeight: obj.height * scale + "px",
       fontSize: obj.fontSize * scale + "px",
       border: "none",
       padding: "0px",
@@ -213,6 +227,8 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
       
       patch.fontSize = Math.max(1, textObj.fontSize * scaleToUse);
       patch.width = Math.max(10, textObj.width * scaleToUse);
+      // We do not strictly need to scale height manually since it auto-calculates,
+      // but we update it to keep the object data somewhat in sync.
       patch.height = Math.max(10, textObj.height * scaleToUse);
     } else {
       patch.width = Math.max(10, obj.width * scaleX);
@@ -231,9 +247,16 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
         scaleX={scale}
         scaleY={scale}
         onMouseDown={(e) => {
-          if (e.target === e.target.getStage()) {
+          const isStage = e.target === e.target.getStage();
+          const name = e.target.name();
+          const isBackgroundOrFrame = name === "background" || name === "frame";
+          
+          if (isStage || isBackgroundOrFrame) {
             if (editingTextId) handleEditComplete();
             onSelect(null);
+            if (onCanvasClick) {
+              onCanvasClick(isStage ? "stage" : (name as "background" | "frame"));
+            }
           }
         }}
       >
@@ -261,7 +284,8 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
                   x={obj.x}
                   y={obj.y}
                   width={obj.width}
-                  height={obj.height}
+                  // Omitting height allows Konva to auto-calculate the text's bounding height 
+                  // based on lines, wrapping, and font size.
                   rotation={obj.rotation}
                   opacity={editingTextId === obj.id ? 0 : obj.opacity}
                   text={applyTextTransform(obj.text, obj.textTransform)}
@@ -335,8 +359,8 @@ export function BadgeCanvas({ document: doc, onChange, selectedId, onSelect, siz
         {!readOnly && <Transformer ref={trRef} rotateEnabled resizeEnabled />}
       </Layer>
 
-      {/* Border layer — the fixed frame's styling; not selectable/draggable/deletable. */}
-      <Layer listening={false}>
+      {/* Border layer — the fixed frame's styling */}
+      <Layer>
         <BadgeBorder
           border={doc.border}
           borderPoints={borderPoints}
@@ -381,7 +405,7 @@ function BackgroundFill({ background, width, height }: { background: BadgeDocume
   const image = useHtmlImage(background.type === "image" ? background.src : undefined);
 
   if (background.type === "solid") {
-    return <Rect x={0} y={0} width={width} height={height} fill={background.value} opacity={background.opacity ?? 1} />;
+    return <Rect name="background" x={0} y={0} width={width} height={height} fill={background.value} opacity={background.opacity ?? 1} />;
   }
   if (background.type === "gradient") {
     const angleRad = (background.angle * Math.PI) / 180;
@@ -389,6 +413,7 @@ function BackgroundFill({ background, width, height }: { background: BadgeDocume
     const dy = (Math.sin(angleRad) * height) / 2;
     return (
       <Rect
+        name="background"
         x={0}
         y={0}
         width={width}
@@ -402,6 +427,7 @@ function BackgroundFill({ background, width, height }: { background: BadgeDocume
   if (background.type === "radialGradient") {
     return (
       <Rect
+        name="background"
         x={0}
         y={0}
         width={width}
@@ -418,6 +444,7 @@ function BackgroundFill({ background, width, height }: { background: BadgeDocume
     const tile = getPatternTile(background.pattern, background.color, background.scale);
     return (
       <Rect
+        name="background"
         x={0}
         y={0}
         width={width}
@@ -436,12 +463,11 @@ function BackgroundFill({ background, width, height }: { background: BadgeDocume
       />
     );
   }
-  // image
   if (image) {
     const crop = computeCrop(image, width, height, background.fit);
-    return <KonvaImage image={image} x={0} y={0} width={width} height={height} crop={crop} listening={false} />;
+    return <KonvaImage name="background" image={image} x={0} y={0} width={width} height={height} crop={crop} />;
   }
-  return <Rect x={0} y={0} width={width} height={height} fill="#0B0B18" />;
+  return <Rect name="background" x={0} y={0} width={width} height={height} fill="#0B0B18" />;
 }
 
 function ShapeInner({ obj }: { obj: BadgeShapeObject }) {
@@ -543,24 +569,48 @@ function BadgeBorder({
     const dy = (Math.sin(angleRad) * height) / 2;
     return (
       <Line
+        name="frame"
         points={borderPoints}
         closed
         strokeWidth={border.width}
         opacity={border.opacity}
+        lineJoin="miter"
+        miterLimit={10}
         strokeLinearGradientStartPoint={{ x: width / 2 - dx, y: height / 2 - dy }}
         strokeLinearGradientEndPoint={{ x: width / 2 + dx, y: height / 2 + dy }}
         strokeLinearGradientColorStops={border.stops.flatMap((s) => [s.offset, s.color])}
+        hitFunc={(ctx, shape) => {
+          ctx.beginPath();
+          for (let i = 0; i < borderPoints.length; i += 2) {
+            if (i === 0) ctx.moveTo(borderPoints[i], borderPoints[i + 1]);
+            else ctx.lineTo(borderPoints[i], borderPoints[i + 1]);
+          }
+          ctx.closePath();
+          ctx.strokeShape(shape);
+        }}
       />
     );
   }
 
   return (
     <Line
+      name="frame"
       points={borderPoints}
       closed
       stroke={border.color}
       strokeWidth={border.width}
       opacity={border.opacity}
+      lineJoin="miter"
+      miterLimit={10}
+      hitFunc={(ctx, shape) => {
+        ctx.beginPath();
+        for (let i = 0; i < borderPoints.length; i += 2) {
+          if (i === 0) ctx.moveTo(borderPoints[i], borderPoints[i + 1]);
+          else ctx.lineTo(borderPoints[i], borderPoints[i + 1]);
+        }
+        ctx.closePath();
+        ctx.strokeShape(shape);
+      }}
     />
   );
 }

@@ -51,7 +51,7 @@ export function BadgeToolbar({ editor, centerX }: { editor: BadgeEditorState; ce
     if (!file) return;
     setUploading(true);
     try {
-      const url = await uploadFileToStorage(file, ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"]);
+      const url = await uploadFileToStorage(file, ["image/png", "image/svg+xml"]);
       editor.addImageObject(url);
     } catch (err) {
       console.error("Failed to upload badge image", err);
@@ -73,7 +73,7 @@ export function BadgeToolbar({ editor, centerX }: { editor: BadgeEditorState; ce
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml"
+        accept="image/png,image/svg+xml"
         className="hidden"
         onChange={(e) => {
           void handleFileChosen(e.target.files?.[0]);
