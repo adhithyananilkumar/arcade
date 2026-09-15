@@ -8,6 +8,11 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { queryClient } from '@/infrastructure/state/queryClient';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import {
+  parseMetadata,
+  getNotificationTargetUrl,
+  type TransferStatus,
+} from '../lib/notificationMetadata';
 
 interface NotificationListProps {
   notifications: NotificationDto[];
@@ -15,8 +20,6 @@ interface NotificationListProps {
   onNotificationAction?: () => void;
   emptyMessage?: string;
 }
-
-export type TransferStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED' | 'EXPIRED';
 
 function typeLabel(type: string): string | null {
   switch (type) {
@@ -82,49 +85,6 @@ function typeTone(type: string): string {
   }
 }
 
-function getNotificationTargetUrl(n: NotificationDto): string | null {
-  let metadataObj: any = null;
-  if (n.metadata) {
-    try {
-      metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-    } catch {
-      metadataObj = null;
-    }
-  }
-
-  const messageId = metadataObj?.contactMessageId || metadataObj?.messageId || metadataObj?.reportId || metadataObj?.id;
-
-  if (n.type === 'REACH_US') {
-    return messageId ? `/console/inbox?tab=reach-us&messageId=${messageId}` : '/console/inbox?tab=reach-us';
-  }
-
-  if (n.type === 'CONTENT_REPORTED') {
-    return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
-  }
-
-  const lowerTitle = (n.title || '').toLowerCase();
-  const lowerMessage = (n.message || '').toLowerCase();
-
-  if (lowerTitle.includes('reach us') || lowerMessage.includes('reach us')) {
-    return messageId ? `/console/inbox?tab=reach-us&messageId=${messageId}` : '/console/inbox?tab=reach-us';
-  }
-
-  if (lowerTitle.includes('report') || lowerMessage.includes('report')) {
-    return messageId ? `/console/inbox?tab=reports&reportId=${messageId}` : '/console/inbox?tab=reports';
-  }
-
-  if (n.linkUrl) {
-    if (n.linkUrl === '/console/inbox') {
-      if (messageId) {
-        return `/console/inbox?messageId=${messageId}`;
-      }
-    }
-    return n.linkUrl;
-  }
-
-  return null;
-}
-
 export function NotificationList({
   notifications,
   onItemClick,
@@ -140,26 +100,17 @@ export function NotificationList({
   useEffect(() => {
     const uncheckedNotifications = notifications.filter((n) => {
       if (n.type !== 'OWNER_TRANSFER_REQUESTED') return false;
-      let metadataObj: any = null;
-      try {
-        metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-      } catch {
-        return false;
-      }
-      const requestId = metadataObj?.requestId;
-      const channelId = metadataObj?.channelId;
+      const metadataObj = parseMetadata(n.metadata);
+      if (!metadataObj) return false;
+      const requestId = metadataObj.requestId;
+      const channelId = metadataObj.channelId;
       return Boolean(channelId && requestId && !checkedRequestIdsRef.current.has(requestId));
     });
 
     if (uncheckedNotifications.length === 0) return;
 
     uncheckedNotifications.forEach(async (n) => {
-      let metadataObj: any = null;
-      try {
-        metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-      } catch {
-        metadataObj = null;
-      }
+      const metadataObj = parseMetadata(n.metadata);
       const channelId = metadataObj?.channelId;
       const requestId = metadataObj?.requestId;
       if (channelId && requestId) {
@@ -207,7 +158,7 @@ export function NotificationList({
           </div>
         </div>
 
-        <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 mb-1">You're all caught up!</h4>
+        <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 mb-1">You&apos;re all caught up!</h4>
         <p className="text-[10px] text-slate-400 font-semibold max-w-[180px] mx-auto leading-relaxed">
           {emptyMessage || "We'll notify you when something new arrives."}
         </p>
@@ -227,8 +178,8 @@ export function NotificationList({
       toast.success('Ownership transferred successfully.');
       queryClient.invalidateQueries();
       onNotificationAction?.();
-    } catch (error: any) {
-      const msg = error.message || 'Failed to accept ownership transfer.';
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to accept ownership transfer.';
       if (
         msg.toLowerCase().includes('pending') ||
         msg.toLowerCase().includes('expired') ||
@@ -256,8 +207,8 @@ export function NotificationList({
       toast.success('Ownership transfer declined.');
       queryClient.invalidateQueries();
       onNotificationAction?.();
-    } catch (error: any) {
-      const msg = error.message || 'Failed to decline ownership transfer.';
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Failed to decline ownership transfer.';
       if (
         msg.toLowerCase().includes('pending') ||
         msg.toLowerCase().includes('expired') ||
@@ -283,8 +234,8 @@ export function NotificationList({
       toast.success('Ownership transfer request cancelled.');
       queryClient.invalidateQueries();
       onNotificationAction?.();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to cancel ownership transfer request.');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel ownership transfer request.');
     } finally {
       setActionLoadingId(null);
     }
@@ -293,10 +244,7 @@ export function NotificationList({
   // Build a map of resolved statuses from terminal notification types OR metadata
   const terminalResolvedStatuses: Record<string, TransferStatus> = {};
   notifications.forEach((n) => {
-    let metadataObj: any = null;
-    try {
-      metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-    } catch {}
+    const metadataObj = parseMetadata(n.metadata);
     const rId = metadataObj?.requestId;
     if (rId) {
       if (n.type === 'OWNER_TRANSFER_ACCEPTED') terminalResolvedStatuses[rId] = 'ACCEPTED';
@@ -307,10 +255,7 @@ export function NotificationList({
 
   // Filter out redundant pending notifications when a terminal status notification exists for the same requestId
   const filteredNotifications = notifications.filter((n) => {
-    let metadataObj: any = null;
-    try {
-      metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-    } catch {}
+    const metadataObj = parseMetadata(n.metadata);
     const rId = metadataObj?.requestId;
     if (n.type === 'OWNER_TRANSFER_REQUESTED' && rId && terminalResolvedStatuses[rId]) {
       return false; // Skip stale pending notification if a terminal update exists
@@ -326,28 +271,21 @@ export function NotificationList({
   return (
     <div className="divide-y divide-black/5 dark:divide-white/5">
       {uniqueNotifications.map((n) => {
-        let metadataObj: any = null;
-        if (n.metadata) {
-          try {
-            metadataObj = typeof n.metadata === 'string' ? JSON.parse(n.metadata) : n.metadata;
-          } catch {
-            metadataObj = null;
-          }
-        }
+        const metadataObj = parseMetadata(n.metadata);
 
         const isOwnerTransferRequest = n.type === 'OWNER_TRANSFER_REQUESTED';
         const requestId = metadataObj?.requestId;
-        const currentOwnerId = metadataObj?.currentOwnerId;
         const currentOwnerName = metadataObj?.currentOwnerName || n.actorName || 'The current owner';
         const channelName = metadataObj?.channelName ? `"${metadataObj.channelName}"` : 'the channel';
         const proposedOwnerId = metadataObj?.proposedOwnerId;
         const proposedOwnerName = metadataObj?.proposedOwnerName || 'the proposed owner';
 
         const isProposedOwner = Boolean(proposedOwnerId && user?.id && user.id === proposedOwnerId);
-        const isCurrentOwner = Boolean(currentOwnerId && user?.id && user.id === currentOwnerId) || (!isProposedOwner);
 
         const resolvedStatus: TransferStatus =
-          transferStatuses[requestId] || terminalResolvedStatuses[requestId] || metadataObj?.status || 'PENDING';
+          (requestId && (transferStatuses[requestId] || terminalResolvedStatuses[requestId])) ||
+          metadataObj?.status ||
+          'PENDING';
 
         // Actionable card for OWNER_TRANSFER_REQUESTED
         if (isOwnerTransferRequest && requestId) {

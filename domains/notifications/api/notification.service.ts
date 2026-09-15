@@ -37,4 +37,12 @@ export class NotificationService {
   static async markRead(id: string): Promise<void> {
     await api.post(`/api/v1/notifications/${id}/read`);
   }
+
+  static async delete(id: string): Promise<void> {
+    await api.delete(`/api/v1/notifications/${id}`);
+  }
+
+  static async deleteAll(): Promise<void> {
+    await api.delete('/api/v1/notifications');
+  }
 }

@@ -45,12 +45,56 @@ export function useMarkReadMutation() {
   return useMutation({
     mutationFn: (id: string) => NotificationService.markRead(id),
     onSuccess: (_data, id) => {
-      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) =>
-        prev ? prev.map((n) => (n.id === id ? { ...n, read: true } : n)) : prev
-      );
-      queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
-        typeof prev === 'number' ? Math.max(0, prev - 1) : prev
-      );
+      // Only decrement unreadCount if this notification was actually unread — marking an
+      // already-read notification read again (e.g. a stale click) must not under-count.
+      let wasUnread = false;
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) => {
+        if (!prev) return prev;
+        return prev.map((n) => {
+          if (n.id === id) {
+            if (!n.read) wasUnread = true;
+            return { ...n, read: true };
+          }
+          return n;
+        });
+      });
+      if (wasUnread) {
+        queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
+          typeof prev === 'number' ? Math.max(0, prev - 1) : prev
+        );
+      }
+    },
+  });
+}
+
+export function useDeleteNotificationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => NotificationService.delete(id),
+    onSuccess: (_data, id) => {
+      let wasUnread = false;
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) => {
+        if (!prev) return prev;
+        const target = prev.find((n) => n.id === id);
+        if (target && !target.read) wasUnread = true;
+        return prev.filter((n) => n.id !== id);
+      });
+      if (wasUnread) {
+        queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
+          typeof prev === 'number' ? Math.max(0, prev - 1) : prev
+        );
+      }
+    },
+  });
+}
+
+export function useDeleteAllNotificationsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => NotificationService.deleteAll(),
+    onSuccess: () => {
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), []);
+      queryClient.setQueryData(notificationKeys.unreadCount(), 0);
     },
   });
 }

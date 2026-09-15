@@ -11,6 +11,8 @@ import {
   useUnreadCountQuery,
   useMarkAllReadMutation,
   useMarkReadMutation,
+  useDeleteNotificationMutation,
+  useDeleteAllNotificationsMutation,
 } from '../api/notification.queries';
 
 /**
@@ -39,6 +41,8 @@ export function useNotifications() {
   const unreadCountQuery = useUnreadCountQuery(enabled);
   const markAllReadMutation = useMarkAllReadMutation();
   const markReadMutation = useMarkReadMutation();
+  const deleteMutation = useDeleteNotificationMutation();
+  const deleteAllMutation = useDeleteAllNotificationsMutation();
 
   useEffect(() => {
     if (!enabled || !connected) return;
@@ -86,6 +90,19 @@ export function useNotifications() {
     [markReadMutation]
   );
 
+  // Delete is destructive and irreversible, so — unlike markRead/markAllRead above — failures
+  // are rethrown rather than swallowed: the caller needs to know so it can tell the user rather
+  // than have a "deleted" notification silently reappear on next refresh.
+  const deleteNotification = useCallback(
+    (id: string) => deleteMutation.mutateAsync(id),
+    [deleteMutation]
+  );
+
+  const deleteAllNotifications = useCallback(
+    () => deleteAllMutation.mutateAsync(),
+    [deleteAllMutation]
+  );
+
   return {
     notifications: listQuery.data ?? [],
     unreadCount: unreadCountQuery.data ?? 0,
@@ -93,5 +110,7 @@ export function useNotifications() {
     refresh,
     markAllRead,
     markRead,
+    deleteNotification,
+    deleteAllNotifications,
   };
 }

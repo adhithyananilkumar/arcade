@@ -30,5 +30,4 @@ export { VoteButtons } from './components/VoteButtons';
 export { TagBadge } from './components/TagBadge';
 export { PostTypeBadge } from './components/PostTypeBadge';
 export { ShareButton } from './components/ShareButton';
-export { useWebSocket } from './hooks/useWebSocket';
 export { timeAgo } from './utils/display';

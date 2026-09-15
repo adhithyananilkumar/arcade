@@ -21,7 +21,7 @@ interface Props {
   channel: Channel;
 }
 
-export function ChannelNotificationsManager({ channel }: Props) {
+export function ChannelAuditLogManager({ channel }: Props) {
   const [logs, setLogs] = useState<ChannelAuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuthStore();
