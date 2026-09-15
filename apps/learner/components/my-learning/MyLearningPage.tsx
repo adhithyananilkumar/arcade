@@ -52,7 +52,6 @@ import TextType from '@/shared/design-system/ui/TextType/TextType';
 import { LibraryCard } from './LibraryCard';
 import { EventRegistrationCard } from './EventRegistrationCard';
 import { LearningActivityPanel } from './LearningActivityPanel';
-import { LearningJourneyPlaceholder } from './LearningJourneyPlaceholder';
 import { progressDisplayFor, resourceHrefFor } from './enrollmentPresentation';
 
 const PAGE_SIZE = 12;
@@ -222,13 +221,13 @@ export default function MyLearningPage() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-9 lg:gap-10 items-start pt-2">
+        <div className={`grid grid-cols-1 gap-9 lg:gap-10 items-start pt-2 ${continueItem ? 'lg:grid-cols-12' : ''}`}>
           {/* LEFT — library / events */}
-          <div className="lg:col-span-9 space-y-6">
-            {/* TABS */}
+          <div className={`space-y-6 ${continueItem ? 'lg:col-span-9' : ''}`}>
+            {/* TABS - Clean Segmented Control */}
             <div
               id="learning-items-section"
-              className="scroll-mt-24 flex flex-wrap items-center gap-2"
+              className="scroll-mt-24 inline-flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl border border-slate-200/90 dark:border-slate-700/80"
               role="tablist"
               aria-label="My Learning sections"
             >
@@ -249,7 +248,7 @@ export default function MyLearningPage() {
             </div>
 
             {/* FILTER BAR — backend-supported options only */}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {tab === 'courses' ? (
                 <>
                   <FilterGroup label="Show">
@@ -384,10 +383,11 @@ export default function MyLearningPage() {
           </div>
 
           {/* RIGHT SIDEBAR */}
-          <div className="lg:col-span-3 space-y-8">
-            {continueItem && <ContinuePanel item={continueItem} />}
-            <LearningJourneyPlaceholder />
-          </div>
+          {continueItem && (
+            <div className="lg:col-span-3 space-y-8">
+              <ContinuePanel item={continueItem} />
+            </div>
+          )}
         </div>
 
         <LearningActivityPanel enabled={isAuthenticated} />
@@ -419,18 +419,23 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`px-4 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 border transition-colors shadow-xs ${
+      className={`relative px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all duration-200 select-none cursor-pointer ${
         active
-          ? 'bg-indigo-600 text-white border-indigo-600'
-          : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
+          ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-white shadow-xs border border-slate-200/90 dark:border-slate-700/80 font-black'
+          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
       }`}
     >
-      <Icon size={15} className={active ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'} />
+      <Icon
+        size={14}
+        className={active ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'}
+      />
       <span>{label}</span>
       {typeof count === 'number' && (
         <span
-          className={`px-1.5 py-0.5 rounded-lg text-[10px] font-black ${
-            active ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+          className={`min-w-[19px] h-[19px] px-1.5 inline-flex items-center justify-center rounded-full text-[10px] font-bold transition-colors ${
+            active
+              ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400'
+              : 'bg-slate-200/70 dark:bg-slate-700/70 text-slate-500 dark:text-slate-400'
           }`}
         >
           {count}
@@ -442,11 +447,13 @@ function TabButton({
 
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+    <div className="flex items-center gap-2">
+      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
         {label}
       </span>
-      {children}
+      <div className="inline-flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl border border-slate-200/90 dark:border-slate-700/80">
+        {children}
+      </div>
     </div>
   );
 }
@@ -465,10 +472,10 @@ function Chip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-colors ${
+      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
         active
-          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white'
-          : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
+          ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-slate-700/80 font-bold'
+          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
       }`}
     >
       {children}
@@ -561,10 +568,10 @@ function EmptyState({
       </p>
       <Link
         href={ctaHref}
-        className="inline-flex items-center gap-1.5 mt-1 px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold"
+        className="inline-flex items-center justify-center gap-2 mt-3 px-6 h-[42px] rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
       >
-        <Compass size={13} />
-        {ctaLabel}
+        <span>{ctaLabel}</span>
+        <span aria-hidden="true" className="text-xs">→</span>
       </Link>
     </div>
   );
@@ -630,13 +637,13 @@ function ContinuePanel({
   if (!href) return null;
 
   return (
-    <section className="relative overflow-hidden rounded-tr-none rounded-bl-none rounded-tl-[2.5rem] rounded-br-[2.5rem] bg-slate-200/80 dark:bg-slate-800 p-[1px] shadow-xs hover:shadow-md transition-all">
-      <div className="absolute inset-[-100%] opacity-100 animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_60%,#ec4899_80%,#8b5cf6_90%,#06b6d4_100%)]" />
-      <div className="relative z-10 h-full w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-tr-none rounded-bl-none rounded-tl-[calc(2.5rem-1px)] rounded-br-[calc(2.5rem-1px)] p-5 sm:p-6 space-y-4">
-        <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-            Continue learning
-          </p>
+    <section className="relative overflow-hidden rounded-2xl sm:rounded-[22px] bg-slate-200/80 dark:bg-slate-800 p-[1.5px] shadow-xs hover:shadow-lg transition-all duration-300">
+      <div className="absolute inset-[-100%] opacity-100 animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,transparent_60%,#3b82f6_75%,#8b5cf6_88%,#06b6d4_100%)]" />
+      <div className="relative z-10 h-full w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-[calc(1.375rem-1.5px)] p-5 sm:p-6 space-y-4">
+        <div className="space-y-1.5">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60">
+            Continue Learning
+          </span>
           <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
             {item.title ?? 'Untitled course'}
           </h3>
@@ -646,16 +653,16 @@ function ContinuePanel({
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
               <span>Course progress</span>
-              <span className="text-sky-500 dark:text-sky-400 font-extrabold">
+              <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">
                 {progress.percent}%
               </span>
             </div>
-            <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress.percent}%` }}
                 transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full rounded-full bg-gradient-to-r from-indigo-500/70 to-sky-400/70"
+                className="h-full rounded-full bg-gradient-to-r from-[#2962D6] to-[#27C5D8]"
               />
             </div>
           </div>
@@ -665,10 +672,10 @@ function ContinuePanel({
 
         <Link
           href={href}
-          className="w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-sky-500 via-indigo-600 to-purple-600 animate-changing-gradient hover:shadow-lg"
+          className="w-full py-3 rounded-xl text-white text-xs font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-sky-500 via-indigo-600 to-teal-500 hover:opacity-95"
         >
           <Play size={13} className="fill-current" />
-          <span>Resume</span>
+          <span>Resume Course</span>
         </Link>
       </div>
     </section>

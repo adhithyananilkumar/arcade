@@ -322,9 +322,8 @@ describe('MyLearningPage — removed fabrications', () => {
     expect(screen.queryByText(/Hours\/Day/i)).not.toBeInTheDocument();
   });
 
-  it('marks the Learning Journey as unavailable rather than computing a fake level', async () => {
+  it('does not render fake progression levels', async () => {
     renderPage();
-    expect(await screen.findByText(/progression tracking is not available yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/Complete 3 courses/i)).not.toBeInTheDocument();
   });
 });

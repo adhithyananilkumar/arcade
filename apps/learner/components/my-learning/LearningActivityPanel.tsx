@@ -124,7 +124,7 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
         </div>
 
         <div
-          className="flex items-center gap-1 shrink-0"
+          className="inline-flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl border border-slate-200/90 dark:border-slate-700/80 shrink-0"
           role="group"
           aria-label="Activity date range"
         >
@@ -134,10 +134,10 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
               type="button"
               onClick={() => setPreset(p)}
               aria-pressed={preset === p}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-colors ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 select-none cursor-pointer ${
                 preset === p
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs border border-slate-200/90 dark:border-slate-700/80 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
               }`}
             >
               {p === '7d' ? 'Last 7 days' : 'Last 30 days'}
