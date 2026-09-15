@@ -286,6 +286,28 @@
   }
 }
 
+/* Toast type-icon entrance — a snappy pop + settle (see shared/design-system/ui/sonner.tsx) */
+@keyframes toast-icon-pop {
+  0% {
+    transform: scale(0.3) rotate(-25deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.15) rotate(6deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.toast-icon-pop {
+  animation: toast-icon-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* Markdown preview overrides — keep it light */
 .w-md-editor-text-pre,
 .w-md-editor-text-input,
