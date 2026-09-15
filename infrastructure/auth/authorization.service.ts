@@ -13,7 +13,7 @@ export const AuthorizationService = {
     AuthorizationService.hasPermission(user, 'platform.roles.assign') ||
     AuthorizationService.hasPermission(user, 'platform.permissions.manage') ||
     AuthorizationService.hasPermission(user, 'platform.system.manage') ||
-    AuthorizationService.hasPermission(user, 'payments.view'),
+    AuthorizationService.hasPermission(user, 'platform.payments.view'),
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
 
@@ -44,5 +44,5 @@ export const AuthorizationService = {
 
   canViewAuditLogs: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.audit.view'),
 
-  canViewPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'payments.view'),
+  canViewPayments: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.payments.view'),
 };

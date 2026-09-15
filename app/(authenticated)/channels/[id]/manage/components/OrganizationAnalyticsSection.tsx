@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { useParams } from 'next/navigation';
+import { api } from '@/infrastructure/http/api';
+import { EmptyState } from './EmptyState';
 
 export interface ReviewItem {
   id: string;
@@ -36,50 +39,14 @@ export interface ReviewItem {
   cardSize?: 'wide' | 'normal';
 }
 
-const mockReviews: ReviewItem[] = [
-  {
-    id: 'rev-1',
-    learnerName: 'Marcus Vance',
-    learnerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-    courseName: 'AI Agent Architecture & Tool Use Masterclass',
-    rating: 5,
-    date: '2 hours ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Hands down the single best enterprise AI course I have taken! The hands-on labs with vector search and multi-agent coordination were immediately applicable to our engineering team.',
-    instructorResponse:
-      'Thank you Marcus! So glad the multi-agent labs resonated with your engineering workflow.',
-  },
-  {
-    id: 'rev-2',
-    learnerName: 'Sophia Lin',
-    learnerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Prompt Engineering & Context Window Optimization',
-    rating: 5,
-    date: '1 day ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Extremely clear explanations and excellent benchmark datasets provided. Learned how to cut our token costs by 40% using prompt caching.',
-  },
-  {
-    id: 'rev-3',
-    learnerName: 'David K.',
-    learnerAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Neural Networks from Scratch in Python',
-    rating: 4,
-    date: '3 days ago',
-    sentiment: 'CONSTRUCTIVE',
-    reviewText:
-      'Great math breakdown in Module 3. Would love to see additional PyTorch GPU acceleration examples in the bonus section!',
-  },
-];
+const mockReviews: ReviewItem[] = [];
 
 const ratingDistribution = [
-  { stars: 5, percentage: 88, count: 3379 },
-  { stars: 4, percentage: 8, count: 307 },
-  { stars: 3, percentage: 2, count: 76 },
-  { stars: 2, percentage: 1, count: 48 },
-  { stars: 1, percentage: 1, count: 30 },
+  { stars: 5, percentage: 0, count: 0 },
+  { stars: 4, percentage: 0, count: 0 },
+  { stars: 3, percentage: 0, count: 0 },
+  { stars: 2, percentage: 0, count: 0 },
+  { stars: 1, percentage: 0, count: 0 },
 ];
 
 type TimeframeOption = '7D' | '30D' | '90D' | '1Y';
@@ -98,59 +65,25 @@ interface TimeframeData {
   chartPoints: number[];
 }
 
+const emptyTimeframeData = (label: string, labels: string[]): TimeframeData => ({
+  timeframeLabel: label,
+  enrollments: '0',
+  enrollmentGrowth: '0%',
+  rating: '0.00 ★',
+  reviewsCount: '0 reviews',
+  completionRate: '0%',
+  revenue: '$0',
+  revenueGrowth: '0%',
+  summaryHeadline: `Your channel got 0 enrollments in the ${label}`,
+  labels,
+  chartPoints: labels.map(() => 0),
+});
+
 const TIMEFRAME_DATA: Record<TimeframeOption, TimeframeData> = {
-  '7D': {
-    timeframeLabel: 'last 7 days',
-    enrollments: '1,840',
-    enrollmentGrowth: '+12.3%',
-    rating: '4.94 ★',
-    reviewsCount: '142 reviews',
-    completionRate: '89.2%',
-    revenue: '$8,400',
-    revenueGrowth: '+14.1%',
-    summaryHeadline: 'Your channel got 1,840 enrollments in the last 7 days',
-    labels: ['Aug 1', 'Aug 2', 'Aug 3', 'Aug 4', 'Aug 5', 'Aug 6', 'Aug 7 (Today)'],
-    chartPoints: [180, 290, 410, 680, 950, 1420, 1840],
-  },
-  '30D': {
-    timeframeLabel: 'last 30 days',
-    enrollments: '14,890',
-    enrollmentGrowth: '+18.4%',
-    rating: '4.92 ★',
-    reviewsCount: '840 reviews',
-    completionRate: '84.6%',
-    revenue: '$42,500',
-    revenueGrowth: '+18.2%',
-    summaryHeadline: 'Your channel got 14,890 enrollments in the last 30 days',
-    labels: ['Jul 8 - 15', 'Jul 16 - 23', 'Jul 24 - 31', 'Aug 1 - 7'],
-    chartPoints: [2800, 5900, 10400, 14890],
-  },
-  '90D': {
-    timeframeLabel: 'last 90 days',
-    enrollments: '42,890',
-    enrollmentGrowth: '+24.1%',
-    rating: '4.91 ★',
-    reviewsCount: '3.8k reviews',
-    completionRate: '83.1%',
-    revenue: '$128,500',
-    revenueGrowth: '+22.1%',
-    summaryHeadline: 'Your channel got 42,890 enrollments in the last 90 days',
-    labels: ['June 2026', 'July 2026', 'August 2026'],
-    chartPoints: [12000, 27500, 42890],
-  },
-  '1Y': {
-    timeframeLabel: 'last 365 days',
-    enrollments: '168,400',
-    enrollmentGrowth: '+42.0%',
-    rating: '4.89 ★',
-    reviewsCount: '12.4k reviews',
-    completionRate: '81.4%',
-    revenue: '$492,000',
-    revenueGrowth: '+38.5%',
-    summaryHeadline: 'Your channel got 168,400 enrollments in the last 365 days',
-    labels: ['Aug 2025', 'Nov 2025', 'Feb 2026', 'May 2026', 'Aug 2026'],
-    chartPoints: [38000, 84000, 128000, 168400],
-  },
+  '7D': emptyTimeframeData('last 7 days', ['Aug 1', 'Aug 2', 'Aug 3', 'Aug 4', 'Aug 5', 'Aug 6', 'Aug 7']),
+  '30D': emptyTimeframeData('last 30 days', ['Jul 8 - 15', 'Jul 16 - 23', 'Jul 24 - 31', 'Aug 1 - 7']),
+  '90D': emptyTimeframeData('last 90 days', ['June', 'July', 'August']),
+  '1Y': emptyTimeframeData('last 365 days', ['Aug', 'Nov', 'Feb', 'May', 'Aug']),
 };
 
 function getSmoothPath(coords: { x: number; y: number }[]) {
@@ -169,34 +102,40 @@ function getSmoothPath(coords: { x: number; y: number }[]) {
 }
 
 export function OrganizationAnalyticsSection() {
+  const params = useParams();
+  const channelId = params.id as string;
   const [timeframe, setTimeframe] = useState<TimeframeOption>('7D');
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>(mockReviews);
-  const [categories] = useState([
-    { name: 'Web & Frontend', percentage: 32, color: 'bg-indigo-600' },
-    { name: 'Backend & Cloud', percentage: 24, color: 'bg-blue-500' },
-    { name: 'AI & Data Science', percentage: 18, color: 'bg-purple-600' },
-    { name: 'Cybersecurity', percentage: 12, color: 'bg-rose-500' },
-    { name: 'Mobile Apps', percentage: 8, color: 'bg-emerald-500' },
-    { name: 'DevOps & SRE', percentage: 4, color: 'bg-amber-500' },
-    { name: 'UI/UX & Product', percentage: 2, color: 'bg-cyan-500' },
-  ]);
   const [categoryPage, setCategoryPage] = useState(0);
   const [feedbackPage, setFeedbackPage] = useState(0);
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
 
-  const ratingDistribution = [
-    { stars: 5, percentage: 88, count: 3379 },
-    { stars: 4, percentage: 8, count: 307 },
-    { stars: 3, percentage: 2, count: 76 },
-    { stars: 2, percentage: 1, count: 48 },
-    { stars: 1, percentage: 1, count: 30 },
+  useEffect(() => {
+    if (!channelId) return;
+    api.get(`/api/channels/${channelId}/analytics?timeframe=${timeframe}`)
+      .then((res: any) => {
+        setData(res);
+        setReviews(res.recentReviews || []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch analytics:", err);
+      });
+  }, [timeframe, channelId]);
+
+  const currentRatingDistribution = data?.ratingOverview?.distribution || [
+    { stars: 5, percentage: 0, count: 0 },
+    { stars: 4, percentage: 0, count: 0 },
+    { stars: 3, percentage: 0, count: 0 },
+    { stars: 2, percentage: 0, count: 0 },
+    { stars: 1, percentage: 0, count: 0 },
   ];
+  const topics: string[] = data?.mostMentionedTopics || [];
+  const categories: { name: string; percentage: number; color: string }[] = data?.categoryBreakdown || [];
 
-  const topics = ['Hands-on Labs', 'AI Code Assistant', 'Clear Explanations', 'Real Projects', 'Token Cost Reduction'];
-
-  const activeData = useMemo(() => TIMEFRAME_DATA[timeframe], [timeframe]);
+  const activeData = data?.timeframeData || TIMEFRAME_DATA[timeframe];
 
   const triggerPoppers = () => {
     try {
@@ -213,11 +152,18 @@ export function OrganizationAnalyticsSection() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      triggerPoppers();
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [timeframe]);
+    if (!activeData) return;
+    
+    const enrollmentGrowth = parseFloat(activeData.enrollmentGrowth) || 0;
+    const revenueGrowth = parseFloat(activeData.revenueGrowth) || 0;
+    
+    if (enrollmentGrowth > 0 || revenueGrowth > 0) {
+      const timer = setTimeout(() => {
+        triggerPoppers();
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [activeData?.enrollmentGrowth, activeData?.revenueGrowth, timeframe]);
 
   const handleSendResponse = (id: string) => {
     if (!replyText[id]?.trim()) return;
@@ -260,7 +206,7 @@ export function OrganizationAnalyticsSection() {
     const height = 170;
     const chartBottom = 135;
 
-    const coords = pts.map((pt, idx) => {
+    const coords = pts.map((pt: number, idx: number) => {
       const x = (idx / (pts.length - 1)) * width;
       const y = chartBottom - ((pt - minVal) / range) * (chartBottom - 30);
       return { x: Math.round(x), y: Math.round(y), pt };
@@ -335,6 +281,54 @@ export function OrganizationAnalyticsSection() {
         </div>
       </div>
 
+      {/* Key Metrics */}
+      <div className={`grid grid-cols-2 ${data?.hasPaidCourses ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
+        <div className="p-5 rounded-2xl border border-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <Users size={16} className="text-indigo-500" />
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Enrollments</p>
+          </div>
+          <div className="flex items-end justify-between">
+            <h4 className="text-3xl font-black text-slate-900">{activeData.enrollments}</h4>
+            <span className="text-xs font-bold text-emerald-600 mb-1">{activeData.enrollmentGrowth}</span>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <Star size={16} className="text-amber-500" />
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Avg Rating</p>
+          </div>
+          <div className="flex items-end justify-between">
+            <h4 className="text-3xl font-black text-slate-900">{activeData.rating.replace(' ★', '')}</h4>
+            <Star size={14} className="fill-amber-400 text-amber-400 mb-2" />
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl border border-slate-200/80 bg-white shadow-2xs hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare size={16} className="text-sky-500" />
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Reviews</p>
+          </div>
+          <div className="flex items-end justify-between">
+            <h4 className="text-3xl font-black text-slate-900">{activeData.reviewsCount.replace(' reviews', '')}</h4>
+          </div>
+        </div>
+
+        {data?.hasPaidCourses && (
+          <div className="p-5 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 to-white shadow-2xs hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 mb-2">
+              <DollarSign size={16} className="text-emerald-600" />
+              <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider">Revenue</p>
+            </div>
+            <div className="flex items-end justify-between">
+              <h4 className="text-3xl font-black text-emerald-900">{activeData.revenue}</h4>
+              <span className="text-xs font-bold text-emerald-600 mb-1">{activeData.revenueGrowth}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Analytics Chart & Category Breakdown Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-stretch">
         {/* Enrollment Trend Chart (Bare Content) */}
@@ -375,7 +369,7 @@ export function OrganizationAnalyticsSection() {
                   d={svgChart.smoothLine}
                   className="transition-all duration-300 ease-out"
                 />
-                {svgChart.coords.map((c, i) => (
+                {svgChart.coords.map((c: { x: number; y: number; pt: number }, i: number) => (
                   <g key={i} className="cursor-pointer" onMouseEnter={() => setHoverIdx(i)}>
                     <circle
                       cx={c.x}
@@ -401,7 +395,7 @@ export function OrganizationAnalyticsSection() {
                 ))}
 
                 {/* X-Axis Date Labels */}
-                {activeData.labels.map((lbl, i) => {
+                {activeData.labels.map((lbl: string, i: number) => {
                   const cx = (i / (activeData.labels.length - 1)) * 540;
                   const textAnchor =
                     i === 0 ? 'start' : i === activeData.labels.length - 1 ? 'end' : 'middle';
@@ -476,6 +470,9 @@ export function OrganizationAnalyticsSection() {
             </div>
 
             <div className="space-y-3.5 pt-3">
+              {currentCategories.length === 0 && (
+                <EmptyState title="No categories" message="No data available." />
+              )}
               {currentCategories.map((cat) => (
                 <div key={cat.name} className="space-y-1">
                   <div className="flex justify-between text-xs font-bold">
@@ -512,21 +509,21 @@ export function OrganizationAnalyticsSection() {
               {/* Left Column: Primary Rating Metric */}
               <div className="sm:col-span-4 flex flex-col items-start pr-0 sm:pr-2">
                 <span className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none">
-                  4.92
+                  {(data?.ratingOverview?.averageRating || 0).toFixed(2)}
                 </span>
-                <div className="flex items-center gap-1 text-sky-500 my-2">
+                <div className="flex items-center gap-1 text-slate-300 my-2">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} className="fill-sky-500 text-sky-500" />
+                    <Star key={i} size={14} className={i < Math.round(data?.ratingOverview?.averageRating || 0) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"} />
                   ))}
                 </div>
                 <span className="text-xs font-medium text-slate-500">
-                  3,972 ratings
+                  {data?.ratingOverview?.totalRatings || 0} ratings
                 </span>
               </div>
 
               {/* Right Column: 5-Star through 1-Star Progress Bars */}
               <div className="sm:col-span-8 space-y-2">
-                {ratingDistribution.map((dist) => (
+                {currentRatingDistribution.map((dist: any) => (
                   <div key={dist.stars} className="flex items-center gap-2 text-xs">
                     <div className="w-6 flex items-center gap-0.5 text-slate-600 font-semibold shrink-0">
                       <span>{dist.stars}</span>
@@ -562,18 +559,21 @@ export function OrganizationAnalyticsSection() {
               </p>
             </div>
 
-            {/* Keyword Tag Collection */}
             <div className="pt-5">
-              <div className="flex flex-wrap gap-2">
-                {topics.map((topic) => (
-                  <span
-                    key={topic}
-                    className="inline-flex items-center rounded-lg border border-sky-200/70 bg-sky-50/60 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100/80 hover:border-sky-300"
-                  >
-                    #{topic}
-                  </span>
-                ))}
-              </div>
+              {topics.length === 0 ? (
+                <EmptyState title="No topics" message="No mentions available." />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {topics.map((topic) => (
+                    <span
+                      key={topic}
+                      className="inline-flex items-center rounded-lg border border-sky-200/70 bg-sky-50/60 px-3 py-1.5 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100/80 hover:border-sky-300"
+                    >
+                      #{topic}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -618,7 +618,8 @@ export function OrganizationAnalyticsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {currentReviews.map((rev, idx) => {
+          {currentReviews.length === 0 && <EmptyState title="No contents" message="No analytics data available yet." />}
+        {currentReviews.length > 0 && currentReviews.map((rev, idx) => {
             const isWide = (rev as any).cardSize === 'wide';
             const themes = [
               'border border-indigo-200/90 bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/30 shadow-[-5px_5px_0px_rgba(99,102,241,0.25)] hover:shadow-[-7px_7px_0px_rgba(79,70,229,0.35)]',

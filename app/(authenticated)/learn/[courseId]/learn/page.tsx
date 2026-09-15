@@ -21,7 +21,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/shared/design-system/ui/dialog';
-import { TiptapContentView, courseProgressService, type CourseProgress } from '@/domains/learning';
+import {
+  TiptapContentView,
+  courseProgressService,
+  useLessonEngagementTracker,
+  type CourseProgress,
+} from '@/domains/learning';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
@@ -93,6 +98,18 @@ export default function CourseLearnPage() {
       setLoading(false);
     }
   }, [courseId]);
+
+  /**
+   * Records real engaged time against the lesson currently on screen — the only source of
+   * `learner_daily_activity.learning_minutes`. Instrumentation only: it renders nothing, and it
+   * measures interaction-gated engagement, never "the tab was open". Gated on lesson content
+   * actually being displayed, so the loading and not-found states accrue nothing.
+   */
+  useLessonEngagementTracker({
+    courseId,
+    lessonId: selectedLesson?.id,
+    enabled: Boolean(courseId && selectedLesson?.id && !loading),
+  });
 
   const orderedLessons = useMemo(
     () => course?.modules.flatMap((mod) => mod.lessons) ?? [],

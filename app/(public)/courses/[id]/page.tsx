@@ -21,8 +21,11 @@ import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { UserService } from "@/domains/identity"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
-import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
-import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
+import {
+  EnrollmentButton,
+  useMyEnrollmentForResourceQuery,
+  type UIEnrollmentState,
+} from "@/domains/enrollment"
 import { toast } from "sonner"
 import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
@@ -233,6 +236,18 @@ export default function CoursePreviewPage() {
   const [openMod, setOpenMod] = useState(0)
   const [isWishlisted, setIsWishlisted] = useState(false)
 
+  // Server-owned enrollment state (D2). This replaces the previous
+  // `user.enrolledCourses.some(e => e.courseId === course.id)` check, which filtered a private
+  // learning list that was smuggled onto the identity payload — the same coupling that let an
+  // anonymous caller enumerate any named user's enrolled courses (SEC-1). The question "is this
+  // learner enrolled" is now answered by the server, for the authenticated caller only.
+  // Disabled for anonymous visitors: they are never enrolled, and the endpoint requires auth.
+  const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
+    "COURSE",
+    course?.id,
+    Boolean(user)
+  )
+
   const handleReportSubmit = async (combinedNote: string) => {
     await api.post("/api/v1/reports", {
       contentId: params?.id,
@@ -266,9 +281,9 @@ export default function CoursePreviewPage() {
   const authorUsername = course?.authorUsername || INSTRUCTOR.channel
   const authorAvatarUrl = course?.authorAvatarUrl
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0
-  const isEnrolled = Boolean(
-    course?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === course.id)
-  )
+  // ACCESSIBLE is the only state that grants entry — a PENDING (unpaid / waitlisted) or REVOKED
+  // enrollment is deliberately not "enrolled" for the purposes of this page's CTA.
+  const isEnrolled = myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
 
   const heroContent = (
     <LearningHero

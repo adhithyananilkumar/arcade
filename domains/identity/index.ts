@@ -25,3 +25,11 @@ export type { Role, RoleRequest } from './api/iam/role.service';
 export { permissionService } from './api/iam/permission.service';
 export type { Permission } from './api/iam/permission.service';
 export { usePermissions } from './hooks/usePermissions';
+export { InterestService } from './api/interest.service';
+export type { Interest } from './api/interest.service';
+export {
+  interestKeys,
+  useInterestsQuery,
+  useMyInterestsQuery,
+  useUpdateMyInterestsMutation,
+} from './api/interest.queries';

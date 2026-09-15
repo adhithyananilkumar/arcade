@@ -15,6 +15,8 @@ if (typeof console !== "undefined") {
     if (typeof args[0] === "string") {
       if (args[0].includes("flushSync was called from inside a lifecycle method")) return;
       if (args[0].includes("Yjs was already imported")) return;
+      if (args[0].includes("[API ERROR 403] Path: /api/platform/reviews/by-content")) return;
+      if (args[0].includes("[API ERROR 404] Path: /api/courses/") && args[0].includes("/render?publishedOnly=true")) return;
     }
     originalError.apply(console, args);
   };

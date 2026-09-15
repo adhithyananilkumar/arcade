@@ -45,7 +45,7 @@ import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 
 import { ChannelStaffManager } from './ChannelStaffManager';
-import { ChannelNotificationsManager } from './ChannelNotificationsManager';
+import { ChannelAuditLogManager } from './ChannelAuditLogManager';
 import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -59,7 +59,7 @@ type ManageTab =
   | 'CONTENT'
   | 'STAFF'
   | 'ANALYTICS'
-  | 'ACTIVITY'
+  | 'LOGS'
   | 'NOTIFICATIONS'
   | 'DANGER';
 
@@ -198,7 +198,7 @@ export default function ManageChannelPage() {
       ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
       : []),
     { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3, badge: '4.92 ★' },
-    { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
+    { id: 'LOGS', label: 'Logs', icon: Activity },
     { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
   ];
@@ -356,11 +356,11 @@ export default function ManageChannelPage() {
           {/* TAB 4: ANALYTICS & REVIEWS */}
           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
 
-          {/* TAB 8: ACTIVITY */}
-          {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
+          {/* TAB 8: LOGS */}
+          {activeTab === 'LOGS' && <RecentActivityTimeline channelId={channelId} />}
 
           {/* TAB 9: NOTIFICATIONS */}
-          {activeTab === 'NOTIFICATIONS' && <ChannelNotificationsManager channel={channel} />}
+          {activeTab === 'NOTIFICATIONS' && <ChannelAuditLogManager channel={channel} />}
 
           {/* TAB 10: DANGER ZONE */}
           {activeTab === 'DANGER' && isOwner && (

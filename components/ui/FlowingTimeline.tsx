@@ -1,0 +1,292 @@
+"use client";
+
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
+import FoldText from "./FoldText";
+
+type TimelineProfile = {
+  name: string;
+  avatar: string;
+};
+
+type TimelineItem = {
+  num: string;
+  title: string;
+  subtitle: string;
+  desc: string;
+  profiles?: TimelineProfile[];
+};
+
+const TIMELINE_DATA: TimelineItem[] = [
+  {
+    num: "01",
+    title: "It Began With a Question",
+    subtitle: "What can a department give back to the world?",
+    desc: "And somewhere between curiosity and possibility, the first page of Arcade began to unfold."
+  },
+  {
+    num: "02",
+    title: "An Idea Found Its Name",
+    subtitle: "March 10",
+    desc: "Adhithyan envisioned a content marketplace where students could learn through classes offered as part of the Silver Jubilee, helping them build new skills and discover new possibilities. He named it Arcade and shared the vision with Lisha Varghese, Faculty In-Charge and guide of the platform. A simple idea had found its name—and the wheels began to turn.",
+    profiles: [
+      { name: "Adhithyan Anilkumar", avatar: "/team/amal_jose.png" }, // temporary placeholder
+      { name: "Lisha Varghese", avatar: "/team/lisha_varghese.png" }
+    ]
+  },
+  {
+    num: "03",
+    title: "We Looked Before We Built",
+    subtitle: "March 12",
+    desc: "The team began by looking at what already existed, studying existing systems, their strengths, their shortcomings, and their relevance. From these observations, a basic case study took shape, giving the idea its first sense of direction.",
+    profiles: [
+      { name: "Anandhulal C V", avatar: "/team/aibal_anil.png" },
+      { name: "Deepthi C D", avatar: "/team/ann_mary.png" },
+      { name: "Athira Biju", avatar: "/team/anna_christina.png" },
+      { name: "Kalyany S Nair", avatar: "/team/theresa_mathew.png" }
+    ]
+  },
+  {
+    num: "04",
+    title: "The Blueprint Took Shape",
+    subtitle: "March 14",
+    desc: "As more information gathered, so did the team. Ideas that once lived only in conversations slowly found their place on paper, and the first basic architecture of Arcade began to emerge. The vision was no longer just imagined—it could now be seen.",
+    profiles: [
+      { name: "Anandhu Pradeep", avatar: "/team/aibal_anil.png" },
+      { name: "Akash A", avatar: "/team/ann_mary.png" },
+      { name: "Jaganath Syam", avatar: "/team/anna_christina.png" },
+      { name: "Aloshy Antony", avatar: "/team/amal_jose.png" },
+      { name: "Anjali Sunil", avatar: "/team/theresa_mathew.png" }
+    ]
+  },
+  {
+    num: "05",
+    title: "Ideas Met Experience",
+    subtitle: "March 16",
+    desc: "We carried the vision beyond our own walls, sharing it with Mercedes Benz and YAG for industrial guidance. Their insights challenged us to look again, rethink what we had designed, and refine the architecture into something stronger.",
+    profiles: [
+      { name: "Mercedes Benz", avatar: "https://ui-avatars.com/api/?name=Mercedes+Benz&background=ffffff&color=0f172a&font-size=0.33" },
+      { name: "YAG", avatar: "https://ui-avatars.com/api/?name=YAG&background=ffffff&color=0f172a&font-size=0.33" }
+    ]
+  },
+  {
+    num: "06",
+    title: "A Door Opened",
+    subtitle: "March 17",
+    desc: "With the architecture and setup plan ready, we approached the college administration seeking support. Their encouragement came with the infrastructure we needed, giving Arcade not just an idea to follow, but a place in which that idea could grow.",
+    profiles: [
+      { name: "Fr. Rubin Thottupuram", avatar: "/team/fr_rubin_cutout.png" }
+    ]
+  },
+  {
+    num: "07",
+    title: "The Idea Came Alive",
+    subtitle: "April 3",
+    desc: "Development began with design, slowly moving into UI while the backend took shape alongside it. Screen by screen and step by step, what once lived in sketches and discussions began becoming something real. Arcade was learning how to take its first breath."
+  },
+  {
+    num: "08",
+    title: "Another Voice Joined",
+    subtitle: "July 20",
+    desc: "As the UI team expanded, Anna Christina Johny joined the journey. With another mind, another perspective, and another pair of hands, the story grew a little richer—and the road ahead a little wider.",
+    profiles: [
+      { name: "Anna Christina Johny", avatar: "/team/anna_christina.png" }
+    ]
+  },
+  {
+    num: "09",
+    title: "The First Chapter Became Real",
+    subtitle: "July 25",
+    desc: "Phase 1 reached its first milestone with the completion of the MVP, reviewed by Merin Chacko, Amal K Jose, and Binumon Joseph, our Faculty In-Charges. The sketches had become screens, the conversations had become creation, and Arcade had finally become something we could hold in our hands.",
+    profiles: [
+      { name: "Merin Chacko", avatar: "/team/anna_christina.png" },
+      { name: "Amal K Jose", avatar: "/team/amal_jose.png" },
+      { name: "Binumon Joseph", avatar: "/team/neeraj_vv.png" }
+    ]
+  },
+  {
+    num: "10",
+    title: "And Then, We Grew",
+    subtitle: "The Next Chapter",
+    desc: "As Arcade grew, so did the work—and the team grew with it. New members joined to share the workload, bringing fresh hands, ideas, and energy into the journey. What began with a few minds was slowly becoming something built by many.",
+    profiles: [
+      { name: "Abel Anil", avatar: "/team/aibal_anil.png" },
+      { name: "Neeraj V V", avatar: "/team/neeraj_vv.png" },
+      { name: "Theresa Rose\nMathew", avatar: "/team/theresa_mathew.png" },
+      { name: "Ann Mary\nMathew", avatar: "/team/ann_mary.png" }
+    ]
+  },
+  {
+    num: "11",
+    title: "The Story Isn't Over",
+    subtitle: "",
+    desc: "A question became an idea. An idea became a team. A team became a platform. And now, the line continues forward—because Arcade was never meant to be a finished story. The next chapter is still waiting to be written."
+  }
+];
+
+export default function FlowingTimeline() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end 80%"]
+  });
+
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  return (
+    <div className="w-full max-w-7xl 2xl:max-w-[90rem] mx-auto py-24 px-4 sm:px-8 lg:px-12">
+      
+      <div className="text-center mb-16 md:mb-24 relative z-10">
+        <h2 
+          className="text-5xl sm:text-6xl lg:text-7xl text-slate-900 tracking-normal"
+          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive", fontWeight: 700 }}
+        >
+          <FoldText
+            text="Arcade — A Story Still Unfolding"
+            splitBy="char"
+            hinge="top"
+            trigger="scroll"
+            duration={0.65}
+            stagger={0.045}
+            ease="power3.out"
+            perspective={700}
+            creaseShading={0.55}
+            fontSize="inherit"
+            fontWeight="inherit"
+            color="currentColor"
+          />
+        </h2>
+      </div>
+
+      <div className="relative" ref={containerRef}>
+        {/* Center Line Container (Desktop) / Left Line Container (Mobile) */}
+        <div className="absolute left-[30px] md:left-1/2 top-4 bottom-4 w-[2px] bg-slate-200/50 -translate-x-1/2 overflow-hidden rounded-full">
+          {/* Animated Glowing Line */}
+          <motion.div 
+            className="absolute top-0 left-0 w-full bg-gradient-to-b from-blue-400 via-indigo-500 to-teal-400"
+            style={{ height: lineHeight }}
+          />
+        </div>
+
+      <div className="space-y-16 md:space-y-24 relative z-10">
+        {TIMELINE_DATA.map((item, index) => {
+          const isEven = index % 2 === 0;
+          
+          const COLORS = [
+            { bg: "#2563eb", text: "text-blue-600", ring: "border-blue-400/30" },
+            { bg: "#ea580c", text: "text-orange-600", ring: "border-orange-400/30" },
+            { bg: "#9333ea", text: "text-purple-600", ring: "border-purple-400/30" },
+            { bg: "#059669", text: "text-emerald-600", ring: "border-emerald-400/30" }
+          ];
+          const color = COLORS[index % COLORS.length];
+          
+          return (
+            <motion.div 
+              key={item.num}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className={`flex flex-col md:flex-row items-start md:items-center w-full ${isEven ? "md:flex-row-reverse" : ""}`}
+            >
+              
+              {/* Mobile Profiles - Below Node */}
+              <div className="flex md:hidden flex-row flex-wrap gap-4 mt-8 w-full px-4 justify-center">
+                {item.profiles && item.profiles.map((profile, i) => {
+                  const needsZoom = ["Anandhulal", "Athira", "Kalyany", "Anandhu Pradeep", "Jaganath", "Anjali", "Anna", "Merin", "Amal", "Binumon", "Abel", "Neeraj", "Theresa", "Ann Mary"].some(name => profile.name.includes(name));
+                  const isRubin = profile.name.includes("Rubin");
+                  const blendClasses = isRubin ? "" : "mix-blend-multiply brightness-[1.15] contrast-[1.15]";
+                  const imageClasses = `transition-transform duration-300 ${isRubin ? "object-contain" : "object-cover"} ${blendClasses} ${needsZoom ? "scale-[1.35] translate-y-4 hover:scale-[1.45]" : "scale-[1.0] hover:scale-[1.05]"}`;
+                  const isThreePerRow = item.profiles!.length % 2 !== 0 && item.profiles!.length > 1;
+                  const widthClass = isThreePerRow ? "w-[30%] min-w-[5rem] max-w-[11rem]" : "w-[45%] max-w-[11rem]";
+                  
+                  return (
+                    <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
+                        <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
+                      </div>
+                      <div className="text-center pt-2">
+                        <p className="text-[11px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Empty space or Profiles for alternating layout on desktop */}
+              <div className={`hidden md:flex md:w-[48%] flex-row flex-wrap justify-center gap-4 md:gap-6 ${isEven ? "mr-auto pl-8 lg:pl-16" : "ml-auto pr-8 lg:pr-16"}`}>
+                {item.profiles && item.profiles.map((profile, i) => {
+                  const needsZoom = ["Anandhulal", "Athira", "Kalyany", "Anandhu Pradeep", "Jaganath", "Anjali", "Anna", "Merin", "Amal", "Binumon", "Abel", "Neeraj", "Theresa", "Ann Mary"].some(name => profile.name.includes(name));
+                  const isRubin = profile.name.includes("Rubin");
+                  const blendClasses = isRubin ? "" : "mix-blend-multiply brightness-[1.15] contrast-[1.15]";
+                  const imageClasses = `transition-transform duration-300 ${isRubin ? "object-contain" : "object-cover"} ${blendClasses} ${needsZoom ? "scale-[1.35] translate-y-4 hover:scale-[1.45]" : "scale-[1.0] hover:scale-[1.05]"}`;
+                  const isThreePerRow = item.profiles!.length % 2 !== 0 && item.profiles!.length > 1;
+                  const widthClass = isThreePerRow ? "w-[30%] max-w-[11rem]" : "w-[45%] max-w-[11rem]";
+                  
+                  return (
+                    <div key={i} className={`flex flex-col items-center gap-2 ${widthClass}`}>
+                      <div className={`relative w-full ${isRubin ? "aspect-[3/4]" : "aspect-square"} bg-white overflow-hidden`}>
+                        <Image src={profile.avatar} alt={profile.name} fill className={imageClasses} unoptimized />
+                      </div>
+                      <div className="text-center pt-2">
+                        <p className="text-[11px] md:text-[12px] font-semibold text-slate-600 leading-tight tracking-wide whitespace-pre-line">{profile.name}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Numbered Node */}
+              <div className="md:w-[10%] flex justify-center shrink-0 mb-6 md:mb-0 ml-1 md:ml-0 relative z-20">
+                <motion.div 
+                  initial={{ scale: 0.8, backgroundColor: "#f8fafc" }}
+                  whileInView={{ scale: 1.1, backgroundColor: "#ffffff" }}
+                  viewport={{ once: false, margin: "-200px" }}
+                  transition={{ duration: 0.4 }}
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-full border-4 border-slate-100 bg-white shadow-xl shadow-blue-500/10 flex items-center justify-center relative group"
+                >
+                  <span className="text-lg md:text-xl font-bold text-slate-800 font-sans tracking-tighter">
+                    {item.num}
+                  </span>
+                  
+                  {/* Subtle pulse ring */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full border-2 border-indigo-400/30"
+                    initial={{ scale: 1, opacity: 0 }}
+                    whileInView={{ scale: 1.4, opacity: 0 }}
+                    viewport={{ once: false, margin: "-200px" }}
+                    transition={{ duration: 1, repeat: Infinity, repeatType: "loop" }}
+                  />
+                </motion.div>
+              </div>
+
+              {/* Content Box */}
+              <div className={`md:w-[45%] pl-16 md:pl-0 ${isEven ? "md:pr-12 md:text-left" : "md:pl-12 md:text-left"}`}>
+                <div className="py-2">
+                  <h3 
+                    className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 tracking-wide"
+                    style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Great Vibes', cursive" }}
+                  >
+                    {item.title}
+                  </h3>
+                  {item.subtitle && (
+                    <div className={`${color.text} font-semibold text-sm mb-3`}>
+                      {item.subtitle}
+                    </div>
+                  )}
+                  <p className="text-slate-600 text-sm md:text-base leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+
+            </motion.div>
+          );
+        })}
+      </div>
+      </div>
+    </div>
+  );
+}

@@ -31,8 +31,6 @@ export const forumKeys = {
   category: (slug: string) => ['forum', 'category-detail', slug] as const,
   trendingTags: (limit: number) => ['forum', 'trending-tags', limit] as const,
   search: (q: string, page: number) => ['forum', 'search', q, page] as const,
-  notifications: (page: number) => ['forum', 'notifications', page] as const,
-  unreadCount: () => ['forum', 'unread-count'] as const,
   reputation: (userId: string) => ['forum', 'reputation', userId] as const,
 };
 
@@ -111,21 +109,6 @@ export function useSearchPosts(q: string, page = 0, size = 20) {
     queryFn: () => ForumService.searchPosts(q, page, size),
     enabled: q.length > 1,
     placeholderData: (prev) => prev,
-  });
-}
-
-export function useNotifications(page = 0, size = 20) {
-  return useQuery({
-    queryKey: forumKeys.notifications(page),
-    queryFn: () => ForumService.getNotifications(page, size),
-  });
-}
-
-export function useUnreadCount() {
-  return useQuery({
-    queryKey: forumKeys.unreadCount(),
-    queryFn: ForumService.getUnreadCount,
-    refetchInterval: 60 * 1000,
   });
 }
 
@@ -270,16 +253,6 @@ export function useToggleFollowTag() {
   });
 }
 
-export function useMarkAllRead() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ForumService.markAllRead,
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: forumKeys.unreadCount() });
-      qc.invalidateQueries({ queryKey: ['forum', 'notifications'] });
-    },
-  });
-}
 
 export function useReportContent() {
   return useMutation({

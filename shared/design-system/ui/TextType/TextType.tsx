@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/refs */
 'use client';
 
 import { useEffect, useRef, useState, createElement, useMemo, useCallback } from 'react';

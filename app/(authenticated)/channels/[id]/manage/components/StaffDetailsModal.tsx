@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 const LinkedinIcon = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -81,52 +82,7 @@ export function StaffDetailsModal({ isOpen, onClose, staff, onStatusToggle }: St
 
   const mockPublishedContent: StaffPublishedContent[] = useMemo(() => {
     return (
-      staff?.publishedContentList || [
-        {
-          id: 'pub-1',
-          type: 'COURSE',
-          title: 'AI Agent Architecture & Tool Use Masterclass',
-          thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
-          publishedDateTime: 'Aug 2, 2026 at 4:30 PM',
-          rating: 4.98,
-          feedbackScore: 98,
-          enrollmentsOrViews: '8,420 enrolled',
-          status: 'PUBLISHED',
-        },
-        {
-          id: 'pub-2',
-          type: 'ARTICLE',
-          title: 'Architecting Scalable RAG Systems with Vector Databases',
-          thumbnail: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=80',
-          publishedDateTime: 'Jul 28, 2026 at 10:15 AM',
-          rating: 4.92,
-          feedbackScore: 96,
-          enrollmentsOrViews: '14,200 views',
-          status: 'PUBLISHED',
-        },
-        {
-          id: 'pub-3',
-          type: 'WEBINAR',
-          title: 'Future of Autonomous AI Agents & Real-World Deployments',
-          thumbnail: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&w=600&q=80',
-          publishedDateTime: 'Jul 15, 2026 at 6:00 PM',
-          rating: 4.94,
-          feedbackScore: 96,
-          enrollmentsOrViews: '1,420 attendees',
-          status: 'COMPLETED',
-        },
-        {
-          id: 'pub-4',
-          type: 'BOOTCAMP',
-          title: 'Full-Stack AI Engineer Intensive Bootcamp (Cohort 8)',
-          thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
-          publishedDateTime: 'Jun 1, 2026 at 9:00 AM',
-          rating: 4.96,
-          feedbackScore: 99,
-          enrollmentsOrViews: '240 cohort students',
-          status: 'ACTIVE',
-        },
-      ]
+      staff?.publishedContentList || []
     );
   }, [staff]);
 
@@ -361,7 +317,8 @@ export function StaffDetailsModal({ isOpen, onClose, staff, onStatusToggle }: St
               </div>
             ) : (
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1 scrollbar-none">
-                {filteredContent.map((item) => {
+                {filteredContent.length === 0 && <EmptyState title="No contents" message="No content published by this staff member." />}
+        {filteredContent.length > 0 && filteredContent.map((item) => {
                   const Icon = typeIconMap[item.type];
                   return (
                     <div

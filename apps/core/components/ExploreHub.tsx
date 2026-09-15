@@ -22,6 +22,15 @@ export const CATEGORY_DATA: Record<string, {
   resources: Array<{ title: string; type: string; readTime: string }>;
   colors: { primary: string; secondary: string };
 }> = {
+  "All": {
+    coursesCount: 50,
+    gradient: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)",
+    colors: { primary: "#4F46E5", secondary: "rgba(79, 70, 229, 0.08)" },
+    desc: "Explore all comprehensive learning paths, bootcamps, workshops, and verified research articles across all academic disciplines and engineering domains.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  },
   "Computer Science": {
     coursesCount: 12,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
@@ -59,128 +68,58 @@ export const CATEGORY_DATA: Record<string, {
     ]
   },
   "Information Technology": {
-    coursesCount: 10,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)",
     colors: { primary: "#4B6189", secondary: "rgba(75, 97, 137, 0.08)" },
     desc: "Understand enterprise server configuration, cloud virtualization, cybersecurity models, and network protocol routing.",
-    courses: [
-      { title: "Computer Networks & Routing", duration: "8 Weeks", level: "Beginner", desc: "Learn IP subnetting, DNS, firewalls, and proxy setups." },
-      { title: "Cyber Security Fundamentals", duration: "10 Weeks", level: "Intermediate", desc: "Explore ethical hacking protocols, cryptography, and server hardening." },
-      { title: "Cloud Computing & AWS Architecture", duration: "8 Weeks", level: "Intermediate", desc: "Deploy scalable load balancers and VPC subnets on cloud hosting." },
-      { title: "Linux Systems Administration", duration: "6 Weeks", level: "Beginner", desc: "Manage terminal configurations, users, services, and bash tools." }
-    ],
+    courses: [],
     bootcamps: [],
-    resources: [
-      { title: "Configuring High-Performance Nginx Servers", type: "Article", readTime: "4 min read" },
-      { title: "SSH Security Hardening Best Practices", type: "Guide", readTime: "7 min read" },
-      { title: "An Introduction to Docker Compose configs", type: "Docs", readTime: "9 min read" }
-    ]
+    resources: []
   },
   "Business & Management": {
-    coursesCount: 6,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #F59E0B 0%, #C2410C 100%)",
     colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
     desc: "Develop strategic startup frameworks, financial accounting competence, agile project leadership, and product marketing strategies.",
-    courses: [
-      { title: "Principles of Management", duration: "6 Weeks", level: "Beginner", desc: "Master organizational structures, planning strategies, and leadership." },
-      { title: "Marketing & Growth Strategy", duration: "8 Weeks", level: "Intermediate", desc: "Analyze user cohorts, product positioning, and acquisition channels." },
-      { title: "Financial & Corporate Accounting", duration: "8 Weeks", level: "Intermediate", desc: "Read company sheets, assess operating costs, and budget plans." },
-      { title: "Entrepreneurship & Valuation", duration: "10 Weeks", level: "Beginner", desc: "Structure target pitches, test market bounds, and secure funding." }
-    ],
+    courses: [],
     bootcamps: [],
-    resources: [
-      { title: "Writing a Successful Startup Business Plan", type: "Article", readTime: "5 min read" },
-      { title: "Understanding Cash Flow & Corporate Burn", type: "Guide", readTime: "8 min read" },
-      { title: "How to Pitch Ideas to Angel Investors", type: "Docs", readTime: "11 min read" }
-    ]
+    resources: []
   },
   "Civil & Mechanical": {
-    coursesCount: 7,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #10B981 0%, #047857 100%)",
     colors: { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },
     desc: "Gain dynamic engineering skills in mechanical stress calculations, structural analysis, materials composition, and CAD drafting.",
-    courses: [
-      { title: "Engineering Static Mechanics", duration: "8 Weeks", level: "Beginner", desc: "Formulate equilibrium equations for structures under heavy load." },
-      { title: "Fluid Dynamics & Turbines", duration: "10 Weeks", level: "Intermediate", desc: "Analyze fluid flows, compression, and hydraulic power machines." },
-      { title: "Surveying & Levelling Methods", duration: "6 Weeks", level: "Beginner", desc: "Determine geographic contours and plot foundation elevations." },
-      { title: "Strength of Structural Materials", duration: "8 Weeks", level: "Advanced", desc: "Evaluate elasticity thresholds, torsion, and fracture models." }
-    ],
-    bootcamps: [
-      { title: "AutoCAD Design Intensive", duration: "2 Weeks", type: "Intensive", date: "Starts Saturday", desc: "Master 2D & 3D computer-aided draft designs and blueprint exports." },
-      { title: "Structural Analysis Hands-on", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Examine static load thresholds, materials deformation, and shear boundaries." },
-      { title: "Robotics & Automation Lab", duration: "4 Weeks", type: "Part-time", date: "Starts Saturday", desc: "Program microcontrollers, design mechanical arms, and simulate automated assembly loops." }
-    ],
-    resources: [
-      { title: "Concrete Mix Design & Setting Guides", type: "Article", readTime: "6 min read" },
-      { title: "Intro to 3D Printing Mechanics & Torsion", type: "Guide", readTime: "10 min read" },
-      { title: "Understanding Commercial HVAC Systems", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Basic Sciences": {
-    coursesCount: 5,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)",
     colors: { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" },
     desc: "Strengthen academic foundations in mathematics, matrix dynamics, electromagnetics, and organic engineering structures.",
-    courses: [
-      { title: "Multivariable Vector Calculus", duration: "10 Weeks", level: "Advanced", desc: "Evaluate triple integrals, curl functions, and divergence theory." },
-      { title: "Linear Algebra & Vectors", duration: "8 Weeks", level: "Intermediate", desc: "Master matrix transformations, eigenvalues, and computer mapping math." },
-      { title: "Applied Electromagnetism", duration: "8 Weeks", level: "Beginner", desc: "Examine electrical fields, wave optics, and electromagnetic laws." },
-      { title: "Chemical Bond Dynamics", duration: "8 Weeks", level: "Beginner", desc: "Explore chemical interactions, molecular configurations, and fuels." }
-    ],
-    bootcamps: [
-      { title: "MATLAB Coding for Scientific Research", duration: "1 Week", type: "Interactive", date: "Starts Friday", desc: "Simulate numerical data sets, write equations, and plot matrices." },
-      { title: "Physics Simulator Engines", duration: "3 Days", type: "Event", date: "Starts Saturday", desc: "Examine mechanical simulations, wave structures, and thermal limits." },
-      { title: "Chemical Synthesis Lab Processes", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Model molecular reactions, setup safe test environments, and process syntheses." }
-    ],
-    resources: [
-      { title: "Understanding Vector Fields & Integrals", type: "Article", readTime: "6 min read" },
-      { title: "How Matrix Mathematics Powers Neural Nets", type: "Guide", readTime: "10 min read" },
-      { title: "The Chemical Composition of Modern Batteries", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Humanities & Languages": {
-    coursesCount: 6,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #6366F1 0%, #4338CA 100%)",
     colors: { primary: "#6366F1", secondary: "rgba(99, 102, 241, 0.08)" },
     desc: "Develop professional competence in copywriting, tech documentation, legal corporate ethics, and vocal presentation skills.",
-    courses: [
-      { title: "Professional Communication", duration: "6 Weeks", level: "Beginner", desc: "Refine speech delivery, corporate email formats, and team syncs." },
-      { title: "Technical Writing & Docs", duration: "8 Weeks", level: "Intermediate", desc: "Author markdown specifications, API references, and user walkthroughs." },
-      { title: "Creative Storytelling & Copy", duration: "8 Weeks", level: "Beginner", desc: "Build narrative arcs, persuasive copy, and clear hook elements." },
-      { title: "Corporate Ethics & Governance", duration: "6 Weeks", level: "Beginner", desc: "Evaluate moral choices in tech, resource handling, and legal compliance." }
-    ],
-    bootcamps: [
-      { title: "Public Speaking Mastery", duration: "3 Days", type: "Interactive", date: "Starts Friday", desc: "Master posture, tone adjustments, slides integration, and stage confidence." },
-      { title: "UX Writing & Copy Event", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Design button labels, warning messages, and setup style rules." },
-      { title: "Vocal Presentation Studio", duration: "1 Day", type: "Intensive", date: "Starts Saturday", desc: "Refine verbal pacing, breathing control, and microphone setups." }
-    ],
-    resources: [
-      { title: "How to Draft a High-Quality Technical Spec", type: "Article", readTime: "5 min read" },
-      { title: "UX Writing: Best Practices for Interface Copy", type: "Guide", readTime: "8 min read" },
-      { title: "Active Listening & Constructive Feedback Tools", type: "Docs", readTime: "10 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Personal Development": {
-    coursesCount: 5,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #84CC16 0%, #4D7C0F 100%)",
     colors: { primary: "#84CC16", secondary: "rgba(132, 204, 22, 0.08)" },
     desc: "Build professional soft skills, goal planning techniques, stress resolution, and technical interview confidence.",
-    courses: [
-      { title: "Time Optimization & Focus Sprints", duration: "4 Weeks", level: "Beginner", desc: "Manage daily tasks, schedule pomodoros, and avoid burnout." },
-      { title: "Leadership & Conflict Resolution", duration: "8 Weeks", level: "Intermediate", desc: "Learn delegation, active consensus mapping, and positive coaching." },
-      { title: "Strategic Problem Solving", duration: "6 Weeks", level: "Beginner", desc: "Apply root-cause analysis models to address complex engineering bottlenecks." },
-      { title: "Emotional Intelligence at Work", duration: "6 Weeks", level: "Beginner", desc: "Practice empathy, handle criticism constructively, and map stress." }
-    ],
-    bootcamps: [
-      { title: "Goal Setting & Okrs Masterclass", duration: "1 Day", type: "Interactive", date: "Starts Saturday", desc: "Map quarterly team objectives and structure key performance metrics." },
-      { title: "Tech Interview Prep & Leetcode Sprints", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Master algorithmic patterns, systems design, and behavioral pitch structures." },
-      { title: "Resume & Portfolio Optimization Event", duration: "3 Hours", type: "Event", date: "Starts Friday", desc: "Design outstanding resumes, optimize LinkedIn SEO, and format github pages." }
-    ],
-    resources: [
-      { title: "Strategies for Negotiating Your Tech Job Offer", type: "Article", readTime: "5 min read" },
-      { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
-      { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Design & UI/UX": {
     coursesCount: 8,
@@ -210,15 +149,14 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Marketing & SEO": {
-    coursesCount: 9,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
     courses: [],
     bootcamps: [],
     resources: []
-  }
-};
+  }};
 
 export const categoriesList = Object.keys(CATEGORY_DATA);
 
@@ -233,6 +171,7 @@ const WEBINARS_DATA = [
 ];
 
 const ILLUSTRATION_BGS: Record<string, string> = {
+  "All": "#4F46E5", // Solid vibrant indigo
   "Computer Science": "#7C3AED", // Solid vibrant purple
   "Artificial Intelligence": "#DB2777", // Solid vibrant pink
   "Information Technology": "#2563EB", // Solid vibrant blue

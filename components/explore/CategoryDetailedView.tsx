@@ -796,6 +796,7 @@ const CATEGORY_TOPICS: Record<string, string[]> = {
 };
 
 const CATEGORY_HEADLINES: Record<string, { main: string; highlight: string }> = {
+  "All": { main: "Explore All Topics & ", highlight: "Disciplines" },
   "Computer Science": { main: "Build the Future of ", highlight: "Software" },
   "Information Technology": { main: "Secure & Scale Modern ", highlight: "Infrastructure" },
   "Business & Management": { main: "Lead Teams & Scale ", highlight: "Enterprises" },
@@ -1016,6 +1017,14 @@ const CATEGORY_EDITOR_TABS: Record<string, EditorContent[]> = {
 };
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "All": (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
   "Computer Science": (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
@@ -1067,6 +1076,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 // Color presets for custom graphic header meshes
 const HEADER_COLOR_MESHES: Record<string, string> = {
+  "All": "radial-gradient(at 10% 20%, rgba(37, 99, 235, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(124, 58, 237, 0.1) 0px, transparent 50%)",
   "Computer Science": "radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.1) 0px, transparent 50%)",
 
   "Information Technology": "radial-gradient(at 10% 20%, rgba(59, 130, 246, 0.15) 0px, transparent 50%), radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.1) 0px, transparent 50%)",
@@ -1374,26 +1384,31 @@ const CategoryPillButton: React.FC<CategoryPillButtonProps> = ({
     <button
       ref={buttonRef}
       onClick={onClick}
-      className={`magic-bento-card category-bento-card category-bento-card--border-glow`}
+      data-active={isActive}
+      className="category-pill-btn"
       style={{
         flexShrink: 0,
-        display: "flex",
+        display: "inline-flex",
+        flexDirection: "row",
         alignItems: "center",
+        whiteSpace: "nowrap",
+        width: "auto",
+        height: "auto",
         gap: "8px",
-        padding: "12px 20px",
-        borderRadius: "14px",
-        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.06)",
-        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.65)",
+        padding: "10px 18px",
+        borderRadius: "12px",
+        border: isActive ? `1.5px solid ${itemData.colors.primary}` : "1.5px solid rgba(20, 23, 31, 0.08)",
+        background: isActive ? itemData.colors.secondary : "rgba(255, 255, 255, 0.75)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        color: isActive ? itemData.colors.primary : "#5E606A",
-        fontSize: "0.9rem",
+        color: isActive ? itemData.colors.primary : "#4B5563",
+        fontSize: "0.86rem",
         fontWeight: "700",
         cursor: "pointer",
         boxShadow: isActive
-          ? `0 10px 20px -8px ${itemData.colors.primary}33`
-          : "0 4px 10px -2px rgba(0,0,0,0.02)",
-        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+          ? `0 6px 16px -4px ${itemData.colors.primary}40`
+          : "0 2px 6px rgba(0,0,0,0.02)",
+        transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
         "--glow-color": glowColor
       } as React.CSSProperties}
     >
@@ -1410,9 +1425,27 @@ type CategoryDetailedViewProps = {
   mode?: "courses" | "events" | "articles";
 };
 
-export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: CategoryDetailedViewProps = {}) {
+export default function CategoryDetailedView({ hubBasePath, mode: propMode = "courses" }: CategoryDetailedViewProps = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const tabFromQuery = searchParams.get("tab");
+  const initialMode = (tabFromQuery === "bootcamps" || tabFromQuery === "events")
+    ? "events"
+    : tabFromQuery === "articles"
+      ? "articles"
+      : propMode;
+  const [mode, setMode] = useState<"courses" | "events" | "articles">(initialMode);
+
+  useEffect(() => {
+    if (tabFromQuery === "bootcamps" || tabFromQuery === "events") {
+      setMode("events");
+    } else if (tabFromQuery === "articles") {
+      setMode("articles");
+    } else if (tabFromQuery === "courses") {
+      setMode("courses");
+    }
+  }, [tabFromQuery]);
+
   const exploreHome = hubBasePath || (mode === "events" ? "/events" : mode === "articles" ? "/articles" : "/explore");
   const isEmbeddedHub = Boolean(hubBasePath);
 
@@ -1426,14 +1459,49 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   // Each admin category is scoped to one section (courses/events/articles) via its `type`.
   const categoryType = mode === "events" ? "EVENTS" : mode === "articles" ? "ARTICLES" : "COURSES";
   const allPublicCategories = usePublicCategories();
-  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
   const publicCourses = usePublicCourses();
 
   const mergedCategoriesList = [
-    ...categoriesList,
-    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+    "All",
+    ...categoriesList.filter((c) => c !== "All"),
+    ...adminCategories.filter((c) => c.name !== "All" && !categoriesList.includes(c.name)).map((c) => c.name),
   ];
   const getCategoryData = (cat: string) => {
+    if (cat.toLowerCase() === "all") {
+      const allCourses: any[] = [];
+      const allBootcamps: any[] = [];
+      const allResources: any[] = [];
+
+      Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
+        if (k.toLowerCase() === "all") return;
+        val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
+        val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
+        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
+      });
+
+      publicCourses.forEach((c) => {
+        allCourses.unshift({
+          id: c.id,
+          title: c.title,
+          duration: "Self-Paced",
+          level: "All Levels",
+          desc: c.description || "",
+          category: "Courses",
+        });
+      });
+
+      return {
+        desc: "Explore all comprehensive courses, interactive bootcamps, and guides across every department.",
+        coursesCount: allCourses.length,
+        gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+        colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+        courses: allCourses,
+        bootcamps: allBootcamps,
+        resources: allResources,
+      };
+    }
+
     const base = CATEGORY_DATA[cat];
     const admin = allPublicCategories.find(
       (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase() || slugify(c.name) === slugify(cat)
@@ -1490,6 +1558,38 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     };
   };
   const [courseStats, setCourseStats] = useState<Record<string, { averageRating: number; reviewsCount: number }>>({});
+
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkCategoryScroll = useCallback(() => {
+    if (!categoryScrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  }, []);
+
+  const handleScrollCategories = (direction: "left" | "right") => {
+    if (!categoryScrollRef.current) return;
+    const scrollAmount = 320;
+    categoryScrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth"
+    });
+  };
+
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    checkCategoryScroll();
+    el.addEventListener("scroll", checkCategoryScroll);
+    window.addEventListener("resize", checkCategoryScroll);
+    return () => {
+      el.removeEventListener("scroll", checkCategoryScroll);
+      window.removeEventListener("resize", checkCategoryScroll);
+    };
+  }, [checkCategoryScroll, mergedCategoriesList]);
 
   const [journeyCompleted, setJourneyCompleted] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -1588,7 +1688,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
 
   useEffect(() => {
     if (initialCategory) {
-      const exactMatch = mergedCategoriesList.find((c) => c === initialCategory);
+      const exactMatch = mergedCategoriesList.find((c) => c.toLowerCase() === initialCategory.toLowerCase());
       if (exactMatch) {
         setActiveCategory(exactMatch);
       } else {
@@ -1602,12 +1702,21 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         }
       }
     } else {
-      setActiveCategory("Computer Science"); // Fallback default
+      setActiveCategory("All"); // Default to "All" category
     }
   }, [initialCategory, mergedCategoriesList]);
 
-  const activeCategoryName = activeCategory || "Computer Science";
-  const activeData = getCategoryData(activeCategoryName) || CATEGORY_DATA["Computer Science"];
+  const activeCategoryName = activeCategory || "All";
+  const activeData = getCategoryData(activeCategoryName) || getCategoryData("All") || CATEGORY_DATA["All"] || CATEGORY_DATA["Computer Science"];
+
+  useEffect(() => {
+    if (categoryScrollRef.current) {
+      const activeEl = categoryScrollRef.current.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, [activeCategoryName]);
 
   // Sync body background so the footer (rendered outside this component) blends seamlessly.
   // Only active on articles mode — cleans up on unmount so other pages are unaffected.
@@ -1615,6 +1724,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     if (mode !== "articles") return;
 
     const ARTICLES_BODY_BG: Record<string, string> = {
+      "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
       "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)",
       "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)",
       "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)",
@@ -1624,7 +1734,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
       "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
     };
 
-    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["Computer Science"];
+    const bg = ARTICLES_BODY_BG[activeCategoryName] ?? ARTICLES_BODY_BG["All"] ?? ARTICLES_BODY_BG["Computer Science"];
     const prev = document.body.style.background;
     document.body.style.background = bg;
 
@@ -1638,8 +1748,21 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     setCourseSearchQuery("");
 
     const base = hubBasePath || window.location.pathname;
-    const newUrl = `${base}?category=${encodeURIComponent(category)}`;
+    const tabParam = mode === "events" ? "&tab=bootcamps" : mode === "articles" ? "&tab=articles" : "&tab=courses";
+    const newUrl = `${base}?category=${encodeURIComponent(category)}${tabParam}`;
     window.history.replaceState(null, "", newUrl);
+  };
+
+  const handleModeChange = (newMode: "courses" | "events" | "articles") => {
+    setMode(newMode);
+    if (hubBasePath) {
+      const tabParam = newMode === "events" ? "bootcamps" : newMode;
+      const newUrl = `${hubBasePath}?category=${encodeURIComponent(activeCategoryName)}&tab=${tabParam}`;
+      window.history.replaceState(null, "", newUrl);
+    } else {
+      const targetPath = newMode === "events" ? "/events" : newMode === "articles" ? "/articles" : "/courses";
+      router.push(`${targetPath}?category=${encodeURIComponent(activeCategoryName)}`);
+    }
   };
 
   const goToExploreHome = () => {
@@ -1647,6 +1770,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
   };
 
   const ARTICLES_BG: Record<string, string> = {
+    "All":                    "linear-gradient(160deg, #F8FAFC 0%, #EEF2FF 35%, #F5F3FF 70%, #F8FAFC 100%)",
     "Computer Science":       "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)", // warm antique parchment
     "Information Technology": "linear-gradient(160deg, #FFF8F0 0%, #FEECD8 35%, #FFF3E0 70%, #FDE8C8 100%)", // soft amber scroll
     "Business & Management":  "linear-gradient(160deg, #FFF9EC 0%, #FEF2D0 35%, #FFFBF0 70%, #FAEAC0 100%)", // golden honey
@@ -1656,7 +1780,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
     "Personal Development":   "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)", // old vellum yellow
   };
 
-  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
+  const articlesBackground = ARTICLES_BG[activeCategoryName] ?? ARTICLES_BG["All"] ?? "linear-gradient(160deg, #FDF6E3 0%, #FAF0D4 35%, #FFF8EA 70%, #F5EFD8 100%)";
 
   return (
     <div
@@ -1665,10 +1789,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         background: mode === "events" ? "linear-gradient(135deg, #FDF4FF 0%, #F5F3FF 50%, #E0F2FE 100%)" : // Pastel lavender-violet-blue sunset mix
           mode === "articles" ? articlesBackground : // Dynamic per-category gradient
             "#f8fafc",
-        // Authenticated hub already clears the dock via LearnerShell pb-28.
-        // Override .landing-root { min-height: 100vh } so short pages don't leave a blank footer.
-        minHeight: isEmbeddedHub ? "auto" : "100vh",
-        paddingBottom: isEmbeddedHub ? "8px" : "100px",
+        minHeight: "100%",
+        paddingBottom: "24px",
         color: "inherit"
       }}
     >
@@ -1939,8 +2061,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
         }}
       >
 
-        {/* Breadcrumb back into explore hub (authenticated) or public explore */}
-        <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: isEmbeddedHub ? "16px" : "28px" }}>
+        {/* Breadcrumb back into explore hub (authenticated) or public explore, and content-type mode switcher */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: isEmbeddedHub ? "20px" : "28px" }}>
           <div
             style={{
               display: "flex",
@@ -1958,25 +2080,115 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
               boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)"
             }}
           >
-            <a
-              href="/explore"
-              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Explore
-            </a>
+            </span>
             <span>/</span>
-            <a
-              href="/explore"
-              style={{ cursor: "pointer", transition: "color 0.2s", textDecoration: "none", color: "inherit" }}
+            <span
+              onClick={goToExploreHome}
+              style={{ cursor: "pointer", transition: "color 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = activeData.colors.primary; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "inherit"; }}
             >
               Departments
-            </a>
+            </span>
             <span>/</span>
             <span style={{ color: activeData.colors.primary, fontWeight: "700" }}>{activeCategoryName}</span>
+          </div>
+
+          {/* Redesigned Premium Content Type Switcher */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              background: "rgba(255, 255, 255, 0.85)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+              border: "1px solid rgba(20, 23, 31, 0.08)",
+              borderRadius: "14px",
+              padding: "4px",
+              boxShadow: "0 4px 16px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
+              gap: "4px"
+            }}
+          >
+            {[
+              {
+                id: "courses",
+                label: "Courses",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                  </svg>
+                )
+              },
+              {
+                id: "events",
+                label: "Events & Bootcamps",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                )
+              },
+              {
+                id: "articles",
+                label: "Articles & Research",
+                icon: (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                )
+              }
+            ].map((tab) => {
+              const isSelected = mode === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleModeChange(tab.id as any)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "7px",
+                    background: isSelected ? activeData.colors.primary : "transparent",
+                    color: isSelected ? "#FFFFFF" : "#4B5563",
+                    border: "none",
+                    borderRadius: "10px",
+                    padding: "8px 16px",
+                    fontSize: "0.84rem",
+                    fontWeight: isSelected ? "700" : "600",
+                    cursor: "pointer",
+                    boxShadow: isSelected ? `0 4px 14px -2px ${activeData.colors.primary}50` : "none",
+                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                    whiteSpace: "nowrap"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = "rgba(20, 23, 31, 0.04)";
+                      e.currentTarget.style.color = "var(--l-ink)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "#4B5563";
+                    }
+                  }}
+                >
+                  <span style={{ display: "inline-flex", opacity: isSelected ? 1 : 0.75 }}>
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -2128,7 +2340,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
 
               {/* 6. SEARCH */}
               <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2136,31 +2348,64 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
                 </div>
                 <input
                   type="text"
-                  placeholder="Search courses under this category..."
+                  placeholder={activeCategoryName === "All" ? "Search all events, webinars & bootcamps..." : `Search events & bootcamps in ${activeCategoryName}...`}
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "14px 20px 14px 48px",
+                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
                     borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.06)",
-                    background: "rgba(255, 255, 255, 0.8)",
+                    border: "1px solid rgba(20, 23, 31, 0.08)",
+                    background: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     color: "var(--l-ink)",
                     fontSize: "0.95rem",
                     fontWeight: "600",
                     outline: "none",
-                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                    transition: "all 0.3s ease"
+                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
+                    transition: "all 0.25s ease"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = activeData.colors.primary;
                     e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
                   }}
                 />
+                {courseSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCourseSearchQuery("")}
+                    aria-label="Clear search"
+                    style={{
+                      position: "absolute",
+                      right: "14px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "rgba(20, 23, 31, 0.08)",
+                      color: "#6B7280",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      lineHeight: "1",
+                      transition: "all 0.15s ease"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             </div>
 
@@ -2241,7 +2486,7 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
 
               {/* Banner Inner Search */}
               <div style={{ position: "relative", maxWidth: "480px", marginBottom: isEmbeddedHub ? "0" : "20px" }}>
-                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }}>
+                <div style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF", pointerEvents: "none" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2249,31 +2494,68 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
                 </div>
                 <input
                   type="text"
-                  placeholder="Search courses under this category..."
+                  placeholder={
+                    mode === "courses"
+                      ? (activeCategoryName === "All" ? "Search all courses..." : `Search ${activeCategoryName} courses...`)
+                      : (activeCategoryName === "All" ? "Search all articles & research..." : `Search ${activeCategoryName} articles...`)
+                  }
                   value={courseSearchQuery}
                   onChange={(e) => setCourseSearchQuery(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "14px 20px 14px 48px",
+                    padding: courseSearchQuery ? "14px 44px 14px 48px" : "14px 20px 14px 48px",
                     borderRadius: "14px",
-                    border: "1px solid rgba(20, 23, 31, 0.06)",
-                    background: "rgba(255, 255, 255, 0.8)",
+                    border: "1px solid rgba(20, 23, 31, 0.08)",
+                    background: "rgba(255, 255, 255, 0.85)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
                     color: "var(--l-ink)",
                     fontSize: "0.95rem",
                     fontWeight: "600",
                     outline: "none",
-                    boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.02)",
-                    transition: "all 0.3s ease"
+                    boxShadow: "0 4px 14px -2px rgba(0, 0, 0, 0.03)",
+                    transition: "all 0.25s ease"
                   }}
                   onFocus={(e) => {
                     e.currentTarget.style.borderColor = activeData.colors.primary;
                     e.currentTarget.style.boxShadow = `0 0 0 4px ${activeData.colors.primary}1A`;
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.06)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = "rgba(20, 23, 31, 0.08)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px -2px rgba(0, 0, 0, 0.03)";
                   }}
                 />
+                {courseSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setCourseSearchQuery("")}
+                    aria-label="Clear search"
+                    style={{
+                      position: "absolute",
+                      right: "14px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      border: "none",
+                      background: "rgba(20, 23, 31, 0.08)",
+                      color: "#6B7280",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      lineHeight: "1",
+                      transition: "all 0.15s ease"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.16)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(20, 23, 31, 0.08)"; }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
 
             </div>
@@ -2301,6 +2583,133 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           </div>
         )}
 
+        {/* Category Filter Pills Bar with Smooth Horizontal Navigation */}
+        <div style={{ position: "relative", marginBottom: "36px" }}>
+          {/* Left scroll chevron */}
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => handleScrollCategories("left")}
+              aria-label="Scroll categories left"
+              style={{
+                position: "absolute",
+                left: "-12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "#FFFFFF",
+                border: "1px solid rgba(20, 23, 31, 0.12)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#374151",
+                transition: "all 0.2s"
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Right scroll chevron */}
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => handleScrollCategories("right")}
+              aria-label="Scroll categories right"
+              style={{
+                position: "absolute",
+                right: "-12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                zIndex: 10,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "#FFFFFF",
+                border: "1px solid rgba(20, 23, 31, 0.12)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#374151",
+                transition: "all 0.2s"
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          )}
+
+          <div
+            ref={categoryScrollRef}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              overflowX: "auto",
+              paddingBottom: "8px",
+              paddingTop: "4px",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              scrollBehavior: "smooth"
+            }}
+            className="hide-scrollbar"
+          >
+            {mergedCategoriesList.map((catName) => {
+              const isActive = activeCategoryName.toLowerCase() === catName.toLowerCase();
+              const data = getCategoryData(catName);
+              if (!data) return null;
+              const count = mode === "courses" 
+                ? data.coursesCount 
+                : mode === "events" 
+                  ? (catName === "All" ? WEBINARS_DATA.length + data.bootcamps.length : data.bootcamps.length)
+                  : data.resources.length;
+
+              return (
+                <CategoryPillButton
+                  key={catName}
+                  item={catName}
+                  isActive={isActive}
+                  itemData={data}
+                  onClick={() => handleCategorySwitch(catName)}
+                >
+                  {catName === "All" ? (
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
+                  ) : (
+                    <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: data.colors.primary }} />
+                  )}
+                  <span>{catName}</span>
+                  <span
+                    style={{
+                      fontSize: "0.72rem",
+                      fontWeight: "800",
+                      padding: "2px 7px",
+                      borderRadius: "10px",
+                      background: isActive ? `${data.colors.primary}20` : "#F3F4F6",
+                      color: isActive ? data.colors.primary : "#6B7280"
+                    }}
+                  >
+                    {count}
+                  </span>
+                </CategoryPillButton>
+              );
+            })}
+          </div>
+        </div>
 
         {mode === "courses" && (
           <CoursesView
@@ -2319,6 +2728,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
             activeData={activeData}
             activeCategoryName={activeCategoryName}
             isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
           />
         )}
 
@@ -2326,6 +2737,8 @@ export default function CategoryDetailedView({ hubBasePath, mode = "courses" }: 
           <ArticlesView
             activeData={activeData}
             isEmbeddedHub={isEmbeddedHub}
+            courseSearchQuery={courseSearchQuery}
+            setCourseSearchQuery={setCourseSearchQuery}
           />
         )}
 

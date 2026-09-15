@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, notFound } from 'next/navigation';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import {
   Inbox,
   Mail,
@@ -34,6 +36,11 @@ export interface ContactMessage {
 }
 
 function ConsoleInboxContent() {
+  const { user } = useAuthStore();
+  if (!AuthorizationService.canManageSettings(user)) {
+    notFound();
+  }
+
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
   const idParam =

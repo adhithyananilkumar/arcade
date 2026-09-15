@@ -27,10 +27,14 @@ export class UserService {
     return data;
   }
 
-  static async getUserActivity(username: string): Promise<{date: string, secondsSpent: number}[]> {
-    const data = await api.get<{date: string, secondsSpent: number}[]>(`/api/v1/public/profiles/${username}/activity`);
-    return data;
-  }
+  // REMOVED (D3): getMyTimeActivity() / GET /api/v1/users/me/time-activity.
+  //
+  // It returned TimeLog rows — seconds between a WebSocket connect and disconnect, i.e. how long a
+  // tab was open — which My Learning rendered as "Learning Time … Hours/Day". D2.5 cut the last
+  // consumer; D3 removed the backend endpoint and replaced the capability properly: real learning
+  // duration is `learningMinutes` on `GET /api/v1/me/activity`, aggregated by the backend from
+  // interaction-gated lesson-engagement segments. Read it via `useDailyActivityQuery` from
+  // `@/domains/learning`. Do not re-add a session-presence time source to the identity domain.
 
   static async updateProfile(
     firstName: string,
@@ -41,7 +45,9 @@ export class UserService {
     mobileNumber?: string,
     gender?: string,
     address?: string,
-    githubUrl?: string
+    githubUrl?: string,
+    avatarUrl?: string,
+    onboardingCompleted?: boolean
   ): Promise<User> {
     const data = await api.put<User>('/api/v1/users/me', {
       firstName,
@@ -53,6 +59,8 @@ export class UserService {
       gender,
       address,
       githubUrl,
+      avatarUrl,
+      onboardingCompleted,
     });
     return data;
   }
