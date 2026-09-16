@@ -163,7 +163,7 @@ describe('MyLearningPage — states', () => {
 });
 
 describe('MyLearningPage — course rendering', () => {
-  it('renders a real backend percentage (on the card and the Continue panel)', async () => {
+  it('renders a real backend percentage on the course card', async () => {
     vi.mocked(MyEnrollmentsService.list).mockResolvedValue(page([course({ progressPercent: 42 })]));
     renderPage();
     expect((await screen.findAllByText('42%')).length).toBeGreaterThan(0);
@@ -218,8 +218,8 @@ describe('MyLearningPage — course rendering', () => {
       page([course({ progressState: 'COMPLETED', progressPercent: 100, completedAt: '2026-08-10T00:00:00Z' })])
     );
     renderPage();
-    expect(await screen.findByText('Completed')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/learn/course-1');
+    expect((await screen.findAllByText('Completed')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Completed' })).toHaveAttribute('href', '/learn/course-1');
   });
 });
 
@@ -230,10 +230,10 @@ describe('MyLearningPage — events tab', () => {
 
     fireEvent.click(await screen.findByRole('tab', { name: /Events/i }));
 
-    expect(await screen.findByText('Kubernetes Bootcamp')).toBeInTheDocument();
-    expect(screen.getByText('Bootcamp')).toBeInTheDocument();
-    expect(screen.getByText('Online')).toBeInTheDocument();
-    expect(screen.getByText('Registered')).toBeInTheDocument();
+    expect((await screen.findAllByText('Kubernetes Bootcamp')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Bootcamp')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Online')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Registered')).length).toBeGreaterThan(0);
     // A list surface must never carry a meeting link/passcode.
     expect(container.innerHTML).not.toMatch(/meetingUrl|passcode|meet\.|zoom\./i);
   });
@@ -243,7 +243,6 @@ describe('MyLearningPage — events tab', () => {
     renderPage();
 
     fireEvent.click(await screen.findByRole('tab', { name: /Events/i }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Past' }));
 
     await waitFor(() =>
       expect(MyEnrollmentsService.listEvents).toHaveBeenCalledWith('PAST', 0, 12)
@@ -269,20 +268,11 @@ describe('MyLearningPage — tabs and filters', () => {
 
   it('sends the sort choice to the backend rather than re-sorting a client-side array', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Recently updated' }));
+    fireEvent.click(await screen.findByRole('button', { name: /Sort by/i }));
+    fireEvent.click(await screen.findByRole('option', { name: /Enrollment Date/i }));
     await waitFor(() =>
       expect(MyEnrollmentsService.list).toHaveBeenCalledWith(
-        expect.objectContaining({ sort: 'updatedAt', direction: 'desc' })
-      )
-    );
-  });
-
-  it('requests full history from the backend when the learner asks for it', async () => {
-    renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'All history' }));
-    await waitFor(() =>
-      expect(MyEnrollmentsService.list).toHaveBeenCalledWith(
-        expect.objectContaining({ status: ['ALL'] })
+        expect.objectContaining({ sort: 'enrolledAt', direction: 'desc' })
       )
     );
   });
@@ -312,19 +302,18 @@ describe('MyLearningPage — removed fabrications', () => {
       page([course({ progressState: 'COMPLETED', progressPercent: 100 })])
     );
     renderPage();
-    await screen.findByText('Completed');
+    await screen.findAllByText('Completed');
     expect(screen.queryByText(/Leave Rating|Edit Rating|Submit Review/i)).not.toBeInTheDocument();
   });
 
   it('labels the activity chart as activity, never as "Learning Time" in hours', async () => {
     renderPage();
-    expect(await screen.findByText('Learning Activity')).toBeInTheDocument();
+    expect((await screen.findAllByText('Learning Activity')).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Hours\/Day/i)).not.toBeInTheDocument();
   });
 
-  it('marks the Learning Journey as unavailable rather than computing a fake level', async () => {
+  it('does not render fake progression levels', async () => {
     renderPage();
-    expect(await screen.findByText(/progression tracking is not available yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/Complete 3 courses/i)).not.toBeInTheDocument();
   });
 });

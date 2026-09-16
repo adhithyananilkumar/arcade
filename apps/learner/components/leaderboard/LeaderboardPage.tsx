@@ -3,7 +3,9 @@
 import { useMemo, useState } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Search, TrendingUp, CalendarDays, ChevronRight } from 'lucide-react';
+import { Search, TrendingUp, CalendarDays, ChevronRight } from 'lucide-react';
+import LeaderboardHero from './LeaderboardHero';
+import { FabricPodiumCard } from './FabricPodiumCard';
 
 type ViewMode = 'board' | 'monthly';
 type Period = 'all' | 'month';
@@ -239,58 +241,53 @@ export default function LeaderboardPage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-8 px-4 pb-20 pt-28 md:px-8 md:pt-32">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] md:text-[2.15rem]">
-              Leaderboard
-            </h1>
-            <p className="mt-1 max-w-lg text-[14px] font-medium text-slate-500">
-              Top learners by XP — podium up top, ranks 4–20 below. Your place always shows if
-              you’re outside the top twenty.
-            </p>
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-4 pb-20 pt-20 md:px-8 md:pt-24">
+        {/* Hero Section with Celebration Confetti & Cursive Font */}
+        <LeaderboardHero
+          topXp={board[0]?.xp ?? 48920}
+          totalLearners={1240}
+          userRank={me.rank}
+        />
+
+        {/* View Mode & Period Toggle Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200/60 dark:border-slate-800/60">
+          <div className="inline-flex items-center p-1 bg-slate-200/50 dark:bg-slate-800/60 backdrop-blur-md rounded-xl border border-slate-200/60 dark:border-white/[0.06] shadow-inner">
+            {(
+              [
+                { id: 'all' as Period, label: 'All time' },
+                { id: 'month' as Period, label: 'This month' },
+              ] as const
+            ).map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => {
+                  setPeriod(p.id);
+                  setViewMode('board');
+                }}
+                className={`px-3.5 py-1.5 rounded-[8px] text-xs font-semibold transition-all duration-200 select-none ${
+                  period === p.id && viewMode === 'board'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_1px_2px_rgba(0,0,0,0.04)] font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex rounded-lg border border-slate-200/90 bg-white/95 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
-              {(
-                [
-                  { id: 'all' as Period, label: 'All time' },
-                  { id: 'month' as Period, label: 'This month' },
-                ] as const
-              ).map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    setPeriod(p.id);
-                    setViewMode('board');
-                  }}
-                  className={`rounded-md px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-                    period === p.id && viewMode === 'board'
-                      ? 'bg-[#12141C] text-white'
-                      : 'text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setViewMode((m) => (m === 'monthly' ? 'board' : 'monthly'))}
-              className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-[12px] font-semibold transition-colors ${
-                viewMode === 'monthly'
-                  ? 'border-[#4C6FFF] bg-[#4C6FFF]/10 text-[#3A56D4]'
-                  : 'border-slate-200 bg-white/95 text-slate-700 hover:border-slate-300'
-              }`}
-            >
-              <CalendarDays size={14} />
-              Monthly tops
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setViewMode((m) => (m === 'monthly' ? 'board' : 'monthly'))}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 shadow-xs ${
+              viewMode === 'monthly'
+                ? 'border-[#2962D6] bg-[#2962D6] text-white font-bold'
+                : 'border-slate-200/80 bg-white/95 text-slate-700 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+            }`}
+          >
+            <CalendarDays size={14} />
+            <span>Monthly tops</span>
+          </button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -336,15 +333,15 @@ export default function LeaderboardPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-end">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 md:gap-8 lg:gap-10 items-center max-w-5xl mx-auto pt-8 sm:pt-16 md:pt-20 pb-4 md:pb-6">
                   {podiumOrder.map((u) => (
-                    <PodiumCard key={u.rank} user={u} place={u.rank as 1 | 2 | 3} />
+                    <FabricPodiumCard key={u.rank} user={u} place={u.rank as 1 | 2 | 3} />
                   ))}
                 </div>
               </section>
 
-              {/* Ranks 4–20 */}
-              <section className="space-y-3">
+              {/* Ranks 4–20 (Option B: Centered Constrained Width) */}
+              <section className="space-y-4 max-w-3xl mx-auto w-full pt-2">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                   <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
                     Ranks 4–20
@@ -363,31 +360,30 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
 
-                <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 shadow-[0_4px_18px_rgba(20,20,43,0.04)]">
-                  <ul className="divide-y divide-slate-100">
-                    {list4to20.length === 0 && !showUserAfter20 ? (
-                      <li className="px-4 py-10 text-center text-sm font-medium text-slate-400">
-                        No matches in ranks 4–20.
-                      </li>
-                    ) : (
-                      <>
-                        {list4to20.map((row) => (
-                          <RankRow
-                            key={row.rank}
-                            user={row}
-                            highlight={
-                              row.username === me.username ||
-                              (!!user?.username && row.username === `@${user.username}`)
-                            }
-                          />
-                        ))}
-                        {/* 21st slot: your rank when outside top 20 */}
-                        {showUserAfter20 && !query.trim() && (
-                          <RankRow user={me} highlight slotLabel="Your rank" />
-                        )}
-                      </>
-                    )}
-                  </ul>
+                {/* Ranks 4–20 Floating Pill Cards List */}
+                <div className="w-full">
+                  {list4to20.length === 0 && !showUserAfter20 ? (
+                    <div className="rounded-2xl border border-slate-200/80 bg-white/95 py-12 text-center text-sm font-medium text-slate-400 shadow-sm">
+                      No matches in ranks 4–20.
+                    </div>
+                  ) : (
+                    <ul className="space-y-3.5 pt-1">
+                      {list4to20.map((row) => (
+                        <RankRow
+                          key={row.rank}
+                          user={row}
+                          highlight={
+                            row.username === me.username ||
+                            (!!user?.username && row.username === `@${user.username}`)
+                          }
+                        />
+                      ))}
+                      {/* 21st slot: your rank when outside top 20 */}
+                      {showUserAfter20 && !query.trim() && (
+                        <RankRow user={me} highlight slotLabel="Your rank" />
+                      )}
+                    </ul>
+                  )}
                 </div>
               </section>
             </motion.div>
@@ -398,56 +394,15 @@ export default function LeaderboardPage() {
   );
 }
 
-function PodiumCard({ user, place }: { user: LeaderboardUser; place: 1 | 2 | 3 }) {
-  const tone = PLACE_TONE[place];
-  const isFirst = place === 1;
-
-  return (
-    <motion.article
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.18 }}
-      className={`relative flex flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white/95 p-4 shadow-[0_6px_20px_rgba(20,20,43,0.05)] ${
-        isFirst ? 'md:pb-6 md:pt-5' : ''
-      }`}
-    >
-      <div className={`absolute inset-x-0 top-0 h-1 ${tone.bar}`} />
-      <div className="mb-3 flex items-center justify-between">
-        <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${tone.chip}`}>
-          {tone.label}
-        </span>
-        {isFirst && <Crown size={16} className="text-[#D4AF37]" />}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-full ring-2 ring-offset-2 ${tone.ring}`}>
-          <img src={user.avatar} alt="" className="h-full w-full object-cover" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="truncate text-[15px] font-bold text-[#14142b]">{user.name}</h3>
-          <p className="truncate text-[12px] font-medium text-slate-400">{user.username}</p>
-          <p className="mt-1 text-[12px] font-semibold text-[#4C6FFF]">
-            {user.xp.toLocaleString()} XP
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center">
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.level}</p>
-          <p className="text-[10px] font-medium text-slate-400">Level</p>
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.coursesCount}</p>
-          <p className="text-[10px] font-medium text-slate-400">Courses</p>
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-[#14142b]">{user.certificatesCount}</p>
-          <p className="text-[10px] font-medium text-slate-400">Certs</p>
-        </div>
-      </div>
-    </motion.article>
-  );
-}
+const DIAMOND_BORDER_TONES = [
+  'border-indigo-400/90 shadow-indigo-400/25 bg-indigo-50/70',
+  'border-sky-400/90 shadow-sky-400/25 bg-sky-50/70',
+  'border-violet-400/90 shadow-violet-400/25 bg-violet-50/70',
+  'border-teal-400/90 shadow-teal-400/25 bg-teal-50/70',
+  'border-emerald-400/90 shadow-emerald-400/25 bg-emerald-50/70',
+  'border-rose-400/90 shadow-rose-400/25 bg-rose-50/70',
+  'border-slate-400/90 shadow-slate-400/25 bg-slate-50/70',
+];
 
 function RankRow({
   user,
@@ -458,33 +413,44 @@ function RankRow({
   highlight?: boolean;
   slotLabel?: string;
 }) {
+  const diamondTone = DIAMOND_BORDER_TONES[(user.rank - 1) % DIAMOND_BORDER_TONES.length];
+  const formattedRank = String(user.rank).padStart(2, '0');
+
   return (
     <li
-      className={`flex items-center gap-3 px-3.5 py-3 sm:px-4 ${
+      className={`group relative flex items-center gap-3 sm:gap-5 pl-4 sm:pl-6 pr-5 sm:pr-7 py-2.5 sm:py-3 rounded-2xl sm:rounded-full bg-white/95 dark:bg-slate-900/95 border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] overflow-visible ${
         highlight
-          ? 'border-t border-[#4C6FFF]/15 bg-[#4C6FFF]/[0.06]'
-          : 'hover:bg-slate-50/80'
+          ? 'border-[#4C6FFF]/60 ring-2 ring-[#4C6FFF]/25 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-[0_6px_22px_rgba(76,111,255,0.12)]'
+          : 'border-slate-200/80 dark:border-slate-800 shadow-[0_4px_16px_rgba(20,20,43,0.04)]'
       }`}
     >
-      <span
-        className={`w-9 shrink-0 text-center text-[13px] font-bold tabular-nums ${
-          highlight ? 'text-[#4C6FFF]' : 'text-slate-400'
-        }`}
-      >
-        #{user.rank}
+      {/* 1. Two-digit Rank Number (Indigo/Sapphire accent) */}
+      <span className="w-6 sm:w-7 shrink-0 text-center text-sm sm:text-base font-black tabular-nums text-indigo-600 dark:text-indigo-400 font-mono tracking-tight">
+        {formattedRank}
       </span>
-      <div
-        className={`h-10 w-10 shrink-0 overflow-hidden rounded-full border ${
-          highlight ? 'border-[#4C6FFF]/35 ring-2 ring-[#4C6FFF]/20' : 'border-slate-200'
-        }`}
-      >
-        <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+
+      {/* 2. Diamond Profile Avatar Frame — Clean frame with full image visible */}
+      <div className="relative shrink-0 flex items-center justify-center w-12 sm:w-14 h-10 my-[-10px] sm:my-[-14px]">
+        <div
+          className={`relative z-10 w-11 h-11 sm:w-13 sm:h-13 rotate-45 rounded-[11px] sm:rounded-[13px] overflow-hidden border-[2px] sm:border-[2.5px] ${diamondTone} shadow-sm transition-transform duration-200 group-hover:scale-105`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="-rotate-45 scale-[1.42] w-full h-full object-cover"
+          />
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
+
+      {/* 3. Name & Subtitle */}
+      <div className="min-w-0 flex-1 pl-1 sm:pl-2">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-[14px] font-bold text-[#14142b]">{user.name}</p>
+          <p className="truncate text-sm sm:text-[15px] font-black uppercase tracking-wider text-slate-900 dark:text-white">
+            {user.name}
+          </p>
           {highlight && (
-            <span className="rounded bg-[#4C6FFF] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-[#4C6FFF] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-xs">
               You
             </span>
           )}
@@ -499,23 +465,29 @@ function RankRow({
           {user.roleBadge ? ` · ${user.roleBadge}` : ''}
         </p>
       </div>
-      <div className="hidden text-right sm:block">
-        <p className="text-[13px] font-bold text-[#4C6FFF]">{user.xp.toLocaleString()} XP</p>
-        <p className="text-[11px] font-medium text-slate-400">Lvl {user.level}</p>
+
+      {/* 4. Score / XP and Trend */}
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-right">
+        <div>
+          <p className="text-sm sm:text-base font-black text-[#2962D6] dark:text-indigo-400 tracking-tight font-mono">
+            {user.xp.toLocaleString()} <span className="text-[10px] font-bold text-slate-400 uppercase font-sans">XP</span>
+          </p>
+          <p className="text-[11px] font-semibold text-slate-400">Lvl {user.level}</p>
+        </div>
+        {user.weeklyChange !== 0 && (
+          <span
+            className={`hidden items-center gap-0.5 rounded-full px-2 py-0.5 text-[11px] font-bold md:inline-flex ${
+              user.weeklyChange > 0
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60'
+                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60'
+            }`}
+          >
+            <TrendingUp size={11} className={user.weeklyChange < 0 ? 'rotate-180' : ''} />
+            {user.weeklyChange > 0 ? '+' : ''}
+            {user.weeklyChange}
+          </span>
+        )}
       </div>
-      {user.weeklyChange !== 0 && (
-        <span
-          className={`hidden items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold md:inline-flex ${
-            user.weeklyChange > 0
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-rose-50 text-rose-600'
-          }`}
-        >
-          <TrendingUp size={12} className={user.weeklyChange < 0 ? 'rotate-180' : ''} />
-          {user.weeklyChange > 0 ? '+' : ''}
-          {user.weeklyChange}
-        </span>
-      )}
     </li>
   );
 }
