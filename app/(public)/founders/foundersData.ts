@@ -55,7 +55,7 @@ export const FOUNDERS_DATA: Founder[] = [
     tagline: "Designing high-throughput backend services and real-time collaborative workshop spaces.",
     image: "/founders/clean_founder_2.jpg",
     bio: "Backend systems engineer passionate about real-time web engines, distributed state, and automated grading.",
-    extendedBio: "Jagan engineered the real-time event streaming and live workspace engine inside Arcade. His work enables interactive coding sessions, live workshop leaderboards, and instant automated feedback for hundreds of concurrent campus participants.",
+    extendedBio: "Jagan engineered the real-time event streaming and live workspace engine inside Arcade. His work enables interactive coding sessions, live workshop spaces, and instant automated feedback for hundreds of concurrent campus participants.",
     quote: "High-performance software removes the friction between a student's curiosity and their mastery.",
     achievements: [
       "Built Arcade's real-time collaborative workshop engine",

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Home, Compass, BookOpen, Crown, Trophy, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Home, Compass, BookOpen, Trophy, ShieldAlert } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -32,14 +32,6 @@ const dockItems = [
     href: '/my-learning',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
-    exact: false,
-  },
-  {
-    id: 'leaderboard',
-    label: 'Leaderboard',
-    href: '/leaderboard',
-    icon: Crown,
-    activeColor: 'text-amber-500 dark:text-amber-400',
     exact: false,
   },
   {

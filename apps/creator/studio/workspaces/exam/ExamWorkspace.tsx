@@ -12,7 +12,7 @@
  * ------------------------------------------------------------------
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -191,6 +191,17 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   });
   const { questions, loading: questionsLoading, addQuestion, removeQuestion } = controller;
 
+  // `selectSection` is recreated whenever `saveManager` reports a new save-state transition
+  // (idle -> saving -> saved -> idle happens on every autosaved edit) — a real dependency for
+  // callers that need the *current* flush/selection behavior, but not something the one-time
+  // bootstrap effect below should re-run for. Read through a ref instead of the dep array so
+  // that effect fires once per `examId`, not once per autosave cycle (the latter is what was
+  // hammering /api/exams/{id}/question-bank into a 429).
+  const selectSectionRef = useRef(selectSection);
+  useEffect(() => {
+    selectSectionRef.current = selectSection;
+  }, [selectSection]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -203,7 +214,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         const sectionList = await listSections(bank.id);
         if (cancelled) return;
         setSections(sectionList);
-        if (sectionList.length > 0) selectSection(sectionList[0].id);
+        if (sectionList.length > 0) selectSectionRef.current(sectionList[0].id);
       } catch {
         if (!cancelled) setLoadError("Couldn't load this exam. You may not have access to it.");
       } finally {
@@ -213,7 +224,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [examId, selectSection]);
+  }, [examId]);
 
   // Tags already in use, offered as one-click additions while editing a question.
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type StudioSaveState = "idle" | "saving" | "saved" | "error";
 
@@ -152,12 +152,19 @@ export function useStudioSaveManager<T>(
     };
   }, []);
 
-  return {
-    isDirty,
-    saveState,
-    error,
-    lastSavedAt,
-    scheduleSave,
-    flush,
-  };
+  // A fresh object every render breaks any caller that depends on this manager's identity (e.g.
+  // a `useCallback`/`useEffect` dependency array) — such a dependency would then never settle,
+  // re-running its effect on every render. Memoized so the manager's own reference is stable
+  // across renders where nothing it exposes actually changed.
+  return useMemo(
+    () => ({
+      isDirty,
+      saveState,
+      error,
+      lastSavedAt,
+      scheduleSave,
+      flush,
+    }),
+    [isDirty, saveState, error, lastSavedAt, scheduleSave, flush]
+  );
 }
