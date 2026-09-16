@@ -41,16 +41,12 @@ import {
   TREE_EMPTY_STATE_CLASS,
   CANVAS_WRAPPER_CLASS,
 } from "@/apps/creator/studio/core/StudioShell";
-import {
-  StudioPresenceStack,
-  StudioShareControl,
-  StudioPanelToggle,
-  StudioActionButton,
-} from "@/apps/creator/studio/core/StudioHeader";
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
+import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
+import { ChannelAccessModal } from "@/apps/creator/shared/components/ChannelAccessModal";
 import {
-  SaveIndicator,
   createSection,
   deleteSection,
   getExam,
@@ -118,6 +114,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   const [publishing, setPublishing] = useState(false);
   const [renamingSectionId, setRenamingSectionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
+  const [accessModalOpen, setAccessModalOpen] = useState(false);
 
   // An exam under platform review is locked for editing, exactly like a submitted course.
   const readOnly = exam?.status === "SUBMITTED";
@@ -130,6 +127,10 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   // rounds that produce a status history. The panel is still mounted and still opens — the Studio
   // is the same shape for every content type — and each tab says plainly why it is empty.
   const panel = useStudioPanel({ collaboratorsPath: null, statusHistoryPath: null });
+  // The same destructive-action confirmation Course/Event use — previously missing here
+  // entirely, so deleting a section or a question had no confirmation step while the equivalent
+  // actions in Course/Event (delete module, delete lesson) did.
+  const { confirm, dialog: confirmDialog } = useStudioConfirm();
 
   const handleSectionCountChange = useCallback((sectionId: string, count: number) => {
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, questionCount: count } : s)));
@@ -150,6 +151,12 @@ export function ExamWorkspace({ examId }: { examId: string }) {
 
   const controller = useSectionQuestions(activeSectionId, handleSectionCountChange);
   const { questions, loading: questionsLoading, saveState, addQuestion, removeQuestion } = controller;
+
+  // Narrower than Course/Event's guard (which tracks "has this document ever been edited" until
+  // submit) because the question engine has no equivalent persistent dirty flag — but it covers
+  // the real risk: closing the tab during the ~1.2s autosave debounce, before the pending edit
+  // has actually reached the server.
+  useUnsavedChangesGuard(saveState === "saving");
 
   useEffect(() => {
     let cancelled = false;
@@ -220,7 +227,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     }
   };
 
-  const removeSection = async (section: SectionResponse) => {
+  const removeSectionNow = async (section: SectionResponse) => {
     const previous = sections;
     setSections((prev) => prev.filter((s) => s.id !== section.id));
     if (activeSectionId === section.id) selectSection("");
@@ -232,6 +239,15 @@ export function ExamWorkspace({ examId }: { examId: string }) {
       toast.error("Couldn't delete the section");
     }
   };
+
+  const askDeleteSection = (section: SectionResponse) =>
+    confirm({
+      title: "Delete section?",
+      message: `"${section.title}" and every question in it (${section.questionCount}) will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete",
+      danger: true,
+      onConfirm: () => removeSectionNow(section),
+    });
 
   // ── Questions ──────────────────────────────────────────────────────────────
 
@@ -429,7 +445,7 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                   <button
                     type="button"
                     title="Delete section"
-                    onClick={() => removeSection(section)}
+                    onClick={() => askDeleteSection(section)}
                     className="rounded-md p-1 text-[#14142b]/40 transition-colors hover:bg-rose-50 hover:text-rose-600"
                   >
                     <Trash2 size={12} />
@@ -473,10 +489,18 @@ export function ExamWorkspace({ examId }: { examId: string }) {
                           <button
                             type="button"
                             title="Delete question"
-                            onClick={() => {
-                              removeQuestion(q.key);
-                              if (isOpen) setActiveQuestionKey(null);
-                            }}
+                            onClick={() =>
+                              confirm({
+                                title: "Delete question?",
+                                message: "This question and its saved draft will be permanently deleted. This cannot be undone.",
+                                confirmLabel: "Delete",
+                                danger: true,
+                                onConfirm: () => {
+                                  removeQuestion(q.key);
+                                  if (isOpen) setActiveQuestionKey(null);
+                                },
+                              })
+                            }
                             className={`flex-shrink-0 rounded-md p-1 opacity-0 transition-opacity group-hover/leaf:opacity-100 ${
                               isOpen ? "text-white/70 hover:text-white" : "text-[#14142b]/40 hover:text-rose-600"
                             }`}
@@ -509,6 +533,10 @@ export function ExamWorkspace({ examId }: { examId: string }) {
 
   return (
     <StudioEditorFrame>
+      {accessModalOpen && exam.channelId && (
+        <ChannelAccessModal onClose={() => setAccessModalOpen(false)} channelId={exam.channelId} />
+      )}
+
       <StudioEditorTopBar
         onBack={() => router.push(`/studio/content/exam/${examId}`)}
         backTitle="Back to the exam overview"
@@ -533,22 +561,25 @@ export function ExamWorkspace({ examId }: { examId: string }) {
             </div>
           )
         }
-        actions={
-          <>
-            <SaveIndicator state={saveState} />
-            <StudioPresenceStack collaborators={[]} />
-            <StudioShareControl note="Who can edit this exam is managed on its channel, under the channel's exam permissions." />
-            <StudioPanelToggle open={panel.open} onToggle={() => panel.setOpen(!panel.open)} />
-            {!readOnly && (
-              <StudioActionButton
-                onClick={handlePublish}
-                disabled={publishing}
-                title="Snapshot this exam and its plans into a new published version"
-                icon={publishing ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
-                label="Publish"
-              />
-            )}
-          </>
+        saveState={saveState}
+        collaborators={[]}
+        share={
+          exam.channelId
+            ? { onOpenCollaborators: () => setAccessModalOpen(true) }
+            : { note: "Who can edit this exam is managed on its channel, under the channel's exam permissions." }
+        }
+        panelOpen={panel.open}
+        onTogglePanel={() => panel.setOpen(!panel.open)}
+        primaryAction={
+          !readOnly
+            ? {
+                onClick: handlePublish,
+                disabled: publishing,
+                title: "Snapshot this exam and its plans into a new published version",
+                icon: publishing ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />,
+                label: "Publish",
+              }
+            : null
         }
       />
 
@@ -644,6 +675,8 @@ export function ExamWorkspace({ examId }: { examId: string }) {
           )}
         </div>
       </StudioEditorBody>
+
+      {confirmDialog}
     </StudioEditorFrame>
   );
 }

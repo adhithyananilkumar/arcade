@@ -15,7 +15,7 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ChevronDown, Copy, Menu, Users } from "lucide-react";
+import { Check, ChevronDown, Copy, Loader2, Menu, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,6 +33,38 @@ import type { ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
  * pattern each editor re-implements. What appears inside it still differs per content type (an
  * exam publishes, a course submits for review); the interaction model no longer can.
  */
+
+// ── Save status ──────────────────────────────────────────────────────────────
+
+export type StudioSaveState = "idle" | "saving" | "saved" | "error";
+
+/**
+ * The Studio top bar's one save-state pill. Exam previously rendered its own `SaveIndicator`
+ * component directly into the header's action row — a second implementation of the same
+ * capability, not a workspace-specific addition. `StudioEditorTopBar` now owns rendering this
+ * from a plain `saveState` value, so no workspace can bring its own save-status UI into the
+ * header again; a workspace with no header-level save concept (Course/Event show save status
+ * in-canvas instead, via `SaveStatusFooter`) simply omits `saveState`.
+ */
+export function StudioSaveStatus({ state }: { state: StudioSaveState }) {
+  if (state === "saving")
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-gray-400">
+        <Loader2 size={12} className="animate-spin" />
+        Saving…
+      </span>
+    );
+  if (state === "saved")
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-emerald-600">
+        <Check size={12} />
+        Saved
+      </span>
+    );
+  if (state === "error")
+    return <span className="text-xs text-red-500">Save failed — retrying on next edit</span>;
+  return null;
+}
 
 // ── Presence ─────────────────────────────────────────────────────────────────
 

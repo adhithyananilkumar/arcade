@@ -30,7 +30,7 @@ import {
   Shield,
 } from "lucide-react";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing";
-import type { Collaborator } from "@/app/(authenticated)/studio/events/api/collaboration";
+import type { StudioCollaborator } from "./useStudioPanel";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 
 function timeAgo(dateString: string) {
@@ -89,7 +89,7 @@ interface StudioRightPanelProps {
 
   activeLessonId: string | null;
   collabState: { status: CollabStatus; collaborators: ActiveCollaborator[] };
-  eventCollaborators: Collaborator[];
+  collaborators: StudioCollaborator[];
   loadingCollaborators: boolean;
   showAddForm: boolean;
   onShowAddFormChange: (v: boolean) => void;
@@ -292,7 +292,7 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
             <div className="space-y-2 border-t border-white/50 pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  Collaborators ({props.eventCollaborators.length})
+                  Collaborators ({props.collaborators.length})
                 </span>
                 <button
                   type="button"
@@ -362,11 +362,11 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
 
               {props.loadingCollaborators ? (
                 <p className="py-1 text-xs text-slate-400">Loading collaborators…</p>
-              ) : props.eventCollaborators.length === 0 ? (
+              ) : props.collaborators.length === 0 ? (
                 <p className="py-1 text-xs italic text-slate-400">No collaborators added</p>
               ) : (
                 <div className="space-y-1.5">
-                  {props.eventCollaborators.map((member) => (
+                  {props.collaborators.map((member) => (
                     <div
                       key={member.userId}
                       className="flex items-center justify-between rounded-xl border border-white/50 bg-white/50 p-2 text-xs"

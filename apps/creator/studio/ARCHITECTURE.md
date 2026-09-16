@@ -21,13 +21,49 @@ wrapper for width. This is what the header-overlap/scrollbar bug traced back to 
 audit: padding and scroll ownership were split across different elements, or combined
 order-dependently, per workspace. Pinned by `StudioShell.test.tsx`.
 
+**The top bar contract.** `StudioEditorTopBar` (in `StudioShell.tsx`) is the single canonical
+implementation, rendered by both `ContentEditorRuntime` (Course/Event) and `ExamWorkspace`. Neither
+workspace has, or has ever needed, its own header component.
+
+It used to expose one free-form `actions: ReactNode` slot, which every shared control (Presence,
+Share, Panel toggle, primary action) was rendered into by each workspace individually — structurally
+correct (same components, same import), but the slot's shape still let a workspace inject a
+*replacement* rather than a *composition*: Exam used it to render its own `SaveIndicator` component
+(from `domains/assessments`) alongside the shared ones, which was a second implementation of "the
+top bar's save status," not a workspace-specific addition — Course/Event have no header-level save
+status at all (theirs lives in-canvas, via `SaveStatusFooter`, deliberately isolated from the header's
+render tree for performance reasons — see that file's own doc comment).
+
+`actions` no longer exists. `StudioEditorTopBar` now takes typed, data-only props for every shared
+control — `saveState`, `collaborators`, `share`, `panelOpen`/`onTogglePanel`, `primaryAction` — and
+renders `StudioSaveStatus`/`StudioPresenceStack`/`StudioShareControl`/`StudioPanelToggle`/
+`StudioActionButton` (all `StudioHeader.tsx`) itself, from those values. A workspace can no longer
+inject a second implementation of any shared control even by accident, because there is no ReactNode
+slot left for one to go into. The only two remaining slots, `workspaceActionsBefore`/
+`workspaceActionsAfter`, are for content genuinely without a Studio-owned equivalent — Event's Day
+Settings icon and Manage button are the only current users. `SaveIndicator` (the old Exam-specific
+component) has been deleted from `domains/assessments` entirely; `StudioSaveStatus` is Exam's — and
+now any future workspace's — only save-status implementation.
+
+Pinned by `StudioTopBar.architecture.test.tsx`: one `StudioEditorTopBar` definition, no workspace
+defines its own `*TopBar`/`*HeaderActions`/`SaveIndicator`, no workspace passes an `actions` prop
+(the escape hatch no longer exists in the type, but the test also checks no one reintroduces it),
+and Course/Event/Exam all feed `primaryAction`/`share`/`saveState` as plain data, never as JSX.
+
+One real domain-neutrality leak was found and fixed during that audit: `StudioRightPanel`/
+`useStudioPanel` imported a `Collaborator` type from `app/(authenticated)/studio/events/api/collaboration.ts`
+— an Event-specific `app/` route module — and named the prop `eventCollaborators`, despite the data
+being used identically for Course. Both a cross-layer violation (`apps` importing from `app/`, against
+this repo's dependency direction) and a domain leak into Studio Core. Fixed: the type is now declared
+locally as `StudioCollaborator` in `useStudioPanel.ts`, and the prop is the domain-neutral
+`collaborators`. Pinned by the same test file.
+
 ## Workspaces (`apps/creator/studio/workspaces/`)
 
 ```
 workspaces/
 ├── content/                     Shared editing engine for Course + Event
 │   ├── ContentEditorRuntime.tsx  the engine: tree, lesson editing, history, collab, exams
-│   ├── SessionSettingsDialog.tsx Event's day-schedule dialog (owned by Event, lives here for now)
 │   ├── types.ts                  ContentDataAdapter contract
 │   └── adapters/
 │       ├── CourseAdapter.ts
@@ -35,7 +71,8 @@ workspaces/
 ├── course/
 │   └── CourseWorkspace.tsx       Course's adapter + category selector + submit/back — 107 lines
 ├── event/
-│   └── EventWorkspace.tsx        Event's adapter + day dialog + submit/back — 100 lines
+│   ├── EventWorkspace.tsx        Event's adapter + day dialog + submit/back — 100 lines
+│   └── SessionSettingsDialog.tsx Event's own day-schedule dialog
 └── exam/
     ├── ExamWorkspace.tsx
     ├── QuestionEditorCard.tsx, QuestionListPreview.tsx
@@ -174,23 +211,56 @@ of one shared orchestrator branching on a `contentType` prop.
 
 ## Remaining backend limitations (not solved in this phase — frontend cannot solve them alone)
 
-1. **Exam history.** `Document.ContentType` has no exam/question member, and question prompts are
-   fields on `question_bank_questions` rows, saved via whole-section replace. Real version history
-   for a question needs a schema change plus a save-path change — deliberately not attempted
-   frontend-only.
+A full forensic audit and architecture decision for these was produced as a dedicated backend task —
+see `backend/docs/architecture/audit/exam-history-collaboration-audit.md`. Summary:
+
+1. **Exam history.** Question prompts/options/etc. live on `question_bank_questions`, saved via
+   whole-section replace, with no per-question history. The audit recommends a dedicated
+   `QuestionVersion` table (not forcing Question into the `Document`/`DocumentVersion` model, since a
+   question is a structured form with one rich-text sub-field, not a single CRDT body) plus a new
+   `PATCH /questions/{id}` endpoint for individual editing, alongside the existing bulk section-replace
+   endpoint. This is judged low-risk and ready to implement — no open product question blocks it.
 2. **Exam collaboration.** The Hocuspocus server hard-rejects any document name not prefixed
-   `lesson:`. Real-time collaborative question editing needs that allow-list extended and a
-   `Document` row per question, contingent on (1).
-3. **Reproducibility.** `ExamVersion`/`StudentExamPaper` immutability is unaffected by this phase
-   — this migration touched no exam persistence.
+   `lesson:`. The audit found this is a deliberately **open product decision**, not a technical
+   blocker: whether real-time multi-author question editing is a validated requirement (unlike lesson
+   co-authoring, there's no evidence exam questions are edited simultaneously by multiple people). If
+   approved, only the `prompt` field should go through Document/Hocuspocus (scoped exactly like
+   Lesson); structured fields (options, difficulty, tags) should stay on optimistic-locked `PATCH`,
+   never merged via CRDT, since silently merging answer-key edits is unsafe. Two pre-existing Hocuspocus
+   security gaps (stale per-document authorization on later joiners; a shared-secret with an insecure
+   default) apply to Lesson collaboration today and are recommended to be fixed before extending the
+   server to a second document type.
+3. **Reproducibility.** `ExamVersion`/`StudentExamPaper` immutability is unaffected by this phase —
+   confirmed by the audit to already be fully decoupled from question edit history: `ExamVersion`
+   never stores question content, and `ExamAttemptQuestion` freezes prompt/options/answer-key
+   per-attempt with every column immutable. Adding question history/collaboration cannot regress this.
+
+## Studio Core, continued: `useStudioConfirm`
+
+`useStudioConfirm.tsx` centralizes the destructive-action confirmation dialog. It was previously
+defined once, inline, inside the content runtime — and never adopted by Exam, so deleting a
+section or a question there had **no confirmation step at all**, while the equivalent actions in
+Course/Event (delete module, delete lesson, delete badge, remove exam) did. This is exactly the
+"claims centralization but isn't" pattern to watch for: the component existed, but "centralized"
+meant "used by one workspace." Both `ContentEditorRuntime` and `ExamWorkspace` (including
+`QuestionEditorCard`'s own delete button) now call the same hook.
+
+`useUnsavedChangesGuard` had the same gap: added to Studio Core for Course/Event, never wired into
+Exam. Exam's autosave has no persistent "ever edited" flag the way Course/Event's `hasDraftChanges`
+does, so its guard is narrower by necessity — it fires only while `saveState === "saving"` (the
+~1.2s debounce window before an edit reaches the server) rather than for the whole editing session.
+Documented as a real, deliberate difference in scope, not an oversight.
 
 ## Remaining frontend limitations
 
-- `ContentEditorRuntime` at ~1,350 lines is still large — it is the honest size of "everything
-  Course and Event's lesson/module/badge/history/collaboration engine actually does," not
-  artificially inflated, but a future pass could split it further (e.g. extract the sidebar tree
-  JSX into its own presentational component) if it keeps growing.
-- `SessionSettingsDialog` and the `ContentDataAdapter` contract still live under
-  `workspaces/content/` even though the dialog is Event-only; it wasn't moved into
-  `workspaces/event/` to avoid an unnecessary import-path churn beyond what this phase already
-  changed. A future cleanup could relocate it.
+- `ContentEditorRuntime` at ~1,350 lines is still large. The confirm dialog is now extracted (see
+  above); what's left is the honest size of "everything Course and Event's lesson/module/badge
+  tree, Y.Doc bootstrap, autosave, version history, collaboration, and exam-attachment actually
+  does." The next extractable boundary, if it keeps growing, is the sidebar tree JSX (module/lesson/
+  badge rows) into its own presentational component — not attempted here because Exam's tree has a
+  different enough shape (Sections → Questions, no drag-reorder) that a shared tree component would
+  need real design work, not a mechanical lift.
+- The rename-input pattern (`autoFocus` + commit-on-blur/Enter + Escape-to-cancel) is still
+  duplicated between `ContentEditorRuntime`'s `renameInput()` helper and `ExamWorkspace`'s inline
+  section-rename JSX. Small, low-risk to extract, not done in this pass — flagged rather than
+  silently left.

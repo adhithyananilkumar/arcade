@@ -220,6 +220,7 @@ export interface ExamResponse {
   deletedAt: string | null;
   courseId: string | null;
   eventId: string | null;
+  channelId: string | null;
   purpose: string | null;
   requiredForCompletion: boolean;
   questionCount: number;

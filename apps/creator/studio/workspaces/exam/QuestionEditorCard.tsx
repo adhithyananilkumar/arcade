@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { ArcadeEditor, type ArcadeEditorHandle } from "@/apps/creator/editor";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import {
   QuestionTagEditor,
   DIFFICULTIES,
@@ -63,6 +64,7 @@ export function QuestionEditorCard({
   readOnly?: boolean;
 }) {
   const editorRef = useRef<ArcadeEditorHandle>(null);
+  const { confirm, dialog: confirmDialog } = useStudioConfirm();
 
   // Flush the editor before leaving this question. Without it the last edit sits in the editor's
   // debounce and is discarded when the component unmounts on navigation.
@@ -134,10 +136,18 @@ export function QuestionEditorCard({
             <button
               type="button"
               title="Delete question"
-              onClick={() => {
-                actions.removeQuestion(q.key);
-                navigation.onBack();
-              }}
+              onClick={() =>
+                confirm({
+                  title: "Delete question?",
+                  message: "This question and its saved draft will be permanently deleted. This cannot be undone.",
+                  confirmLabel: "Delete",
+                  danger: true,
+                  onConfirm: () => {
+                    actions.removeQuestion(q.key);
+                    navigation.onBack();
+                  },
+                })
+              }
               className="rounded-lg p-1.5 text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-600"
             >
               <Trash2 size={14} />
@@ -145,6 +155,7 @@ export function QuestionEditorCard({
           )}
         </div>
       </div>
+      {confirmDialog}
 
       {/* ── Prompt: the shared Arcade editor ──────────────────────────────── */}
       <div className="rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl sm:p-6">

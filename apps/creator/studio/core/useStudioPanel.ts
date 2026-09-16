@@ -3,8 +3,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
-import type { Collaborator } from "@/app/(authenticated)/studio/events/api/collaboration";
 import type { ContentStatusHistoryResponse } from "@/domains/publishing";
+
+/**
+ * Defined here, not imported from Event's own collaboration API module, even though the field
+ * shape happens to match it today — Studio Core must not depend on an `app/` route module (nor on
+ * any one content type's API shape) merely because that type was the first place a matching shape
+ * existed. Course collaborators use this same shape through the same generic `collaboratorsPath`.
+ */
+export interface StudioCollaborator {
+  id: string | null;
+  userId: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER";
+  status: "PENDING" | "ACCEPTED";
+  joinedAt: string;
+}
 
 /**
  * Everything the Studio's right-hand panel needs: status history, the collaborator list, and the
@@ -19,9 +35,9 @@ import type { ContentStatusHistoryResponse } from "@/domains/publishing";
  * across Course, Event and Exam, which is exactly why it belongs here and not in three editors.
  */
 export interface StudioWorkflowPanelPaths {
-  /** Collection endpoint for this content's collaborators, e.g. `/api/v1/courses/{id}/collaborators`. */
+  /** Collection endpoint for this content's collaborators, supplied per content type. */
   collaboratorsPath: string | null;
-  /** Status-history endpoint, e.g. `/api/courses/{id}/status-history`. Null when the type has none. */
+  /** Status-history endpoint, supplied per content type. Null when the type has none. */
   statusHistoryPath: string | null;
 }
 
@@ -35,7 +51,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
   const [statusHistoryLoading, setStatusHistoryLoading] = useState(false);
   const [statusHistoryError, setStatusHistoryError] = useState<string | null>(null);
 
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [collaborators, setCollaborators] = useState<StudioCollaborator[]>([]);
   const [loadingCollaborators, setLoadingCollaborators] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -49,7 +65,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
     if (!collaboratorsPath) return;
     setLoadingCollaborators(true);
     try {
-      const data = await api.get<Collaborator[]>(collaboratorsPath);
+      const data = await api.get<StudioCollaborator[]>(collaboratorsPath);
       setCollaborators(data || []);
     } catch (e) {
       console.error("Failed to load collaborators", e);
@@ -106,7 +122,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
       if (!email || !collaboratorsPath) return;
       setInviting(true);
       try {
-        await api.post<Collaborator>(collaboratorsPath, { email, role: inviteRole });
+        await api.post<StudioCollaborator>(collaboratorsPath, { email, role: inviteRole });
         toast.success(`Added ${email} as collaborator`);
         setInviteEmail("");
         setUserSearchResults([]);
@@ -145,7 +161,7 @@ export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioW
       statusHistoryLoading,
       statusHistoryError,
       onRetryStatusHistory: loadStatusHistory,
-      eventCollaborators: collaborators,
+      collaborators,
       loadingCollaborators,
       showAddForm,
       onShowAddFormChange: setShowAddForm,

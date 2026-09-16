@@ -19,7 +19,7 @@ import { Settings } from "lucide-react";
 import { StudioIconAction } from "@/apps/creator/studio/core/StudioHeader";
 import { ContentEditorRuntime, type ContentEditorRuntimeHandle } from "@/apps/creator/studio/workspaces/content/ContentEditorRuntime";
 import { EventAdapter } from "@/apps/creator/studio/workspaces/content/adapters/EventAdapter";
-import { SessionSettingsDialog } from "@/apps/creator/studio/workspaces/content/SessionSettingsDialog";
+import { SessionSettingsDialog } from "./SessionSettingsDialog";
 
 /**
  * EventWorkspace owns exactly what is Event-specific: which adapter to hand the shared runtime,

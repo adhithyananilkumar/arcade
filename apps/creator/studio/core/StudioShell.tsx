@@ -4,6 +4,15 @@ import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
+import {
+  StudioActionButton,
+  StudioPanelToggle,
+  StudioPresenceStack,
+  StudioSaveStatus,
+  StudioShareControl,
+  type StudioSaveState,
+} from "./StudioHeader";
+import type { ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 
 /**
  * The Studio editor chrome — the frame every full-screen authoring surface in Studio sits in:
@@ -38,20 +47,69 @@ export function StudioEditorFrame({ children }: { children: ReactNode }) {
   );
 }
 
+/** Configures the Studio-owned Share control; omit (or pass `null`) to hide Share entirely. */
+export interface StudioShareConfig {
+  onOpenCollaborators?: () => void;
+  note?: string;
+}
+
+/**
+ * Configures the Studio-owned primary action button; the workspace supplies the business
+ * operation (what "Submit"/"Publish" actually does) and its label/icon, never the button
+ * implementation itself. Omit (or pass `null`) to hide the primary action (e.g. Course already
+ * submitted, or a read-only Exam).
+ */
+export interface StudioPrimaryAction {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  title?: string;
+}
+
 export function StudioEditorTopBar({
   onBack,
   backDisabled,
   backTitle = "Save and return to Content Studio",
   breadcrumb,
-  actions,
+  saveState,
+  collaborators = [],
+  share,
+  panelOpen,
+  onTogglePanel,
+  workspaceActionsBefore,
+  primaryAction,
+  workspaceActionsAfter,
 }: {
   onBack: () => void;
   backDisabled?: boolean;
   backTitle?: string;
   /** Contents of the centered pill — a breadcrumb, or the content title when nothing is open. */
   breadcrumb: ReactNode;
-  /** Right-hand side of the top bar (share, submit, publish, panel toggle …). */
-  actions?: ReactNode;
+  /**
+   * The Studio-owned save-state pill. Omit entirely for a workspace whose save status doesn't
+   * belong in the header (Course/Event show it in-canvas instead, via `SaveStatusFooter`) — never
+   * render a workspace's own save-status component here instead.
+   */
+  saveState?: StudioSaveState;
+  /** Feeds the Studio-owned presence stack. Defaults to none. */
+  collaborators?: ActiveCollaborator[];
+  /** Configures the Studio-owned Share control. Omit/`null` to hide Share for this render. */
+  share?: StudioShareConfig | null;
+  /** Whether the Studio right panel is open — feeds the Studio-owned panel toggle. */
+  panelOpen: boolean;
+  onTogglePanel: () => void;
+  /**
+   * Genuinely workspace-specific actions with no Studio-owned equivalent (Event's Day Settings
+   * icon, rendered before the primary action). Never a replacement for Share/Save/History/
+   * Collaboration/Panel/primary-action — those are dedicated props above, not part of this slot,
+   * so a workspace cannot inject a second implementation of any of them here even by accident.
+   */
+  workspaceActionsBefore?: ReactNode;
+  /** Configures the Studio-owned primary action button. Omit/`null` to hide it for this render. */
+  primaryAction?: StudioPrimaryAction | null;
+  /** Genuinely workspace-specific actions rendered after the primary action (Event's Manage button). */
+  workspaceActionsAfter?: ReactNode;
 }) {
   return (
     <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
@@ -88,9 +146,28 @@ export function StudioEditorTopBar({
           </div>
         </div>
 
-        {/* Right actions */}
+        {/*
+         * Right actions — every shared control below is rendered by Studio Core itself, from
+         * plain data props, never from a ReactNode a workspace could use to substitute its own
+         * implementation. `workspaceActionsBefore`/`workspaceActionsAfter` are the only slots a
+         * workspace actually fills, and they sit alongside these, never in place of them.
+         */}
         <div className="pointer-events-auto flex flex-shrink-0 items-center justify-end gap-3.5">
-          {actions}
+          {saveState && <StudioSaveStatus state={saveState} />}
+          <StudioPresenceStack collaborators={collaborators} />
+          {share && <StudioShareControl onOpenCollaborators={share.onOpenCollaborators} note={share.note} />}
+          <StudioPanelToggle open={panelOpen} onToggle={onTogglePanel} />
+          {workspaceActionsBefore}
+          {primaryAction && (
+            <StudioActionButton
+              onClick={primaryAction.onClick}
+              disabled={primaryAction.disabled}
+              title={primaryAction.title}
+              icon={primaryAction.icon}
+              label={primaryAction.label}
+            />
+          )}
+          {workspaceActionsAfter}
         </div>
       </div>
     </div>

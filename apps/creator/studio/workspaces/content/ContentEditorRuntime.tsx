@@ -15,7 +15,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
-import { createPortal } from "react-dom";
 import type * as Y from "yjs";
 import type { CollabStatus, ActiveCollaborator } from "@/apps/creator/editor/hooks/useArcadeEditor";
 import { api } from "@/infrastructure/http/api";
@@ -44,12 +43,7 @@ import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
-import {
-  StudioPresenceStack,
-  StudioShareControl,
-  StudioPanelToggle,
-  StudioActionButton,
-} from "@/apps/creator/studio/core/StudioHeader";
+import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import {
   StudioEditorFrame,
   StudioEditorTopBar,
@@ -78,7 +72,6 @@ import {
   Plus,
   FileText,
   Layers,
-  AlertTriangle,
   Settings,
   GraduationCap,
   Pencil,
@@ -190,14 +183,6 @@ interface ModuleNode {
 
 type EditKind = "module" | "lesson" | "badge";
 
-interface ConfirmOptions {
-  title: string;
-  message: string;
-  confirmLabel: string;
-  danger?: boolean;
-  onConfirm: () => void | Promise<void>;
-}
-
 /** How long (of edit activity) between automatic version snapshots. */
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -231,60 +216,6 @@ function SortableRow({
   );
 }
 
-function ConfirmDialog({ options, onClose }: { options: ConfirmOptions | null; onClose: () => void }) {
-  const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    setBusy(false);
-  }, [options]);
-
-  if (!options) return null;
-  const { title, message, confirmLabel, danger } = options;
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={() => !busy && onClose()} />
-      <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <div className="flex gap-3">
-          <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50" : "bg-slate-100"}`}>
-            <AlertTriangle size={20} className={danger ? "text-rose-500" : "text-[#14142b]"} />
-          </div>
-          <div className="flex-1 pt-0.5">
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">{title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{message}</p>
-          </div>
-        </div>
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={busy}
-            className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await options.onConfirm();
-                onClose();
-              } finally {
-                setBusy(false);
-              }
-            }}
-            className={`rounded-full px-5 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60 ${danger ? "bg-rose-600 hover:bg-rose-700" : "bg-[#14142b] hover:bg-[#232735]"}`}
-          >
-            {busy ? "Working…" : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 function IconBtn({
   title,
@@ -389,7 +320,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const editorRef = useRef<ArcadeEditorHandle>(null);
   const [editing, setEditing] = useState<{ kind: EditKind; id: string } | null>(null);
   const [editingValue, setEditingValue] = useState("");
-  const [confirm, setConfirm] = useState<ConfirmOptions | null>(null);
+  const { confirm, dialog: confirmDialog } = useStudioConfirm();
 
   // The Studio right-hand panel (status history, collaborators, invite/remove) — the same hook
   // Exam uses. Null the path while there's no contentId yet (content still being created) so the
@@ -809,7 +740,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   };
 
   const askDeleteModule = (mod: ModuleNode) =>
-    setConfirm({
+    confirm({
       title: `Delete ${adapter.terminology.container}?`,
       message: `"${mod.title}" and all of its lessons will be permanently deleted. This cannot be undone.`,
       confirmLabel: "Delete",
@@ -818,7 +749,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     });
 
   const askDeleteLesson = (lesson: LessonNode) =>
-    setConfirm({
+    confirm({
       title: `Delete ${adapter.terminology.leafDocument}?`,
       message: `"${lesson.title}" and its saved draft will be permanently deleted. This cannot be undone.`,
       confirmLabel: "Delete",
@@ -841,7 +772,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   };
 
   const askDeleteBadge = (badge: BadgeNode) =>
-    setConfirm({
+    confirm({
       title: `Delete ${adapter.terminology.leafBadge ?? "Badge"}?`,
       message: `"${badge.title}" and its saved design will be permanently deleted. This cannot be undone.`,
       confirmLabel: "Delete",
@@ -850,7 +781,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     });
 
   const askRemoveExam = (exam: ExamSummary) =>
-    setConfirm({
+    confirm({
       title: "Remove this exam?",
       message: `"${exam.title}" will no longer be attached here. It becomes a standalone exam — nothing about the exam itself (questions, attempts, results) is deleted.`,
       confirmLabel: "Remove",
@@ -982,7 +913,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           contentType={adapter.terminology.root === "Course" ? "course" : "workshop"}
         />
       )}
-      <ConfirmDialog options={confirm} onClose={() => setConfirm(null)} />
+      {confirmDialog}
       {extraDialogs}
 
       <StudioEditorTopBar
@@ -1005,22 +936,26 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             <span className="block max-w-[40vw] truncate text-[#14142b]">{title || adapter.terminology.root}</span>
           )
         }
-        actions={
-          <>
-            <StudioPresenceStack collaborators={collabState.collaborators} />
-            {contentId && <StudioShareControl onOpenCollaborators={() => setCollaboratorsModalOpen(true)} />}
-            <StudioPanelToggle open={panel.open} onToggle={() => panel.setOpen((prev: boolean) => !prev)} />
-            {headerExtras?.({ activeLessonId, activeModuleId }).beforeSubmit}
-            {status !== "SUBMITTED" && (
-              <StudioActionButton
-                onClick={askSubmit}
-                icon={<Send size={14} />}
-                label={status === "PUBLISHED" || status === "APPROVED" ? "Submit Updates" : status === "REJECTED" ? "Resubmit" : "Submit"}
-              />
-            )}
-            {headerExtras?.({ activeLessonId, activeModuleId }).afterSubmit}
-          </>
+        collaborators={collabState.collaborators}
+        share={contentId ? { onOpenCollaborators: () => setCollaboratorsModalOpen(true) } : null}
+        panelOpen={panel.open}
+        onTogglePanel={() => panel.setOpen((prev: boolean) => !prev)}
+        workspaceActionsBefore={headerExtras?.({ activeLessonId, activeModuleId }).beforeSubmit}
+        primaryAction={
+          status !== "SUBMITTED"
+            ? {
+                onClick: askSubmit,
+                icon: <Send size={14} />,
+                label:
+                  status === "PUBLISHED" || status === "APPROVED"
+                    ? "Submit Updates"
+                    : status === "REJECTED"
+                      ? "Resubmit"
+                      : "Submit",
+              }
+            : null
         }
+        workspaceActionsAfter={headerExtras?.({ activeLessonId, activeModuleId }).afterSubmit}
       />
 
       <StudioRightPanel

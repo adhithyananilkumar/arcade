@@ -20,7 +20,6 @@
 export { QuizEditor } from "./components/QuizEditor";
 export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
-export { SaveIndicator } from "./components/SaveIndicator";
 export { QuestionTagEditor } from "./components/QuestionTagEditor";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
 // Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives
