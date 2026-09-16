@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { roleService, Role } from "@/domains/identity";
 import { AuthService } from '@/infrastructure/auth/auth.service';
 import { toast } from 'sonner';
-import { Plus, ShieldCheck, Edit3, Trash2, Users } from 'lucide-react';
+import { Plus, ShieldCheck, Edit3, Trash2, Users, Search } from 'lucide-react';
 import { usePermissions } from "@/domains/identity";
 import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
 import { SURFACE_LABEL } from '@/domains/iam/policy-editor/PermissionSelector';
@@ -18,6 +18,7 @@ export function PolicyManager() {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [deletingRole, setDeletingRole] = useState<Role | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [search, setSearch] = useState('');
 
   const { hasPermission } = usePermissions();
   const canManagePolicies = hasPermission('platform.roles.manage');
@@ -98,28 +99,56 @@ export function PolicyManager() {
 
   if (loading) return <div className="text-sm text-gray-500">Loading policies...</div>;
 
+  const filteredRoles = roles.filter((role) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      role.displayName.toLowerCase().includes(q) ||
+      (role.description ?? '').toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <p className="text-sm font-semibold text-gray-900">Policies</p>
           <p className="text-xs text-gray-500">Reusable access definitions for Platform Console users.</p>
         </div>
-        {canManagePolicies && (
-          <button
-            onClick={() => {
-              setEditingRole(null);
-              setIsModalOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg transition-colors shrink-0"
-          >
-            <Plus size={16} /> Create Policy
-          </button>
-        )}
+        <div className="flex gap-2">
+          <div className="relative flex-1 sm:w-64">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-[#14142b]/30 focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm"
+              placeholder="Search policies…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {canManagePolicies && (
+            <button
+              onClick={() => {
+                setEditingRole(null);
+                setIsModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#14142b] hover:bg-[#232735] rounded-lg transition-colors shrink-0"
+            >
+              <Plus size={16} /> Create Policy
+            </button>
+          )}
+        </div>
       </div>
 
+      {filteredRoles.length === 0 ? (
+        <div className="p-10 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
+          <p className="text-sm text-gray-500">No policies match &quot;{search}&quot;.</p>
+        </div>
+      ) : (
       <div className="grid gap-4 md:grid-cols-2">
-        {roles.map(role => {
+        {filteredRoles.map(role => {
           const surfaces = Array.from(
             new Set((role.permissions ?? []).map((p) => SURFACE_LABEL[(p.surface as ConsoleSurface) ?? 'SYSTEM']))
           );
@@ -184,6 +213,7 @@ export function PolicyManager() {
           );
         })}
       </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

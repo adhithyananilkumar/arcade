@@ -110,14 +110,6 @@ export class UserService {
     return data;
   }
 
-  static async acceptContentCreatorInvite(): Promise<void> {
-    await api.post('/api/v1/content-creators/accept');
-  }
-
-  static async declineContentCreatorInvite(): Promise<void> {
-    await api.post('/api/v1/content-creators/decline');
-  }
-
   static async checkUsername(username: string): Promise<{ available: boolean; suggestions: string[] }> {
     const data = await api.get<{ available: boolean; suggestions: string[] }>(`/api/v1/users/check-username?username=${encodeURIComponent(username)}`);
     return data;

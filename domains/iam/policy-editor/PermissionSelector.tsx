@@ -17,9 +17,9 @@ const SURFACE_LABEL: Record<ConsoleSurface, string> = {
 
 const SURFACE_DESCRIPTION: Record<ConsoleSurface, string> = {
   CHANNELS: 'Manage platform channels and channel access',
-  REVIEWS: 'Review platform and course content',
-  CONTENT_MANAGE: 'Manage platform content and categories',
-  EXAMS: 'Manage exam schedules for published courses',
+  REVIEWS: 'Review submitted courses and content, and publish or reject them',
+  CONTENT_MANAGE: 'Suspend, unsuspend, and organize published courses',
+  EXAMS: 'Create and edit exam schedule time slots for published courses',
   PAYMENTS: 'Financial, billing, and analytics operations',
   INBOX: 'Manage support and report submissions',
   IAM: 'Manage platform access and policies',

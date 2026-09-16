@@ -16,7 +16,7 @@ export default function ArcConsoleLayout({
   const { user } = useAuthStore();
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviews = AuthorizationService.canReviewContent(user);
-  const showPlatformReviews = AuthorizationService.canReviewPlatformContent(user);
+  const showContentManage = AuthorizationService.canManageContent(user);
   const showExams = AuthorizationService.canManageExams(user);
   const showPayments = AuthorizationService.canViewPayments(user);
   const showIam = AuthorizationService.canAccessIamConsole(user);
@@ -29,7 +29,7 @@ export default function ArcConsoleLayout({
     ...(showReviews
       ? [{ name: 'Reviews', href: '/console/reviews', icon: ClipboardCheck, iconBg: 'bg-[#fef08a] text-[#854d0e]' }]
       : []),
-    ...(showPlatformReviews
+    ...(showContentManage
       ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843]' }]
       : []),
     ...(showExams

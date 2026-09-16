@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UserService, roleService, type Role } from '@/domains/identity';
-import { User } from '@/infrastructure/auth/auth.store';
+import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AccessPoliciesPanel, AssignPolicyDialog, ConfirmDialog } from '@/domains/iam';
 import { AuditService, type RoleAssignmentAuditLog } from '@/infrastructure/monitoring/audit.service';
 import { ApiError } from '@/infrastructure/http/api';
@@ -105,6 +105,14 @@ export function UserAccessDrawer({
     try {
       const updated = await fn();
       setUser(updated);
+      // Managing your OWN access (e.g. an owner testing a policy on their own account) must take
+      // effect immediately, not just after the next token refresh/relogin — the backend
+      // re-evaluates permissions live on every request, but the frontend's nav/page gating reads
+      // the global auth store's cached `user.permissions`, which otherwise only updates when the
+      // access token naturally refreshes.
+      if (updated.id === useAuthStore.getState().user?.id) {
+        useAuthStore.getState().updateUser(updated);
+      }
       toast.success(successMessage);
       onChanged?.();
     } catch (error: unknown) {
@@ -154,6 +162,7 @@ export function UserAccessDrawer({
   };
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="!max-w-xl w-full sm:!max-w-xl">
         <SheetHeader>
@@ -225,27 +234,32 @@ export function UserAccessDrawer({
           )}
         </div>
       </SheetContent>
-
-      {assignOpen && user && (
-        <AssignPolicyDialog
-          userName={`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email}
-          availablePolicies={availablePolicies}
-          busy={busy}
-          onAssign={handleAssignPolicy}
-          onClose={() => setAssignOpen(false)}
-        />
-      )}
-
-      <ConfirmDialog
-        open={pendingOwnerAssign !== null}
-        title={`Grant Platform Owner to ${user?.firstName ?? 'this user'}?`}
-        description={<p>This grants unrestricted access to every permission on the platform. Grant with care.</p>}
-        danger
-        busy={busy}
-        confirmLabel="Grant Platform Owner"
-        onConfirm={confirmOwnerAssign}
-        onCancel={() => setPendingOwnerAssign(null)}
-      />
     </Sheet>
+
+    {/* Deliberately rendered OUTSIDE <Sheet>: Base UI's Dialog.Root applies inert/dimming to
+        its own subtree while open, which made a nested dialog rendered as a Sheet child look
+        washed out (the whole modal, not just its backdrop). As independent siblings, these two
+        overlays get their own unaffected stacking context. */}
+    {assignOpen && user && (
+      <AssignPolicyDialog
+        userName={`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email}
+        availablePolicies={availablePolicies}
+        busy={busy}
+        onAssign={handleAssignPolicy}
+        onClose={() => setAssignOpen(false)}
+      />
+    )}
+
+    <ConfirmDialog
+      open={pendingOwnerAssign !== null}
+      title={`Grant Platform Owner to ${user?.firstName ?? 'this user'}?`}
+      description={<p>This grants unrestricted access to every permission on the platform. Grant with care.</p>}
+      danger
+      busy={busy}
+      confirmLabel="Grant Platform Owner"
+      onConfirm={confirmOwnerAssign}
+      onCancel={() => setPendingOwnerAssign(null)}
+    />
+    </>
   );
 }

@@ -64,7 +64,7 @@ export default function ContentManagePage() {
   });
   const [savingCategory, setSavingCategory] = useState(false);
 
-  if (!AuthorizationService.canReviewPlatformContent(user)) {
+  if (!AuthorizationService.canManageContent(user)) {
     notFound();
   }
 
