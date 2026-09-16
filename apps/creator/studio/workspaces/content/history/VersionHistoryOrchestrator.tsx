@@ -31,6 +31,10 @@ interface VersionHistoryOrchestratorProps {
   embedded?: boolean;
 }
 
+/**
+ * VersionHistoryOrchestrator: Connects lesson document version history and course status
+ * history to VersionHistoryPanel. Owned by the content workspace (Course/Event lessons).
+ */
 export function VersionHistoryOrchestrator({
   lessonId,
   open,
@@ -89,6 +93,7 @@ export function VersionHistoryOrchestrator({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadVersions();
       if (isSuView || courseId) {
         loadStatusHistory();

@@ -1,9 +1,31 @@
-# Arcade Studio Architecture
+# Arcade Creator Architecture & 4-Layer Taxonomy
+
+## The 4-Layer Architecture
+
+The Creator application is structured around a strict 4-layer taxonomy:
+
+| Layer | Path | Responsibility | Question Answered | Key Components |
+|---|---|---|---|---|
+| **1. Editor** | `apps/creator/editor/` | Reusable document & rich-text editing engine | *How* content is edited & rendered | `ArcadeEditor`, Tiptap extensions, Yjs bindings, `uploadQueueStore`, `editor.css` |
+| **2. Studio Core** | `apps/creator/studio/core/` | Centralized authoring application chrome & infrastructure | *Where* the authoring experience happens | `StudioShell` (Frame, TopBar, Body), `StudioHeader`, `StudioRightPanel`, `useStudioPanel`, `useStudioConfirm`, `useUnsavedChangesGuard` |
+| **3. Workspace** | `apps/creator/studio/workspaces/` | Domain authoring workflows & tree management | *Which* content domain is being managed | `CourseWorkspace`, `EventWorkspace`, `ExamWorkspace`, `ContentEditorRuntime`, adapters, `ContentSubmitDialog` |
+| **4. Domain / API** | `domains/*`, `infrastructure/http/api` | Business entities, REST queries, backend persistence | *What* the content is & how it persists | `domains/courses`, `domains/assessments`, `domains/publishing`, `api` |
+
+### Architectural Invariants
+
+* **Studio ≠ Editor**: `editor/` is the independent editing engine, NOT a second Studio. Studio consumes Editor engines; the Learner app also consumes `ArcadeEditor`.
+* **Editor Dependency Rule**: Studio → Editor is allowed; **Editor → Studio is forbidden**.
+* **Studio Core Dependency Rule**: Studio Core is strictly domain-neutral; **Studio Core → Workspaces is forbidden**.
+* **Workspace Isolation**: Workspaces depend on Studio Core and their respective domain; **Workspace → Workspace dependencies are forbidden** (no Course → Event, Exam → Course, etc.).
+* **Canonical Top Bar**: Exactly one `StudioEditorTopBar` implementation renders across Course, Event, and Exam. Workspace-specific actions compose through typed data props, never custom headers.
+* **Consolidated Share**: TopBar Share activates the centralized Studio Team panel (`StudioRightPanel`), eliminating duplicate collaborator modals.
+
+---
 
 ## Studio Core (`apps/creator/studio/core/`)
 
 Generic editor infrastructure with zero knowledge of Course, Event, Exam, or any future content
-type. Verified by `ContentEditorRuntime.test.tsx`: no file here imports from `studio/workspaces/`.
+type. Verified by `ContentEditorRuntime.test.tsx` and `StudioTopBar.architecture.test.tsx`: no file here imports from `studio/workspaces/`.
 
 | File | Owns |
 |---|---|
@@ -11,6 +33,7 @@ type. Verified by `ContentEditorRuntime.test.tsx`: no file here imports from `st
 | `StudioHeader.tsx` | `StudioPresenceStack`, `StudioShareControl`, `StudioPanelToggle`, `StudioActionButton`, `StudioIconAction` — every header control. |
 | `StudioRightPanel.tsx` | The floating Status/History/Team panel. |
 | `useStudioPanel.ts` | Collaborator list + status history + invite/remove state, parameterized only by two API paths. |
+| `useStudioConfirm.tsx` | Destructive action confirmation dialog hook. |
 | `useUnsavedChangesGuard.ts` | `beforeunload` protection for a dirty flag. |
 
 **The viewport contract.** `StudioEditorBody`'s `<main>` is the one element that owns top clearance,
@@ -65,17 +88,23 @@ workspaces/
 ├── content/                     Shared editing engine for Course + Event
 │   ├── ContentEditorRuntime.tsx  the engine: tree, lesson editing, history, collab, exams
 │   ├── types.ts                  ContentDataAdapter contract
-│   └── adapters/
-│       ├── CourseAdapter.ts
-│       └── EventAdapter.ts
+│   ├── adapters/
+│   │   ├── CourseAdapter.ts
+│   │   └── EventAdapter.ts
+│   ├── dialogs/
+│   │   └── ContentSubmitDialog.tsx Submit-for-review modal (pricing, cover image, notes)
+│   └── history/
+│       └── VersionHistoryOrchestrator.tsx Lesson version snapshots & course audit
 ├── course/
-│   └── CourseWorkspace.tsx       Course's adapter + category selector + submit/back — 107 lines
+│   └── CourseWorkspace.tsx       Course's adapter + category selector + submit/back
 ├── event/
-│   ├── EventWorkspace.tsx        Event's adapter + day dialog + submit/back — 100 lines
+│   ├── EventWorkspace.tsx        Event's adapter + day dialog + submit/back
 │   └── SessionSettingsDialog.tsx Event's own day-schedule dialog
 └── exam/
     ├── ExamWorkspace.tsx
     ├── QuestionEditorCard.tsx, QuestionListPreview.tsx
+    ├── components/
+    │   └── ChannelAccessModal.tsx Exam-specific channel team view
     └── management/               plans, pools, preview, settings, attempts
 ```
 
@@ -158,7 +187,7 @@ through one shared persistence call:
 
 ## History
 
-Real, backend-persisted version history (`VersionHistoryOrchestrator` → `documents`/`document_versions`)
+Real, backend-persisted version history (`workspaces/content/history/VersionHistoryOrchestrator` → `documents`/`document_versions`)
 exists for Course and Event lessons — unchanged, still gated by `activeLessonId`. **Exam has no
 equivalent and none is faked.** Its History/Team tabs render `unavailableNotes` explaining exactly
 why (`ExamWorkspace.tsx`): questions aren't `Document` rows, and the collaboration server rejects

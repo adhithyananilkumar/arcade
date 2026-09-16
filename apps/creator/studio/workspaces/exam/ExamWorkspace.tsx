@@ -5,7 +5,7 @@
  * Arcade Frontend Architecture
  * Layer: Apps
  * App: Creator
- * Type: Orchestrator
+ * Type: Workspace
  *
  * Purpose:
  * Exam question authoring, hosted by the shared Arcade Studio.
@@ -45,7 +45,7 @@ import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
-import { ChannelAccessModal } from "@/apps/creator/shared/components/ChannelAccessModal";
+import { ChannelAccessModal } from "./components/ChannelAccessModal";
 import {
   createSection,
   deleteSection,

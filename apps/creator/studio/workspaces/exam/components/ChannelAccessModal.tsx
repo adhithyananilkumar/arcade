@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * The Exam Studio's "who can edit this" — read-only, unlike `ContentCollaboratorsModal`. Exam has
+ * The Exam Studio's "who can edit this" — read-only modal. Exam has
  * no per-item collaborator/invite system of its own (access is entirely channel-scoped, via
  * `channel.exams.manage[.own]`); this shows the real channel roster instead of a fake invite form
  * for a feature that doesn't exist. Inviting/removing staff stays where it already lives — the

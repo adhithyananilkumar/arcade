@@ -38,7 +38,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
-import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
+import { VersionHistoryOrchestrator } from "./history/VersionHistoryOrchestrator";
 import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/editor";
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
@@ -57,8 +57,7 @@ import {
 import type { ExamResponse } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
-import { CourseSubmitDialog } from "@/apps/creator/components/CourseSubmitDialog";
-import { ContentCollaboratorsModal } from "@/apps/creator/shared/components/ContentCollaboratorsModal";
+import { ContentSubmitDialog } from "./dialogs/ContentSubmitDialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -120,7 +119,7 @@ export interface ContentEditorRuntimeProps {
   backHref: string;
   /**
    * Executes the actual submit-for-review API call and returns the new status. The confirmation
-   * dialog (CourseSubmitDialog) is shared; only what happens when its form is confirmed differs.
+   * dialog (ContentSubmitDialog) is shared; only what happens when its form is confirmed differs.
    */
   onSubmit: (data: {
     coverImageUrl?: string;
@@ -266,13 +265,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const [status, setStatus] = useState<string>("DRAFT");
   const [hasDraftChanges, setHasDraftChanges] = useState<boolean>(false);
   // Raw content-type-specific payload (CourseResponse for Course, the Event object for Event);
-  // CourseSubmitDialog's own `course` prop is already typed loosely for the same reason.
+  // ContentSubmitDialog's own `course` prop is already typed loosely for the same reason.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [courseData, setCourseData] = useState<any>(null);
   const [exams, setExams] = useState<ExamSummary[]>([]);
   const [addingExam, setAddingExam] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
-  const [collaboratorsModalOpen, setCollaboratorsModalOpen] = useState(false);
   const [collabState, setCollabState] = useState<{ status: CollabStatus; collaborators: ActiveCollaborator[] }>({
     status: "disabled",
     collaborators: [],
@@ -897,20 +895,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   return (
     <StudioEditorFrame>
       {submitDialogOpen && (
-        <CourseSubmitDialog
+        <ContentSubmitDialog
           course={courseData}
-          contentType={adapter.terminology.root === "Course" ? "course" : "workshop"}
+          contentType={adapter.terminology.root === "Course" ? "course" : "event"}
           open={submitDialogOpen}
           onClose={() => setSubmitDialogOpen(false)}
           onSubmit={handleSubmit}
-        />
-      )}
-      {collaboratorsModalOpen && contentId && (
-        <ContentCollaboratorsModal
-          isOpen={collaboratorsModalOpen}
-          onClose={() => setCollaboratorsModalOpen(false)}
-          contentId={contentId}
-          contentType={adapter.terminology.root === "Course" ? "course" : "workshop"}
         />
       )}
       {confirmDialog}
@@ -937,7 +927,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           )
         }
         collaborators={collabState.collaborators}
-        share={contentId ? { onOpenCollaborators: () => setCollaboratorsModalOpen(true) } : null}
+        share={
+          contentId
+            ? {
+                onOpenCollaborators: () => {
+                  panel.setTab("team");
+                  panel.setOpen(true);
+                },
+              }
+            : null
+        }
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen((prev: boolean) => !prev)}
         workspaceActionsBefore={headerExtras?.({ activeLessonId, activeModuleId }).beforeSubmit}

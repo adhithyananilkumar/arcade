@@ -5,26 +5,21 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/shared/design-system/ui/button";
 import { Input } from "@/shared/design-system/ui/input";
 import { CourseResponse } from "@/shared/types/api.types";
-import { X, Plus, Clock, CalendarDays, IndianRupee, Image as ImageIcon } from "lucide-react";
+import { IndianRupee, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { toMinorUnits, fromMinorUnits } from "@/shared/utils/money";
 
-interface ExamScheduleSlot {
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-}
-
-interface CourseSubmitDialogProps {
+export interface ContentSubmitDialogProps {
   course?: CourseResponse;
-  contentType?: 'course' | 'workshop' | 'question-bank';
+  contentType?: 'course' | 'event' | 'workshop' | 'question-bank';
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { coverImageUrl?: string; pricingModel: 'FREE' | 'PAID'; priceAmount?: number; message?: string }) => Promise<void>;
 }
 
-export function CourseSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit }: CourseSubmitDialogProps) {
+export function ContentSubmitDialog({ course, contentType = 'course', open, onClose, onSubmit }: ContentSubmitDialogProps) {
+  const isEvent = contentType === 'event' || contentType === 'workshop';
   const [coverImageUrl, setCoverImageUrl] = useState(course?.coverImageUrl || "");
   const [pricingModel, setPricingModel] = useState<'FREE' | 'PAID'>(course?.pricingModel || 'FREE');
   // Displayed/edited as a decimal amount; converted to minor units at the API boundary.
@@ -32,15 +27,6 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
     course?.priceAmount ? fromMinorUnits(course.priceAmount) : ""
   );
   const [message, setMessage] = useState("");
-  
-  const [schedule, setSchedule] = useState<ExamScheduleSlot[]>(() => {
-    try {
-      if (course?.examSchedule) {
-        return JSON.parse(course.examSchedule);
-      }
-    } catch (e) {}
-    return [];
-  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -52,7 +38,7 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
     setIsUploading(true);
     try {
       // 1. Get presigned URL
-      const { key, uploadUrl, publicUrl } = await api.post<any>('/api/media/presign', {
+      const { key, uploadUrl, publicUrl } = await api.post<{ key: string; uploadUrl: string; publicUrl: string }>('/api/media/presign', {
         fileName: file.name,
         contentType: file.type
       });
@@ -107,7 +93,7 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
       onClose();
     } catch (e) {
       console.error(e);
-      toast.error(`Failed to submit ${contentType}.`);
+      toast.error(`Failed to submit ${isEvent ? 'event' : 'course'}.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -117,9 +103,9 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
     <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Submit {contentType === 'workshop' ? 'Event' : 'Course'} for Review</DialogTitle>
+          <DialogTitle className="text-xl">Submit {isEvent ? 'Event' : 'Course'} for Review</DialogTitle>
           <DialogDescription>
-            Configure the final details before sending your {contentType === 'workshop' ? 'workshop' : 'course'} for approval.
+            Configure the final details before sending your {isEvent ? 'event' : 'course'} for approval.
           </DialogDescription>
         </DialogHeader>
 
@@ -127,62 +113,66 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
           {contentType === 'course' && (
             <>
               {/* Thumbnail Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800"><ImageIcon size={16}/> Course Thumbnail</h3>
-            <div className="flex gap-4 items-start">
-              <div className="flex-1 space-y-2">
-                <Input 
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-                <p className="text-xs text-slate-500">{isUploading ? "Uploading..." : "Upload a cover image for your course."}</p>
-              </div>
-              {coverImageUrl && (
-                <div className="w-32 h-20 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coverImageUrl} alt="Preview" className="w-full h-full object-cover" />
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
+                  <ImageIcon size={16}/> Course Thumbnail
+                </h3>
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1 space-y-2">
+                    <Input 
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    <p className="text-xs text-slate-500">{isUploading ? "Uploading..." : "Upload a cover image for your course."}</p>
+                  </div>
+                  {coverImageUrl && (
+                    <div className="w-32 h-20 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={coverImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Pricing Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800"><IndianRupee size={16}/> Pricing</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <select 
-                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 h-9"
-                  value={pricingModel}
-                  onChange={(e) => setPricingModel(e.target.value as 'FREE' | 'PAID')}
-                >
-                  <option value="FREE">Free</option>
-                  <option value="PAID">Paid</option>
-                </select>
-              </div>
-              {pricingModel === 'PAID' && (
-                <div className="space-y-2 relative">
-                  <span className="absolute left-3 top-2 text-slate-500">$</span>
-                  <Input 
-                    type="number" 
-                    min="0"
-                    step="0.01"
-                    className="pl-7"
-                    placeholder="e.g. 49.99"
-                    value={priceAmount}
-                    onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
-                  />
+              {/* Pricing Section */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold flex items-center gap-2 text-slate-800">
+                  <IndianRupee size={16}/> Pricing
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <select 
+                      className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300 h-9"
+                      value={pricingModel}
+                      onChange={(e) => setPricingModel(e.target.value as 'FREE' | 'PAID')}
+                    >
+                      <option value="FREE">Free</option>
+                      <option value="PAID">Paid</option>
+                    </select>
+                  </div>
+                  {pricingModel === 'PAID' && (
+                    <div className="space-y-2 relative">
+                      <span className="absolute left-3 top-2 text-slate-500">$</span>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        step="0.01"
+                        className="pl-7"
+                        placeholder="e.g. 49.99"
+                        value={priceAmount}
+                        onChange={(e) => setPriceAmount(e.target.value ? parseFloat(e.target.value) : "")}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-              {pricingModel === 'PAID' && (
-                <p className="mt-2 text-xs text-[#14142b] bg-slate-50 border border-slate-200 p-2 rounded flex items-start gap-1.5 font-medium">
-                  <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
-                </p>
-              )}
-            </div>
+                {pricingModel === 'PAID' && (
+                  <p className="mt-2 text-xs text-[#14142b] bg-slate-50 border border-slate-200 p-2 rounded flex items-start gap-1.5 font-medium">
+                    <span className="text-[10px] mt-[1px]">💡</span> Note: A 20% platform fee will be applied to all paid courses.
+                  </p>
+                )}
+              </div>
             </>
           )}
 
@@ -197,7 +187,6 @@ export function CourseSubmitDialog({ course, contentType = 'course', open, onClo
               onChange={(e) => setMessage(e.target.value)}
             />
           </div>
-
         </div>
 
         <DialogFooter className="pt-2">
