@@ -9,7 +9,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Lock, AlertTriangle, Calendar, BookOpen } from 'lucide-react';
+import { CheckCircle2, Lock, AlertTriangle, BookOpen } from 'lucide-react';
 import type { LearnerEnrollmentSummary } from '@/domains/enrollment';
 import {
   STATUS_TONE_CLASSES,
@@ -23,6 +23,8 @@ import {
   formatDate,
 } from './enrollmentPresentation';
 
+import { LetterVectorArt } from './LetterVectorArt';
+
 export function LibraryCard({
   item,
   index,
@@ -35,7 +37,6 @@ export function LibraryCard({
   const href = resourceHrefFor(item);
   const openable = isOpenable(item);
   const enrolledOn = formatDate(item.enrolledAt);
-  const TypeIcon = item.resourceType === 'EVENT' ? Calendar : BookOpen;
   const pct = progress.kind === 'bar' ? progress.percent : null;
 
   return (
@@ -55,32 +56,12 @@ export function LibraryCard({
       />
 
       <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
-        {/* Prominent Large Cover Image Banner */}
-        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-sm">
-          {item.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.imageUrl}
-              alt=""
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div
-              aria-hidden
-              className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${placeholderTintFor(item.resourceId)}`}
-            >
-              <span className="text-4xl font-black text-slate-400 select-none">
-                {initialFor(item.title)}
-              </span>
-            </div>
-          )}
-
-          {/* Type Badge on Top-Left */}
-          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-[#12141C]/80 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-white shadow-xs">
-            <TypeIcon size={12} className="text-[#4C6FFF]" />
-            {item.resourceType === 'EVENT' ? 'Event' : 'Course'}
-          </span>
+        {/* Vector Letter Banner */}
+        <div className="relative h-44 sm:h-48 w-full shrink-0 overflow-hidden rounded-tl-[1.75rem] rounded-br-[1.75rem] rounded-tr-md rounded-bl-md border border-slate-200/70 dark:border-slate-800 shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+          <LetterVectorArt
+            title={item.title}
+            id={item.resourceId || item.enrollmentId}
+          />
         </div>
 
         {/* Title and Status details */}
@@ -115,8 +96,8 @@ export function LibraryCard({
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
             <span className="text-slate-500 dark:text-slate-400">Course Progress</span>
-            {pct !== null ? (
-              <span className="font-bold text-[#14142b] dark:text-white">{pct}%</span>
+            {progress.kind === 'bar' ? (
+              <span className="font-bold text-[#14142b] dark:text-white">{progress.percent}%</span>
             ) : (
               <span className="text-slate-400 dark:text-slate-500 font-medium">{progress.label}</span>
             )}

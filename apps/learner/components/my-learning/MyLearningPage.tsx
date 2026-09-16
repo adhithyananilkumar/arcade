@@ -31,6 +31,8 @@ import {
   Sparkles,
   ChevronDown,
   Check,
+  Search,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import {
@@ -44,7 +46,6 @@ import TextType from '@/shared/design-system/ui/TextType/TextType';
 import { LibraryCard } from './LibraryCard';
 import { EventRegistrationCard } from './EventRegistrationCard';
 import { LearningActivityPanel } from './LearningActivityPanel';
-import { UserInfoCard } from './UserInfoCard';
 import { progressDisplayFor, resourceHrefFor } from './enrollmentPresentation';
 
 const PAGE_SIZE = 12;
@@ -55,6 +56,7 @@ const SORT_OPTIONS = [
   { id: 'recent-activity', label: 'Recent Activity', sort: 'updatedAt', direction: 'desc' },
   { id: 'name-asc', label: 'Name [A-Z]', sort: 'title', direction: 'asc' },
   { id: 'name-desc', label: 'Name [Z-A]', sort: 'title', direction: 'desc' },
+  { id: 'completed', label: 'Completed', sort: 'completedAt', direction: 'desc' },
   { id: 'completion-date', label: 'Last Completion date', sort: 'completedAt', direction: 'desc' },
   { id: 'enrollment-date', label: 'Enrollment Date', sort: 'enrolledAt', direction: 'desc' },
   { id: 'due-date', label: 'Due Date', sort: 'dueDate', direction: 'asc' },
@@ -84,9 +86,19 @@ export default function MyLearningPage() {
   const upcomingEventsQuery = useMyEventsQuery('UPCOMING', eventPage, PAGE_SIZE, isAuthenticated);
   const pastEventsQuery = useMyEventsQuery('PAST', 0, PAGE_SIZE, isAuthenticated);
 
-  const courses = useMemo(() => coursesQuery.data?.content ?? [], [coursesQuery.data]);
+  const rawCourses = useMemo(() => coursesQuery.data?.content ?? [], [coursesQuery.data]);
   const upcomingEventsRaw = useMemo(() => upcomingEventsQuery.data?.content ?? [], [upcomingEventsQuery.data]);
   const pastEventsRaw = useMemo(() => pastEventsQuery.data?.content ?? [], [pastEventsQuery.data]);
+
+  // When 'completed' filter is selected, prioritize/filter completed courses or sort by completed
+  const displayCourses = useMemo(() => {
+    if (sortId === 'completed') {
+      const completed = rawCourses.filter((c) => c.progressState === 'COMPLETED');
+      const others = rawCourses.filter((c) => c.progressState !== 'COMPLETED');
+      return [...completed, ...others];
+    }
+    return rawCourses;
+  }, [rawCourses, sortId]);
 
   // Sort events based on selected sort
   const sortEvents = (list: LearnerEventRegistration[]) => {
@@ -107,24 +119,36 @@ export default function MyLearningPage() {
     );
   };
 
-  const upcomingEvents = useMemo(
-    () => sortEvents(upcomingEventsRaw.filter((e) => e.upcoming !== false)),
-    [upcomingEventsRaw, sortId]
-  );
-  const pastEvents = useMemo(
-    () => sortEvents(pastEventsRaw.filter((e) => e.upcoming === false)),
-    [pastEventsRaw, sortId]
-  );
+  const displayEvents = useMemo(() => {
+    const upcoming = upcomingEventsRaw.filter((e) => e.upcoming !== false);
+    const past = pastEventsRaw.filter((e) => e.upcoming === false);
+    const all = sortId === 'completed' ? [...past, ...upcoming] : [...upcoming, ...past];
+    return sortEvents(all);
+  }, [upcomingEventsRaw, pastEventsRaw, sortId]);
 
-  // Categorize active vs completed courses
-  const completedCourses = useMemo(
-    () => courses.filter((c) => c.progressState === 'COMPLETED'),
-    [courses]
-  );
-  const activeCourses = useMemo(
-    () => courses.filter((c) => c.progressState !== 'COMPLETED'),
-    [courses]
-  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  // Filter courses by search query
+  const filteredCourses = useMemo(() => {
+    if (!searchQuery.trim()) return displayCourses;
+    const q = searchQuery.toLowerCase().trim();
+    return displayCourses.filter((c) => (c.title ?? '').toLowerCase().includes(q));
+  }, [displayCourses, searchQuery]);
+
+  // Filter events by search query
+  const filteredEvents = useMemo(() => {
+    if (!searchQuery.trim()) return displayEvents;
+    const q = searchQuery.toLowerCase().trim();
+    return displayEvents.filter((e) => (e.title ?? '').toLowerCase().includes(q));
+  }, [displayEvents, searchQuery]);
 
   return (
     <div className="relative min-h-screen w-full text-slate-900 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-900/40">
@@ -159,7 +183,7 @@ export default function MyLearningPage() {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-20 space-y-10 sm:space-y-12">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-20 space-y-6 sm:space-y-8">
         {/* PAGE HEADER / TITLE */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -167,7 +191,7 @@ export default function MyLearningPage() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="pb-1 text-center flex flex-col items-center justify-center"
         >
-          <style jsx global>{`
+          <style>{`
             @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Satisfy&display=swap');
           `}</style>
 
@@ -238,61 +262,121 @@ export default function MyLearningPage() {
           </div>
         </motion.div>
 
-        {/* ── SECTION 1: USER INFORMATION BOX ─────────────────────────────────── */}
-        <section aria-label="User Information">
-          <UserInfoCard
-            user={user}
-            completedCoursesCount={completedCourses.length}
-            activeCoursesCount={activeCourses.length}
-            achievementsCount={3}
-          />
-        </section>
+        {/* ── TOOLBAR: LEFT SEARCH | CENTER CAPSULE TABS | RIGHT SORT ── */}
+        <div className="relative flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
+          {/* LEFT: Search Icon Button (expands on click) */}
+          <div className="w-full md:w-72 flex items-center justify-start shrink-0">
+            <AnimatePresence initial={false}>
+              {isSearchOpen || searchQuery ? (
+                <motion.div
+                  key="search-input-field"
+                  initial={{ opacity: 0, width: '40px' }}
+                  animate={{ opacity: 1, width: '100%' }}
+                  exit={{ opacity: 0, width: '40px' }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="relative w-full flex items-center"
+                >
+                  <Search
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+                  />
+                  <input
+                    ref={(el) => {
+                      searchInputRef.current = el;
+                      if (el) {
+                        el.focus();
+                      }
+                    }}
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        setSearchQuery('');
+                        setIsSearchOpen(false);
+                      }
+                    }}
+                    placeholder={tab === 'courses' ? 'Search courses...' : 'Search events...'}
+                    className="w-full pl-9 pr-8 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm bg-transparent border border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-300 dark:focus:ring-slate-700 transition-all font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setIsSearchOpen(false);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    aria-label="Close search"
+                    title="Close search"
+                  >
+                    <X size={15} />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="search-icon-toggle"
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration: 0.15 }}
+                  type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors flex items-center justify-center cursor-pointer"
+                  aria-label="Open search"
+                  title="Search"
+                >
+                  <Search size={21} className="stroke-[2.2]" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
 
-        {/* ── TABS & SORT CONTROLS (OUTSIDE & ABOVE THE LEARNING BOX) ────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          {/* TABS — Clean Roadmaps Navigation */}
+          {/* CENTER: Arcade Signature Geometric Asymmetric Tabs */}
           <div
             id="learning-items-section"
-            className="scroll-mt-24 flex items-center gap-6 sm:gap-8"
+            className="scroll-mt-24 flex items-center justify-center gap-2.5 sm:gap-3"
             role="tablist"
             aria-label="My Learning sections"
           >
             <TabButton
               active={tab === 'courses'}
-              onClick={() => setTab('courses')}
+              onClick={() => {
+                setTab('courses');
+                setSearchQuery('');
+              }}
               label="Courses"
             />
             <TabButton
               active={tab === 'events'}
-              onClick={() => setTab('events')}
+              onClick={() => {
+                setTab('events');
+                setSearchQuery('');
+              }}
               label="Events"
             />
           </div>
 
-          {/* Right: Same Sort By Dropdown for both Courses & Events */}
-          <SortDropdown
-            selectedId={sortId}
-            onChange={(id) => {
-              setSortId(id);
-              if (tab === 'courses') setCoursePage(0);
-              else setEventPage(0);
-            }}
-          />
+          {/* RIGHT: Sort Dropdown */}
+          <div className="w-full md:w-72 flex items-center justify-end shrink-0">
+            <SortDropdown
+              selectedId={sortId}
+              onChange={(id) => {
+                setSortId(id);
+                if (tab === 'courses') setCoursePage(0);
+                else setEventPage(0);
+              }}
+            />
+          </div>
         </div>
 
-        {/* ── SECTION 2: LEARNING ACTIVITY (ACTIVE / IN-PROGRESS BOX) ────────── */}
+        {/* ── SECTION 2: LEARNING ACTIVITY (ALL COURSES / EVENTS) ────────── */}
         <section
           aria-label="Learning Activity"
-          className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.04)] backdrop-blur-md space-y-6"
+          className="relative space-y-4 sm:space-y-5 pt-0"
         >
-          {/* Subtle ambient gradient inside box */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-[#2962D6]/8 via-[#2C83F5]/6 to-transparent blur-3xl"
-          />
-
           {/* Section Header */}
-          <div className="relative z-10 flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-1">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               Learning Activity
             </h2>
@@ -305,25 +389,29 @@ export default function MyLearningPage() {
                 isLoading={coursesQuery.isLoading}
                 isError={coursesQuery.isError}
                 onRetry={() => coursesQuery.refetch()}
-                isEmpty={activeCourses.length === 0}
+                isEmpty={filteredCourses.length === 0}
                 empty={
                   <EmptyState
                     icon={BookOpen}
-                    title="Your library is empty"
-                    body="Courses you enrol in will appear here with their real progress."
-                    ctaHref="/search"
-                    ctaLabel="Browse courses"
+                    title={searchQuery ? 'No matching courses' : 'Your library is empty'}
+                    body={
+                      searchQuery
+                        ? `No courses matched "${searchQuery}". Try a different search term.`
+                        : 'Courses you enrol in will appear here with their real progress.'
+                    }
+                    ctaHref={searchQuery ? undefined : '/search'}
+                    ctaLabel={searchQuery ? undefined : 'Browse courses'}
                   />
                 }
                 skeletonKind="grid"
               >
                 <motion.div
-                  key={`courses-${sortId}-${coursePage}`}
+                  key={`courses-${sortId}-${coursePage}-${searchQuery}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
                 >
-                  {activeCourses.map((item, idx) => (
+                  {filteredCourses.map((item, idx) => (
                     <LibraryCard key={item.enrollmentId} item={item} index={idx} />
                   ))}
                 </motion.div>
@@ -335,28 +423,35 @@ export default function MyLearningPage() {
               </SectionState>
             ) : (
               <SectionState
-                isLoading={upcomingEventsQuery.isLoading}
-                isError={upcomingEventsQuery.isError}
-                onRetry={() => upcomingEventsQuery.refetch()}
-                isEmpty={upcomingEvents.length === 0}
+                isLoading={upcomingEventsQuery.isLoading || pastEventsQuery.isLoading}
+                isError={upcomingEventsQuery.isError || pastEventsQuery.isError}
+                onRetry={() => {
+                  upcomingEventsQuery.refetch();
+                  pastEventsQuery.refetch();
+                }}
+                isEmpty={filteredEvents.length === 0}
                 empty={
                   <EmptyState
                     icon={Calendar}
-                    title="No upcoming events"
-                    body="Workshops, webinars and bootcamps you register for appear here."
-                    ctaHref="/events"
-                    ctaLabel="Browse events"
+                    title={searchQuery ? 'No matching events' : 'No upcoming events'}
+                    body={
+                      searchQuery
+                        ? `No events matched "${searchQuery}". Try a different search term.`
+                        : 'Workshops, webinars and bootcamps you register for appear here.'
+                    }
+                    ctaHref={searchQuery ? undefined : '/events'}
+                    ctaLabel={searchQuery ? undefined : 'Browse events'}
                   />
                 }
                 skeletonKind="grid"
               >
                 <motion.div
-                  key={`upcoming-events-${sortId}-${eventPage}`}
+                  key={`events-${sortId}-${eventPage}-${searchQuery}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
                 >
-                  {upcomingEvents.map((reg, idx) => (
+                  {filteredEvents.map((reg, idx) => (
                     <EventRegistrationCard
                       key={reg.enrollmentId}
                       registration={reg}
@@ -374,68 +469,7 @@ export default function MyLearningPage() {
           </div>
         </section>
 
-        {/* ── SECTION 3: COMPLETED ACTIVITY BOX ─────────────────────────────── */}
-        <section
-          aria-label="Completed Activity"
-          className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-6 sm:p-8 shadow-[0_8px_30px_rgba(20,20,43,0.04)] backdrop-blur-md space-y-6"
-        >
-          {/* Subtle ambient gradient inside box */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-gradient-to-tr from-emerald-500/8 via-[#27C5D8]/6 to-transparent blur-3xl"
-          />
-
-          {/* Section Header */}
-          <div className="relative z-10 flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-800">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-              Completed Activity
-            </h2>
-          </div>
-
-          <div className="relative z-10">
-            {tab === 'courses' ? (
-              completedCourses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-                  {completedCourses.map((item, idx) => (
-                    <LibraryCard key={`completed-${item.enrollmentId}`} item={item} index={idx} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/40 p-8 text-center backdrop-blur-sm">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-3">
-                    <CheckCircle2 className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                    No completed courses yet
-                  </h3>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                    Complete all modules in your active courses to earn certificates and display your milestones here.
-                  </p>
-                </div>
-              )
-            ) : pastEvents.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-                {pastEvents.map((reg, idx) => (
-                  <EventRegistrationCard key={`past-event-${reg.enrollmentId}`} registration={reg} index={idx} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/40 p-8 text-center backdrop-blur-sm">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-3">
-                  <CheckCircle2 className="h-7 w-7" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                  No past events attended yet
-                </h3>
-                <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                  Past workshops, webinars and bootcamps you registered for and attended appear here.
-                </p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── SECTION 4: LEARNING ACTIVITY TIME CHART ────────────────────────── */}
+        {/* ── SECTION 3: LEARNING ACTIVITY TIME CHART ────────────────────────── */}
         <section aria-label="Learning Activity Chart">
           <LearningActivityPanel enabled={isAuthenticated} />
         </section>
@@ -481,7 +515,7 @@ function SortDropdown({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors select-none cursor-pointer shadow-xs"
+        className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md bg-transparent border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-colors select-none cursor-pointer"
       >
         <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400">Sort by:</span>
         <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
@@ -499,7 +533,7 @@ function SortDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.96 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 mt-1 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 overflow-hidden"
+            className="absolute right-0 mt-1.5 w-56 rounded-tl-2xl rounded-br-2xl rounded-tr-md rounded-bl-md bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 overflow-hidden"
             role="listbox"
           >
             {SORT_OPTIONS.map((option) => {
@@ -551,21 +585,13 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`relative pb-3 pt-1 font-bold text-sm sm:text-base flex items-center transition-colors select-none cursor-pointer ${active
-        ? 'text-[#2962D6]'
-        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-        }`}
+      className={`relative px-5 sm:px-6 py-2 rounded-tl-[1.25rem] rounded-br-[1.25rem] rounded-tr-md rounded-bl-md text-xs sm:text-sm font-black tracking-tight transition-all duration-200 select-none cursor-pointer min-w-[96px] text-center ${
+        active
+          ? 'bg-white dark:bg-slate-900 text-[#2962D6] dark:text-[#3B82F6] border-2 border-[#2962D6] dark:border-[#3B82F6]'
+          : 'bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/60 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white'
+      }`}
     >
-      <span>{label}</span>
-
-      {/* Active Underline Line Indicator matching Roadmaps */}
-      {active && (
-        <motion.div
-          layoutId="tabUnderline"
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2962D6] rounded-full"
-          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-        />
-      )}
+      <span className="relative z-10">{label}</span>
     </button>
   );
 }
@@ -626,8 +652,8 @@ function EmptyState({
   icon: React.ElementType;
   title: string;
   body: string;
-  ctaHref: string;
-  ctaLabel: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-10 text-center">
@@ -636,13 +662,15 @@ function EmptyState({
       </div>
       <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">{body}</p>
-      <Link
-        href={ctaHref}
-        className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-4 py-2 text-xs font-bold text-white dark:text-slate-900 hover:opacity-90 transition"
-      >
-        <Compass className="h-3.5 w-3.5" />
-        {ctaLabel}
-      </Link>
+      {ctaHref && ctaLabel && (
+        <Link
+          href={ctaHref}
+          className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-slate-900 dark:bg-white px-4 py-2 text-xs font-bold text-white dark:text-slate-900 hover:opacity-90 transition"
+        >
+          <Compass className="h-3.5 w-3.5" />
+          {ctaLabel}
+        </Link>
+      )}
     </div>
   );
 }

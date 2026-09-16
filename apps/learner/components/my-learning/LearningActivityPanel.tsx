@@ -85,20 +85,33 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
   const hasAnything = activeDays > 0;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 sm:p-8 space-y-6 shadow-[0_8px_30px_rgba(20,20,43,0.04)]">
+    <section className="relative space-y-8 sm:space-y-10 pt-12 sm:pt-16 pb-8">
       {/* Header with Title & Date Range Toggle */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-        <div className="space-y-1.5">
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
-            <Activity size={22} className="text-[#2C83F5]" />
-            <span>Study Activity & Engagement</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2">
+        <div className="space-y-2.5">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Study Activity & Engagement
           </h3>
-          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2 max-w-2xl leading-relaxed">
-            <Info size={16} className="shrink-0 text-slate-400" />
-            <span>
-              Time you were actively engaged with lesson content. Idle time and background tabs are not counted.
-            </span>
-          </p>
+          <div className="flex items-center gap-2 pt-0.5 pl-3 sm:pl-4">
+            <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Track your daily active learning focus and consistency
+            </p>
+
+            {/* Interactive Info Tooltip */}
+            <div className="relative group inline-flex items-center">
+              <button
+                type="button"
+                aria-label="Activity measurement details"
+                className="inline-flex items-center justify-center h-5 w-5 rounded-full text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors cursor-help"
+              >
+                <Info size={14} />
+              </button>
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:flex flex-col w-64 p-2.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium leading-snug shadow-xl z-50 border border-slate-700/50 pointer-events-none">
+                <span>Active time engaged with lesson content. Idle time and background tabs are not counted.</span>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900 dark:border-t-slate-800" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div
@@ -125,17 +138,17 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
       </div>
 
       {isLoading ? (
-        <div className="h-56 flex items-center justify-center text-slate-400">
+        <div className="h-60 flex items-center justify-center text-slate-400">
           <Loader2 className="animate-spin" size={24} />
         </div>
       ) : isError ? (
-        <div className="h-56 flex items-center justify-center text-center px-6">
+        <div className="h-60 flex items-center justify-center text-center px-6">
           <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
             Your activity could not be loaded right now. Nothing is lost — try again shortly.
           </p>
         </div>
       ) : !hasAnything ? (
-        <div className="h-56 flex flex-col items-center justify-center text-center gap-2.5 px-6">
+        <div className="h-60 flex flex-col items-center justify-center text-center gap-3 px-6">
           <Activity className="text-slate-300 dark:text-slate-700" size={32} />
           <p className="text-base font-bold text-slate-700 dark:text-slate-300">
             No activity recorded in this range
@@ -147,7 +160,7 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
       ) : (
         <>
           {/* Summary Stat Line */}
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 pt-1">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 pt-3 pb-2">
             <div className="flex items-baseline gap-2.5 text-slate-900 dark:text-white">
               <Clock size={20} className="self-center text-[#2C83F5]" />
               <span className="text-3xl sm:text-4xl font-black tracking-tight tabular-nums">
@@ -165,19 +178,19 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
           </div>
 
           {/* Activity Bar Chart */}
-          <div className="relative h-60 w-full flex items-end pt-6">
+          <div className="relative h-64 sm:h-72 w-full pt-8 pb-4 mt-2">
             {/* Y-axis grid lines & labels */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-4 text-xs font-bold text-slate-400 dark:text-slate-500">
+            <div className="absolute inset-0 bottom-14 flex flex-col justify-between pointer-events-none text-xs font-semibold text-slate-400 dark:text-slate-500">
               {[maxMinutes, Math.round(maxMinutes / 2), 0].map((val, i) => (
                 <div key={i} className="flex items-center gap-3 w-full">
-                  <span className="w-10 text-right shrink-0">{val}m</span>
-                  <div className="w-full h-px bg-slate-200/80 dark:border-slate-800 dark:bg-slate-800/80" />
+                  <span className="w-10 text-right shrink-0 text-xs font-semibold text-slate-400 dark:text-slate-500">{val}m</span>
+                  <div className="w-full h-px bg-slate-200/80 dark:bg-slate-800/80" />
                 </div>
               ))}
             </div>
 
             {/* X-axis bars & dates */}
-            <div className="w-full pl-14 h-full flex items-end justify-between gap-2 sm:gap-3 z-10 pt-4">
+            <div className="w-full pl-14 sm:pl-16 h-full flex items-end justify-between gap-3 sm:gap-5 z-10">
               {bars.map((b, i) => (
                 <div
                   key={b.key}
@@ -209,13 +222,13 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                   </AnimatePresence>
 
                   {/* Vertical Progress Bar */}
-                  <div className="w-full max-w-[48px] h-[78%] flex items-end justify-center">
+                  <div className="w-full max-w-[44px] flex-1 flex items-end justify-center pb-2">
                     <motion.div
                       initial={{ height: 0 }}
                       animate={{
                         height:
                           (b.minutes ?? 0) > 0
-                            ? `${Math.max(((b.minutes as number) / maxMinutes) * 100, 6)}%`
+                            ? `${Math.max(((b.minutes as number) / maxMinutes) * 100, 8)}%`
                             : '0%',
                       }}
                       transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(i * 0.02, 0.4) }}
@@ -224,7 +237,7 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                   </div>
 
                   {/* Date labels below bar */}
-                  <div className="mt-2 text-center">
+                  <div className="pt-2 text-center select-none">
                     <p
                       className={`font-bold text-slate-800 dark:text-slate-200 ${
                         isManyBars ? 'text-[10px] truncate max-w-[32px]' : 'text-xs sm:text-sm'
@@ -233,9 +246,8 @@ export function LearningActivityPanel({ enabled }: { enabled: boolean }) {
                       {b.label}
                     </p>
                     {!isManyBars && (
-                      <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                      <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
                         {b.weekday}
-                        {b.minutes !== null && b.minutes > 0 ? ` · ${formatMinutes(b.minutes)}` : ''}
                       </p>
                     )}
                   </div>

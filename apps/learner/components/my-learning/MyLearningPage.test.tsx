@@ -218,8 +218,8 @@ describe('MyLearningPage — course rendering', () => {
       page([course({ progressState: 'COMPLETED', progressPercent: 100, completedAt: '2026-08-10T00:00:00Z' })])
     );
     renderPage();
-    expect(await screen.findByText('Completed')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Review' })).toHaveAttribute('href', '/learn/course-1');
+    expect((await screen.findAllByText('Completed')).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Completed' })).toHaveAttribute('href', '/learn/course-1');
   });
 });
 

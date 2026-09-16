@@ -23,6 +23,8 @@ import {
   placeholderTintFor,
 } from './enrollmentPresentation';
 
+import { LetterVectorArt } from './LetterVectorArt';
+
 export function EventRegistrationCard({
   registration,
   index,
@@ -45,25 +47,11 @@ export function EventRegistrationCard({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.04, 0.2) }}
       className="group relative flex flex-col sm:flex-row gap-4 sm:gap-5 overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-4 sm:p-5 shadow-[0_8px_30px_rgba(20,20,43,0.04)] hover:shadow-[0_12px_36px_rgba(20,20,43,0.07)] hover:-translate-y-1 transition-all duration-300"
     >
-      <div className="h-28 w-full sm:h-28 sm:w-28 shrink-0 rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md overflow-hidden border border-slate-200/70 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shadow-sm">
-        {registration.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={registration.imageUrl}
-            alt=""
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div
-            aria-hidden
-            className={`w-full h-full flex items-center justify-center bg-gradient-to-br ${placeholderTintFor(registration.eventId)}`}
-          >
-            <span className="text-2xl font-black text-slate-400 select-none">
-              {initialFor(registration.title)}
-            </span>
-          </div>
-        )}
+      <div className="h-28 w-full sm:h-28 sm:w-28 shrink-0 rounded-tl-[1.5rem] rounded-br-[1.5rem] rounded-tr-md rounded-bl-md overflow-hidden border border-slate-200/70 dark:border-slate-800 shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+        <LetterVectorArt
+          title={registration.title}
+          id={registration.eventId || registration.enrollmentId}
+        />
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-3">
