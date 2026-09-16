@@ -1,6 +1,13 @@
 import { api } from '@/infrastructure/http/api';
 import { User, useAuthStore } from '@/infrastructure/auth/auth.store';
-import type { Page } from './iam/pipeline.service';
+
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const usp = new URLSearchParams();
@@ -37,8 +44,14 @@ export class UserService {
     );
   }
 
+  /** Replaces a user's full set of assigned policies. Policy is the only assignable IAM unit. */
   static async assignRolesToUser(userId: string, roleIds: string[]): Promise<User> {
     const data = await api.put<User>(`/api/v1/users/${userId}/roles`, roleIds);
+    return data;
+  }
+
+  static async revokeRoleFromUser(userId: string, roleId: string): Promise<User> {
+    const data = await api.delete<User>(`/api/v1/users/${userId}/roles/${roleId}`);
     return data;
   }
 

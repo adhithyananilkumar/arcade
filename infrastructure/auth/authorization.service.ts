@@ -6,13 +6,13 @@ export const AuthorizationService = {
     return user.permissions?.includes('ALL') || user.permissions?.includes(permission) || false;
   },
 
-  canAccessConsole: (user: User | null | undefined) => 
+  canAccessConsole: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'platform.channels.manage') ||
     AuthorizationService.canReviewContent(user) ||
     AuthorizationService.hasPermission(user, 'platform.users.manage') ||
-    AuthorizationService.hasPermission(user, 'platform.roles.assign') ||
-    AuthorizationService.hasPermission(user, 'platform.permissions.manage') ||
-    AuthorizationService.hasPermission(user, 'platform.system.manage') ||
+    AuthorizationService.hasPermission(user, 'platform.roles.manage') ||
+    AuthorizationService.hasPermission(user, 'platform.inbox.manage') ||
+    AuthorizationService.hasPermission(user, 'platform.exams.manage') ||
     AuthorizationService.hasPermission(user, 'platform.payments.view'),
 
   canManageChannels: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.channels.manage'),
@@ -35,10 +35,20 @@ export const AuthorizationService = {
   /** @deprecated Use canReviewContent */
   canReviewCourses: (user: User | null | undefined) => AuthorizationService.canReviewContent(user),
 
+  /** Console → Exams: a dedicated permission, or the broader content-review authority Reviewers already hold. */
+  canManageExams: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.exams.manage') ||
+    AuthorizationService.canReviewPlatformContent(user),
+
+  /** Console → Inbox: contact-us submissions and content/lesson reports. */
+  canManageInbox: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.inbox.manage'),
+
   canManageUsers: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.users.manage'),
-  canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.roles.assign') || AuthorizationService.hasPermission(user, 'platform.roles.manage'),
-  canManagePermissions: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.permissions.manage'),
-  canManageSettings: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.system.manage'),
+  canManageRoles: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.roles.manage'),
+
+  /** Console → IAM: managing who holds a policy, or managing policies themselves. */
+  canAccessIamConsole: (user: User | null | undefined) =>
+    AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user),
 
   canManageCategories: (user: User | null | undefined) => AuthorizationService.hasPermission(user, 'platform.categories.manage'),
 

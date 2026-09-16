@@ -11,12 +11,7 @@ import { AuthorizationService } from '@/infrastructure/auth/authorization.servic
 export default function IamPage() {
   const { user } = useAuthStore();
 
-  if (
-    !AuthorizationService.canManageSettings(user) &&
-    !AuthorizationService.canManageUsers(user) &&
-    !AuthorizationService.canManageRoles(user) &&
-    !AuthorizationService.canManagePermissions(user)
-  ) {
+  if (!AuthorizationService.canAccessIamConsole(user)) {
     notFound();
   }
 
@@ -24,6 +19,10 @@ export default function IamPage() {
 
   return (
     <div className="flex w-full flex-col h-full space-y-5 pb-6">
+      <div className="flex-none space-y-0.5">
+        <h1 className="text-lg font-bold text-[#14142b]">IAM</h1>
+        <p className="text-sm text-gray-500">Manage who can access Arcade Platform operations.</p>
+      </div>
       <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
         <button
           type="button"

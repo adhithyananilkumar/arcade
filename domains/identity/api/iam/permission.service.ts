@@ -1,9 +1,22 @@
 import { api } from '@/infrastructure/http/api';
 
+/** The real Arcade Console navigation surface this permission's capability belongs to. */
+export type ConsoleSurface =
+  | 'CHANNELS'
+  | 'REVIEWS'
+  | 'CONTENT_MANAGE'
+  | 'EXAMS'
+  | 'PAYMENTS'
+  | 'INBOX'
+  | 'IAM'
+  | 'SYSTEM';
+
 export interface Permission {
   id: string;
   code: string;
   module: string;
+  /** Null for CHANNEL-scope permissions — Channel IAM has no Console-surface picker. */
+  surface: ConsoleSurface | null;
   description: string;
   context: string;
   deprecated?: boolean;

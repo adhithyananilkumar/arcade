@@ -22,7 +22,7 @@ function parseSlots(raw?: string | null) {
 
 export default function ExamSchedulesPage() {
   const { user } = useAuthStore();
-  if (!AuthorizationService.canReviewPlatformContent(user)) {
+  if (!AuthorizationService.canManageExams(user)) {
     notFound();
   }
 

@@ -1,4 +1,5 @@
 import { api } from '@/infrastructure/http/api';
+import type { ConsoleSurface } from './permission.service';
 
 export interface Role {
   id: string;
@@ -7,7 +8,8 @@ export interface Role {
   description: string;
   systemRole: boolean;
   level?: number;
-  permissions?: { id: string, code: string, module?: string }[];
+  permissions?: { id: string; code: string; module?: string; surface?: ConsoleSurface | null }[];
+  assignedUserCount?: number;
 }
 
 export interface RoleRequest {

@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Loader2, X, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { permissionService, Permission } from '@/domains/identity';
 import { Scope } from '../types/iam.types';
-import { ChevronDown, ChevronRight, Loader2, X, Check, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { PermissionSelector, SURFACE_LABEL, SURFACE_ORDER } from './PermissionSelector';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -26,130 +27,10 @@ export interface PolicyEditorProps {
   onCancel: () => void;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatLabel(str: string): string {
-  return str
-    .replace(/[._-]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function groupByModule(permissions: Permission[]): Record<string, Permission[]> {
-  const groups: Record<string, Permission[]> = {};
-  for (const perm of permissions) {
-    const key = perm.module || perm.code.split('.').slice(0, -1).join('.') || 'General';
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(perm);
-  }
-  return groups;
-}
-
 const SCOPE_LABEL: Record<Scope, string> = {
   PLATFORM: 'Platform',
   CHANNEL: 'Channel',
 };
-
-// ─── Permission Group ─────────────────────────────────────────────────────────
-
-function PermissionGroup({
-  groupName,
-  permissions,
-  selectedIds,
-  onToggle,
-  onToggleAll,
-}: {
-  groupName: string;
-  permissions: Permission[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-  onToggleAll: (ids: string[], select: boolean) => void;
-}) {
-  const [expanded, setExpanded] = useState(true);
-  const groupIds = permissions.map((p) => p.id);
-  const allSelected = groupIds.every((id) => selectedIds.includes(id));
-  const someSelected = groupIds.some((id) => selectedIds.includes(id));
-
-  return (
-    <div className="border border-slate-200/80 rounded-xl overflow-hidden bg-white">
-      {/* Group header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/80 select-none">
-        {/* Group-level checkbox */}
-        <button
-          type="button"
-          onClick={() => onToggleAll(groupIds, !allSelected)}
-          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-            allSelected
-              ? 'bg-[#14142b] border-[#14142b] text-white'
-              : someSelected
-              ? 'bg-slate-300 border-slate-400 text-white'
-              : 'border-slate-300 hover:border-slate-400 bg-white'
-          }`}
-        >
-          {(allSelected || someSelected) && <Check size={10} strokeWidth={3} />}
-        </button>
-
-        <button
-          type="button"
-          className="flex-1 flex items-center gap-2 text-left"
-          onClick={() => setExpanded((e) => !e)}
-        >
-          <span className="text-sm font-semibold text-gray-800">{formatLabel(groupName)}</span>
-          <span className="text-xs text-gray-400">
-            {someSelected
-              ? `${groupIds.filter((id) => selectedIds.includes(id)).length}/${permissions.length}`
-              : permissions.length}
-          </span>
-          <span className="ml-auto text-gray-400">
-            {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          </span>
-        </button>
-      </div>
-
-      {/* Permission rows */}
-      {expanded && (
-        <div className="divide-y divide-slate-50">
-          {permissions.map((perm) => {
-            const isSelected = selectedIds.includes(perm.id);
-            return (
-              <label
-                key={perm.id}
-                className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
-                  isSelected ? 'bg-slate-50' : 'hover:bg-gray-50/60'
-                }`}
-              >
-                <div
-                  className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                    isSelected
-                      ? 'bg-[#14142b] border-[#14142b] text-white'
-                      : 'border-slate-300 hover:border-slate-400 bg-white'
-                  }`}
-                >
-                  {isSelected && <Check size={10} strokeWidth={3} />}
-                </div>
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={isSelected}
-                  onChange={() => onToggle(perm.id)}
-                />
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium text-gray-800 font-mono">
-                    {perm.code}
-                  </p>
-                  {perm.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                      {perm.description}
-                    </p>
-                  )}
-                </div>
-              </label>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Main Editor ──────────────────────────────────────────────────────────────
 
@@ -169,63 +50,37 @@ export function PolicyEditor({
   const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [touched, setTouched] = useState(false);
-  const [search, setSearch] = useState('');
-
-  // ── Load ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     setName(policy?.name ?? '');
     setDescription(policy?.description ?? '');
     setSelectedIds(policy?.permissionIds ?? []);
     setTouched(false);
-    setSearch('');
     setLoadError(false);
     setLoading(true);
 
     permissionService
       .getAllPermissions(scope)
-      // The backend is the single source of truth for which permissions exist in this scope —
-      // an empty or short catalog is a real state (e.g. CHANNEL scope currently defines a small,
-      // deliberately curated set), never a signal to substitute placeholder data. Policies must
-      // only ever be built from permissions that actually exist and are actually enforced.
+      // The backend is the single source of truth for which permissions exist in this scope, and
+      // for the Console surface each one belongs to — the frontend never re-derives either.
       .then((perms) => setAllPermissions(perms ?? []))
       .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [policy?.id, scope]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Derived ───────────────────────────────────────────────────────────────
-  // allPermissions is already filtered to this scope by the backend — the frontend
-  // must never re-derive scope from a permission's code or infer it locally.
+  const selectedPermissions = useMemo(
+    () => allPermissions.filter((p) => selectedIds.includes(p.id)),
+    [allPermissions, selectedIds]
+  );
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return allPermissions;
-    const q = search.toLowerCase();
-    return allPermissions.filter(
-      (p) =>
-        p.code.toLowerCase().includes(q) ||
-        (p.description ?? '').toLowerCase().includes(q) ||
-        (p.module ?? '').toLowerCase().includes(q)
-    );
-  }, [allPermissions, search]);
-
-  const grouped = useMemo(() => groupByModule(filtered), [filtered]);
-  const groupKeys = Object.keys(grouped).sort();
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
-  const toggle = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
-  const toggleAll = (ids: string[], select: boolean) => {
-    setSelectedIds((prev) =>
-      select
-        ? [...new Set([...prev, ...ids])]
-        : prev.filter((x) => !ids.includes(x))
-    );
-  };
+  const summaryBySurface = useMemo(() => {
+    const counts: Partial<Record<string, number>> = {};
+    for (const p of selectedPermissions) {
+      const key = p.surface ?? 'SYSTEM';
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return SURFACE_ORDER.filter((s) => counts[s]).map((s) => ({ surface: s, count: counts[s]! }));
+  }, [selectedPermissions]);
 
   const nameError = touched && name.trim().length === 0;
   const canSave = name.trim().length > 0;
@@ -245,8 +100,6 @@ export function PolicyEditor({
     }
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <div className="flex flex-col max-h-[90vh] w-full bg-white rounded-2xl overflow-hidden font-sans">
 
@@ -254,13 +107,10 @@ export function PolicyEditor({
       <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
         <div>
           <h2 className="text-lg font-bold text-[#14142b]">
-            {mode === 'create' ? 'New Policy' : 'Edit Policy'}
+            {mode === 'create' ? 'Create Policy' : 'Edit Policy'}
           </h2>
           <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
-            Scope
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-100 text-[#14142b] text-[11px] font-semibold ring-1 ring-inset ring-slate-200">
-              {SCOPE_LABEL[scope]}
-            </span>
+            {SCOPE_LABEL[scope]} Policy
           </p>
         </div>
         <button
@@ -271,25 +121,22 @@ export function PolicyEditor({
         </button>
       </div>
 
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-6 py-6 space-y-6">
+      {/* Scrollable body — two columns on desktop: form + permission picker, summary panel */}
+      <div className="flex-1 overflow-y-auto md:overflow-hidden md:flex">
+        <div className="flex-1 min-w-0 overflow-y-auto px-6 py-6 space-y-6">
 
           {/* Policy Information */}
           <section className="space-y-4">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Policy Information
+              Policy Name
             </h3>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Policy Name <span className="text-rose-500">*</span>
-              </label>
               <input
                 autoFocus
                 type="text"
                 value={name}
                 onChange={(e) => { setName(e.target.value); setTouched(true); }}
-                placeholder="e.g. BCA Faculty Moderators"
+                placeholder="e.g. Content Operations Manager"
                 className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium outline-none transition-all ${
                   nameError
                     ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/50'
@@ -344,43 +191,45 @@ export function PolicyEditor({
                 <p className="text-xs text-gray-400">A policy can still be saved with a name and no permissions, and permissions can be added later once they exist.</p>
               </div>
             ) : (
-              <>
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search permissions…"
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium focus:border-[#14142b]/30 focus:bg-white focus:ring-2 focus:ring-slate-200 outline-none"
-                  />
-                </div>
-
-                {/* Groups */}
-                {groupKeys.length > 0 ? (
-                  <div className="space-y-2">
-                    {groupKeys.map((key) => (
-                      <PermissionGroup
-                        key={key}
-                        groupName={key}
-                        permissions={grouped[key]}
-                        selectedIds={selectedIds}
-                        onToggle={toggle}
-                        onToggleAll={toggleAll}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-400 italic text-center py-6 border border-dashed border-gray-200 rounded-xl">
-                    No permissions match &quot;{search}&quot;.
-                  </div>
-                )}
-              </>
+              <PermissionSelector
+                permissions={allPermissions}
+                selectedIds={selectedIds}
+                onChange={setSelectedIds}
+              />
             )}
           </section>
-
         </div>
+
+        {/* Policy summary — persistent on desktop, inline below on mobile */}
+        <aside className="shrink-0 md:w-72 md:border-l border-slate-100 bg-slate-50/50 px-6 py-6 md:overflow-y-auto">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+            Policy Summary
+          </h3>
+          <p className="text-sm font-bold text-gray-900 mb-1 truncate">{name.trim() || 'Untitled policy'}</p>
+          <p className="text-xs text-gray-500 mb-4">
+            {selectedIds.length} permission{selectedIds.length === 1 ? '' : 's'}
+            {summaryBySurface.length > 0 && ` across ${summaryBySurface.length} Console area${summaryBySurface.length === 1 ? '' : 's'}`}
+          </p>
+
+          {summaryBySurface.length > 0 ? (
+            <div className="space-y-2 mb-4">
+              {summaryBySurface.map(({ surface, count }) => (
+                <div key={surface} className="flex items-center justify-between text-xs">
+                  <span className="text-gray-600">{SURFACE_LABEL[surface as keyof typeof SURFACE_LABEL]}</span>
+                  <span className="font-semibold text-gray-900">{count}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400 italic mb-4">No permissions selected yet.</p>
+          )}
+
+          <div className="pt-3 border-t border-slate-200/70">
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              This policy grants access to {SCOPE_LABEL[scope].toLowerCase()}-level operations only.
+            </p>
+          </div>
+        </aside>
       </div>
 
       {/* Footer */}

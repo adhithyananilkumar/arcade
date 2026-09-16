@@ -37,7 +37,7 @@ export interface ContactMessage {
 
 function ConsoleInboxContent() {
   const { user } = useAuthStore();
-  if (!AuthorizationService.canManageSettings(user)) {
+  if (!AuthorizationService.canManageInbox(user)) {
     notFound();
   }
 

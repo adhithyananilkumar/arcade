@@ -11,7 +11,7 @@ export default function ArcConsoleIndex() {
   
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviewCourses = AuthorizationService.canReviewCourses(user);
-  const showIam = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showIam = AuthorizationService.canAccessIamConsole(user);
 
   if (!showAdminChannels && !showReviewCourses && !showIam) {
     notFound();

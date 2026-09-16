@@ -19,6 +19,7 @@
 export { PolicyEditor } from './policy-editor/PolicyEditor';
 export type { PolicyEditorProps } from './policy-editor/PolicyEditor';
 
-export { UserPipelinePanel } from './user-access/UserPipelinePanel';
-export type { UserPipelinePanelProps } from './user-access/UserPipelinePanel';
-export { ComplianceBadge } from './user-access/ComplianceBadge';
+export { AccessPoliciesPanel } from './user-access/AccessPoliciesPanel';
+export type { AccessPoliciesPanelProps } from './user-access/AccessPoliciesPanel';
+export { AssignPolicyDialog } from './user-access/AssignPolicyDialog';
+export { ConfirmDialog } from './user-access/ConfirmDialog';

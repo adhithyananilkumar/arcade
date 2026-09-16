@@ -35,7 +35,7 @@ export default function LearnerSidebar() {
   }, []);
 
   const showAdminChannels = AuthorizationService.canManageChannels(user);
-  const showAdminSettings = AuthorizationService.canManageSettings(user) || AuthorizationService.canManageUsers(user) || AuthorizationService.canManageRoles(user) || AuthorizationService.canManagePermissions(user);
+  const showAdminSettings = AuthorizationService.canAccessIamConsole(user);
   const showArcConsole = showAdminChannels || showAdminSettings || AuthorizationService.canReviewCourses(user);
   // "Content Studio" specifically needs real content-authoring capability in a channel the
   // user owns or staffs — no bypass for platform admins/reviewers, who do their platform-level

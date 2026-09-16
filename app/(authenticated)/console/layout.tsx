@@ -17,13 +17,10 @@ export default function ArcConsoleLayout({
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showReviews = AuthorizationService.canReviewContent(user);
   const showPlatformReviews = AuthorizationService.canReviewPlatformContent(user);
+  const showExams = AuthorizationService.canManageExams(user);
   const showPayments = AuthorizationService.canViewPayments(user);
-  const showIam =
-    AuthorizationService.canManageSettings(user) ||
-    AuthorizationService.canManageUsers(user) ||
-    AuthorizationService.canManageRoles(user) ||
-    AuthorizationService.canManagePermissions(user);
-  const showInbox = AuthorizationService.canAccessConsole(user);
+  const showIam = AuthorizationService.canAccessIamConsole(user);
+  const showInbox = AuthorizationService.canManageInbox(user);
 
   const navItems = [
     ...(showAdminChannels
@@ -35,7 +32,7 @@ export default function ArcConsoleLayout({
     ...(showPlatformReviews
       ? [{ name: 'Content manage', href: '/console/content-manage', icon: Library, iconBg: 'bg-[#fbcfe8] text-[#831843]' }]
       : []),
-    ...(showPlatformReviews
+    ...(showExams
       ? [{ name: 'Exams', href: '/console/exam-schedules', icon: Calendar, iconBg: 'bg-[#bbf7d0] text-[#14532d]' }]
       : []),
     ...(showPayments
