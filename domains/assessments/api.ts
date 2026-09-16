@@ -4,6 +4,9 @@
 import { api } from "@/infrastructure/http/api";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import type {
+  AssessmentHostType,
+  AssessmentLandingResponse,
+  AssessmentPlacementResponse,
   AttemptResponse,
   BankQuestionRequest,
   BankQuestionResponse,
@@ -328,6 +331,29 @@ export function getExamResult(attemptId: string) {
   return api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
 }
 
+// ── Proctoring ───────────────────────────────────────────────────────────────────────────────
+// The delivery surface (app/) must not reach the proctoring endpoints directly — these calls
+// previously lived inline in the exam player page, which put HTTP in the app layer. A proctored
+// exam refuses paper generation until its session is ACTIVE (see backend ProctoringService
+// .requireReadyForDelivery), so the player's 403-on-start path routes through these.
+
+export function startProctorSession(examId: string) {
+  return api.post<void>(`/api/exams/${examId}/proctoring/session/start`, {});
+}
+
+export function verifyProctorIdentity(examId: string) {
+  return api.post<void>(`/api/exams/${examId}/proctoring/session/verify-identity`, {});
+}
+
+/** Best-effort telemetry: a recorded event must never interrupt an in-flight attempt. */
+export function recordProctorEvent(examId: string, eventType: string, detail: string) {
+  return api.post<void>(`/api/exams/${examId}/proctoring/session/events`, { eventType, detail });
+}
+
+export function completeProctorSession(examId: string) {
+  return api.post<void>(`/api/exams/${examId}/proctoring/session/complete`, {});
+}
+
 /** Creator-facing: every learner's attempts at this exam. */
 export function listAttemptsForExam(examId: string) {
   return api.get<ExamAttemptSummaryResponse[]>(`/api/exam-attempts/exams/${examId}/all`);
@@ -416,4 +442,66 @@ export async function previewExamPaper(
     `/api/exams/${examId}/preview-paper${query}`
   );
   return wire.map((q) => ({ ...q, question: parsePrompt(q.question) }));
+}
+
+// ── Assessment placement & landing ────────────────────────────────────────────
+
+/** Every assessment placed in one host — a module's, or a course's own root-level ones. */
+export function listAssessmentPlacements(hostType: AssessmentHostType, hostId: string) {
+  return api.get<AssessmentPlacementResponse[]>(
+    `/api/assessments/placements?hostType=${hostType}&hostId=${encodeURIComponent(hostId)}`
+  );
+}
+
+/** Every assessment anywhere under a course — root and all modules — for the Assessments tab. */
+export function listAssessmentPlacementsForCourse(courseId: string) {
+  return api.get<AssessmentPlacementResponse[]>(`/api/assessments/placements/course/${courseId}`);
+}
+
+/** Places an existing exam into a host. Requires authoring rights on both the exam and the host. */
+export function placeAssessment(payload: {
+  examId: string;
+  hostType: AssessmentHostType;
+  hostId: string;
+  planId?: string | null;
+}) {
+  return api.post<AssessmentPlacementResponse>("/api/assessments/placements", payload);
+}
+
+export function updateAssessmentPlacement(
+  placementId: string,
+  patch: {
+    planId?: string | null;
+    requiredForCompletion?: boolean;
+    instructions?: string;
+    titleOverride?: string;
+  }
+) {
+  return api.patch<AssessmentPlacementResponse>(
+    `/api/assessments/placements/${placementId}`,
+    patch
+  );
+}
+
+/** Removes the assessment from this host. The exam itself is never deleted — it may live elsewhere. */
+export function removeAssessmentPlacement(placementId: string) {
+  return api.delete<void>(`/api/assessments/placements/${placementId}`);
+}
+
+/**
+ * The assessment landing page's data: what this is, the terms of the sitting, the candidate's own
+ * history, and whether they may begin. `startable`/`blockedReason` are server-decided — render them,
+ * never recompute them.
+ */
+export function getAssessmentLanding(
+  examId: string,
+  opts: { planId?: string | null; placementId?: string | null } = {}
+) {
+  const params = new URLSearchParams();
+  if (opts.planId) params.set("planId", opts.planId);
+  if (opts.placementId) params.set("placementId", opts.placementId);
+  const query = params.toString();
+  return api.get<AssessmentLandingResponse>(
+    `/api/assessments/landing/${examId}${query ? `?${query}` : ""}`
+  );
 }

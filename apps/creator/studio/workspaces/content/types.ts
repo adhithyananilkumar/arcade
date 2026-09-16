@@ -83,6 +83,18 @@ export interface ContentDataAdapter {
   deleteBadge?(badgeId: string): Promise<void>;
   renameBadge?(badgeId: string, title: string): Promise<void>;
 
+  // Assessments placed inside this content item's containers — "Add assessment" next to "Add
+  // lesson". An assessment is an exam placed at a location, so these are placement operations, not
+  // exam CRUD: removing one never deletes the exam, which may be placed elsewhere too.
+  //
+  // Optional, like badges: a content type whose containers cannot host assessments yet (Event days,
+  // whose lesson positions are densely renumbered on delete) simply doesn't implement them, and the
+  // runtime hides the affordance rather than offering something that would fail.
+  listContainerAssessments?(contentId: string): Promise<AssessmentLeaf[]>;
+  /** Creates a new exam and places it in this container, returning the placed node. */
+  addContainerAssessment?(containerId: string, title: string): Promise<AssessmentLeaf>;
+  removeContainerAssessment?(placementId: string): Promise<void>;
+
   // Exams attached to this content item. Every content type that hosts the shared content
   // editor runtime supports this (there is no capability gate here, unlike badges) — it exists
   // on the adapter, rather than as a `contentType === ...` branch in the runtime, purely so the
@@ -91,6 +103,20 @@ export interface ContentDataAdapter {
   /** Creates a brand-new exam already attached to this content item, and returns it. */
   createAndAttachExam(contentId: string, title: string): Promise<ExamSummary>;
   detachExam(contentId: string, examId: string): Promise<void>;
+}
+
+/**
+ * An assessment sitting inside a container, as the authoring tree needs it. Its `position` shares
+ * one space with that container's lessons, so it can be ordered between two of them.
+ */
+export interface AssessmentLeaf {
+  /** The placement's id — what you remove. Distinct from `examId`, which is what you edit. */
+  id: string;
+  examId: string;
+  containerId: string;
+  title: string;
+  position: number;
+  requiredForCompletion: boolean;
 }
 
 /** The minimal shape the shared runtime's sidebar needs for an attached exam. */

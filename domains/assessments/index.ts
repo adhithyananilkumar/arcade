@@ -19,6 +19,10 @@
 // Public surface of the assessment domain.
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionTagEditor } from "./components/QuestionTagEditor";
+// The assessment landing page. Shared by the in-course player, the preview renderer and the
+// standalone exam route, so an assessment presents identically wherever it is met.
+export { AssessmentLanding } from "./components/AssessmentLanding";
+export type { AssessmentLandingProps } from "./components/AssessmentLanding";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
 // Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives
 // at the apps layer (apps/creator/editor). The domain owns the state machine; the Studio owns the
@@ -90,12 +94,29 @@ export {
   saveExamAnswer,
   submitExamAttempt,
   getExamResult,
+  listAssessmentPlacements,
+  listAssessmentPlacementsForCourse,
+  placeAssessment,
+  updateAssessmentPlacement,
+  removeAssessmentPlacement,
+  getAssessmentLanding,
+  startProctorSession,
+  verifyProctorIdentity,
+  recordProctorEvent,
+  completeProctorSession,
   listAttemptsForExam,
   getExamQuestionBank,
   listExamVersions,
   publishExam,
 } from "./api";
 export type {
+  AssessmentHostType,
+  AssessmentOutcome,
+  AssessmentPlacementResponse,
+  AssessmentNode,
+  AssessmentBlockedReason,
+  AssessmentLandingResponse,
+  AttemptHistoryItem,
   DeliveryMode,
   SelectionMode,
   PoolMode,

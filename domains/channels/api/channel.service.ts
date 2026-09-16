@@ -76,6 +76,19 @@ export interface OwnershipTransferResponse {
   respondedAt?: string | null;
 }
 
+export interface ChannelSettingsUpdate {
+  /** Omit to leave the name unchanged. */
+  name?: string;
+  /** Omit to leave the description unchanged. */
+  description?: string;
+  iconFile?: File;
+  bannerFile?: File;
+  removeIcon?: boolean;
+  removeBanner?: boolean;
+  /** Omit to leave social links unchanged; pass [] to clear them. */
+  socialLinks?: string[];
+}
+
 export const channelService = {
   createChannelRequest: async (
     name: string,
@@ -87,12 +100,50 @@ export const channelService = {
     formData.append('name', name);
     formData.append('description', description);
     formData.append('isPersonal', String(isPersonal));
-    
+
     if (iconFile) {
       formData.append('icon', iconFile);
     }
-    
+
     const response = await api.post<Channel>('/api/v1/channels', formData);
+    return response;
+  },
+
+  /**
+   * Partial update: every field left undefined is untouched by the backend, so callers that only
+   * own one piece of the profile (e.g. the social-links card) can't accidentally wipe the rest.
+   */
+  updateChannelProfile: async (
+    channelId: string,
+    update: ChannelSettingsUpdate
+  ): Promise<Channel> => {
+    const formData = new FormData();
+    if (update.name !== undefined) {
+      formData.append('name', update.name);
+    }
+    if (update.description !== undefined) {
+      formData.append('description', update.description);
+    }
+    if (update.iconFile) {
+      formData.append('icon', update.iconFile);
+    }
+    if (update.bannerFile) {
+      formData.append('banner', update.bannerFile);
+    }
+    formData.append('removeIcon', String(!!update.removeIcon));
+    formData.append('removeBanner', String(!!update.removeBanner));
+    if (update.socialLinks) {
+      // An empty list must still reach the backend as "clear", which multipart can't express with
+      // zero entries — send one empty value that the backend trims away.
+      if (update.socialLinks.length === 0) {
+        formData.append('socialLinks', '');
+      }
+      update.socialLinks.forEach((link) => {
+        formData.append('socialLinks', link);
+      });
+    }
+
+    const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
     return response;
   },
 
@@ -104,27 +155,19 @@ export const channelService = {
     removeIcon: boolean = false,
     removeBanner: boolean = false,
     socialLinks?: string[]
-  ): Promise<Channel> => {
-    const formData = new FormData();
-    formData.append('description', description);
-    
-    if (iconFile) {
-      formData.append('icon', iconFile);
-    }
-    if (bannerFile) {
-      formData.append('banner', bannerFile);
-    }
-    
-    formData.append('removeIcon', String(removeIcon));
-    formData.append('removeBanner', String(removeBanner));
-    
-    if (socialLinks) {
-      socialLinks.forEach((link) => {
-        formData.append('socialLinks', link);
-      });
-    }
-    
-    const response = await api.post<Channel>(`/api/v1/channels/${channelId}/settings`, formData);
+  ): Promise<Channel> =>
+    channelService.updateChannelProfile(channelId, {
+      description,
+      iconFile,
+      bannerFile,
+      removeIcon,
+      removeBanner,
+      socialLinks,
+    }),
+
+  /** The caller's own channel requests still awaiting platform review. */
+  getMyChannelRequests: async (): Promise<Channel[]> => {
+    const response = await api.get<Channel[]>('/api/v1/channels/requests/me');
     return response;
   },
 

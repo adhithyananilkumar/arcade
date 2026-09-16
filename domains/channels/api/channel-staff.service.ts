@@ -20,9 +20,16 @@ export interface ChannelInvitation {
   email: string;
   roleNames: string[];
   status: string;
+  channelId: string;
   channelName: string;
+  channelIconUrl?: string | null;
+  channelPersonal: boolean;
   invitedByName: string;
   createdAt: string;
+  /** Null for legacy invitations that never expire. */
+  expiresAt?: string | null;
+  /** Still PENDING in storage but past its expiry — can be cancelled or re-issued, not accepted. */
+  expired: boolean;
 }
 
 interface Page<T> {

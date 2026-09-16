@@ -81,7 +81,7 @@ import {
   Loader2,
   GripVertical,
 } from "lucide-react";
-import type { ContentDataAdapter, ExamSummary } from "./types";
+import type { AssessmentLeaf, ContentDataAdapter, ExamSummary } from "./types";
 
 /**
  * The lesson/module/badge editing engine Course and Event share: tree state and CRUD, Y.Doc
@@ -177,6 +177,13 @@ interface ModuleNode {
   title: string;
   position: number;
   lessons: LessonNode[];
+  /**
+   * Assessments placed in this container, kept as a parallel list rather than merged into
+   * `lessons` — they are a different kind of thing with a different id (a placement, not a
+   * lesson) and a different editor. They share `position` with lessons, so the tree renders the
+   * two merged and sorted.
+   */
+  assessments: AssessmentLeaf[];
   expanded: boolean;
 }
 
@@ -523,6 +530,21 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           .catch(() => {
             // Best-effort — same pattern as the rest of this sidebar's supplementary data.
           });
+        // Best-effort, like the exam list above: a content type whose containers can't host
+        // assessments simply doesn't implement this, and the tree shows none.
+        let assessmentsByContainer = new Map<string, AssessmentLeaf[]>();
+        if (adapter.listContainerAssessments && contentId) {
+          try {
+            const placed = await adapter.listContainerAssessments(contentId);
+            assessmentsByContainer = placed.reduce((acc, a) => {
+              acc.set(a.containerId, [...(acc.get(a.containerId) ?? []), a]);
+              return acc;
+            }, new Map<string, AssessmentLeaf[]>());
+          } catch {
+            // Leaves the tree showing lessons only rather than failing the whole load.
+          }
+        }
+
         setModules(
           containers.map((m) => ({
             id: m.id,
@@ -532,6 +554,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             lessons: (m.leaves || []).filter(
               (l: { type?: string }) => l.type === "document" || l.type === "lesson" || l.type === "quiz" || !l.type
             ) as LessonNode[],
+            assessments: assessmentsByContainer.get(m.id) ?? [],
           }))
         );
         setBadges(loadedBadges ?? []);
@@ -677,7 +700,10 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     try {
       const title = `${adapter.terminology.container} ${modules.length + 1}`;
       const m = await adapter.addContainer(contentId, title);
-      setModules((prev) => [...prev, { id: m.id, title: m.title, position: m.position, lessons: [], expanded: true }]);
+      setModules((prev) => [
+        ...prev,
+        { id: m.id, title: m.title, position: m.position, lessons: [], assessments: [], expanded: true },
+      ]);
       setHasDraftChanges(true);
       onContainerCreated?.({ id: m.id, title: m.title });
     } catch (e) {
@@ -703,6 +729,48 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       }
     },
     [contentId, modules, openLesson, adapter]
+  );
+
+  /**
+   * Adds an assessment inside a container — the "Add assessment" sibling of "Add lesson". Creates
+   * the exam and places it here in one step so the author gets something real immediately, rather
+   * than an empty shell they have to go and configure elsewhere before it does anything.
+   */
+  const addAssessment = useCallback(
+    async (moduleId: string) => {
+      if (!contentId || !adapter.addContainerAssessment) return;
+      try {
+        const mod = modules.find((m) => m.id === moduleId);
+        const nextIndex = (mod?.assessments.length ?? 0) + 1;
+        const placed = await adapter.addContainerAssessment(moduleId, `Assessment ${nextIndex}`);
+        setModules((prev) =>
+          prev.map((m) =>
+            m.id === moduleId ? { ...m, expanded: true, assessments: [...m.assessments, placed] } : m
+          )
+        );
+        setActiveModuleId(moduleId);
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.error("Failed to add assessment", e);
+      }
+    },
+    [contentId, modules, adapter]
+  );
+
+  const removeAssessment = useCallback(
+    async (placementId: string) => {
+      if (!adapter.removeContainerAssessment) return;
+      try {
+        await adapter.removeContainerAssessment(placementId);
+        setModules((prev) =>
+          prev.map((m) => ({ ...m, assessments: m.assessments.filter((a) => a.id !== placementId) }))
+        );
+        setHasDraftChanges(true);
+      } catch (e) {
+        console.error("Failed to remove assessment", e);
+      }
+    },
+    [adapter]
   );
 
   const addBadge = useCallback(async () => {
@@ -1120,7 +1188,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                     {status !== "SUBMITTED" && (
                       <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <DropdownMenu>
-                          <DropdownMenuTrigger title="Add lesson" className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]">
+                          <DropdownMenuTrigger title={`Add to ${adapter.terminology.container.toLowerCase()}`} className="rounded-full p-1 text-[#14142b]/50 hover:bg-[#14142b]/10 hover:text-[#14142b]">
                             <Plus size={12} />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start" sideOffset={4}>
@@ -1128,6 +1196,14 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                               <FileText size={13} />
                               Lesson
                             </DropdownMenuItem>
+                            {/* Only offered where the adapter can actually place one — the
+                                Capability Honesty Rule applied to an authoring affordance. */}
+                            {adapter.addContainerAssessment && (
+                              <DropdownMenuItem onClick={() => addAssessment(mod.id)}>
+                                <GraduationCap size={13} />
+                                Assessment
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                         <IconBtn title="Rename module" onClick={() => startEdit("module", mod.id, mod.title)}>
@@ -1198,6 +1274,47 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                         </SortableContext>
                       </DndContext>
 
+                      {/* Assessments in this container. Not inside the SortableContext above: that
+                          one reorders lessons through the lessons-only reorder endpoint, and
+                          dragging a placement through it would fail. Cross-kind reordering needs
+                          the heterogeneous reorder path, which is a separate change. */}
+                      {mod.assessments
+                        .slice()
+                        .sort((a, b) => a.position - b.position)
+                        .map((assessment) => (
+                          <div
+                            key={assessment.id}
+                            className="group flex items-center gap-2 rounded-full px-3 transition-all hover:bg-white/40"
+                          >
+                            <div className="w-[13px] flex-shrink-0" aria-hidden />
+                            <button
+                              type="button"
+                              onClick={() => router.push(`/studio/exam/${assessment.examId}/edit`)}
+                              className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs text-slate-500"
+                              title="Edit this assessment's questions"
+                            >
+                              <GraduationCap size={11} className="flex-shrink-0" />
+                              <span className="truncate">{assessment.title}</span>
+                              {assessment.requiredForCompletion && (
+                                <span className="flex-shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
+                                  Required
+                                </span>
+                              )}
+                            </button>
+                            {status !== "SUBMITTED" && (
+                              <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                <IconBtn
+                                  title="Remove assessment from this module"
+                                  danger
+                                  onClick={() => removeAssessment(assessment.id)}
+                                >
+                                  <Trash2 size={12} />
+                                </IconBtn>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+
                       {status !== "SUBMITTED" && (
                         <div className="mt-0.5 flex items-center gap-3 pl-2">
                           <button
@@ -1208,6 +1325,16 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                             <Plus size={11} />
                             Add {adapter.terminology.leafDocument}
                           </button>
+                          {adapter.addContainerAssessment && (
+                            <button
+                              type="button"
+                              onClick={() => addAssessment(mod.id)}
+                              className="flex items-center gap-1 py-1 text-[11px] font-semibold text-slate-400 hover:text-[#14142b]"
+                            >
+                              <Plus size={11} />
+                              Add assessment
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

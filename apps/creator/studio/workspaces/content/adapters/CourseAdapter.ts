@@ -1,7 +1,24 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, ExamSummary, LeafNode, RootBadgeNode, Terminology } from "../types";
+import {
+  AssessmentLeaf,
+  ContentDataAdapter,
+  ContentMeta,
+  ContainerNode,
+  ExamSummary,
+  LeafNode,
+  RootBadgeNode,
+  Terminology,
+} from "../types";
 import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, BadgeSummaryResponse } from "@/shared/types/api.types";
-import { createExam, detachExamFromCourse, listExamsForCourse } from "@/domains/assessments";
+import {
+  createExam,
+  detachExamFromCourse,
+  listExamsForCourse,
+  listAssessmentPlacementsForCourse,
+  placeAssessment,
+  removeAssessmentPlacement,
+  updateAssessmentPlacement,
+} from "@/domains/assessments";
 
 export class CourseAdapter implements ContentDataAdapter {
   terminology: Terminology = {
@@ -161,5 +178,52 @@ export class CourseAdapter implements ContentDataAdapter {
 
   async detachExam(contentId: string, examId: string): Promise<void> {
     await detachExamFromCourse(contentId, examId);
+  }
+
+  // ── Assessments inside modules ────────────────────────────────────────────────
+  // A module assessment is an exam placed on that module. The exam is created against the course
+  // so it draws on the course's question bank; the placement is what makes it appear in module 3
+  // between two lessons.
+
+  async listContainerAssessments(contentId: string): Promise<AssessmentLeaf[]> {
+    const placements = await listAssessmentPlacementsForCourse(contentId);
+    return placements
+      .filter((p) => p.hostType === "COURSE_MODULE")
+      .map((p) => ({
+        id: p.id,
+        examId: p.examId,
+        containerId: p.hostId,
+        title: p.titleOverride ?? "Assessment",
+        position: p.position,
+        requiredForCompletion: p.requiredForCompletion,
+      }));
+  }
+
+  async addContainerAssessment(containerId: string, title: string): Promise<AssessmentLeaf> {
+    // Created without a courseId so it isn't also root-attached: placement is what locates it, and
+    // creating it here would otherwise put the same exam in two places at once.
+    const exam = await createExam({ title });
+    const placement = await placeAssessment({
+      examId: exam.id,
+      hostType: "COURSE_MODULE",
+      hostId: containerId,
+    });
+    // The placement's own title is what the tree shows, so it survives the exam being renamed
+    // elsewhere or reused in another course under a different name.
+    await updateAssessmentPlacement(placement.id, { titleOverride: title });
+    return {
+      id: placement.id,
+      examId: exam.id,
+      containerId,
+      title,
+      position: placement.position,
+      requiredForCompletion: placement.requiredForCompletion,
+    };
+  }
+
+  async removeContainerAssessment(placementId: string): Promise<void> {
+    // Removes the assessment from this module only — the exam itself survives, as it may be placed
+    // in other courses and is a standalone content item in its own right.
+    await removeAssessmentPlacement(placementId);
   }
 }

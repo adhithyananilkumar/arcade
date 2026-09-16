@@ -31,19 +31,33 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
     }
   };
 
+  const personalName = (user?.fullName || user?.email || '').trim();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalName = isPersonal ? (user?.fullName || 'User') : name;
+    const finalName = (isPersonal ? personalName : name).trim();
 
-    if (!finalName.trim()) {
-      toast.error('Channel name is required');
+    if (finalName.length < 2) {
+      toast.error(
+        isPersonal
+          ? 'Add your name to your profile first — a personal channel is named after you.'
+          : 'Channel name must be at least 2 characters'
+      );
+      return;
+    }
+    if (finalName.length > 150) {
+      toast.error('Channel name must be at most 150 characters');
+      return;
+    }
+    if (description.trim().length > 2000) {
+      toast.error('Description must be at most 2000 characters');
       return;
     }
 
     try {
       setIsLoading(true);
-      await channelService.createChannelRequest(finalName, description, isPersonal, iconFile || undefined);
-      toast.success('Channel creation requested successfully');
+      await channelService.createChannelRequest(finalName, description.trim(), isPersonal, iconFile || undefined);
+      toast.success('Channel request submitted — an administrator will review it shortly');
       setName('');
       setDescription('');
       setIconFile(null);
@@ -51,8 +65,8 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error('Failed to create channel request');
-      console.error(error);
+      // e.g. "You already have a personal channel…" — the backend message is the useful part.
+      toast.error(error instanceof Error ? error.message : 'Failed to create channel request');
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +132,11 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
                       <span className="text-sm text-gray-700">Organization Channel</span>
                     </label>
                   </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {isPersonal
+                      ? 'One per account, named after you. You are the only person who can publish to it.'
+                      : 'Invite a team, define policies (permission bundles) and assign them to staff.'}
+                  </p>
                 </div>
 
                 <div className="flex justify-center">
@@ -148,9 +167,10 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
                   <input
                     type="text"
                     id="name"
-                    value={isPersonal ? (user?.fullName || '') : name}
+                    value={isPersonal ? personalName : name}
                     onChange={(e) => !isPersonal && setName(e.target.value)}
                     readOnly={isPersonal}
+                    maxLength={150}
                     className={`w-full rounded-xl border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all ${isPersonal ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="E.g., Tech Tutorials"
                     required
@@ -180,6 +200,7 @@ export function CreateChannelModal({ isOpen, onClose, onSuccess }: CreateChannel
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
+                    maxLength={2000}
                     className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none"
                     placeholder="What is your channel about?"
                   />

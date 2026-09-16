@@ -8,8 +8,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePermissions } from "@/domains/identity";
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
-import { useState, useEffect } from 'react';
-import { channelService, useStudioAccess } from "@/domains/channels";
+import { useStudioAccess } from "@/domains/channels";
 
 const baseNavItems = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
@@ -20,19 +19,7 @@ export default function LearnerSidebar() {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const { hasPermission } = usePermissions();
-  const [hasChannels, setHasChannels] = useState(false);
   const { hasAccess: hasStudioAccess } = useStudioAccess();
-
-  useEffect(() => {
-    Promise.all([
-      channelService.getMyChannels(),
-      channelService.getMyWorkspaces()
-    ])
-      .then(([channels, workspaces]) => {
-        setHasChannels(channels.length > 0 || workspaces.length > 0);
-      })
-      .catch(() => setHasChannels(false));
-  }, []);
 
   const showAdminChannels = AuthorizationService.canManageChannels(user);
   const showAdminSettings = AuthorizationService.canAccessIamConsole(user);
@@ -48,7 +35,9 @@ export default function LearnerSidebar() {
       { name: 'Content Studio', href: '/studio', icon: BookOpen },
       { name: 'Published Courses', href: '/studio/published', icon: Eye }
     ] : []),
-    ...(hasChannels ? [{ name: 'Manage Channels', href: '/manage-channels', icon: Tv }] : []),
+    // Always visible: channels are the entry point for creating content, so a user with none yet
+    // must still be able to reach the page that lets them request one.
+    { name: 'Manage Channels', href: '/manage-channels', icon: Tv },
     { name: 'Settings', href: '/settings', icon: Settings },
     ...(showArcConsole ? [{ name: 'Console', href: '/console', icon: ShieldAlert }] : [])
   ];

@@ -134,19 +134,23 @@ export default function LearnerNavbar() {
     try {
       await ChannelStaffService.acceptInvitation(id);
       toast.success('Invitation accepted! You are now staff.');
+      setHasChannels(true);
+    } catch (error) {
+      // e.g. expired, channel suspended, already staff — the backend says which.
+      toast.error(error instanceof Error ? error.message : 'Failed to accept invitation');
+    } finally {
       fetchInvitations();
-    } catch {
-      toast.error('Failed to accept invitation');
     }
   };
 
   const handleRejectInvite = async (id: string) => {
     try {
       await ChannelStaffService.rejectInvitation(id);
-      toast.success('Invitation rejected.');
+      toast.success('Invitation declined.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to decline invitation');
+    } finally {
       fetchInvitations();
-    } catch {
-      toast.error('Failed to reject invitation');
     }
   };
 
@@ -349,6 +353,9 @@ export default function LearnerNavbar() {
                               </p>
                               <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">
                                 {new Date(inv.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at {new Date(inv.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                                {inv.expiresAt && (
+                                  <> · expires {new Date(inv.expiresAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</>
+                                )}
                               </p>
                               <div className="flex gap-2">
                                 <button

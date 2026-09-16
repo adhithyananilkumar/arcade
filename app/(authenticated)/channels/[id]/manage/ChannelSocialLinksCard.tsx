@@ -63,21 +63,21 @@ export function ChannelSocialLinksCard({ channel, canManageSettings, onUpdate, i
   const handleSave = async () => {
     try {
       setLoading(true);
-      const cleanLinks = socialLinks.filter(link => link.trim() !== '');
-      const updatedChannel = await channelService.updateChannelSettings(
-        channel.id,
-        channel.description || '',
-        undefined,
-        undefined,
-        false,
-        false,
-        cleanLinks
-      );
+      const cleanLinks = socialLinks.map((link) => link.trim()).filter((link) => link !== '');
+      const invalid = cleanLinks.find((link) => !/^https?:\/\//i.test(link));
+      if (invalid) {
+        toast.error(`"${invalid}" must start with http:// or https://`);
+        return;
+      }
+      // Only the links are sent — the rest of the profile is left untouched by the backend.
+      const updatedChannel = await channelService.updateChannelProfile(channel.id, {
+        socialLinks: cleanLinks,
+      });
       toast.success('Social links updated successfully');
       onUpdate(updatedChannel);
       setIsEditing(false);
     } catch (error) {
-      toast.error('Failed to update social links');
+      toast.error(error instanceof Error ? error.message : 'Failed to update social links');
     } finally {
       setLoading(false);
     }

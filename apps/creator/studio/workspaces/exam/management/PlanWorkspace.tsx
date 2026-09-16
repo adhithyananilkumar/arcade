@@ -22,6 +22,7 @@ import {
   savePlanSectionRules,
   updateExamPlan,
   validateExamPlan,
+  type AssessmentOutcome,
   type Difficulty,
   type ExamPlanResponse,
   type ExamPlanValidationResponse,
@@ -54,7 +55,36 @@ const PANELS: { id: PanelId; label: string }[] = [
   { id: "attempt", label: "Attempt & scoring" },
   { id: "delivery", label: "Delivery" },
   { id: "security", label: "Security" },
-  { id: "completion", label: "Completion" },
+  { id: "completion", label: "Outcome" },
+];
+
+/**
+ * The four things sitting a plan can produce. This is the one enum in the exam model, because it
+ * genuinely branches behaviour — a "certification exam" is this value plus the security settings
+ * above, not a separate kind of exam with its own code path.
+ */
+const OUTCOME_OPTIONS: { value: AssessmentOutcome; label: string; description: string }[] = [
+  {
+    value: "NONE",
+    label: "Score only",
+    description: "A result the candidate can see. Practice drills and formative checks.",
+  },
+  {
+    value: "COMPLETION",
+    label: "Counts towards completion",
+    description: "Passing satisfies the course or event this assessment is placed in.",
+  },
+  {
+    value: "GRADE_CARD",
+    label: "Issues a grade card",
+    description:
+      "A durable, verifiable transcript with a per-section breakdown — issued on a fail as well as a pass.",
+  },
+  {
+    value: "CERTIFICATE",
+    label: "Certification",
+    description: "A grade card, plus eligibility for a certificate.",
+  },
 ];
 
 export function PlanWorkspace({
@@ -369,22 +399,39 @@ export function PlanWorkspace({
 
         {panel === "completion" && (
           <SettingsCard
-            title="Completion"
-            description="What passing this plan means elsewhere in Arcade."
+            title="Outcome"
+            description="What sitting this plan produces."
           >
+            {/* One outcome replaces the two toggles that used to live here. Each step includes
+                everything below it, so they read as increasing weight rather than as independent
+                switches that could be combined into states nothing implemented. */}
+            <div className="space-y-2">
+              {OUTCOME_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={readOnly || busy}
+                  onClick={() => patchPlan({ outcome: option.value })}
+                  className={`flex w-full flex-col items-start gap-0.5 rounded-xl border px-4 py-3 text-left transition-colors disabled:opacity-60 ${
+                    plan.outcome === option.value
+                      ? "border-[#14142b] bg-[#14142b]/[0.04]"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <span className="text-[13px] font-semibold text-[#14142b]">{option.label}</span>
+                  <span className="text-[12px] font-medium text-slate-500">
+                    {option.description}
+                  </span>
+                </button>
+              ))}
+            </div>
+
             <ToggleField
-              label="Passing completes the parent content"
-              description="Only applies when this exam is attached to a course or event."
-              value={plan.grantsCompletion}
+              label="Require course completion first"
+              description="Candidates must finish the course this assessment is placed in before they can sit it."
+              value={plan.requiresHostCompletion}
               disabled={readOnly || busy}
-              onChange={(v) => patchPlan({ grantsCompletion: v })}
-            />
-            <ToggleField
-              label="Passing counts towards certification"
-              description="Uses Arcade's existing certificate flow — this exam never issues one itself."
-              value={plan.grantsCertificate}
-              disabled={readOnly || busy}
-              onChange={(v) => patchPlan({ grantsCertificate: v })}
+              onChange={(v) => patchPlan({ requiresHostCompletion: v })}
             />
           </SettingsCard>
         )}

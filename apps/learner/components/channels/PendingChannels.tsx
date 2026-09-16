@@ -67,20 +67,24 @@ export function PendingChannels() {
   const handleAccept = async (id: string) => {
     try {
       await channelService.acceptChannelRequest(id);
-      toast.success('Channel request accepted');
+      toast.success('Channel request approved — the owner has been notified');
       fetchChannels();
     } catch (error) {
-      toast.error('Failed to accept request');
+      toast.error(error instanceof Error ? error.message : 'Failed to approve request');
     }
   };
 
   const handleReject = async (id: string) => {
+    const target = pendingChannels.find((c) => c.id === id);
+    if (!confirm(`Reject the channel request "${target?.name ?? ''}"? The request is removed and the owner is notified.`)) {
+      return;
+    }
     try {
       await channelService.deleteChannelRequest(id);
-      toast.success('Channel request deleted');
+      toast.success('Channel request rejected');
       fetchChannels();
     } catch (error) {
-      toast.error('Failed to delete request');
+      toast.error(error instanceof Error ? error.message : 'Failed to reject request');
     }
   };
 
@@ -252,7 +256,7 @@ export function PendingChannels() {
                 <button
                   onClick={() => handleReject(channel.id)}
                   className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                  title="Delete"
+                  title="Reject request"
                 >
                   <X size={18} />
                 </button>

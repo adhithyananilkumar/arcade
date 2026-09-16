@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import { roleService, Role, RoleRequest } from "@/domains/identity";
 import { toast } from 'sonner';
 import { Plus, ShieldCheck, Edit3, Trash2, Shield } from 'lucide-react';
-import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
+import { PolicyEditor } from '@/domains/iam';
+import { ApiError } from '@/infrastructure/http/api';
 import { Card, CardContent, CardHeader } from '@/shared/design-system/ui/card';
 import { Badge } from '@/shared/design-system/ui/badge';
 import { Skeleton } from '@/shared/design-system/ui/skeleton';
@@ -42,8 +43,10 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
     setMounted(true);
   }, []);
 
-  const canManageRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.roles.manage');
-  const canViewRoles = canManageRoles || userPermissions.includes('channel.staff.manage');
+  // Mirrors the backend gate on /channels/{id}/roles: policies are managed by whoever manages
+  // staff (`channel.staff.manage`), or the owner via `ALL`. There is no separate roles permission.
+  const canManageRoles = userPermissions.includes('ALL') || userPermissions.includes('channel.staff.manage');
+  const canViewRoles = canManageRoles;
 
   useEffect(() => {
     fetchData();
@@ -59,11 +62,11 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
       setLoading(true);
       const rolesData = await roleService.getChannelRoles(channelId);
       setRoles(rolesData || []);
-    } catch (error: any) {
-      if (error?.status === 403 || error?.message?.includes('403')) {
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 403) {
         setRoles([]);
       } else {
-        toast.error('Failed to load roles');
+        toast.error(error instanceof Error ? error.message : 'Failed to load roles');
       }
     } finally {
       setLoading(false);
@@ -92,15 +95,16 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
       }
       handleCloseModal();
       fetchData();
-    } catch {
-      toast.error(editingRole ? 'Failed to update role' : 'Failed to create role');
+    } catch (error) {
+      // Surface the backend's reason (duplicate code, permission escalation, suspended channel…).
+      toast.error(error instanceof Error ? error.message : (editingRole ? 'Failed to update role' : 'Failed to create role'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeletePolicy = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this custom role? Users assigned this role may lose access.')) {
+    if (!window.confirm('Delete this policy? It can only be removed once no staff member or pending invitation holds it.')) {
       return;
     }
     try {
@@ -108,7 +112,7 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
       toast.success('Role deleted successfully');
       fetchData();
     } catch (error) {
-      toast.error('Failed to delete role');
+      toast.error(error instanceof Error ? error.message : 'Failed to delete role');
     }
   };
 
@@ -195,6 +199,18 @@ export function ChannelPolicyManager({ channelId, permissions: userPermissions, 
                 </Button>
               </div>
             )
+          )}
+
+          {roles.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-12 text-center">
+              <div className="mb-3 grid size-12 place-items-center rounded-2xl bg-blue-50 text-blue-600 border border-blue-100/80">
+                <Shield size={22} />
+              </div>
+              <p className="text-sm font-extrabold text-[#14142b]">No policies yet</p>
+              <p className="mt-1 max-w-sm text-xs font-medium text-slate-500">
+                A policy is a named bundle of channel permissions you grant to staff. Create one to start inviting your team.
+              </p>
+            </div>
           )}
 
           <div className="grid gap-4.5 md:grid-cols-2">

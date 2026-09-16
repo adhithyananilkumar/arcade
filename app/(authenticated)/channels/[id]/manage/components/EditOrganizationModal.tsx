@@ -33,17 +33,18 @@ export function EditOrganizationModal({
   const [cropTarget, setCropTarget] = useState<'icon' | 'banner' | null>(null);
   const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
 
+  const [removeIcon, setRemoveIcon] = useState(false);
+  const [removeBanner, setRemoveBanner] = useState(false);
+
   useEffect(() => {
     setName(channel.name || '');
     setDescription(channel.description || '');
-
-    const savedBanner = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_banner_${channel.id}`) : null;
-    const savedLogo = typeof window !== 'undefined' ? localStorage.getItem(`arcade_org_logo_${channel.id}`) : null;
-
-    setIconPreview(savedLogo !== null ? savedLogo : (channel.iconUrl || ''));
-    setBannerPreview(savedBanner !== null ? savedBanner : (channel.bannerUrl || ''));
+    setIconPreview(channel.iconUrl || '');
+    setBannerPreview(channel.bannerUrl || '');
     setIconFile(null);
     setBannerFile(null);
+    setRemoveIcon(false);
+    setRemoveBanner(false);
   }, [channel, isOpen]);
 
   const handleIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,9 +77,11 @@ export function EditOrganizationModal({
       if (cropTarget === 'icon') {
         setIconFile(croppedFile);
         setIconPreview(dataUrl);
+        setRemoveIcon(false);
       } else if (cropTarget === 'banner') {
         setBannerFile(croppedFile);
         setBannerPreview(dataUrl);
+        setRemoveBanner(false);
       }
     };
     reader.readAsDataURL(croppedFile);
@@ -89,39 +92,48 @@ export function EditOrganizationModal({
   const handleRemoveBanner = () => {
     setBannerPreview('');
     setBannerFile(null);
-    toast.info('Organization banner removed');
+    setRemoveBanner(!!channel.bannerUrl);
   };
 
   const handleRemoveLogo = () => {
     setIconPreview('');
     setIconFile(null);
-    toast.info('Organization logo removed');
+    setRemoveIcon(!!channel.iconUrl);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) {
+      toast.error('Channel name must be at least 2 characters');
+      return;
+    }
+    if (trimmedName.length > 150) {
+      toast.error('Channel name must be at most 150 characters');
+      return;
+    }
+    if (description.trim().length > 2000) {
+      toast.error('Description must be at most 2000 characters');
+      return;
+    }
     try {
       setLoading(true);
-      await channelService.updateChannelSettings(
-        channel.id,
-        description,
-        iconFile || undefined,
-        bannerFile || undefined
-      );
+      // The backend is the source of truth for what was saved — use its response rather than an
+      // optimistic local copy, so a rename or removal that didn't persist can't be shown as done.
+      const saved = await channelService.updateChannelProfile(channel.id, {
+        name: trimmedName !== channel.name ? trimmedName : undefined,
+        description: description.trim(),
+        iconFile: iconFile || undefined,
+        bannerFile: bannerFile || undefined,
+        removeIcon,
+        removeBanner,
+      });
 
-      const finalChannel: Channel = {
-        ...channel,
-        name: name || channel.name,
-        description,
-        iconUrl: iconPreview,
-        bannerUrl: bannerPreview,
-      };
-
-      toast.success('Organization branding and profile updated successfully');
-      onUpdate(finalChannel);
+      toast.success('Channel profile updated');
+      onUpdate(saved);
       onClose();
-    } catch {
-      toast.error('Failed to update organization profile');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update channel profile');
     } finally {
       setLoading(false);
     }
@@ -264,6 +276,8 @@ export function EditOrganizationModal({
                   <input
                     type="text"
                     required
+                    minLength={2}
+                    maxLength={150}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Arcade AI Research Institute"
@@ -279,6 +293,7 @@ export function EditOrganizationModal({
                 </label>
                 <textarea
                   rows={3}
+                  maxLength={2000}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your organization's mission, courses, faculty, and learning goals..."

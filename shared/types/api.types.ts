@@ -59,6 +59,11 @@ export interface CourseResponse {
   wasPublished?: boolean;
   modules: ModuleResponse[];
   badges: BadgeSummaryResponse[];
+  /**
+   * Course-level assessments — siblings of the module list (a final or certification exam).
+   * Assessments placed inside a module travel on that module instead.
+   */
+  assessments?: AssessmentNodeResponse[];
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
@@ -94,6 +99,29 @@ export interface ModuleResponse {
   position: number;
   lessons: LessonResponse[];
   quizzes: QuizResponse[];
+  /**
+   * Assessments placed in this module. Shares one `position` space with `lessons` — merge and sort
+   * the two to get the module's real running order, which is how an assessment can sit between two
+   * lessons rather than always at the end.
+   */
+  assessments?: AssessmentNodeResponse[];
+}
+
+/**
+ * An assessment node in a course tree. Carries placement and presentation only: no question count,
+ * no answer data, no paper construction, no security configuration. Those stay inside the Exam
+ * context and are resolved when a candidate opens the assessment, which is what lets exams integrate
+ * natively into a course without the course API exposing how they work.
+ */
+export interface AssessmentNodeResponse {
+  placementId: string;
+  examId: string;
+  planId: string | null;
+  title: string;
+  position: number;
+  requiredForCompletion: boolean;
+  /** NONE | COMPLETION | GRADE_CARD | CERTIFICATE — what passing this produces. */
+  outcome: string;
 }
 
 // ── Badge (a course-level content item — sibling of Module; owned by the badges domain) ─

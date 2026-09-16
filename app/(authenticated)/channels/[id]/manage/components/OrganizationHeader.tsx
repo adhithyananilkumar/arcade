@@ -8,7 +8,6 @@ import {
   Edit3,
   ExternalLink,
   Share2,
-  Download,
   Building2,
   Check,
   Mail,
@@ -86,7 +85,6 @@ export function OrganizationHeader({
   onUpdate,
 }: OrganizationHeaderProps) {
   const [copied, setCopied] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
 
   const handleShare = () => {
@@ -95,15 +93,6 @@ export function OrganizationHeader({
     setCopied(true);
     toast.success('Organization link copied to clipboard!');
     setTimeout(() => setCopied(false), 2500);
-  };
-
-  const handleExport = () => {
-    setIsExporting(true);
-    toast.info('Generating comprehensive organization report PDF...');
-    setTimeout(() => {
-      setIsExporting(false);
-      toast.success('Organization Executive Report downloaded successfully!');
-    }, 1800);
   };
 
   return (
@@ -226,32 +215,18 @@ export function OrganizationHeader({
                       }
                     })
                   ) : (
-                    [
-                      { name: 'LinkedIn', icon: LinkedinIcon, href: 'https://linkedin.com', color: 'hover:bg-blue-600 hover:text-white' },
-                      { name: 'Instagram', icon: InstagramIcon, href: 'https://instagram.com', color: 'hover:bg-pink-600 hover:text-white' },
-                      { name: 'GitHub', icon: GithubIcon, href: 'https://github.com', color: 'hover:bg-slate-900 hover:text-white' },
-                      { name: 'Mail', icon: Mail, href: `mailto:${channel.ownerEmail || 'contact@arcade.ai'}`, color: 'hover:bg-indigo-600 hover:text-white' },
-                    ].map((social) => {
-                      const Icon = social.icon;
-                      return (
-                        <a
-                          key={social.name}
-                          href={social.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => {
-                            if (social.name === 'Mail') {
-                              e.preventDefault();
-                              toast.info(`Sending email to ${channel.ownerEmail || 'contact@arcade.ai'}`);
-                            }
-                          }}
-                          className={`flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-[#14142b] shadow-2xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${social.color}`}
-                          title={`Visit Organization ${social.name}`}
-                        >
-                          <Icon size={15} />
-                        </a>
-                      );
-                    })
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      {canEdit ? 'No social links yet — add one:' : 'No social links'}
+                    </span>
+                  )}
+                  {channel.ownerEmail && (
+                    <a
+                      href={`mailto:${channel.ownerEmail}`}
+                      className="flex h-8.5 w-8.5 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-[#14142b] shadow-2xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:bg-indigo-600 hover:text-white"
+                      title={`Email the owner (${channel.ownerEmail})`}
+                    >
+                      <Mail size={15} />
+                    </a>
                   )}
 
                   {/* Plus (+) Button to Add / Manage Social Links */}
@@ -309,15 +284,6 @@ export function OrganizationHeader({
               )}
             </button>
 
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={isExporting}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-xs hover:border-emerald-300 hover:bg-emerald-50/50 hover:text-emerald-700 transition-all active:scale-[0.98] disabled:opacity-70"
-            >
-              <Download size={14} className={`text-emerald-600 ${isExporting ? 'animate-bounce' : ''}`} />
-              <span>Export Report</span>
-            </button>
           </div>
         </div>
       </div>

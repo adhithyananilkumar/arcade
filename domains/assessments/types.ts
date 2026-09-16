@@ -404,8 +404,13 @@ export interface ExamPlanResponse {
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
-  grantsCompletion: boolean;
-  grantsCertificate: boolean;
+  /**
+   * What sitting this plan produces. Replaces the former `grantsCompletion`/`grantsCertificate`
+   * pair, which the authoring UI wrote and nothing ever read.
+   */
+  outcome: AssessmentOutcome;
+  /** Candidates must have completed the course this plan's placement sits under before sitting it. */
+  requiresHostCompletion: boolean;
   /** Sum of every rule's count — the size of the paper this plan builds. */
   totalQuestions: number;
   totalMarks: number;
@@ -430,8 +435,8 @@ export type ExamPlanRequest = Partial<{
   proctoringRequired: boolean;
   identityVerificationRequired: boolean;
   fullscreenRequired: boolean;
-  grantsCompletion: boolean;
-  grantsCertificate: boolean;
+  outcome: AssessmentOutcome;
+  requiresHostCompletion: boolean;
 }>;
 
 export interface ExamPlanValidationResponse {
@@ -503,4 +508,114 @@ export interface QuestionSearchResponse {
   limit: number;
   /** Every tag in use anywhere in the bank — the tag filter's options. */
   availableTags: string[];
+}
+
+// ── Assessment placement & landing ────────────────────────────────────────────
+// An assessment is an exam placed somewhere in other content. Placement is a location, not a kind:
+// a practice drill in module 2 and a proctored certification at course level are the same exam
+// machinery with a different host and a different plan.
+
+/** Where an assessment can sit. EVENT_SESSION is declared but not yet supported by the server. */
+export type AssessmentHostType = "COURSE" | "COURSE_MODULE" | "EVENT" | "EVENT_SESSION";
+
+/** What passing an assessment produces — the one enum in the exam model that branches behaviour. */
+export type AssessmentOutcome = "NONE" | "COMPLETION" | "GRADE_CARD" | "CERTIFICATE";
+
+/** One appearance of an exam inside other content, as the authoring UI sees it. */
+export interface AssessmentPlacementResponse {
+  id: string;
+  examId: string;
+  hostType: AssessmentHostType;
+  hostId: string;
+  planId: string | null;
+  /** Shares one ordering space with the host's lessons, so it can sit between two of them. */
+  position: number;
+  requiredForCompletion: boolean;
+  /** Tiptap JSON, serialized. Overrides the exam's own instructions for this appearance. */
+  instructions: string | null;
+  titleOverride: string | null;
+}
+
+/** An assessment node inside a course tree, as the learner player and renderers see it. */
+export interface AssessmentNode {
+  placementId: string;
+  examId: string;
+  planId: string | null;
+  title: string;
+  position: number;
+  requiredForCompletion: boolean;
+  outcome: AssessmentOutcome;
+}
+
+/**
+ * Why a candidate cannot begin. Decided by the server from the same rules the attempt-start path
+ * enforces — never recomputed in the browser, which would drift from what is actually enforced.
+ */
+export type AssessmentBlockedReason =
+  | "NOT_PUBLISHED"
+  | "NOT_STARTED_YET"
+  | "WINDOW_CLOSED"
+  | "ATTEMPTS_EXHAUSTED"
+  | "REGISTRATION_REQUIRED"
+  | "PAYMENT_REQUIRED"
+  | "PREREQUISITE_NOT_MET"
+  | "AWAITING_MARKING";
+
+/** One past sitting. A pending-review entry reports no pass/fail yet, rather than a provisional one. */
+export interface AttemptHistoryItem {
+  attemptId: string;
+  attemptNumber: number;
+  status: string;
+  submittedAt: string | null;
+  percentage: number | null;
+  passed: boolean | null;
+  awaitingReview: boolean;
+  gradeCardId: string | null;
+}
+
+/**
+ * Everything the assessment landing page shows before a candidate starts — the page that replaces
+ * a bare "Start exam" button.
+ */
+export interface AssessmentLandingResponse {
+  examId: string;
+  title: string;
+  purpose: string | null;
+  /** Tiptap document. */
+  instructions: unknown | null;
+
+  placementId: string | null;
+  requiredForCompletion: boolean;
+
+  planId: string | null;
+  planName: string | null;
+  planDescription: string | null;
+  durationMinutes: number;
+  maxAttempts: number;
+  passPercentage: number;
+  questionCount: number;
+
+  deliveryMode: DeliveryMode;
+  opensAt: string | null;
+  closesAt: string | null;
+  openNow: boolean;
+
+  proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
+  fullscreenRequired: boolean;
+  registrationRequired: boolean;
+  registered: boolean;
+
+  outcome: AssessmentOutcome;
+
+  attemptsUsed: number;
+  attemptsRemaining: number;
+  /** An attempt already in progress, which Start resumes rather than replacing. */
+  openAttemptId: string | null;
+
+  history: AttemptHistoryItem[];
+
+  startable: boolean;
+  blockedReason: AssessmentBlockedReason | null;
+  blockedMessage: string | null;
 }

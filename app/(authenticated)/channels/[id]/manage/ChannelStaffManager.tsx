@@ -7,11 +7,10 @@ import { ChannelStaffService, ChannelStaff, ChannelInvitation } from "@/domains/
 import { UserService } from "@/domains/identity";
 import { Role, roleService } from "@/domains/identity";
 import { toast } from 'sonner';
-import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil, Search, ShieldCheck } from 'lucide-react';
+import { Users, Mail, Check, X, Trash2, Plus, Loader2, LogOut, Pencil, Search, ShieldCheck, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/design-system/ui/dialog';
 import { ChannelPolicyManager } from './ChannelPolicyManager';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/shared/design-system/ui/table';
 import { Badge } from '@/shared/design-system/ui/badge';
 import { Avatar, AvatarFallback } from '@/shared/design-system/ui/avatar';
 import { Skeleton } from '@/shared/design-system/ui/skeleton';
@@ -154,9 +153,36 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       setSelectedRoleIds([]);
       setFoundUser(null);
       fetchData();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to send invitation');
+    } catch (error) {
+      // The HTTP client surfaces the backend's message on `error.message` (see ApiError).
+      toast.error(error instanceof Error ? error.message : 'Failed to send invitation');
     }
+  };
+
+  const [cancellingInvitationId, setCancellingInvitationId] = useState<string | null>(null);
+  // Captured once per mount so expiry countdowns are pure during render.
+  const [now] = useState(() => Date.now());
+
+  const handleCancelInvitation = async (invitation: ChannelInvitation) => {
+    if (!confirm(`Cancel the invitation for ${invitation.email}?`)) return;
+    setCancellingInvitationId(invitation.id);
+    try {
+      await ChannelStaffService.deleteInvitation(channelId, invitation.id);
+      toast.success('Invitation cancelled');
+      setInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to cancel invitation');
+    } finally {
+      setCancellingInvitationId(null);
+    }
+  };
+
+  const formatExpiry = (invitation: ChannelInvitation) => {
+    if (!invitation.expiresAt) return null;
+    const expires = new Date(invitation.expiresAt);
+    if (invitation.expired) return `Expired ${expires.toLocaleDateString()}`;
+    const days = Math.max(0, Math.ceil((expires.getTime() - now) / 86_400_000));
+    return days <= 1 ? 'Expires today' : `Expires in ${days} days`;
   };
 
   const openEditRoles = (member: ChannelStaff) => {
@@ -175,8 +201,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       toast.success('Policies updated');
       setEditRolesTarget(null);
       fetchData();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to update policies');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update policies');
     } finally {
       setEditRolesSubmitting(false);
     }
@@ -196,8 +222,8 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
         } else {
           fetchData();
         }
-      } catch {
-        toast.error(isSelf ? 'Failed to leave channel' : 'Failed to remove staff');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : (isSelf ? 'Failed to leave channel' : 'Failed to remove staff'));
       }
     }
   };
@@ -216,6 +242,19 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
       <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
         <p className="text-sm font-semibold text-gray-700">You're not a member of this channel</p>
         <p className="text-sm text-gray-500 mt-1">Only the owner and staff can view its roster and roles.</p>
+      </div>
+    );
+  }
+
+  if (isPersonalChannel) {
+    // The backend refuses staffing calls on personal channels; the manage page normally hides
+    // this tab for them, so this is only a safety net for deep links.
+    return (
+      <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center">
+        <p className="text-sm font-semibold text-gray-700">Personal channels don&apos;t have staff</p>
+        <p className="text-sm text-gray-500 mt-1">
+          You are the sole authority on a personal channel. Create an organisation channel to invite a team and define policies.
+        </p>
       </div>
     );
   }
@@ -454,7 +493,7 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
         </div>
       )}
 
-      {isPersonalChannel && invitations.length > 0 && (
+      {canManageStaff && activeSubView === 'ROSTER' && invitations.length > 0 && (
         <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 shadow-sm space-y-0">
           <div className="flex items-center justify-between border-b border-slate-100 bg-amber-50/50 px-6 py-4">
             <h4 className="flex items-center gap-2.5 text-sm font-extrabold text-[#14142b]">
@@ -469,40 +508,59 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
           </div>
 
           <div className="divide-y divide-slate-100">
-            {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map((inv) => (
-              <div
-                key={inv.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 hover:bg-amber-50/20 transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs border border-amber-200/60">
-                    {inv.email[0].toUpperCase()}
+            {(isInvitationsExpanded ? invitations : invitations.slice(0, 3)).map((inv) => {
+              const expiry = formatExpiry(inv);
+              return (
+                <div
+                  key={inv.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 hover:bg-amber-50/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-100 text-amber-800 font-extrabold text-xs border border-amber-200/60">
+                      {inv.email[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-[#14142b] truncate">{inv.email}</p>
+                      <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
+                        Invited by <span className="text-slate-700 font-bold">{inv.invitedByName}</span> on{' '}
+                        {new Date(inv.createdAt).toLocaleDateString()}
+                        {expiry && (
+                          <>
+                            {' · '}
+                            <span className={`inline-flex items-center gap-1 ${inv.expired ? 'text-rose-600 font-bold' : ''}`}>
+                              <Clock size={10} /> {expiry}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-[#14142b] truncate">{inv.email}</p>
-                    <p className="text-[11px] font-semibold text-slate-400 truncate mt-0.5">
-                      Invited by <span className="text-slate-700 font-bold">{inv.invitedByName}</span> on{' '}
-                      {new Date(inv.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                  <Badge
-                    variant="outline"
-                    className={
-                      inv.status === 'PENDING'
-                        ? 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
-                        : inv.status === 'REJECTED'
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                    <Badge
+                      variant="outline"
+                      className={
+                        inv.expired
                           ? 'text-rose-700 border-rose-200/70 bg-rose-50/90 text-[11px] font-black px-3 py-1 rounded-full'
-                          : 'text-slate-600 border-slate-200 bg-slate-50 text-[11px] font-black px-3 py-1 rounded-full'
-                    }
-                  >
-                    {inv.roleNames.join(', ')} • {inv.status}
-                  </Badge>
+                          : 'text-amber-700 border-amber-200/70 bg-amber-50/90 text-[11px] font-black px-3 py-1 rounded-full'
+                      }
+                    >
+                      {inv.roleNames.join(', ')} • {inv.expired ? 'EXPIRED' : inv.status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleCancelInvitation(inv)}
+                      disabled={isSuspended || cancellingInvitationId === inv.id}
+                      className="h-8 w-8 rounded-xl border border-slate-200/80 bg-white text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
+                      title={inv.expired ? 'Remove expired invitation' : 'Cancel invitation'}
+                    >
+                      {cancellingInvitationId === inv.id ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {!isInvitationsExpanded && invitations.length > 3 && (
@@ -576,6 +634,19 @@ export function ChannelStaffManager({ channelId, permissions, isSuspended, isPer
                 Organization Policies <span className="text-slate-400 font-medium">(select one or more)</span>
               </label>
               <div className="space-y-1.5 max-h-48 overflow-y-auto rounded-2xl border border-slate-200 p-2 bg-slate-50/50">
+                {roles.length === 0 && (
+                  <p className="px-3 py-3 text-xs font-medium text-slate-500">
+                    No policies defined yet. Create one under{' '}
+                    <button
+                      type="button"
+                      className="font-bold text-blue-600 hover:underline"
+                      onClick={() => { setIsInviteModalOpen(false); setActiveSubView('CUSTOM_ROLES'); }}
+                    >
+                      Custom Roles
+                    </button>{' '}
+                    first — every staff member needs at least one policy.
+                  </p>
+                )}
                 {roles.map(role => (
                   <label key={role.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-blue-50/70 transition-colors cursor-pointer text-xs font-semibold text-slate-800">
                     <input

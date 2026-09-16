@@ -3,13 +3,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/infrastructure/http/api';
-import type { CourseResponse, LessonResponse } from '@/shared/types/api.types';
+import type {
+  AssessmentNodeResponse,
+  CourseResponse,
+  LessonResponse,
+  ModuleResponse,
+} from '@/shared/types/api.types';
 import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
   Check,
   CheckCircle2,
+  FileText,
   Flag,
   MoreVertical,
 } from 'lucide-react';
@@ -30,6 +36,46 @@ import {
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ReportModal } from '@/shared/design-system/ui/ReportModal';
+import { AssessmentLandingPane } from './AssessmentLandingPane';
+
+/**
+ * A node in the course's running order. Until assessments existed every node was a lesson and this
+ * page assumed so throughout — there was no type switch anywhere in it.
+ */
+type PlayerItem =
+  | { kind: 'lesson'; id: string; moduleId: string; position: number; lesson: LessonResponse }
+  | {
+      kind: 'assessment';
+      id: string;
+      moduleId: string;
+      position: number;
+      assessment: AssessmentNodeResponse;
+    };
+
+/**
+ * Lessons and assessments share one position space, so a module's real order is the two merged and
+ * sorted. Ties break on kind then id, keeping the order total and stable rather than dependent on
+ * however the two arrays happened to arrive.
+ */
+function itemsForModule(mod: ModuleResponse): PlayerItem[] {
+  const lessons: PlayerItem[] = (mod.lessons ?? []).map((lesson) => ({
+    kind: 'lesson',
+    id: lesson.id,
+    moduleId: mod.id,
+    position: lesson.position,
+    lesson,
+  }));
+  const assessments: PlayerItem[] = (mod.assessments ?? []).map((assessment) => ({
+    kind: 'assessment',
+    id: assessment.placementId,
+    moduleId: mod.id,
+    position: assessment.position,
+    assessment,
+  }));
+  return [...lessons, ...assessments].sort(
+    (a, b) => a.position - b.position || a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id)
+  );
+}
 
 export default function CourseLearnPage() {
   const params = useParams();
@@ -38,7 +84,7 @@ export default function CourseLearnPage() {
   const lessonParam = searchParams?.get('lesson');
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedLesson, setSelectedLesson] = useState<LessonResponse | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PlayerItem | null>(null);
   const [progress, setProgress] = useState<CourseProgress | null>(null);
   const [marking, setMarking] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
@@ -76,15 +122,13 @@ export default function CourseLearnPage() {
         .then((data) => {
           setCourse(data);
           if (data.modules && data.modules.length > 0) {
-            const allLessons = data.modules.flatMap((m) => m.lessons || []);
-            const targetLesson = lessonParam
-              ? allLessons.find((l) => l.id === lessonParam)
+            const items = data.modules.flatMap(itemsForModule);
+            // ?lesson= still addresses a lesson specifically — it predates assessments and is
+            // linked to from elsewhere, so it keeps meaning exactly what it always did.
+            const target = lessonParam
+              ? items.find((i) => i.kind === 'lesson' && i.id === lessonParam)
               : null;
-            if (targetLesson) {
-              setSelectedLesson(targetLesson);
-            } else if (allLessons.length > 0) {
-              setSelectedLesson(allLessons[0]);
-            }
+            setSelectedItem(target ?? items[0] ?? null);
           }
         })
         .catch(console.error)
@@ -99,6 +143,10 @@ export default function CourseLearnPage() {
     }
   }, [courseId]);
 
+  // Null while an assessment is on screen: engagement time is measured against lesson content, and
+  // time spent reading an assessment's instructions is not lesson study time.
+  const selectedLesson = selectedItem?.kind === 'lesson' ? selectedItem.lesson : null;
+
   /**
    * Records real engaged time against the lesson currently on screen — the only source of
    * `learner_daily_activity.learning_minutes`. Instrumentation only: it renders nothing, and it
@@ -111,33 +159,27 @@ export default function CourseLearnPage() {
     enabled: Boolean(courseId && selectedLesson?.id && !loading),
   });
 
-  const orderedLessons = useMemo(
-    () => course?.modules.flatMap((mod) => mod.lessons) ?? [],
+  const orderedItems = useMemo(
+    () => course?.modules.flatMap(itemsForModule) ?? [],
     [course],
   );
 
-  const lessonNumberById = useMemo(() => {
+  /** One running number across the whole course, counting assessments as steps too. */
+  const itemNumberById = useMemo(() => {
     const map = new Map<string, number>();
-    let n = 0;
-    course?.modules.forEach((mod) => {
-      mod.lessons.forEach((lesson) => {
-        n += 1;
-        map.set(lesson.id, n);
-      });
-    });
+    orderedItems.forEach((item, index) => map.set(item.id, index + 1));
     return map;
-  }, [course]);
+  }, [orderedItems]);
 
-  const currentLessonIndex = selectedLesson
-    ? orderedLessons.findIndex((lesson) => lesson.id === selectedLesson.id)
+  const currentIndex = selectedItem
+    ? orderedItems.findIndex((item) => item.id === selectedItem.id)
     : -1;
-  const previousLesson = currentLessonIndex > 0 ? orderedLessons[currentLessonIndex - 1] : null;
-  const nextLesson =
-    currentLessonIndex >= 0 && currentLessonIndex < orderedLessons.length - 1
-      ? orderedLessons[currentLessonIndex + 1]
+  const previousItem = currentIndex > 0 ? orderedItems[currentIndex - 1] : null;
+  const nextItem =
+    currentIndex >= 0 && currentIndex < orderedItems.length - 1
+      ? orderedItems[currentIndex + 1]
       : null;
-  const isLastLesson =
-    currentLessonIndex >= 0 && currentLessonIndex === orderedLessons.length - 1;
+  const isLastItem = currentIndex >= 0 && currentIndex === orderedItems.length - 1;
 
   const isLessonComplete = (lessonId: string) =>
     progress?.completedLessonIds.includes(lessonId) ?? false;
@@ -154,15 +196,24 @@ export default function CourseLearnPage() {
     return updated;
   };
 
+  const goTo = (item: PlayerItem | null) => {
+    if (!item) return;
+    setSelectedItem(item);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleNext = async () => {
-    if (!selectedLesson) return;
+    if (!selectedItem) return;
+    // Completion for an assessment is passing it, not visiting its page. markLessonComplete would
+    // reject a placement id outright, since the published snapshot knows it isn't a lesson.
+    if (selectedItem.kind !== 'lesson') {
+      goTo(nextItem);
+      return;
+    }
     setMarking(true);
     try {
       await markComplete();
-      if (nextLesson) {
-        setSelectedLesson(nextLesson);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      goTo(nextItem);
     } catch (err) {
       console.error('Failed to advance to next lesson:', err);
       toast.error('Could not update progress.');
@@ -171,10 +222,12 @@ export default function CourseLearnPage() {
     }
   };
 
-  const handlePrevious = () => {
-    if (!previousLesson) return;
-    setSelectedLesson(previousLesson);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handlePrevious = () => goTo(previousItem);
+
+  /** Refreshes the progress bar after an assessment is passed, without a full reload. */
+  const refreshProgress = () => {
+    if (!courseId) return;
+    courseProgressService.getCourseProgress(courseId).then(setProgress).catch(() => {});
   };
 
   if (loading) {
@@ -280,20 +333,70 @@ export default function CourseLearnPage() {
                     {mod.title?.trim() ? mod.title : `Module ${modIdx + 1}`}
                   </p>
                   <ul className="space-y-0.5">
-                    {mod.lessons.map((lesson) => {
-                      const num = lessonNumberById.get(lesson.id) ?? 0;
-                      const isSelected = selectedLesson?.id === lesson.id;
+                    {itemsForModule(mod).map((item) => {
+                      const num = itemNumberById.get(item.id) ?? 0;
+                      const isSelected = selectedItem?.id === item.id;
+
+                      // Assessments get a distinct row: no completion tick (passing is what counts,
+                      // and this page doesn't know the result), no report menu, and an icon instead
+                      // of a step number so they read as a different kind of thing in the tree.
+                      if (item.kind === 'assessment') {
+                        return (
+                          <li key={item.id} className="relative">
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => goTo(item)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  goTo(item);
+                                }
+                              }}
+                              className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
+                                isSelected
+                                  ? 'bg-[#14142b] text-white shadow-[0_6px_16px_rgba(20,20,43,0.18)]'
+                                  : 'text-slate-600 hover:bg-white/80 hover:text-[#14142b]'
+                              }`}
+                            >
+                              <span
+                                className={`grid size-6 shrink-0 place-items-center rounded-md ${
+                                  isSelected ? 'bg-white/15 text-white' : 'bg-amber-50 text-amber-600'
+                                }`}
+                              >
+                                <FileText size={12} />
+                              </span>
+                              <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+                                {item.assessment.title}
+                              </span>
+                              {item.assessment.requiredForCompletion && (
+                                <span
+                                  className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${
+                                    isSelected
+                                      ? 'bg-white/15 text-white'
+                                      : 'bg-amber-50 text-amber-700'
+                                  }`}
+                                >
+                                  Required
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      }
+
+                      const lesson = item.lesson;
                       const isComplete = isLessonComplete(lesson.id);
                       return (
                         <li key={lesson.id} className="relative group/item">
                           <div
                             role="button"
                             tabIndex={0}
-                            onClick={() => setSelectedLesson(lesson)}
+                            onClick={() => goTo(item)}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                setSelectedLesson(lesson);
+                                goTo(item);
                               }
                             }}
                             className={`flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors ${
@@ -396,13 +499,23 @@ export default function CourseLearnPage() {
         {/* Lesson canvas — centered & wide */}
         <main className="relative flex min-w-0 flex-1 justify-center px-4 py-6 sm:px-8 md:py-8 lg:px-12">
           <article className="relative flex w-full max-w-4xl flex-col">
-            {selectedLesson ? (
+            {selectedItem?.kind === 'assessment' ? (
+              // An assessment is a page in the structure, not a button: it describes itself here,
+              // inside the course shell, and only hands off to the exam player once the candidate
+              // actually starts — which needs fullscreen and possibly proctoring.
+              <AssessmentLandingPane
+                key={selectedItem.id}
+                assessment={selectedItem.assessment}
+                courseId={courseId}
+                onPassed={refreshProgress}
+              />
+            ) : selectedLesson ? (
               <>
                 <header className="mb-6 flex items-start justify-between gap-4 md:mb-8">
                   <div>
                     <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Lesson {currentLessonIndex + 1}
-                      {orderedLessons.length > 0 ? ` · ${orderedLessons.length}` : ''}
+                      Lesson {currentIndex + 1}
+                      {orderedItems.length > 0 ? ` · ${orderedItems.length}` : ''}
                     </p>
                     <h1 className="text-[1.75rem] font-bold leading-tight tracking-tight text-[#14142b] md:text-[2.15rem]">
                       {selectedLesson.title}
@@ -435,7 +548,7 @@ export default function CourseLearnPage() {
                 {/* Bottom actions only — hide absent prev/next */}
                 <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-5 pb-10">
                   <div>
-                    {previousLesson && (
+                    {previousItem && (
                       <button
                         type="button"
                         onClick={handlePrevious}
@@ -448,21 +561,17 @@ export default function CourseLearnPage() {
                   </div>
 
                   <div className="ml-auto flex items-center gap-2">
-                    {nextLesson ? (
+                    {nextItem ? (
                       <button
                         type="button"
                         onClick={handleNext}
                         disabled={marking}
                         className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
                       >
-                        {marking
-                          ? 'Saving…'
-                          : lessonDone
-                            ? 'Next lesson'
-                            : 'Complete & next'}
+                        {marking ? 'Saving…' : lessonDone ? 'Next' : 'Complete & next'}
                         <ChevronRight size={16} />
                       </button>
-                    ) : isLastLesson ? (
+                    ) : isLastItem ? (
                       lessonDone ? (
                         <Link
                           href="/learning"
