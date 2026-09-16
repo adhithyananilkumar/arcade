@@ -7,7 +7,7 @@ The Creator application is structured around a strict 4-layer taxonomy:
 | Layer | Path | Responsibility | Question Answered | Key Components |
 |---|---|---|---|---|
 | **1. Editor** | `apps/creator/editor/` | Reusable document & rich-text editing engine | *How* content is edited & rendered | `ArcadeEditor`, Tiptap extensions, Yjs bindings, `uploadQueueStore`, `editor.css` |
-| **2. Studio Core** | `apps/creator/studio/core/` | Centralized authoring application chrome & infrastructure | *Where* the authoring experience happens | `StudioShell` (Frame, TopBar, Body), `StudioHeader`, `StudioRightPanel`, `useStudioPanel`, `useStudioConfirm`, `useUnsavedChangesGuard` |
+| **2. Studio Core** | `apps/creator/studio/core/` | Centralized authoring application chrome & infrastructure | *Where* the authoring experience happens | `StudioShell` (Frame, TopBar, Body), `StudioHeader`, `StudioRightPanel`, `StudioHistoryPanel`, `useStudioSaveManager`, `useStudioUnsavedChanges`, `useStudioPanel`, `useStudioConfirm` |
 | **3. Workspace** | `apps/creator/studio/workspaces/` | Domain authoring workflows & tree management | *Which* content domain is being managed | `CourseWorkspace`, `EventWorkspace`, `ExamWorkspace`, `ContentEditorRuntime`, adapters, `ContentSubmitDialog` |
 | **4. Domain / API** | `domains/*`, `infrastructure/http/api` | Business entities, REST queries, backend persistence | *What* the content is & how it persists | `domains/courses`, `domains/assessments`, `domains/publishing`, `api` |
 
@@ -19,6 +19,9 @@ The Creator application is structured around a strict 4-layer taxonomy:
 * **Workspace Isolation**: Workspaces depend on Studio Core and their respective domain; **Workspace → Workspace dependencies are forbidden** (no Course → Event, Exam → Course, etc.).
 * **Canonical Top Bar**: Exactly one `StudioEditorTopBar` implementation renders across Course, Event, and Exam. Workspace-specific actions compose through typed data props, never custom headers.
 * **Consolidated Share**: TopBar Share activates the centralized Studio Team panel (`StudioRightPanel`), eliminating duplicate collaborator modals.
+* **Capability Honesty Rule**: Studio Core must never infer that a capability exists merely because its UI exists. A capability is `available` only when the underlying backend/runtime implementation is actually functional. Otherwise the workspace must explicitly provide `unavailable` or `disabled` state. No placeholder adapters, fake revision lists, simulated collaboration, or client-only persistence.
+* **Domain Decoupling (Question Bank vs. Exam)**: Question Bank owns questions, options, sections, and future revisions (`QuestionVersion`). Exam owns assessment plans, question pools, selection rules, and published release snapshots (`ExamVersion`). Question Bank editing lives inside `ExamWorkspace` for now without coupling their domain models.
+* **Quiz Owns Nothing in Creator**: Quiz is eliminated as an authoring concept. Learner-side quiz taking remains only where required for course delivery.
 
 ---
 
@@ -32,6 +35,10 @@ type. Verified by `ContentEditorRuntime.test.tsx` and `StudioTopBar.architecture
 | `StudioShell.tsx` | `StudioEditorFrame` (ambient chrome), `StudioEditorTopBar`, `StudioEditorBody` — the viewport contract (see below) — plus shared tree/canvas class constants and the four canvas states (`StudioCanvasLoading/Empty/Error`). |
 | `StudioHeader.tsx` | `StudioPresenceStack`, `StudioShareControl`, `StudioPanelToggle`, `StudioActionButton`, `StudioIconAction` — every header control. |
 | `StudioRightPanel.tsx` | The floating Status/History/Team panel. |
+| `StudioHistoryPanel.tsx` | Reusable history presentation consuming generic `StudioHistoryAdapter<TRevision>`. |
+| `StudioCapabilities.ts` | Typed capability status union (`available` | `unavailable` | `disabled`) and capability honesty contract. |
+| `useStudioSaveManager.ts` | Headless, snapshot-safe save manager handling debounce scheduling, concurrency, and unmount safety flush. |
+| `useStudioUnsavedChanges.ts` | Decoupled browser navigation protection hook consuming save state. |
 | `useStudioPanel.ts` | Collaborator list + status history + invite/remove state, parameterized only by two API paths. |
 | `useStudioConfirm.tsx` | Destructive action confirmation dialog hook. |
 | `useUnsavedChangesGuard.ts` | `beforeunload` protection for a dirty flag. |

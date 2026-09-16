@@ -32,6 +32,9 @@ import {
 import type { ContentStatusHistoryResponse } from "@/domains/publishing";
 import type { StudioCollaborator } from "./useStudioPanel";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
+import type { StudioCapability } from "./StudioCapabilities";
+import type { StudioHistoryAdapter } from "./StudioHistory";
+import { StudioHistoryPanel } from "./StudioHistoryPanel";
 
 function timeAgo(dateString: string) {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
@@ -85,7 +88,11 @@ interface StudioRightPanelProps {
   // The version-history tab's whole body — built by the orchestrator as an
   // embedded <VersionHistoryOrchestrator embedded /> so this component stays
   // presentational (it doesn't own that data-fetching/restore flow).
-  historyContent: React.ReactNode;
+  historyContent?: React.ReactNode;
+  /** Studio Core capability adapter for history */
+  historyCapability?: StudioCapability<StudioHistoryAdapter<any>>;
+  /** Studio Core capability for real-time collaboration */
+  collaborationCapability?: StudioCapability<{ isRealtime: boolean }>;
 
   activeLessonId: string | null;
   collabState: { status: CollabStatus; collaborators: ActiveCollaborator[] };
@@ -193,7 +200,25 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
             </p>
           </div>
         ) : tab === "history" ? (
-          props.historyContent
+          props.historyCapability ? (
+            <StudioHistoryPanel capability={props.historyCapability} />
+          ) : (
+            props.historyContent
+          )
+        ) : tab === "collab" && props.collaborationCapability && props.collaborationCapability.status !== "available" ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl border border-white/40 bg-white/60">
+              <Users className="h-6 w-6 text-slate-300" />
+            </span>
+            <h4 className="text-sm font-semibold text-slate-800">
+              {props.collaborationCapability.status === "disabled"
+                ? "Collaboration Disabled"
+                : "Collaboration Unavailable"}
+            </h4>
+            <p className="max-w-[240px] text-xs leading-relaxed text-slate-500">
+              {props.collaborationCapability.reason}
+            </p>
+          </div>
         ) : tab === "status" ? (
           props.statusHistoryLoading ? (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-400">

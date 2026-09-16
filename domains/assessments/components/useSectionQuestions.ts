@@ -1,20 +1,17 @@
 // domains/assessments/components/useSectionQuestions.ts
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getSectionQuestions, saveSectionQuestions } from "../api";
+import { useCallback, useEffect, useState } from "react";
+import { getSectionQuestions } from "../api";
 import type { BankQuestionType, Difficulty, QuestionBankQuestionsRequest } from "../types";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 
 /**
- * The question-authoring engine for one question-bank section: load, debounced autosave, and every
- * mutation a question supports. Deliberately headless — the stacked editor (SectionQuestionsEditor)
- * and the exam editor's tree/canvas layout are two presentations of this one state machine, so
- * "editing a question" behaves identically wherever a creator does it.
+ * The question-authoring engine for one question-bank section: loading and every question
+ * mutation. Deliberately headless — the stacked editor (SectionQuestionsEditor)
+ * and the exam editor's tree/canvas layout are two presentations of this one state machine.
+ * Save scheduling is managed by Studio Core (useStudioSaveManager).
  */
-
-/** Debounce for autosaving question edits. */
-const SAVE_DEBOUNCE_MS = 1200;
 
 const EMPTY_DOC: TiptapDocument = { type: "doc", content: [] };
 
@@ -83,7 +80,7 @@ function newQuestion(): LocalQuestion {
   };
 }
 
-function toRequest(questions: LocalQuestion[]): QuestionBankQuestionsRequest {
+export function toRequest(questions: LocalQuestion[]): QuestionBankQuestionsRequest {
   return {
     questions: questions.map((q) => ({
       id: q.id,
@@ -112,6 +109,12 @@ export function promptToPlainText(prompt: TiptapDocument | undefined): string {
   return walk(prompt).replace(/\s+/g, " ").trim();
 }
 
+export interface UseSectionQuestionsOptions {
+  onQuestionCountChange?: (sectionId: string, count: number) => void;
+  onChange?: (questions: LocalQuestion[]) => void;
+  saveState?: SaveState;
+}
+
 export interface SectionQuestionsController {
   questions: LocalQuestion[];
   loading: boolean;
@@ -136,20 +139,25 @@ const NO_QUESTIONS: LocalQuestion[] = [];
 
 export function useSectionQuestions(
   sectionId: string,
-  onQuestionCountChange?: (sectionId: string, count: number) => void
+  optionsOrCountCallback?:
+    | ((sectionId: string, count: number) => void)
+    | UseSectionQuestionsOptions
 ): SectionQuestionsController {
+  const options =
+    typeof optionsOrCountCallback === "function"
+      ? { onQuestionCountChange: optionsOrCountCallback }
+      : optionsOrCountCallback ?? {};
+
+  const { onQuestionCountChange, onChange, saveState = "idle" } = options;
+
   const [loadedQuestions, setQuestions] = useState<LocalQuestion[]>([]);
   const [loadingState, setLoading] = useState(true);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
 
   // With no section selected (the exam editor mounts before one is picked) there is nothing to
   // load and nothing to show. Derived rather than written into state by an effect, so mounting
   // without a section doesn't trigger a render just to blank things out.
   const questions = sectionId ? loadedQuestions : NO_QUESTIONS;
   const loading = sectionId ? loadingState : false;
-
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingRef = useRef<LocalQuestion[] | null>(null);
 
   const fromServer = useCallback(
     (server: Awaited<ReturnType<typeof getSectionQuestions>>): LocalQuestion[] =>
@@ -189,55 +197,14 @@ export function useSectionQuestions(
     };
   }, [sectionId, fromServer, onQuestionCountChange]);
 
-  // ── Save (debounced) ──────────────────────────────────────────────────────────
-  const flushSave = useCallback(async () => {
-    if (saveTimer.current) {
-      clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    const pending = pendingRef.current;
-    if (!pending) return;
-    pendingRef.current = null;
-    setSaveState("saving");
-    try {
-      await saveSectionQuestions(sectionId, toRequest(pending));
-      setSaveState("saved");
-    } catch (e) {
-      console.warn("Question save failed", e);
-      setSaveState("error");
-    }
-  }, [sectionId]);
-
-  const scheduleSave = useCallback(
-    (next: LocalQuestion[]) => {
-      pendingRef.current = next;
-      setSaveState("saving");
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(flushSave, SAVE_DEBOUNCE_MS);
-    },
-    [flushSave]
-  );
-
-  // Flush any pending edit when unmounting (e.g. switching to another section).
-  useEffect(() => {
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      const pending = pendingRef.current;
-      if (pending) {
-        pendingRef.current = null;
-        saveSectionQuestions(sectionId, toRequest(pending)).catch(() => {});
-      }
-    };
-  }, [sectionId]);
-
-  /** Apply a change and schedule a save. */
+  /** Apply a change, notify listeners, and let Studio manage save lifecycle. */
   const commit = useCallback(
     (next: LocalQuestion[]) => {
       setQuestions(next);
-      scheduleSave(next);
+      onChange?.(next);
       onQuestionCountChange?.(sectionId, next.length);
     },
-    [scheduleSave, onQuestionCountChange, sectionId]
+    [onChange, onQuestionCountChange, sectionId]
   );
 
   const mapQuestion = useCallback(

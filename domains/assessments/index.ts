@@ -25,6 +25,7 @@ export { QuestionTagEditor } from "./components/QuestionTagEditor";
 // writing surface, and there is exactly one of those in the platform.
 export {
   useSectionQuestions,
+  toRequest,
   promptToPlainText,
   DIFFICULTIES,
   DIFFICULTIES_BG,

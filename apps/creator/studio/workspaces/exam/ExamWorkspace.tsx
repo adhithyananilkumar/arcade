@@ -44,7 +44,8 @@ import {
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
-import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
+import { useStudioSaveManager, type StudioSaveAdapter } from "@/apps/creator/studio/core/useStudioSaveManager";
+import { useStudioUnsavedChanges } from "@/apps/creator/studio/core/useStudioUnsavedChanges";
 import {
   createSection,
   deleteSection,
@@ -57,11 +58,14 @@ import {
   promptToPlainText,
   publishExam,
   renameSection,
+  saveSectionQuestions,
   searchBankQuestions,
+  toRequest,
   useSectionQuestions,
   validateExamPlan,
   type BankQuestionResponse,
   type ExamResponse,
+  type LocalQuestion,
   type SectionResponse,
 } from "@/domains/assessments";
 import { QuestionEditorCard } from "./QuestionEditorCard";
@@ -137,24 +141,55 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     setPreviewReloadKey((k) => k + 1);
   }, []);
 
+  interface SectionQuestionsSnapshot {
+    sectionId: string;
+    questions: LocalQuestion[];
+  }
+
+  const sectionSaveAdapter = useMemo<StudioSaveAdapter<SectionQuestionsSnapshot>>(
+    () => ({
+      save: async ({ sectionId, questions }) => {
+        if (!sectionId) return;
+        await saveSectionQuestions(sectionId, toRequest(questions));
+      },
+    }),
+    []
+  );
+
+  const saveManager = useStudioSaveManager(sectionSaveAdapter, { debounceMs: 1200 });
+  const { saveState } = saveManager;
+
+  useStudioUnsavedChanges(saveManager);
+
+  const handleQuestionsChange = useCallback(
+    (nextQuestions: LocalQuestion[]) => {
+      if (activeSectionId) {
+        saveManager.scheduleSave({ sectionId: activeSectionId, questions: nextQuestions });
+      }
+    },
+    [activeSectionId, saveManager]
+  );
+
   /**
    * Opening a section closes whatever question was open — the canvas always shows something
    * belonging to the section the tree has expanded. Done here rather than in an effect so
    * changing sections is one render, not two.
    */
-  const selectSection = useCallback((sectionId: string) => {
-    setActiveSectionId(sectionId);
-    setActiveQuestionKey(null);
-  }, []);
+  const selectSection = useCallback(
+    (sectionId: string) => {
+      saveManager.flush();
+      setActiveSectionId(sectionId);
+      setActiveQuestionKey(null);
+    },
+    [saveManager]
+  );
 
-  const controller = useSectionQuestions(activeSectionId, handleSectionCountChange);
-  const { questions, loading: questionsLoading, saveState, addQuestion, removeQuestion } = controller;
-
-  // Narrower than Course/Event's guard (which tracks "has this document ever been edited" until
-  // submit) because the question engine has no equivalent persistent dirty flag — but it covers
-  // the real risk: closing the tab during the ~1.2s autosave debounce, before the pending edit
-  // has actually reached the server.
-  useUnsavedChangesGuard(saveState === "saving");
+  const controller = useSectionQuestions(activeSectionId, {
+    onQuestionCountChange: handleSectionCountChange,
+    onChange: handleQuestionsChange,
+    saveState: saveManager.saveState,
+  });
+  const { questions, loading: questionsLoading, addQuestion, removeQuestion } = controller;
 
   useEffect(() => {
     let cancelled = false;
@@ -536,7 +571,10 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   return (
     <StudioEditorFrame>
       <StudioEditorTopBar
-        onBack={() => router.push(`/studio/content/exam/${examId}`)}
+        onBack={async () => {
+          await saveManager.flush();
+          router.push(`/studio/content/exam/${examId}`);
+        }}
         backTitle="Back to the exam overview"
         breadcrumb={
           activeQuestion && activeSection ? (
@@ -587,15 +625,19 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         mode={panel.open ? "workflow" : "closed"}
         activeLessonId={null}
         collabState={{ status: "disconnected", collaborators: [] }}
-        historyContent={null}
+        historyCapability={{
+          status: "unavailable",
+          reason:
+            "Question revision history requires QuestionVersion persistence on the server. Published releases are captured as ExamVersions on the exam overview.",
+        }}
+        collaborationCapability={{
+          status: "unavailable",
+          reason: "Real-time collaborative question editing is not currently supported.",
+        }}
         footerOverride={{ label: "Exam ID", value: examId }}
         unavailableNotes={{
           status:
             "Exams publish directly rather than going through a platform review round, so there is no submit/approve history to show. Published versions are listed on the exam's overview.",
-          history:
-            "Exam questions and sections save continuously. Published snapshots (ExamVersions) are immutable configurations available on the exam overview.",
-          collab:
-            "Exams don't have their own collaborator list. Anyone with your channel's exam permissions can edit this exam — manage that from the channel's team settings.",
         }}
       />
 
