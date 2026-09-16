@@ -1,21 +1,24 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { MoreHorizontal, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { Lock, MoreHorizontal, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import type { Role } from '@/domains/identity';
 import type { ConsoleSurface } from '@/domains/identity';
 import { SURFACE_LABEL, SURFACE_ORDER, formatPermissionLabel } from '../policy-editor/PermissionSelector';
 import { ConfirmDialog } from './ConfirmDialog';
+import { canDelegatePolicy } from './delegation';
 
 function PolicyCard({
   policy,
   busy,
   canManage,
+  canDelegate,
   onRemove,
 }: {
   policy: Role;
   busy: boolean;
   canManage: boolean;
+  canDelegate: boolean;
   onRemove: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,29 +46,40 @@ function PolicyCard({
 
       {canManage && (
         <div className="shrink-0">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setMenuOpen((o) => !o)}
-            className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            <MoreHorizontal size={16} />
-          </button>
-          {menuOpen && (
+          {!canDelegate ? (
+            <div
+              className="p-1.5 text-gray-300 cursor-not-allowed"
+              title="You don't hold all the permissions this policy grants, so you can't remove it — ask someone who holds them (or a Platform Owner)."
+            >
+              <Lock size={15} />
+            </div>
+          ) : (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-8 z-20 w-40 rounded-xl border border-gray-100 bg-white shadow-lg py-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onRemove();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
-                >
-                  <Trash2 size={13} /> Remove policy
-                </button>
-              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setMenuOpen((o) => !o)}
+                className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                <MoreHorizontal size={16} />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-8 z-20 w-40 rounded-xl border border-gray-100 bg-white shadow-lg py-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onRemove();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <Trash2 size={13} /> Remove policy
+                    </button>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
@@ -79,6 +93,10 @@ export interface AccessPoliciesPanelProps {
   assignedPolicies: Role[];
   busy: boolean;
   canManage: boolean;
+  /** The CURRENT ADMIN's own effective permission codes — used only to predict, in the UI,
+   * whether the backend's delegation cap will allow removing a given policy (see
+   * canDelegatePolicy). Never used as an authorization decision by itself. */
+  myPermissionCodes: string[] | undefined;
   onRemovePolicy: (policyId: string) => Promise<void>;
   onOpenAssign: () => void;
 }
@@ -93,6 +111,7 @@ export function AccessPoliciesPanel({
   assignedPolicies,
   busy,
   canManage,
+  myPermissionCodes,
   onRemovePolicy,
   onOpenAssign,
 }: AccessPoliciesPanelProps) {
@@ -162,6 +181,7 @@ export function AccessPoliciesPanel({
                 policy={p}
                 busy={busy}
                 canManage={canManage}
+                canDelegate={canDelegatePolicy(myPermissionCodes, p)}
                 onRemove={() => setPendingRemoval(p)}
               />
             ))}

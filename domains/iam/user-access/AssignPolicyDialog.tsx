@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Loader2, Search, ShieldCheck, X } from 'lucide-react';
+import { Loader2, Lock, Search, ShieldCheck, X } from 'lucide-react';
 import type { Role } from '@/domains/identity';
 import { SURFACE_LABEL, formatPermissionLabel } from '../policy-editor/PermissionSelector';
 import type { ConsoleSurface } from '@/domains/identity';
+import { canDelegatePolicy } from './delegation';
 
 function groupBySurface(role: Role): { surface: ConsoleSurface | 'SYSTEM'; labels: string[] }[] {
   const groups = new Map<string, string[]>();
@@ -23,18 +24,25 @@ export interface AssignPolicyDialogProps {
   userName: string;
   availablePolicies: Role[];
   busy: boolean;
+  /** The CURRENT ADMIN's own effective permission codes — used only to predict, in the UI,
+   * whether the backend's delegation cap will allow granting a given policy (see
+   * canDelegatePolicy). Never used as an authorization decision by itself. */
+  myPermissionCodes: string[] | undefined;
   onAssign: (policyId: string) => Promise<void>;
   onClose: () => void;
 }
 
 /**
  * Two-step: pick a policy from a focused searchable list, then confirm an explicit
- * "this grants exactly these permissions" preview before the grant is applied.
+ * "this grants exactly these permissions" preview before the grant is applied. Policies the
+ * current admin isn't authorized to delegate (see canDelegatePolicy) are shown but disabled,
+ * with an explanation — never silently hidden, and never selectable only to fail on confirm.
  */
 export function AssignPolicyDialog({
   userName,
   availablePolicies,
   busy,
+  myPermissionCodes,
   onAssign,
   onClose,
 }: AssignPolicyDialogProps) {
@@ -95,7 +103,12 @@ export function AssignPolicyDialog({
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Recommended</p>
                       {systemPolicies.map((p) => (
-                        <PolicyRow key={p.id} policy={p} onClick={() => setSelected(p)} />
+                        <PolicyRow
+                          key={p.id}
+                          policy={p}
+                          canDelegate={canDelegatePolicy(myPermissionCodes, p)}
+                          onClick={() => setSelected(p)}
+                        />
                       ))}
                     </div>
                   )}
@@ -103,7 +116,12 @@ export function AssignPolicyDialog({
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Custom Policies</p>
                       {customPolicies.map((p) => (
-                        <PolicyRow key={p.id} policy={p} onClick={() => setSelected(p)} />
+                        <PolicyRow
+                          key={p.id}
+                          policy={p}
+                          canDelegate={canDelegatePolicy(myPermissionCodes, p)}
+                          onClick={() => setSelected(p)}
+                        />
                       ))}
                     </div>
                   )}
@@ -174,11 +192,38 @@ export function AssignPolicyDialog({
   );
 }
 
-function PolicyRow({ policy, onClick }: { policy: Role; onClick: () => void }) {
+function PolicyRow({
+  policy,
+  canDelegate,
+  onClick,
+}: {
+  policy: Role;
+  canDelegate: boolean;
+  onClick: () => void;
+}) {
   const count = policy.permissions?.length ?? 0;
   const surfaces = Array.from(
     new Set((policy.permissions ?? []).map((p) => SURFACE_LABEL[(p.surface as ConsoleSurface) ?? 'SYSTEM']))
   );
+
+  if (!canDelegate) {
+    return (
+      <div
+        className="w-full flex items-start justify-between gap-3 p-3 rounded-xl text-left border border-transparent opacity-50 cursor-not-allowed"
+        title="You don't hold all the permissions this policy grants, so you can't assign it — ask someone who holds them (or a Platform Owner)."
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-500 truncate">{policy.displayName}</p>
+          <p className="text-xs text-gray-400 truncate">
+            {count} permission{count === 1 ? '' : 's'}
+            {surfaces.length > 0 && ` · ${surfaces.join(' · ')}`}
+          </p>
+        </div>
+        <Lock size={13} className="shrink-0 text-gray-300 mt-0.5" />
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"

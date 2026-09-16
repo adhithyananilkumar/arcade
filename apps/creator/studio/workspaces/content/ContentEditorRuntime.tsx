@@ -812,7 +812,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       const json = editorRef.current.getJSON();
       if (json) {
         try {
-          await api.post(`/api/lessons/${activeLessonId}/document/versions`, {
+          const versionsUrl =
+            adapter.terminology.root === "Course"
+              ? `/api/documents/LESSON/${activeLessonId}/versions`
+              : `/api/v1/events/lessons/${activeLessonId}/document/versions`;
+          await api.post(versionsUrl, {
             snapshot: encodeSnapshotBase64(activeYDocRef.current),
             body: JSON.stringify(json),
             kind: "AUTO",
@@ -965,6 +969,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           activeLessonId ? (
             <VersionHistoryOrchestrator
               lessonId={activeLessonId}
+              documentBaseUrl={
+                adapter.terminology.root === "Course"
+                  ? `/api/documents/LESSON/${activeLessonId}`
+                  : `/api/v1/events/lessons/${activeLessonId}/document`
+              }
               open={panel.open && panel.tab === "history"}
               onClose={() => panel.setOpen(false)}
               refreshKey={historyRefreshKey}

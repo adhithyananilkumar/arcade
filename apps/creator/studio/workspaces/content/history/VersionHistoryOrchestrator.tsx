@@ -29,6 +29,14 @@ interface VersionHistoryOrchestratorProps {
   courseId?: string;
   isSuView?: boolean;
   embedded?: boolean;
+  /**
+   * Base URL for this lesson's document (no trailing slash) — versions live at
+   * `${documentBaseUrl}/versions`. Course lessons and Event lessons are served by different
+   * backend routes (`/api/documents/LESSON/{id}` vs `/api/v1/events/lessons/{id}/document`),
+   * so the caller who knows which kind of lesson this is must supply it. Defaults to the Course
+   * lesson route for backward compatibility.
+   */
+  documentBaseUrl?: string;
 }
 
 /**
@@ -45,7 +53,9 @@ export function VersionHistoryOrchestrator({
   courseId,
   isSuView,
   embedded,
+  documentBaseUrl,
 }: VersionHistoryOrchestratorProps) {
+  const base = documentBaseUrl ?? `/api/documents/LESSON/${lessonId}`;
   const [versions, setVersions] = useState<VersionSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,9 +74,7 @@ export function VersionHistoryOrchestrator({
     setLoading(true);
     setError(null);
     try {
-      const list = await api.get<VersionSummary[]>(
-        `/api/lessons/${lessonId}/document/versions`
-      );
+      const list = await api.get<VersionSummary[]>(`${base}/versions`);
       const filteredList = (list ?? []).filter((v) => v.kind !== "WORKFLOW");
       setVersions(filteredList);
     } catch (e) {
@@ -74,7 +82,7 @@ export function VersionHistoryOrchestrator({
     } finally {
       setLoading(false);
     }
-  }, [lessonId]);
+  }, [lessonId, base]);
 
   const loadStatusHistory = useCallback(async () => {
     if (!courseId) return;
@@ -106,9 +114,7 @@ export function VersionHistoryOrchestrator({
       if (!lessonId) return;
       setPreviewLoading(true);
       try {
-        const detail = await api.get<VersionDetail>(
-          `/api/lessons/${lessonId}/document/versions/${v.id}`
-        );
+        const detail = await api.get<VersionDetail>(`${base}/versions/${v.id}`);
         setSelected(detail);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load version");
@@ -116,7 +122,7 @@ export function VersionHistoryOrchestrator({
         setPreviewLoading(false);
       }
     },
-    [lessonId]
+    [lessonId, base]
   );
 
   return (

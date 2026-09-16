@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import { roleService, Role } from "@/domains/identity";
 import { AuthService } from '@/infrastructure/auth/auth.service';
+import { ApiError } from '@/infrastructure/http/api';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { toast } from 'sonner';
-import { Plus, ShieldCheck, Edit3, Trash2, Users, Search } from 'lucide-react';
+import { Plus, ShieldCheck, Edit3, Trash2, Users, Search, Lock } from 'lucide-react';
 import { usePermissions } from "@/domains/identity";
 import { PolicyEditor } from '@/domains/iam/policy-editor/PolicyEditor';
 import { SURFACE_LABEL } from '@/domains/iam/policy-editor/PermissionSelector';
 import type { ConsoleSurface } from '@/domains/identity';
-import { ConfirmDialog } from '@/domains/iam';
+import { ConfirmDialog, canDelegatePolicy } from '@/domains/iam';
 
 export function PolicyManager() {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -22,6 +24,7 @@ export function PolicyManager() {
 
   const { hasPermission } = usePermissions();
   const canManagePolicies = hasPermission('platform.roles.manage');
+  const myPermissionCodes = useAuthStore((state) => state.user?.permissions);
 
   useEffect(() => {
     fetchData();
@@ -66,8 +69,9 @@ export function PolicyManager() {
       setEditingRole(null);
       fetchData();
       await AuthService.refresh();
-    } catch {
-      toast.error(editingRole ? 'Failed to update policy' : 'Failed to create policy');
+    } catch (error: unknown) {
+      const message = error instanceof ApiError || error instanceof Error ? error.message : undefined;
+      toast.error(message || (editingRole ? 'Failed to update policy' : 'Failed to create policy'));
     }
   };
 
@@ -80,8 +84,9 @@ export function PolicyManager() {
       setDeletingRole(null);
       fetchData();
       await AuthService.refresh();
-    } catch (error) {
-      toast.error('Failed to delete policy');
+    } catch (error: unknown) {
+      const message = error instanceof ApiError || error instanceof Error ? error.message : undefined;
+      toast.error(message || 'Failed to delete policy');
     } finally {
       setDeleting(false);
     }
@@ -178,13 +183,22 @@ export function PolicyManager() {
                     </button>
                   )}
                   {canManagePolicies && !role.systemRole && (
-                    <button
-                      onClick={() => setDeletingRole(role)}
-                      className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                      title="Delete Policy"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    canDelegatePolicy(myPermissionCodes, role) ? (
+                      <button
+                        onClick={() => setDeletingRole(role)}
+                        className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Delete Policy"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    ) : (
+                      <div
+                        className="p-1.5 text-gray-300 cursor-not-allowed"
+                        title="You don't hold all the permissions this policy grants, so you can't delete it — ask someone who holds them (or a Platform Owner)."
+                      >
+                        <Lock size={16} />
+                      </div>
+                    )
                   )}
                 </div>
               </div>

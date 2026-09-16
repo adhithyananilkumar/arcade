@@ -44,6 +44,7 @@ export function UserAccessDrawer({
   onChanged?: () => void;
 }) {
   const [user, setUser] = useState<User | null>(initialUser);
+  const myPermissionCodes = useAuthStore((state) => state.user?.permissions);
   const [allPolicies, setAllPolicies] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -204,6 +205,7 @@ export function UserAccessDrawer({
                 assignedPolicies={assignedPolicies}
                 busy={busy}
                 canManage={canManageAdminRole}
+                myPermissionCodes={myPermissionCodes}
                 onRemovePolicy={handleRemovePolicy}
                 onOpenAssign={() => setAssignOpen(true)}
               />
@@ -245,6 +247,7 @@ export function UserAccessDrawer({
         userName={`${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email}
         availablePolicies={availablePolicies}
         busy={busy}
+        myPermissionCodes={myPermissionCodes}
         onAssign={handleAssignPolicy}
         onClose={() => setAssignOpen(false)}
       />

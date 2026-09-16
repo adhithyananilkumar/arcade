@@ -23,3 +23,4 @@ export { AccessPoliciesPanel } from './user-access/AccessPoliciesPanel';
 export type { AccessPoliciesPanelProps } from './user-access/AccessPoliciesPanel';
 export { AssignPolicyDialog } from './user-access/AssignPolicyDialog';
 export { ConfirmDialog } from './user-access/ConfirmDialog';
+export { canDelegatePolicy } from './user-access/delegation';

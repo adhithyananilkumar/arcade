@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Loader2, X, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { permissionService, Permission } from '@/domains/identity';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { Scope } from '../types/iam.types';
 import { PermissionSelector, SURFACE_LABEL, SURFACE_ORDER } from './PermissionSelector';
 
@@ -42,6 +43,7 @@ export function PolicyEditor({
   onSave,
   onCancel,
 }: PolicyEditorProps) {
+  const myPermissionCodes = useAuthStore((state) => state.user?.permissions);
   const [name, setName] = useState(policy?.name ?? '');
   const [description, setDescription] = useState(policy?.description ?? '');
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
@@ -194,6 +196,7 @@ export function PolicyEditor({
               <PermissionSelector
                 permissions={allPermissions}
                 selectedIds={selectedIds}
+                myPermissionCodes={myPermissionCodes}
                 onChange={setSelectedIds}
               />
             )}

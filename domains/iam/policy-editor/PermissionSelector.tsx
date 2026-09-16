@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Lock, Search } from 'lucide-react';
 import type { ConsoleSurface, Permission } from '@/domains/identity';
 
 const SURFACE_LABEL: Record<ConsoleSurface, string> = {
@@ -50,12 +50,17 @@ function PermissionSurfaceGroup({
   surface,
   permissions,
   selectedIds,
+  heldCodes,
   onToggle,
   onToggleAll,
 }: {
   surface: ConsoleSurface;
   permissions: Permission[];
   selectedIds: string[];
+  /** null = current admin holds ALL (no restriction); otherwise the set of permission codes they
+   * may delegate. Permissions outside this set can be unchecked but never newly checked — mirrors
+   * PlatformRoleService#assignPermissions' assigner cap. */
+  heldCodes: Set<string> | null;
   onToggle: (id: string) => void;
   onToggleAll: (ids: string[], select: boolean) => void;
 }) {
@@ -64,13 +69,14 @@ function PermissionSurfaceGroup({
   const selectedCount = ids.filter((id) => selectedIds.includes(id)).length;
   const allSelected = selectedCount === ids.length && ids.length > 0;
   const someSelected = selectedCount > 0 && !allSelected;
+  const delegableIds = heldCodes ? permissions.filter((p) => heldCodes.has(p.code)).map((p) => p.id) : ids;
 
   return (
     <div className="border border-slate-200/80 rounded-xl overflow-hidden bg-white">
       <div className="flex items-center gap-3 px-4 py-3 bg-slate-50/80 select-none">
         <button
           type="button"
-          onClick={() => onToggleAll(ids, !allSelected)}
+          onClick={() => onToggleAll(allSelected ? ids : delegableIds, !allSelected)}
           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
             allSelected
               ? 'bg-[#14142b] border-[#14142b] text-white'
@@ -105,27 +111,37 @@ function PermissionSurfaceGroup({
         <div className="divide-y divide-slate-50">
           {permissions.map((perm) => {
             const isSelected = selectedIds.includes(perm.id);
+            const isHeld = !heldCodes || heldCodes.has(perm.code);
+            // Locked only when NOT already selected and NOT held — you may always uncheck a
+            // permission you don't personally hold (that's how you'd fix a save that would
+            // otherwise be rejected), you just can't newly add one you don't hold.
+            const locked = !isSelected && !isHeld;
             return (
               <label
                 key={perm.id}
-                className={`flex items-start gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
-                  isSelected ? 'bg-slate-50' : 'hover:bg-gray-50/60'
-                }`}
+                className={`flex items-start gap-3 px-4 py-2.5 transition-colors ${
+                  locked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                } ${isSelected ? 'bg-slate-50' : locked ? '' : 'hover:bg-gray-50/60'}`}
+                title={locked ? "You don't hold this permission yourself, so you can't grant it to others." : undefined}
               >
                 <div
                   className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
                     isSelected
                       ? 'bg-[#14142b] border-[#14142b] text-white'
+                      : locked
+                      ? 'border-slate-200 bg-slate-50'
                       : 'border-slate-300 hover:border-slate-400 bg-white'
                   }`}
                 >
                   {isSelected && <Check size={10} strokeWidth={3} />}
+                  {locked && <Lock size={8} className="text-slate-300" />}
                 </div>
                 <input
                   type="checkbox"
                   className="sr-only"
                   checked={isSelected}
-                  onChange={() => onToggle(perm.id)}
+                  disabled={locked}
+                  onChange={() => !locked && onToggle(perm.id)}
                 />
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium text-gray-800">
@@ -148,6 +164,12 @@ export interface PermissionSelectorProps {
   permissions: Permission[];
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  /** The CURRENT ADMIN's own effective permission codes — used only to predict, in the UI,
+   * whether the backend will accept the resulting permission set (PlatformRoleService requires
+   * holding every permission in a policy's FINAL set, not just newly-added ones, unless you hold
+   * ALL). Undefined/missing is treated as "no restriction known" (nothing locked) rather than
+   * "holds nothing" — the backend remains the real authority either way. */
+  myPermissionCodes?: string[];
 }
 
 /**
@@ -157,8 +179,13 @@ export interface PermissionSelectorProps {
  * read-only (see AccessPoliciesPanel's effective-access view) and never edits permissions
  * directly, since Policy is the only assignable IAM unit.
  */
-export function PermissionSelector({ permissions, selectedIds, onChange }: PermissionSelectorProps) {
+export function PermissionSelector({ permissions, selectedIds, onChange, myPermissionCodes }: PermissionSelectorProps) {
   const [search, setSearch] = useState('');
+  const heldCodes = useMemo(() => {
+    if (!myPermissionCodes) return null;
+    if (myPermissionCodes.includes('ALL')) return null; // no restriction
+    return new Set(myPermissionCodes);
+  }, [myPermissionCodes]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return permissions;
@@ -212,6 +239,7 @@ export function PermissionSelector({ permissions, selectedIds, onChange }: Permi
               surface={surface}
               permissions={grouped[surface]!}
               selectedIds={selectedIds}
+              heldCodes={heldCodes}
               onToggle={toggle}
               onToggleAll={toggleAll}
             />

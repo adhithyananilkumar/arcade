@@ -111,17 +111,17 @@ export class CourseAdapter implements ContentDataAdapter {
   }
 
   async getLeafDocument(leafId: string): Promise<{ ydocState: string | null; body: string | null } | null> {
-    const res = await api.get<{ ydocState?: string; body: string } | null>(`/api/lessons/${leafId}/document`);
+    const res = await api.get<{ ydocState?: string; body: string } | null>(`/api/documents/LESSON/${leafId}`);
     if (!res) return null;
     return { ydocState: res.ydocState ?? null, body: res.body ?? null };
   }
 
   async saveLeafDocument(leafId: string, payload: { ydocState: string; body: string }): Promise<void> {
-    await api.put(`/api/lessons/${leafId}/document`, payload);
+    await api.put(`/api/documents/LESSON/${leafId}`, payload);
   }
 
   async saveLeafVersion(leafId: string, payload: { snapshot?: string; body: string; kind: string; label?: string }): Promise<void> {
-    await api.post(`/api/lessons/${leafId}/document/versions`, payload);
+    await api.post(`/api/documents/LESSON/${leafId}/versions`, payload);
   }
 
   // ── Root-level badges ────────────────────────────────────────────────────────
