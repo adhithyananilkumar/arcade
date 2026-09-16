@@ -156,3 +156,30 @@ describe("Studio Core domain neutrality (top bar + right panel)", () => {
     expect(hook).not.toMatch(/eventCollaborators/);
   });
 });
+
+describe("Assessment unification — Quiz is not a standalone Creator architecture", () => {
+  it("no standalone quiz workspace exists under studio/workspaces/", () => {
+    const quizWorkspaceDir = path.join(STUDIO_ROOT, "workspaces", "quiz");
+    expect(fs.existsSync(quizWorkspaceDir)).toBe(false);
+  });
+
+  it("no standalone quiz route exists under app/(authenticated)/studio/quiz", () => {
+    const quizRouteDir = path.resolve(STUDIO_ROOT, "..", "..", "..", "app", "(authenticated)", "studio", "quiz");
+    expect(fs.existsSync(quizRouteDir)).toBe(false);
+  });
+
+  it("no standalone QuizEditor or StandaloneQuizEditor exists in the codebase", () => {
+    const allFiles = [...listFiles("core"), ...listFiles("workspaces")];
+    for (const file of allFiles) {
+      const content = read(file);
+      expect(content, `${file} must not mention StandaloneQuizEditor`).not.toMatch(/\bStandaloneQuizEditor\b/);
+    }
+  });
+
+  it("ExamWorkspace is the single assessment authoring workspace", () => {
+    const exam = read(path.join("workspaces", "exam", "ExamWorkspace.tsx"));
+    expect(exam).toMatch(/<StudioEditorTopBar\b/);
+    expect(exam).toMatch(/<StudioEditorBody\b/);
+    expect(exam).toMatch(/<StudioRightPanel\b/);
+  });
+});

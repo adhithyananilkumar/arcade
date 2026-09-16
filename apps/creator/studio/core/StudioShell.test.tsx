@@ -31,21 +31,21 @@ describe("StudioEditorBody viewport contract", () => {
     // element, overflow-y-auto on a differently-scrolled one) that let exam content scroll up
     // behind the header.
     expect(main.className).toContain("overflow-y-auto");
-    expect(main.className).toContain("pt-36");
+    expect(main.className).toContain("pt-20");
   });
 
   it("clears the floating rich-text toolbar by default", () => {
     // Every editor render mounts ArcadeEditor's toolbar in its steady state; the default must
     // match that, not the leaner "no editor mounted" offset.
     const main = renderBody();
-    expect(main.className).toContain("pt-36");
-    expect(main.className).not.toContain("pt-28");
+    expect(main.className).toContain("pt-20");
+    expect(main.className).not.toContain("pt-6");
   });
 
   it("uses the smaller offset only when the caller declares no toolbar is mounted", () => {
     const main = renderBody({ toolbarClearance: false });
-    expect(main.className).toContain("pt-28");
-    expect(main.className).not.toContain("pt-36");
+    expect(main.className).toContain("pt-6");
+    expect(main.className).not.toContain("pt-20");
   });
 
   it("renders workspace content inside the single header-safe scroll region", () => {

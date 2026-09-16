@@ -460,12 +460,12 @@ export function StudioRightPanel(props: StudioRightPanelProps) {
         )}
       </div>
 
-      {/* Footer: Document ID */}
+      {/* Footer: Resource identity */}
       <div className="mt-auto px-4 pb-4">
         <div className="flex items-center justify-between border-t border-white/50 pt-3 text-[11px] text-slate-400">
-          <span>{props.footerOverride?.label ?? "Document ID"}</span>
+          <span>{props.footerOverride?.label ?? (props.activeLessonId ? "Lesson ID" : "Resource ID")}</span>
           <span className="max-w-[140px] truncate rounded bg-white/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-            {props.footerOverride?.value ?? (props.activeLessonId ? `lesson:${props.activeLessonId}` : "None")}
+            {props.footerOverride?.value ?? props.activeLessonId ?? "—"}
           </span>
         </div>
       </div>

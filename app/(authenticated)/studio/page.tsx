@@ -425,24 +425,20 @@ function ContentCard({
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
-  // Legacy standalone quizzes have no split overview/editor — their "editor" is the detail page
-  // itself. Exam, Course and Event all open the shared Content Overview.
-  const isLegacyQuiz = item.type === "QUIZ";
   const segment = toContentTypeSegment(item.type);
-  const openHref = isLegacyQuiz
-    ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+  const openHref =
+    contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
-  const preview = segment && !isLegacyQuiz ? previewHref(segment, item.id) : null;
+  const preview = segment ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
-  const hasSecondaryMenu = !isLegacyQuiz && segment != null && !isPendingInvitation;
+  const hasSecondaryMenu = segment != null && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -659,7 +655,7 @@ function ContentCard({
           onClick={(e) => e.stopPropagation()}
           className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {!isLegacyQuiz && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
+          {item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
         </Link>
       )}
 
@@ -760,7 +756,7 @@ function ChannelRequiredModal({
 export default function DashboardPage() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "event" | "quiz" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "event" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
@@ -787,7 +783,7 @@ export default function DashboardPage() {
       return;
     }
     if (typeId === "course" || typeId === "event") {
-      setCreateOpen(typeId as any);
+      setCreateOpen(typeId);
     } else if (href) {
       router.push(href);
     }
@@ -802,8 +798,8 @@ export default function DashboardPage() {
         setChannelRequiredModalOpen(true);
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
-      } else if (create === "course" || create === "quiz") {
-        setCreateOpen(create as any);
+      } else if (create === "course") {
+        setCreateOpen("course");
       }
     }
   }, [channelsLoading, channels.length]);

@@ -101,10 +101,8 @@ workspaces/
 │   ├── EventWorkspace.tsx        Event's adapter + day dialog + submit/back
 │   └── SessionSettingsDialog.tsx Event's own day-schedule dialog
 └── exam/
-    ├── ExamWorkspace.tsx
+    ├── ExamWorkspace.tsx         Single centralized assessment authoring workspace with Exam Plans; Share routes to Studio Team panel
     ├── QuestionEditorCard.tsx, QuestionListPreview.tsx
-    ├── components/
-    │   └── ChannelAccessModal.tsx Exam-specific channel team view
     └── management/               plans, pools, preview, settings, attempts
 ```
 

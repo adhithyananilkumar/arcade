@@ -45,7 +45,6 @@ import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import { useStudioConfirm } from "@/apps/creator/studio/core/useStudioConfirm";
 import { useUnsavedChangesGuard } from "@/apps/creator/studio/core/useUnsavedChangesGuard";
-import { ChannelAccessModal } from "./components/ChannelAccessModal";
 import {
   createSection,
   deleteSection,
@@ -114,7 +113,6 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   const [publishing, setPublishing] = useState(false);
   const [renamingSectionId, setRenamingSectionId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
-  const [accessModalOpen, setAccessModalOpen] = useState(false);
 
   // An exam under platform review is locked for editing, exactly like a submitted course.
   const readOnly = exam?.status === "SUBMITTED";
@@ -289,10 +287,14 @@ export function ExamWorkspace({ examId }: { examId: string }) {
     if (!pendingOpenId || questionsLoading) return;
     const local = questions.find((q) => q.id === pendingOpenId);
     if (local) {
-      setActiveQuestionKey(local.key);
-      setPendingOpenId(null);
+      queueMicrotask(() => {
+        setActiveQuestionKey(local.key);
+        setPendingOpenId(null);
+      });
     } else if (questions.length > 0) {
-      setPendingOpenId(null);
+      queueMicrotask(() => {
+        setPendingOpenId(null);
+      });
     }
   }, [pendingOpenId, questions, questionsLoading]);
 
@@ -533,10 +535,6 @@ export function ExamWorkspace({ examId }: { examId: string }) {
 
   return (
     <StudioEditorFrame>
-      {accessModalOpen && exam.channelId && (
-        <ChannelAccessModal onClose={() => setAccessModalOpen(false)} channelId={exam.channelId} />
-      )}
-
       <StudioEditorTopBar
         onBack={() => router.push(`/studio/content/exam/${examId}`)}
         backTitle="Back to the exam overview"
@@ -563,11 +561,12 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         }
         saveState={saveState}
         collaborators={[]}
-        share={
-          exam.channelId
-            ? { onOpenCollaborators: () => setAccessModalOpen(true) }
-            : { note: "Who can edit this exam is managed on its channel, under the channel's exam permissions." }
-        }
+        share={{
+          onOpenCollaborators: () => {
+            panel.setTab("collab");
+            panel.setOpen(true);
+          },
+        }}
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen(!panel.open)}
         primaryAction={
@@ -593,6 +592,8 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         unavailableNotes={{
           status:
             "Exams publish directly rather than going through a platform review round, so there is no submit/approve history to show. Published versions are listed on the exam's overview.",
+          history:
+            "Exam questions and sections save continuously. Published snapshots (ExamVersions) are immutable configurations available on the exam overview.",
           collab:
             "Exams don't have their own collaborator list. Anyone with your channel's exam permissions can edit this exam — manage that from the channel's team settings.",
         }}

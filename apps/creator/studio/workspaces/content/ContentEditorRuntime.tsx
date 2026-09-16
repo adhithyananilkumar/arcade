@@ -54,7 +54,6 @@ import {
   CANVAS_WRAPPER_CLASS,
   CANVAS_CARD_CLASS,
 } from "@/apps/creator/studio/core/StudioShell";
-import type { ExamResponse } from "@/domains/assessments";
 import { TiptapContentView } from "@/domains/learning";
 import { useBadgeEditor, BadgeEditorWorkspace, BadgeEditorContextPanel } from "@/domains/badges";
 import { ContentSubmitDialog } from "./dialogs/ContentSubmitDialog";
@@ -71,13 +70,11 @@ import {
   Plus,
   FileText,
   Layers,
-  Settings,
   GraduationCap,
   Pencil,
   Trash2,
   Send,
   Award,
-  Users,
   Loader2,
   GripVertical,
 } from "lucide-react";
@@ -931,7 +928,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
           contentId
             ? {
                 onOpenCollaborators: () => {
-                  panel.setTab("team");
+                  panel.setTab("collab");
                   panel.setOpen(true);
                 },
               }

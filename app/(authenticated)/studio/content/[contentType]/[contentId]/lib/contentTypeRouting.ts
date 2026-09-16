@@ -11,7 +11,7 @@ const EVENT_TYPES = new Set(["WORKSHOP", "EVENT", "WEBINAR", "BOOTCAMP"]);
 export function toContentTypeSegment(rawType: string): ContentTypeSegment | null {
   const type = rawType?.toUpperCase();
   if (type === "COURSE") return "course";
-  if (type === "EXAM") return "exam";
+  if (type === "EXAM" || type === "QUIZ") return "exam";
   if (type && EVENT_TYPES.has(type)) return "event";
   return null;
 }

@@ -17,8 +17,6 @@
 
 // features/assessment/index.ts
 // Public surface of the assessment domain.
-export { QuizEditor } from "./components/QuizEditor";
-export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
 export { QuestionTagEditor } from "./components/QuestionTagEditor";
 // The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs

@@ -112,7 +112,7 @@ export function StudioEditorTopBar({
   workspaceActionsAfter?: ReactNode;
 }) {
   return (
-    <div className="absolute inset-x-0 top-4 z-30 pointer-events-none flex justify-center px-4 sm:px-6">
+    <header className="relative z-30 flex-shrink-0 w-full flex justify-center px-4 sm:px-6 pt-4 pb-2 pointer-events-none">
       <div className="relative flex w-full items-center justify-between">
         {/* Left: Logo & Back Button */}
         <div className="pointer-events-auto flex items-center gap-2">
@@ -170,7 +170,7 @@ export function StudioEditorTopBar({
           {workspaceActionsAfter}
         </div>
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -202,9 +202,9 @@ export function StudioEditorBody({
   children: ReactNode;
 }) {
   return (
-    <div className="relative min-h-0 flex-1 flex flex-col pt-36">
+    <div className="relative min-h-0 flex-1 flex flex-col overflow-hidden">
       {/* ── Floating sidebar: content structure ─────────── */}
-      <aside className="absolute left-10 top-28 z-20 flex flex-col h-[calc(100vh-14rem)] w-[268px] pointer-events-none">
+      <aside className="absolute left-10 top-4 z-20 flex flex-col h-[calc(100%-2rem)] w-[268px] pointer-events-none">
         <div className="pointer-events-auto flex flex-col w-full h-full overflow-hidden">
           {/* ── Sidebar header ───────────────── */}
           <div className="flex flex-shrink-0 items-center justify-between mb-3">
@@ -227,25 +227,19 @@ export function StudioEditorBody({
        * ── Canvas viewport: the ONE header-safe, ONE scroll-owning region every workspace's
        * content renders into.
        *
-       * This element — not each workspace — owns:
-       *   1. Top clearance under the floating top bar (and, when `toolbarClearance`, the
-       *      floating rich-text toolbar too).
-       *   2. The scroll container: `overflow-y-auto` lives HERE, on the same element as the
-       *      padding, so padding can never end up inside a differently-scrolled child and get
-       *      scrolled away — which is exactly how content previously ended up rendering behind
-       *      the header (padding and `overflow-y-auto` were split across two different elements,
-       *      or combined on one element in an order-dependent way, per workspace).
-       *   3. Horizontal centering, so a workspace only has to declare its own `max-w-[Npx]`.
+       * Viewport invariant:
+       *   Studio Header (fixed non-scrolling chrome)
+       *   ↓
+       *   Studio Viewport (<main className="overflow-y-auto">)
+       *   ↓
+       *   Scrolling workspace content
        *
-       * A workspace MAY still nest its own scroll container inside this (e.g. a bordered "page"
-       * card whose own edge is the visible scrollbar, as the lesson editor does) — that's a
-       * legitimate visual choice about where the scrollbar appears, not a second owner of the
-       * safe area. Wherever the actual scrolling ends up happening, content can never start above
-       * this element's own padding, because that padding is never delegated away.
+       * The scrollbar begins strictly below the Studio header, and content can NEVER
+       * underlap or scroll behind the top bar.
        */}
       <main
-        className={`z-0 flex flex-col min-h-0 absolute inset-0 items-center overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
-          toolbarClearance ? "pt-36" : "pt-28"
+        className={`z-0 flex flex-col min-h-0 flex-1 items-center overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
+          toolbarClearance ? "pt-20" : "pt-6"
         }`}
       >
         {children}
