@@ -12,6 +12,10 @@ export class CourseAdapter implements ContentDataAdapter {
     leafBadge: "Badge",
   };
 
+  collaboratorsPath(contentId: string): string {
+    return `/api/v1/content/COURSE/${contentId}/collaborators`;
+  }
+
   async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }> {
     const course = await api.get<CourseResponse>(`/api/courses/${id}`);
 

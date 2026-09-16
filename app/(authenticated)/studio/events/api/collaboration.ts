@@ -1,6 +1,11 @@
 import { api } from '@/infrastructure/http/api';
 
-const API_BASE_PATH = '/api/v1/events';
+// Backed by the one collaborator system every Studio content type shares — see backend
+// ContentCollaborationController (studio/content). Function names/signatures here are kept
+// event-shaped since EventCollaboratorsManager (the wizard review step) is written against them,
+// but the endpoint itself is the generic `/api/v1/content/EVENT/{id}/collaborators`, not a
+// separate Event-only route.
+const API_BASE_PATH = '/api/v1/content/EVENT';
 
 export interface Collaborator {
   id: string | null;

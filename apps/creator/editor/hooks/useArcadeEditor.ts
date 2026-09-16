@@ -2,25 +2,19 @@
 "use client";
 
 import { useEditor } from "@tiptap/react";
-import { HocuspocusProvider } from "@hocuspocus/provider";
 import debounce from "lodash.debounce";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type * as Y from "yjs";
 import { buildExtensions } from "../extensions";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
-import { COLLAB_WS_URL } from "@/infrastructure/config/env";
+import {
+  useCollaborativeDocument,
+  type CollabStatus,
+  type ActiveCollaborator,
+} from "@/apps/creator/studio/core/collaboration/useCollaborativeDocument";
 
-export type CollabStatus = "disabled" | "connecting" | "connected" | "disconnected";
-
-export interface ActiveCollaborator {
-  clientId: number;
-  user?: {
-    id?: string;
-    name?: string;
-    color?: string;
-  };
-}
+export type { CollabStatus, ActiveCollaborator };
 
 export interface UseArcadeEditorOptions {
   /**
@@ -75,66 +69,25 @@ export function useArcadeEditor({
   onSelectionUpdate,
   documentName,
 }: UseArcadeEditorOptions = {}) {
-  const { user, accessToken } = useAuthStore();
+  const { user } = useAuthStore();
 
-  const effectiveDocumentName = documentName || (documentId ? `lesson:${documentId}` : undefined);
+  // Room name is "{OWNER_TYPE}:{ownerId}" — the exact backend Document.OwnerType enum name (see
+  // backend/collaboration/src/server.ts). Defaults to a course Lesson room; a caller editing any
+  // other rich-text owner type (an event lesson) passes documentName explicitly.
+  const effectiveDocumentName = documentName || (documentId ? `LESSON:${documentId}` : undefined);
+  const [ownerType, ownerId] = effectiveDocumentName ? effectiveDocumentName.split(":") : [undefined, undefined];
 
-  const provider = useMemo(() => {
-    if (!effectiveDocumentName || typeof window === "undefined") return null;
+  const {
+    ydoc: resolvedYDoc,
+    provider,
+    status: statusState,
+    collaborators,
+  } = useCollaborativeDocument({
+    ownerType: ownerType ?? "LESSON",
+    ownerId,
+    ydoc,
+  });
 
-    const wsUrl = COLLAB_WS_URL;
-    const p = new HocuspocusProvider({
-      url: wsUrl,
-      name: effectiveDocumentName,
-      token: accessToken || undefined,
-      document: ydoc,
-      onAuthenticationFailed: (data) => {
-        console.warn("[Collaboration] Hocuspocus authentication failed:", data.reason);
-      },
-    });
-    return p;
-  }, [effectiveDocumentName, accessToken, ydoc]);
-
-  const [statusState, setStatusState] = useState<CollabStatus>(effectiveDocumentName ? "connecting" : "disabled");
-  const [collaborators, setCollaborators] = useState<ActiveCollaborator[]>([]);
-
-  useEffect(() => {
-    if (!provider) {
-      setStatusState("disabled");
-      setCollaborators([]);
-      return;
-    }
-
-    const updateStatus = ({ status }: { status: string }) => {
-      setStatusState(status as CollabStatus);
-    };
-
-    const updateAwareness = () => {
-      if (!provider.awareness) return;
-      const states = provider.awareness.getStates();
-      const users: ActiveCollaborator[] = [];
-      states.forEach((state: any, clientId: number) => {
-        if (state.user) {
-          users.push({ clientId, user: state.user });
-        }
-      });
-      setCollaborators(users);
-    };
-
-    provider.on("status", updateStatus);
-    if (provider.awareness) {
-      provider.awareness.on("change", updateAwareness);
-      updateAwareness();
-    }
-
-    return () => {
-      provider.off("status", updateStatus);
-      if (provider.awareness) {
-        provider.awareness.off("change", updateAwareness);
-      }
-      provider.destroy();
-    };
-  }, [provider]);
   const onSaveRef = useRef(onSave);
   useEffect(() => {
     onSaveRef.current = onSave;
@@ -154,7 +107,11 @@ export function useArcadeEditor({
     };
   }, [debouncedSave]);
 
-  const effectiveYDoc = ydoc || provider?.document;
+  // Only treat this editor as collaborative when the caller actually supplied a Y.Doc or a
+  // document name/id — useCollaborativeDocument always resolves *some* Y.Doc internally (it
+  // needs one to construct), but that must not leak into plain, non-collaborative editors (quiz
+  // text, comments, …) that never asked for one.
+  const effectiveYDoc = ydoc || (effectiveDocumentName ? resolvedYDoc : undefined);
 
   const extensions = useMemo(
     () => buildExtensions(placeholder, effectiveYDoc, provider, user ? { id: user.id, name: user.fullName } : undefined, contentType),

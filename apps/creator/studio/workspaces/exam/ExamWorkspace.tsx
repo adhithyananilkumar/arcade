@@ -70,6 +70,7 @@ import {
 } from "@/domains/assessments";
 import { QuestionEditorCard } from "./QuestionEditorCard";
 import { QuestionListPreview } from "./QuestionListPreview";
+import { createExamQuestionHistoryAdapter } from "./ExamQuestionHistoryAdapter";
 
 /**
  * The Exam editor — the same Arcade Studio a course or event is authored in, editing an exam's
@@ -121,14 +122,15 @@ export function ExamWorkspace({ examId }: { examId: string }) {
   // An exam under platform review is locked for editing, exactly like a submitted course.
   const readOnly = exam?.status === "SUBMITTED";
 
-  // The same right-hand panel the course/event editor mounts, from the same hook.
-  //
-  // Both paths are null because an exam has neither surface on the backend today: authority over
-  // an exam comes from the channel (channel.exams.manage[.own]), so there is no per-exam
-  // collaborator list to read, and exams self-publish rather than passing through the review
-  // rounds that produce a status history. The panel is still mounted and still opens — the Studio
-  // is the same shape for every content type — and each tab says plainly why it is empty.
-  const panel = useStudioPanel({ collaboratorsPath: null, statusHistoryPath: null });
+  // The same right-hand panel the course/event editor mounts, from the same hook. Team is real —
+  // Exam now shares the one ContentCollaborationController every owner type uses. statusHistoryPath
+  // stays null: exams self-publish rather than passing through the review rounds that produce a
+  // status history, so there is genuinely nothing to show there (see unavailableNotes below) — the
+  // Capability Honesty Rule, not a gap.
+  const panel = useStudioPanel({
+    collaboratorsPath: `/api/v1/content/EXAM/${examId}/collaborators`,
+    statusHistoryPath: null,
+  });
   // The same destructive-action confirmation Course/Event use — previously missing here
   // entirely, so deleting a section or a question had no confirmation step while the equivalent
   // actions in Course/Event (delete module, delete lesson) did.
@@ -636,15 +638,20 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         mode={panel.open ? "workflow" : "closed"}
         activeLessonId={null}
         collabState={{ status: "disconnected", collaborators: [] }}
-        historyCapability={{
-          status: "unavailable",
-          reason:
-            "Question revision history requires QuestionVersion persistence on the server. Published releases are captured as ExamVersions on the exam overview.",
-        }}
-        collaborationCapability={{
-          status: "unavailable",
-          reason: "Real-time collaborative question editing is not currently supported.",
-        }}
+        historyCapability={
+          activeQuestion?.id
+            ? {
+                status: "available",
+                data: createExamQuestionHistoryAdapter(activeQuestion.id, (snapshot) =>
+                  controller.restoreQuestion(activeQuestion.key, snapshot)
+                ),
+              }
+            : {
+                status: "unavailable",
+                reason:
+                  "This question hasn't been saved to the server yet — history starts after the first save.",
+              }
+        }
         footerOverride={{ label: "Exam ID", value: examId }}
         unavailableNotes={{
           status:

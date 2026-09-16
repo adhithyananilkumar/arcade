@@ -48,6 +48,14 @@ export interface Terminology {
 export interface ContentDataAdapter {
   terminology: Terminology;
 
+  /**
+   * Studio Core's Team-tab endpoint for this content item — the one collaborator system every
+   * owner type shares (`/api/v1/content/{ownerType}/{id}/collaborators`, see backend
+   * ContentCollaborationController). Each adapter supplies its own ownerType so
+   * ContentEditorRuntime never has to branch on "which content type is this" to build the URL.
+   */
+  collaboratorsPath(contentId: string): string;
+
   // Initialization
   loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }>;
 

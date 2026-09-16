@@ -31,7 +31,13 @@ export {
   DIFFICULTIES_BG,
   TYPE_LABELS,
 } from "./components/useSectionQuestions";
-export type { LocalQuestion, LocalOption, SaveState, SectionQuestionsController } from "./components/useSectionQuestions";
+export type {
+  LocalQuestion,
+  LocalOption,
+  SaveState,
+  SectionQuestionsController,
+  RestoredQuestionSnapshot,
+} from "./components/useSectionQuestions";
 export { listSections, createSection, renameSection, deleteSection } from "./api";
 export { planReadiness, isPlanPublishable } from "./lib/planReadiness";
 export type { PlanReadiness } from "./lib/planReadiness";

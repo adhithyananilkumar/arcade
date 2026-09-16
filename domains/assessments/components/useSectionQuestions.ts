@@ -39,6 +39,17 @@ export interface LocalQuestion {
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
+/** Shape of a history snapshot's body — matches BankQuestionResponse (see restoreQuestion). */
+export interface RestoredQuestionSnapshot {
+  type: BankQuestionType;
+  difficulty: Difficulty;
+  prompt: TiptapDocument;
+  points: number;
+  options: { text: string; correct: boolean }[];
+  sampleAnswer?: string | null;
+  tags?: string[] | null;
+}
+
 export const TYPE_LABELS: Record<BankQuestionType, string> = {
   SINGLE: "Single answer",
   MULTIPLE: "Multiple select",
@@ -122,6 +133,7 @@ export interface SectionQuestionsController {
   addQuestion: () => LocalQuestion;
   removeQuestion: (qKey: string) => void;
   setPrompt: (qKey: string, prompt: TiptapDocument) => void;
+  restoreQuestion: (qKey: string, snapshot: RestoredQuestionSnapshot) => void;
   setDifficulty: (qKey: string, difficulty: Difficulty) => void;
   setPoints: (qKey: string, points: number) => void;
   setSampleAnswer: (qKey: string, sampleAnswer: string) => void;
@@ -227,6 +239,28 @@ export function useSectionQuestions(
 
   const setPrompt = useCallback(
     (qKey: string, prompt: TiptapDocument) => mapQuestion(qKey, (q) => ({ ...q, prompt })),
+    [mapQuestion]
+  );
+
+  /**
+   * Replaces every field of one question with a prior version's snapshot (history "Restore") —
+   * same field shape as the server question responses `fromServer` already maps, since the
+   * backend snapshots that exact response DTO for history (see QuestionBankService in the
+   * backend). Identity (`key`/`id`) is preserved so this stays an edit to the same question, not
+   * a new one.
+   */
+  const restoreQuestion = useCallback(
+    (qKey: string, snapshot: RestoredQuestionSnapshot) =>
+      mapQuestion(qKey, (q) => ({
+        ...q,
+        type: snapshot.type,
+        difficulty: snapshot.difficulty,
+        prompt: snapshot.prompt,
+        points: snapshot.points,
+        options: snapshot.options.map((o) => ({ key: newKey(), text: o.text, correct: o.correct })),
+        sampleAnswer: snapshot.sampleAnswer ?? "",
+        tags: snapshot.tags ?? [],
+      })),
     [mapQuestion]
   );
 
@@ -343,6 +377,7 @@ export function useSectionQuestions(
     addQuestion,
     removeQuestion,
     setPrompt,
+    restoreQuestion,
     setDifficulty,
     setPoints,
     setSampleAnswer,

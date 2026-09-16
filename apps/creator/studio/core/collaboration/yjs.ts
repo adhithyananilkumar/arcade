@@ -1,10 +1,7 @@
-// features/content/editor/lib/yjs.ts
-// Yjs plumbing for the version-history substrate.
-//
-// The editor binds to a Y.Doc (the CRDT source of truth). We persist its encoded
-// state and periodic snapshots to the backend as base64 over JSON. The backend
-// stores these as opaque blobs — single-writer today, real-time collaboration
-// (a sync provider) is a later add-on that needs no schema change.
+// Yjs plumbing for the version-history substrate — the one CRDT layer every Studio content type
+// shares (moved here from apps/creator/editor, which is Tiptap-specific; this file has no Tiptap
+// dependency and never did). We persist the encoded state and periodic snapshots to the backend
+// as base64 over JSON; the backend stores these as opaque blobs.
 
 import * as Y from "yjs";
 

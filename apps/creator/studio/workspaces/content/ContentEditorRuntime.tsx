@@ -39,6 +39,9 @@ import { toast } from "sonner";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import type { ArcadeEditorHandle } from "@/apps/creator/editor";
 import { VersionHistoryOrchestrator } from "./history/VersionHistoryOrchestrator";
+import { createContentMetadataHistoryAdapter } from "./adapters/ContentMetadataHistoryAdapter";
+import { useCollaborativeDocument } from "@/apps/creator/studio/core/collaboration/useCollaborativeDocument";
+import { useCollaborativeFields } from "@/apps/creator/studio/core/collaboration/useCollaborativeFields";
 import { encodeSnapshotBase64, createYDoc, applyBase64Update, encodeStateBase64 } from "@/apps/creator/editor";
 import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
 import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
@@ -259,6 +262,61 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const [title, setTitle] = useState("Untitled");
   const [description, setDescription] = useState("");
   const [pricingModel, setPricingModel] = useState<"FREE" | "PAID">("FREE");
+
+  // Live collaborative editing for title/description/pricingModel — the structured-field
+  // counterpart to lesson bodies' Tiptap/Yjs binding, same room-per-owner pattern. The Course/
+  // Event row (not this document) stays the source of truth for these fields (see
+  // CourseMetadataDocumentAuthorizer's backend doc); this Y.Map is the live-sync transport, kept
+  // in step with the `title`/`description`/`pricingModel` state above by the two effects below
+  // rather than replacing it, so every existing read/write of that state elsewhere in this file
+  // keeps working unchanged.
+  const metadataOwnerType = adapter.terminology.root === "Course" ? "COURSE_METADATA" : "EVENT_METADATA";
+  const {
+    ydoc: metadataYDoc,
+    status: metadataCollabStatus,
+    collaborators: metadataCollaborators,
+  } = useCollaborativeDocument({
+    ownerType: metadataOwnerType,
+    ownerId: contentId,
+  });
+  const metadataFields = useCollaborativeFields(contentId ? metadataYDoc : null, {
+    title,
+    description,
+    pricingModel,
+  });
+
+  // Local edit -> broadcast. Only once the fields hook is actually bound to a room (`ready`), so
+  // this can't race the initial seed-from-server effect below on mount.
+  useEffect(() => {
+    if (!metadataFields.ready) return;
+    if (metadataFields.values.title !== title) metadataFields.setField("title", title);
+  }, [title, metadataFields.ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!metadataFields.ready) return;
+    if (metadataFields.values.description !== description) metadataFields.setField("description", description);
+  }, [description, metadataFields.ready]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!metadataFields.ready) return;
+    if (metadataFields.values.pricingModel !== pricingModel) metadataFields.setField("pricingModel", pricingModel);
+  }, [pricingModel, metadataFields.ready]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Remote edit -> local state, so another collaborator's change shows up here live.
+  useEffect(() => {
+    if (metadataFields.values.title !== undefined && metadataFields.values.title !== title) {
+      setTitle(metadataFields.values.title);
+    }
+  }, [metadataFields.values.title]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (metadataFields.values.description !== undefined && metadataFields.values.description !== description) {
+      setDescription(metadataFields.values.description);
+    }
+  }, [metadataFields.values.description]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (metadataFields.values.pricingModel !== undefined && metadataFields.values.pricingModel !== pricingModel) {
+      setPricingModel(metadataFields.values.pricingModel as "FREE" | "PAID");
+    }
+  }, [metadataFields.values.pricingModel]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [status, setStatus] = useState<string>("DRAFT");
   const [hasDraftChanges, setHasDraftChanges] = useState<boolean>(false);
   // Raw content-type-specific payload (CourseResponse for Course, the Event object for Event);
@@ -280,6 +338,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   const [modules, setModules] = useState<ModuleNode[]>([]);
   const [badges, setBadges] = useState<BadgeNode[]>([]);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  // Which live-collaboration room's presence to show: the open lesson's, or — when no lesson is
+  // open (viewing the course/event's own settings) — the metadata room's, so "Active now" is
+  // never just stale/empty while someone actually is editing the title/description live.
+  const effectiveCollabState = activeLessonId
+    ? collabState
+    : { status: metadataCollabStatus, collaborators: metadataCollaborators };
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
   const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
   const badgeEditor = useBadgeEditor(activeBadgeId, status === "SUBMITTED");
@@ -321,7 +385,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
   // Exam uses. Null the path while there's no contentId yet (content still being created) so the
   // hook's own `!path` guard matches the previous `&& contentId` guard exactly.
   const panel = useStudioPanel({
-    collaboratorsPath: contentId ? `/api/v1/${adapter.terminology.root === "Course" ? "courses" : "events"}/${contentId}/collaborators` : null,
+    collaboratorsPath: contentId ? adapter.collaboratorsPath(contentId) : null,
     statusHistoryPath: contentId
       ? adapter.terminology.root === "Course"
         ? `/api/courses/${contentId}/status-history`
@@ -791,7 +855,12 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     setNavigatingBack(true);
 
     const tasks: Promise<unknown>[] = [];
-    if (contentId) {
+    // When the metadata room is live, Hocuspocus already persisted every keystroke and the
+    // backend's onDocumentSaved hook already wrote it back into the Course/Event row — sending a
+    // REST PATCH too would just be a redundant, potentially-stale write racing a fresher one.
+    // Only fall back to REST when collaboration never connected (matches the lesson-body pattern
+    // in handleSave below).
+    if (contentId && metadataCollabStatus !== "connected") {
       tasks.push(
         adapter.updateMeta(contentId, { title, description, pricingModel }).catch((e) => console.warn("Content metadata flush failed", e))
       );
@@ -828,7 +897,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     }
 
     router.push(backHref);
-  }, [navigatingBack, contentId, title, description, pricingModel, activeLessonId, activeLessonTitle, router, adapter, backHref]);
+  }, [navigatingBack, contentId, title, description, pricingModel, metadataCollabStatus, activeLessonId, activeLessonTitle, router, adapter, backHref]);
 
   // ── Submit for review ─────────────────────────────────────────────────────
 
@@ -927,7 +996,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             <span className="block max-w-[40vw] truncate text-[#14142b]">{title || adapter.terminology.root}</span>
           )
         }
-        collaborators={collabState.collaborators}
+        collaborators={effectiveCollabState.collaborators}
         share={
           contentId
             ? {
@@ -962,9 +1031,30 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         {...panel.sidebarProps}
         mode={panel.open ? "workflow" : activeBadgeId ? "editor" : "closed"}
         activeLessonId={activeLessonId}
-        collabState={collabState}
+        collabState={effectiveCollabState}
         editorContextNode={activeBadgeId ? <BadgeEditorContextPanel editor={badgeEditor} /> : undefined}
         footerOverride={activeBadgeId ? { label: "Badge ID", value: activeBadgeId } : null}
+        historyCapability={
+          !activeLessonId && contentId
+            ? {
+                status: "available",
+                data: createContentMetadataHistoryAdapter<{ title?: string; description?: string }>(
+                  adapter.terminology.root === "Course" ? "COURSE_METADATA" : "EVENT_METADATA",
+                  contentId,
+                  (snapshot) => {
+                    // Scoped restore: title/description are the two fields this runtime owns and
+                    // can safely set directly for both Course and Event. Pricing/category live in
+                    // workspace-specific state (e.g. CourseWorkspace's category selector) and
+                    // aren't restored here yet — Restore only ever touches fields it's honest
+                    // about actually applying.
+                    if (snapshot.title !== undefined) setTitle(snapshot.title);
+                    if (snapshot.description !== undefined) setDescription(snapshot.description);
+                    setHasDraftChanges(true);
+                  }
+                ),
+              }
+            : undefined
+        }
         historyContent={
           activeLessonId ? (
             <VersionHistoryOrchestrator
@@ -1274,6 +1364,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                   ref={editorRef}
                   ydoc={activeYDoc}
                   documentId={activeLessonId}
+                  documentName={`${adapter.terminology.root === "Course" ? "LESSON" : "EVENT_LESSON"}:${activeLessonId}`}
                   seedContent={activeSeedContent}
                   placeholder="Start writing your lesson content…"
                   onSave={handleSave}

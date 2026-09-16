@@ -1,8 +1,8 @@
 import { api, ApiError } from "@/infrastructure/http/api";
 import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/studio/events/api/publish";
-import { getCollaborators as getEventCollaborators } from "@/app/(authenticated)/studio/events/api/collaboration";
 import { platformReviewApi, type ContentType as ReviewContentType, type ReviewResponse } from "@/domains/publishing/api/platformReview";
 import type { ContentTypeSegment } from "./contentTypeRouting";
+import { collaboratorsPath } from "./contentActions";
 import type { PublishValidationResponse } from "@/app/(authenticated)/studio/events/types";
 
 // Every fetch here hits an existing, already-working backend endpoint — see
@@ -141,12 +141,18 @@ export async function fetchOverviewData(
   }
 
   if (segment === "exam") {
-    // Everything else an exam needs (plans, attempts) is loaded by the tab that
-    // shows it — there is no cross-capability fan-out to do here.
+    // Everything else an exam needs (plans, attempts) is loaded by the tab that shows it — there
+    // is no cross-capability fan-out to do here. statusHistory stays empty: exams self-publish
+    // rather than passing through platform review, so there is genuinely none to show. Team is
+    // real, though — Exam shares the one ContentCollaborationController every owner type uses.
+    const collaborators = await settle(
+      api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)),
+      { isEmpty: isEmptyArray }
+    );
     return {
       content,
       statusHistory: { status: "empty" },
-      collaborators: { status: "empty" },
+      collaborators,
       review: { status: "empty" },
     };
   }
@@ -159,7 +165,7 @@ export async function fetchOverviewData(
   if (segment === "course") {
     const [statusHistory, collaborators, review] = await Promise.all([
       settle(api.get<StatusHistoryEntry[]>(`/api/courses/${contentId}/status-history`), { isEmpty: isEmptyArray }),
-      settle(api.get<CollaboratorLite[]>(`/api/v1/courses/${contentId}/collaborators`), { isEmpty: isEmptyArray }),
+      settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
       reviewPromise,
     ]);
     return { content, statusHistory, collaborators, review };
@@ -169,7 +175,7 @@ export async function fetchOverviewData(
   const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review] =
     await Promise.all([
       settle(getEventStatusHistory(contentId), { isEmpty: isEmptyArray }),
-      settle(getEventCollaborators(contentId), { isEmpty: isEmptyArray }),
+      settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
       settle(api.get<EventParticipant[]>(`/api/v1/events/${contentId}/participants`), { isEmpty: isEmptyArray }),
       settle(api.get<Record<string, unknown>>(`/api/v1/events/${contentId}/participants/analytics`), {
         isEmpty: (data) => !data || Object.keys(data).length === 0,

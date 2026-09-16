@@ -613,7 +613,7 @@ function ContentCard({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                await api.post(`/api/v1/content/COURSE/${item.id}/collaborators/accept`);
                 toast.success("Accepted collaboration invitation!");
                 onChanged();
               } catch {
@@ -629,7 +629,7 @@ function ContentCard({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                await api.post(`/api/v1/content/COURSE/${item.id}/collaborators/decline`);
                 toast.info("Declined invitation");
                 onChanged();
               } catch {

@@ -57,24 +57,24 @@ export const SUPPORTS_TITLE_CONFIRM_DELETE: Partial<Record<ContentTypeSegment, b
   course: true,
 };
 
-// Exam is deliberately absent: authority over an exam comes from the channel
-// (channel.exams.manage[.own]), not a per-exam collaborator list, so there is no endpoint here.
-const COLLABORATORS_BASE: Partial<Record<ContentTypeSegment, (id: string) => string>> = {
-  course: (id) => `/api/v1/courses/${id}/collaborators`,
-  event: (id) => `/api/v1/events/${id}/collaborators`,
+const OWNER_TYPE: Record<ContentTypeSegment, "COURSE" | "EVENT" | "EXAM"> = {
+  course: "COURSE",
+  event: "EVENT",
+  exam: "EXAM",
 };
 
-// Both domains share the exact same {email, role} invite contract —
-// see InviteCollaboratorRequest, reused verbatim across course/event.
+/** The one Team-tab endpoint every content type shares — see backend ContentCollaborationController. */
+export function collaboratorsPath(segment: ContentTypeSegment, contentId: string): string {
+  return `/api/v1/content/${OWNER_TYPE[segment]}/${contentId}/collaborators`;
+}
+
+// Every owner type shares the exact same {email, role} invite contract —
+// see InviteCollaboratorRequest.
 export function inviteCollaborator(
   segment: ContentTypeSegment,
   contentId: string,
   email: string,
   role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER"
 ) {
-  const base = COLLABORATORS_BASE[segment];
-  if (!base) {
-    return Promise.reject(new Error(`${segment} content has no collaborator list.`));
-  }
-  return api.post(base(contentId), { email, role });
+  return api.post(collaboratorsPath(segment, contentId), { email, role });
 }

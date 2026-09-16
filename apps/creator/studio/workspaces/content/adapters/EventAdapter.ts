@@ -17,6 +17,10 @@ export class EventAdapter implements ContentDataAdapter {
     leafQuiz: "Quiz",
   };
 
+  collaboratorsPath(contentId: string): string {
+    return `/api/v1/content/EVENT/${contentId}/collaborators`;
+  }
+
   async loadContent(id: string): Promise<{ meta: ContentMeta; containers: ContainerNode[]; badges: RootBadgeNode[] }> {
     const [workshop, sessions] = await Promise.all([
       api.get<Event>(`/api/v1/events/${id}`),
