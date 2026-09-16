@@ -147,7 +147,7 @@ export function QuestionEditorCard({
       </div>
 
       {/* ── Prompt: the shared Arcade editor ──────────────────────────────── */}
-      <div className="rounded-3xl border border-white/40 bg-white/30 p-6 shadow-lg backdrop-blur-xl sm:p-8">
+      <div className="rounded-3xl border border-white/40 bg-white/30 p-4 shadow-lg backdrop-blur-xl sm:p-6">
         <ArcadeEditor
           // Keyed on the question so switching rebuilds the document rather than diffing one
           // question's content into another's.
@@ -158,6 +158,10 @@ export function QuestionEditorCard({
           readOnly={readOnly}
           onSave={(doc) => actions.setPrompt(q.key, doc)}
           chromeless
+          // A question prompt is a sentence or two, not a lesson's worth of prose — the editor's
+          // 300px lesson-sized default was the biggest single contributor to this card's excessive
+          // empty space.
+          minHeight={120}
         />
       </div>
 

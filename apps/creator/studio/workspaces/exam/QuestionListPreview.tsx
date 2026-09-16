@@ -14,7 +14,7 @@ import {
   StudioCanvasEmpty,
   StudioCanvasError,
   StudioCanvasLoading,
-} from "@/apps/creator/shared/content-editor/StudioEditorShell";
+} from "@/apps/creator/studio/core/StudioShell";
 
 /**
  * Every question in scope, read straight through as a scrollable page.

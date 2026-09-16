@@ -685,7 +685,7 @@ const CONTEXT_TABS: { id: BadgeEditorPanel; label: string; icon: typeof LayersIc
 /**
  * Everything the sidebar shows while a Badge is the active editor: a small tab
  * strip (Design/Properties/Layers) plus the selected tab's content — self-
- * contained so EditorRightSidebar itself stays generic (it just renders
+ * contained so StudioRightPanel itself stays generic (it just renders
  * whatever `editorContextNode` it's given, same as it already did for the
  * Lesson-only Status/History/Team tabs before this existed). Layers lives here
  * rather than behind a toolbar toggle, so it's reachable directly from the

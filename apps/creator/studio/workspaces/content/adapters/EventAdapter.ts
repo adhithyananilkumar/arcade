@@ -1,6 +1,7 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, RootBadgeNode, Terminology } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, ExamSummary, LeafNode, RootBadgeNode, Terminology } from "../types";
 import type { Event, EventSession } from "@/app/(authenticated)/studio/events/types";
+import { createExam, detachExamFromEvent, listExamsForEvent } from "@/domains/assessments";
 
 export class EventAdapter implements ContentDataAdapter {
   private eventId: string;
@@ -142,5 +143,19 @@ export class EventAdapter implements ContentDataAdapter {
     payload: { snapshot?: string; body: string; kind: string; label?: string }
   ): Promise<void> {
     await api.post(`/api/v1/events/lessons/${leafId}/document/versions`, payload);
+  }
+
+  // ── Exams attached to this event ───────────────────────────────────────────────
+
+  async listExams(contentId: string): Promise<ExamSummary[]> {
+    return listExamsForEvent(contentId);
+  }
+
+  async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
+    return createExam({ title, eventId: contentId });
+  }
+
+  async detachExam(contentId: string, examId: string): Promise<void> {
+    await detachExamFromEvent(contentId, examId);
   }
 }

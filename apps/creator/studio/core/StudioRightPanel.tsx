@@ -10,7 +10,7 @@
  * edges) instead of a flat, screen-docked modal.
  *
  * Pure presentational component — all data loading and mutation happen in
- * SharedContentEditorOrchestrator; this only renders what it's given.
+ * ContentEditorRuntime; this only renders what it's given.
  */
 
 import { useEffect, useState } from "react";
@@ -29,7 +29,7 @@ import {
   User,
   Shield,
 } from "lucide-react";
-import type { ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
+import type { ContentStatusHistoryResponse } from "@/domains/publishing";
 import type { Collaborator } from "@/app/(authenticated)/studio/events/api/collaboration";
 import type { CollabStatus, ActiveCollaborator } from "../../editor/hooks/useArcadeEditor";
 
@@ -72,7 +72,7 @@ export interface SidebarExtraPanel {
   content: React.ReactNode;
 }
 
-interface EditorRightSidebarProps {
+interface StudioRightPanelProps {
   tab: string;
   onTabChange: (tab: string) => void;
   onClose: () => void;
@@ -124,7 +124,7 @@ const BASE_TABS: { id: RightSidebarTab; label: string; icon: typeof History }[] 
   { id: "collab", label: "Team", icon: Users },
 ];
 
-export function EditorRightSidebar(props: EditorRightSidebarProps) {
+export function StudioRightPanel(props: StudioRightPanelProps) {
   const { mode, tab, onTabChange, onClose, editorContextNode } = props;
   const TABS = BASE_TABS;
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);

@@ -12,7 +12,7 @@ import {
   StudioCanvasEmpty,
   StudioCanvasError,
   StudioCanvasLoading,
-} from "@/apps/creator/shared/content-editor/StudioEditorShell";
+} from "@/apps/creator/studio/core/StudioShell";
 
 /**
  * Learner-facing preview of a plan.

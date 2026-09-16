@@ -1,9 +1,9 @@
 "use client";
 
 import { use } from "react";
-import { ExamStudioOrchestrator } from "@/apps/creator/exam-studio/ExamStudioOrchestrator";
+import { ExamWorkspace } from "@/apps/creator/studio/workspaces/exam/ExamWorkspace";
 
 export default function ExamEditorPage({ params }: { params: Promise<{ examId: string }> }) {
   const { examId } = use(params);
-  return <ExamStudioOrchestrator examId={examId} />;
+  return <ExamWorkspace examId={examId} />;
 }

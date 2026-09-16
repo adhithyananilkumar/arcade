@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import type { ExamResponse } from "@/domains/assessments";
-import { ExamManagementSections } from "@/apps/creator/exam-studio/management/ExamManagementSections";
+import { ExamManagementSections } from "@/apps/creator/studio/workspaces/exam/management/ExamManagementSections";
 import { editorHref } from "../../../lib/contentTypeRouting";
 
 /**

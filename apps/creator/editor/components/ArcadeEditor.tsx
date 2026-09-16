@@ -89,6 +89,12 @@ interface ArcadeEditorProps {
    * (Figma-style). The host owns padding + scrolling.
    */
   chromeless?: boolean;
+  /**
+   * Minimum height of the writing surface. Defaults to 300px, sized for a lesson's worth of
+   * prose; a host editing something shorter (a question prompt, an answer explanation) should
+   * pass a smaller value rather than inherit lesson-sized empty space.
+   */
+  minHeight?: number;
   /** Content type of the editor. */
   contentType?: "course" | "workshop";
   /** Callback for selection updates */
@@ -105,7 +111,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, onSelectionUpdate, documentName, onCollabStateChange },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, minHeight = 300, contentType, onSelectionUpdate, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -165,9 +171,10 @@ export const ArcadeEditor = memo(
       <div
         className={
           chromeless
-            ? `min-h-[300px] !bg-transparent !shadow-none !border-none ${className}`
+            ? `!bg-transparent !shadow-none !border-none ${className}`
             : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
         }
+        style={chromeless ? { minHeight } : undefined}
       >
         <EditorSkeleton />
       </div>
@@ -186,10 +193,14 @@ export const ArcadeEditor = memo(
         {!readOnly && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
+          // Not a Tailwind arbitrary-value class: `minHeight` is a runtime prop, and Tailwind's
+          // JIT scanner can only generate classes it sees as literal strings in source, so a
+          // template-literal `min-h-[${minHeight}px]` would silently produce no CSS at all.
+          style={{ minHeight }}
           className={
             chromeless
-              ? "flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none"
-              : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
+              ? "flex-1 focus-within:outline-none !bg-transparent !shadow-none !border-none"
+              : "flex-1 overflow-y-auto px-8 py-6 focus-within:outline-none"
           }
         />
         {!readOnly && <RichTextBubbles editor={editor} />}

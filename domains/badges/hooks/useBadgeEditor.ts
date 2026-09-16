@@ -26,10 +26,10 @@ export type BadgeSaveState = "idle" | "saving" | "saved" | "error";
  * Owns a badge design's full editing state — load, autosave, selection, and object
  * mutations — independent of where any given piece of UI for it renders. The Badge
  * Editor's toolbar/canvas live in the main workspace while its Design/Properties/Layers
- * panels render inside the shared Studio right sidebar (see EditorRightSidebar); both
+ * panels render inside the shared Studio right sidebar (see StudioRightPanel); both
  * need the same live state, so it's centralized here rather than owned by whichever
  * component happens to mount first — the same reason Lesson editing state lives in
- * SharedContentEditorOrchestrator rather than inside ArcadeEditor.
+ * ContentEditorRuntime rather than inside ArcadeEditor.
  *
  * badgeId may be null (no badge currently open) so this can be called unconditionally
  * from the orchestrator regardless of which editor is active.

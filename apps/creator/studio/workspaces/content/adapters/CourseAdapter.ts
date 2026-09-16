@@ -1,6 +1,7 @@
 import { api } from "@/infrastructure/http/api";
-import { ContentDataAdapter, ContentMeta, ContainerNode, LeafNode, RootBadgeNode, Terminology } from "../types";
+import { ContentDataAdapter, ContentMeta, ContainerNode, ExamSummary, LeafNode, RootBadgeNode, Terminology } from "../types";
 import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, BadgeSummaryResponse } from "@/shared/types/api.types";
+import { createExam, detachExamFromCourse, listExamsForCourse } from "@/domains/assessments";
 
 export class CourseAdapter implements ContentDataAdapter {
   terminology: Terminology = {
@@ -142,5 +143,19 @@ export class CourseAdapter implements ContentDataAdapter {
 
   async renameBadge(badgeId: string, title: string): Promise<void> {
     await api.patch(`/api/badges/${badgeId}`, { title });
+  }
+
+  // ── Exams attached to this course ─────────────────────────────────────────────
+
+  async listExams(contentId: string): Promise<ExamSummary[]> {
+    return listExamsForCourse(contentId);
+  }
+
+  async createAndAttachExam(contentId: string, title: string): Promise<ExamSummary> {
+    return createExam({ title, courseId: contentId });
+  }
+
+  async detachExam(contentId: string, examId: string): Promise<void> {
+    await detachExamFromCourse(contentId, examId);
   }
 }

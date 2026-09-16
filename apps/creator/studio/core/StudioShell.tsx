@@ -10,7 +10,7 @@ import { AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
  * ambient background, floating top bar (logo · back · centered breadcrumb · actions), the
  * floating left structure sidebar, and the canvas column.
  *
- * Extracted from SharedContentEditorOrchestrator so a second authoring surface (the exam editor)
+ * Extracted from ContentEditorRuntime so a second authoring surface (the exam editor)
  * is literally the same chrome rather than a look-alike copy of it. Deliberately compound
  * (Frame / TopBar / Body) rather than one component with a dozen slot props: the pieces then sit
  * in the same source order as the markup they replaced, so adopting it is a wrap, not a rewrite.
@@ -101,6 +101,7 @@ export function StudioEditorBody({
   sidebarTitle,
   sidebarTree,
   sidebarActions,
+  toolbarClearance = true,
   children,
 }: {
   /** Sidebar heading, e.g. "Course structure" / "Question bank". */
@@ -108,6 +109,18 @@ export function StudioEditorBody({
   sidebarTree: ReactNode;
   /** Pinned bottom actions in the sidebar (Add Module, Add Exam …). */
   sidebarActions?: ReactNode;
+  /**
+   * Whether the canvas this render mounts ArcadeEditor's own floating toolbar (portalled to
+   * `top-[70px]`, see FloatingToolbar). When it does, the canvas needs extra top clearance so its
+   * content doesn't start underneath that toolbar; when it doesn't (a list, an empty state, a
+   * settings panel), the canvas only needs to clear the Studio top bar itself.
+   *
+   * This is the ONE legitimate reason a workspace's top offset varies — never a reason to
+   * hand-derive or override the offset itself. Defaults to `true` (every render clears the
+   * toolbar), matching every editor's steady-state; pass `false` only for a render you know
+   * mounts no editor.
+   */
+  toolbarClearance?: boolean;
   /** The canvas column. */
   children: ReactNode;
 }) {
@@ -133,10 +146,33 @@ export function StudioEditorBody({
         </div>
       </aside>
 
-      {/* ── Canvas: wide, centered pane. Fixed in place — only its own inner
-           content scrolls, so the panel itself never shifts and the scrollbar
-           sits at the panel's own edge instead of the browser window's. ── */}
-      <main className="z-0 flex flex-col min-h-0 absolute inset-0 items-center">{children}</main>
+      {/*
+       * ── Canvas viewport: the ONE header-safe, ONE scroll-owning region every workspace's
+       * content renders into.
+       *
+       * This element — not each workspace — owns:
+       *   1. Top clearance under the floating top bar (and, when `toolbarClearance`, the
+       *      floating rich-text toolbar too).
+       *   2. The scroll container: `overflow-y-auto` lives HERE, on the same element as the
+       *      padding, so padding can never end up inside a differently-scrolled child and get
+       *      scrolled away — which is exactly how content previously ended up rendering behind
+       *      the header (padding and `overflow-y-auto` were split across two different elements,
+       *      or combined on one element in an order-dependent way, per workspace).
+       *   3. Horizontal centering, so a workspace only has to declare its own `max-w-[Npx]`.
+       *
+       * A workspace MAY still nest its own scroll container inside this (e.g. a bordered "page"
+       * card whose own edge is the visible scrollbar, as the lesson editor does) — that's a
+       * legitimate visual choice about where the scrollbar appears, not a second owner of the
+       * safe area. Wherever the actual scrolling ends up happening, content can never start above
+       * this element's own padding, because that padding is never delegated away.
+       */}
+      <main
+        className={`z-0 flex flex-col min-h-0 absolute inset-0 items-center overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
+          toolbarClearance ? "pt-36" : "pt-28"
+        }`}
+      >
+        {children}
+      </main>
     </div>
   );
 }
@@ -157,11 +193,22 @@ export const TREE_SIDEBAR_ACTIONS_CLASS =
 export const TREE_EMPTY_STATE_CLASS =
   "flex flex-col items-center gap-3 px-4 py-8 text-center rounded-3xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm";
 
-/** The glass canvas card the lesson editor uses — reused so canvases sit identically. */
+/**
+ * The glass canvas card the lesson editor uses — reused so canvases sit identically. This is a
+ * legitimate NESTED scroll container (see `StudioEditorBody`'s doc comment): its own edge is the
+ * visible scrollbar for a "page within the canvas" look, distinct from and inside the Studio
+ * viewport's own header-safe scroll region.
+ */
 export const CANVAS_CARD_CLASS =
   "h-full overflow-y-auto rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg p-8 arcade-scrollbar-mini";
 
-export const CANVAS_WRAPPER_CLASS = "w-full max-w-[1024px] flex-1 min-h-0 px-6 pb-6 pt-36 sm:px-12";
+/**
+ * Width-constrains and centers a workspace's canvas content inside the Studio viewport. Carries
+ * no padding or scroll properties of its own — `StudioEditorBody`'s `<main>` owns both, so a
+ * workspace can never misplace them the way earlier ad-hoc per-workspace variants did (padding
+ * placed inside a differently-scrolled element let content render behind the header).
+ */
+export const CANVAS_WRAPPER_CLASS = "w-full max-w-[1024px] flex-1 min-h-0";
 
 
 // ── Shared canvas states ──────────────────────────────────────────────────────

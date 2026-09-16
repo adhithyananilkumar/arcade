@@ -16,13 +16,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
+  AlignLeft,
   ChevronDown,
   ChevronRight,
+  CircleDot,
   FileQuestion,
   Layers,
+  ListChecks,
   Loader2,
   Pencil,
   Plus,
+  ToggleLeft,
   Trash2,
   UploadCloud,
 } from "lucide-react";
@@ -35,15 +39,16 @@ import {
   TREE_SIDEBAR_BUTTON_CLASS,
   TREE_SIDEBAR_ACTIONS_CLASS,
   TREE_EMPTY_STATE_CLASS,
-} from "@/apps/creator/shared/content-editor/StudioEditorShell";
+  CANVAS_WRAPPER_CLASS,
+} from "@/apps/creator/studio/core/StudioShell";
 import {
   StudioPresenceStack,
   StudioShareControl,
   StudioPanelToggle,
   StudioActionButton,
-} from "@/apps/creator/shared/content-editor/StudioHeaderActions";
-import { EditorRightSidebar } from "@/apps/creator/shared/content-editor/EditorRightSidebar";
-import { useStudioWorkflowPanel } from "@/apps/creator/shared/content-editor/useStudioWorkflowPanel";
+} from "@/apps/creator/studio/core/StudioHeader";
+import { StudioRightPanel } from "@/apps/creator/studio/core/StudioRightPanel";
+import { useStudioPanel } from "@/apps/creator/studio/core/useStudioPanel";
 import {
   SaveIndicator,
   createSection,
@@ -83,7 +88,18 @@ import { QuestionListPreview } from "./QuestionListPreview";
  * settings and preview are configuration around the content and live on the Content Overview,
  * alongside publishing and attempts.
  */
-export function ExamStudioOrchestrator({ examId }: { examId: string }) {
+/**
+ * One icon per question type, so a section's rows are scannable at a glance instead of every
+ * question showing the same generic document icon regardless of what it actually asks for.
+ */
+const QUESTION_TYPE_ICON: Record<string, typeof FileQuestion> = {
+  SINGLE: CircleDot,
+  MULTIPLE: ListChecks,
+  TRUE_FALSE: ToggleLeft,
+  SENTENCE: AlignLeft,
+};
+
+export function ExamWorkspace({ examId }: { examId: string }) {
   const router = useRouter();
 
   const [exam, setExam] = useState<ExamResponse | null>(null);
@@ -113,7 +129,7 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
   // collaborator list to read, and exams self-publish rather than passing through the review
   // rounds that produce a status history. The panel is still mounted and still opens — the Studio
   // is the same shape for every content type — and each tab says plainly why it is empty.
-  const panel = useStudioWorkflowPanel({ collaboratorsPath: null, statusHistoryPath: null });
+  const panel = useStudioPanel({ collaboratorsPath: null, statusHistoryPath: null });
 
   const handleSectionCountChange = useCallback((sectionId: string, count: number) => {
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, questionCount: count } : s)));
@@ -433,6 +449,7 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
                   questions.map((q, index) => {
                     const label = promptToPlainText(q.prompt);
                     const isOpen = q.key === activeQuestionKey;
+                    const TypeIcon = QUESTION_TYPE_ICON[q.type] ?? FileQuestion;
                     return (
                       <div
                         key={q.key}
@@ -447,7 +464,7 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
                             isOpen ? "font-semibold text-white" : "text-slate-500"
                           }`}
                         >
-                          <FileQuestion size={11} className="flex-shrink-0" />
+                          <TypeIcon size={12} className="flex-shrink-0" />
                           <span className="truncate" title={label || `Question ${index + 1}`}>
                             {label || `Question ${index + 1}`}
                           </span>
@@ -535,7 +552,7 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
         }
       />
 
-      <EditorRightSidebar
+      <StudioRightPanel
         {...panel.sidebarProps}
         mode={panel.open ? "workflow" : "closed"}
         activeLessonId={null}
@@ -553,6 +570,11 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
       <StudioEditorBody
         sidebarTitle="Question bank"
         sidebarTree={sidebarTree}
+        // The floating rich-text toolbar only mounts while a question is open (QuestionEditorCard
+        // embeds ArcadeEditor); the read-through list mounts no editor and needs no extra
+        // clearance for it. This is the one legitimate reason to vary the Studio viewport's top
+        // offset — the offset itself is never re-derived here, only requested from the shell.
+        toolbarClearance={Boolean(activeQuestion)}
         sidebarActions={
           readOnly ? undefined : (
             <div className={TREE_SIDEBAR_ACTIONS_CLASS}>
@@ -579,15 +601,10 @@ export function ExamStudioOrchestrator({ examId }: { examId: string }) {
           </div>
         )}
 
-        {/* The canvas scrolls; the toolbar ArcadeEditor portals to the top stays put above it.
-            An open question reserves room for that toolbar (pt-36, matching the lesson editor);
-            the read-through list has no toolbar, so it starts just under the top bar instead of
-            beneath 144px of empty space. */}
-        <div
-          className={`w-full max-w-[1024px] flex-1 min-h-0 overflow-y-auto px-6 pb-6 sm:px-12 arcade-scrollbar-mini ${
-            activeQuestion ? "pt-36" : "pt-28"
-          }`}
-        >
+        {/* Scroll and header-safe clearance are owned by StudioEditorBody's `<main>` (see its
+            doc comment) — this wrapper only declares its own max width, same as every other
+            Studio workspace canvas. */}
+        <div className={CANVAS_WRAPPER_CLASS}>
           {activeQuestion ? (
             <QuestionEditorCard
               key={activeQuestion.key}

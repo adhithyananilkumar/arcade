@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { api } from "@/infrastructure/http/api";
-import { VersionHistoryPanel, type ContentStatusHistoryResponse } from "@/domains/publishing/components/VersionHistoryPanel";
+import { VersionHistoryPanel, type ContentStatusHistoryResponse } from "@/domains/publishing";
 import type { TiptapDocument } from "@/shared/types/editor.types";
 
 interface VersionSummary {

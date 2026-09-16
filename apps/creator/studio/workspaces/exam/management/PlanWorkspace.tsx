@@ -30,7 +30,7 @@ import {
   type QuestionPoolDetail,
   type SectionResponse,
 } from "@/domains/assessments";
-import { StudioCanvasEmpty } from "@/apps/creator/shared/content-editor/StudioEditorShell";
+import { StudioCanvasEmpty } from "@/apps/creator/studio/core/StudioShell";
 
 /**
  * The Exam Plan workspace — where a creator says how one way of running this examination works.

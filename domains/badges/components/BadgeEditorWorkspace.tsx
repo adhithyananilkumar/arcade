@@ -25,7 +25,7 @@ const TARGET_FRACTION_OF_VIEWPORT_HEIGHT = 0.65;
  * dominate the available space and centered in it, and a bottom zoom control
  * bar. No card, no border, no background of its own — the badge geometry is
  * the only thing that reads as a canvas. Design/Properties/Layers render
- * separately, inside the shared Studio right sidebar (see EditorRightSidebar +
+ * separately, inside the shared Studio right sidebar (see StudioRightPanel +
  * BadgeEditorContextPanel) — this component only owns the toolbar, the badge,
  * and the zoom control.
  */

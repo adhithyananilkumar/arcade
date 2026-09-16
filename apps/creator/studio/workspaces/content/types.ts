@@ -74,4 +74,20 @@ export interface ContentDataAdapter {
   addBadge?(contentId: string, title: string): Promise<RootBadgeNode>;
   deleteBadge?(badgeId: string): Promise<void>;
   renameBadge?(badgeId: string, title: string): Promise<void>;
+
+  // Exams attached to this content item. Every content type that hosts the shared content
+  // editor runtime supports this (there is no capability gate here, unlike badges) — it exists
+  // on the adapter, rather than as a `contentType === ...` branch in the runtime, purely so the
+  // runtime never has to know which underlying API a Course vs an Event exam lives behind.
+  listExams(contentId: string): Promise<ExamSummary[]>;
+  /** Creates a brand-new exam already attached to this content item, and returns it. */
+  createAndAttachExam(contentId: string, title: string): Promise<ExamSummary>;
+  detachExam(contentId: string, examId: string): Promise<void>;
+}
+
+/** The minimal shape the shared runtime's sidebar needs for an attached exam. */
+export interface ExamSummary {
+  id: string;
+  title: string;
+  wasPublished: boolean;
 }

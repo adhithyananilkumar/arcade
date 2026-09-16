@@ -27,7 +27,7 @@ export interface StudioWorkflowPanelPaths {
 
 export type InviteRole = "EDITOR" | "MANAGER" | "VIEWER";
 
-export function useStudioWorkflowPanel({ collaboratorsPath, statusHistoryPath }: StudioWorkflowPanelPaths) {
+export function useStudioPanel({ collaboratorsPath, statusHistoryPath }: StudioWorkflowPanelPaths) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<string>("status");
 
@@ -135,7 +135,7 @@ export function useStudioWorkflowPanel({ collaboratorsPath, statusHistoryPath }:
     [collaboratorsPath, loadCollaborators]
   );
 
-  /** Spread straight onto {@code EditorRightSidebar} — keeps the wiring in one place. */
+  /** Spread straight onto {@code StudioRightPanel} — keeps the wiring in one place. */
   const sidebarProps = useMemo(
     () => ({
       tab,
