@@ -11,6 +11,6 @@
 
 import MyLearningPage from '@/apps/learner/components/my-learning/MyLearningPage';
 
-export default function MyLearningRoute() {
+export default function LearningRoute() {
   return <MyLearningPage />;
 }

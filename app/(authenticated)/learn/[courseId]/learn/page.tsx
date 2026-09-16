@@ -233,11 +233,11 @@ export default function CourseLearnPage() {
         <aside className="flex w-full shrink-0 flex-col border-b border-slate-200/70 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)] md:w-[280px] md:border-b-0 md:border-r md:border-slate-200/70 lg:w-[300px]">
           <div className="space-y-4 px-5 pb-4 md:px-6">
             <Link
-              href="/my-learning"
+              href="/learning"
               className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-400 transition-colors hover:text-[#14142b]"
             >
               <ChevronLeft size={14} />
-              My Learning
+              Learning
             </Link>
 
             <div>
@@ -465,11 +465,11 @@ export default function CourseLearnPage() {
                     ) : isLastLesson ? (
                       lessonDone ? (
                         <Link
-                          href="/my-learning"
+                          href="/learning"
                           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(5,150,105,0.22)] transition-colors hover:bg-emerald-700"
                         >
                           <CheckCircle2 size={16} />
-                          Back to My Learning
+                          Back to Learning
                         </Link>
                       ) : (
                         <button

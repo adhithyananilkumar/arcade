@@ -1004,7 +1004,7 @@ export default function AchievementsPage() {
                       </button>
                     ) : (
                       <Link
-                        href="/my-learning"
+                        href="/learning"
                         onClick={() => setSelectedBadge(null)}
                         className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20 text-center"
                       >
