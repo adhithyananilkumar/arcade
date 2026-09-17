@@ -26,4 +26,7 @@ export type {
   ContentType,
   ReviewStatus,
   ReviewDecisionType,
+  CourseExamReviewDetail,
+  CourseExamPlacementSummary,
+  CourseExamPlanSummary,
 } from './api/platformReview';

@@ -11,7 +11,7 @@ import { VersionHistoryOrchestrator } from "@/apps/creator/studio/workspaces/con
 import { ArcadeEditor } from "@/apps/creator/editor";
 import { api } from "@/infrastructure/http/api";
 
-type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
+type SelectedItem = { kind: "lesson" | "quiz" | "assessment"; id: string } | null;
 
 export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string; mode?: string }) {
   const [course, setCourse] = useState<CourseRenderResponse | null>(null);

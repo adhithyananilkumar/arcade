@@ -196,6 +196,7 @@ export interface ModuleRenderResponse {
   position: number;
   lessons: LessonRenderResponse[];
   quizzes: QuizRenderResponse[];
+  assessments?: AssessmentNodeResponse[];
 }
 
 export interface CourseRenderResponse {
@@ -211,4 +212,5 @@ export interface CourseRenderResponse {
   examSchedule?: string;
   hasExam?: boolean;
   modules: ModuleRenderResponse[];
+  assessments?: AssessmentNodeResponse[];
 }

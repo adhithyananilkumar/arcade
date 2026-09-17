@@ -364,6 +364,22 @@ export function getExamQuestionBank(examId: string) {
   return api.get<QuestionBankSummary>(`/api/exams/${examId}/question-bank`);
 }
 
+/** All questions configured for this exam's question bank. */
+export async function getExamQuestions(examId: string): Promise<BankQuestionResponse[]> {
+  try {
+    const wire = await api.get<WireBankQuestionResponse[]>(`/api/exams/${examId}/question-bank/questions`);
+    return wire.map(fromWire);
+  } catch {
+    try {
+      const bank = await getExamQuestionBank(examId);
+      if (!bank?.id) return [];
+      return await getAllBankQuestions(bank.id);
+    } catch {
+      return [];
+    }
+  }
+}
+
 /** Immutable published versions of this exam, newest first. */
 export function listExamVersions(examId: string) {
   return api.get<Array<{ id: string; versionNumber: number; label: string | null; publishedAt: string }>>(

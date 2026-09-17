@@ -620,8 +620,18 @@ export function ExamWorkspace({ examId }: { examId: string }) {
         }}
         panelOpen={panel.open}
         onTogglePanel={() => panel.setOpen(!panel.open)}
+        workspaceActionsBefore={
+          exam.courseId ? (
+            <span
+              title="This assessment is part of a course and will be reviewed and published when the course is submitted."
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-slate-600 backdrop-blur-md"
+            >
+              Course Assessment
+            </span>
+          ) : undefined
+        }
         primaryAction={
-          !readOnly
+          !readOnly && !exam.courseId
             ? {
                 onClick: handlePublish,
                 disabled: publishing,

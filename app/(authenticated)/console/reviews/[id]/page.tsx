@@ -1,17 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter, notFound } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import {
   platformReviewApi,
+  type ReviewCommentResponse,
   type ReviewEventResponse,
   type ReviewResponse,
+  type CourseExamReviewDetail,
 } from "@/domains/publishing";
-import { ChevronLeft, Loader2, X } from "lucide-react";
+import {
+  ChevronLeft,
+  Loader2,
+  X,
+  Award,
+  Shield,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  FileCheck,
+  FileQuestion,
+  Eye,
+  Layers,
+  Send,
+  MessageSquare,
+  ExternalLink,
+} from "lucide-react";
 import { toast } from "sonner";
+import { AssessmentReviewQuestions } from "@/domains/learning/delivery/components/AssessmentReviewQuestions";
 
 export default function ReviewDetailPage() {
   const params = useParams();
@@ -19,11 +38,19 @@ export default function ReviewDetailPage() {
   const reviewId = params?.id as string;
   const { user } = useAuthStore();
 
-  // We removed the early notFound() check because channel-level permissions
-  // aren't in the global user token. The backend will enforce access via 403.
-
   const [review, setReview] = useState<ReviewResponse | null>(null);
   const [timeline, setTimeline] = useState<ReviewEventResponse[]>([]);
+  const [exams, setExams] = useState<CourseExamReviewDetail[]>([]);
+  const [loadingExams, setLoadingExams] = useState(false);
+  const [inspectingExam, setInspectingExam] = useState<CourseExamReviewDetail | null>(null);
+  const [examTab, setExamTab] = useState<
+    "overview" | "questions" | "plans" | "placements" | "comments"
+  >("overview");
+  const [examComments, setExamComments] = useState<ReviewCommentResponse[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [newCommentBody, setNewCommentBody] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,13 +65,46 @@ export default function ReviewDetailPage() {
         setReview(r);
         setTimeline(t);
         if (r.contentType === "COURSE") {
-          // Do not redirect so the user can see the review page and buttons.
-          // They can preview the course using a 'Preview' link instead.
+          setLoadingExams(true);
+          platformReviewApi
+            .getExams(reviewId)
+            .then((examList) => setExams(examList))
+            .catch(() => setExams([]))
+            .finally(() => setLoadingExams(false));
         }
       })
       .catch(() => setError("Could not load review"))
       .finally(() => setLoading(false));
   }, [reviewId, router]);
+
+  useEffect(() => {
+    if (!inspectingExam || !reviewId) return;
+    setLoadingComments(true);
+    platformReviewApi
+      .listComments(reviewId, "EXAM", inspectingExam.examId)
+      .then((c) => setExamComments(c))
+      .catch(() => setExamComments([]))
+      .finally(() => setLoadingComments(false));
+  }, [inspectingExam, reviewId]);
+
+  const handlePostExamComment = async () => {
+    if (!reviewId || !inspectingExam || !newCommentBody.trim()) return;
+    setPostingComment(true);
+    try {
+      const created = await platformReviewApi.addComment(reviewId, {
+        targetType: "EXAM",
+        targetId: inspectingExam.examId,
+        body: newCommentBody.trim(),
+      });
+      setExamComments((prev) => [...prev, created]);
+      setNewCommentBody("");
+      toast.success("Feedback posted for this assessment.");
+    } catch {
+      toast.error("Failed to post comment.");
+    } finally {
+      setPostingComment(false);
+    }
+  };
 
   const closeDialog = () => {
     if (busy) return;
@@ -73,7 +133,11 @@ export default function ReviewDetailPage() {
       });
       setReview(updated);
       setTimeline(await platformReviewApi.timeline(review.id));
-      toast.success(dialog === "approve" ? "Approved" : "Changes requested");
+      if (review.contentType === "COURSE") {
+        const refreshedExams = await platformReviewApi.getExams(review.id);
+        setExams(refreshedExams);
+      }
+      toast.success(dialog === "approve" ? "Approved & published course and exams" : "Changes requested");
       closeDialog();
     } catch {
       toast.error("Decision failed");
@@ -94,10 +158,23 @@ export default function ReviewDetailPage() {
     return <p className="text-rose-600">{error ?? "Not found"}</p>;
   }
 
-  // Removed check that returned null for COURSE so we render the review page
+  const examStatusBadge = (status: string) => {
+    switch (status) {
+      case "PUBLISHED":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "SUBMITTED":
+        return "bg-amber-50 text-amber-800 border-amber-200";
+      case "REJECTED":
+        return "bg-rose-50 text-rose-700 border-rose-200";
+      case "APPROVED":
+        return "bg-sky-50 text-sky-700 border-sky-200";
+      default:
+        return "bg-slate-100 text-slate-700 border-slate-200";
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <Link
         href="/console/reviews"
         className="inline-flex items-center gap-1 text-[13px] font-semibold text-slate-500 hover:text-[#14142b]"
@@ -110,18 +187,18 @@ export default function ReviewDetailPage() {
           {review.contentType}
         </div>
         {(() => {
-          const role = review.tier === 'GLOBAL' ? 'Superuser' : 'Org Head';
+          const role = review.tier === "GLOBAL" ? "Superuser" : "Org Head";
           let text: string = review.status;
-          let colorClass = 'bg-slate-100 text-slate-800';
-          if ((review.status as string) === 'OPEN') {
+          let colorClass = "bg-slate-100 text-slate-800";
+          if ((review.status as string) === "OPEN") {
             text = `Pending by ${role}`;
-            colorClass = 'bg-amber-100 text-amber-800';
-          } else if (review.status === 'COMPLETED') {
+            colorClass = "bg-amber-100 text-amber-800";
+          } else if (review.status === "COMPLETED") {
             text = `Approved by ${role}`;
-            colorClass = 'bg-emerald-100 text-emerald-800';
-          } else if ((review.status as string) === 'CHANGES_REQUESTED') {
+            colorClass = "bg-emerald-100 text-emerald-800";
+          } else if ((review.status as string) === "CHANGES_REQUESTED") {
             text = `Rejected by ${role}`;
-            colorClass = 'bg-rose-100 text-rose-800';
+            colorClass = "bg-rose-100 text-rose-800";
           }
 
           return (
@@ -129,7 +206,9 @@ export default function ReviewDetailPage() {
               <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
                 Review · Round {review.currentRound}
               </h1>
-              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${colorClass}`}>
+              <span
+                className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${colorClass}`}
+              >
                 {text}
               </span>
             </div>
@@ -147,8 +226,8 @@ export default function ReviewDetailPage() {
           </Link>
         </div>
 
-        {review.status === "OPEN" && (
-          review.tier === 'GLOBAL' && !AuthorizationService.canReviewPlatformContent(user) ? (
+        {review.status === "OPEN" &&
+          (review.tier === "GLOBAL" && !AuthorizationService.canReviewPlatformContent(user) ? (
             <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
               Course approved at Org level and sent for Superuser review.
             </div>
@@ -163,7 +242,7 @@ export default function ReviewDetailPage() {
                 }}
                 className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-[#232735] disabled:opacity-50"
               >
-                {review.tier === 'ORG' ? 'Approve' : 'Approve & Publish'}
+                {review.tier === "ORG" ? "Approve" : "Approve & Publish"}
               </button>
               <button
                 type="button"
@@ -174,13 +253,115 @@ export default function ReviewDetailPage() {
                 }}
                 className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
               >
-                {review.tier === 'ORG' ? 'Reject' : 'Request Changes'}
+                {review.tier === "ORG" ? "Reject" : "Request Changes"}
               </button>
             </div>
-          )
-        )}
+          ))}
       </header>
 
+      {/* Associated Assessments & Exams Section */}
+      {review.contentType === "COURSE" && (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-[14px] font-bold text-[#14142b] flex items-center gap-2">
+                <Award size={17} className="text-amber-600" />
+                Associated Assessments & Exams
+              </h2>
+              <p className="text-[12px] text-slate-500 mt-0.5">
+                Exams, certifications, and graded assessments attached to this course are reviewed and locked concurrently.
+              </p>
+            </div>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700">
+              {loadingExams ? "Loading…" : `${exams.length} attached`}
+            </span>
+          </div>
+
+          {loadingExams ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={20} className="animate-spin text-slate-400" />
+            </div>
+          ) : exams.length === 0 ? (
+            <div className="py-8 text-center text-[13px] text-slate-400">
+              No standalone assessments or external exams associated with this course.
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-3 sm:grid-cols-1">
+              {exams.map((ex) => (
+                <div
+                  key={ex.examId}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition-colors hover:border-slate-300 hover:bg-white"
+                >
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[14px] font-semibold text-[#14142b] truncate">
+                        {ex.title}
+                      </span>
+                      <span
+                        className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${examStatusBadge(
+                          ex.status
+                        )}`}
+                      >
+                        {ex.status}
+                      </span>
+                      {ex.proctoringRequired && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                          <Shield size={11} /> Proctored
+                        </span>
+                      )}
+                      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                        {ex.examType}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-[12px] text-slate-500">
+                      <span className="inline-flex items-center gap-1">
+                        <Clock size={13} className="text-slate-400" />
+                        {ex.durationMinutes} mins
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <CheckCircle2 size={13} className="text-slate-400" />
+                        Pass: {ex.passPercentage}%
+                      </span>
+                      <span>{ex.questionCount} Questions</span>
+                      <span>
+                        {ex.placements.length} Placement{ex.placements.length !== 1 ? "s" : ""}
+                      </span>
+                      <span>
+                        {ex.plans.length} Plan{ex.plans.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 flex items-center gap-2">
+                    <Link
+                      href={`/studio/exam/${ex.examId}/edit`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 transition-colors"
+                    >
+                      <ExternalLink size={13} />
+                      Question Bank ↗
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInspectingExam(ex);
+                        setExamTab("overview");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-sm hover:bg-[#232735] transition-colors"
+                    >
+                      <Eye size={14} />
+                      Inspect Exam
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Timeline Section */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
         <h2 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
           Timeline
@@ -203,6 +384,7 @@ export default function ReviewDetailPage() {
         </ol>
       </section>
 
+      {/* Decision Dialog */}
       {dialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.22)]">
@@ -213,8 +395,8 @@ export default function ReviewDetailPage() {
                 </h2>
                 <p className="mt-0.5 text-[12px] font-medium text-slate-500">
                   {dialog === "approve"
-                    ? "Required note for the audit log."
-                    : "Tell the author what needs to change."}
+                    ? "Course and its associated assessments will be published simultaneously."
+                    : "Course and associated assessments will be unlocked for revisions."}
                 </p>
               </div>
               <button
@@ -260,13 +442,434 @@ export default function ReviewDetailPage() {
                 type="button"
                 onClick={submitDecision}
                 disabled={busy || (dialog === "changes" && !reason.trim())}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${dialog === "approve"
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-40 ${
+                  dialog === "approve"
                     ? "bg-[#14142b] hover:bg-[#232735]"
                     : "bg-rose-600 hover:bg-rose-700"
-                  }`}
+                }`}
               >
                 {busy && <Loader2 size={14} className="animate-spin" />}
-                {dialog === "approve" ? "Publish" : "Request changes"}
+                {dialog === "approve" ? "Publish Course & Exams" : "Request changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Inspect Exam Modal Dialog */}
+      {inspectingExam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#14142b]/50 p-4 backdrop-blur-sm">
+          <div className="flex h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(20,20,43,0.25)]">
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[17px] font-bold text-[#14142b] truncate">
+                    {inspectingExam.title}
+                  </h2>
+                  <span
+                    className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${examStatusBadge(
+                      inspectingExam.status
+                    )}`}
+                  >
+                    {inspectingExam.status}
+                  </span>
+                </div>
+                <p className="mt-0.5 font-mono text-[11px] text-slate-400 truncate">
+                  Exam ID: {inspectingExam.examId} · Author: {inspectingExam.authorName || "Author"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/studio/exam/${inspectingExam.examId}/edit`}
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-[#14142b] hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                  <ExternalLink size={13} />
+                  Question Bank ↗
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setInspectingExam(null)}
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-[#14142b]"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Nav Tabs */}
+            <div className="flex border-b border-slate-100 px-6 bg-slate-50/50">
+              <button
+                type="button"
+                onClick={() => setExamTab("overview")}
+                className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+                  examTab === "overview"
+                    ? "border-[#14142b] text-[#14142b]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Overview & Integrity
+              </button>
+              <button
+                type="button"
+                onClick={() => setExamTab("questions")}
+                className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
+                  examTab === "questions"
+                    ? "border-[#14142b] text-[#14142b]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <FileQuestion size={13} />
+                Questions ({inspectingExam.bankQuestionCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setExamTab("plans")}
+                className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+                  examTab === "plans"
+                    ? "border-[#14142b] text-[#14142b]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Delivery Plans ({inspectingExam.plans.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setExamTab("placements")}
+                className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+                  examTab === "placements"
+                    ? "border-[#14142b] text-[#14142b]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Placements ({inspectingExam.placements.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setExamTab("comments")}
+                className={`border-b-2 px-3 py-2.5 text-[13px] font-semibold transition-colors flex items-center gap-1.5 ${
+                  examTab === "comments"
+                    ? "border-[#14142b] text-[#14142b]"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <MessageSquare size={13} />
+                Feedback ({examComments.length})
+              </button>
+            </div>
+
+            {/* Tab Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {examTab === "overview" && (
+                <div className="space-y-6">
+                  {/* Basic specifications */}
+                  <div>
+                    <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      Assessment Specifications
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
+                        <div className="text-[11px] font-medium text-slate-500">Duration</div>
+                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
+                          {inspectingExam.durationMinutes} mins
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
+                        <div className="text-[11px] font-medium text-slate-500">Pass Percentage</div>
+                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
+                          {inspectingExam.passPercentage}%
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
+                        <div className="text-[11px] font-medium text-slate-500">Max Attempts</div>
+                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
+                          {inspectingExam.maxAttempts}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
+                        <div className="text-[11px] font-medium text-slate-500">Blueprint Questions</div>
+                        <div className="text-[15px] font-bold text-[#14142b] mt-0.5">
+                          {inspectingExam.questionCount}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security & Integrity */}
+                  <div>
+                    <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      Integrity & Proctoring Controls
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
+                        <Shield
+                          size={18}
+                          className={inspectingExam.proctoringRequired ? "text-indigo-600" : "text-slate-300"}
+                        />
+                        <div>
+                          <div className="text-[13px] font-semibold text-[#14142b]">Proctored Session</div>
+                          <div className="text-[11px] text-slate-400">
+                            {inspectingExam.proctoringRequired ? "Enforced" : "Disabled"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
+                        <Layers
+                          size={18}
+                          className={inspectingExam.fullscreenRequired ? "text-indigo-600" : "text-slate-300"}
+                        />
+                        <div>
+                          <div className="text-[13px] font-semibold text-[#14142b]">Fullscreen Mode</div>
+                          <div className="text-[11px] text-slate-400">
+                            {inspectingExam.fullscreenRequired ? "Enforced" : "Optional"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm">
+                        <FileCheck
+                          size={18}
+                          className={inspectingExam.identityVerificationRequired ? "text-indigo-600" : "text-slate-300"}
+                        />
+                        <div>
+                          <div className="text-[13px] font-semibold text-[#14142b]">Identity Verification</div>
+                          <div className="text-[11px] text-slate-400">
+                            {inspectingExam.identityVerificationRequired ? "Required" : "Not Required"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Difficulty Breakdown */}
+                  <div>
+                    <h3 className="text-[12px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      Question Bank & Difficulty Breakdown
+                    </h3>
+                    <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 space-y-3">
+                      <div className="flex justify-between text-[12px] font-medium text-slate-600">
+                        <span>Total Bank Pool: <b>{inspectingExam.bankQuestionCount} items</b></span>
+                        <span>Randomization: <b>{inspectingExam.sameQuestionsForAllStudents ? "Fixed for all" : "Randomized per candidate"}</b></span>
+                      </div>
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200 flex">
+                        <div
+                          style={{ width: `${inspectingExam.easyPercent}%` }}
+                          className="bg-emerald-500"
+                          title={`Easy: ${inspectingExam.easyPercent}%`}
+                        />
+                        <div
+                          style={{ width: `${inspectingExam.mediumPercent}%` }}
+                          className="bg-amber-500"
+                          title={`Medium: ${inspectingExam.mediumPercent}%`}
+                        />
+                        <div
+                          style={{ width: `${inspectingExam.hardPercent}%` }}
+                          className="bg-rose-500"
+                          title={`Hard: ${inspectingExam.hardPercent}%`}
+                        />
+                      </div>
+                      <div className="flex items-center gap-4 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2.5 rounded-full bg-emerald-500" />
+                          Easy: {inspectingExam.easyPercent}%
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2.5 rounded-full bg-amber-500" />
+                          Medium: {inspectingExam.mediumPercent}%
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2.5 rounded-full bg-rose-500" />
+                          Hard: {inspectingExam.hardPercent}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {examTab === "questions" && (
+                <div className="space-y-4">
+                  <AssessmentReviewQuestions
+                    examId={inspectingExam.examId}
+                    examTitle={inspectingExam.title}
+                  />
+                </div>
+              )}
+
+              {examTab === "plans" && (
+                <div className="space-y-4">
+                  {inspectingExam.plans.length === 0 ? (
+                    <div className="py-8 text-center text-[13px] text-slate-400">
+                      No delivery plans defined for this exam.
+                    </div>
+                  ) : (
+                    inspectingExam.plans.map((pl) => (
+                      <div
+                        key={pl.planId}
+                        className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] font-bold text-[#14142b]">{pl.name}</span>
+                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                              {pl.type}
+                            </span>
+                            {pl.valid ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                <CheckCircle2 size={11} /> Valid
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700">
+                                <AlertCircle size={11} /> Invalid Plan
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[12px] font-semibold text-slate-500">
+                            {pl.durationMinutes} mins · Pass: {pl.passPercentage}%
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-4 text-[12px] text-slate-500 border-t border-slate-100 pt-2.5">
+                          <span>Questions Asked: <b>{pl.totalQuestionsAsked}</b></span>
+                          <span>Sections: <b>{pl.sectionsCount}</b></span>
+                          <span>Max Attempts: <b>{pl.maxAttempts}</b></span>
+                          <span>Proctoring: <b>{pl.proctoringRequired ? "Required" : "None"}</b></span>
+                        </div>
+
+                        {!pl.valid && pl.validationErrors.length > 0 && (
+                          <div className="rounded-lg border border-rose-200 bg-rose-50/70 p-3 text-[12px] text-rose-800 space-y-1">
+                            <div className="font-semibold">Plan Validation Issues:</div>
+                            <ul className="list-disc pl-4 space-y-0.5">
+                              {pl.validationErrors.map((err, i) => (
+                                <li key={i}>{err}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {examTab === "placements" && (
+                <div className="space-y-3">
+                  {inspectingExam.placements.length === 0 ? (
+                    <div className="py-8 text-center text-[13px] text-slate-400">
+                      No host placements assigned for this assessment.
+                    </div>
+                  ) : (
+                    inspectingExam.placements.map((plc) => (
+                      <div
+                        key={plc.placementId}
+                        className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[13px] font-bold text-[#14142b]">
+                              {plc.title || "Assessment Placement"}
+                            </span>
+                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                              Host: {plc.hostType}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            Location: {plc.hostTitle} (Position {plc.position})
+                          </div>
+                        </div>
+
+                        <div>
+                          {plc.requiredForCompletion ? (
+                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                              Required for Course Pass
+                            </span>
+                          ) : (
+                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500">
+                              Optional / Ungraded
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {examTab === "comments" && (
+                <div className="space-y-5">
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-4 space-y-3">
+                    <div className="text-[12px] font-bold text-[#14142b]">
+                      Add Assessment Review Feedback
+                    </div>
+                    <textarea
+                      value={newCommentBody}
+                      onChange={(e) => setNewCommentBody(e.target.value)}
+                      placeholder="Comment on assessment question quality, pass marks, or proctoring settings…"
+                      rows={3}
+                      className="w-full resize-none rounded-xl border border-slate-200 bg-white p-3 text-[13px] text-[#14142b] outline-none placeholder:text-slate-400 focus:border-[#14142b]/25 focus:ring-2 focus:ring-slate-200"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        disabled={postingComment || !newCommentBody.trim()}
+                        onClick={handlePostExamComment}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-[#232735] disabled:opacity-40"
+                      >
+                        {postingComment ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <Send size={13} />
+                        )}
+                        Post Comment
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      Review Feedback Thread
+                    </h4>
+                    {loadingComments ? (
+                      <div className="flex justify-center py-6">
+                        <Loader2 size={18} className="animate-spin text-slate-400" />
+                      </div>
+                    ) : examComments.length === 0 ? (
+                      <div className="py-6 text-center text-[12px] text-slate-400">
+                        No feedback posted for this exam yet.
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        {examComments.map((cm) => (
+                          <div
+                            key={cm.id}
+                            className="rounded-xl border border-slate-200/80 bg-white p-3.5 space-y-1 shadow-sm"
+                          >
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-semibold text-[#14142b]">{cm.authorName}</span>
+                              <span className="text-slate-400">
+                                {new Date(cm.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="text-[13px] text-slate-700 whitespace-pre-wrap">
+                              {cm.body}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex shrink-0 justify-end border-t border-slate-100 bg-slate-50/80 px-6 py-3">
+              <button
+                type="button"
+                onClick={() => setInspectingExam(null)}
+                className="rounded-full bg-[#14142b] px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-[#232735]"
+              >
+                Done
               </button>
             </div>
           </div>
@@ -275,3 +878,4 @@ export default function ReviewDetailPage() {
     </div>
   );
 }
+

@@ -108,6 +108,7 @@ export {
   completeProctorSession,
   listAttemptsForExam,
   getExamQuestionBank,
+  getExamQuestions,
   listExamVersions,
   publishExam,
 } from "./api";

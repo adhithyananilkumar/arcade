@@ -146,4 +146,62 @@ export const platformReviewApi = {
     id: string,
     body: { targetType?: string; targetId?: string; body: string }
   ) => api.post<ReviewCommentResponse>(`/api/platform/reviews/${id}/comments`, body),
+
+  getExams: (id: string) =>
+    api.get<CourseExamReviewDetail[]>(`/api/platform/reviews/${id}/exams`),
+};
+
+export type CourseExamPlacementSummary = {
+  placementId: string;
+  hostType: string;
+  hostId: string;
+  hostTitle: string;
+  title: string;
+  position: number;
+  requiredForCompletion: boolean;
+  planId?: string | null;
+};
+
+export type CourseExamPlanSummary = {
+  planId: string;
+  name: string;
+  type: string;
+  durationMinutes: number;
+  passPercentage: number;
+  maxAttempts: number;
+  active: boolean;
+  proctoringRequired: boolean;
+  sectionsCount: number;
+  totalQuestionsAsked: number;
+  valid: boolean;
+  validationErrors: string[];
+};
+
+export type CourseExamReviewDetail = {
+  examId: string;
+  title: string;
+  description?: string | null;
+  purpose?: string | null;
+  examType: string;
+  status: string;
+  durationMinutes: number;
+  passPercentage: number;
+  maxAttempts: number;
+  questionCount: number;
+  easyPercent: number;
+  mediumPercent: number;
+  hardPercent: number;
+  proctoringRequired: boolean;
+  identityVerificationRequired: boolean;
+  fullscreenRequired: boolean;
+  sameQuestionsForAllStudents: boolean;
+  rejectionReason?: string | null;
+  publishedVersionId?: string | null;
+  channelId?: string | null;
+  authorId?: string | null;
+  authorName?: string | null;
+  updatedAt?: string | null;
+  placements: CourseExamPlacementSummary[];
+  plans: CourseExamPlanSummary[];
+  bankQuestionCount: number;
 };

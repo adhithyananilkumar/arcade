@@ -1,5 +1,3 @@
-// features/learning/delivery/components/CourseRenderer.tsx
-// Review / published course view: module sidebar + read-only content pane.
 "use client";
 
 import { useMemo, useState } from "react";
@@ -14,20 +12,31 @@ import {
   History,
   MessageSquare,
   X,
+  Award,
+  Shield,
+  Clock,
+  Target,
+  FileCheck,
 } from "lucide-react";
 import { TiptapContentView } from "./TiptapContentView";
 import { QuizPlayer, type QuizStatsResponse } from "@/domains/assessments";
+import { AssessmentReviewQuestions } from "./AssessmentReviewQuestions";
 import { LessonReviewFeedback } from "./LessonReviewFeedback";
 import { PublishCourseDialog } from "./PublishCourseDialog";
-import type { CourseRenderResponse, LessonRenderResponse } from "@/shared/types/api.types";
+import type {
+  CourseRenderResponse,
+  LessonRenderResponse,
+  AssessmentNodeResponse,
+} from "@/shared/types/api.types";
 import { formatMoney } from "@/shared/utils/money";
 import { toast } from "sonner";
 
 type TreeItem =
   | { kind: "lesson"; moduleId: string; item: LessonRenderResponse }
-  | { kind: "quiz"; moduleId: string; id: string; title: string; position: number };
+  | { kind: "quiz"; moduleId: string; id: string; title: string; position: number }
+  | { kind: "assessment"; moduleId: string; item: AssessmentNodeResponse };
 
-type SelectedItem = { kind: "lesson" | "quiz"; id: string } | null;
+type SelectedItem = { kind: "lesson" | "quiz" | "assessment"; id: string } | null;
 
 interface CourseRendererProps {
   course: CourseRenderResponse | null;
@@ -106,6 +115,23 @@ export function CourseRenderer({
     return null;
   }, [course, selectedItem]);
 
+  const selectedAssessment = useMemo(() => {
+    if (!course || selectedItem?.kind !== "assessment") return null;
+    for (const mod of course.modules) {
+      const found = (mod.assessments || []).find(
+        (a) => a.placementId === selectedItem.id || a.examId === selectedItem.id
+      );
+      if (found) return found;
+    }
+    if (course.assessments) {
+      const found = course.assessments.find(
+        (a) => a.placementId === selectedItem.id || a.examId === selectedItem.id
+      );
+      if (found) return found;
+    }
+    return null;
+  }, [course, selectedItem]);
+
   const selectedModule = useMemo(() => {
     if (!course || !selectedItem) return null;
     for (const mod of course.modules) {
@@ -113,6 +139,14 @@ export function CourseRenderer({
         return mod;
       }
       if (selectedItem.kind === "quiz" && mod.quizzes.some((q) => q.id === selectedItem.id)) {
+        return mod;
+      }
+      if (
+        selectedItem.kind === "assessment" &&
+        (mod.assessments || []).some(
+          (a) => a.placementId === selectedItem.id || a.examId === selectedItem.id
+        )
+      ) {
         return mod;
       }
     }
@@ -140,7 +174,10 @@ export function CourseRenderer({
 
   const selectedQuizId = selectedItem?.kind === "quiz" ? selectedItem.id : null;
   const crumbLabel =
-    selectedLesson?.title ?? selectedQuizTitle ?? (canPublish ? "Review" : "Overview");
+    selectedLesson?.title ??
+    selectedQuizTitle ??
+    selectedAssessment?.title ??
+    (canPublish ? "Review" : "Overview");
 
   if (loading) {
     return (
@@ -215,9 +252,18 @@ export function CourseRenderer({
                     position: q.position,
                   }),
                 ),
+                ...(mod.assessments || []).map(
+                  (a): TreeItem => ({
+                    kind: "assessment",
+                    moduleId: mod.id,
+                    item: a,
+                  }),
+                ),
               ].sort((a, b) => {
-                const posA = a.kind === "lesson" ? a.item.position : a.position;
-                const posB = b.kind === "lesson" ? b.item.position : b.position;
+                const posA =
+                  a.kind === "lesson" ? a.item.position : a.kind === "quiz" ? a.position : a.item.position;
+                const posB =
+                  b.kind === "lesson" ? b.item.position : b.kind === "quiz" ? b.position : b.item.position;
                 return posA - posB;
               });
 
@@ -256,7 +302,7 @@ export function CourseRenderer({
                             )}
                             <span className="line-clamp-1">{item.item.title}</span>
                           </button>
-                        ) : (
+                        ) : item.kind === "quiz" ? (
                           <button
                             key={item.id}
                             type="button"
@@ -282,6 +328,41 @@ export function CourseRenderer({
                               </span>
                             )}
                           </button>
+                        ) : (
+                          <button
+                            key={item.item.placementId}
+                            type="button"
+                            onClick={() => setSelectedItem({ kind: "assessment", id: item.item.placementId })}
+                            className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
+                              selectedItem?.kind === "assessment" &&
+                              (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
+                                ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                                : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                            }`}
+                          >
+                            <Award
+                              size={13}
+                              className={`shrink-0 ${
+                                selectedItem?.kind === "assessment" &&
+                                (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
+                                  ? "text-amber-300"
+                                  : "text-amber-500"
+                              }`}
+                            />
+                            <span className="line-clamp-1 flex-1">{item.item.title}</span>
+                            {item.item.outcome && (
+                              <span
+                                className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                                  selectedItem?.kind === "assessment" &&
+                                  (selectedItem.id === item.item.placementId || selectedItem.id === item.item.examId)
+                                    ? "bg-white/20 text-white"
+                                    : "bg-amber-50 text-amber-700 border border-amber-200"
+                                }`}
+                              >
+                                {item.item.outcome}
+                              </span>
+                            )}
+                          </button>
                         ),
                       )}
                     </div>
@@ -289,6 +370,52 @@ export function CourseRenderer({
                 </div>
               );
             })
+          )}
+
+          {course.assessments && course.assessments.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-slate-100">
+              <div className="px-3 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Course Assessments
+              </div>
+              <div className="space-y-0.5">
+                {course.assessments.map((a) => (
+                  <button
+                    key={a.placementId}
+                    type="button"
+                    onClick={() => setSelectedItem({ kind: "assessment", id: a.placementId })}
+                    className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
+                      selectedItem?.kind === "assessment" &&
+                      (selectedItem.id === a.placementId || selectedItem.id === a.examId)
+                        ? "bg-[#14142b] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.14)]"
+                        : "font-medium text-slate-500 hover:bg-white hover:text-[#14142b]"
+                    }`}
+                  >
+                    <Award
+                      size={13}
+                      className={`shrink-0 ${
+                        selectedItem?.kind === "assessment" &&
+                        (selectedItem.id === a.placementId || selectedItem.id === a.examId)
+                          ? "text-amber-300"
+                          : "text-amber-500"
+                      }`}
+                    />
+                    <span className="line-clamp-1 flex-1">{a.title}</span>
+                    {a.outcome && (
+                      <span
+                        className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                          selectedItem?.kind === "assessment" &&
+                          (selectedItem.id === a.placementId || selectedItem.id === a.examId)
+                            ? "bg-white/20 text-white"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
+                        {a.outcome}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </nav>
       </aside>
@@ -305,13 +432,13 @@ export function CourseRenderer({
                 <span className="truncate font-semibold text-slate-400">{selectedModule.title}</span>
               </>
             )}
-            {(selectedLesson || selectedQuizTitle) && (
+            {(selectedLesson || selectedQuizTitle || selectedAssessment) && (
               <>
                 <span className="text-slate-300">/</span>
                 <span className="truncate font-bold text-[#14142b]">{crumbLabel}</span>
               </>
             )}
-            {!selectedLesson && !selectedQuizTitle && (
+            {!selectedLesson && !selectedQuizTitle && !selectedAssessment && (
               <>
                 <span className="text-slate-300">/</span>
                 <span className="font-bold text-[#14142b]">{crumbLabel}</span>
@@ -390,6 +517,80 @@ export function CourseRenderer({
                   key={selectedQuizId}
                   quizId={selectedQuizId}
                   onAttemptGraded={(attempt) => onAttemptGraded(attempt, selectedQuizId)}
+                />
+              </div>
+            ) : selectedAssessment ? (
+              <div className="rounded-2xl border border-slate-200/80 bg-white/95 p-8 shadow-[0_8px_28px_rgba(20,20,43,0.05)] space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-5">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold tracking-tight text-[#14142b]">
+                        {selectedAssessment.title}
+                      </h2>
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                        {selectedAssessment.outcome || "ASSESSMENT"}
+                      </span>
+                    </div>
+                    <p className="font-mono text-[11px] text-slate-400">
+                      Placement: {selectedAssessment.placementId} · Exam: {selectedAssessment.examId}
+                    </p>
+                  </div>
+
+                  {selectedAssessment.requiredForCompletion ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-semibold text-rose-700">
+                      <Target size={12} /> Required for course pass
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-500">
+                      Optional assessment
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                      <Award size={13} className="text-slate-400" /> Assessment Outcome
+                    </div>
+                    <div className="text-[15px] font-bold text-[#14142b] mt-1">
+                      {selectedAssessment.outcome || "COMPLETION"}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                      <Target size={13} className="text-slate-400" /> Completion Gate
+                    </div>
+                    <div className="text-[15px] font-bold text-[#14142b] mt-1">
+                      {selectedAssessment.requiredForCompletion ? "Mandatory" : "Optional"}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                      <CheckCircle2 size={13} className="text-slate-400" /> Plan Reference
+                    </div>
+                    <div className="text-[15px] font-bold text-[#14142b] mt-1 font-mono text-[12px] truncate">
+                      {selectedAssessment.planId || "Default Blueprint"}
+                    </div>
+                  </div>
+                </div>
+
+
+                {canPublish && (
+                  <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-[13px] text-blue-900 space-y-1">
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <Shield size={15} className="text-blue-700" />
+                      Assessment Review & Approval Seam
+                    </div>
+                    <p className="text-blue-800 text-[12px]">
+                      This assessment is coupled with the current course lifecycle. Approving or rejecting the course automatically publishes or returns this exam in tandem.
+                    </p>
+                  </div>
+                )}
+
+                {/* Question paper, options, and scoring key for superadmin and creator review */}
+                <AssessmentReviewQuestions
+                  examId={selectedAssessment.examId}
+                  examTitle={selectedAssessment.title}
                 />
               </div>
             ) : (
