@@ -10,6 +10,7 @@ export interface Channel {
   isPersonal: boolean;
   status: string;
   suspensionReason?: string;
+  rejectionReason?: string;
   suspendedAt?: string;
   forcedSuspension?: boolean;
   /** When public listings will be unlisted, if suspended (non-forced). Null once already past. */
@@ -228,8 +229,9 @@ export const channelService = {
     await api.post(`/api/v1/channels/${channelId}/accept`);
   },
 
-  deleteChannelRequest: async (channelId: string): Promise<void> => {
-    await api.delete(`/api/v1/channels/${channelId}`);
+  deleteChannelRequest: async (channelId: string, reason: string): Promise<void> => {
+    const query = new URLSearchParams({ reason }).toString();
+    await api.delete(`/api/v1/channels/${channelId}?${query}`);
   },
 
   submitDeletionRequest: async (
