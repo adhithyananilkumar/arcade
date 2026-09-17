@@ -429,35 +429,36 @@ export default function HeroScrollExperience() {
         {/* Hero Content */}
         <motion.div
           style={{ x: textX, y: textY }}
-          className="relative z-10 max-w-[800px] mx-auto text-center space-y-8 my-auto py-20 sm:py-24"
+          className="relative z-10 max-w-[950px] mx-auto text-center space-y-8 my-auto py-20 sm:py-24 px-2"
         >
           {/* HEADLINE */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
+            className="text-[38px] sm:text-[54px] md:text-[66px] lg:text-[76px] tracking-normal leading-[1.25] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center font-bold"
             style={{
-              fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
-              fontWeight: 600,
+              fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Amira-Grace', cursive",
+              fontWeight: 700,
             }}
           >
             <span className="block">
               Where{" "}
-              <span className="relative inline-block">
-                Ideas
+              <span className="relative inline-block px-1">
+                Curiosity
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-none origin-left"
+                  className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-full origin-left"
                 />
-              </span>
+              </span>{" "}
+              Finds Its Voice,
             </span>
             <span className="block mt-1 sm:mt-2">
-              Become{" "}
+              And Ideas Find{" "}
               <span
-                className="inline-block animate-gradient-15s"
+                className="inline-block animate-gradient-15s px-1"
                 style={{
                   backgroundImage:
                     "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
@@ -465,7 +466,7 @@ export default function HeroScrollExperience() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Impact.
+                Their Wings.
               </span>
             </span>
           </motion.h1>
