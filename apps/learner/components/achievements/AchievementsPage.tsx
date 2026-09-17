@@ -9,11 +9,12 @@ import {
   Trophy, Award, Flame, Star, Zap, CheckCircle2, Lock,
   Search, Shield, ChevronRight, Share2, Sparkles, Filter,
   Check, ArrowRight, ExternalLink, Calendar, Medal, Clock,
-  BookOpen, GraduationCap, Video, Wrench, Laptop, Download, ClipboardList, X, Code, MoreVertical
+  BookOpen, GraduationCap, Video, Wrench, Laptop, Download, ClipboardList, X, Code, MoreVertical, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import TiltedCard from '@/shared/design-system/ui/tilted-card';
 import { MagicBento, ParticleCard } from '@/shared/design-system/ui/magic-bento';
+import SpecularButton from '@/shared/design-system/ui/SpecularButton';
 import AchievementsHero from './AchievementsHero';
 
 // ─── SVG Hexagonal Badge Graphic ─────────────────────────────────────────────
@@ -335,9 +336,18 @@ export default function AchievementsPage() {
   const { user, updateUser } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [certFilter, setCertFilter] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
+  const [badgeSpinKey, setBadgeSpinKey] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates' | 'quests'>('badges');
+  const [hoveredTab, setHoveredTab] = useState<'badges' | 'certificates' | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredCertFilter, setHoveredCertFilter] = useState<string | null>(null);
+
+  const openBadgeDetails = (badge: BadgeItem) => {
+    setSelectedBadge(badge);
+    setBadgeSpinKey((k) => k + 1);
+  };
 
 
   // Load fresh profile details from DB if available
@@ -405,26 +415,24 @@ export default function AchievementsPage() {
       className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 relative overflow-hidden"
       style={{ 
         background: `
-          radial-gradient(at 10% 10%, rgba(189, 230, 67, 0.20) 0px, transparent 55%),
-          radial-gradient(at 90% 15%, rgba(16, 185, 129, 0.16) 0px, transparent 55%),
-          radial-gradient(at 50% 28%, rgba(132, 204, 22, 0.12) 0px, transparent 50%),
-          radial-gradient(at 85% 55%, rgba(235, 132, 103, 0.10) 0px, transparent 50%),
-          radial-gradient(at 15% 75%, rgba(52, 211, 153, 0.15) 0px, transparent 55%),
-          radial-gradient(at 60% 85%, rgba(189, 230, 67, 0.14) 0px, transparent 50%),
-          radial-gradient(at 90% 95%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
-          linear-gradient(135deg, #fbfef7 0%, #f4fdf8 35%, #f6fdf7 70%, #fefcf9 100%)
+          radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.14) 0px, transparent 50%),
+          radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+          radial-gradient(at 50% 40%, rgba(240, 253, 250, 0.8) 0px, transparent 60%),
+          radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+          radial-gradient(at 0% 100%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+          linear-gradient(135deg, #f0fdf4 0%, #ecfeff 35%, #f8fafc 70%, #f0fdfa 100%)
         `
       }}
     >
-      {/* Ambient Dim Multi-Color Glow Orbs */}
-      <div className="absolute -top-10 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-[#bde643]/15 via-[#84cc16]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
-      <div className="absolute top-10 -right-10 w-[550px] h-[550px] bg-gradient-to-bl from-[#10b981]/12 via-[#34d399]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
-      <div className="absolute top-[45%] -left-10 w-[450px] h-[450px] bg-gradient-to-tr from-[#84cc16]/12 via-[#bde643]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
-      <div className="absolute -bottom-10 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-[#10b981]/10 via-[#eb8467]/08 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      {/* Ambient Glow Orbs in Mint / Emerald / Cyan / Sky Blue Tones */}
+      <div className="absolute -top-10 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-[#10B981]/15 via-[#34D399]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-10 -right-10 w-[550px] h-[550px] bg-gradient-to-bl from-[#0EA5E9]/15 via-[#10B981]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-[45%] -left-10 w-[450px] h-[450px] bg-gradient-to-tr from-[#10B981]/12 via-[#38BDF8]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute -bottom-10 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-[#059669]/12 via-[#0EA5E9]/12 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
 
       <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* ── Desktop Hero Celebration Section (Image 2 Exact Mock) ── */}
+        {/* ── Desktop Hero Celebration Section ── */}
         <AchievementsHero
           unlockedCount={unlockedCount}
           totalBadges={totalBadges}
@@ -432,30 +440,44 @@ export default function AchievementsPage() {
           certificatesCount={CERTIFICATES.length}
         />
 
-        {/* ── Main Navigation Tabs ── */}
+        {/* ── Main Navigation Tabs with Moving Selection Pill on Hover/Click ── */}
         <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-neutral-800 mb-8 pb-4 mt-6">
-          <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setActiveTab('badges')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'badges'
-                ? 'bg-gradient-to-r from-[#16a34a] via-[#84cc16] via-[#bde643] to-[#10b981] text-slate-950 font-black shadow-md shadow-emerald-500/25'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-neutral-900'
-                }`}
-            >
-              <Trophy size={16} />
-              <span>Badges & Honors ({unlockedCount})</span>
-            </button>
+          <div 
+            className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 relative"
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            {[
+              { id: 'badges' as const, label: `Badges & Honors (${unlockedCount})`, icon: Trophy },
+              { id: 'certificates' as const, label: `Certificates (${CERTIFICATES.length})`, icon: Award }
+            ].map(({ id, label, icon: Icon }) => {
+              const isTargeted = (hoveredTab ?? activeTab) === id;
 
-            <button
-              onClick={() => setActiveTab('certificates')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'certificates'
-                ? 'bg-gradient-to-r from-[#16a34a] via-[#84cc16] via-[#bde643] to-[#10b981] text-slate-950 font-black shadow-md shadow-emerald-500/25'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-neutral-900'
-                }`}
-            >
-              <Award size={16} />
-              <span>Certificates ({CERTIFICATES.length})</span>
-            </button>
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  onMouseEnter={() => setHoveredTab(id)}
+                  className={`relative px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-colors duration-200 cursor-pointer flex items-center gap-2 select-none z-10 ${
+                    isTargeted
+                      ? 'text-white font-black'
+                      : 'text-slate-600 dark:text-slate-400 font-bold hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {isTargeted && (
+                    <motion.div
+                      layoutId="activeNavTabPill"
+                      className="absolute inset-0 rounded-xl shadow-md shadow-emerald-500/20 -z-10"
+                      style={{
+                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                      }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <Icon size={16} className="relative z-10" />
+                  <span className="relative z-10">{label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {(activeTab === 'badges' || activeTab === 'certificates') && (
@@ -466,7 +488,7 @@ export default function AchievementsPage() {
                 placeholder={activeTab === 'certificates' ? "Search certificates..." : "Search badges..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#eb8467]"
+                className="w-full bg-white/95 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-900 dark:text-white shadow-xs"
               />
             </div>
           )}
@@ -475,20 +497,37 @@ export default function AchievementsPage() {
         {/* ── TAB 1: BADGES GALLERY ── */}
         {activeTab === 'badges' && (
           <div>
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {['All', 'Unlocked', 'In Progress'].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${selectedCategory === cat
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                    : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#eb8467]'
+            {/* Category Filter Pills with Moving Hover/Active Indicator */}
+            <div 
+              className="flex flex-wrap items-center gap-2 mb-6 relative"
+              onMouseLeave={() => setHoveredCategory(null)}
+            >
+              {['All', 'Unlocked', 'In Progress'].map((cat) => {
+                const isTargeted = (hoveredCategory ?? selectedCategory) === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    onMouseEnter={() => setHoveredCategory(cat)}
+                    className={`relative px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-colors duration-200 cursor-pointer select-none ${
+                      isTargeted
+                        ? 'text-emerald-800 dark:text-emerald-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                     }`}
-                >
-                  {cat}
-                </button>
-              ))}
+                  >
+                    {isTargeted ? (
+                      <motion.div
+                        layoutId="activeCategoryPill"
+                        className="absolute inset-0 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400/80 dark:border-emerald-600 rounded-full shadow-xs -z-10"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-white/90 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full -z-10 hover:border-emerald-300" />
+                    )}
+                    <span className="relative z-10">{cat}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Keyframe animation for moving dotted lines */}
@@ -509,36 +548,36 @@ export default function AchievementsPage() {
               }
             `}</style>
 
-            {/* Badges Grid — Diagonal Curve/Sharp Leaf Shape Cards with Gradient Fills */}
+            {/* Badges Grid — Diagonal Curve Cards with Modern Emerald / Sky / Teal Gradient Fills */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredBadges.map((badge, idx) => {
                 const cardColors = [
-                  '#eb8467', // Coral
-                  '#0284c7', // Sky Blue
-                  '#8b5cf6', // Violet Purple
-                  '#10b981', // Emerald Green
-                  '#f59e0b', // Golden Amber
-                  '#06b6d4', // Cyan
-                  '#84cc16', // Lime Green
-                  '#ec4899', // Pink
+                  '#059669', // Emerald Green
+                  '#0284C7', // Sky Blue
+                  '#0D9488', // Teal
+                  '#2563EB', // Royal Blue
+                  '#10B981', // Mint Emerald
+                  '#0891B2', // Cyan
+                  '#4F46E5', // Indigo
+                  '#16A34A', // Vibrant Green
                 ];
                 const cardColor = cardColors[idx % cardColors.length];
 
                 return (
                   <div
                     key={badge.id}
-                    onClick={() => setSelectedBadge(badge)}
+                    onClick={() => openBadgeDetails(badge)}
                     className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between hover:scale-[1.02]"
                     style={{
-                      background: `linear-gradient(160deg, ${cardColor}18 0%, rgba(255,255,255,0.98) 50%, ${cardColor}0c 100%)`,
-                      borderColor: `${cardColor}40`
+                      background: `linear-gradient(145deg, ${cardColor}18 0%, ${cardColor}08 35%, rgba(255,255,255,0.96) 65%, ${cardColor}14 100%)`,
+                      borderColor: `${cardColor}35`
                     }}
                   >
                     <div>
                       {/* Top Header with Pill & Badge Graphic */}
                       <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
-                        {/* Top-Left Dark Pill Badge */}
-                        <div className="self-start mb-2 bg-slate-900/85 dark:bg-white/90 backdrop-blur-md text-white dark:text-slate-900 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
+                        {/* Top-Left Status Pill Badge */}
+                        <div className={`self-start mb-2 ${badge.unlocked ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-100'} backdrop-blur-md font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm`}>
                           {badge.unlocked ? 'UNLOCKED' : 'IN PROGRESS'}
                         </div>
 
@@ -587,15 +626,14 @@ export default function AchievementsPage() {
                       )}
                     </div>
 
-                    {/* Bottom Full-Width CTA Button with Matching Diagonal Curves */}
-                    <button
-                      type="button"
-                      className="w-full py-3 px-4 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mt-5 cursor-pointer"
-                      style={{ backgroundColor: cardColor }}
+                    {/* Bottom Action Text Link */}
+                    <div
+                      className="w-full pt-3 pb-1 flex items-center justify-center gap-2 font-extrabold text-xs sm:text-sm mt-3 transition-all"
+                      style={{ color: cardColor }}
                     >
                       <BookOpen className="w-4 h-4" />
                       <span>{badge.unlocked ? 'View Badge Details' : 'Continue Learning'}</span>
-                    </button>
+                    </div>
                   </div>
                 );
               })}
@@ -606,21 +644,37 @@ export default function AchievementsPage() {
         {/* ── TAB 2: CERTIFICATES (Diagonal Curve/Sharp Shape Cards with Gradient Fills) ── */}
         {activeTab === 'certificates' && (
           <div>
-            {/* Certificate Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {['All', 'Passed', 'Failed'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setCertFilter(filter)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
-                    certFilter === filter
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                      : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#eb8467]'
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
+            {/* Certificate Filter Pills with Moving Hover/Active Indicator */}
+            <div 
+              className="flex flex-wrap items-center gap-2 mb-6 relative"
+              onMouseLeave={() => setHoveredCertFilter(null)}
+            >
+              {['All', 'Passed', 'Failed'].map((filter) => {
+                const isTargeted = (hoveredCertFilter ?? certFilter) === filter;
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setCertFilter(filter)}
+                    onMouseEnter={() => setHoveredCertFilter(filter)}
+                    className={`relative px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-colors duration-200 cursor-pointer select-none ${
+                      isTargeted
+                        ? 'text-emerald-800 dark:text-emerald-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    {isTargeted ? (
+                      <motion.div
+                        layoutId="activeCertFilterPill"
+                        className="absolute inset-0 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400/80 dark:border-emerald-600 rounded-full shadow-xs -z-10"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-white/90 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full -z-10 hover:border-emerald-300" />
+                    )}
+                    <span className="relative z-10">{filter}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-2 w-full">
@@ -628,32 +682,32 @@ export default function AchievementsPage() {
               const isPassed = cert.status !== 'FAILED';
               
               const certColors = [
-                '#eb8467', // Coral
-                '#0284c7', // Sky Blue
-                '#8b5cf6', // Violet Purple
-                '#10b981', // Emerald Green
-                '#f59e0b', // Golden Amber
-                '#06b6d4', // Cyan
-                '#84cc16', // Lime Green
-                '#ec4899', // Pink
+                '#059669', // Emerald Green
+                '#0284C7', // Sky Blue
+                '#0D9488', // Teal
+                '#2563EB', // Royal Blue
+                '#10B981', // Mint Emerald
+                '#0891B2', // Cyan
+                '#4F46E5', // Indigo
+                '#16A34A', // Vibrant Green
               ];
-              const cardColor = isPassed ? certColors[idx % certColors.length] : '#e11d48';
+              const cardColor = isPassed ? certColors[idx % certColors.length] : '#E11D48';
 
               return (
                 <div
                   key={cert.id}
                   className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:scale-[1.02]"
                   style={{
-                    background: `linear-gradient(160deg, ${cardColor}18 0%, rgba(255,255,255,0.98) 50%, ${cardColor}0c 100%)`,
-                    borderColor: `${cardColor}40`
+                    background: `linear-gradient(145deg, ${cardColor}18 0%, ${cardColor}08 35%, rgba(255,255,255,0.96) 65%, ${cardColor}14 100%)`,
+                    borderColor: `${cardColor}35`
                   }}
                 >
                   <div>
                     {/* Top Header with Pill & Medal Seal */}
                     <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
-                      {/* Top-Left Dark Pill Badge */}
-                      <div className="self-start mb-2 bg-slate-900/85 dark:bg-white/90 backdrop-blur-md text-white dark:text-slate-900 font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
-                        {cert.status || 'PASSED'}
+                      {/* Top-Left Status Pill Badge */}
+                      <div className={`self-start mb-2 ${isPassed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'} backdrop-blur-md font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm`}>
+                        {cert.status || (isPassed ? 'PASSED' : 'FAILED')}
                       </div>
 
                       {/* Scalloped Medal Seal */}
@@ -671,7 +725,7 @@ export default function AchievementsPage() {
                       >
                         <Star className="w-3 h-3 fill-current" />
                         <Star className="w-3.5 h-3.5 fill-current" />
-                        <Star className="w-3 h-3 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
                       </div>
                     </div>
 
@@ -695,7 +749,7 @@ export default function AchievementsPage() {
                     </div>
                   </div>
 
-                  {/* Bottom Full-Width CTA Button */}
+                  {/* Bottom Action Text Link */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -706,8 +760,8 @@ export default function AchievementsPage() {
                         toast.info(`Downloading certificate for "${cert.title}"...`);
                       }
                     }}
-                    className="w-full py-3 px-4 rounded-tl-xl rounded-br-xl rounded-tr-none rounded-bl-none text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 mt-5 cursor-pointer"
-                    style={{ backgroundColor: cardColor }}
+                    className="w-full pt-3 pb-1 flex items-center justify-center gap-2 font-extrabold text-xs sm:text-sm mt-3 cursor-pointer transition-opacity hover:opacity-80"
+                    style={{ color: cardColor }}
                   >
                     <Download className="w-4 h-4" />
                     <span>{isPassed ? 'Download Certificate' : 'Retake Assessment'}</span>
@@ -721,7 +775,7 @@ export default function AchievementsPage() {
 
 
 
-        {/* ── RIGHT SLIDE-OVER SPOTLIGHT DRAWER (1:1 Exact Match to Reference Image) ── */}
+        {/* ── RIGHT SLIDE-OVER SPOTLIGHT DRAWER ── */}
         <AnimatePresence>
           {selectedBadge && (
             <div className="fixed inset-0 z-50 overflow-hidden">
@@ -743,37 +797,107 @@ export default function AchievementsPage() {
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                   className="w-screen max-w-md sm:max-w-[480px] bg-white dark:bg-neutral-900 border-l border-slate-200/80 dark:border-neutral-800 shadow-2xl flex flex-col justify-between p-6 sm:p-8 overflow-y-auto"
                 >
-                  {/* ── Top Header ── */}
+                  {/* ── Top Header: Back Arrow to return to Achievements page ── */}
                   <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
-                    <div>
-                      <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
-                        Badge Spotlight
-                      </h3>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBadge(null)}
+                      className="group/back p-2 rounded-full text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      title="Go back to Achievements"
+                    >
+                      <ArrowLeft className="w-5 h-5 transition-transform group-hover/back:-translate-x-0.5" />
+                    </button>
 
                     <button
                       type="button"
                       onClick={() => setSelectedBadge(null)}
                       className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      title="Close"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* ── Main Blended Content (No Inner Box) ── */}
+                  {/* ── Main Blended Content ── */}
                   <div className="flex-1 flex flex-col items-center text-center py-6">
 
-                    {/* Badge Hero Presentation */}
-                    <div className="relative w-full mb-6 pt-4 pb-4 flex flex-col items-center justify-center overflow-hidden">
-                      {/* Floating Sparkle Elements */}
-                      <div className="absolute top-2 left-8 text-[#eb8467] text-sm animate-pulse">✦</div>
-                      <div className="absolute top-6 right-10 text-[#f0937a] text-xs animate-ping">✦</div>
-                      <div className="absolute bottom-2 left-12 text-[#f7a88f] text-xs">✦</div>
+                    {/* Badge Hero Presentation with 3D 3-Second Spin */}
+                    <div 
+                      className="relative w-full mb-6 pt-4 pb-4 flex flex-col items-center justify-center overflow-visible"
+                      style={{ perspective: 1000 }}
+                    >
+                      {/* Floating Sparkle Elements in Mint / Cyan / Emerald */}
+                      <motion.div
+                        key={`sparkle1-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.6, 1, 0.8, 1], scale: [0, 1.3, 0.9, 1.2, 0.95, 1] }}
+                        transition={{ duration: 3.5, delay: 0.1, repeat: 2 }}
+                        className="absolute top-2 left-8 text-[#10B981] text-sm animate-pulse"
+                      >
+                        ✦
+                      </motion.div>
+                      <motion.div
+                        key={`sparkle2-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.8, 1, 0.6, 1], scale: [0, 1.5, 1, 1.3, 1, 1] }}
+                        transition={{ duration: 3.2, delay: 0.4, repeat: 2 }}
+                        className="absolute top-6 right-10 text-[#0EA5E9] text-xs animate-ping"
+                      >
+                        ✦
+                      </motion.div>
+                      <motion.div
+                        key={`sparkle3-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.7, 1, 0.8, 1], scale: [0, 1.2, 1, 1.1, 0.95, 1] }}
+                        transition={{ duration: 3.3, delay: 0.2, repeat: 2 }}
+                        className="absolute bottom-2 left-12 text-[#34D399] text-xs"
+                      >
+                        ✦
+                      </motion.div>
 
-                      {/* Center Hexagonal Badge Graphic */}
-                      <div className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_15px_30px_rgba(235,132,103,0.35)] z-20">
+                      {/* Luminous Pulsing Glow Backdrop during 10s Spin */}
+                      <motion.div
+                        key={`glow-${badgeSpinKey}`}
+                        initial={{ opacity: 0.2, scale: 0.6 }}
+                        animate={{
+                          opacity: [0.2, 0.75, 0.4, 0.8, 0.45],
+                          scale: [0.6, 1.3, 0.95, 1.25, 1.05],
+                        }}
+                        transition={{ duration: 10, ease: 'easeOut' }}
+                        className="absolute w-48 h-48 rounded-full bg-gradient-to-tr from-[#10B981]/30 via-[#0EA5E9]/25 to-[#34D399]/20 blur-2xl -z-10 pointer-events-none"
+                      />
+
+                      {/* 3D 10-Second Rotating Center Hexagonal Badge Graphic */}
+                      <motion.div
+                        key={`badge-spin-${selectedBadge.id}-${badgeSpinKey}`}
+                        initial={{
+                          rotateY: 0,
+                          rotateX: 12,
+                          scale: 0.45,
+                          opacity: 0,
+                        }}
+                        animate={{
+                          rotateY: [0, 720, 1440, 2160, 2880, 3600], // 10 full 360° revolutions
+                          rotateX: [12, -10, 8, -6, 3, 0],
+                          scale: [0.45, 1.15, 0.95, 1.08, 0.98, 1],
+                          opacity: [0, 1, 1, 1, 1, 1],
+                        }}
+                        transition={{
+                          duration: 10, // Exactly 10 seconds
+                          ease: [0.16, 1, 0.3, 1], // Majestic smooth deceleration curve
+                          times: [0, 0.2, 0.4, 0.65, 0.85, 1],
+                        }}
+                        style={{
+                          transformStyle: 'preserve-3d',
+                        }}
+                        onClick={() => setBadgeSpinKey((k) => k + 1)}
+                        className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_20px_35px_rgba(16,185,129,0.28)] z-20 cursor-pointer select-none"
+                        title="Click to spin badge again!"
+                        whileHover={{ scale: 1.08, transition: { duration: 0.2 } }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         <BadgeGraphic type={selectedBadge.type} unlocked={selectedBadge.unlocked} />
-                      </div>
+                      </motion.div>
                     </div>
 
                     <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -863,10 +987,10 @@ export default function AchievementsPage() {
                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-1">
                           <svg viewBox="0 0 100 100" className="w-full h-full">
                             <defs>
-                              <linearGradient id="arcPurple" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#DDD6FE" />
-                                <stop offset="50%" stopColor="#8B5CF6" />
-                                <stop offset="100%" stopColor="#6D28D9" />
+                              <linearGradient id="arcEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#6EE7B7" />
+                                <stop offset="50%" stopColor="#10B981" />
+                                <stop offset="100%" stopColor="#047857" />
                               </linearGradient>
                             </defs>
                             {/* Faint Outer Ring Track */}
@@ -875,18 +999,18 @@ export default function AchievementsPage() {
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="3.5"
-                              className="text-purple-50 dark:text-neutral-800"
+                              className="text-emerald-50 dark:text-neutral-800"
                             />
                             {/* Progress Arc */}
                             <path
                               d="M 22.5 73 A 36 36 0 1 1 77.5 73"
                               fill="none"
-                              stroke="url(#arcPurple)"
+                              stroke="url(#arcEmerald)"
                               strokeWidth="4.5"
                               strokeLinecap="round"
                             />
                             {/* End Cap Dot */}
-                            <circle cx="77.5" cy="73" r="3.5" fill="#6D28D9" />
+                            <circle cx="77.5" cy="73" r="3.5" fill="#047857" />
                             {/* Inner Elevated Circle */}
                             <circle
                               cx="50"
@@ -895,13 +1019,13 @@ export default function AchievementsPage() {
                               className="fill-white dark:fill-neutral-900 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.08)]"
                             />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[#8B5CF6] dark:text-purple-400">
+                          <div className="absolute inset-0 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Star className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
                           </div>
                         </div>
 
                         {/* Value */}
-                        <span className="text-base sm:text-xl font-black text-[#8B5CF6] dark:text-purple-400 my-0.5 tracking-tight">
+                        <span className="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 my-0.5 tracking-tight">
                           {selectedBadge.unlocked ? '98%' : '72%'}
                         </span>
                         {/* Label */}
@@ -916,10 +1040,10 @@ export default function AchievementsPage() {
                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-1">
                           <svg viewBox="0 0 100 100" className="w-full h-full">
                             <defs>
-                              <linearGradient id="arcOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#FFEDD5" />
-                                <stop offset="50%" stopColor="#F97316" />
-                                <stop offset="100%" stopColor="#C2410C" />
+                              <linearGradient id="arcCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#BAE6FD" />
+                                <stop offset="50%" stopColor="#0EA5E9" />
+                                <stop offset="100%" stopColor="#0284C7" />
                               </linearGradient>
                             </defs>
                             {/* Faint Outer Ring Track */}
@@ -928,18 +1052,18 @@ export default function AchievementsPage() {
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="3.5"
-                              className="text-orange-50 dark:text-neutral-800"
+                              className="text-cyan-50 dark:text-neutral-800"
                             />
                             {/* Progress Arc */}
                             <path
                               d="M 22.5 73 A 36 36 0 1 1 77.5 73"
                               fill="none"
-                              stroke="url(#arcOrange)"
+                              stroke="url(#arcCyan)"
                               strokeWidth="4.5"
                               strokeLinecap="round"
                             />
                             {/* End Cap Dot */}
-                            <circle cx="77.5" cy="73" r="3.5" fill="#C2410C" />
+                            <circle cx="77.5" cy="73" r="3.5" fill="#0284C7" />
                             {/* Inner Elevated Circle */}
                             <circle
                               cx="50"
@@ -948,13 +1072,13 @@ export default function AchievementsPage() {
                               className="fill-white dark:fill-neutral-900 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.08)]"
                             />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[#F97316] dark:text-amber-400">
+                          <div className="absolute inset-0 flex items-center justify-center text-[#0EA5E9] dark:text-cyan-400">
                             <Clock className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
                           </div>
                         </div>
 
                         {/* Value */}
-                        <span className="text-base sm:text-xl font-black text-[#F97316] dark:text-amber-400 my-0.5 tracking-tight">
+                        <span className="text-base sm:text-xl font-black text-[#0EA5E9] dark:text-cyan-400 my-0.5 tracking-tight">
                           {selectedBadge.unlocked ? '18h' : '4.5h'}
                         </span>
                         {/* Label */}
@@ -985,9 +1109,9 @@ export default function AchievementsPage() {
                         onClick={() => {
                           toast.success(`Downloading "${selectedBadge.name}" badge graphic... 🏆`);
                         }}
-                        className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-800 dark:text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                        className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-emerald-50/60 dark:hover:bg-neutral-800 text-slate-800 dark:text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                       >
-                        <Download className="w-4 h-4 text-[#eb8467]" />
+                        <Download className="w-4 h-4 text-emerald-600" />
                         <span>Download</span>
                       </button>
                     ) : (
@@ -1011,7 +1135,7 @@ export default function AchievementsPage() {
                           navigator.clipboard?.writeText(window.location.href);
                           toast.success(`Share link for "${selectedBadge.name}" copied to clipboard! 🚀`);
                         }}
-                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#eb8467]/25"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/25"
                       >
                         <Share2 className="w-4 h-4" />
                         <span>Share</span>
@@ -1020,7 +1144,7 @@ export default function AchievementsPage() {
                       <Link
                         href="/my-learning"
                         onClick={() => setSelectedBadge(null)}
-                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-[#eb8467] via-[#f0937a] to-[#e26a4a] hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#eb8467]/25 text-center"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/25 text-center"
                       >
                         <span>Continue</span>
                         <ArrowRight className="w-4 h-4" />

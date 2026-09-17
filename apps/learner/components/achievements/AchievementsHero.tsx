@@ -64,7 +64,7 @@ function ProfessionalPartyPopperCanvas() {
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    const colors = ['#bde643', '#10b981', '#84cc16', '#22c55e', '#34d399', '#eb8467', '#38bdf8', '#FFFFFF'];
+    const colors = ['#10B981', '#059669', '#0EA5E9', '#38BDF8', '#34D399', '#6EE7B7', '#2563EB', '#F0FDF4', '#A7F3D0'];
 
     interface Particle {
       x: number;
@@ -98,7 +98,7 @@ function ProfessionalPartyPopperCanvas() {
         vRot: (Math.random() - 0.5) * 0.18,
         opacity: 1,
         decay: 0.0032 + Math.random() * 0.0022, // 3.5 to 4 seconds lifespan
-        shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any,
+        shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any
       });
 
       particles.push({
@@ -111,8 +111,8 @@ function ProfessionalPartyPopperCanvas() {
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.18,
         opacity: 1,
-        decay: 0.0032 + Math.random() * 0.0022, // 3.5 to 4 seconds lifespan
-        shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any,
+        decay: 0.0032 + Math.random() * 0.0022,
+        shape: ['square', 'circle', 'ribbon', 'star', 'diamond'][Math.floor(Math.random() * 5)] as any
       });
     }
 
@@ -134,10 +134,10 @@ function ProfessionalPartyPopperCanvas() {
     }
 
     let animationId: number;
-    const gravity = 0.18; // Soft fluttery gravity
-    const drag = 0.988; // Gentle drag for 3-4s motion
+    let startTime: number | null = null;
 
-    const render = () => {
+    const render = (time: number) => {
+      if (!startTime) startTime = time;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       let aliveCount = 0;
@@ -147,50 +147,44 @@ function ProfessionalPartyPopperCanvas() {
 
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += gravity;
-        p.vx *= drag;
-        p.vy *= drag;
+        p.vy += 0.22; // Gravity
+        p.vx *= 0.985; // Air drag
         p.rotation += p.vRot;
         p.opacity -= p.decay;
 
-        if (p.opacity > 0) {
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rotation);
-          ctx.globalAlpha = Math.max(0, p.opacity);
-          ctx.fillStyle = p.color;
-          ctx.strokeStyle = p.color;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
 
-          if (p.shape === 'square') {
-            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-          } else if (p.shape === 'circle') {
-            ctx.beginPath();
-            ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
-            ctx.fill();
-          } else if (p.shape === 'diamond') {
-            ctx.beginPath();
-            ctx.moveTo(0, -p.size);
-            ctx.lineTo(p.size / 1.5, 0);
-            ctx.lineTo(0, p.size);
-            ctx.lineTo(-p.size / 1.5, 0);
-            ctx.closePath();
-            ctx.fill();
-          } else if (p.shape === 'ribbon') {
-            ctx.beginPath();
-            ctx.rect(-p.size / 3, -p.size * 1.2, p.size / 1.8, p.size * 2.4);
-            ctx.fill();
-          } else if (p.shape === 'star') {
-            ctx.beginPath();
-            for (let s = 0; s < 5; s++) {
-              ctx.lineTo(Math.cos((18 + s * 72) * Math.PI / 180) * p.size, -Math.sin((18 + s * 72) * Math.PI / 180) * p.size);
-              ctx.lineTo(Math.cos((54 + s * 72) * Math.PI / 180) * (p.size / 2), -Math.sin((54 + s * 72) * Math.PI / 180) * (p.size / 2));
-            }
-            ctx.closePath();
-            ctx.fill();
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.shape === 'ribbon') {
+          ctx.fillRect(-p.size * 1.5, -p.size * 0.3, p.size * 3, p.size * 0.6);
+        } else if (p.shape === 'diamond') {
+          ctx.beginPath();
+          ctx.moveTo(0, -p.size);
+          ctx.lineTo(p.size * 0.7, 0);
+          ctx.lineTo(0, p.size);
+          ctx.lineTo(-p.size * 0.7, 0);
+          ctx.closePath();
+          ctx.fill();
+        } else if (p.shape === 'star') {
+          ctx.beginPath();
+          for (let s = 0; s < 5; s++) {
+            ctx.lineTo(Math.cos((18 + s * 72) * Math.PI / 180) * p.size, -Math.sin((18 + s * 72) * Math.PI / 180) * p.size);
+            ctx.lineTo(Math.cos((54 + s * 72) * Math.PI / 180) * (p.size / 2), -Math.sin((54 + s * 72) * Math.PI / 180) * (p.size / 2));
           }
-
-          ctx.restore();
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
         }
+
+        ctx.restore();
       });
 
       if (aliveCount > 0) {
@@ -238,13 +232,13 @@ export default function AchievementsHero({
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 2.2], opacity: [1, 0] }}
         transition={{ duration: 0.7, delay: 0.05 }}
-        className="absolute top-12 left-[12%] w-10 h-10 rounded-full border-2 border-[#84cc16] pointer-events-none hidden md:block"
+        className="absolute top-12 left-[12%] w-10 h-10 rounded-full border-2 border-[#10B981] pointer-events-none hidden md:block"
       />
       <motion.div
         initial={{ scale: 0, opacity: 1 }}
         animate={{ scale: [0, 2.2], opacity: [1, 0] }}
         transition={{ duration: 0.7, delay: 0.05 }}
-        className="absolute top-12 right-[12%] w-10 h-10 rounded-full border-2 border-[#bde643] pointer-events-none hidden md:block"
+        className="absolute top-12 right-[12%] w-10 h-10 rounded-full border-2 border-[#0EA5E9] pointer-events-none hidden md:block"
       />
 
       {/* ── 3. Centered Main Hero Composition ── */}
@@ -262,19 +256,19 @@ export default function AchievementsHero({
             My
           </motion.span>
 
-          {/* "Achievements" in Dancing Script with Solid Black Color & Curved Underline */}
+          {/* "Achievements" in Dancing Script with Solid Black/Slate Color & Curved Underline */}
           <div className="relative inline-block pb-2">
             <motion.span
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.22, ease: cubicEase }}
               className="inline-block text-slate-900 dark:text-white px-1 text-5xl sm:text-6xl lg:text-7xl font-bold italic"
-              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Amira-Grace', cursive", color: '#000000' }}
+              style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Amira-Grace', cursive", color: '#0f172a' }}
             >
               Achievements
             </motion.span>
 
-            {/* Black Curved Underline Stroke */}
+            {/* Emerald/Cyan Curved Underline Stroke */}
             <motion.svg
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
@@ -283,9 +277,16 @@ export default function AchievementsHero({
               fill="none"
               className="absolute -bottom-1 left-0 w-full h-4 pointer-events-none"
             >
+              <defs>
+                <linearGradient id="underlineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#10B981" />
+                  <stop offset="60%" stopColor="#059669" />
+                  <stop offset="100%" stopColor="#0EA5E9" />
+                </linearGradient>
+              </defs>
               <path
                 d="M 8 13 C 90 4, 210 3, 292 11"
-                stroke="#000000"
+                stroke="url(#underlineGrad)"
                 strokeWidth="4"
                 strokeLinecap="round"
               />
@@ -325,11 +326,11 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.5, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1" style={{ color: '#000000' }}>
+            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
               <SmoothCounter value={unlockedCount} delay={0.55} />
-              <span className="text-base sm:text-xl font-bold text-slate-500 font-sans ml-1.5">/ {totalBadges}</span>
+              <span className="text-base sm:text-xl font-bold text-emerald-600 dark:text-emerald-400 font-sans ml-1.5">/ {totalBadges}</span>
             </div>
-            <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-1 mb-2">
               Badges Unlocked
             </p>
           </motion.div>
@@ -341,11 +342,11 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.62, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1" style={{ color: '#000000' }}>
+            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
               <SmoothCounter value={streakDays} delay={0.67} />
               <span className="text-sm sm:text-base font-bold text-slate-500 font-sans ml-1.5">Days</span>
             </div>
-            <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-1 mb-2">
               Active Streak
             </p>
           </motion.div>
@@ -357,10 +358,10 @@ export default function AchievementsHero({
             transition={{ duration: 0.55, delay: 0.74, ease: cubicEase }}
             className="flex flex-col items-center text-center group"
           >
-            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1" style={{ color: '#000000' }}>
+            <div className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
               <SmoothCounter value={certificatesCount} delay={0.78} />
             </div>
-            <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mt-1 mb-2">
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 mt-1 mb-2">
               Certificates
             </p>
           </motion.div>
