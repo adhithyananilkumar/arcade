@@ -13,7 +13,7 @@
   
   font-family:'Inter',system-ui,sans-serif;
   color:var(--ink);
-  background: transparent;
+  background: linear-gradient(180deg, #F0F4FF 0%, #F8FAFD 18%, #FFFFFF 38%, #FFFFFF 68%, #F6F8FE 85%, #EFF5FD 100%);
   line-height:1.6;
   -webkit-font-smoothing:antialiased;
   position: relative;
@@ -1113,6 +1113,7 @@
 /* FAQ MINIMAL ACCORDIONS */
 .for-creators-root .faq-sec {
   background: transparent;
+  padding-bottom: 20px;
 }
 
 .for-creators-root .faq-list {
@@ -1128,6 +1129,10 @@
 
 .for-creators-root .faq-item:first-child {
   border-top: 1px solid var(--lav-100);
+}
+
+.for-creators-root .faq-item:last-child {
+  border-bottom: none;
 }
 
 .for-creators-root .faq-q {

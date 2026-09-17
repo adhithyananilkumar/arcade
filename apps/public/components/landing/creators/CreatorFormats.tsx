@@ -215,19 +215,6 @@ export default function CreatorFormats() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="sec-head text-center max-w-2xl mx-auto mb-14 space-y-3"
         >
-          {/* Color Dot Palette Bar */}
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="w-3 h-3 rounded-full bg-[#7A5AF8] shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-[#2451D6] shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-[#20B8CF] shadow-xs" />
-            <span className="w-3 h-3 rounded-full bg-[#F5A623] shadow-xs" />
-          </div>
-
-          <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#7A5AF8] tracking-[0.2em] uppercase font-mono">
-            <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
-            <span>FORMATS & MONETIZATION</span>
-            <span className="w-5 h-[2px] bg-[#7A5AF8] rounded-full inline-block" />
-          </div>
 
           <motion.h2
             initial={{ opacity: 0, y: 18 }}

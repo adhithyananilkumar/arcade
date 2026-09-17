@@ -39,12 +39,13 @@ function ShellOuter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isProfile = !!params?.username;
   const isExplore = pathname === "/explore";
+  const isCreators = pathname === "/creators";
 
   return (
     <>
       <HeroNav />
       {children}
-      {!isProfile && !isExplore && <Footer />}
+      {!isProfile && !isExplore && !isCreators && <Footer />}
     </>
   );
 }

@@ -8,15 +8,15 @@ import JourneyToWorkflowTransition from "@/apps/public/components/landing/creato
 import CreatorEverythingInOnePlace from "@/apps/public/components/landing/creators/CreatorEverythingInOnePlace";
 import CreatorPublishingInfographic from "@/apps/public/components/landing/creators/CreatorPublishingInfographic";
 import CreatorFormats from "@/apps/public/components/landing/creators/CreatorFormats";
-import CreatorEducators from "@/apps/public/components/landing/creators/CreatorEducators";
 import CreatorFAQ from "@/apps/public/components/landing/creators/CreatorFAQ";
 import CreatorEnquiry from "@/apps/public/components/landing/creators/CreatorEnquiry";
+import Footer from "@/apps/public/components/landing/Footer";
 
 import "./creators.css";
 
 export default function CreatorsPage() {
   return (
-    <div className="for-creators-root relative min-h-screen pt-2 lg:pt-4 overflow-x-hidden">
+    <div className="for-creators-root relative min-h-screen overflow-x-hidden">
       <CreatorsBackground />
       <CreatorHero />
       <CreatorJourney />
@@ -24,9 +24,9 @@ export default function CreatorsPage() {
       <CreatorEverythingInOnePlace />
       <CreatorPublishingInfographic />
       <CreatorFormats />
-      <CreatorEducators />
       <CreatorEnquiry />
       <CreatorFAQ />
+      <Footer />
     </div>
   );
 }

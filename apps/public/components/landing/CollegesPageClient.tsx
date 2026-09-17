@@ -105,11 +105,6 @@ export default function CollegesPageClient() {
                 What Capability <br />
                 <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">Do you want?</span>
               </h1>
-              {/* Handdrawn underline accent using SVG */}
-              <svg width="220" height="12" viewBox="0 0 220 12" fill="none" className="mt-1">
-                <path d="M4 8C45 4.5 125 1.5 216 4.5" stroke="#6366F1" strokeWidth="3" strokeLinecap="round" />
-                <path d="M12 9.5C65 7 130 5.5 192 7" stroke="#EC4899" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-              </svg>
             </motion.div>
 
             {/* Description */}
@@ -118,9 +113,9 @@ export default function CollegesPageClient() {
               initial="hidden"
               animate="visible"
               custom={0.3}
-              className="text-lg text-zinc-600 leading-relaxed mb-8 max-w-xl"
+              className="text-lg text-zinc-600 leading-relaxed mb-8 max-w-lg"
             >
-              Empower your educators, organizations, and developers. Build, host, and scale professional courses and coding labs natively on Arcade. Provide hands-on learning experiences and certifications that help your community level up.
+              Build, host, and scale professional courses and coding labs natively on Arcade. Empower your community with hands-on learning and certifications.
             </motion.p>
 
 

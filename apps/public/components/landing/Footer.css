@@ -7,7 +7,7 @@
 
   background: transparent !important;
   background-color: transparent !important;
-  padding: 64px 0 160px 0;
+  padding: 60px 0 160px 0;
   color: var(--fe-text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
@@ -20,14 +20,14 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(17, 24, 39, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(17, 24, 39, 0.015) 1px, transparent 1px);
+    linear-gradient(to right, rgba(17, 24, 39, 0.012) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 24, 39, 0.012) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 0.5;
   z-index: 1;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 1) 30%);
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 1) 30%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.8) 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.4) 30%, rgba(0, 0, 0, 0.8) 100%);
 }
 
 .arc-footer__container {

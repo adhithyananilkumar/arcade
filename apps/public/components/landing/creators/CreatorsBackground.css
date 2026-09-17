@@ -7,7 +7,7 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background-color: #ffffff;
+  background: linear-gradient(180deg, #EFF4FE 0%, #F7F9FD 16%, #FFFFFF 36%, #FFFFFF 68%, #F5F8FE 86%, #EDF3FD 100%);
 }
 
 .creators-bg-mesh {
@@ -16,23 +16,22 @@
   z-index: 1;
   pointer-events: none;
   background-image:
-    /* Top Hero & Statbar: Lavender & Sky Blue lighting */
-    radial-gradient(ellipse 70% 35% at 15% 5%, rgba(232, 236, 251, 0.90) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 40% at 85% 12%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    /* Top Hero: Soft Periwinkle & Azure Radial Glow */
+    radial-gradient(ellipse 75% 40% at 20% 6%, rgba(224, 231, 255, 0.70) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 40% at 80% 12%, rgba(224, 242, 254, 0.65) 0%, transparent 65%),
     
-    /* Journey & Workflow: Mint & Soft Lavender lighting */
-    radial-gradient(ellipse 70% 45% at 20% 28%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 40% at 80% 38%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
+    /* Journey & Workflow: Soft Lavender lighting */
+    radial-gradient(ellipse 70% 45% at 15% 30%, rgba(238, 242, 255, 0.60) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 40% at 85% 40%, rgba(240, 253, 250, 0.65) 0%, transparent 65%),
     
-    /* Everything in One Place & Publishing: Cyan & Soft White */
-    radial-gradient(ellipse 75% 45% at 50% 52%, rgba(232, 236, 251, 0.75) 0%, transparent 65%),
-    radial-gradient(ellipse 60% 40% at 15% 64%, rgba(227, 249, 245, 0.80) 0%, transparent 65%),
+    /* Everything in One Place: Clean light accent */
+    radial-gradient(ellipse 75% 45% at 50% 54%, rgba(238, 242, 255, 0.55) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 40% at 12% 66%, rgba(224, 242, 254, 0.60) 0%, transparent 65%),
     
-    /* Formats, Educators, FAQ & CTA: Lavender & Mint tint */
-    radial-gradient(ellipse 70% 40% at 85% 78%, rgba(232, 236, 251, 0.80) 0%, transparent 65%),
-    radial-gradient(ellipse 65% 35% at 20% 90%, rgba(227, 249, 245, 0.85) 0%, transparent 65%),
-    radial-gradient(ellipse 70% 40% at 50% 98%, rgba(232, 236, 251, 0.70) 0%, transparent 65%),
-    #ffffff;
+    /* Formats, FAQ & CTA: Soft gradient accents */
+    radial-gradient(ellipse 70% 40% at 88% 80%, rgba(238, 242, 255, 0.60) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 35% at 18% 92%, rgba(240, 253, 250, 0.65) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(237, 243, 253, 0.95) 0%, transparent 70%);
 }
 
 .creators-bg-blobs {
@@ -81,6 +80,14 @@
   width: 640px;
   height: 640px;
   background: radial-gradient(circle, rgba(227, 249, 245, 0.85) 0%, transparent 70%);
+}
+
+.blob-5 {
+  top: 94%;
+  left: 25%;
+  width: 720px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(232, 236, 251, 0.90) 0%, transparent 70%);
 }
 
 .creators-bg-noise {
