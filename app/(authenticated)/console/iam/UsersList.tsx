@@ -100,49 +100,82 @@ export function UsersList() {
       </div>
 
       {filteredUsers.length === 0 ? (
-        <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center text-slate-500">
           No users found matching "{searchQuery}"
         </div>
       ) : (
-        filteredUsers.map(user => (
-          <div key={user.id} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 border border-slate-200">
-              <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
-              <AvatarFallback className="bg-slate-100 text-[#14142b] font-semibold text-sm">
-                {user.firstName ? user.firstName.charAt(0) : 'U'}
-                {user.lastName ? user.lastName.charAt(0) : ''}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h4 className="font-semibold text-gray-900">
-                <Link 
-                  href={`/${user.username}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-[#14142b] hover:underline transition-colors"
-                >
-                  {user.firstName} {user.lastName}
-                </Link>
-              </h4>
-              <p className="text-sm text-gray-500">{user.email}</p>
-              <div className="mt-2 flex gap-2 flex-wrap">
-                {(user as any).platformRoles?.map((role: any) => (
-                  <span key={role.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-[#14142b] ring-1 ring-inset ring-slate-300">
-                    {role.name}
-                  </span>
+        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_4px_24px_-4px_rgba(20,20,43,0.04)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px] text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200/80 bg-slate-50/75 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th className="py-3.5 px-6 font-semibold">User</th>
+                  <th className="py-3.5 px-4 font-semibold">Email</th>
+                  <th className="py-3.5 px-4 font-semibold">Assigned Policies</th>
+                  <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50/80 transition-all duration-150">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-3.5">
+                        <Avatar className="h-9 w-9 border border-slate-200/80 shadow-2xs">
+                          <AvatarImage src={getAvatarUrl(user.avatarUrl)} alt="Avatar" className="object-cover" referrerPolicy="no-referrer" />
+                          <AvatarFallback className="bg-slate-100 text-[#14142b] font-bold text-xs">
+                            {user.firstName ? user.firstName.charAt(0) : 'U'}
+                            {user.lastName ? user.lastName.charAt(0) : ''}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h4 className="font-bold text-xs text-slate-900">
+                            <Link 
+                              href={`/${user.username}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="hover:text-indigo-600 transition-colors"
+                            >
+                              {user.firstName} {user.lastName}
+                            </Link>
+                          </h4>
+                          {user.username && (
+                            <p className="text-[11px] text-slate-400 font-mono">@{user.username}</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 font-medium text-slate-600">
+                      {user.email}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex gap-1.5 flex-wrap max-w-[280px]">
+                        {(user as any).platformRoles && (user as any).platformRoles.length > 0 ? (
+                          (user as any).platformRoles.map((role: any) => (
+                            <span key={role.id} className="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-[10.5px] font-semibold text-[#14142b]">
+                              {role.name}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[11px] text-slate-400">No custom policies</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <button 
+                        onClick={() => openAssignModal(user)}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#14142b] hover:bg-slate-50 transition-colors shadow-2xs hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        <Shield size={13} className="text-indigo-600" />
+                        <span>Assign Policy</span>
+                      </button>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
-          <button 
-            onClick={() => openAssignModal(user)}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#14142b] bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-          >
-            <Shield size={16} /> Assign Policy
-          </button>
         </div>
-      )))}
+      )}
 
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

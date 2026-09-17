@@ -1,0 +1,403 @@
+/* ==========================================================================
+   Serpentine & Infographic Roadmap Styles
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Dancing+Script:wght@700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* --- Root Variables --- */
+:root {
+  --roadmap-bg: #F8FAFC;
+  --roadmap-navy: #0F172A;
+  --roadmap-text: #334155;
+  --roadmap-muted: #64748B;
+  --roadmap-border: rgba(226, 232, 240, 0.85);
+  --roadmap-card-bg: #FFFFFF;
+  --roadmap-card-radius: 18px;
+  --roadmap-shadow-sm: 0 2px 10px rgba(15, 23, 42, 0.04);
+  --roadmap-shadow-md: 0 10px 24px -4px rgba(15, 23, 42, 0.07);
+  --roadmap-shadow-hover: 0 16px 32px -4px rgba(15, 23, 42, 0.1);
+}
+
+/* --- Container --- */
+.serpentine-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--roadmap-bg);
+  color: var(--roadmap-navy);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 5rem;
+}
+
+/* --- Subtle Background Dot Grid Pattern --- */
+.serpentine-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+  z-index: 0;
+}
+
+/* --- Breadcrumbs --- */
+.roadmap-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #2563EB;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.roadmap-breadcrumb:hover {
+  color: #1D4ED8;
+  transform: translateX(-2px);
+}
+
+.roadmap-breadcrumb-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #DBEAFE;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* --- Main Heading & Gradient --- */
+.roadmap-hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--roadmap-navy);
+}
+
+.roadmap-title-gradient {
+  background: linear-gradient(135deg, #2563EB 0%, #4F46E5 50%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.roadmap-hero-subtitle {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--roadmap-muted);
+}
+
+/* --- Filter Pill Buttons --- */
+.roadmap-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #FFFFFF;
+  border: 1px solid var(--roadmap-border);
+  padding: 0.25rem;
+  border-radius: 9999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.roadmap-filter-btn {
+  padding: 0.35rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748B;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.roadmap-filter-btn:hover {
+  color: var(--roadmap-navy);
+}
+
+.roadmap-filter-btn.active {
+  background-color: #2563EB;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* ==========================================================================
+   Roadmap Stage Card Core Styles
+   ========================================================================== */
+.roadmap-stage-card {
+  position: relative;
+  border-width: 1.5px;
+  border-style: solid;
+  border-radius: var(--roadmap-card-radius);
+  box-shadow: var(--roadmap-shadow-sm);
+  padding: 1.15rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.roadmap-stage-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--roadmap-shadow-hover);
+  border-color: var(--card-border-active);
+}
+
+.roadmap-stage-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+/* Number Pill */
+.stage-number-pill {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Stage Title */
+.stage-title {
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Stage Topic Checklist */
+.stage-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stage-topic-text {
+  font-size: 0.75rem;
+  color: #334155;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+/* Active Stage Highlight */
+.roadmap-stage-card.is-active {
+  border-color: var(--card-accent) !important;
+  box-shadow: 0 0 0 3px var(--card-glow), 0 16px 32px -4px rgba(15, 23, 42, 0.12) !important;
+}
+
+.roadmap-stage-card.is-completed {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+/* ==========================================================================
+   10 Curated Stage Pastel Themes
+   ========================================================================== */
+/* 1. theme-blue (01 Internet & Web Basics) */
+.theme-blue {
+  --card-accent: #2563EB;
+  --card-glow: rgba(37, 99, 235, 0.18);
+  --card-border-active: #93C5FD;
+}
+
+/* 2. theme-lavender (02 HTML) */
+.theme-lavender {
+  --card-accent: #7C3AED;
+  --card-glow: rgba(124, 58, 237, 0.18);
+  --card-border-active: #C4B5FD;
+}
+
+/* 3. theme-mint (03 CSS) */
+.theme-mint {
+  --card-accent: #059669;
+  --card-glow: rgba(5, 150, 105, 0.18);
+  --card-border-active: #6EE7B7;
+}
+
+/* 4. theme-peach (04 JavaScript) */
+.theme-peach {
+  --card-accent: #D97706;
+  --card-glow: rgba(217, 119, 6, 0.18);
+  --card-border-active: #FCD34D;
+}
+
+/* 5. theme-sky (05 Git & GitHub) */
+.theme-sky {
+  --card-accent: #0284C7;
+  --card-glow: rgba(2, 132, 199, 0.18);
+  --card-border-active: #7DD3FC;
+}
+
+/* 6. theme-violet (06 JavaScript Frameworks) */
+.theme-violet {
+  --card-accent: #7C3AED;
+  --card-glow: rgba(124, 58, 237, 0.18);
+  --card-border-active: #C4B5FD;
+}
+
+/* 7. theme-teal (07 Advanced Topics) */
+.theme-teal {
+  --card-accent: #0D9488;
+  --card-glow: rgba(13, 148, 136, 0.18);
+  --card-border-active: #5EEAD4;
+}
+
+/* 8. theme-rose (08 Build Projects) */
+.theme-rose {
+  --card-accent: #E11D48;
+  --card-glow: rgba(225, 29, 72, 0.18);
+  --card-border-active: #FDA4AF;
+}
+
+/* 9. theme-indigo (09 Prepare for Jobs) */
+.theme-indigo {
+  --card-accent: #4F46E5;
+  --card-glow: rgba(79, 70, 229, 0.18);
+  --card-border-active: #A5B4FC;
+}
+
+/* 10. theme-emerald (10 Get Hired & Grow) */
+.theme-emerald {
+  --card-accent: #10B981;
+  --card-glow: rgba(16, 185, 129, 0.18);
+  --card-border-active: #6EE7B7;
+}
+
+/* ==========================================================================
+   Auxiliary Cards Styling
+   ========================================================================== */
+.roadmap-resource-card,
+.roadmap-goal-card {
+  border-radius: var(--roadmap-card-radius);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.roadmap-resource-card:hover,
+.roadmap-goal-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--roadmap-shadow-hover);
+}
+
+/* ==========================================================================
+   Mobile Vertical Timeline Layout
+   ========================================================================== */
+.timeline-mobile-wrapper {
+  position: relative;
+  width: 100%;
+  padding-left: 1.25rem;
+  padding-right: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.timeline-spine {
+  position: absolute;
+  top: 18px;
+  bottom: 40px;
+  left: 24px;
+  width: 2.5px;
+  background: linear-gradient(180deg, #2563EB 0%, #7C3AED 25%, #059669 50%, #E11D48 75%, #10B981 100%);
+  border-radius: 9999px;
+  z-index: 1;
+}
+
+.timeline-mobile-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  z-index: 2;
+}
+
+.timeline-node-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 4px #F8FAFC, 0 2px 6px rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+  margin-top: 14px;
+  z-index: 3;
+}
+
+.timeline-card-wrap {
+  flex: 1;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Bottom Motivation Banner
+   ========================================================================== */
+.roadmap-footer-banner {
+  background: #FFFFFF;
+  border: 1px solid var(--roadmap-border);
+  border-radius: 16px;
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.roadmap-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--roadmap-navy);
+}
+
+.roadmap-trophy-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background-color: #EFF6FF;
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   SVG Connector Overlay
+   ========================================================================== */
+.roadmap-svg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.connector-path {
+  transition: stroke 0.3s ease;
+}
+
+/* Smooth Horizontal Scrollbar for Canvas */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.7);
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 9999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
+}

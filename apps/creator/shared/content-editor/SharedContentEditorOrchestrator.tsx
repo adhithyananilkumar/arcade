@@ -1639,7 +1639,7 @@ export function SharedContentEditorOrchestrator({ contentType, contentId: initia
               type="button"
               onClick={handleBack}
               disabled={navigatingBack}
-              title="Save and return to Content Studio"
+              title="Save and return to Arcade Studio"
               className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/60 text-[#14142b] shadow-sm transition-all duration-300 hover:bg-white hover:shadow-md disabled:opacity-60 backdrop-blur-md"
             >
               <ArrowLeft size={16} />

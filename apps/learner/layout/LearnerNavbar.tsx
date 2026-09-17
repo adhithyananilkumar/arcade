@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy } from 'lucide-react';
+import { LogOut, Search, Plus, ChevronDown, CircleDot, GitPullRequest, Book, Inbox, Gamepad2, LayoutDashboard, User as UserIcon, Tv, Settings, BookOpen, ShieldAlert, Bell, Check, X, GraduationCap, Compass, Trophy, ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { AuthService } from '@/infrastructure/auth/auth.service';
@@ -230,17 +230,31 @@ export default function LearnerNavbar() {
       transition={{ duration: 0.35, ease: "easeInOut" }}
       className="fixed top-6 left-0 right-0 z-40 flex w-full items-center justify-between gap-3 px-4 md:px-8 pointer-events-none"
     >
-      {/* Left Island: Branding */}
-      <div className="pointer-events-auto flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
-        <Link href="/" className="group flex cursor-pointer items-center">
-          <Image
-            src="/arcade.svg"
-            alt="Arcade"
-            width={85}
-            height={24}
-            className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
-          />
-        </Link>
+      {/* Left Island: Branding & Back Navigation */}
+      <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="flex h-12 shrink-0 items-center rounded-full px-5 apple-glass-dock shadow-none [box-shadow:none]">
+          <Link href="/" className="group flex cursor-pointer items-center">
+            <Image
+              src="/arcade.svg"
+              alt="Arcade"
+              width={85}
+              height={24}
+              className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
+            />
+          </Link>
+        </div>
+
+        {pathname !== '/' && pathname !== '/home' && (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full apple-glass-dock text-slate-700 dark:text-slate-200 hover:text-[#14142b] dark:hover:text-white transition-all cursor-pointer shadow-none [box-shadow:none]"
+            title="Go back"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={16} strokeWidth={2.2} />
+          </button>
+        )}
       </div>
 
       {/* Center: Channel Manage breadcrumbs */}
@@ -452,7 +466,7 @@ export default function LearnerNavbar() {
                 icon={<BookOpen className="text-[#14142b]" strokeWidth={2} />} 
                 onClick={() => router.push('/studio')}
               >
-                Content Studio
+                Arcade Studio
               </MenuItem>
             )}
             {collaboratedEventId && (

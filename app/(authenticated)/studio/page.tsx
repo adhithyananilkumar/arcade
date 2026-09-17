@@ -1,5 +1,5 @@
 // app/(authenticated)/studio/page.tsx
-// Post-login dashboard home — Create Content + unified content grid (courses + roadmaps).
+// Arcade Studio — Creator dashboard for authoring, managing, and publishing educational content.
 "use client";
 
 import Link from "next/link";
@@ -9,15 +9,22 @@ import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
 import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
-import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
   contentOverviewHref,
   toContentTypeSegment,
   editorHref,
   previewHref,
 } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentTypeRouting";
-import { DUPLICATE_ACTION, archiveContent, deleteContent, SUPPORTS_TITLE_CONFIRM_DELETE } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
+import {
+  DUPLICATE_ACTION,
+  archiveContent,
+  deleteContent,
+  SUPPORTS_TITLE_CONFIRM_DELETE,
+} from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/lib/contentActions";
 import { ConfirmActionModal } from "@/app/(authenticated)/studio/content/[contentType]/[contentId]/components/ConfirmActionModal";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import ShinyText from "@/components/ui/ShinyText";
+import Magnet from "@/components/ui/Magnet";
 import {
   BookOpen,
   Calendar,
@@ -38,10 +45,15 @@ import {
   FileQuestion,
   Eye,
   Archive,
-  Tv,
   Loader2,
   HelpCircle,
   Check,
+  Search,
+  LayoutGrid,
+  List,
+  ArrowUpDown,
+  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 
 // ── Unified content summary (backing GET /api/content) ─────────────────────────
@@ -75,102 +87,194 @@ const CONTENT_TYPES = [
     label: "Course",
     desc: "Structured learning path with modules & lessons",
     href: "/studio/course/new",
-    color: "text-indigo-600",
-    bg: "bg-indigo-50",
   },
   {
     id: "roadmap",
     icon: Map,
     label: "Roadmap",
-    desc: "Visual learning path with nodes & connections",
+    desc: "Visual interactive learning path with nodes",
     href: "",
-    color: "text-[#14142b]",
-    bg: "bg-fuchsia-50",
   },
   {
     id: "event",
     icon: Calendar,
     label: "Event",
-    desc: "Events, webinars, bootcamps & live sessions",
+    desc: "Live sessions, webinars & workshops",
     href: "/studio/events/new",
-    color: "text-violet-600",
-    bg: "bg-violet-50",
   },
   {
     id: "article",
     icon: FileText,
     label: "Article",
-    desc: "Standalone rich document authored with the editor",
+    desc: "Rich publication document with the editor",
     href: "/studio/article/new",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
   },
   {
     id: "quiz",
     icon: HelpCircle,
     label: "Quiz",
-    desc: "Standalone question bank with automated grading",
+    desc: "Question bank with automated grading",
     href: "/studio/quiz/new",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
   },
   {
     id: "exam",
     icon: ClipboardCheck,
     label: "Exam",
-    desc: "Standalone exam or quiz",
+    desc: "Comprehensive timed evaluation & grading",
     href: "/studio/exam/new",
-    color: "text-orange-600",
-    bg: "bg-orange-50",
   },
 ] as const;
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    DRAFT: "bg-amber-50 text-amber-700 border-amber-200",
-    SUBMITTED: "bg-orange-50 text-orange-700 border-orange-200",
-    PUBLISHED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    ARCHIVED: "bg-slate-100 text-slate-500 border-slate-200",
+  const key = status?.toUpperCase() || "DRAFT";
+  const config: Record<string, { bg: string; dot: string; label: string }> = {
+    DRAFT: {
+      bg: "bg-amber-500/10 border-amber-500/20 text-amber-800",
+      dot: "bg-amber-500",
+      label: "Draft",
+    },
+    SUBMITTED: {
+      bg: "bg-blue-500/10 border-blue-500/20 text-blue-800",
+      dot: "bg-blue-500 animate-pulse",
+      label: "In Review",
+    },
+    PUBLISHED: {
+      bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-800",
+      dot: "bg-emerald-500 animate-pulse",
+      label: "Published",
+    },
+    ARCHIVED: {
+      bg: "bg-slate-500/10 border-slate-500/20 text-slate-600",
+      dot: "bg-slate-400",
+      label: "Archived",
+    },
   };
-  const key = status.toUpperCase();
+  const item = config[key] ?? config.DRAFT;
   return (
     <span
-      className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${map[key] ?? "bg-slate-100 text-slate-500 border-slate-200"
-        }`}
+      className={`inline-flex items-center gap-1.5 text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full border ${item.bg}`}
     >
-      {key}
+      <span className={`w-1.5 h-1.5 rounded-full ${item.dot}`} />
+      {item.label}
     </span>
   );
 }
 
 function TypeBadge({ type }: { type: string }) {
-  if (type === "ROADMAP") {
+  const t = type?.toUpperCase();
+  if (t === "ROADMAP") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200">
-        <Map size={10} /> Roadmap
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
+        <Map size={11} strokeWidth={2.4} className="text-amber-800" /> Roadmap
       </span>
     );
   }
-  if (type === "WORKSHOP" || type === "EVENT") {
+  if (t === "WORKSHOP" || t === "EVENT") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
-        <Calendar size={10} /> Event
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
+        <Calendar size={11} strokeWidth={2.4} className="text-amber-800" /> Event
       </span>
     );
   }
-  if (type === "QUIZ") {
+  if (t === "QUIZ" || t === "EXAM") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
-        <FileQuestion size={10} /> Quiz
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
+        <FileQuestion size={11} strokeWidth={2.4} className="text-amber-800" /> {t === "EXAM" ? "Exam" : "Quiz"}
+      </span>
+    );
+  }
+  if (t === "ARTICLE") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
+        <FileText size={11} strokeWidth={2.4} className="text-amber-800" /> Article
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-      <BookOpen size={10} /> Course
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-md border bg-amber-900/[0.04] text-amber-950 border-amber-900/12">
+      <BookOpen size={11} strokeWidth={2.4} className="text-amber-800" /> Course
     </span>
   );
 }
+
+const TYPE_CONFIG: Record<
+  string,
+  {
+    label: string;
+    icon: any;
+    color: string;
+    bgGradient: string;
+    border: string;
+    badgeBg: string;
+  }
+> = {
+  ROADMAP: {
+    label: "Roadmap",
+    icon: Map,
+    color: "text-fuchsia-700",
+    bgGradient: "from-fuchsia-500/15 to-purple-500/10",
+    border: "border-fuchsia-500/20",
+    badgeBg: "bg-fuchsia-50 text-fuchsia-800 border-fuchsia-200",
+  },
+  COURSE: {
+    label: "Course",
+    icon: BookOpen,
+    color: "text-indigo-700",
+    bgGradient: "from-indigo-500/15 to-blue-500/10",
+    border: "border-indigo-500/20",
+    badgeBg: "bg-indigo-50 text-indigo-800 border-indigo-200",
+  },
+  EVENT: {
+    label: "Event",
+    icon: Calendar,
+    color: "text-violet-700",
+    bgGradient: "from-violet-500/15 to-purple-500/10",
+    border: "border-violet-500/20",
+    badgeBg: "bg-violet-50 text-violet-800 border-violet-200",
+  },
+  WORKSHOP: {
+    label: "Workshop",
+    icon: Calendar,
+    color: "text-violet-700",
+    bgGradient: "from-violet-500/15 to-purple-500/10",
+    border: "border-violet-500/20",
+    badgeBg: "bg-violet-50 text-violet-800 border-violet-200",
+  },
+  QUIZ: {
+    label: "Quiz",
+    icon: FileQuestion,
+    color: "text-rose-700",
+    bgGradient: "from-rose-500/15 to-orange-500/10",
+    border: "border-rose-500/20",
+    badgeBg: "bg-rose-50 text-rose-800 border-rose-200",
+  },
+  EXAM: {
+    label: "Exam",
+    icon: ClipboardCheck,
+    color: "text-orange-700",
+    bgGradient: "from-orange-500/15 to-amber-500/10",
+    border: "border-orange-500/20",
+    badgeBg: "bg-orange-50 text-orange-800 border-orange-200",
+  },
+  ARTICLE: {
+    label: "Article",
+    icon: FileText,
+    color: "text-emerald-700",
+    bgGradient: "from-emerald-500/15 to-teal-500/10",
+    border: "border-emerald-500/20",
+    badgeBg: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  },
+};
+
+const TYPE_DEFAULT_COVERS: Record<string, string> = {
+  COURSE: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=80",
+  ROADMAP: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80",
+  EVENT: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
+  WORKSHOP: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop&q=80",
+  QUIZ: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
+  EXAM: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&auto=format&fit=crop&q=80",
+  ARTICLE: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop&q=80",
+};
 
 // ── New Course creation modal ───────────────────────────────────────────────────
 
@@ -213,17 +317,17 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <BookOpen size={20} className="text-[#14142b]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+            <BookOpen size={20} strokeWidth={2.4} />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Course</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
@@ -236,7 +340,7 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label htmlFor="course-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Course name <span className="text-rose-500">*</span>
+              Course title <span className="text-rose-500">*</span>
             </label>
             <input
               id="course-name"
@@ -261,14 +365,14 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Course"}
             </button>
@@ -320,17 +424,17 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <HelpCircle size={20} className="text-[#14142b]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <HelpCircle size={20} strokeWidth={2.4} />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
+            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
           </div>
         </div>
 
@@ -343,7 +447,7 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Quiz name <span className="text-rose-500">*</span>
+              Quiz title <span className="text-rose-500">*</span>
             </label>
             <input
               id="quiz-name"
@@ -368,14 +472,14 @@ function CreateQuizModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
+              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60 cursor-pointer"
             >
               {creating ? "Creating…" : "Create Quiz"}
             </button>
@@ -427,13 +531,13 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
         >
           <X size={18} />
         </button>
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Map size={20} className="text-[#14142b]" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-fuchsia-50 text-fuchsia-600">
+            <Map size={20} strokeWidth={2.4} />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Roadmap</h3>
@@ -475,16 +579,16 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
+              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
-              {creating ? "Creating..." : "Create roadmap"}
+              {creating ? "Creating..." : "Create Roadmap"}
             </button>
           </div>
         </form>
@@ -492,6 +596,8 @@ function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+// ── New Event creation modal ────────────────────────────────────────────────────
 
 function CreateEventModal({
   onClose,
@@ -553,8 +659,8 @@ function CreateEventModal({
         </button>
 
         <div className="mb-5 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100">
-            <Calendar size={20} className="text-violet-600" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+            <Calendar size={20} strokeWidth={2.4} />
           </div>
           <div>
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Event</h3>
@@ -569,7 +675,6 @@ function CreateEventModal({
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
-          {/* Event Type Choice (Workshop vs Webinar) */}
           <div>
             <label className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
               Event Type <span className="text-red-500">*</span>
@@ -643,8 +748,7 @@ function CreateEventModal({
   );
 }
 
-
-// ── Rename roadmap modal (title/description only — ported from the old /roadmaps list) ─
+// ── Rename roadmap modal ────────────────────────────────────────────────────────
 
 function RenameRoadmapModal({
   item,
@@ -818,7 +922,7 @@ function DeleteRoadmapModal({
   );
 }
 
-// ── Content card ─────────────────────────────────────────────────────────────
+// ── Enhanced Content Card (Grid View with SpotlightCard) ───────────────────────
 
 function ContentCard({
   item,
@@ -839,11 +943,10 @@ function ContentCard({
   const isRoadmap = item.type === "ROADMAP";
   const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
-  // Quiz / Exam has no split overview/editor yet — its "editor" is the detail page itself.
-  // Every other type opens the Content Overview, not a direct editor route.
   const openHref = isQuiz
     ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+    : contentOverviewHref(item.type, item.id) ??
+      (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
@@ -855,6 +958,11 @@ function ContentCard({
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
   const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
+
+  const typeKey = item.type?.toUpperCase() || "COURSE";
+  const typeInfo = TYPE_CONFIG[typeKey] ?? TYPE_CONFIG.COURSE;
+  const TypeIcon = typeInfo.icon;
+  const coverImage = item.coverImageUrl || TYPE_DEFAULT_COVERS[typeKey] || TYPE_DEFAULT_COVERS.COURSE;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
@@ -887,212 +995,130 @@ function ContentCard({
   }
 
   function handleCardActivate(e: React.MouseEvent) {
-    // Ignore clicks that originated on an interactive descendant (kebab menu, its
-    // items, the explicit Open link) — they handle their own navigation/actions.
     if ((e.target as HTMLElement).closest("[data-card-interactive]")) return;
     router.push(openHref);
   }
 
   return (
-    <div
+    <SpotlightCard
+      spotlightColor="rgba(217, 119, 6, 0.06)"
+      spotlightSize={360}
       onClick={channelSuspended || isPendingInvitation ? undefined : handleCardActivate}
-      className={`group relative flex flex-col gap-3 rounded-lg border border-slate-200/80 bg-white/95 p-5 shadow-[0_4px_16px_rgba(20,20,43,0.04)] transition-all hover:border-slate-300 hover:shadow-[0_8px_24px_rgba(20,20,43,0.08)] ${
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-tl-[2rem] rounded-br-[2rem] rounded-tr-xl rounded-bl-xl border border-amber-900/12 bg-[#FFFDF7]/90 hover:bg-[#FFFDF7] p-5 shadow-[0_4px_20px_rgba(78,41,17,0.03)] hover:shadow-[0_8px_30px_rgba(78,41,17,0.06)] hover:border-amber-900/25 transition-all duration-200 ${
         channelSuspended || isPendingInvitation ? "" : "cursor-pointer"
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-[#14142b]">
-          {item.title}
-        </h3>
-        {hasSecondaryMenu && (
-          <div className="relative" data-card-interactive>
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-              aria-label="More actions"
+      <div className="relative z-10 flex flex-1 flex-col justify-between gap-4">
+        {/* ── Content Body: Channel, Title, & Description ── */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70 truncate max-w-[260px]"
+              title={item.channelName}
             >
-              <MoreVertical size={16} />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      router.push(openHref);
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <MoreVertical size={14} /> Open
-                  </button>
-                  {segment && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push(editorHref(segment, item.id));
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} /> Edit
-                    </button>
-                  )}
-                  {preview && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        router.push(preview);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Eye size={14} /> Preview
-                    </button>
-                  )}
-                  {isRoadmap && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onRename(item);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} /> Rename
-                    </button>
-                  )}
-                  {(isRoadmap || duplicate) && (
-                    <button
-                      onClick={handleDuplicateSegmentAware}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Copy size={14} /> Duplicate
-                    </button>
-                  )}
-                  {canArchive && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        setConfirmAction("archive");
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Archive size={14} /> Archive
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (isRoadmap) {
-                        onDelete(item);
-                      } else {
-                        setConfirmAction("delete");
-                      }
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
-                  >
-                    <Trash2 size={14} /> Delete
-                  </button>
-                </div>
-              </>
-            )}
+              {item.channelName || "Personal Channel"}
+            </span>
           </div>
-        )}
-      </div>
-      {item.description && (
-        <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
-      )}
-      {item.authorName && (
-        <div className="flex items-center gap-1 text-xs text-slate-500">
-          <User size={11} className="text-slate-400" />
-          <span className="truncate">{item.authorName}</span>
+
+          <h3 className="line-clamp-1 text-base sm:text-[17px] font-bold tracking-tight text-[#14142b] group-hover:text-amber-950 transition-colors leading-snug">
+            {item.title}
+          </h3>
+
+          <p className="line-clamp-2 text-xs leading-relaxed text-slate-600 font-medium min-h-[32px]">
+            {item.description ||
+              (isRoadmap
+                ? "Visual learning path with nodes & checkpoints"
+                : "Comprehensive modules · Self-paced learning")}
+          </p>
         </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        <TypeBadge type={item.type} />
-        <StatusBadge status={item.status} />
-        {item.collaborationStatus === "PENDING" && (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-            Invitation Pending
-          </span>
-        )}
-        {channelSuspended && (
-          <span
-            className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700"
-            title={
-              item.channelForcedSuspension
-                ? "Channel suspended — already unlisted from public discovery"
-                : unlistDate
-                  ? `Channel suspended — will be unlisted on ${unlistDate.toLocaleDateString()}`
-                  : "Channel suspended"
-            }
-          >
-            <Lock size={10} /> Channel Suspended
-          </span>
-        )}
-      </div>
-      <div className="mt-auto flex items-center gap-1.5 text-xs text-slate-400">
-        <Clock size={11} />
-        Last edited:{" "}
-        {new Date(item.updatedAt).toLocaleString("en-IN", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })}
-      </div>
-      {channelSuspended ? (
-        <span
-          className="cursor-not-allowed rounded-lg bg-slate-50 py-2 text-center text-xs font-semibold text-slate-400"
-          title="This channel is suspended — editing is disabled until it's reactivated"
-        >
-          Editing Disabled
-        </span>
-      ) : item.collaborationStatus === "PENDING" ? (
-        <div className="flex items-center gap-2" data-card-interactive onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={async (e) => {
-              e.stopPropagation();
-              try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
-                toast.success("Accepted collaboration invitation!");
-                onChanged();
-              } catch {
-                toast.error("Failed to accept invitation");
-              }
-            }}
-            className="flex-1 rounded-lg bg-indigo-600 py-2 text-center text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
-          >
-            Accept
-          </button>
-          <button
-            type="button"
-            onClick={async (e) => {
-              e.stopPropagation();
-              try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
-                toast.info("Declined invitation");
-                onChanged();
-              } catch {
-                toast.error("Failed to decline invitation");
-              }
-            }}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            Decline
-          </button>
-        </div>
-      ) : (
-        <Link
-          href={openHref}
+
+        {/* ── Standard Clean Footer: Date on Left, Compact Button on Right ── */}
+        <div
+          className="pt-3 border-t border-amber-900/10 flex items-center justify-between gap-2"
           data-card-interactive
           onClick={(e) => e.stopPropagation()}
-          className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
-        </Link>
-      )}
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+            <Clock size={12} className="text-amber-800/60" />
+            <span>
+              {new Date(item.updatedAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {segment && !channelSuspended && (
+              <button
+                type="button"
+                onClick={() => router.push(editorHref(segment, item.id))}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-900/15 bg-white/80 text-slate-600 hover:bg-white hover:text-[#14142b] transition-colors cursor-pointer"
+                title="Direct Edit"
+              >
+                <Pencil size={12} />
+              </button>
+            )}
+
+            {channelSuspended ? (
+              <span className="inline-flex items-center rounded-lg bg-amber-900/5 px-3 py-1 text-xs font-semibold text-slate-400 cursor-not-allowed">
+                Disabled
+              </span>
+            ) : item.collaborationStatus === "PENDING" ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                      toast.success("Accepted invitation!");
+                      onChanged();
+                    } catch {
+                      toast.error("Failed to accept");
+                    }
+                  }}
+                  className="rounded-lg bg-[#14142b] px-3 py-1 text-xs font-bold text-white hover:bg-[#232735] transition-colors cursor-pointer"
+                >
+                  Accept
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                      toast.info("Declined invitation");
+                      onChanged();
+                    } catch {
+                      toast.error("Failed to decline");
+                    }
+                  }}
+                  className="rounded-lg border border-amber-900/15 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-amber-50 transition-colors cursor-pointer"
+                >
+                  Decline
+                </button>
+              </div>
+            ) : (
+              <Link
+                href={openHref}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white transition-all shadow-3xs hover:bg-[#232735] hover:shadow-2xs cursor-pointer"
+              >
+                <TypeIcon size={12} className="text-amber-400/90" />
+                <span>
+                  {!isQuiz && !isRoadmap && item.status === "SUBMITTED"
+                    ? "Review"
+                    : isRoadmap
+                    ? "Open"
+                    : isQuiz
+                    ? "Open Quiz"
+                    : "Open"}
+                </span>
+                <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5 text-amber-200/80" />
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
 
       {confirmAction === "archive" && (
         <div data-card-interactive>
@@ -1122,11 +1148,129 @@ function ContentCard({
           />
         </div>
       )}
+    </SpotlightCard>
+  );
+}
+
+// ── Standard Studio Table View (List Mode) ─────────────────────────────────────
+
+function ContentTable({
+  items,
+  onRename,
+  onDelete,
+  onDuplicate,
+  onChanged,
+}: {
+  items: ContentSummary[];
+  onRename: (item: ContentSummary) => void;
+  onDelete: (item: ContentSummary) => void;
+  onDuplicate: (item: ContentSummary) => void;
+  onChanged: () => void;
+}) {
+  const router = useRouter();
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-amber-900/12 bg-[#FFFDF7]/90 backdrop-blur-md shadow-[0_4px_24px_rgba(78,41,17,0.03)]">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-amber-900/10 bg-amber-900/[0.03] text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60">
+            <tr>
+              <th className="px-5 py-3.5">Creation</th>
+              <th className="px-4 py-3.5">Type</th>
+              <th className="px-4 py-3.5">Channel</th>
+              <th className="px-4 py-3.5">Status</th>
+              <th className="px-4 py-3.5">Last Updated</th>
+              <th className="px-5 py-3.5 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-amber-900/[0.07]">
+            {items.map((item) => {
+              const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
+              const segment = toContentTypeSegment(item.type);
+              const openHref = isQuiz
+                ? `/studio/quiz/${item.id}`
+                : contentOverviewHref(item.type, item.id) ??
+                  (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+
+              return (
+                <tr
+                  key={item.id}
+                  onClick={() => router.push(openHref)}
+                  className="group hover:bg-amber-900/[0.03] transition-colors cursor-pointer"
+                >
+                  {/* Title & Author */}
+                  <td className="px-5 py-3.5 max-w-xs">
+                    <div className="font-bold text-[#14142b] group-hover:text-amber-950 transition-colors truncate text-[13px]">
+                      {item.title}
+                    </div>
+                    {item.authorName && (
+                      <div className="text-[10.5px] font-semibold text-amber-900/60 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                        <User size={10} />
+                        <span className="truncate">{item.authorName}</span>
+                      </div>
+                    )}
+                  </td>
+
+                  {/* Type */}
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    <TypeBadge type={item.type} />
+                  </td>
+
+                  {/* Channel */}
+                  <td className="px-4 py-3.5 font-semibold text-slate-700 whitespace-nowrap text-[12px]">
+                    {item.channelName || "Personal Channel"}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-3.5 whitespace-nowrap">
+                    <StatusBadge status={item.status} />
+                  </td>
+
+                  {/* Last Updated */}
+                  <td className="px-4 py-3.5 text-slate-500 whitespace-nowrap font-medium text-[12px]">
+                    {new Date(item.updatedAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </td>
+
+                  {/* Actions */}
+                  <td
+                    className="px-5 py-3.5 text-right whitespace-nowrap"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="inline-flex items-center gap-1.5">
+                      {segment && (
+                        <button
+                          type="button"
+                          onClick={() => router.push(editorHref(segment, item.id))}
+                          className="rounded-lg border border-amber-900/12 bg-white/90 p-1.5 text-slate-600 hover:bg-[#14142b] hover:text-white hover:border-[#14142b] transition-all cursor-pointer shadow-3xs"
+                          title="Edit"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      )}
+                      <Link
+                        href={openHref}
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#14142b] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#232735] transition-all shadow-3xs cursor-pointer"
+                      >
+                        <span>Open</span>
+                        <ArrowRight size={11} className="text-amber-300" />
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-// ── Feature Locked Modal (shown when user has no channels) ───────────────────
+// ── Feature Locked Modal ────────────────────────────────────────────────────────
 
 function ChannelRequiredModal({
   isOpen,
@@ -1139,15 +1283,11 @@ function ChannelRequiredModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[#14142b]/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-
-      {/* Modal Surface */}
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.2)] transition-all">
-        {/* Icon & Close */}
         <div className="flex items-start justify-between">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
             <Lock size={24} />
@@ -1161,7 +1301,6 @@ function ChannelRequiredModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="mt-4">
           <h3 className="text-lg font-bold tracking-tight text-[#14142b]">
             Feature Locked
@@ -1171,7 +1310,6 @@ function ChannelRequiredModal({
           </p>
         </div>
 
-        {/* Actions */}
         <div className="mt-6 flex items-center justify-end">
           <button
             type="button"
@@ -1186,17 +1324,23 @@ function ChannelRequiredModal({
   );
 }
 
-// ── Dashboard page ───────────────────────────────────────────────────────────
+// ── Arcade Studio Dashboard Page ───────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [channelDropdownOpen, setChannelDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
   const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"UPDATED_DESC" | "CREATED_DESC" | "TITLE_ASC">("UPDATED_DESC");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   const { channels, loading: channelsLoading } = useEligibleChannels();
   const [channelRequiredModalOpen, setChannelRequiredModalOpen] = useState(false);
@@ -1279,27 +1423,57 @@ export default function DashboardPage() {
   const eligibleChannelIds = useMemo(() => new Set(channels.map((c) => c.id)), [channels]);
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      // Content Studio strictly displays content owned/authored by channels the user has authority over, or collaborated items
-      if (channels.length > 0 && item.channelId && !eligibleChannelIds.has(item.channelId) && !item.collaborationStatus) {
+    let result = items.filter((item) => {
+      if (
+        channels.length > 0 &&
+        item.channelId &&
+        !eligibleChannelIds.has(item.channelId) &&
+        !item.collaborationStatus
+      ) {
         return false;
       }
-      const statusOk =
-        statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
-      const typeOk =
-        typeFilter === "ALL" ||
-        item.type?.toUpperCase() === typeFilter;
-      const channelOk = channelFilter === "ALL" || item.channelId === channelFilter || !!item.collaborationStatus;
-      return statusOk && typeOk && channelOk;
+      const statusOk = statusFilter === "ALL" || item.status?.toUpperCase() === statusFilter;
+      const typeOk = typeFilter === "ALL" || item.type?.toUpperCase() === typeFilter;
+      const channelOk =
+        channelFilter === "ALL" || item.channelId === channelFilter || !!item.collaborationStatus;
+
+      const query = searchQuery.trim().toLowerCase();
+      const searchOk =
+        !query ||
+        item.title.toLowerCase().includes(query) ||
+        (item.description && item.description.toLowerCase().includes(query)) ||
+        (item.authorName && item.authorName.toLowerCase().includes(query)) ||
+        (item.channelName && item.channelName.toLowerCase().includes(query));
+
+      return statusOk && typeOk && channelOk && searchOk;
     });
-  }, [items, statusFilter, typeFilter, channelFilter, channels, eligibleChannelIds]);
+
+    if (sortBy === "UPDATED_DESC") {
+      result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    } else if (sortBy === "CREATED_DESC") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortBy === "TITLE_ASC") {
+      result.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    return result;
+  }, [
+    items,
+    statusFilter,
+    typeFilter,
+    channelFilter,
+    searchQuery,
+    sortBy,
+    channels,
+    eligibleChannelIds,
+  ]);
 
   const CHANNEL_CHIPS = useMemo(() => {
     const base = [{ id: "ALL", label: "All channels" }];
     return base.concat(
-      channels.map(c => ({
+      channels.map((c) => ({
         id: c.id,
-        label: c.isPersonal ? "Personal" : c.name
+        label: c.isPersonal ? "Personal" : c.name,
       }))
     );
   }, [channels]);
@@ -1319,11 +1493,17 @@ export default function DashboardPage() {
     { id: "EVENT" as const, label: "Events" },
   ];
 
+  const SORT_OPTIONS = [
+    { id: "UPDATED_DESC" as const, label: "Recently updated" },
+    { id: "CREATED_DESC" as const, label: "Newest first" },
+    { id: "TITLE_ASC" as const, label: "Title A–Z" },
+  ];
+
   return (
     <div
       className="relative flex min-h-screen flex-1 flex-col"
       style={{
-        background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)",
+        background: "linear-gradient(160deg, #FDFAF0 0%, #FAF3D8 35%, #FDFDF5 70%, #F3EDD0 100%)",
       }}
     >
       <ChannelRequiredModal
@@ -1356,61 +1536,101 @@ export default function DashboardPage() {
       )}
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        {/* ── Header: Standard Studio Header (Brand Title & Actions) ── */}
+        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-[1.75rem] font-bold tracking-tight text-[#14142b] md:text-[2rem]">
-              Content Studio
+            <h1
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-[#14142b] leading-[1.15] tracking-normal select-none"
+              style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
+            >
+              <ShinyText text="Arcade Studio" speed={4.5} />
             </h1>
-            <p className="mt-1 text-[14px] font-medium text-slate-500">
-              Create and manage your educational content
-            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Right: Channel Switcher, Utility Links, and Create Action */}
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
             {channels.length > 0 && (
               <div className="relative">
-                <select
-                  value={channelFilter}
-                  onChange={(e) => setChannelFilter(e.target.value)}
-                  className="appearance-none inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 pl-3.5 pr-8 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b] outline-none cursor-pointer focus:ring-2 focus:ring-slate-200"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChannelDropdownOpen(!channelDropdownOpen);
+                    setTypeDropdownOpen(false);
+                    setSortDropdownOpen(false);
+                    setDropdownOpen(false);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-900/10 bg-white/95 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] outline-none cursor-pointer shadow-3xs"
                 >
-                  {CHANNEL_CHIPS.map((chip) => (
-                    <option key={chip.id} value={chip.id}>
-                      {chip.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <ChevronDown size={14} className="text-slate-400" />
-                </div>
+                  <span>{CHANNEL_CHIPS.find((c) => c.id === channelFilter)?.label ?? "All channels"}</span>
+                  <ChevronDown
+                    size={13}
+                    className={`text-slate-400 transition-transform duration-150 ${channelDropdownOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {channelDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setChannelDropdownOpen(false)} />
+                    <div className="absolute right-0 z-40 mt-1.5 min-w-[170px] rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                      {CHANNEL_CHIPS.map((chip) => {
+                        const isSelected = channelFilter === chip.id;
+                        return (
+                          <button
+                            key={chip.id}
+                            type="button"
+                            onClick={() => {
+                              setChannelFilter(chip.id);
+                              setChannelDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
+                              isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                            }`}
+                          >
+                            <span>{chip.label}</span>
+                            {isSelected && <Check size={13} className="text-amber-700" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             )}
+
             <Link
               href="/studio/review"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-white/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] shadow-3xs"
             >
               <ClipboardCheck size={14} />
-              Review
-            </Link>
-            <Link
-              href="/trash"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-[#14142b]"
-            >
-              <Trash2 size={14} />
-              Trash
+              <span>Review</span>
+              {statusCounts.SUBMITTED > 0 ? (
+                <span className="rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.5 text-[10px] font-extrabold">
+                  {statusCounts.SUBMITTED}
+                </span>
+              ) : (
+                <span className="text-slate-400 font-medium text-[11px]">(0)</span>
+              )}
             </Link>
 
-            <div className="relative">
+            <Link
+              href="/trash"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-900/10 bg-white/90 px-3.5 py-2 text-[12px] font-bold text-slate-700 transition-colors hover:border-amber-900/25 hover:text-[#14142b] shadow-3xs"
+            >
+              <Trash2 size={14} />
+              <span>Trash</span>
+            </Link>
+
+            <div className="hidden h-5 w-px bg-amber-900/15 sm:block mx-0.5" />
+
+            <div className="relative shrink-0">
               <button
                 id="create-content-btn"
                 onClick={handleCreateContentClick}
-                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-75 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-[13px] font-bold text-white shadow-sm transition-all hover:bg-[#232735] active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {channelsLoading ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <Plus size={16} />
+                  <Plus size={16} strokeWidth={2.5} />
                 )}
                 Create Content
                 <ChevronDown
@@ -1423,44 +1643,44 @@ export default function DashboardPage() {
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setDropdownOpen(false)} />
                   <div
-                    className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl"
+                    className="absolute right-0 z-40 mt-2 w-72 sm:w-80 overflow-hidden rounded-2xl border border-amber-900/12 bg-[#FFFDF7]/98 backdrop-blur-xl p-1.5 shadow-[0_16px_40px_rgba(20,20,43,0.14),0_2px_8px_rgba(78,41,17,0.04)] animate-in fade-in zoom-in-95 duration-150"
                     role="menu"
                   >
-                    <div className="border-b border-slate-100 px-4 py-2.5">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Select content type
+                    <div className="px-3 py-2 mb-1 border-b border-amber-900/10 flex items-center justify-between">
+                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/70">
+                        Create New
                       </p>
+                      <span className="text-[10px] font-semibold text-slate-400">Select format</span>
                     </div>
-                    {CONTENT_TYPES.map((type) => {
-                      const inner = (
-                        <>
-                          <div
-                            className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${type.bg}`}
-                          >
-                            <type.icon size={17} className={type.color} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-[#14142b]">{type.label}</p>
-                            <p className="mt-0.5 text-xs leading-relaxed text-slate-400">
-                              {type.desc}
-                            </p>
-                          </div>
-                        </>
-                      );
-                      const cls =
-                        "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-slate-50 cursor-pointer";
-                      return (
+                    <div className="space-y-0.5">
+                      {CONTENT_TYPES.map((type) => (
                         <button
                           key={type.id}
                           type="button"
                           role="menuitem"
                           onClick={() => handleSelectContentType(type.id, type.href)}
-                          className={cls}
+                          className="group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left transition-all hover:bg-amber-900/8 active:bg-amber-900/12 cursor-pointer"
                         >
-                          {inner}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-900/10 bg-white/90 text-amber-900 shadow-3xs group-hover:border-amber-900/20 group-hover:bg-[#14142b] group-hover:text-amber-300 transition-colors">
+                              <type.icon size={15} strokeWidth={2.2} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-[#14142b] group-hover:text-amber-950 transition-colors">
+                                {type.label}
+                              </p>
+                              <p className="text-[11px] font-medium text-slate-500 truncate leading-tight">
+                                {type.desc}
+                              </p>
+                            </div>
+                          </div>
+                          <ArrowRight
+                            size={13}
+                            className="shrink-0 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-amber-900 opacity-40 group-hover:opacity-100"
+                          />
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
@@ -1468,8 +1688,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Status segments */}
-        <div className="mb-4 flex flex-wrap gap-1.5 rounded-full border border-slate-200/80 bg-white/90 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)]">
+        {/* ── Studio Standard Tabs (SaaS Underline Navigation) ── */}
+        <div className="mb-6 flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar">
           {STATUS_TABS.map((tab) => {
             const count = statusCounts[tab.id];
             const active = statusFilter === tab.id;
@@ -1478,48 +1698,181 @@ export default function DashboardPage() {
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${active
-                    ? "bg-[#14142b] text-white shadow-sm"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-[#14142b]"
-                  }`}
+                className={`relative pb-3 text-[13px] sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                  active
+                    ? "text-[#14142b]"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
               >
-                {tab.label}
+                <span>{tab.label}</span>
                 <span
-                  className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"
-                    }`}
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+                    active
+                      ? "bg-[#14142b] text-white shadow-3xs"
+                      : "bg-white/80 border border-slate-200/80 text-slate-500"
+                  }`}
                 >
                   {count}
                 </span>
+                {active && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#14142b] rounded-full" />
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* Type chips */}
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          {TYPE_CHIPS.map((chip) => {
-            const active = typeFilter === chip.id;
-            return (
+        {/* ── Studio Standard Toolbar (Single Streamlined Row) ── */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Left: Search Input */}
+          <div className="relative flex-1 max-w-sm">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search creations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-amber-900/10 bg-white/95 pl-9 pr-8 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-[#14142b] focus:ring-2 focus:ring-amber-200 shadow-3xs"
+            />
+            {searchQuery && (
               <button
-                key={chip.id}
                 type="button"
-                onClick={() => setTypeFilter(chip.id)}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${active
-                    ? "border-[#FF6B4A]/35 bg-[#FF6B4A]/10 text-[#D94F32]"
-                    : "border-slate-200 bg-white/80 text-slate-500 hover:border-slate-300 hover:text-[#14142b]"
-                  }`}
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer"
               >
-                {chip.label}
+                <X size={12} />
               </button>
-            );
-          })}
+            )}
+          </div>
+
+          {/* Right: Format Dropdown, Sort Dropdown & View Mode Switcher */}
+          <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0 flex-wrap sm:flex-nowrap">
+            {/* Format Filter Custom Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setTypeDropdownOpen(!typeDropdownOpen);
+                  setSortDropdownOpen(false);
+                  setChannelDropdownOpen(false);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-white/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-[#14142b] transition-all cursor-pointer shadow-3xs"
+              >
+                <span>{TYPE_CHIPS.find((c) => c.id === typeFilter)?.label ?? "All types"}</span>
+                <ChevronDown
+                  size={13}
+                  className={`text-slate-400 transition-transform duration-150 ${typeDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {typeDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setTypeDropdownOpen(false)} />
+                  <div className="absolute left-0 sm:left-auto sm:right-0 z-40 mt-1.5 w-44 rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                    {TYPE_CHIPS.map((chip) => {
+                      const isSelected = typeFilter === chip.id;
+                      return (
+                        <button
+                          key={chip.id}
+                          type="button"
+                          onClick={() => {
+                            setTypeFilter(chip.id as any);
+                            setTypeDropdownOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
+                            isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span>{chip.label}</span>
+                          {isSelected && <Check size={13} className="text-amber-700" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Sort Custom Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setSortDropdownOpen(!sortDropdownOpen);
+                  setTypeDropdownOpen(false);
+                  setChannelDropdownOpen(false);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-900/10 bg-white/95 px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-900/25 hover:text-[#14142b] transition-all cursor-pointer shadow-3xs"
+              >
+                <ArrowUpDown size={12} className="text-slate-400" />
+                <span>{SORT_OPTIONS.find((s) => s.id === sortBy)?.label ?? "Recently updated"}</span>
+                <ChevronDown
+                  size={13}
+                  className={`text-slate-400 transition-transform duration-150 ${sortDropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {sortDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setSortDropdownOpen(false)} />
+                  <div className="absolute right-0 z-40 mt-1.5 w-48 rounded-2xl border border-amber-900/10 bg-white p-1.5 shadow-xl">
+                    {SORT_OPTIONS.map((opt) => {
+                      const isSelected = sortBy === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setSortBy(opt.id as any);
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition-colors cursor-pointer ${
+                            isSelected ? "bg-amber-50 text-amber-950 font-bold" : "text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          {isSelected && <Check size={13} className="text-amber-700" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center rounded-xl border border-amber-900/10 bg-white/95 p-0.5 shadow-3xs">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-[#14142b] text-white shadow-xs"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("table")}
+                className={`rounded-lg p-1.5 text-xs transition-colors cursor-pointer ${
+                  viewMode === "table"
+                    ? "bg-[#14142b] text-white shadow-xs"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
+                title="Table View"
+              >
+                <List size={14} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Content grid */}
+        {/* ── Content Grid or Table View ── */}
         {loadingItems ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5">
+              <div key={i} className="animate-pulse rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="mb-3 h-4 w-2/3 rounded bg-slate-100" />
                 <div className="mb-2 h-3 w-full rounded bg-slate-50" />
                 <div className="mb-4 h-3 w-3/4 rounded bg-slate-50" />
@@ -1531,35 +1884,36 @@ export default function DashboardPage() {
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-slate-200 bg-white/70 py-20 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-              <BookOpen size={24} className="text-slate-400" />
+          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white/70 py-20 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+              <BookOpen size={24} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
+              <p className="text-sm font-bold text-[#14142b]">No creations yet</p>
               <p className="mt-1 text-xs text-slate-400">
-                Click &quot;Create Content&quot; to build your first course or roadmap.
+                Click &quot;Create Content&quot; to build your first course, roadmap, quiz, or event.
               </p>
             </div>
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200/80 bg-white/80 py-16 text-center">
+          <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 py-16 text-center">
             <GraduationCap size={28} className="text-slate-300" />
-            <p className="text-sm font-semibold text-[#14142b]">Nothing in this segment</p>
-            <p className="text-xs text-slate-400">Try another filter.</p>
+            <p className="text-sm font-bold text-[#14142b]">No creations found</p>
+            <p className="text-xs text-slate-400">Try changing your search query or filters.</p>
             <button
               type="button"
               onClick={() => {
                 setStatusFilter("ALL");
                 setTypeFilter("ALL");
                 setChannelFilter("ALL");
+                setSearchQuery("");
               }}
-              className="mt-1 text-[12px] font-semibold text-[#FF6B4A] hover:underline"
+              className="mt-1 text-[12px] font-bold text-indigo-600 hover:underline cursor-pointer"
             >
-              Clear filters
+              Reset filters
             </button>
           </div>
-        ) : (
+        ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((item) => (
               <ContentCard
@@ -1572,6 +1926,14 @@ export default function DashboardPage() {
               />
             ))}
           </div>
+        ) : (
+          <ContentTable
+            items={filteredItems}
+            onRename={setRenameTarget}
+            onDelete={setDeleteTarget}
+            onDuplicate={handleDuplicate}
+            onChanged={fetchContent}
+          />
         )}
       </div>
     </div>

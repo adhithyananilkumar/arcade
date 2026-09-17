@@ -83,7 +83,7 @@
     "react-icons": "^5.7.0",
     "react-image-crop": "^11.1.2",
     "react-is": "^19.2.8",
-    "react-konva": "^19.2.5",
+    "react-konva": "^19.2.7",
     "reactjs-tiptap-editor": "^1.0.29",
     "recharts": "^3.10.1",
     "shadcn": "^4.13.0",

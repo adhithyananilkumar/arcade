@@ -10,7 +10,7 @@ export interface StudioAccessState {
 }
 
 /**
- * Whether the current user should see/reach Content Studio.
+ * Whether the current user should see/reach Arcade Studio.
  *
  * Owning a channel always qualifies. Being a collaborator on courses/content qualifies.
  * Being a staff member of an org channel with content-authoring permissions qualifies.
