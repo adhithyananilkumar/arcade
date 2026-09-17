@@ -29,6 +29,8 @@ export interface AuthFormProps {
   onGoogleLogin: () => void;
   hasToken?: boolean;
   onResendOtp?: (email: string) => Promise<void>;
+  /** Prefills the email field, e.g. from a `?email=` query param on an invite link. */
+  defaultEmail?: string;
 }
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -243,6 +245,7 @@ export default function AuthForm({
   onGoogleLogin,
   hasToken,
   onResendOtp,
+  defaultEmail,
 }: AuthFormProps) {
   const reduce = useReducedMotion();
   const [email, setEmail] = useState('');
@@ -265,12 +268,20 @@ export default function AuthForm({
   }, [globalError]);
 
   useEffect(() => {
+    // A query-param prefill (e.g. from an invite link) wins over whatever was left in
+    // sessionStorage from a previous, unrelated auth attempt on this device.
+    if (defaultEmail) {
+      setEmail(defaultEmail);
+      setIsRestoring(false);
+      return;
+    }
     const stored = sessionStorage.getItem('arcade_auth_email');
     if (stored && !email) {
       setEmail(stored);
     }
     setIsRestoring(false);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultEmail]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && email) {

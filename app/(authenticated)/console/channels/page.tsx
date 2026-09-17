@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AlertTriangle, History, Tv } from 'lucide-react';
+import { AlertTriangle, History, Tv, UserPlus } from 'lucide-react';
 import { PendingChannels } from '@/apps/learner/components/channels/PendingChannels';
 import { DeletionRequests } from '@/apps/learner/components/admin/DeletionRequests';
 import { ChannelAuditLog } from '@/apps/learner/components/admin/ChannelAuditLog';
-import { channelService } from '@/domains/channels';
+import { channelService, InviteUserModal } from '@/domains/channels';
 import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
@@ -16,6 +16,7 @@ export default function AdminChannelsPage() {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<AdminTab>('CHANNELS');
   const [deletionRequestCount, setDeletionRequestCount] = useState<number | null>(null);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,38 +73,49 @@ export default function AdminChannelsPage() {
         </div>
       )}
 
-      <div className="flex-none sticky top-0 z-20 flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
-        {tabs.map((tab) => {
-          const active = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
-                active
-                  ? tab.danger
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'bg-[#14142b] text-white shadow-sm'
-                  : tab.danger
-                    ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600'
-                    : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
-              }`}
-            >
-              <tab.icon size={14} />
-              {tab.label}
-              {!!tab.badge && (
-                <span
-                  className={`ml-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                    active ? 'bg-white/20 text-white' : 'bg-rose-600 text-white'
-                  }`}
-                >
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      <div className="flex-none flex flex-wrap items-center justify-between gap-3 sm:sticky sm:top-0 sm:z-20">
+        <div className="flex flex-wrap gap-1 rounded-full border border-slate-200/80 bg-white/80 p-1 shadow-[0_4px_14px_rgba(20,20,43,0.04)] backdrop-blur-md">
+          {tabs.map((tab) => {
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all ${
+                  active
+                    ? tab.danger
+                      ? 'bg-rose-600 text-white shadow-sm'
+                      : 'bg-[#14142b] text-white shadow-sm'
+                    : tab.danger
+                      ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600'
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-[#14142b]'
+                }`}
+              >
+                <tab.icon size={14} />
+                {tab.label}
+                {!!tab.badge && (
+                  <span
+                    className={`ml-0.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                      active ? 'bg-white/20 text-white' : 'bg-rose-600 text-white'
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsInviteOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-[#14142b] px-4 py-2 text-[12px] font-semibold text-white shadow-sm transition-colors hover:bg-[#14142b]/90"
+        >
+          <UserPlus size={14} />
+          Invite User
+        </button>
       </div>
 
       <div className={activeTab === 'CHANNELS' ? 'flex-1 min-h-0 overflow-y-auto pr-2 relative' : 'hidden'}>
@@ -115,6 +127,8 @@ export default function AdminChannelsPage() {
       <div className={activeTab === 'AUDIT_LOG' ? 'flex-1 min-h-0 overflow-y-auto pr-2 relative' : 'hidden'}>
         <ChannelAuditLog />
       </div>
+
+      <InviteUserModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} />
     </div>
   );
 }
