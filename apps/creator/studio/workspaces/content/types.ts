@@ -91,8 +91,23 @@ export interface ContentDataAdapter {
   // whose lesson positions are densely renumbered on delete) simply doesn't implement them, and the
   // runtime hides the affordance rather than offering something that would fail.
   listContainerAssessments?(contentId: string): Promise<AssessmentLeaf[]>;
-  /** Creates a new exam and places it in this container, returning the placed node. */
-  addContainerAssessment?(containerId: string, title: string): Promise<AssessmentLeaf>;
+  /**
+   * Whether this content item already has the exam its assessments run on — asked *before* adding
+   * one, so the first assessment can explain the arrangement rather than silently provisioning an
+   * exam behind a menu click. Null means "not set up yet".
+   */
+  findAssessmentExam?(contentId: string): Promise<{ id: string; title: string } | null>;
+  /** Sets the content item up for assessments. Idempotent. */
+  createAssessmentExam?(contentId: string): Promise<{ id: string; title: string }>;
+  /**
+   * Adds an assessment to this container: a new plan on the content item's single exam, placed
+   * here. `contentId` is passed because the exam belongs to the content item, not the container.
+   */
+  addContainerAssessment?(
+    containerId: string,
+    title: string,
+    contentId: string
+  ): Promise<AssessmentLeaf>;
   removeContainerAssessment?(placementId: string): Promise<void>;
 
   // Exams attached to this content item. Every content type that hosts the shared content
@@ -112,11 +127,19 @@ export interface ContentDataAdapter {
 export interface AssessmentLeaf {
   /** The placement's id — what you remove. Distinct from `examId`, which is what you edit. */
   id: string;
+  /** The course's single exam content item. Every assessment in the course shares it. */
   examId: string;
+  /**
+   * The plan this assessment delivers — what actually differs between a module quiz, the course
+   * final and a certification sitting. All three are plans on the same exam and question bank.
+   */
+  planId: string | null;
   containerId: string;
   title: string;
   position: number;
   requiredForCompletion: boolean;
+  /** Serialized Tiptap document shown to candidates above the Start button; null until written. */
+  instructions?: string | null;
 }
 
 /** The minimal shape the shared runtime's sidebar needs for an attached exam. */

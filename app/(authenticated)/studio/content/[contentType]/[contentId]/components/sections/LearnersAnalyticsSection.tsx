@@ -3,7 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Users, GraduationCap, Star, Award, CheckCircle2, Radio, FileText, Search, ExternalLink, MessageSquare, BookOpen, Download, FolderArchive, Clock, Code2, Trophy, Loader2 } from "lucide-react";
-import { listExamsForCourse, listExamsForEvent, type ExamResponse } from "@/domains/assessments";
+import {
+  listAssessmentPlacementsForCourse,
+  listExamPlans,
+  listExamsForCourse,
+  listExamsForEvent,
+  type AssessmentPlacementResponse,
+  type ExamPlanResponse,
+  type ExamResponse,
+} from "@/domains/assessments";
+
+/** One assessment in the course, joined to the plan it delivers. */
+type AssessmentRow = { placement: AssessmentPlacementResponse; plan: ExamPlanResponse | null };
 import type { ContentTypeSegment } from "../../lib/contentTypeRouting";
 
 export interface LearnerRecord {
@@ -91,6 +102,48 @@ export function LearnersAnalyticsSection({
     if (!contentId || !segment) return;
     const request = segment === "event" ? listExamsForEvent(contentId) : listExamsForCourse(contentId);
     request.then(setExams).catch(() => setExams([]));
+  }, [contentId, segment]);
+
+  /**
+   * The course's assessments, joined to the plan each one delivers.
+   *
+   * A course has one exam content item; each assessment is a plan on it. Listing exams here would
+   * therefore show a single row saying nothing useful, and the exam's own legacy `questionCount`
+   * field is a pre-plans leftover that reads 25 for everything. The real per-assessment facts —
+   * paper size, duration, attempts, pass mark, outcome — all live on the plan.
+   */
+  const [assessments, setAssessments] = useState<AssessmentRow[] | null>(null);
+  useEffect(() => {
+    if (!contentId || segment !== "course") {
+      setAssessments(segment === "course" ? null : []);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const placements = await listAssessmentPlacementsForCourse(contentId);
+        if (placements.length === 0) {
+          if (!cancelled) setAssessments([]);
+          return;
+        }
+        // Every placement shares the course's one exam, so a single plan fetch covers them all.
+        const plans = await listExamPlans(placements[0].examId).catch(() => []);
+        const planById = new Map(plans.map((p) => [p.id, p]));
+        if (!cancelled) {
+          setAssessments(
+            placements
+              .slice()
+              .sort((a, b) => a.position - b.position)
+              .map((p) => ({ placement: p, plan: p.planId ? planById.get(p.planId) ?? null : null }))
+          );
+        }
+      } catch {
+        if (!cancelled) setAssessments([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [contentId, segment]);
 
   // Dynamic real-time heartbeat ticker for live active learners
@@ -260,17 +313,66 @@ export function LearnersAnalyticsSection({
               <FileText size={18} className="text-indigo-600" />
               Assessments & Exams
             </h3>
-            {exams === null ? (
+            {segment === "course" && (
+              <p className="-mt-1 text-[11px] font-medium leading-relaxed text-slate-500">
+                Every assessment in this course runs on one exam and one question bank. What makes
+                them differ is the plan each delivers — its question selection, timing, attempts,
+                pass mark and outcome.
+              </p>
+            )}
+
+            {assessments === null && exams === null ? (
               <div className="flex items-center justify-center py-10 text-slate-400">
                 <Loader2 size={18} className="animate-spin" />
               </div>
-            ) : exams.length === 0 ? (
+            ) : (assessments?.length ?? 0) === 0 && (exams?.length ?? 0) === 0 ? (
               <p className="rounded-2xl border border-dashed border-indigo-200 bg-white px-4 py-8 text-center text-xs font-semibold text-slate-500">
-                No assessments attached yet. Add one from the content editor.
+                No assessments yet. Add one from the content editor — &ldquo;Add assessment&rdquo;
+                inside any module.
               </p>
-            ) : (
+            ) : (assessments?.length ?? 0) > 0 ? (
               <div className="flex flex-col gap-2">
-                {exams.map((exam) => (
+                {assessments!.map(({ placement, plan }) => (
+                  <Link
+                    key={placement.id}
+                    href={`/studio/content/exam/${placement.examId}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-200/70 bg-white px-4 py-3 transition-colors hover:bg-indigo-50/50"
+                  >
+                    <div className="min-w-0">
+                      <span className="block truncate text-xs font-black text-slate-900">
+                        {placement.titleOverride ?? plan?.name ?? "Assessment"}
+                      </span>
+                      <span className="text-[11px] font-medium text-slate-400">
+                        {placement.hostType === "COURSE_MODULE" ? "In a module" : "Course level"}
+                        {plan
+                          ? ` · ${plan.totalQuestions} question${plan.totalQuestions === 1 ? "" : "s"} · ${plan.durationMinutes} min · pass ${plan.passPercentage}%`
+                          : " · uses the default plan"}
+                      </span>
+                    </div>
+                    <div className="flex flex-shrink-0 items-center gap-1.5">
+                      {placement.requiredForCompletion && (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-amber-700">
+                          Required
+                        </span>
+                      )}
+                      {plan && plan.outcome !== "NONE" && (
+                        <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-700">
+                          {plan.outcome === "CERTIFICATE"
+                            ? "Certification"
+                            : plan.outcome === "GRADE_CARD"
+                              ? "Grade card"
+                              : "Completion"}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              // Events still list exams directly — assessments inside event days aren't supported
+              // yet, so there is no placement list to show there.
+              <div className="flex flex-col gap-2">
+                {exams!.map((exam) => (
                   <Link
                     key={exam.id}
                     href={`/studio/content/exam/${exam.id}`}
@@ -279,8 +381,7 @@ export function LearnersAnalyticsSection({
                     <div className="min-w-0">
                       <span className="block truncate text-xs font-black text-slate-900">{exam.title}</span>
                       <span className="text-[11px] font-medium text-slate-400">
-                        {exam.purpose ?? "Assessment"} · {exam.questionCount} question
-                        {exam.questionCount === 1 ? "" : "s"}
+                        {exam.purpose ?? "Assessment"}
                       </span>
                     </div>
                     <span className="flex-shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">

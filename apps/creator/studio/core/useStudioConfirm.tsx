@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 
@@ -20,6 +20,12 @@ export interface StudioConfirmOptions {
   message: string;
   confirmLabel: string;
   danger?: boolean;
+  /**
+   * Overrides the default warning triangle. Not every confirmation is a warning — some explain a
+   * one-time setup step the author is about to take — and a hazard icon on those reads as a
+   * problem where there isn't one.
+   */
+  icon?: ReactNode;
   onConfirm: () => void | Promise<void>;
 }
 
@@ -44,7 +50,7 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
   const [busy, setBusy] = useState(false);
 
   if (!options || typeof document === "undefined") return null;
-  const { title, message, confirmLabel, danger } = options;
+  const { title, message, confirmLabel, danger, icon } = options;
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -52,7 +58,7 @@ function StudioConfirmDialog({ options, onClose }: { options: StudioConfirmOptio
       <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
         <div className="flex gap-3">
           <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${danger ? "bg-rose-50" : "bg-slate-100"}`}>
-            <AlertTriangle size={20} className={danger ? "text-rose-500" : "text-[#14142b]"} />
+            {icon ?? <AlertTriangle size={20} className={danger ? "text-rose-500" : "text-[#14142b]"} />}
           </div>
           <div className="flex-1 pt-0.5">
             <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">{title}</h3>

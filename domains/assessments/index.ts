@@ -100,6 +100,8 @@ export {
   updateAssessmentPlacement,
   removeAssessmentPlacement,
   getAssessmentLanding,
+  getCourseExam,
+  createCourseExam,
   startProctorSession,
   verifyProctorIdentity,
   recordProctorEvent,

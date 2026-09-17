@@ -82,6 +82,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import type { AssessmentLeaf, ContentDataAdapter, ExamSummary } from "./types";
+import { AssessmentSettingsPanel } from "./assessment/AssessmentSettingsPanel";
 
 /**
  * The lesson/module/badge editing engine Course and Event share: tree state and CRUD, Y.Doc
@@ -353,6 +354,11 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
     : { status: metadataCollabStatus, collaborators: metadataCollaborators };
   const [activeLessonTitle, setActiveLessonTitle] = useState(adapter.terminology.leafDocument);
   const [activeBadgeId, setActiveBadgeId] = useState<string | null>(null);
+  /**
+   * The assessment open in the canvas. Held as the whole node rather than an id because its
+   * settings page edits the placement itself, not a document fetched by id.
+   */
+  const [activeAssessment, setActiveAssessment] = useState<AssessmentLeaf | null>(null);
   const badgeEditor = useBadgeEditor(activeBadgeId, status === "SUBMITTED");
   const [activeSeedContent, setActiveSeedContent] = useState<TiptapDocument | undefined>(undefined);
 
@@ -493,6 +499,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       setActiveLessonTitle(lesson.title);
       setActiveLessonId(lesson.id);
       setActiveBadgeId(null);
+      setActiveAssessment(null);
     },
     [adapter, resolveLegacyContent, panel.tab]
   );
@@ -502,8 +509,26 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
       panel.setOpen((prev) => (panel.tab === "history" ? false : prev));
       setActiveYDoc(null);
       setActiveLessonId(null);
+      setActiveAssessment(null);
       setActiveLessonTitle(badge.title);
       setActiveBadgeId(badge.id);
+    },
+    [panel.tab]
+  );
+
+  /**
+   * Opens an assessment's settings page in the canvas — the same gesture as opening a lesson.
+   * Selecting one used to navigate straight to the Exam workspace, which threw the author out of
+   * the course they were building to edit something they hadn't asked to edit.
+   */
+  const openAssessment = useCallback(
+    (assessment: AssessmentLeaf) => {
+      panel.setOpen((prev) => (panel.tab === "history" ? false : prev));
+      setActiveYDoc(null);
+      setActiveLessonId(null);
+      setActiveBadgeId(null);
+      setActiveLessonTitle(assessment.title);
+      setActiveAssessment(assessment);
     },
     [panel.tab]
   );
@@ -736,25 +761,72 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
    * the exam and places it here in one step so the author gets something real immediately, rather
    * than an empty shell they have to go and configure elsewhere before it does anything.
    */
-  const addAssessment = useCallback(
+  const placeAssessmentIn = useCallback(
     async (moduleId: string) => {
       if (!contentId || !adapter.addContainerAssessment) return;
       try {
         const mod = modules.find((m) => m.id === moduleId);
         const nextIndex = (mod?.assessments.length ?? 0) + 1;
-        const placed = await adapter.addContainerAssessment(moduleId, `Assessment ${nextIndex}`);
+        const placed = await adapter.addContainerAssessment(
+          moduleId,
+          `Assessment ${nextIndex}`,
+          contentId
+        );
         setModules((prev) =>
           prev.map((m) =>
             m.id === moduleId ? { ...m, expanded: true, assessments: [...m.assessments, placed] } : m
           )
         );
         setActiveModuleId(moduleId);
+        // Opens its settings page immediately, the same way adding a lesson opens the lesson —
+        // a new assessment needs instructions written before it's worth anything to a candidate.
+        openAssessment(placed);
         setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to add assessment", e);
       }
     },
-    [contentId, modules, adapter]
+    [contentId, modules, adapter, openAssessment]
+  );
+
+  /**
+   * Adding an assessment needs somewhere for its questions to live. Every assessment in this
+   * content item runs on one exam and one question bank — plans are what make them differ — so the
+   * first one has to set that up. Rather than provisioning it invisibly behind a menu click, the
+   * first assessment explains the arrangement and asks; after that, adding is immediate.
+   */
+  const addAssessment = useCallback(
+    async (moduleId: string) => {
+      if (!contentId || !adapter.addContainerAssessment) return;
+      try {
+        const existingExam = adapter.findAssessmentExam
+          ? await adapter.findAssessmentExam(contentId)
+          : null;
+        if (existingExam) {
+          await placeAssessmentIn(moduleId);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to check for an assessment exam", e);
+        return;
+      }
+
+      confirm({
+        title: `Set up assessments for this ${adapter.terminology.root.toLowerCase()}`,
+        message:
+          `Assessments here all run on one exam and share a single question bank — what makes each ` +
+          `one different is its own plan: which questions it draws, how long candidates get, how ` +
+          `many attempts, the pass mark, and what passing produces. This ${adapter.terminology.root.toLowerCase()} ` +
+          `doesn't have that exam yet, so adding your first assessment will create it.`,
+        confirmLabel: "Create and add",
+        icon: <GraduationCap size={20} className="text-[#14142b]" />,
+        onConfirm: async () => {
+          await adapter.createAssessmentExam?.(contentId);
+          await placeAssessmentIn(moduleId);
+        },
+      });
+    },
+    [contentId, adapter, placeAssessmentIn, confirm]
   );
 
   const removeAssessment = useCallback(
@@ -765,6 +837,8 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
         setModules((prev) =>
           prev.map((m) => ({ ...m, assessments: m.assessments.filter((a) => a.id !== placementId) }))
         );
+        // Don't leave the canvas showing a page for something that no longer exists.
+        setActiveAssessment((prev) => (prev?.id === placementId ? null : prev));
         setHasDraftChanges(true);
       } catch (e) {
         console.error("Failed to remove assessment", e);
@@ -1149,7 +1223,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
       <StudioEditorBody
         sidebarTitle={`${adapter.terminology.root} structure`}
-        toolbarClearance={Boolean(activeLessonId || activeBadgeId)}
+        toolbarClearance={Boolean(activeLessonId || activeBadgeId || activeAssessment)}
         sidebarTree={
           <>
             {modules.length === 0 && badges.length === 0 && (
@@ -1284,14 +1358,24 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
                         .map((assessment) => (
                           <div
                             key={assessment.id}
-                            className="group flex items-center gap-2 rounded-full px-3 transition-all hover:bg-white/40"
+                            className={`group flex items-center gap-2 rounded-full px-3 transition-all ${
+                              activeAssessment?.id === assessment.id
+                                ? "bg-[#14142b] shadow-md"
+                                : "hover:bg-white/40"
+                            }`}
                           >
                             <div className="w-[13px] flex-shrink-0" aria-hidden />
                             <button
                               type="button"
-                              onClick={() => router.push(`/studio/exam/${assessment.examId}/edit`)}
-                              className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs text-slate-500"
-                              title="Edit this assessment's questions"
+                              onClick={() => {
+                                setActiveModuleId(mod.id);
+                                openAssessment(assessment);
+                              }}
+                              className={`flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-xs ${
+                                activeAssessment?.id === assessment.id
+                                  ? "font-semibold text-white"
+                                  : "text-slate-500"
+                              }`}
                             >
                               <GraduationCap size={11} className="flex-shrink-0" />
                               <span className="truncate">{assessment.title}</span>
@@ -1478,7 +1562,31 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
             </div>
           </div>
         )}
-        {activeBadgeId ? (
+        {activeAssessment ? (
+          <div className={CANVAS_WRAPPER_CLASS}>
+            <div className={CANVAS_CARD_CLASS}>
+              <AssessmentSettingsPanel
+                key={activeAssessment.id}
+                assessment={activeAssessment}
+                readOnly={status === "SUBMITTED"}
+                onEditExam={(examId) => router.push(`/studio/exam/${examId}/edit`)}
+                onChange={(patch) => {
+                  setActiveAssessment((prev) => (prev ? { ...prev, ...patch } : prev));
+                  setModules((prev) =>
+                    prev.map((m) => ({
+                      ...m,
+                      assessments: m.assessments.map((a) =>
+                        a.id === activeAssessment.id ? { ...a, ...patch } : a
+                      ),
+                    }))
+                  );
+                  if (patch.title) setActiveLessonTitle(patch.title);
+                  setHasDraftChanges(true);
+                }}
+              />
+            </div>
+          </div>
+        ) : activeBadgeId ? (
           <div className="flex h-full w-full max-w-[1400px] flex-1 min-h-0 transition-all duration-300">
             <BadgeEditorWorkspace key={activeBadgeId} editor={badgeEditor} />
           </div>

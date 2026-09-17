@@ -505,3 +505,22 @@ export function getAssessmentLanding(
     `/api/assessments/landing/${examId}${query ? `?${query}` : ""}`
   );
 }
+
+/**
+ * The single exam content item backing a course's assessments, created on first use.
+ *
+ * A course has one exam, not one per assessment: the exam owns the question bank, and each
+ * assessment is a plan on it. See ExamPlan's own contract — one exam carries many plans, each with
+ * its own selection, timing, attempts, scoring, security and outcome, all drawing on the same
+ * questions.
+ */
+export function getCourseExam(courseId: string) {
+  // 204 when the course has no exam yet — a normal state, not an error, so the caller can offer to
+  // set one up rather than creating it as a side effect of asking.
+  return api.get<ExamResponse | null>(`/api/courses/${courseId}/exams/primary`);
+}
+
+/** Creates the course's exam. Idempotent — returns the existing one if there already is one. */
+export function createCourseExam(courseId: string) {
+  return api.post<ExamResponse>(`/api/courses/${courseId}/exams/primary`, {});
+}

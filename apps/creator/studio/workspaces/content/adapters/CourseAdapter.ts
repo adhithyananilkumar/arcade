@@ -12,6 +12,9 @@ import {
 import type { CourseResponse, ModuleResponse, LessonResponse, QuizResponse, BadgeSummaryResponse } from "@/shared/types/api.types";
 import {
   createExam,
+  createExamPlan,
+  getCourseExam,
+  createCourseExam,
   detachExamFromCourse,
   listExamsForCourse,
   listAssessmentPlacementsForCourse,
@@ -193,31 +196,60 @@ export class CourseAdapter implements ContentDataAdapter {
         id: p.id,
         examId: p.examId,
         containerId: p.hostId,
+        planId: p.planId,
         title: p.titleOverride ?? "Assessment",
         position: p.position,
         requiredForCompletion: p.requiredForCompletion,
+        instructions: p.instructions,
       }));
   }
 
-  async addContainerAssessment(containerId: string, title: string): Promise<AssessmentLeaf> {
-    // Created without a courseId so it isn't also root-attached: placement is what locates it, and
-    // creating it here would otherwise put the same exam in two places at once.
-    const exam = await createExam({ title });
+  /**
+   * A course has one exam content item, and each assessment is a *plan* on it — not an exam of its
+   * own. The exam owns the question bank; a plan owns how one sitting runs (its question selection,
+   * timing, attempt allowance, pass mark, security and outcome). That is exactly the split plans
+   * exist for, and it is what lets a module quiz, the course final and a certification sitting all
+   * draw on the same bank while behaving completely differently.
+   *
+   * So placing an assessment is three steps: get (or create) the course's exam, add a plan named
+   * after this assessment, and place that (exam, plan) pair on the module.
+   */
+  async findAssessmentExam(contentId: string): Promise<{ id: string; title: string } | null> {
+    const exam = await getCourseExam(contentId);
+    return exam ? { id: exam.id, title: exam.title } : null;
+  }
+
+  async createAssessmentExam(contentId: string): Promise<{ id: string; title: string }> {
+    const exam = await createCourseExam(contentId);
+    return { id: exam.id, title: exam.title };
+  }
+
+  async addContainerAssessment(
+    containerId: string,
+    title: string,
+    contentId: string
+  ): Promise<AssessmentLeaf> {
+    // Created by now: the runtime sets the course up before it gets here the first time.
+    const exam = await createCourseExam(contentId);
+    const plan = await createExamPlan(exam.id, { name: title });
     const placement = await placeAssessment({
       examId: exam.id,
       hostType: "COURSE_MODULE",
       hostId: containerId,
+      planId: plan.id,
     });
-    // The placement's own title is what the tree shows, so it survives the exam being renamed
-    // elsewhere or reused in another course under a different name.
+    // The placement carries its own title so the tree keeps reading correctly even if the plan is
+    // renamed from the Exam workspace later.
     await updateAssessmentPlacement(placement.id, { titleOverride: title });
     return {
       id: placement.id,
       examId: exam.id,
+      planId: plan.id,
       containerId,
       title,
       position: placement.position,
       requiredForCompletion: placement.requiredForCompletion,
+      instructions: placement.instructions,
     };
   }
 
