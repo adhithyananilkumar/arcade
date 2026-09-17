@@ -42,6 +42,15 @@ function ShellOuter({ children }: { children: React.ReactNode }) {
   const isProfile = !!params?.username;
   const isExplore = pathname === "/explore";
   const isCreators = pathname === "/creators";
+  const isAuth =
+    pathname?.startsWith("/sign") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/verify-email");
+
+  if (isAuth) {
+    return <>{children}</>;
+  }
 
   return (
     <>
@@ -74,6 +83,15 @@ export default function PublicShell({
 }) {
   const pathname = usePathname();
   const isLanding = pathname === "/";
+  const isAuth =
+    pathname?.startsWith("/sign") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/verify-email");
+
+  if (isAuth) {
+    return <>{children}</>;
+  }
 
   if (isLanding) {
     return (

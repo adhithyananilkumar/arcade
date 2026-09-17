@@ -61,7 +61,7 @@ function OverviewSkeleton() {
       className="min-h-screen w-full relative"
       style={{ background: "linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)" }}
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-24 pb-28 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-24 pb-28 sm:px-6 sm:pt-28 lg:pt-32">
         <Skeleton className="h-4 w-32 rounded-full" />
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-64 rounded-xl" />
@@ -91,6 +91,7 @@ export default function ContentOverviewPage() {
 
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [activeTab, setActiveTab] = useState<OverviewTab>("OVERVIEW");
+  const [activeSubTab, setActiveSubTab] = useState<"overview" | "learners" | "exams" | "feedback" | "certificates" | "curriculum">("overview");
   const [submitting, setSubmitting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -212,12 +213,14 @@ export default function ContentOverviewPage() {
         : [];
 
   return (
-    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/40">
-      {/* Decorative ambient light glows */}
-      <div className="absolute top-10 left-1/4 h-96 w-96 rounded-full bg-blue-400/15 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-1/4 h-96 w-96 rounded-full bg-indigo-400/15 blur-3xl pointer-events-none" />
+    <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden w-full bg-gradient-to-b from-amber-50/60 via-yellow-50/30 to-slate-100/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+      {/* Rich ambient shading and atmospheric glow across the canvas */}
+      <div className="absolute -top-40 -left-40 h-[750px] w-[750px] rounded-full bg-gradient-to-br from-amber-300/30 via-yellow-200/25 to-transparent dark:from-amber-900/30 dark:via-yellow-950/20 dark:to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-10 -right-40 h-[800px] w-[800px] rounded-full bg-gradient-to-bl from-orange-300/25 via-amber-200/20 to-transparent dark:from-orange-950/30 dark:via-amber-950/20 dark:to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -left-32 h-[700px] w-[700px] rounded-full bg-gradient-to-tr from-yellow-300/20 via-amber-200/15 to-transparent dark:from-yellow-950/20 dark:via-amber-950/15 dark:to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 right-10 h-[750px] w-[750px] rounded-full bg-gradient-to-tl from-amber-300/25 via-yellow-200/20 to-transparent dark:from-amber-950/25 dark:via-yellow-950/15 dark:to-transparent blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pt-10 pb-28 sm:px-6 sm:pt-12 lg:pt-14">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 pt-14 pb-28 sm:px-6 sm:pt-16 lg:pt-20">
         <ContentOverviewHeader
           segment={segment!}
           contentId={contentId}
@@ -229,7 +232,7 @@ export default function ContentOverviewPage() {
           createdAt={content.createdAt}
           updatedAt={content.updatedAt}
           review={review}
-          showMetadataRail={activeTab === "OVERVIEW"}
+          showMetadataRail={activeTab === "OVERVIEW" && activeSubTab === "overview"}
           showStatusSubtext={activeTab === "publishing"}
           onJumpToPublishing={() => setActiveTab("publishing")}
         />
@@ -240,10 +243,22 @@ export default function ContentOverviewPage() {
               <ReadinessCard readiness={data.eventReadiness.data} continueHref={editorHref("event", contentId)} />
             )}
 
-            <LearnersAnalyticsSection />
+            <LearnersAnalyticsSection
+              segment={segment!}
+              contentId={contentId}
+              courseTitle={content.title}
+              activeSubTab={activeSubTab}
+              onSubTabChange={setActiveSubTab}
+            />
           </div>
         ) : activeTab === "analytics" ? (
-          <LearnersAnalyticsSection />
+          <LearnersAnalyticsSection
+            segment={segment!}
+            contentId={contentId}
+            courseTitle={content.title}
+            activeSubTab={activeSubTab}
+            onSubTabChange={setActiveSubTab}
+          />
         ) : segment === "course" ? (
           <CourseOverviewTab
             tab={activeTab}
@@ -276,7 +291,13 @@ export default function ContentOverviewPage() {
           />
         )}
 
-        <ContentWorkspaceDock groups={groups} activeTab={activeTab} onChange={setActiveTab} />
+        <ContentWorkspaceDock
+          groups={groups}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          activeSubTab={activeSubTab}
+          onSubTabChange={setActiveSubTab}
+        />
       </div>
     </div>
   );

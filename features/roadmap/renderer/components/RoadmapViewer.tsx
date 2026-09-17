@@ -1255,10 +1255,10 @@ export default async function BlogPost({ params }: { params: { slug: string } })
       </div>
 
       {/* Main Canvas Container */}
-      <div className="w-full h-full flex flex-col pt-20 overflow-y-auto">
+      <div className="w-full h-full flex flex-col pt-10 overflow-y-auto">
 
         {/* PAGE HERO SECTION (COMPACT TOP OFFSET) */}
-        <div className="w-full max-w-7xl mx-auto px-6 pt-2 pb-1 pointer-events-auto flex flex-col items-center justify-center gap-1.5 text-center select-none z-20 relative">
+        <div className="w-full max-w-7xl mx-auto px-6 pt-0 pb-1 pointer-events-auto flex flex-col items-center justify-center gap-1 text-center select-none z-20 relative">
           {/* Cursive Title with Underline */}
           <div className="relative flex flex-col items-center justify-center">
             <h1
@@ -1270,7 +1270,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
             </h1>
 
             {/* Blue Curved Underline Stroke */}
-            <svg className="w-48 sm:w-56 h-3 text-[#2563eb] mt-1" viewBox="0 0 200 12" fill="none">
+            <svg className="w-48 sm:w-56 h-3 text-[#2563eb] mt-0.5" viewBox="0 0 200 12" fill="none">
               <path
                 d="M 5 6 C 60 11, 140 11, 195 4"
                 stroke="#2563eb"
@@ -1279,32 +1279,10 @@ export default async function BlogPost({ params }: { params: { slug: string } })
               />
             </svg>
           </div>
-          {/* Subtitle Metadata Row: Unique Glassmorphic Badges with Live Progress */}
-          <div className="flex items-center gap-2 text-[10px] font-black tracking-wider uppercase mt-0.5 flex-wrap justify-center">
-            <span className="bg-blue-50/90 text-blue-700 border border-blue-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-              {roadmapSteps.length} TOPICS
-            </span>
-            <span className="text-slate-300">•</span>
-            <span className="bg-emerald-50/90 text-emerald-700 border border-emerald-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
-              <FileText className="w-3 h-3 text-emerald-600" />
-              BEGINNER
-            </span>
-            <span className="text-slate-300">•</span>
-            <div className="bg-purple-50/90 text-purple-700 border border-purple-200/70 px-3 py-0.5 rounded-full shadow-2xs flex items-center gap-2">
-              <Clock className="w-3 h-3 text-purple-600" />
-              <span>{Math.round(completionPercentage)}% COMPLETE</span>
-              <div className="w-12 h-1.5 bg-purple-200/80 rounded-full overflow-hidden">
-                <div
-                  style={{ width: `${completionPercentage}%` }}
-                  className="h-full bg-purple-600 rounded-full transition-all duration-300"
-                />
-              </div>
-            </div>
-          </div>
+
 
           {/* Mode Switcher Controller Tabs */}
-          <div className="bg-white border border-slate-200/80 p-1.5 rounded-full flex items-center gap-2 shadow-2xs mt-2">
+          <div className="bg-white border border-slate-200/80 p-1.5 rounded-full flex items-center gap-2 shadow-2xs mt-1">
             {[
               { id: 'roadmap' as const, label: 'Roadmap', icon: BookOpen },
               { id: 'projects' as const, label: 'Projects', icon: Trophy },
@@ -1942,77 +1920,81 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                   transition={{ duration: 0.25 }}
                   className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-24 pointer-events-auto flex flex-col gap-6 select-none h-full overflow-y-auto"
                 >
-                  {/* Filter Toolbar (Colorful Vibrant Pill Capsules) */}
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    {/* Difficulty Filter Pills */}
-                    <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 p-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
+                  {/* Innovative Developer HUD Keycap Filter Toolbar */}
+                  <div className="flex flex-wrap items-center justify-between gap-4 w-full py-1">
+                    {/* Tactile Keycap Chip Switchers with Live Tier Accents */}
+                    <div className="flex flex-wrap items-center gap-2">
                       {[
                         {
                           id: 'all' as const,
                           label: 'All Levels',
-                          count: projectsData.length,
-                          activeClass: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25',
-                          inactiveClass: 'text-slate-600 hover:text-blue-600 hover:bg-blue-50/70',
+                          keyNum: '1',
+                          activeClass: 'bg-slate-900 text-white border-slate-900 shadow-md shadow-slate-900/20',
                           badgeActive: 'bg-white/20 text-white',
-                          badgeInactive: 'bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700',
+                          ledColor: 'bg-blue-400 shadow-[0_0_8px_#60a5fa]',
                         },
                         {
                           id: 'beginner' as const,
                           label: 'Beginner',
-                          count: projectsData.filter(p => p.difficulty === 'beginner').length,
-                          activeClass: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/25',
-                          inactiveClass: 'text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50/70',
-                          badgeActive: 'bg-white/20 text-white',
-                          badgeInactive: 'bg-emerald-100 text-emerald-800',
+                          keyNum: '2',
+                          activeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-400/20 shadow-sm shadow-emerald-500/15',
+                          badgeActive: 'bg-emerald-200/80 text-emerald-900',
+                          ledColor: 'bg-emerald-500 shadow-[0_0_8px_#10b981]',
                         },
                         {
                           id: 'intermediate' as const,
                           label: 'Intermediate',
-                          count: projectsData.filter(p => p.difficulty === 'intermediate').length,
-                          activeClass: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25',
-                          inactiveClass: 'text-amber-700 hover:text-amber-800 hover:bg-amber-50/70',
-                          badgeActive: 'bg-white/20 text-white',
-                          badgeInactive: 'bg-amber-100 text-amber-800',
+                          keyNum: '3',
+                          activeClass: 'bg-amber-50 text-amber-800 border-amber-300 ring-2 ring-amber-400/20 shadow-sm shadow-amber-500/15',
+                          badgeActive: 'bg-amber-200/80 text-amber-900',
+                          ledColor: 'bg-amber-500 shadow-[0_0_8px_#f59e0b]',
                         },
                         {
                           id: 'advanced' as const,
                           label: 'Advanced',
-                          count: projectsData.filter(p => p.difficulty === 'advanced').length,
-                          activeClass: 'bg-gradient-to-r from-purple-600 to-rose-600 text-white shadow-md shadow-purple-500/25',
-                          inactiveClass: 'text-purple-700 hover:text-purple-800 hover:bg-purple-50/70',
-                          badgeActive: 'bg-white/20 text-white',
-                          badgeInactive: 'bg-purple-100 text-purple-800',
+                          keyNum: '4',
+                          activeClass: 'bg-purple-50 text-purple-800 border-purple-300 ring-2 ring-purple-400/20 shadow-sm shadow-purple-500/15',
+                          badgeActive: 'bg-purple-200/80 text-purple-900',
+                          ledColor: 'bg-purple-500 shadow-[0_0_8px_#a855f7]',
                         },
                       ].map((filter) => {
                         const isActive = projectFilter === filter.id;
                         return (
-                          <button
+                          <motion.button
                             key={filter.id}
                             onClick={() => setProjectFilter(filter.id)}
-                            className={`group px-3.5 py-1.5 rounded-full text-xs font-black capitalize transition-all cursor-pointer flex items-center gap-1.5 ${
-                              isActive ? filter.activeClass : filter.inactiveClass
+                            whileHover={{ y: -1 }}
+                            whileTap={{ scale: 0.97 }}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2 select-none ${
+                              isActive
+                                ? filter.activeClass
+                                : 'bg-white/80 hover:bg-white text-slate-500 hover:text-slate-800 border-slate-200/90 shadow-2xs'
                             }`}
                           >
                             <span>{filter.label}</span>
-                            <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full transition-colors ${
-                              isActive ? filter.badgeActive : filter.badgeInactive
-                            }`}>
-                              {filter.count}
+
+                            {/* Hotkey Tag */}
+                            <span
+                              className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-md transition-colors ${
+                                isActive ? filter.badgeActive : 'bg-slate-100 text-slate-400'
+                              }`}
+                            >
+                              {filter.keyNum}
                             </span>
-                          </button>
+                          </motion.button>
                         );
                       })}
                     </div>
 
-                    {/* Project Count Badge */}
-                    <div className="bg-white border border-slate-200/80 px-3.5 py-1.5 rounded-full text-xs font-black text-slate-600 shadow-2xs flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{filteredProjects.length} Projects Available</span>
+                    {/* Right-aligned Projects Count HUD Pill */}
+                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md border border-slate-200/90 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 shadow-2xs">
+                      <span className="font-extrabold text-slate-900">{filteredProjects.length}</span>
+                      <span>Projects Available</span>
                     </div>
                   </div>
 
-                  {/* Soft Pastel Light Color Theme Projects Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 w-full text-left">
+                  {/* Projects Grid with Spacious Gap */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-7 lg:gap-8 w-full text-left pt-2">
                     {filteredProjects.map((p) => {
                       const fullProjectDetail: RoadmapProjectDetail = {
                         id: p.id,
@@ -2041,6 +2023,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                       return (
                         <div
                           key={p.id}
+                          className="h-full flex flex-col"
                           onClick={() => setActiveProjectDetail(fullProjectDetail)}
                         >
                           <ColorThemeProjectCard
@@ -2053,6 +2036,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                             timeAgo={p.timeAgo}
                             colorTheme={p.colorTheme as CardColorTheme}
                             icon={p.icon}
+                            techStack={p.techStack}
+                            taskCount={p.tasks.length}
                             onJoin={() => setActiveProjectDetail(fullProjectDetail)}
                             onShare={() => setActiveProjectDetail(fullProjectDetail)}
                           />

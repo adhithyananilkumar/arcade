@@ -12,11 +12,6 @@ import {
   Archive,
   Trash2,
   Send,
-  FileText,
-  Radio,
-  Tv,
-  BookOpen,
-  CheckCircle2,
 } from "lucide-react";
 import type { ContentTypeSegment } from "../lib/contentTypeRouting";
 import { CONTENT_TYPE_LABEL, editorHref, previewHref } from "../lib/contentTypeRouting";
@@ -39,14 +34,6 @@ function formatDateLine(value?: string | null) {
   return `${dateStr}, ${timeStr}`;
 }
 
-function formatDateParts(value?: string | null) {
-  if (!value) return { dateStr: "—", timeStr: "" };
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return { dateStr: "—", timeStr: "" };
-  const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
-  return { dateStr, timeStr };
-}
 
 type ActionBtnVariant = "primary" | "secondary";
 
@@ -66,13 +53,13 @@ function ActionButton({
   const cls =
     variant === "primary"
       ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xs active:scale-[0.98]"
-      : "border border-slate-200 bg-white text-[#14142b] hover:bg-slate-50 hover:border-slate-300 shadow-2xs active:scale-[0.98]";
+      : "border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-800 dark:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-700 shadow-xs active:scale-[0.98]";
   const content = (
     <>
-      {Icon && <Icon size={15} />} <span>{label}</span>
+      {Icon && <Icon size={14} />} <span>{label}</span>
     </>
   );
-  const className = `inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-extrabold transition-all duration-200 cursor-pointer ${cls}`;
+  const className = `inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${cls}`;
   if (href) {
     return (
       <Link href={href} className={className}>
@@ -122,13 +109,12 @@ export function ContentOverviewHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"delete" | "archive" | null>(null);
   const [busy, setBusy] = useState(false);
-
   const [liveCount, setLiveCount] = useState(14);
 
   // Dynamic real-time heartbeat ticker for live active learners
   useEffect(() => {
     const interval = setInterval(() => {
-      const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
+      const delta = Math.floor(Math.random() * 3) - 1;
       setLiveCount((prev) => Math.min(22, Math.max(11, prev + delta)));
     }, 3200);
     return () => clearInterval(interval);
@@ -202,60 +188,98 @@ export function ContentOverviewHeader({
     primaryActions.push({ key: "submit", label: "Submit for Review", icon: Send, onClick: handleSubmit, variant: "secondary" });
   }
 
-  const createdParts = formatDateParts(createdAt);
-  const updatedParts = formatDateParts(updatedAt);
-
   return (
-    <div className="flex flex-col items-center justify-center py-4 w-full">
-      {/* Main Centered Content Title & Metadata */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 max-w-4xl mx-auto">
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Satisfy&family=Alex+Brush&display=swap');`}</style>
+    <div className="flex flex-col gap-4 pb-2 w-full">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Caveat:wght@700&display=swap');
+      `}</style>
 
-        <h1
-          className="text-4xl font-bold tracking-wide bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 bg-clip-text text-transparent sm:text-5xl lg:text-6xl py-1 leading-snug text-center"
-          style={{
-            fontFamily: "'Dancing Script', 'Satisfy', 'Great Vibes', 'Alex Brush', cursive",
-          }}
-        >
-          {title}
-        </h1>
-        <p className="text-xs font-medium text-slate-500 text-center">
-          Created {formatDateLine(createdAt)} &nbsp;·&nbsp; Last edited {formatDateLine(updatedAt)}
-        </p>
+      {/* Main Header Row - Centered */}
+      <div className="flex flex-col items-center justify-center text-center gap-3.5 w-full">
+        {/* Title & Metadata */}
+        <div className="flex flex-col items-center text-center gap-2 max-w-3xl">
+          <div className="relative inline-block pb-3 pt-1 text-center">
+            <h1
+              className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0F172A] dark:text-neutral-100 tracking-tight block text-center"
+              style={{ fontFamily: "'Dancing Script', 'Caveat', cursive" }}
+            >
+              {title}
+            </h1>
 
-        {/* Combined Row: Channel Name, Content Type, and Published Status */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-black uppercase tracking-wider py-1">
-          <span className="inline-flex items-center gap-1.5 text-indigo-700">
-            <Tv size={13} className="text-indigo-600" />
-            {channelName || "Personal Channel"}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 text-blue-700">
-            <BookOpen size={13} className="text-blue-600" />
-            {CONTENT_TYPE_LABEL[segment]}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className="inline-flex items-center gap-1.5 font-black uppercase tracking-widest text-emerald-600">
-            <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              {status ? status.toLowerCase() : "published"}
+            {/* Curved Arcade Logo Gradient Brush Underline */}
+            <svg
+              className="absolute left-0 bottom-0 w-full h-3.5 pointer-events-none"
+              viewBox="0 0 300 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="course-header-line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#2962D6" />
+                  <stop offset="45%" stopColor="#2C83F5" />
+                  <stop offset="100%" stopColor="#27C5D8" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M5 12C60 16 180 17 295 8"
+                stroke="url(#course-header-line-gradient)"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          {/* Clean, Authentic Metadata Row */}
+          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-neutral-400 font-normal pt-0.5">
+            {/* Status */}
+            <span className="font-medium text-slate-800 dark:text-neutral-200">
+              {status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : "Published"}
             </span>
-          </span>
+
+            <span className="text-slate-300 dark:text-neutral-700 select-none">·</span>
+
+            {/* Content Type */}
+            <span className="text-slate-600 dark:text-neutral-300">
+              {CONTENT_TYPE_LABEL[segment]}
+            </span>
+
+            <span className="text-slate-300 dark:text-neutral-700 select-none">·</span>
+
+            {/* Channel */}
+            <span className="text-slate-600 dark:text-neutral-300">
+              {channelName || "Personal Channel"}
+            </span>
+
+            <span className="text-slate-300 dark:text-neutral-700 select-none">·</span>
+
+            {/* Created Timestamp */}
+            <span>
+              Created {formatDateLine(createdAt)}
+            </span>
+
+            <span className="text-slate-300 dark:text-neutral-700 select-none">·</span>
+
+            {/* Updated Timestamp */}
+            <span>
+              Last edited {formatDateLine(updatedAt)}
+            </span>
+          </div>
         </div>
 
-        {/* SINGLE ROW BELOW HEADING: Active Learners, Preview, Edit Content, 3-Dots Menu */}
+        {/* Actions Centered */}
         {showMetadataRail && (
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-            {/* 1. Active Learners Badge (No Inner Oval) */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-300/90 bg-gradient-to-r from-emerald-50 via-teal-50/40 to-white px-3.5 py-2 shadow-2xs">
-              <span className="text-xs font-black text-slate-900 tracking-tight">Active Learners</span>
-              <span className="text-xs font-black text-emerald-600 transition-all duration-300">{liveCount}</span>
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-1">
+            {/* Active Learners Badge */}
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-200/90 dark:border-emerald-800/50 bg-white dark:bg-neutral-900 px-3 py-1.5 shadow-2xs">
+              <span className="text-xs font-medium text-slate-700 dark:text-neutral-300">Active Learners</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{liveCount}</span>
             </div>
 
-            {/* 2. Action Buttons: Preview & Edit Content */}
+            {/* Action Buttons: Preview & Edit Content */}
             {channelSuspended ? (
               <span
-                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700"
+                className="inline-flex w-fit cursor-not-allowed items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700"
                 title="This channel is suspended — editing is disabled until it's reactivated"
               >
                 Editing Disabled
@@ -273,28 +297,28 @@ export function ContentOverviewHeader({
               ))
             )}
 
-            {/* 3. 3-Dots Overflow Menu Button */}
+            {/* 3-Dots Overflow Menu */}
             {(duplicate || canArchive || canDelete) && !channelSuspended && (
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="grid size-9 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 cursor-pointer shadow-2xs"
+                  className="grid size-9 place-items-center rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 transition-colors hover:bg-slate-50 dark:hover:bg-neutral-700 hover:text-slate-900 cursor-pointer shadow-2xs"
                   aria-label="More actions"
                 >
-                  <MoreVertical size={16} />
+                  <MoreVertical size={15} />
                 </button>
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 z-20 mt-2 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                    <div className="absolute right-0 z-20 mt-2 w-44 rounded-2xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-1.5 shadow-xl">
                       {duplicate && (
                         <button
                           onClick={() => {
                             setMenuOpen(false);
                             handleDuplicate();
                           }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer text-left"
                         >
                           <Copy size={14} /> Duplicate
                         </button>
@@ -305,7 +329,7 @@ export function ContentOverviewHeader({
                             setMenuOpen(false);
                             setConfirmAction("archive");
                           }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 hover:bg-slate-50 cursor-pointer text-left"
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer text-left"
                         >
                           <Archive size={14} /> Archive
                         </button>
@@ -316,7 +340,7 @@ export function ContentOverviewHeader({
                             setMenuOpen(false);
                             setConfirmAction("delete");
                           }}
-                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 cursor-pointer text-left"
+                          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer text-left"
                         >
                           <Trash2 size={14} /> Delete
                         </button>
@@ -329,6 +353,7 @@ export function ContentOverviewHeader({
           </div>
         )}
       </div>
+
       {confirmAction === "delete" && (
         <ConfirmActionModal
           title="Delete this content?"
