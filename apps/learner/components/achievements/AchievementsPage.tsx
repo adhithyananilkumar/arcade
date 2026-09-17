@@ -574,13 +574,8 @@ export default function AchievementsPage() {
                     }}
                   >
                     <div>
-                      {/* Top Header with Pill & Badge Graphic */}
+                      {/* Top Header with Badge Graphic */}
                       <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
-                        {/* Top-Left Status Pill Badge */}
-                        <div className={`self-start mb-2 ${badge.unlocked ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-100'} backdrop-blur-md font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm`}>
-                          {badge.unlocked ? 'UNLOCKED' : 'IN PROGRESS'}
-                        </div>
-
                         {/* Hexagon Badge Graphic */}
                         <div className="w-24 h-28 sm:w-28 sm:h-32 relative flex items-center justify-center drop-shadow-md group-hover:scale-105 transition-all duration-300 my-2">
                           <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
@@ -703,13 +698,8 @@ export default function AchievementsPage() {
                   }}
                 >
                   <div>
-                    {/* Top Header with Pill & Medal Seal */}
+                    {/* Top Header with Medal Seal */}
                     <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
-                      {/* Top-Left Status Pill Badge */}
-                      <div className={`self-start mb-2 ${isPassed ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'} backdrop-blur-md font-extrabold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm`}>
-                        {cert.status || (isPassed ? 'PASSED' : 'FAILED')}
-                      </div>
-
                       {/* Scalloped Medal Seal */}
                       <div 
                         className="w-16 h-16 rounded-full border flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300 bg-white/90 dark:bg-neutral-800 my-2"
