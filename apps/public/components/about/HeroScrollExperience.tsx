@@ -41,9 +41,6 @@ const HERO_RADIANT_STYLE: React.CSSProperties = {
     "linear-gradient(180deg, #E9EEFB 0%, #F2F5FD 35%, #F8FAFD 70%, #F2F5FD 100%)",
 };
 
-// Section 2 starts with identical solid radiant styling so canvas is 100% blocked until blend starts
-const SECTION2_RADIANT_STYLE: React.CSSProperties = HERO_RADIANT_STYLE;
-
 export default function HeroScrollExperience() {
   const stickyContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -92,15 +89,15 @@ export default function HeroScrollExperience() {
   ============================================================
   */
 
-  // Radiant Background Blend Overlay: seamlessly blends into live cloud flight
-  const bgBlendOpacity = useTransform(
+  // 60FPS Cinematic Canvas smoothly fades in as user scrolls into cloud flight
+  const canvasOpacity = useTransform(
     scrollYProgress,
     [0.10, 0.24],
-    [1, 0]
+    [0, 1]
   );
-  const bgBlendDisplay = useTransform(
+  const canvasDisplay = useTransform(
     scrollYProgress,
-    (v) => (v >= 0.26 ? "none" : "block")
+    (v) => (v < 0.08 ? "none" : "block")
   );
 
   // Arcade Stats Section Dissolve Transition
@@ -508,44 +505,37 @@ export default function HeroScrollExperience() {
           </motion.div>
         </motion.div>
 
+        {/* Soft Ambient Transition Bridge between Hero and Ecosystem section */}
+        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[85vw] max-w-[1000px] h-[200px] bg-gradient-to-b from-transparent via-sky-100/30 to-transparent rounded-full blur-[80px] pointer-events-none z-10" />
       </section>
 
       {/* =========================================================
           SECTION 2: CONTINUOUS SCROLL ANIMATION STAGE
-          Starts tucked underneath Section 1 with matching radiant styling ->
+          Seamlessly blends with Section 1 with unified radiant styling ->
           Blends smoothly into live 3D cloud flight -> "Powered by Amal Jyothi" ->
           Clouds Divide -> Campus Drone Flyover -> Frame 300 Dwell
       ========================================================= */}
       <div
         ref={stickyContainerRef}
-        className="relative z-10 -mt-20 w-full h-[480vh] bg-transparent"
+        className="relative z-10 w-full h-[480vh] bg-transparent"
       >
         {/* Sticky Fullscreen Stage */}
         <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center select-none bg-transparent">
           {/* =========================================================
               LAYER 0: 60FPS CINEMATIC CANVAS (Cloud Flight & Drone Flyover)
+              Smoothly dissolves into view during scroll without any background cut
           ========================================================= */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+          <motion.div
+            style={{
+              opacity: canvasOpacity,
+              display: canvasDisplay,
+            }}
+            className="absolute inset-0 w-full h-full z-0 overflow-hidden"
+          >
             <canvas
               ref={canvasRef}
               className="w-full h-full block object-cover"
             />
-          </div>
-
-          {/* =========================================================
-              LAYER 1: RADIANT BACKGROUND BLEND OVERLAY
-              Uses matching radiant gradient as Section 1; as you scroll,
-              it blends smoothly (1 -> 0) into the live 3D cloud flight canvas
-          ========================================================= */}
-          <motion.div
-            style={{
-              opacity: bgBlendOpacity,
-              display: bgBlendDisplay,
-            }}
-            className="absolute inset-0 z-10 pointer-events-none will-change-transform bg-white"
-          >
-            <div className="w-full h-full" style={SECTION2_RADIANT_STYLE} />
-            <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[90vw] max-w-[1100px] h-[600px] bg-gradient-to-tr from-blue-200/35 via-sky-100/45 to-indigo-200/25 rounded-full blur-[120px] pointer-events-none" />
           </motion.div>
 
           {/* =========================================================
@@ -561,17 +551,6 @@ export default function HeroScrollExperience() {
             }}
             className="absolute z-20 max-w-[850px] mx-auto text-center px-6 flex flex-col items-center pointer-events-none will-change-transform"
           >
-            {/* Top Pill */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-[0_8px_24px_rgba(15,23,42,0.08)] mb-6">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-600" />
-              </span>
-              <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-slate-800 font-sans">
-                The Arcade Ecosystem
-              </span>
-            </div>
-
             {/* HEADLINE (Same Format as Hero) */}
             <h2
               className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
