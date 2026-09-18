@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Send, Pencil } from "lucide-react";
-import type { ReviewResponse } from "@/domains/publishing/api/platformReview";
+import { ReviewPathPanel, type ReviewResponse, type ReviewPathPreview } from "@/domains/publishing";
 import { ActivitySection, type TimelineEntry } from "./ActivitySection";
 
 const DOT: Record<string, string> = {
@@ -31,6 +31,9 @@ export function PublishingWorkflow({
   onSubmit,
   submitting,
   historyEntries,
+  reviewPath,
+  reviewPathLoading,
+  reviewPathError,
 }: {
   status: string;
   review: ReviewResponse | null;
@@ -38,6 +41,14 @@ export function PublishingWorkflow({
   onSubmit: () => void;
   submitting: boolean;
   historyEntries?: TimelineEntry[];
+  /**
+   * The server's answer to "what happens if I submit this?". Supplied by the orchestrator; this
+   * component never derives it, because a client-side derivation would be a second implementation
+   * of the governance rules.
+   */
+  reviewPath?: ReviewPathPreview | null;
+  reviewPathLoading?: boolean;
+  reviewPathError?: string | null;
 }) {
   const statusKey = status?.toUpperCase();
   const publishedEntry = historyEntries?.find((e) => /publish/i.test(e.title));
@@ -78,18 +89,45 @@ export function PublishingWorkflow({
   } else if (statusKey === "PUBLISHED" || statusKey === "ARCHIVED") {
     body = null;
   } else {
-    body = (
+    // Draft: show the author the exact path this submission will take, and disable submitting when
+    // the server says it would be refused -- so they fix problems here rather than discovering them
+    // as an error toast.
+    const blocked = (reviewPath?.blockingProblems.length ?? 0) > 0;
+    const submitLabel = reviewPath?.directPublication ? "Publish" : "Submit for Review";
+
+    const submitButton = (
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={submitting || blocked || reviewPathLoading}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <Send size={13} /> {submitting ? "Submitting…" : submitLabel}
+      </button>
+    );
+
+    // The preview is unavailable to viewers who are not the content's owner (the endpoint is
+    // author-scoped). That is not an error state for them — fall back to the plain control rather
+    // than showing a failure they cannot act on. The backend re-validates on submit regardless.
+    const previewUnavailable = !reviewPath && !reviewPathError && !reviewPathLoading;
+
+    body = previewUnavailable ? (
       <div className="mb-4">
         <p className="mb-1 text-sm font-bold text-amber-600">Draft</p>
-        <p className="mb-3 text-xs text-slate-500">This content has not been submitted for platform review.</p>
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={submitting}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+        <p className="mb-3 text-xs text-slate-500">
+          This content has not been submitted for platform review.
+        </p>
+        {submitButton}
+      </div>
+    ) : (
+      <div className="mb-4">
+        <ReviewPathPanel
+          preview={reviewPath ?? null}
+          loading={reviewPathLoading}
+          error={reviewPathError}
         >
-          <Send size={13} /> {submitting ? "Submitting…" : "Submit for Review"}
-        </button>
+          {submitButton}
+        </ReviewPathPanel>
       </div>
     );
   }

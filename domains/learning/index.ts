@@ -19,6 +19,7 @@ export { default as TimeTracker } from './components/TimeTracker';
 export { CourseRenderer } from './delivery/components/CourseRenderer';
 export { TiptapContentView } from './delivery/components/TiptapContentView';
 export { LessonReviewFeedback } from './delivery/components/LessonReviewFeedback';
+export { AssessmentReviewQuestions } from './delivery/components/AssessmentReviewQuestions';
 export { courseDeliveryService } from './delivery/api/courses';
 export { courseProgressService } from './progress/api/courseProgress';
 export type { CourseProgress, EnrollmentStatus } from './progress/api/courseProgress';

@@ -76,36 +76,42 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
     });
   }
 
+  /**
+   * Approve from the reviewer's in-player view.
+   *
+   * The `/api/courses/{id}/approve` fallback this used to have is gone, along with the endpoint.
+   * That route entered the workflow by content id and so could not name the version being
+   * approved -- it had to resolve one, which is how "approve" came to mean "publish whatever is
+   * newest" rather than "publish what I just read". Without a review id there is nothing to decide.
+   */
   const handlePublish = async (note: string) => {
+    if (!reviewId) {
+      throw new Error("No open review for this course; nothing to approve.");
+    }
     try {
-      if (reviewId) {
-        await platformReviewApi.decide(reviewId, { decision: "APPROVE", note });
-      } else {
-        await api.post(`/api/courses/${courseId}/approve`, { note });
-      }
+      await platformReviewApi.decide(reviewId, { decision: "APPROVE", note });
       if (course) {
         setCourse({ ...course, status: "PUBLISHED" });
       }
-    } catch {
-      throw new Error("Failed to publish the course.");
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : "Failed to publish the course.");
     }
   };
 
   const handleReject = async (reason: string) => {
+    if (!reviewId) {
+      throw new Error("No open review for this course; nothing to decide.");
+    }
     try {
-      if (reviewId) {
-        await platformReviewApi.decide(reviewId, {
-          decision: "REQUEST_CHANGES",
-          reason,
-        });
-      } else {
-        await api.post(`/api/courses/${courseId}/reject`, { reason });
-      }
+      await platformReviewApi.decide(reviewId, {
+        decision: "REQUEST_CHANGES",
+        reason,
+      });
       if (course) {
         setCourse({ ...course, status: "REJECTED" });
       }
-    } catch {
-      throw new Error("Failed to reject the course.");
+    } catch (err) {
+      throw new Error(err instanceof Error ? err.message : "Failed to reject the course.");
     }
   };
 
@@ -135,7 +141,7 @@ export function CoursePlayerOrchestrator({ courseId, mode }: { courseId: string;
       setCommentsLoading(true);
       setCommentsError(null);
       platformReviewApi
-        .listComments(reviewId, "LESSON", selectedItem.id)
+        .listComments(reviewId, { targetType: "LESSON", targetId: selectedItem.id })
         .then((rows) =>
           setComments(
             rows.map((c) => ({

@@ -55,6 +55,12 @@ export function CourseOverviewTab({
         editHref={editorHref("course", contentId)}
         onSubmit={onSubmit}
         submitting={submitting}
+        reviewPath={data.reviewPath.status === "ok" ? data.reviewPath.data : null}
+        reviewPathError={
+          data.reviewPath.status === "error"
+            ? "Could not determine the review path for this content."
+            : null
+        }
         historyEntries={
           data.statusHistory.status === "ok"
             ? data.statusHistory.data.map((entry, i) => ({

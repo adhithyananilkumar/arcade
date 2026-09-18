@@ -1,6 +1,11 @@
 import { api, ApiError } from "@/infrastructure/http/api";
 import { getEventStatusHistory, validateEvent } from "@/app/(authenticated)/studio/events/api/publish";
-import { platformReviewApi, type ContentType as ReviewContentType, type ReviewResponse } from "@/domains/publishing/api/platformReview";
+import type { ReviewPathPreview } from "@/domains/publishing";
+import {
+  platformReviewApi,
+  type ContentType as ReviewContentType,
+  type ReviewResponse,
+} from "@/domains/publishing";
 import type { ContentTypeSegment } from "./contentTypeRouting";
 import { collaboratorsPath } from "./contentActions";
 import type { PublishValidationResponse } from "@/app/(authenticated)/studio/events/types";
@@ -84,6 +89,11 @@ export interface OverviewData {
   statusHistory: FetchResult<StatusHistoryEntry[]>;
   collaborators: FetchResult<CollaboratorLite[]>;
   review: FetchResult<ReviewResponse>;
+  /**
+   * The server-computed path this content would take if submitted now. Fetched here rather than
+   * derived in a component: it is author-specific and comes from the same resolver submission uses.
+   */
+  reviewPath: FetchResult<ReviewPathPreview>;
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
@@ -137,6 +147,7 @@ export async function fetchOverviewData(
       statusHistory: { status: "empty" },
       collaborators: { status: "empty" },
       review: { status: "empty" },
+      reviewPath: { status: "empty" },
     };
   }
 
@@ -154,6 +165,7 @@ export async function fetchOverviewData(
       statusHistory: { status: "empty" },
       collaborators,
       review: { status: "empty" },
+      reviewPath: { status: "empty" },
     };
   }
 
@@ -162,17 +174,34 @@ export async function fetchOverviewData(
     ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [404] })
     : Promise.resolve({ status: "empty" });
 
+  // 403 is expected for a collaborator who can see the content but is not its owner; an absent
+  // preview simply hides the panel rather than surfacing an error they cannot act on.
+  const reviewPathPromise: Promise<FetchResult<ReviewPathPreview>> = reviewContentType
+    ? settle(platformReviewApi.reviewPath(reviewContentType, contentId), {
+        emptyStatuses: [403, 404, 422],
+      })
+    : Promise.resolve({ status: "empty" });
+
   if (segment === "course") {
-    const [statusHistory, collaborators, review] = await Promise.all([
+    const [statusHistory, collaborators, review, reviewPath] = await Promise.all([
       settle(api.get<StatusHistoryEntry[]>(`/api/courses/${contentId}/status-history`), { isEmpty: isEmptyArray }),
       settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
       reviewPromise,
+      reviewPathPromise,
     ]);
-    return { content, statusHistory, collaborators, review };
+    return { content, statusHistory, collaborators, review, reviewPath };
   }
 
   // event
-  const [statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review] =
+  const [
+    statusHistory,
+    collaborators,
+    eventParticipants,
+    eventAnalytics,
+    eventReadiness,
+    review,
+    reviewPath,
+  ] =
     await Promise.all([
       settle(getEventStatusHistory(contentId), { isEmpty: isEmptyArray }),
       settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
@@ -182,6 +211,16 @@ export async function fetchOverviewData(
       }),
       settle(validateEvent(contentId)),
       reviewPromise,
+      reviewPathPromise,
     ]);
-  return { content, statusHistory, collaborators, eventParticipants, eventAnalytics, eventReadiness, review };
+  return {
+    content,
+    statusHistory,
+    collaborators,
+    eventParticipants,
+    eventAnalytics,
+    eventReadiness,
+    review,
+    reviewPath,
+  };
 }

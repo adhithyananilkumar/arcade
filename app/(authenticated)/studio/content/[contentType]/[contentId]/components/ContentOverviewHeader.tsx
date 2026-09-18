@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import type { ContentTypeSegment } from "../lib/contentTypeRouting";
 import { CONTENT_TYPE_LABEL, editorHref, previewHref } from "../lib/contentTypeRouting";
-import type { ReviewResponse } from "@/domains/publishing/api/platformReview";
+import type { ReviewResponse } from "@/domains/publishing";
 import {
   submitForReview,
   supportsReviewSubmission,

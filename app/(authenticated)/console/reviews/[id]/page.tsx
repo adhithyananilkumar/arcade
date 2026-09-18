@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthStore } from "@/infrastructure/auth/auth.store";
-import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import {
   platformReviewApi,
+  ReviewPolicySummary,
+  ContentVersionHistory,
+  ContentLifecycleTimeline,
+  RollbackDialog,
   type ReviewCommentResponse,
   type ReviewEventResponse,
   type ReviewResponse,
   type CourseExamReviewDetail,
+  type ContentVersionSummary,
+  type LifecycleEvent,
 } from "@/domains/publishing";
 import {
   ChevronLeft,
@@ -30,16 +34,20 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AssessmentReviewQuestions } from "@/domains/learning/delivery/components/AssessmentReviewQuestions";
+import { AssessmentReviewQuestions } from "@/domains/learning";
 
 export default function ReviewDetailPage() {
   const params = useParams();
   const router = useRouter();
   const reviewId = params?.id as string;
-  const { user } = useAuthStore();
 
   const [review, setReview] = useState<ReviewResponse | null>(null);
   const [timeline, setTimeline] = useState<ReviewEventResponse[]>([]);
+  const [versions, setVersions] = useState<ContentVersionSummary[]>([]);
+  const [lifecycle, setLifecycle] = useState<LifecycleEvent[]>([]);
+  const [historyTab, setHistoryTab] = useState<"versions" | "lifecycle" | "events">("versions");
+  const [rollbackTarget, setRollbackTarget] = useState<ContentVersionSummary | null>(null);
+  const [rollingBack, setRollingBack] = useState(false);
   const [exams, setExams] = useState<CourseExamReviewDetail[]>([]);
   const [loadingExams, setLoadingExams] = useState(false);
   const [inspectingExam, setInspectingExam] = useState<CourseExamReviewDetail | null>(null);
@@ -54,16 +62,23 @@ export default function ReviewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<"approve" | "changes" | null>(null);
+  const [dialog, setDialog] = useState<"approve" | "changes" | "reject" | null>(null);
   const [note, setNote] = useState("");
   const [reason, setReason] = useState("");
 
   useEffect(() => {
     if (!reviewId) return;
-    Promise.all([platformReviewApi.get(reviewId), platformReviewApi.timeline(reviewId)])
-      .then(([r, t]) => {
+    Promise.all([
+      platformReviewApi.get(reviewId),
+      platformReviewApi.timeline(reviewId),
+      platformReviewApi.versions(reviewId),
+      platformReviewApi.lifecycle(reviewId),
+    ])
+      .then(([r, t, v, l]) => {
         setReview(r);
         setTimeline(t);
+        setVersions(v);
+        setLifecycle(l);
         if (r.contentType === "COURSE") {
           setLoadingExams(true);
           platformReviewApi
@@ -79,9 +94,10 @@ export default function ReviewDetailPage() {
 
   useEffect(() => {
     if (!inspectingExam || !reviewId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingComments(true);
     platformReviewApi
-      .listComments(reviewId, "EXAM", inspectingExam.examId)
+      .listComments(reviewId, { targetType: "EXAM", targetId: inspectingExam.examId })
       .then((c) => setExamComments(c))
       .catch(() => setExamComments([]))
       .finally(() => setLoadingComments(false));
@@ -115,8 +131,8 @@ export default function ReviewDetailPage() {
 
   const submitDecision = async () => {
     if (!review || !dialog) return;
-    if (dialog === "changes" && !reason.trim()) {
-      toast.error("Please provide a reason for requesting changes.");
+    if (dialog !== "approve" && !reason.trim()) {
+      toast.error("Please provide a reason.");
       return;
     }
     if (dialog === "approve" && !note.trim()) {
@@ -127,20 +143,38 @@ export default function ReviewDetailPage() {
     setBusy(true);
     try {
       const updated = await platformReviewApi.decide(review.id, {
-        decision: dialog === "approve" ? "APPROVE" : "REQUEST_CHANGES",
+        decision:
+          dialog === "approve" ? "APPROVE" : dialog === "reject" ? "REJECT" : "REQUEST_CHANGES",
         note: dialog === "approve" ? note.trim() : undefined,
-        reason: dialog === "changes" ? reason.trim() : undefined,
+        reason: dialog === "approve" ? undefined : reason.trim(),
+        // The version this page rendered. If the author resubmitted while the reviewer was
+        // reading, the backend refuses rather than letting them approve bytes they never saw.
+        expectedContentVersionId: review.contentVersionId ?? null,
       });
       setReview(updated);
-      setTimeline(await platformReviewApi.timeline(review.id));
+      const [t, v, l] = await Promise.all([
+        platformReviewApi.timeline(review.id),
+        platformReviewApi.versions(review.id),
+        platformReviewApi.lifecycle(review.id),
+      ]);
+      setTimeline(t);
+      setVersions(v);
+      setLifecycle(l);
       if (review.contentType === "COURSE") {
-        const refreshedExams = await platformReviewApi.getExams(review.id);
-        setExams(refreshedExams);
+        setExams(await platformReviewApi.getExams(review.id));
       }
-      toast.success(dialog === "approve" ? "Approved & published course and exams" : "Changes requested");
+      toast.success(
+        dialog === "approve"
+          ? updated.policy && review.actions.approvalPublishes
+            ? "Approved and published."
+            : "Approved. Sent to the next review stage."
+          : dialog === "reject"
+            ? "Rejected."
+            : "Changes requested."
+      );
       closeDialog();
-    } catch {
-      toast.error("Decision failed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Decision failed");
     } finally {
       setBusy(false);
     }
@@ -186,35 +220,53 @@ export default function ReviewDetailPage() {
         <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           {review.contentType}
         </div>
-        {(() => {
-          const role = review.tier === "GLOBAL" ? "Superuser" : "Org Head";
-          let text: string = review.status;
-          let colorClass = "bg-slate-100 text-slate-800";
-          if ((review.status as string) === "OPEN") {
-            text = `Pending by ${role}`;
-            colorClass = "bg-amber-100 text-amber-800";
-          } else if (review.status === "COMPLETED") {
-            text = `Approved by ${role}`;
-            colorClass = "bg-emerald-100 text-emerald-800";
-          } else if ((review.status as string) === "CHANGES_REQUESTED") {
-            text = `Rejected by ${role}`;
-            colorClass = "bg-rose-100 text-rose-800";
-          }
 
-          return (
-            <div className="flex items-center justify-between">
-              <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
-                Review · Round {review.currentRound}
-              </h1>
-              <span
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${colorClass}`}
-              >
-                {text}
-              </span>
-            </div>
-          );
-        })()}
-        <p className="mt-1 font-mono text-[11px] text-slate-400">{review.contentId}</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-[1.35rem] font-bold tracking-tight text-[#14142b]">
+            Review &middot; Round {review.currentRound}
+          </h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
+                review.stage === "ORG_REVIEW"
+                  ? "bg-sky-100 text-sky-800"
+                  : "bg-violet-100 text-violet-800"
+              }`}
+            >
+              {review.stage === "ORG_REVIEW" ? "Organization review" : "Platform review"}
+            </span>
+            <span
+              className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
+                review.status === "OPEN"
+                  ? "bg-amber-100 text-amber-800"
+                  : review.status === "COMPLETED"
+                    ? "bg-emerald-100 text-emerald-800"
+                    : review.status === "REJECTED"
+                      ? "bg-rose-100 text-rose-800"
+                      : review.status === "CHANGES_REQUESTED"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              {review.status.replaceAll("_", " ")}
+            </span>
+          </div>
+        </div>
+
+        {/*
+          The version banner. A reviewer must never have to infer which artifact they are judging —
+          the old page showed only a content id, so "approve" meant "approve whatever this course
+          currently is", which is exactly the ambiguity the versioned pipeline removes.
+        */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+          <FileCheck size={15} className="text-slate-500" />
+          <span className="text-[13px] font-bold text-[#14142b]">
+            {review.versionNumber != null
+              ? `Reviewing version ${review.versionNumber}`
+              : "No resolvable version"}
+          </span>
+          <span className="font-mono text-[11px] text-slate-400">{review.contentId}</span>
+        </div>
 
         <div className="mt-4">
           <Link
@@ -222,17 +274,22 @@ export default function ReviewDetailPage() {
             target="_blank"
             className="inline-flex items-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
           >
-            Preview {review.contentType.toLowerCase()} content ↗
+            Preview {review.contentType.toLowerCase()} content <ExternalLink size={13} />
           </Link>
         </div>
 
-        {review.status === "OPEN" &&
-          (review.tier === "GLOBAL" && !AuthorizationService.canReviewPlatformContent(user) ? (
-            <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
-              Course approved at Org level and sent for Superuser review.
-            </div>
-          ) : (
-            <div className="mt-6 flex flex-wrap gap-2">
+        {/*
+          Actions come from the backend's ReviewActionsView. The page no longer re-derives authority
+          from permission codes: that rule lived in two places and drifted, so channel reviewers saw
+          an approve button on escalated reviews the API would reject.
+        */}
+        {review.actions.blockedReason ? (
+          <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
+            {review.actions.blockedReason}
+          </div>
+        ) : (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {review.actions.canApprove && (
               <button
                 type="button"
                 disabled={busy}
@@ -242,8 +299,10 @@ export default function ReviewDetailPage() {
                 }}
                 className="rounded-full bg-[#14142b] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(20,20,43,0.16)] hover:bg-[#232735] disabled:opacity-50"
               >
-                {review.tier === "ORG" ? "Approve" : "Approve & Publish"}
+                {review.actions.approvalPublishes ? "Approve & publish" : "Approve & send onward"}
               </button>
+            )}
+            {review.actions.canRequestChanges && (
               <button
                 type="button"
                 disabled={busy}
@@ -251,13 +310,33 @@ export default function ReviewDetailPage() {
                   setReason("");
                   setDialog("changes");
                 }}
+                className="rounded-full border border-orange-200 bg-orange-50 px-4 py-2.5 text-[12px] font-semibold text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+              >
+                Request changes
+              </button>
+            )}
+            {review.actions.canReject && (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setReason("");
+                  setDialog("reject");
+                }}
                 className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2.5 text-[12px] font-semibold text-rose-600 hover:bg-rose-100 disabled:opacity-50"
               >
-                {review.tier === "ORG" ? "Reject" : "Request Changes"}
+                Reject
               </button>
-            </div>
-          ))}
+            )}
+          </div>
+        )}
       </header>
+
+      <ReviewPolicySummary
+        policy={review.policy}
+        currentStage={review.stage}
+        approvalPublishes={review.actions.approvalPublishes}
+      />
 
       {/* Associated Assessments & Exams Section */}
       {review.contentType === "COURSE" && (
@@ -361,28 +440,112 @@ export default function ReviewDetailPage() {
         </section>
       )}
 
-      {/* Timeline Section */}
+      {/*
+        Three histories, deliberately labelled and kept apart:
+          Versions  -> the immutable artifacts the pipeline governs
+          Lifecycle -> what happened to the content, in plain language, version by version
+          Events    -> the review case's own gapless internal sequence
+        The old page showed only the third and called it "Timeline", which is why nobody could
+        answer "which version was published" from the console.
+      */}
       <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_8px_24px_rgba(20,20,43,0.05)]">
-        <h2 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-          Timeline
-        </h2>
-        <ol className="space-y-3">
-          {[...timeline].reverse().map((e) => (
-            <li key={e.id} className="flex gap-3 text-[13px]">
-              <span className="w-8 shrink-0 font-mono text-[11px] text-slate-400">
-                #{e.sequenceNumber}
-              </span>
-              <div>
-                <div className="font-semibold text-[#14142b]">{e.eventType}</div>
-                {e.note && <div className="text-slate-500">{e.note}</div>}
-                <div className="text-[11px] text-slate-400">
-                  {new Date(e.createdAt).toLocaleString()}
-                </div>
-              </div>
-            </li>
+        <nav className="mb-4 flex gap-1 border-b border-slate-100" aria-label="History views">
+          {(
+            [
+              { id: "versions", label: `Versions (${versions.length})` },
+              { id: "lifecycle", label: "Status history" },
+              { id: "events", label: "Review activity" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setHistoryTab(tab.id)}
+              aria-current={historyTab === tab.id ? "true" : undefined}
+              className={`border-b-2 px-3 pb-2 text-[12px] font-semibold transition-colors ${
+                historyTab === tab.id
+                  ? "border-[#14142b] text-[#14142b]"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
-        </ol>
+        </nav>
+
+        {historyTab === "versions" && (
+          <ContentVersionHistory
+            versions={versions}
+            selectedVersionId={review.contentVersionId ?? undefined}
+            onRollback={review.actions.canApprove ? setRollbackTarget : undefined}
+            rollbackDisabledReason={
+              review.status === "OPEN"
+                ? "Resolve the review in progress before rolling back."
+                : null
+            }
+          />
+        )}
+
+        {historyTab === "lifecycle" && <ContentLifecycleTimeline events={lifecycle} />}
+
+        {historyTab === "events" && (
+          <ol className="space-y-3">
+            {[...timeline].reverse().map((e) => (
+              <li key={e.id} className="flex gap-3 text-[13px]">
+                <span className="w-8 shrink-0 font-mono text-[11px] text-slate-400">
+                  #{e.sequenceNumber}
+                </span>
+                <div>
+                  <div className="font-semibold text-[#14142b]">{e.eventType}</div>
+                  {e.note && <div className="text-slate-500">{e.note}</div>}
+                  <div className="text-[11px] text-slate-400">
+                    {new Date(e.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
+
+      {rollbackTarget ? (
+        <RollbackDialog
+          target={rollbackTarget}
+          currentLiveVersionNumber={versions.find((v) => v.status === "PUBLISHED")?.versionNumber}
+          publishesImmediately={
+            !review.policy.organizationReviewRequired && !review.policy.platformReviewRequired
+          }
+          busy={rollingBack}
+          onCancel={() => setRollbackTarget(null)}
+          onConfirm={async (reason) => {
+            setRollingBack(true);
+            try {
+              const result = await platformReviewApi.rollback(
+                review.contentType,
+                review.contentId,
+                {
+                  targetVersionId: rollbackTarget.id,
+                  reason,
+                  // Lets a timed-out rollback be retried without minting a second version.
+                  idempotencyKey: `rollback-${review.contentId}-${rollbackTarget.id}`,
+                }
+              );
+              toast.success(
+                result.publishedDirectly
+                  ? `Rolled back and published version ${result.newVersionNumber}.`
+                  : `Version ${result.newVersionNumber} created and sent for review.`
+              );
+              setRollbackTarget(null);
+              setVersions(await platformReviewApi.versions(review.id));
+              setLifecycle(await platformReviewApi.lifecycle(review.id));
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Rollback failed.");
+            } finally {
+              setRollingBack(false);
+            }
+          }}
+        />
+      ) : null}
 
       {/* Decision Dialog */}
       {dialog && (
@@ -391,12 +554,22 @@ export default function ReviewDetailPage() {
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
               <div>
                 <h2 className="text-[16px] font-bold tracking-tight text-[#14142b]">
-                  {dialog === "approve" ? "Approve & publish" : "Request changes"}
+                  {dialog === "approve"
+                    ? review.actions.approvalPublishes
+                      ? "Approve & publish"
+                      : "Approve & send onward"
+                    : dialog === "reject"
+                      ? "Reject submission"
+                      : "Request changes"}
                 </h2>
                 <p className="mt-0.5 text-[12px] font-medium text-slate-500">
                   {dialog === "approve"
-                    ? "Course and its associated assessments will be published simultaneously."
-                    : "Course and associated assessments will be unlocked for revisions."}
+                    ? review.actions.approvalPublishes
+                      ? `Version ${review.versionNumber ?? "?"} will be published exactly as reviewed.`
+                      : `Version ${review.versionNumber ?? "?"} passes unchanged to the next review stage.`
+                    : dialog === "reject"
+                      ? "The submission is refused. The author must start a new submission to try again."
+                      : "The author can revise and submit a new version."}
                 </p>
               </div>
               <button

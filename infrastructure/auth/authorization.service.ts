@@ -40,6 +40,28 @@ export const AuthorizationService = {
   canReviewChannelContent: (user: User | null | undefined) =>
     AuthorizationService.hasPermission(user, 'channel.content.review'),
 
+  /**
+   * Console -> Reviews -> Governance: deciding whether a channel's content must be reviewed at all.
+   *
+   * Deliberately NOT implied by canReviewPlatformContent. A reviewer decides submissions; a
+   * governor decides whether submissions must be reviewed. Bundling them would mean every reviewer
+   * could exempt a channel from their own oversight.
+   */
+  canGovernPlatformContent: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'platform.content.governance'),
+
+  /**
+   * A channel administrator's authority over their OWN channel's review policy and author
+   * exemptions. Scoped to the org-review stage only - it can never waive platform review, which is
+   * enforced on the backend by the absence of any code path from this permission to a
+   * platform-governed column.
+   *
+   * Presentation hint only: the backend re-resolves per-channel authority on every call, because a
+   * permission code alone does not say WHICH channel.
+   */
+  canGovernChannelContent: (user: User | null | undefined) =>
+    AuthorizationService.hasPermission(user, 'channel.content.governance'),
+
   /** @deprecated Use canReviewContent */
   canReviewCourses: (user: User | null | undefined) => AuthorizationService.canReviewContent(user),
 
