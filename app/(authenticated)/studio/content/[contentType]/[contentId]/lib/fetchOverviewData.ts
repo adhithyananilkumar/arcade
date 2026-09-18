@@ -171,7 +171,7 @@ export async function fetchOverviewData(
 
   const reviewContentType = REVIEW_CONTENT_TYPE[segment];
   const reviewPromise: Promise<FetchResult<ReviewResponse>> = reviewContentType
-    ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [404] })
+    ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [403, 404] })
     : Promise.resolve({ status: "empty" });
 
   // 403 is expected for a collaborator who can see the content but is not its owner; an absent
