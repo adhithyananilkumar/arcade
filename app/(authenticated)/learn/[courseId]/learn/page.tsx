@@ -97,8 +97,34 @@ export default function CourseLearnPage() {
     lessonId: string;
     lessonTitle: string;
   } | null>(null);
+  
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   const courseId = params?.courseId as string | undefined;
+
+  const handleFeedbackSubmit = async () => {
+    if (!courseId) return;
+    
+    if (feedbackText.trim().length > 0) {
+      setSubmittingFeedback(true);
+      try {
+        await api.post(`/api/v1/learning/courses/${courseId}/reviews`, {
+          reviewText: feedbackText.trim()
+        });
+        toast.success('Thank you for your feedback!');
+      } catch (err) {
+        console.error('Failed to submit feedback:', err);
+        toast.error('Could not submit feedback.');
+      } finally {
+        setSubmittingFeedback(false);
+      }
+    }
+    
+    setFeedbackModalOpen(false);
+    router.push('/learning');
+  };
 
   const handleReportSubmit = async (combinedNote: string) => {
     if (!courseId || !reportingContext) return;
@@ -192,6 +218,7 @@ export default function CourseLearnPage() {
     setProgress(updated);
     if (previousStatus !== 'COMPLETED' && updated.enrollmentStatus === 'COMPLETED') {
       toast.success('Course completed!');
+      setFeedbackModalOpen(true);
     }
     return updated;
   };
@@ -573,13 +600,14 @@ export default function CourseLearnPage() {
                       </button>
                     ) : isLastItem ? (
                       lessonDone ? (
-                        <Link
-                          href="/learning"
+                        <button
+                          type="button"
+                          onClick={() => setFeedbackModalOpen(true)}
                           className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_rgba(5,150,105,0.22)] transition-colors hover:bg-emerald-700"
                         >
                           <CheckCircle2 size={16} />
                           Back to Learning
-                        </Link>
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -626,6 +654,40 @@ export default function CourseLearnPage() {
         }
         contentType={reportingContext?.lessonTitle ? 'LESSON' : 'COURSE'}
       />
+
+      {/* Course Feedback Modal */}
+      <Dialog open={feedbackModalOpen} onOpenChange={setFeedbackModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Share your experience</DialogTitle>
+            <DialogDescription>
+              We'd love to hear your thoughts on this course. What did you like? What could be improved?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <textarea
+              className="min-h-[120px] w-full resize-y rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              placeholder="Write your feedback here..."
+              value={feedbackText}
+              onChange={(e) => setFeedbackText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={handleFeedbackSubmit}
+              disabled={submittingFeedback}
+              className={`inline-flex h-10 items-center justify-center rounded-full px-6 text-sm font-semibold transition-colors disabled:opacity-50 ${
+                feedbackText.trim().length > 0
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {submittingFeedback ? 'Saving...' : (feedbackText.trim().length > 0 ? 'Submit' : 'Skip')}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

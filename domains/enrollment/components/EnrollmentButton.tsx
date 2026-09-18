@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -223,6 +223,12 @@ export function EnrollmentButton({
     }
   };
 
+  useEffect(() => {
+    if (!isProcessing && !isPaying) {
+      setCurrentState(initialState);
+    }
+  }, [initialState, isProcessing, isPaying]);
+
   // Render logic based on explicit UI state
   if (currentState === 'ENROLLED') {
     const resourceLabel = resourceType === 'COURSE' ? 'Course' : 'Event';
@@ -286,8 +292,9 @@ export function EnrollmentButton({
     return (
       <button
         disabled
-        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm ${className}`}>
-        Action required
+        className={`bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold py-3 px-4 rounded-xl shadow-sm opacity-90 cursor-default border border-blue-200 dark:border-blue-800 w-full text-sm flex items-center justify-center gap-2 ${className}`}>
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+        <span>Processing…</span>
       </button>
     );
   }

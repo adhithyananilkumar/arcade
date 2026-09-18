@@ -35,8 +35,15 @@ export default function PersonalInfoPage() {
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || '');
   const [gender, setGender] = useState(user?.gender || '');
   const [address, setAddress] = useState(user?.address || '');
+  
+  const [specialities, setSpecialities] = useState(user?.specialities?.join(', ') || '');
+  const [experienceYears, setExperienceYears] = useState(user?.experienceYears?.toString() || '');
 
   const userEmail = user?.email || '';
+
+  const isStaff = user?.channelMemberships?.some(m => 
+    m.roles.some(r => r.code === 'CONTENT_CREATOR' || r.code === 'CHANNEL_ADMIN' || r.code === 'REVIEWER')
+  ) || user?.platformRoles?.some(r => r.code === 'PLATFORM_ADMIN');
 
   const handleCopyEmail = () => {
     if (!userEmail) return;
@@ -59,7 +66,11 @@ export default function PersonalInfoPage() {
         mobileNumber,
         gender,
         address,
-        user.githubUrl
+        user.githubUrl,
+        user.avatarUrl,
+        user.onboardingCompleted,
+        specialities.split(',').map(s => s.trim()).filter(Boolean),
+        experienceYears ? parseInt(experienceYears) : undefined
       );
       updateUser(updated);
       setEditingField(null);
@@ -79,6 +90,8 @@ export default function PersonalInfoPage() {
     setMobileNumber(user?.mobileNumber || '');
     setGender(user?.gender || '');
     setAddress(user?.address || '');
+    setSpecialities(user?.specialities?.join(', ') || '');
+    setExperienceYears(user?.experienceYears?.toString() || '');
     setEditingField(null);
   };
 
@@ -270,6 +283,77 @@ export default function PersonalInfoPage() {
             </button>
           )}
         </div>
+
+        {isStaff && (
+          <>
+            {/* Specialities */}
+            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+                  <User size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Specialities</h3>
+                  {editingField === 'specialities' ? (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input
+                        type="text"
+                        value={specialities}
+                        placeholder="e.g. Design Systems, Prototyping"
+                        onChange={(e) => setSpecialities(e.target.value)}
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      />
+                      {renderSaveCancelButtons("Specialities")}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                      {user?.specialities?.join(', ') || 'Not set'}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {editingField !== 'specialities' && (
+                <button onClick={() => setEditingField('specialities')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                  <Edit2 size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Experience Years */}
+            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
+                  <User size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Years of Experience</h3>
+                  {editingField === 'experienceYears' ? (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input
+                        type="number"
+                        min="0"
+                        value={experienceYears}
+                        placeholder="e.g. 5"
+                        onChange={(e) => setExperienceYears(e.target.value)}
+                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                      />
+                      {renderSaveCancelButtons("Experience Years")}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
+                      {user?.experienceYears !== undefined && user?.experienceYears !== null ? `${user.experienceYears} years` : 'Not set'}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {editingField !== 'experienceYears' && (
+                <button onClick={() => setEditingField('experienceYears')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                  <Edit2 size={14} />
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );

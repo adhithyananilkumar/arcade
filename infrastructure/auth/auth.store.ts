@@ -17,6 +17,9 @@ export interface User {
   preferences?: string[];
   workingAt?: string;
   onboardingCompleted?: boolean;
+  staffOnboardingCompleted?: boolean;
+  specialities?: string[];
+  experienceYears?: number;
   provider?: string;
   createdAt?: string;
   avatarUrl?: string;

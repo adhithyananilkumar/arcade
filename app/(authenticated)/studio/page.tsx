@@ -555,9 +555,7 @@ function ContentCard({
           </div>
         )}
       </div>
-      {item.description && (
-        <p className="line-clamp-2 text-xs leading-relaxed text-slate-500">{item.description}</p>
-      )}
+
       {item.authorName && (
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <User size={11} className="text-slate-400" />

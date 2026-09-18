@@ -124,7 +124,7 @@ export interface ContentEditorRuntimeProps {
    */
   onSubmit: (data: {
     coverImageUrl?: string;
-    pricingModel: "FREE" | "PAID";
+    pricingModel?: "FREE" | "PAID";
     priceAmount?: number;
     message?: string;
   }) => Promise<{ status: string; updatedAt?: string | null }>;
@@ -1045,7 +1045,7 @@ export const ContentEditorRuntime = forwardRef<ContentEditorRuntimeHandle, Conte
 
   const askSubmit = () => setSubmitDialogOpen(true);
 
-  const handleSubmit = async (data: { coverImageUrl?: string; pricingModel: "FREE" | "PAID"; priceAmount?: number; message?: string }) => {
+  const handleSubmit = async (data: { coverImageUrl?: string; pricingModel?: "FREE" | "PAID"; priceAmount?: number; message?: string }) => {
     if (!contentId) return;
     if (editorRef.current) {
       try {

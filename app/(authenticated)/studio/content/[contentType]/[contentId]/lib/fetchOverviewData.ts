@@ -87,6 +87,7 @@ export interface OverviewData {
   eventParticipants?: FetchResult<EventParticipant[]>;
   eventAnalytics?: FetchResult<Record<string, unknown>>;
   eventReadiness?: FetchResult<PublishValidationResponse>;
+  courseEnrollmentCount?: FetchResult<number>;
 }
 
 async function findContentSummary(contentId: string): Promise<ContentSummaryLite | null> {
@@ -159,16 +160,17 @@ export async function fetchOverviewData(
 
   const reviewContentType = REVIEW_CONTENT_TYPE[segment];
   const reviewPromise: Promise<FetchResult<ReviewResponse>> = reviewContentType
-    ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [404] })
+    ? settle(platformReviewApi.byContent(reviewContentType, contentId), { emptyStatuses: [404, 403] })
     : Promise.resolve({ status: "empty" });
 
   if (segment === "course") {
-    const [statusHistory, collaborators, review] = await Promise.all([
+    const [statusHistory, collaborators, review, courseEnrollmentCount] = await Promise.all([
       settle(api.get<StatusHistoryEntry[]>(`/api/courses/${contentId}/status-history`), { isEmpty: isEmptyArray }),
       settle(api.get<CollaboratorLite[]>(collaboratorsPath(segment, contentId)), { isEmpty: isEmptyArray }),
       reviewPromise,
+      settle(api.get<number>(`/api/v1/enrollments/resource/COURSE/${contentId}/count`)),
     ]);
-    return { content, statusHistory, collaborators, review };
+    return { content, statusHistory, collaborators, review, courseEnrollmentCount };
   }
 
   // event

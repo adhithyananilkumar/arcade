@@ -436,24 +436,34 @@ function CourseHero({
   authorUsername, 
   authorAvatarUrl,
   lessonCount = 0,
+  duration = "4h 30m",
+  enrollmentCount = 12480,
   onEnroll,
   isEnrolled = false,
+  initialState = "NOT_ENROLLED",
   pricingModel,
   priceAmount,
   courseId,
-  onReportClick
+  onReportClick,
+  channel,
+  collaborators
 }: {
   title: string
   authorName?: string
   authorUsername?: string
   authorAvatarUrl?: string | null
   lessonCount?: number
+  duration?: string
+  enrollmentCount?: number
   onEnroll?: () => void
   isEnrolled?: boolean
+  initialState?: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED"
   pricingModel?: string
   priceAmount?: number
   courseId?: string
   onReportClick?: () => void
+  channel?: { id: string, name: string, iconUrl: string | null, isPersonal: boolean }
+  collaborators?: { id: string, name: string, username: string, avatarUrl: string | null, role: string }[]
 }) {
   const [saved, setSaved] = useState(false)
 
@@ -461,14 +471,19 @@ function CourseHero({
   const lastWord = words.pop() || ''
   const firstPart = words.join(' ')
   
+  // Prepare author defaults
   const displayAuthor = authorName || INSTRUCTOR.name;
   const displayUsername = authorUsername || displayAuthor.toLowerCase().replace(/\s+/g, '');
   const authorInitials = displayAuthor.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
+  const hasCollaborators = collaborators && collaborators.length > 0;
+  // Make sure the primary author is first if we render collaborators, 
+  // but collaborators list should already have creator first based on backend logic.
+
   const metaData = [
-    { icon: Clock, label: "4h 30m", dot: "var(--color-blue)" },
-    { icon: BookOpen, label: `${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}`, dot: "var(--color-amber)" },
-    { icon: Users, label: "12,480 enrolled", dot: "var(--color-teal)" },
+    { icon: Clock, label: duration || "Unknown", dot: "var(--color-blue)" },
+    { icon: BookOpen, label: `${lessonCount || 1} ${lessonCount === 1 ? 'module' : 'modules'}`, dot: "var(--color-amber)" },
+    { icon: Users, label: `${(enrollmentCount || 0).toLocaleString()} enrolled`, dot: "var(--color-teal)" },
   ]
 
   return (
@@ -489,16 +504,51 @@ function CourseHero({
             </span>
           </h1>
 
-          {/* Instructor: name + channel */}
-          <div className="mt-5 flex items-center gap-2.5">
-            <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} accent={INSTRUCTOR.accent} size={34} />
-            <div>
-              <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
-              <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
-                <Radio size={12} className="text-blue" /> @{displayUsername}
-              </p>
+          {/* Instructor / Channel */}
+          {channel && !channel.isPersonal ? (
+            <div className="mt-5 flex items-center gap-2.5">
+              <Link href={`/channels/${channel.id}`} className="hover:opacity-80 transition-opacity">
+                <Avatar name={channel.name} imageUrl={channel.iconUrl} size={34} />
+              </Link>
+              <div>
+                <Link href={`/channels/${channel.id}`} className="hover:underline">
+                  <p className="text-sm font-semibold text-ink">{channel.name}</p>
+                </Link>
+                <Link href={`/${displayUsername}`} className="hover:underline">
+                  <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
+                    <Radio size={12} className="text-blue" /> by @{displayUsername}
+                  </p>
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-2.5">
+              <Link href={`/${displayUsername}`} className="hover:opacity-80 transition-opacity">
+                <Avatar name={displayAuthor} imageUrl={authorAvatarUrl} size={34} />
+              </Link>
+              <div>
+                <Link href={`/${displayUsername}`} className="hover:underline">
+                  <p className="text-sm font-semibold text-ink">{displayAuthor}</p>
+                </Link>
+                <Link href={`/${displayUsername}`} className="hover:underline">
+                  <p className="text-[11.5px] font-medium text-subtle">@{displayUsername}</p>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Collaborators */}
+          {hasCollaborators && (
+            <div className="mt-4 flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-subtle font-medium">Collaborators:</span>
+              {collaborators.map((collab) => (
+                <Link key={collab.id} href={`/${collab.username}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity bg-paper border border-line rounded-full px-2 py-0.5">
+                  <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={16} />
+                  <span className="text-xs text-ink">{collab.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="mt-7 flex flex-wrap gap-2.5">
             {metaData.map(({ icon: Icon, label }) => (
@@ -527,7 +577,7 @@ function CourseHero({
                 <EnrollmentButton
                   resourceType="COURSE"
                   resourceId={courseId}
-                  initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+                  initialState={initialState}
                   onStateChange={(state) => {
                     if (state === "ENROLLED" && onEnroll) {
                       onEnroll();
@@ -576,7 +626,7 @@ function CourseHero({
 /*  Tabs                                                               */
 /* ------------------------------------------------------------------ */
 
-function CourseTabs({ courseTitle }: { courseTitle?: string }) {
+function CourseTabs({ courseTitle, course }: { courseTitle?: string; course?: any }) {
   const [tab, setTab] = useState<Tab>("Overview")
   const [openMod, setOpenMod] = useState(0)
   const params = useParams<{ courseId?: string }>()
@@ -621,31 +671,40 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
           <div className="grid gap-12 md:grid-cols-2 md:gap-16">
             <AnimatedItem index={0} style={{ cursor: "default" }}>
               <h3 className="font-serif text-2xl font-light text-ink">About this course</h3>
-              <p className="mt-4 text-[15px] leading-relaxed text-subtle">
-                This course treats design as a craft you build in public — every module ends with a real
-                assignment, reviewed by working product designers. You&apos;ll leave with a portfolio-ready piece,
-                not just a certificate.
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-subtle">
-                Through interactive breakdowns and hands-on exercises, you&apos;ll master visual hierarchy, spatial grid systems, interactive prototyping, and design system governance. Every concept is grounded in production realities so you build interfaces that are scalable, accessible, and delightful to use.
-              </p>
+              {course?.description ? (
+                <div className="mt-4 text-[15px] leading-relaxed text-subtle whitespace-pre-wrap">
+                  {course.description}
+                </div>
+              ) : (
+                <p className="mt-4 text-[15px] leading-relaxed text-subtle italic opacity-75">
+                  No overview information provided.
+                </p>
+              )}
             </AnimatedItem>
             <div className="md:pl-16 lg:pl-28">
               <h3 className="font-serif text-2xl font-light text-ink">What you&apos;ll walk away with</h3>
               <div className="mt-4">
-                <AnimatedList
-                  items={HIGHLIGHTS}
-                  showGradients={false}
-                  displayScrollbar={false}
-                  renderItem={(h) => (
-                    <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
-                        <Check size={13} className="text-teal" />
-                      </span>
-                      <span>{h}</span>
-                    </div>
-                  )}
-                />
+                {(() => {
+                  const items = course?.learningOutcomes ? course.learningOutcomes.split("\n").filter((i: string) => i.trim() !== "") : [];
+                  if (items.length === 0) {
+                    return <p className="text-[15px] italic text-subtle opacity-75">No learning outcomes listed.</p>;
+                  }
+                  return (
+                    <AnimatedList
+                      items={items}
+                      showGradients={false}
+                      displayScrollbar={false}
+                      renderItem={(h) => (
+                        <div className="flex items-center gap-3 text-[15px] text-ink py-0.5">
+                          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-teal/12">
+                            <Check size={13} className="text-teal" />
+                          </span>
+                          <span>{h}</span>
+                        </div>
+                      )}
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -656,9 +715,9 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
             {/* Structured summary of the course layout */}
             <div className="mb-6 flex flex-wrap items-center justify-center gap-2.5">
               {[
-                { icon: BookOpen, label: `${MODULES.length} modules`, c: "var(--color-blue)" },
-                { icon: PlayCircle, label: `${TOTAL_LESSONS} lessons`, c: "var(--color-amber)" },
-                { icon: Clock, label: "4h 30m total", c: "var(--color-teal)" },
+                { icon: BookOpen, label: `${course?.modules?.length || 0} modules`, c: "var(--color-blue)" },
+                { icon: PlayCircle, label: `${course?.modules?.reduce((sum: number, mod: any) => sum + (mod.lessons?.length || 0), 0) || 0} lessons`, c: "var(--color-amber)" },
+                { icon: Clock, label: course?.duration ? `${course.duration} total` : "4h 30m total", c: "var(--color-teal)" },
               ].map(({ icon: Icon, label, c }) => (
                 <span
                   key={label}
@@ -670,7 +729,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
             </div>
 
             <div className="flex flex-col gap-3">
-              {MODULES.map((m, idx) => {
+              {course?.modules?.map((m: any, idx: number) => {
                 const open = openMod === idx
                 const bgGradient = MODULE_LIGHT_GRADIENTS[idx % MODULE_LIGHT_GRADIENTS.length]
                 const borderColor = MODULE_BORDER_COLORS[idx % MODULE_BORDER_COLORS.length]
@@ -690,7 +749,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                     >
                       <span
                         className="grid size-10 shrink-0 place-items-center rounded-xl font-serif text-lg font-bold border"
-                        style={{ color: m.accent, borderColor: borderColor }}
+                        style={{ color: m.accent || 'var(--color-ink)', borderColor: borderColor }}
                       >
                         {idx + 1}
                       </span>
@@ -701,7 +760,7 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                         <span className="block text-[15px] font-semibold text-ink">{m.title}</span>
                       </span>
                       <span className="hidden text-xs text-subtle sm:block">
-                        {m.lessons.length} lessons · {m.duration}
+                        {m.lessons?.length || 0} lessons
                       </span>
                       <ChevronDown
                         size={17}
@@ -714,15 +773,14 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
                         className="flex flex-col gap-1 border-t px-3 pb-3 pt-2"
                         style={{ borderColor: borderColor }}
                       >
-                        {m.lessons.map((lesson, li) => (
+                        {m.lessons?.map((lesson: any, li: number) => (
                           <li
                             key={lesson.title}
                             className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/60 dark:hover:bg-black/20"
                           >
                             <span className="w-5 text-center text-[12px] font-medium text-subtle/70">{li + 1}</span>
-                            <PlayCircle size={16} style={{ color: m.accent }} className="shrink-0" />
+                            <PlayCircle size={16} style={{ color: m.accent || 'var(--color-ink)' }} className="shrink-0" />
                             <span className="flex-1 text-[14px] text-ink">{lesson.title}</span>
-                            <span className="text-[12px] text-subtle">{lesson.length}</span>
                           </li>
                         ))}
                       </ul>
@@ -735,64 +793,80 @@ function CourseTabs({ courseTitle }: { courseTitle?: string }) {
         )}
 
         {tab === "Instructor" && (
-          <div
-            className="w-full rounded-3xl border p-8 transition-all"
-            style={{
-              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
-              borderColor: "rgba(139, 92, 246, 0.28)",
-            }}
-          >
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-              <Avatar name={INSTRUCTOR.name} accent={INSTRUCTOR.accent} size={72} />
-              <div className="flex-1">
-                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
-                  <BadgeCheck size={13} /> {INSTRUCTOR.org}
-                </div>
-                <h3 className="font-serif text-2xl font-light text-ink">{INSTRUCTOR.name}</h3>
-                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Briefcase size={13} /> {INSTRUCTOR.role}
-                  </span>
-                </p>
-              </div>
-              <button className="rounded-full bg-ink px-5 py-2.5 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5">
-                Follow channel
-              </button>
-            </div>
+          <div className="flex flex-col gap-8 w-full">
+            {(course?.collaborators || []).map((collaborator: any, index: number) => {
+              const isOrg = !course?.channel?.isPersonal;
+              const orgName = isOrg ? course?.channel?.name : null;
+              
+              return (
+                <div
+                  key={collaborator.id || index}
+                  className="w-full rounded-3xl border p-8 transition-all"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(99, 102, 241, 0.04) 100%)",
+                    borderColor: "rgba(139, 92, 246, 0.28)",
+                  }}
+                >
+                  <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <Avatar name={collaborator.name || "Unknown"} avatarUrl={collaborator.avatarUrl} size={72} />
+                    <div className="flex-1">
+                      {orgName && (
+                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-purple/10 px-2.5 py-1 text-[12px] font-medium text-purple">
+                          <BadgeCheck size={13} /> {orgName}
+                        </div>
+                      )}
+                      <h3 className="font-serif text-2xl font-light text-ink">{collaborator.name || "Unknown"}</h3>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-subtle">
+                        <span className="inline-flex items-center gap-1.5 uppercase">
+                          <Briefcase size={13} /> {collaborator.role ? collaborator.role.replace(/_/g, ' ') : "Instructor"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
 
-            <p className="mt-6 text-[15px] leading-relaxed text-subtle">{INSTRUCTOR.bio}</p>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {(collaborator.specialities || []).map((e: string, idx: number) => {
+                      const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
+                      return (
+                        <span
+                          key={e}
+                          className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
+                          style={{
+                            background: style.bg,
+                            borderColor: style.border,
+                            color: style.text,
+                          }}
+                        >
+                          {e}
+                        </span>
+                      )
+                    })}
+                  </div>
 
-            <div className="mt-6 flex flex-wrap gap-2">
-              {INSTRUCTOR.expertise.map((e, idx) => {
-                const style = EXPERTISE_TAG_STYLES[idx % EXPERTISE_TAG_STYLES.length]
-                return (
-                  <span
-                    key={e}
-                    className="rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all hover:scale-105"
-                    style={{
-                      background: style.bg,
-                      borderColor: style.border,
-                      color: style.text,
-                    }}
+                  <div
+                    className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center"
+                    style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
                   >
-                    {e}
-                  </span>
-                )
-              })}
-            </div>
-
-            <div
-              className="mt-7 grid grid-cols-2 gap-6 border-t pt-6 text-center sm:grid-cols-4"
-              style={{ borderColor: "rgba(139, 92, 246, 0.28)" }}
-            >
-              {INSTRUCTOR.stats.map(({ k, label, c, icon: Icon }) => (
-                <div key={label} className="flex flex-col items-center justify-center">
-                  <Icon size={18} style={{ color: c }} />
-                  <p className="mt-2 font-serif text-xl font-medium text-ink">{k}</p>
-                  <p className="text-[12px] text-subtle">{label}</p>
+                    <div className="flex flex-col items-center justify-center">
+                      <Star size={18} className="text-amber" />
+                      <p className="mt-2 font-serif text-xl font-medium text-ink">{collaborator.experienceYears || 0}</p>
+                      <p className="text-[12px] text-subtle">Years of Experience</p>
+                    </div>
+                    <div className="flex flex-col items-center justify-center">
+                      <PlayCircle size={18} className="text-blue" />
+                      <p className="mt-2 font-serif text-xl font-medium text-ink">{collaborator.courseCount || 0}</p>
+                      <p className="text-[12px] text-subtle">Courses Created</p>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+            
+            {(!course?.collaborators || course.collaborators.length === 0) && (
+              <div className="p-8 text-center text-[15px] text-subtle italic">
+                No instructor information available.
+              </div>
+            )}
           </div>
         )}
 
@@ -910,7 +984,7 @@ function ReviewsBlock() {
 /*  Enroll CTA                                                         */
 /* ------------------------------------------------------------------ */
 
-function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, courseId }: { onEnroll?: () => void; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string }) {
+function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, courseId, initialState = "NOT_ENROLLED" }: { onEnroll?: () => void; isEnrolled?: boolean; pricingModel?: string; priceAmount?: number; courseId?: string, initialState?: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED" }) {
   return (
     <section className="arcade-cta-wash relative overflow-hidden rounded-[2rem] px-8 py-14 text-center sm:px-16 sm:py-16">
       <FlowerMark
@@ -931,7 +1005,7 @@ function EnrollCta({ onEnroll, isEnrolled = false, pricingModel, priceAmount, co
             <EnrollmentButton
               resourceType="COURSE"
               resourceId={courseId}
-              initialState={isEnrolled ? "ENROLLED" : "NOT_ENROLLED"}
+              initialState={initialState}
               className="!bg-white !text-ink hover:!bg-white/90"
               onStateChange={(state) => {
                 if (state === "ENROLLED" && onEnroll) {
@@ -1020,6 +1094,14 @@ export default function CoursePage() {
     Boolean(user)
   )
   const isEnrolled = myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
+  let initialState: "ENROLLED" | "NOT_ENROLLED" | "PENDING" | "WAITLISTED" = "NOT_ENROLLED"
+  if (myEnrollment?.enrollment) {
+    if (isEnrolled) {
+      initialState = "ENROLLED"
+    } else if (myEnrollment.enrollment.enrollmentStatus === "PENDING" || myEnrollment.enrollment.enrollmentStatus === "REQUESTED") {
+      initialState = "PENDING"
+    }
+  }
 
   // EnrollmentButton already invalidates the enrollment read model on every state transition, so
   // `isEnrolled` refreshes itself. Nothing to refetch here, and no profile payload to reload.
@@ -1048,7 +1130,7 @@ export default function CoursePage() {
   const authorName = course?.authorName;
   const authorUsername = course?.authorUsername;
   const authorAvatarUrl = course?.authorAvatarUrl;
-  const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+  const moduleCount = course?.modules?.length || 0;
 
   return (
     <main className="min-h-screen bg-white text-ink">
@@ -1060,13 +1142,18 @@ export default function CoursePage() {
             authorName={authorName}
             authorUsername={authorUsername}
             authorAvatarUrl={authorAvatarUrl}
-            lessonCount={lessonCount}
+            lessonCount={moduleCount}
+            duration={course?.duration}
+            enrollmentCount={course?.enrollmentCount}
             onEnroll={handleEnrollSuccess}
             isEnrolled={isEnrolled}
+            initialState={initialState}
             pricingModel={course?.pricingModel}
             priceAmount={course?.priceAmount}
             courseId={params?.courseId as string}
             onReportClick={() => setReportModalOpen(true)}
+            channel={course?.channel}
+            collaborators={course?.collaborators}
           />
         </div>
       </div>
@@ -1074,12 +1161,12 @@ export default function CoursePage() {
       {/* Body below hero with pure white background */}
       <div className="w-full bg-white">
         <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-          <CourseTabs courseTitle={displayTitle} />
+          <CourseTabs courseTitle={displayTitle} course={course} />
           <div className="mt-20">
             <ReviewsBlock />
           </div>
           <div className="mt-16">
-            <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} />
+            <EnrollCta onEnroll={handleEnrollSuccess} isEnrolled={isEnrolled} pricingModel={course?.pricingModel} priceAmount={course?.priceAmount} courseId={params?.courseId as string} initialState={initialState} />
           </div>
         </div>
       </div>

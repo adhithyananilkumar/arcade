@@ -45,6 +45,7 @@ export interface CourseResponse {
   authorAvatarUrl?: string | null;
   title: string;
   description?: string;
+  learningOutcomes?: string;
   coverImageUrl?: string;
   pricingModel: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
@@ -57,6 +58,21 @@ export interface CourseResponse {
   status: ContentStatus;
   rejectionReason?: string;
   wasPublished?: boolean;
+  duration?: string;
+  enrollmentCount?: number;
+  channel?: {
+    id: string;
+    name: string;
+    iconUrl: string | null;
+    isPersonal: boolean;
+  };
+  collaborators?: {
+    id: string;
+    name: string;
+    username: string;
+    avatarUrl: string | null;
+    role: string;
+  }[];
   modules: ModuleResponse[];
   badges: BadgeSummaryResponse[];
   /**
@@ -78,17 +94,20 @@ export interface CreateCourseRequest {
   currency?: string;
   examSchedule?: string;
   hasExam?: boolean;
+  duration?: string;
 }
 
 export interface PatchCourseRequest {
   title?: string;
   description?: string;
+  learningOutcomes?: string;
   pricingModel?: PricingModel;
   /** Minor currency units (e.g. cents/paise). */
   priceAmount?: number;
   currency?: string;
   examSchedule?: string;
   hasExam?: boolean;
+  duration?: string;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────

@@ -64,6 +64,8 @@ export interface LearningHeroProps {
   previewAuthorLabel?: string
   accentColor?: string
   breadcrumbs?: BreadcrumbItem[]
+  channel?: { id: string; name: string; iconUrl: string | null; isPersonal: boolean }
+  collaborators?: { id: string; name: string; username: string; avatarUrl: string | null; role: string }[]
 }
 
 export function LearningHero({
@@ -88,6 +90,8 @@ export function LearningHero({
   previewAuthorLabel,
   accentColor = "#4c6fff",
   breadcrumbs = [],
+  channel,
+  collaborators,
 }: LearningHeroProps) {
   const words = title.split(" ")
   const lastWord = words.pop() || ""
@@ -132,17 +136,51 @@ export function LearningHero({
           .
         </h1>
 
-        {/* Instructor */}
-        <div className="mt-7 flex items-center gap-3">
-          <Avatar name={authorName} imageUrl={authorAvatarUrl} accent={authorAccent} size={46} />
-          <div>
-            <p className="font-semibold text-ink">{authorName}</p>
-            <p className="flex items-center gap-1.5 text-[13px] font-medium text-subtle">
-              <Radio size={14} className="opacity-70 text-blue" />
-              @{displayUsername}
-            </p>
-          </div>
-        </div>
+          {/* Instructor / Channel */}
+          {channel && !channel.isPersonal ? (
+            <div className="mt-5 flex items-center gap-2.5">
+              <Link href={`/channels/${channel.id}`} className="hover:opacity-80 transition-opacity">
+                <Avatar name={channel.name} imageUrl={channel.iconUrl} size={34} />
+              </Link>
+              <div>
+                <Link href={`/channels/${channel.id}`} className="hover:underline">
+                  <p className="text-sm font-semibold text-ink">{channel.name}</p>
+                </Link>
+                <Link href={`/${displayUsername}`} className="hover:underline">
+                  <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
+                    <Radio size={12} className="text-[#4c6fff]" /> by @{displayUsername}
+                  </p>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-center gap-2.5">
+              <Link href={`/${displayUsername}`} className="hover:opacity-80 transition-opacity">
+                <Avatar name={authorName} imageUrl={authorAvatarUrl} accent={authorAccent} size={34} />
+              </Link>
+              <div>
+                <Link href={`/${displayUsername}`} className="hover:underline">
+                  <p className="text-sm font-semibold text-ink">{authorName}</p>
+                </Link>
+                <p className="flex items-center gap-1 text-[11.5px] font-medium text-subtle">
+                  <Radio size={12} className="text-[#4c6fff]" /> @{displayUsername}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Collaborators */}
+          {collaborators && collaborators.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-subtle font-medium">Collaborators:</span>
+              {collaborators.map((collab) => (
+                <Link key={collab.id} href={`/${collab.username}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity bg-paper border border-line rounded-full px-2 py-0.5">
+                  <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={16} />
+                  <span className="text-xs text-ink">{collab.name}</span>
+                </Link>
+              ))}
+            </div>
+          )}
 
         {/* Meta Chips */}
         <div className="mt-7 flex flex-wrap gap-2.5">
