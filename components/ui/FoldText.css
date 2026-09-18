@@ -1,11 +1,12 @@
 .fold-text {
   display: inline-block;
   color: var(--fold-text-color, currentColor);
+  font-family: inherit;
   font-size: var(--fold-text-font-size, inherit);
   font-weight: var(--fold-text-font-weight, inherit);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  white-space: pre-wrap;
+  line-height: inherit;
+  letter-spacing: inherit;
+  white-space: inherit;
   user-select: text;
 }
 

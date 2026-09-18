@@ -11,6 +11,8 @@ import {
 } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight, ShieldCheck } from "lucide-react";
+import FoldText from "@/components/ui/FoldText";
+import SplitText from "@/components/ui/SplitText";
 
 // ============================================================
 // FRAME CONSTANTS & ASSET URL BUILDERS
@@ -426,23 +428,47 @@ export default function HeroScrollExperience() {
         {/* Hero Content */}
         <motion.div
           style={{ x: textX, y: textY }}
-          className="relative z-10 max-w-[950px] mx-auto text-center space-y-8 my-auto py-20 sm:py-24 px-2"
+          className="relative z-10 max-w-[1100px] mx-auto text-center space-y-8 my-auto py-20 sm:py-24 px-2"
         >
-          {/* HEADLINE */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[38px] sm:text-[54px] md:text-[66px] lg:text-[76px] tracking-normal leading-[1.25] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center font-bold"
+          {/* HEADLINE WITH FOLDTEXT EFFECT (Strictly 2 lines) */}
+          <h1
+            className="text-[28px] xs:text-[34px] sm:text-[48px] md:text-[60px] lg:text-[70px] xl:text-[78px] tracking-normal leading-[1.25] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center font-bold"
             style={{
               fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Amira-Grace', cursive",
               fontWeight: 700,
             }}
           >
-            <span className="block">
-              Where{" "}
+            {/* Line 1 */}
+            <span className="block whitespace-nowrap">
+              <FoldText
+                text="Where "
+                splitBy="char"
+                hinge="top"
+                trigger="mount"
+                duration={0.65}
+                stagger={0.035}
+                ease="power3.out"
+                perspective={700}
+                creaseShading={0.4}
+                color="inherit"
+                fontSize="inherit"
+                fontWeight="inherit"
+              />
               <span className="relative inline-block px-1">
-                Curiosity
+                <FoldText
+                  text="Curiosity"
+                  splitBy="char"
+                  hinge="top"
+                  trigger="mount"
+                  duration={0.65}
+                  stagger={0.035}
+                  ease="power3.out"
+                  perspective={700}
+                  creaseShading={0.4}
+                  color="inherit"
+                  fontSize="inherit"
+                  fontWeight="inherit"
+                />
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
@@ -450,23 +476,61 @@ export default function HeroScrollExperience() {
                   className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#EAB308] rounded-full origin-left"
                 />
               </span>{" "}
-              Finds Its Voice,
+              <FoldText
+                text="Finds Its Voice,"
+                splitBy="char"
+                hinge="top"
+                trigger="mount"
+                duration={0.65}
+                stagger={0.035}
+                ease="power3.out"
+                perspective={700}
+                creaseShading={0.4}
+                color="inherit"
+                fontSize="inherit"
+                fontWeight="inherit"
+              />
             </span>
-            <span className="block mt-1 sm:mt-2">
-              And Ideas Find{" "}
-              <span
-                className="inline-block animate-gradient-15s px-1"
+
+            {/* Line 2 */}
+            <span className="block mt-1 sm:mt-2 whitespace-nowrap">
+              <FoldText
+                text="And Ideas Find "
+                splitBy="char"
+                hinge="top"
+                trigger="mount"
+                duration={0.65}
+                stagger={0.035}
+                ease="power3.out"
+                perspective={700}
+                creaseShading={0.4}
+                color="inherit"
+                fontSize="inherit"
+                fontWeight="inherit"
+              />
+              <FoldText
+                text="Their Wings."
+                splitBy="char"
+                hinge="top"
+                trigger="mount"
+                duration={0.65}
+                stagger={0.035}
+                ease="power3.out"
+                perspective={700}
+                creaseShading={0.4}
+                color="inherit"
+                fontSize="inherit"
+                fontWeight="inherit"
+                className="animate-gradient-15s px-1"
                 style={{
                   backgroundImage:
                     "linear-gradient(90deg, #0D9488 0%, #06B6D4 35%, #2563EB 70%, #7C3AED 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
-              >
-                Their Wings.
-              </span>
+              />
             </span>
-          </motion.h1>
+          </h1>
 
           {/* DESCRIPTION */}
           <motion.p
@@ -551,68 +615,106 @@ export default function HeroScrollExperience() {
             }}
             className="absolute z-20 max-w-[850px] mx-auto text-center px-6 flex flex-col items-center pointer-events-none will-change-transform"
           >
-            {/* HEADLINE (Same Format as Hero) */}
+            {/* HEADLINE WITH SPLITTEXT EFFECT */}
             <h2
-              className="text-[52px] sm:text-[68px] md:text-[76px] lg:text-[84px] tracking-tight leading-[1.05] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center"
+              className="text-[42px] sm:text-[58px] md:text-[70px] lg:text-[80px] tracking-normal leading-[1.2] text-[#0B132B] drop-shadow-[0_4px_16px_rgba(11,19,43,0.04)] text-center font-bold"
               style={{
-                fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
-                fontWeight: 600,
+                fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Amira-Grace', cursive",
+                fontWeight: 700,
               }}
             >
-              <span className="block">
-                Driven by{" "}
-                <span className="relative inline-block">
-                  Curiosity.
-                  <span className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#0284C7] rounded-none origin-left" />
+              <span className="block whitespace-nowrap">
+                <SplitText
+                  text="Where Ideas "
+                  splitType="chars"
+                  delay={35}
+                  duration={0.75}
+                  ease="power3.out"
+                  from={{ opacity: 0, y: 35 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  rootMargin="-20px"
+                  tag="span"
+                />
+                <span className="relative inline-block px-1">
+                  <SplitText
+                    text="Rise,"
+                    splitType="chars"
+                    delay={35}
+                    duration={0.75}
+                    ease="power3.out"
+                    from={{ opacity: 0, y: 35 }}
+                    to={{ opacity: 1, y: 0 }}
+                    threshold={0.1}
+                    rootMargin="-20px"
+                    tag="span"
+                  />
+                  <span className="absolute left-0 -bottom-1 sm:-bottom-2 w-full h-[3px] sm:h-[4px] bg-[#0284C7] rounded-full origin-left" />
                 </span>
               </span>
-              <span className="block mt-1 sm:mt-2">
-                Built for{" "}
-                <span
-                  className="inline-block animate-gradient-15s"
+              <span className="block mt-1 sm:mt-2 whitespace-nowrap">
+                <SplitText
+                  text="And Futures "
+                  splitType="chars"
+                  delay={35}
+                  duration={0.75}
+                  ease="power3.out"
+                  from={{ opacity: 0, y: 35 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  rootMargin="-20px"
+                  tag="span"
+                />
+                <SplitText
+                  text="Begin."
+                  splitType="chars"
+                  delay={35}
+                  duration={0.75}
+                  ease="power3.out"
+                  from={{ opacity: 0, y: 35 }}
+                  to={{ opacity: 1, y: 0 }}
+                  threshold={0.1}
+                  rootMargin="-20px"
+                  tag="span"
+                  className="animate-gradient-15s px-1"
                   style={{
                     backgroundImage:
                       "linear-gradient(90deg, #2563EB 0%, #06B6D4 50%, #0D9488 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                   }}
-                >
-                  Scale.
-                </span>
+                />
               </span>
             </h2>
 
-            {/* DESCRIPTION */}
-            <p className="mt-5 text-[18px] sm:text-[19px] leading-[1.75] text-[#334155] max-w-[620px] mx-auto font-sans font-normal">
-              Arcade powers Amal Jyothi's technological vanguard — combining industry certifications, high-stakes hackathons, and interdisciplinary student ventures under one unified ecosystem.
+            {/* DESCRIPTION ANIMATED FROM BOTH SIDES */}
+            <p className="mt-5 text-[16px] sm:text-[18px] leading-[1.75] text-[#334155] max-w-[720px] mx-auto font-sans font-normal drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)] overflow-hidden">
+              <motion.span
+                initial={{ opacity: 0, x: -70 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.95, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-block mr-1.5 will-change-transform"
+              >
+                Arcade is where curiosity begins its journey and ideas find the space to grow.
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, x: 70 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.95, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-block mr-1.5 will-change-transform"
+              >
+                A vibrant community for learners, creators, and dreamers, it brings together knowledge, creativity, and collaboration through inspiring events, workshops, webinars, hackathons, and meaningful experiences.
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, x: -70 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.95, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-block will-change-transform"
+              >
+                Here, every question can spark a discovery, every idea can become a creation, and every learner has the chance to turn imagination into impact.
+              </motion.span>
             </p>
 
-            {/* STATS ROW (Same format / clean metric pills) */}
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3.5 max-w-[760px] w-full">
-              {/* Stat 1 */}
-              <div className="px-5 py-3.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/80 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.08)] text-center flex flex-col items-center">
-                <span className="text-[26px] sm:text-[28px] font-bold text-[#0B132B] font-sans tracking-tight">5,000+</span>
-                <span className="text-xs text-slate-600 font-medium mt-0.5">Active Innovators</span>
-              </div>
-
-              {/* Stat 2 */}
-              <div className="px-5 py-3.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/80 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.08)] text-center flex flex-col items-center">
-                <span className="text-[26px] sm:text-[28px] font-bold text-blue-600 font-sans tracking-tight">120+</span>
-                <span className="text-xs text-slate-600 font-medium mt-0.5">Workshops & Events</span>
-              </div>
-
-              {/* Stat 3 */}
-              <div className="px-5 py-3.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/80 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.08)] text-center flex flex-col items-center">
-                <span className="text-[26px] sm:text-[28px] font-bold text-teal-600 font-sans tracking-tight">40+</span>
-                <span className="text-xs text-slate-600 font-medium mt-0.5">Hackathons Built</span>
-              </div>
-
-              {/* Stat 4 */}
-              <div className="px-5 py-3.5 rounded-2xl bg-white/95 backdrop-blur-md border border-white/80 shadow-[0_8px_20px_-6px_rgba(15,23,42,0.08)] text-center flex flex-col items-center">
-                <span className="text-[26px] sm:text-[28px] font-bold text-indigo-600 font-sans tracking-tight">15K+</span>
-                <span className="text-xs text-slate-600 font-medium mt-0.5">Verified Credentials</span>
-              </div>
-            </div>
           </motion.div>
 
           {/* =========================================================
@@ -629,26 +731,17 @@ export default function HeroScrollExperience() {
             }}
             className="absolute z-30 max-w-[850px] mx-auto text-center px-6 flex flex-col items-center pointer-events-none will-change-transform"
           >
-            {/* Glowing Brand Pill */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-[0_8px_24px_rgba(15,23,42,0.12)] mb-6">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600" />
-              </span>
-              <span className="text-[11px] font-bold tracking-[0.25em] uppercase text-slate-800 font-sans">
-                Premier Autonomous Institution • Kerala
-              </span>
-            </div>
 
-            {/* HEADLINE: "Powered by Amal Jyothi" */}
+            {/* HEADLINE: "Powered by Amal Jyothi" in running letters */}
             <h2
-              className="text-[54px] sm:text-[76px] md:text-[92px] lg:text-[100px] font-medium tracking-tight text-[#0B132B] leading-[1.02] drop-shadow-[0_4px_24px_rgba(255,255,255,0.9)]"
+              className="text-[46px] sm:text-[68px] md:text-[84px] lg:text-[96px] font-bold tracking-normal text-[#0B132B] leading-[1.15] drop-shadow-[0_4px_24px_rgba(255,255,255,0.9)] text-center"
               style={{
-                fontFamily: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
+                fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Amira-Grace', cursive",
+                fontWeight: 700,
               }}
             >
-              <span className="italic text-[#334155] font-normal mr-3">Powered by</span>
-              <span className="font-bold relative inline-block">
+              <span className="text-[#334155] mr-3">Powered by</span>
+              <span className="relative inline-block">
                 <span
                   style={{
                     backgroundImage:
