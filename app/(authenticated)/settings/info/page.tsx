@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { UserService } from '@/domains/identity';
+import { channelService } from '@/domains/channels';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -41,9 +42,18 @@ export default function PersonalInfoPage() {
 
   const userEmail = user?.email || '';
 
+  const [hasChannels, setHasChannels] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    channelService.getMyChannels().then(channels => {
+      setHasChannels(channels.length > 0);
+    }).catch(() => {});
+  }, [user]);
+
   const isStaff = user?.channelMemberships?.some(m => 
     m.roles.some(r => r.code === 'CONTENT_CREATOR' || r.code === 'CHANNEL_ADMIN' || r.code === 'REVIEWER')
-  ) || user?.platformRoles?.some(r => r.code === 'PLATFORM_ADMIN');
+  ) || user?.platformRoles?.some(r => r.code === 'PLATFORM_ADMIN') || hasChannels;
 
   const handleCopyEmail = () => {
     if (!userEmail) return;
@@ -286,71 +296,15 @@ export default function PersonalInfoPage() {
 
         {isStaff && (
           <>
-            {/* Specialities */}
-            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
-                  <User size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Specialities</h3>
-                  {editingField === 'specialities' ? (
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <input
-                        type="text"
-                        value={specialities}
-                        placeholder="e.g. Design Systems, Prototyping"
-                        onChange={(e) => setSpecialities(e.target.value)}
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                      />
-                      {renderSaveCancelButtons("Specialities")}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
-                      {user?.specialities?.join(', ') || 'Not set'}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {editingField !== 'specialities' && (
-                <button onClick={() => setEditingField('specialities')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
-                  <Edit2 size={14} />
-                </button>
-              )}
-            </div>
 
-            {/* Experience Years */}
-            <div className="py-2.5 px-3 rounded-xl hover:bg-slate-100/60 dark:hover:bg-neutral-800/50 transition-colors border-b border-slate-100 dark:border-neutral-800/60 flex items-center justify-between gap-3 md:col-span-2">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="text-slate-400 dark:text-neutral-400 shrink-0">
-                  <User size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white">Years of Experience</h3>
-                  {editingField === 'experienceYears' ? (
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <input
-                        type="number"
-                        min="0"
-                        value={experienceYears}
-                        placeholder="e.g. 5"
-                        onChange={(e) => setExperienceYears(e.target.value)}
-                        className="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
-                      />
-                      {renderSaveCancelButtons("Experience Years")}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5 truncate">
-                      {user?.experienceYears !== undefined && user?.experienceYears !== null ? `${user.experienceYears} years` : 'Not set'}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {editingField !== 'experienceYears' && (
-                <button onClick={() => setEditingField('experienceYears')} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
-                  <Edit2 size={14} />
-                </button>
-              )}
+
+            <div className="md:col-span-2 flex justify-end mt-4 px-3">
+              <button 
+                onClick={() => window.dispatchEvent(new Event('openStaffOnboarding'))}
+                className="px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors shadow-sm"
+              >
+                Edit Instructor Page
+              </button>
             </div>
           </>
         )}

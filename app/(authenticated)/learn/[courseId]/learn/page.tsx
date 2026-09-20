@@ -18,6 +18,7 @@ import {
   FileText,
   Flag,
   MoreVertical,
+  Star,
 } from 'lucide-react';
 import {
   Dialog,
@@ -100,6 +101,7 @@ export default function CourseLearnPage() {
   
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(0);
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
 
   const courseId = params?.courseId as string | undefined;
@@ -111,7 +113,8 @@ export default function CourseLearnPage() {
       setSubmittingFeedback(true);
       try {
         await api.post(`/api/v1/learning/courses/${courseId}/reviews`, {
-          reviewText: feedbackText.trim()
+          reviewText: feedbackText.trim(),
+          rating: feedbackRating > 0 ? feedbackRating : 5
         });
         toast.success('Thank you for your feedback!');
       } catch (err) {
@@ -665,6 +668,25 @@ export default function CourseLearnPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="flex justify-center gap-2 mb-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setFeedbackRating(star)}
+                  className="focus:outline-none transition-transform hover:scale-110"
+                >
+                  <Star
+                    size={28}
+                    className={`${
+                      star <= (feedbackRating || 0)
+                        ? 'fill-amber-400 text-amber-400'
+                        : 'fill-transparent text-slate-300'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
             <textarea
               className="min-h-[120px] w-full resize-y rounded-lg border border-slate-200 p-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               placeholder="Write your feedback here..."

@@ -170,10 +170,10 @@ export function LearningHero({
           )}
 
           {/* Collaborators */}
-          {collaborators && collaborators.length > 0 && (
+          {collaborators && collaborators.filter(c => c.username !== displayUsername).length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 items-center">
               <span className="text-xs text-subtle font-medium">Collaborators:</span>
-              {collaborators.map((collab) => (
+              {collaborators.filter(c => c.username !== displayUsername).map((collab) => (
                 <Link key={collab.id} href={`/${collab.username}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity bg-paper border border-line rounded-full px-2 py-0.5">
                   <Avatar name={collab.name} imageUrl={collab.avatarUrl} size={16} />
                   <span className="text-xs text-ink">{collab.name}</span>

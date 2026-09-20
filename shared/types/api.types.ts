@@ -72,6 +72,9 @@ export interface CourseResponse {
     username: string;
     avatarUrl: string | null;
     role: string;
+    specialities?: string[];
+    experienceYears?: number;
+    courseCount?: number;
   }[];
   modules: ModuleResponse[];
   badges: BadgeSummaryResponse[];

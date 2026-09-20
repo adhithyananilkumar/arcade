@@ -6,7 +6,7 @@ import { Button } from '@/shared/design-system/ui/button';
 import { Textarea } from '@/shared/design-system/ui/textarea';
 import { Input } from '@/shared/design-system/ui/input';
 import { toast } from 'sonner';
-import { Sparkles, User, Briefcase, Star } from 'lucide-react';
+import { Sparkles, User, Briefcase, Star, X } from 'lucide-react';
 import { UserService } from '@/domains/identity';
 import { channelService } from '@/domains/channels';
 
@@ -19,6 +19,17 @@ export function StaffOnboardingModal() {
   const [bio, setBio] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCheckedOwnership, setHasCheckedOwnership] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+      setBio(user?.bio || '');
+      setSpecialities(user?.specialities?.join(', ') || '');
+      setExperience(user?.experienceYears?.toString() || '');
+    };
+    window.addEventListener('openStaffOnboarding', handleOpen);
+    return () => window.removeEventListener('openStaffOnboarding', handleOpen);
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -87,7 +98,15 @@ export function StaffOnboardingModal() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800">
+      <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-8 shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800 relative">
+        {user.staffOnboardingCompleted && (
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        )}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-500/20">
             <Sparkles className="h-7 w-7 text-sky-600 dark:text-sky-400" />

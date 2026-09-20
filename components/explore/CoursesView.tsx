@@ -104,7 +104,25 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     { name: "Prof. David Miller", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
     { name: "Elena Rostova", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" }
   ];
-  const instructor = instructors[index % instructors.length];
+  let instructor = instructors[index % instructors.length];
+
+  // Try to use real backend data if provided
+  if ((course as any).channel && !(course as any).channel.isPersonal) {
+    const channel = (course as any).channel;
+    const name = channel.name;
+    const avatarUrl = channel.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role: 'Organization', avatarUrl };
+  } else if ((course as any).authorName) {
+    const name = (course as any).authorName;
+    const avatarUrl = (course as any).authorAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role: 'Course Author', avatarUrl };
+  } else if ((course as any).collaborators && (course as any).collaborators.length > 0) {
+    const author = (course as any).collaborators.find((c: any) => c.role === 'AUTHOR' || c.role === 'Author') || (course as any).collaborators[0];
+    const name = author.name || author.userEmail || 'Instructor';
+    const role = author.role === 'AUTHOR' || author.role === 'Author' ? 'Course Author' : 'Instructor';
+    const avatarUrl = author.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role, avatarUrl };
+  }
 
   return {
     ...course,
@@ -689,7 +707,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                   </button>
                 )}
               </div>
+            </div>
 
+            <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                 <img
                   src={enriched.instructor.avatarUrl}
@@ -827,8 +847,8 @@ export default function CoursesView({
   const sortedCourses = [...filteredCourses].sort((a: any, b: any) => {
     const slugA = slugify(a.title);
     const slugB = slugify(b.title);
-    const ratingA = courseStats[slugA]?.averageRating || 4.8;
-    const ratingB = courseStats[slugB]?.averageRating || 4.8;
+    const ratingA = (courseStats[a.id] || courseStats[slugA])?.averageRating || 4.8;
+    const ratingB = (courseStats[b.id] || courseStats[slugB])?.averageRating || 4.8;
 
     if (sortBy === "rating") {
       return ratingB - ratingA;
@@ -1034,7 +1054,7 @@ export default function CoursesView({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: "30px" }}>
           {sortedCourses.map((course: any, index: number) => {
             const slug = slugify(course.title);
-            const stats = courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
+            const stats = courseStats[course.id] || courseStats[slug] || { averageRating: 0.0, reviewsCount: 0 };
             return (
               <CourseCard
                 key={course.id || `${course.title}-${index}`}

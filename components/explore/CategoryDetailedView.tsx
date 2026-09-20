@@ -774,7 +774,25 @@ function getEnrichedCourse(course: { title: string; duration: string; level: str
     { name: "Prof. David Miller", role: "Course Author", avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150" },
     { name: "Elena Rostova", role: "Instructor", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150" }
   ];
-  const instructor = instructors[index % instructors.length];
+  let instructor = instructors[index % instructors.length];
+
+  // Try to use real backend data if provided
+  if ((course as any).channel && !(course as any).channel.isPersonal) {
+    const channel = (course as any).channel;
+    const name = channel.name;
+    const avatarUrl = channel.iconUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role: 'Organization', avatarUrl };
+  } else if ((course as any).authorName) {
+    const name = (course as any).authorName;
+    const avatarUrl = (course as any).authorAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role: 'Course Author', avatarUrl };
+  } else if ((course as any).collaborators && (course as any).collaborators.length > 0) {
+    const author = (course as any).collaborators.find((c: any) => c.role === 'AUTHOR' || c.role === 'Author') || (course as any).collaborators[0];
+    const name = author.name || author.userEmail || 'Instructor';
+    const role = author.role === 'AUTHOR' || author.role === 'Author' ? 'Course Author' : 'Instructor';
+    const avatarUrl = author.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    instructor = { name, role, avatarUrl };
+  }
 
   return {
     ...course,
@@ -1488,6 +1506,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
           level: "All Levels",
           desc: c.description || "",
           category: "Courses",
+          collaborators: c.collaborators,
+          authorName: c.authorName,
+          authorAvatarUrl: c.authorAvatarUrl,
+          channel: c.channel,
         });
       });
 
@@ -1522,6 +1544,10 @@ export default function CategoryDetailedView({ hubBasePath, mode: propMode = "co
         duration: "Self-Paced",
         level: "All Levels",
         desc: c.description || "",
+        collaborators: c.collaborators,
+        authorName: c.authorName,
+        authorAvatarUrl: c.authorAvatarUrl,
+        channel: c.channel,
       }));
 
     if (base) {

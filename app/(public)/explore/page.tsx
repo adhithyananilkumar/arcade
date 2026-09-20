@@ -21,16 +21,11 @@ export const CATEGORY_DATA: Record<string, {
   colors: { primary: string; secondary: string };
 }> = {
   "Computer Science": {
-    coursesCount: 12,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Gain foundational and advanced skills in software development, data structures, database design, and software engineering workflows.",
-    courses: [
-      { title: "Intro to Programming", duration: "6 Weeks", level: "Beginner", desc: "Learn programming logic and syntax fundamentals using modern languages." },
-      { title: "Data Structures & Algorithms", duration: "10 Weeks", level: "Advanced", desc: "Master complexity analysis, sorting algorithms, trees, and dynamic programming." },
-      { title: "Database Management Systems", duration: "8 Weeks", level: "Intermediate", desc: "Design relational databases, write queries, and optimize index schemas." },
-      { title: "Software Engineering Principles", duration: "12 Weeks", level: "Advanced", desc: "Study system architecture patterns, automated tests, and agile collaboration." }
-    ],
+    courses: [],
     bootcamps: [
       { title: "Fullstack Web Development", duration: "12 Weeks", type: "Part-time", date: "Starts Monday", desc: "Build enterprise React and Node applications from architectural design to cloud deployment." },
       { title: "React & Next.js Intensive", duration: "3 Days", type: "Intensive", date: "Starts Friday", desc: "Deep-dive into App Router, Server Components, and scale-up optimizations." },
@@ -102,7 +97,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Design & UI/UX": {
-    coursesCount: 8,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #EC4899 0%, #BE185D 100%)",
     colors: { primary: "#EC4899", secondary: "rgba(236, 72, 153, 0.08)" },
     desc: "Master user interface design, user experience research, wireframing, and interactive prototyping.",
@@ -111,7 +106,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Data Science & AI": {
-    coursesCount: 15,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)",
     colors: { primary: "#F59E0B", secondary: "rgba(245, 158, 11, 0.08)" },
     desc: "Dive into machine learning, deep neural networks, data analysis, and predictive modeling.",
@@ -120,7 +115,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Productivity Tools": {
-    coursesCount: 4,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
     colors: { primary: "#3B82F6", secondary: "rgba(59, 130, 246, 0.08)" },
     desc: "Learn to streamline your workflow with modern productivity software, automation, and integrations.",
@@ -138,7 +133,7 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "All": {
-    coursesCount: 50,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
     colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
     desc: "Explore all comprehensive learning paths, hands-on bootcamps, and educational resources across all disciplines.",
