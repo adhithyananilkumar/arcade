@@ -1,21 +1,13 @@
 'use client';
 
 /**
- * Landing step for the invite-gated channel creation flow (see the "Invitation -> Channel
- * Creation Flow" plan, Frontend §2). Reached from either the invite email or the in-app
- * notification — both point at this same URL with `?token=`.
- *
- * Responsibilities:
- * 1. Validate the token (public, no auth, no mutation).
- * 2. Always require login before proceeding, regardless of how the user arrived:
- *    - Already authenticated -> skip straight to the channel-type/form page.
- *    - Not authenticated -> bounce through /sign with `redirect` + `email` so they land back
- *      here (well, on the create step) once signed in.
+ * Landing step for the invite-gated channel creation flow.
+ * Validates the token and redirects cleanly with matching luxury dark theme.
  */
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, XCircle, MailWarning } from 'lucide-react';
+import { Loader2, XCircle, MailWarning, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { channelService } from '@/domains/channels';
@@ -31,10 +23,7 @@ function ChannelInviteContent() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    // No token at all is a render-time condition, not something to resolve via an effect —
-    // handled directly below instead of round-tripping through state.
     if (!token) return;
-    // Wait for the app-wide auth bootstrap to resolve before deciding where to send the user.
     if (status === 'loading') return;
 
     let cancelled = false;
@@ -56,16 +45,7 @@ function ChannelInviteContent() {
 
         setState('redirecting');
         const createPath = `/channel-invite/create?token=${encodeURIComponent(token)}`;
-
-        if (status === 'authenticated') {
-          router.replace(createPath);
-          return;
-        }
-
-        const params = new URLSearchParams({ redirect: createPath });
-        if (result.email) params.set('email', result.email);
-        if (result.accountExists === false) params.set('mode', 'signup');
-        router.replace(`/sign?${params.toString()}`);
+        router.replace(createPath);
       } catch (err) {
         if (!cancelled) {
           setState('error');
@@ -83,35 +63,35 @@ function ChannelInviteContent() {
   const effectiveErrorMessage = !token ? 'No invitation token was provided in the URL.' : errorMessage;
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#030712] px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-xl shadow-indigo-100/50"
+        className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/80 p-8 text-center shadow-2xl backdrop-blur-2xl"
       >
         {(effectiveState === 'validating' || effectiveState === 'redirecting') && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-indigo-50 p-4 text-indigo-600">
-              <Loader2 className="animate-spin" size={32} />
+            <div className="mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 p-4 text-cyan-400">
+              <Loader2 className="animate-spin" size={36} />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-white">
               {effectiveState === 'validating' ? 'Checking your invitation...' : 'Taking you onward...'}
             </h2>
-            <p className="text-sm text-gray-500 mt-2">This will just take a moment.</p>
+            <p className="text-sm text-slate-400 mt-2">This will just take a moment.</p>
           </div>
         )}
 
         {effectiveState === 'error' && (
           <div className="flex flex-col items-center">
-            <div className="mb-4 rounded-full bg-red-50 p-4 text-red-500">
-              {effectiveErrorMessage.includes('expired') ? <MailWarning size={48} /> : <XCircle size={48} />}
+            <div className="mb-4 rounded-full bg-rose-500/10 border border-rose-500/20 p-4 text-rose-400">
+              {effectiveErrorMessage.includes('expired') ? <MailWarning size={44} /> : <ShieldAlert size={44} />}
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Invitation Unavailable</h2>
-            <p className="text-sm text-gray-500 mt-2">{effectiveErrorMessage}</p>
+            <h2 className="text-2xl font-bold text-white">Invitation Unavailable</h2>
+            <p className="text-sm text-slate-300 mt-2 leading-relaxed">{effectiveErrorMessage}</p>
 
             <Link
               href="/"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:opacity-90 transition-opacity"
             >
               Go to Homepage
             </Link>
@@ -126,8 +106,8 @@ export default function ChannelInvitePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="animate-spin text-indigo-500" size={40} />
+        <div className="flex h-screen w-full items-center justify-center bg-[#030712]">
+          <Loader2 className="animate-spin text-cyan-400" size={40} />
         </div>
       }
     >
