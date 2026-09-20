@@ -1,6 +1,6 @@
 // features/content/blocks/registry.ts
 // Single source of truth for every custom (non-StarterKit) block type: button, toggle,
-// callout, roadmap, and future additions. Each block is defined once in its own folder
+// callout, and future additions. Each block is defined once in its own folder
 // (extension + optional editor NodeView + optional learner renderer + command) and
 // registered here — buildExtensions(), blockCommands.ts, and TiptapContentView all derive
 // from this list instead of being hand-edited independently. See docs on Phase 0 of the
@@ -14,12 +14,11 @@
 import type { BlockDefinition } from "./types";
 import { buttonBlock } from "./button";
 import { toggleBlock } from "./toggle";
-import { roadmapBlock } from "./roadmap";
 import { quizBlock } from "./quiz";
 import { examBlock } from "./exam";
 import { sectionBlock } from "./section";
 
-const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, quizBlock, roadmapBlock, examBlock, sectionBlock];
+const BLOCKS: BlockDefinition[] = [buttonBlock, toggleBlock, quizBlock, examBlock, sectionBlock];
 
 export function getBlockDefinitions(): BlockDefinition[] {
   return BLOCKS;

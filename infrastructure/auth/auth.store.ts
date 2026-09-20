@@ -23,7 +23,15 @@ export interface User {
   emailVerified: boolean;
   platformRoles?: { id: string; code: string; name: string }[];
   channelMemberships?: { channelId: string; channelName: string; channelType: string; roles: { id: string; code: string; name: string }[] }[];
-  enrolledCourses?: { courseId: string; title?: string; coverImageUrl?: string; authorName?: string; instructor?: string; date?: string; type?: string; status?: string; }[];
+  // `enrolledCourses` was removed from this type and from the backend `ProfileResponse` (SEC-3).
+  // The learner's own enrollments are private learning state, not identity — read them with
+  // `useMyEnrollmentsQuery` / `useMyEnrollmentForResourceQuery` from `@/domains/enrollment`.
+  // Do not re-add it here: a cached copy on the auth store cannot be invalidated when an
+  // enrollment changes, which is exactly why My Learning used to need a full page reload.
+  // "Body of work" — content the user authored (backend: ProfileResponse.CourseDto/AuthoredWorkshopDto/CertificateDto)
+  courses?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
+  workshops?: { id: string; title: string; description?: string; coverImageUrl?: string; status?: string; createdAt?: string }[];
+  certificates?: { name: string; issuer?: string; date?: string; idCode?: string }[];
   // Legacy fields (kept for fallback)
   roles?: any[];
   permissions?: string[];

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Footer from "@/apps/public/components/landing/Footer";
 import GradientText from "@/components/landing/GradientText";
-import { CourseCard } from "@/components/explore/CategoryDetailedView";
+import CategoryDetailedView, { CourseCard } from "@/components/explore/CategoryDetailedView";
 import Link from "next/link";
 import "@/apps/public/landing.css";
 import { usePublicCategories } from "@/shared/hooks/usePublicCategories";
@@ -48,136 +48,58 @@ export const CATEGORY_DATA: Record<string, {
     ]
   },
   "Information Technology": {
-    coursesCount: 10,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #4B6189 0%, #2E4A72 100%)",
     colors: { primary: "#4B6189", secondary: "rgba(75, 97, 137, 0.08)" },
     desc: "Understand enterprise server configuration, cloud virtualization, cybersecurity models, and network protocol routing.",
-    courses: [
-      { title: "Computer Networks & Routing", duration: "8 Weeks", level: "Beginner", desc: "Learn IP subnetting, DNS, firewalls, and proxy setups." },
-      { title: "Cyber Security Fundamentals", duration: "10 Weeks", level: "Intermediate", desc: "Explore ethical hacking protocols, cryptography, and server hardening." },
-      { title: "Cloud Computing & AWS Architecture", duration: "8 Weeks", level: "Intermediate", desc: "Deploy scalable load balancers and VPC subnets on cloud hosting." },
-      { title: "Linux Systems Administration", duration: "6 Weeks", level: "Beginner", desc: "Manage terminal configurations, users, services, and bash tools." }
-    ],
-    bootcamps: [
-      { title: "DevOps & CI/CD Pipelines Lab", duration: "4 Weeks", type: "Part-time", date: "Starts Sunday", desc: "Automate builds using GitHub Actions, configure Docker, and scale release cycles." },
-      { title: "Cyber Security Analyst Lab", duration: "2 Weeks", type: "Intensive", date: "Starts next Week", desc: "Practice real-time threat intelligence detection, system auditing, and incident responses." },
-      { title: "Kubernetes Orchestration Hands-on", duration: "3 Days", type: "Interactive", date: "Starts Friday", desc: "Configure ingress controllers, manage secret files, and scale horizontal pods." }
-    ],
-    resources: [
-      { title: "Configuring High-Performance Nginx Servers", type: "Article", readTime: "4 min read" },
-      { title: "SSH Security Hardening Best Practices", type: "Guide", readTime: "7 min read" },
-      { title: "An Introduction to Docker Compose configs", type: "Docs", readTime: "9 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Business & Management": {
-    coursesCount: 6,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #D97462 0%, #9C4132 100%)",
     colors: { primary: "#D97462", secondary: "rgba(217, 116, 98, 0.08)" },
     desc: "Develop strategic startup frameworks, financial accounting competence, agile project leadership, and product marketing strategies.",
-    courses: [
-      { title: "Principles of Management", duration: "6 Weeks", level: "Beginner", desc: "Master organizational structures, planning strategies, and leadership." },
-      { title: "Marketing & Growth Strategy", duration: "8 Weeks", level: "Intermediate", desc: "Analyze user cohorts, product positioning, and acquisition channels." },
-      { title: "Financial & Corporate Accounting", duration: "8 Weeks", level: "Intermediate", desc: "Read company sheets, assess operating costs, and budget plans." },
-      { title: "Entrepreneurship & Valuation", duration: "10 Weeks", level: "Beginner", desc: "Structure target pitches, test market bounds, and secure funding." }
-    ],
-    bootcamps: [
-      { title: "MBA Case Study Masterclass", duration: "2 Days", type: "Interactive", date: "Starts Saturday", desc: "Evaluate real startup failures and model successful pivot options." },
-      { title: "Product Management Intensive", duration: "6 Weeks", type: "Part-time", date: "Starts next Monday", desc: "Learn to write PRDs, manage backlogs, coordinate engineering, and track metrics." },
-      { title: "Digital Marketing Strategy Lab", duration: "4 Weeks", type: "Part-time", date: "Starts Friday", desc: "Optimize SEO metrics, setup PPC campaigns, and track customer conversions." }
-    ],
-    resources: [
-      { title: "Writing a Successful Startup Business Plan", type: "Article", readTime: "5 min read" },
-      { title: "Understanding Cash Flow & Corporate Burn", type: "Guide", readTime: "8 min read" },
-      { title: "How to Pitch Ideas to Angel Investors", type: "Docs", readTime: "11 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Civil & Mechanical": {
-    coursesCount: 7,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #10B981 0%, #047857 100%)",
     colors: { primary: "#10B981", secondary: "rgba(16, 185, 129, 0.08)" },
     desc: "Gain dynamic engineering skills in mechanical stress calculations, structural analysis, materials composition, and CAD drafting.",
-    courses: [
-      { title: "Engineering Static Mechanics", duration: "8 Weeks", level: "Beginner", desc: "Formulate equilibrium equations for structures under heavy load." },
-      { title: "Fluid Dynamics & Turbines", duration: "10 Weeks", level: "Intermediate", desc: "Analyze fluid flows, compression, and hydraulic power machines." },
-      { title: "Surveying & Levelling Methods", duration: "6 Weeks", level: "Beginner", desc: "Determine geographic contours and plot foundation elevations." },
-      { title: "Strength of Structural Materials", duration: "8 Weeks", level: "Advanced", desc: "Evaluate elasticity thresholds, torsion, and fracture models." }
-    ],
-    bootcamps: [
-      { title: "AutoCAD Design Intensive", duration: "2 Weeks", type: "Intensive", date: "Starts Saturday", desc: "Master 2D & 3D computer-aided draft designs and blueprint exports." },
-      { title: "Structural Analysis Hands-on", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Examine static load thresholds, materials deformation, and shear boundaries." },
-      { title: "Robotics & Automation Lab", duration: "4 Weeks", type: "Part-time", date: "Starts Saturday", desc: "Program microcontrollers, design mechanical arms, and simulate automated assembly loops." }
-    ],
-    resources: [
-      { title: "Concrete Mix Design & Setting Guides", type: "Article", readTime: "6 min read" },
-      { title: "Intro to 3D Printing Mechanics & Torsion", type: "Guide", readTime: "10 min read" },
-      { title: "Understanding Commercial HVAC Systems", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Basic Sciences": {
-    coursesCount: 5,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)",
     colors: { primary: "#14B8A6", secondary: "rgba(20, 184, 166, 0.08)" },
     desc: "Strengthen academic foundations in mathematics, matrix dynamics, electromagnetics, and organic engineering structures.",
-    courses: [
-      { title: "Multivariable Vector Calculus", duration: "10 Weeks", level: "Advanced", desc: "Evaluate triple integrals, curl functions, and divergence theory." },
-      { title: "Linear Algebra & Vectors", duration: "8 Weeks", level: "Intermediate", desc: "Master matrix transformations, eigenvalues, and computer mapping math." },
-      { title: "Applied Electromagnetism", duration: "8 Weeks", level: "Beginner", desc: "Examine electrical fields, wave optics, and electromagnetic laws." },
-      { title: "Chemical Bond Dynamics", duration: "8 Weeks", level: "Beginner", desc: "Explore chemical interactions, molecular configurations, and fuels." }
-    ],
-    bootcamps: [
-      { title: "MATLAB Coding for Scientific Research", duration: "1 Week", type: "Interactive", date: "Starts Friday", desc: "Simulate numerical data sets, write equations, and plot matrices." },
-      { title: "Physics Simulator Engines", duration: "3 Days", type: "Event", date: "Starts Saturday", desc: "Examine mechanical simulations, wave structures, and thermal limits." },
-      { title: "Chemical Synthesis Lab Processes", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Model molecular reactions, setup safe test environments, and process syntheses." }
-    ],
-    resources: [
-      { title: "Understanding Vector Fields & Integrals", type: "Article", readTime: "6 min read" },
-      { title: "How Matrix Mathematics Powers Neural Nets", type: "Guide", readTime: "10 min read" },
-      { title: "The Chemical Composition of Modern Batteries", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Humanities & Languages": {
-    coursesCount: 6,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #6366F1 0%, #4338CA 100%)",
     colors: { primary: "#6366F1", secondary: "rgba(99, 102, 241, 0.08)" },
     desc: "Develop professional competence in copywriting, tech documentation, legal corporate ethics, and vocal presentation skills.",
-    courses: [
-      { title: "Professional Communication", duration: "6 Weeks", level: "Beginner", desc: "Refine speech delivery, corporate email formats, and team syncs." },
-      { title: "Technical Writing & Docs", duration: "8 Weeks", level: "Intermediate", desc: "Author markdown specifications, API references, and user walkthroughs." },
-      { title: "Creative Storytelling & Copy", duration: "8 Weeks", level: "Beginner", desc: "Build narrative arcs, persuasive copy, and clear hook elements." },
-      { title: "Corporate Ethics & Governance", duration: "6 Weeks", level: "Beginner", desc: "Evaluate moral choices in tech, resource handling, and legal compliance." }
-    ],
-    bootcamps: [
-      { title: "Public Speaking Mastery", duration: "3 Days", type: "Interactive", date: "Starts Friday", desc: "Master posture, tone adjustments, slides integration, and stage confidence." },
-      { title: "UX Writing & Copy Event", duration: "1 Week", type: "Interactive", date: "Starts Monday", desc: "Design button labels, warning messages, and setup style rules." },
-      { title: "Vocal Presentation Studio", duration: "1 Day", type: "Intensive", date: "Starts Saturday", desc: "Refine verbal pacing, breathing control, and microphone setups." }
-    ],
-    resources: [
-      { title: "How to Draft a High-Quality Technical Spec", type: "Article", readTime: "5 min read" },
-      { title: "UX Writing: Best Practices for Interface Copy", type: "Guide", readTime: "8 min read" },
-      { title: "Active Listening & Constructive Feedback Tools", type: "Docs", readTime: "10 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Personal Development": {
-    coursesCount: 5,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #84CC16 0%, #4D7C0F 100%)",
     colors: { primary: "#84CC16", secondary: "rgba(132, 204, 22, 0.08)" },
     desc: "Build professional soft skills, goal planning techniques, stress resolution, and technical interview confidence.",
-    courses: [
-      { title: "Time Optimization & Focus Sprints", duration: "4 Weeks", level: "Beginner", desc: "Manage daily tasks, schedule pomodoros, and avoid burnout." },
-      { title: "Leadership & Conflict Resolution", duration: "8 Weeks", level: "Intermediate", desc: "Learn delegation, active consensus mapping, and positive coaching." },
-      { title: "Strategic Problem Solving", duration: "6 Weeks", level: "Beginner", desc: "Apply root-cause analysis models to address complex engineering bottlenecks." },
-      { title: "Emotional Intelligence at Work", duration: "6 Weeks", level: "Beginner", desc: "Practice empathy, handle criticism constructively, and map stress." }
-    ],
-    bootcamps: [
-      { title: "Goal Setting & Okrs Masterclass", duration: "1 Day", type: "Interactive", date: "Starts Saturday", desc: "Map quarterly team objectives and structure key performance metrics." },
-      { title: "Tech Interview Prep & Leetcode Sprints", duration: "2 Weeks", type: "Intensive", date: "Starts Monday", desc: "Master algorithmic patterns, systems design, and behavioral pitch structures." },
-      { title: "Resume & Portfolio Optimization Event", duration: "3 Hours", type: "Event", date: "Starts Friday", desc: "Design outstanding resumes, optimize LinkedIn SEO, and format github pages." }
-    ],
-    resources: [
-      { title: "Strategies for Negotiating Your Tech Job Offer", type: "Article", readTime: "5 min read" },
-      { title: "How to Build a Remarkable Developer Portfolio", type: "Guide", readTime: "10 min read" },
-      { title: "Developing a Lifelong Growth Mindset Profile", type: "Docs", readTime: "15 min read" }
-    ]
+    courses: [],
+    bootcamps: [],
+    resources: []
   },
   "Design & UI/UX": {
     coursesCount: 8,
@@ -207,17 +129,25 @@ export const CATEGORY_DATA: Record<string, {
     resources: []
   },
   "Marketing & SEO": {
-    coursesCount: 9,
+    coursesCount: 0,
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)",
     colors: { primary: "#8B5CF6", secondary: "rgba(139, 92, 246, 0.08)" },
     desc: "Understand digital marketing strategies, search engine optimization, and social media growth.",
     courses: [],
     bootcamps: [],
     resources: []
-  }
-};
+  },
+  "All": {
+    coursesCount: 50,
+    gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+    colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+    desc: "Explore all comprehensive learning paths, hands-on bootcamps, and educational resources across all disciplines.",
+    courses: [],
+    bootcamps: [],
+    resources: []
+  }};
 
-export const categoriesList = Object.keys(CATEGORY_DATA);
+export const categoriesList = ["All", ...Object.keys(CATEGORY_DATA).filter((c) => c !== "All")];
 
 // Static Webinar Content
 const WEBINARS_DATA = [
@@ -229,6 +159,7 @@ const WEBINARS_DATA = [
 ];
 
 const ILLUSTRATION_BGS: Record<string, string> = {
+  "All": "#2563EB", // Solid vibrant blue
   "Computer Science": "#7C3AED", // Solid vibrant purple
   "Information Technology": "#2563EB", // Solid vibrant blue
   "Business & Management": "#EA580C", // Solid vibrant orange
@@ -250,6 +181,19 @@ export function CategoryWatermark({ category, color }: { category: string; color
     zIndex: 0
   };
   switch (category) {
+    case "All":
+      return (
+        <svg style={style} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <line x1="10" y1="6.5" x2="14" y2="6.5" strokeWidth="1.5" />
+          <line x1="10" y1="17.5" x2="14" y2="17.5" strokeWidth="1.5" />
+          <line x1="6.5" y1="10" x2="6.5" y2="14" strokeWidth="1.5" />
+          <line x1="17.5" y1="10" x2="17.5" y2="14" strokeWidth="1.5" />
+        </svg>
+      );
     case "Computer Science":
     case "Information Technology":
       return (
@@ -307,6 +251,21 @@ export function CategoryWatermark({ category, color }: { category: string; color
 function CategoryIllustration({ category }: { category: string }) {
   const bgFill = "transparent";
   switch (category) {
+    case "All":
+      return (
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+          <rect width="100%" height="100%" fill={bgFill} />
+          <circle cx="150" cy="80" r="50" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+          <circle cx="150" cy="80" r="30" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1" />
+          <circle cx="150" cy="80" r="8" fill="#FFFFFF" />
+          <line x1="100" y1="80" x2="200" y2="80" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <line x1="150" y1="30" x2="150" y2="130" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+          <rect x="75" y="45" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="195" y="45" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="75" y="95" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+          <rect x="195" y="95" width="26" height="20" rx="3" fill="rgba(255,255,255,0.15)" stroke="#FFFFFF" strokeWidth="1" />
+        </svg>
+      );
     case "Computer Science":
       return (
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
@@ -481,6 +440,32 @@ function CategoryHeaderIllustration({ category, activeTab }: { category: string;
   }
 
   switch (category) {
+    case "All":
+      return (
+        <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 30,130 H 270" stroke="#E2E8F0" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="150" cy="80" r="48" fill={colors.veryLight} stroke={colors.dark} strokeWidth="1.5" strokeDasharray="4 4" />
+          <circle cx="150" cy="80" r="28" fill={colors.light} stroke={colors.dark} strokeWidth="1.5" />
+          <rect x="138" y="68" width="24" height="24" rx="4" fill={colors.dark} />
+          <path d="M 144,80 L 156,80 M 150,74 L 150,86" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+          {/* Left discipline node */}
+          <g transform="translate(62, 65)">
+            <rect x="0" y="0" width="36" height="26" rx="4" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1.5" />
+            <line x1="6" y1="8" x2="22" y2="8" stroke={colors.dark} strokeWidth="2" strokeLinecap="round" />
+            <line x1="6" y1="14" x2="30" y2="14" stroke={colors.medium} strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="6" y1="20" x2="18" y2="20" stroke={colors.light} strokeWidth="1.5" strokeLinecap="round" />
+          </g>
+          {/* Right discipline node */}
+          <g transform="translate(202, 65)">
+            <circle cx="16" cy="13" r="15" fill="#FFFFFF" stroke={colors.medium} strokeWidth="1.5" />
+            <path d="M 8,13 H 24 M 16,5 V 21" stroke={colors.dark} strokeWidth="1.5" />
+            <circle cx="16" cy="13" r="4" fill={colors.dark} />
+          </g>
+          {/* Connectors */}
+          <path d="M 98,78 L 122,80" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+          <path d="M 178,80 L 202,78" stroke={colors.medium} strokeWidth="1.5" strokeDasharray="3 3" />
+        </svg>
+      );
     case "Computer Science":
       return (
         <svg viewBox="0 0 300 160" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1045,32 +1030,80 @@ function WebinarCardHeader({ title, status, duration, category }: { title: strin
   );
 }
 
-function CoursesContent() {
+function CoursesContent({ hubBasePath }: { hubBasePath?: string } = {}) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Route selector
   const initialCategory = searchParams.get("category");
+  const tabParam = searchParams.get("tab");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // Tab State
-  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "roadmaps" | "articles">("courses");
+  const initialTab = (tabParam === "bootcamps" || tabParam === "events")
+    ? "bootcamps"
+    : tabParam === "articles"
+      ? "articles"
+      : "courses";
+  const [activeTab, setActiveTab] = useState<"courses" | "bootcamps" | "articles">(initialTab);
+
+  useEffect(() => {
+    if (tabParam) {
+      if (tabParam === "bootcamps" || tabParam === "events") setActiveTab("bootcamps");
+      else if (tabParam === "articles") setActiveTab("articles");
+      else if (tabParam === "courses") setActiveTab("courses");
+    }
+  }, [tabParam]);
 
   // Categories created via Console -> Content Manage -> Categories (super-user only),
   // merged additively on top of the hardcoded dummy categories — never removes them.
-  // Each admin category is scoped to one section (courses/events/articles) via its `type`;
-  // there's no admin-category equivalent for the roadmaps tab.
+  // Each admin category is scoped to one section (courses/events/articles) via its `type`.
   const categoryType = activeTab === "bootcamps" ? "EVENTS" : activeTab === "articles" ? "ARTICLES" : activeTab === "courses" ? "COURSES" : null;
   const allPublicCategories = usePublicCategories();
-  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType);
+  const adminCategories = allPublicCategories.filter((c) => c.type === categoryType || c.type === "ALL");
   const publicCourses = usePublicCourses();
 
   const mergedCategoriesList = [
-    ...categoriesList,
-    ...adminCategories.filter((c) => !categoriesList.includes(c.name)).map((c) => c.name),
+    "All",
+    ...categoriesList.filter((c) => c !== "All"),
+    ...adminCategories.filter((c) => c.name !== "All" && !categoriesList.includes(c.name)).map((c) => c.name),
   ];
 
   const getCategoryData = (cat: string) => {
+    if (cat.toLowerCase() === "all") {
+      const allCourses: any[] = [];
+      const allBootcamps: any[] = [];
+      const allResources: any[] = [];
+
+      Object.entries(CATEGORY_DATA).forEach(([k, val]) => {
+        if (k.toLowerCase() === "all") return;
+        val.courses.forEach((c) => allCourses.push({ ...c, category: k }));
+        val.bootcamps.forEach((b) => allBootcamps.push({ ...b, category: k }));
+        val.resources.forEach((r) => allResources.push({ ...r, category: k }));
+      });
+
+      publicCourses.forEach((c) => {
+        allCourses.unshift({
+          id: c.id,
+          title: c.title,
+          duration: "Self-Paced",
+          level: "All Levels",
+          desc: c.description || "",
+          category: "Courses",
+        });
+      });
+
+      return {
+        desc: "Access all self-paced courses, expert bootcamps, and in-depth articles across every topic.",
+        coursesCount: allCourses.length,
+        gradient: "linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)",
+        colors: { primary: "#2563EB", secondary: "rgba(37, 99, 235, 0.08)" },
+        courses: allCourses,
+        bootcamps: allBootcamps,
+        resources: allResources,
+      };
+    }
+
     const base = CATEGORY_DATA[cat];
     const admin = allPublicCategories.find(
       (c) => c.name === cat || c.name.toLowerCase() === cat.toLowerCase()
@@ -1137,7 +1170,7 @@ function CoursesContent() {
   // Ref for the content section — used to auto-scroll into view on tab switch
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  const handleTabSwitch = (tab: "courses" | "bootcamps" | "roadmaps" | "articles") => {
+  const handleTabSwitch = (tab: "courses" | "bootcamps" | "articles") => {
     setActiveTab(tab);
     setSearchQuery("");
     // Small delay lets React flush the state before scrolling
@@ -1147,25 +1180,32 @@ function CoursesContent() {
   };
 
   useEffect(() => {
+    if (hubBasePath) {
+      // When inside internal authenticated hub, category viewing is handled at top level
+      return;
+    }
     if (initialCategory && mergedCategoriesList.includes(initialCategory)) {
       router.push(`/courses?category=${encodeURIComponent(initialCategory)}`);
     } else {
       setActiveCategory(null);
     }
-  }, [initialCategory, router]);
+  }, [initialCategory, router, hubBasePath, mergedCategoriesList]);
 
   const handleCategorySwitch = (category: string) => {
     setActiveCategory(category);
     const encodedCat = encodeURIComponent(category);
-    if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
-    else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
-    else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
-    else if (activeTab === "roadmaps") router.push(`/roadmaps?category=${encodedCat}`);
+    if (hubBasePath) {
+      router.push(`${hubBasePath}?category=${encodedCat}&tab=${activeTab}`);
+    } else {
+      if (activeTab === "courses") router.push(`/courses?category=${encodedCat}`);
+      else if (activeTab === "bootcamps") router.push(`/events?category=${encodedCat}`);
+      else if (activeTab === "articles") router.push(`/articles?category=${encodedCat}`);
+    }
   };
 
   const handleGoBackToExplore = () => {
     setActiveCategory(null);
-    router.push("/explore");
+    router.push(hubBasePath || "/explore");
   };
 
   // RENDER OPTION B: Main Explore Hub Dashboard
@@ -1217,7 +1257,7 @@ function CoursesContent() {
       `}</style>
 
       {/* Spacer to prevent banner content/diagonal background from sliding under the fixed header navigation bar */}
-      <div style={{ height: "64px" }} />
+      {!hubBasePath && <div style={{ height: "64px" }} />}
 
       {/* Neobrutalist Typography Header */}
       <div
@@ -1648,9 +1688,10 @@ function CoursesContent() {
             let searchResults: any[] = [];
             if (searchQuery) {
               mergedCategoriesList.forEach(cat => {
+                if (cat.toLowerCase() === "all") return;
 
-                        const data = getCategoryData(cat)!;
-                        const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
+                const data = getCategoryData(cat)!;
+                const themeColor = activeTab === "courses" ? "#3B82F6" : activeTab === "bootcamps" ? "#8B5CF6" : activeTab === "articles" ? "#10B981" : data.colors.primary;
                 if (activeTab === "courses") {
                   data.courses.forEach(course => {
                     if (course.title.toLowerCase().includes(query) || course.desc.toLowerCase().includes(query)) {
@@ -1901,15 +1942,32 @@ function CoursesContent() {
             })()}
         </div>{/* end contentRef wrapper */}
       </main>
-      <Footer />
+      {!hubBasePath && <Footer />}
     </div>
   );
 }
 
-export default function ExploreHubPage() {
+function ExploreHubInner({ hubBasePath }: { hubBasePath?: string } = {}) {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  const tabParam = searchParams.get("tab");
+
+  if (hubBasePath && category) {
+    const mode = (tabParam === "bootcamps" || tabParam === "events")
+      ? "events"
+      : tabParam === "articles"
+        ? "articles"
+        : "courses";
+    return <CategoryDetailedView hubBasePath={hubBasePath} mode={mode} />;
+  }
+
+  return <CoursesContent hubBasePath={hubBasePath} />;
+}
+
+export default function ExploreHubPage({ hubBasePath }: { hubBasePath?: string } = {}) {
   return (
     <Suspense fallback={<div style={{ padding: "100px", textAlign: "center", color: "#6B7280" }}>Loading explore hub...</div>}>
-      <CoursesContent />
+      <ExploreHubInner hubBasePath={hubBasePath} />
     </Suspense>
   );
 }

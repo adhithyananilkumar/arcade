@@ -1,5 +1,5 @@
 // app/(authenticated)/studio/page.tsx
-// Post-login dashboard home — Create Content + unified content grid (courses + roadmaps).
+// Post-login dashboard home — Create Content + unified content grid.
 "use client";
 
 import Link from "next/link";
@@ -7,7 +7,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/infrastructure/http/api";
-import { roadmapService } from "@/domains/roadmaps";
 import { useEligibleChannels, ChannelPicker } from "@/domains/channels";
 import { EventType } from "@/app/(authenticated)/studio/events/types";
 import {
@@ -28,7 +27,6 @@ import {
   GraduationCap,
   Trash2,
   X,
-  Map,
   ClipboardCheck,
   MoreVertical,
   Pencil,
@@ -40,7 +38,6 @@ import {
   Archive,
   Tv,
   Loader2,
-  HelpCircle,
   Check,
 } from "lucide-react";
 
@@ -48,7 +45,7 @@ import {
 
 interface ContentSummary {
   id: string;
-  type: "COURSE" | "ROADMAP" | string;
+  type: "COURSE" | string;
   title: string;
   description?: string | null;
   coverImageUrl?: string | null;
@@ -79,15 +76,6 @@ const CONTENT_TYPES = [
     bg: "bg-indigo-50",
   },
   {
-    id: "roadmap",
-    icon: Map,
-    label: "Roadmap",
-    desc: "Visual learning path with nodes & connections",
-    href: "",
-    color: "text-[#14142b]",
-    bg: "bg-fuchsia-50",
-  },
-  {
     id: "event",
     icon: Calendar,
     label: "Event",
@@ -106,19 +94,13 @@ const CONTENT_TYPES = [
     bg: "bg-emerald-50",
   },
   {
-    id: "quiz",
-    icon: HelpCircle,
-    label: "Quiz",
-    desc: "Standalone question bank with automated grading",
-    href: "/studio/quiz/new",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
-  },
-  {
+    // One assessment capability, not two. A quiz is an exam configured lightly (short duration,
+    // generous attempts, no proctoring) — see the Exam settings — so there is no separate Quiz
+    // content type to create. Existing quizzes keep working; nothing new is created as one.
     id: "exam",
     icon: ClipboardCheck,
     label: "Exam",
-    desc: "Standalone exam or quiz",
+    desc: "Questions, pools, plans, attempts & results",
     href: "/studio/exam/new",
     color: "text-orange-600",
     bg: "bg-orange-50",
@@ -144,13 +126,6 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: string }) {
-  if (type === "ROADMAP") {
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200">
-        <Map size={10} /> Roadmap
-      </span>
-    );
-  }
   if (type === "WORKSHOP" || type === "EVENT") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-violet-50 text-violet-700 border-violet-200">
@@ -158,10 +133,12 @@ function TypeBadge({ type }: { type: string }) {
       </span>
     );
   }
-  if (type === "QUIZ") {
+  if (type === "EXAM") {
+    // Only standalone exams reach this list at all — an exam attached to a course/event is
+    // surfaced inside that parent's editor instead (see ContentService.listContent).
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
-        <FileQuestion size={10} /> Quiz
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-orange-50 text-orange-700 border-orange-200">
+        <ClipboardCheck size={10} /> Exam
       </span>
     );
   }
@@ -271,220 +248,6 @@ function CreateCourseModal({ onClose }: { onClose: () => void }) {
               className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Course"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ── New Quiz creation modal ──────────────────────────────────────────────────
-
-function CreateQuizModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [name, setName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { channels, loading: channelsLoading } = useEligibleChannels();
-  const [channelId, setChannelId] = useState("");
-
-  useEffect(() => {
-    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
-  }, [channels, channelId]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !channelId) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const quiz = await api.post<{ id: string }>("/api/quizzes", {
-        title: name.trim(),
-        channelId,
-      });
-      toast.success(`"${name.trim()}" created`);
-      router.push(`/studio/quiz/${quiz.id}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create quiz";
-      setError(message);
-      toast.error(message);
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <HelpCircle size={20} className="text-[#14142b]" />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Quiz</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a name to get started.</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="quiz-name" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Quiz name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="quiz-name"
-              type="text"
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Chapter 1 Quiz"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a quiz.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!name.trim() || !channelId || creating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
-            >
-              {creating ? "Creating…" : "Create Quiz"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ── New Roadmap creation modal ──────────────────────────────────────────────────
-
-function CreateRoadmapModal({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { channels, loading: channelsLoading } = useEligibleChannels();
-  const [channelId, setChannelId] = useState("");
-
-  useEffect(() => {
-    if (channels.length === 1 && !channelId) setChannelId(channels[0].id);
-  }, [channels, channelId]);
-
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim() || !channelId) return;
-    setCreating(true);
-    setError(null);
-    try {
-      const roadmap = await roadmapService.createRoadmap({
-        title: title.trim(),
-        channelId,
-      });
-      toast.success(`"${title.trim()}" created`);
-      router.push(`/studio/roadmap/${roadmap.id}/edit`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not create roadmap";
-      setError(message);
-      toast.error(message);
-      setCreating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Map size={20} className="text-[#14142b]" />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">New Roadmap</h3>
-            <p className="text-[12px] font-medium text-slate-500">Give it a title to get started.</p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label htmlFor="roadmap-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Roadmap Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="roadmap-title"
-              type="text"
-              required
-              autoFocus
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Java Backend Path"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          {!channelsLoading && channels.length > 0 && (
-            <ChannelPicker channels={channels} value={channelId} onChange={setChannelId} />
-          )}
-          {!channelsLoading && channels.length === 0 && (
-            <p className="text-sm text-rose-600">
-              You need a channel with content-authoring rights before you can create a roadmap.
-            </p>
-          )}
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={creating}
-              className="inline-flex items-center gap-2 rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#232735] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {creating ? "Creating..." : "Create roadmap"}
             </button>
           </div>
         </form>
@@ -643,225 +406,35 @@ function CreateEventModal({
   );
 }
 
-
-// ── Rename roadmap modal (title/description only — ported from the old /roadmaps list) ─
-
-function RenameRoadmapModal({
-  item,
-  onClose,
-  onUpdated,
-}: {
-  item: ContentSummary;
-  onClose: () => void;
-  onUpdated: () => void;
-}) {
-  const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(item.description || "");
-  const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleUpdate(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setUpdating(true);
-    setError(null);
-    try {
-      await roadmapService.updateRoadmap(item.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
-      });
-      onUpdated();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not update roadmap");
-      setUpdating(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_24px_64px_rgba(20,20,43,0.22)]">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-        >
-          <X size={18} />
-        </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-            <Pencil size={20} className="text-[#14142b]" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Rename Roadmap</h3>
-        </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleUpdate} className="space-y-4">
-          <div>
-            <label htmlFor="rename-title" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Roadmap Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="rename-title"
-              type="text"
-              required
-              autoFocus
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          <div>
-            <label htmlFor="rename-desc" className="mb-1.5 block text-[13px] font-semibold text-[#14142b]">
-              Description <span className="font-medium text-slate-400">(optional)</span>
-            </label>
-            <textarea
-              id="rename-desc"
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]/30 focus:bg-white focus:ring-4 focus:ring-slate-200/60"
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!title.trim() || updating}
-              className="rounded-full bg-[#14142b] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(20,20,43,0.18)] transition-colors hover:bg-[#232735] disabled:opacity-60"
-            >
-              {updating ? "Saving…" : "Save Changes"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function DeleteRoadmapModal({
-  item,
-  onClose,
-  onDeleted,
-}: {
-  item: ContentSummary;
-  onClose: () => void;
-  onDeleted: () => void;
-}) {
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleDelete() {
-    setDeleting(true);
-    setError(null);
-    try {
-      await roadmapService.deleteRoadmap(item.id);
-      onDeleted();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete roadmap");
-      setDeleting(false);
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#14142b]/45 backdrop-blur-md" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
-            <Trash2 size={20} className="text-red-600" />
-          </div>
-          <h3 className="text-[15px] font-bold tracking-tight text-[#14142b]">Delete Roadmap</h3>
-        </div>
-        <p className="text-sm text-gray-600 mb-6">
-          Are you sure you want to delete <strong>{item.title}</strong>? This action cannot be
-          undone.
-        </p>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <div className="flex justify-end gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={deleting}
-            className="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-[#14142b]"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="rounded-full bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
-          >
-            {deleting ? "Deleting…" : "Delete"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Content card ─────────────────────────────────────────────────────────────
 
 function ContentCard({
   item,
-  onRename,
-  onDelete,
-  onDuplicate,
   onChanged,
 }: {
   item: ContentSummary;
-  onRename: (item: ContentSummary) => void;
-  onDelete: (item: ContentSummary) => void;
-  onDuplicate: (item: ContentSummary) => void;
   onChanged: () => void;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
-  const isRoadmap = item.type === "ROADMAP";
-  const isQuiz = item.type === "QUIZ" || item.type === "EXAM";
   const segment = toContentTypeSegment(item.type);
-  // Quiz / Exam has no split overview/editor yet — its "editor" is the detail page itself.
-  // Every other type opens the Content Overview, not a direct editor route.
-  const openHref = isQuiz
-    ? `/studio/quiz/${item.id}`
-    : contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
+  const openHref =
+    contentOverviewHref(item.type, item.id) ?? (item.type === "COURSE" ? `/studio/course/${item.id}/edit` : `/studio`);
   const channelSuspended = item.channelStatus === "SUSPENDED";
   const unlistDate =
     channelSuspended && !item.channelForcedSuspension && item.channelSuspendedAt
       ? new Date(new Date(item.channelSuspendedAt).setMonth(new Date(item.channelSuspendedAt).getMonth() + 6))
       : null;
 
-  const preview = segment && !isQuiz ? previewHref(segment, item.id) : null;
+  const preview = segment ? previewHref(segment, item.id) : null;
   const duplicate = segment ? DUPLICATE_ACTION[segment] : undefined;
   const canArchive = segment === "event" && item.status?.toUpperCase() !== "ARCHIVED";
   const isPendingInvitation = item.collaborationStatus === "PENDING";
-  const hasSecondaryMenu = (isRoadmap || (!isQuiz && segment != null)) && !isPendingInvitation;
+  const hasSecondaryMenu = segment != null && !isPendingInvitation;
 
   async function handleDuplicateSegmentAware() {
     setMenuOpen(false);
-    if (isRoadmap) {
-      onDuplicate(item);
-      return;
-    }
     if (!segment || !duplicate) return;
     try {
       const created = await duplicate.run(item.id);
@@ -948,18 +521,7 @@ function ContentCard({
                       <Eye size={14} /> Preview
                     </button>
                   )}
-                  {isRoadmap && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onRename(item);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} /> Rename
-                    </button>
-                  )}
-                  {(isRoadmap || duplicate) && (
+                  {duplicate && (
                     <button
                       onClick={handleDuplicateSegmentAware}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
@@ -981,11 +543,7 @@ function ContentCard({
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      if (isRoadmap) {
-                        onDelete(item);
-                      } else {
-                        setConfirmAction("delete");
-                      }
+                      setConfirmAction("delete");
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50"
                   >
@@ -1055,7 +613,7 @@ function ContentCard({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/accept`);
+                await api.post(`/api/v1/content/COURSE/${item.id}/collaborators/accept`);
                 toast.success("Accepted collaboration invitation!");
                 onChanged();
               } catch {
@@ -1071,7 +629,7 @@ function ContentCard({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                await api.post(`/api/v1/courses/${item.id}/collaborators/decline`);
+                await api.post(`/api/v1/content/COURSE/${item.id}/collaborators/decline`);
                 toast.info("Declined invitation");
                 onChanged();
               } catch {
@@ -1090,7 +648,7 @@ function ContentCard({
           onClick={(e) => e.stopPropagation()}
           className="rounded-lg bg-[#14142b] py-2 text-center text-xs font-semibold text-white transition-colors hover:bg-[#232735]"
         >
-          {!isQuiz && !isRoadmap && item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
+          {item.status === "SUBMITTED" ? "View (Under Review)" : "Open"}
         </Link>
       )}
 
@@ -1191,11 +749,11 @@ function ChannelRequiredModal({
 export default function DashboardPage() {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState<"course" | "roadmap" | "event" | "quiz" | null>(null);
+  const [createOpen, setCreateOpen] = useState<"course" | "event" | null>(null);
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"ALL" | "DRAFT" | "SUBMITTED" | "PUBLISHED" | "ARCHIVED">("ALL");
-  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "ROADMAP" | "EVENT">("ALL");
+  const [typeFilter, setTypeFilter] = useState<"ALL" | "COURSE" | "EVENT" | "EXAM">("ALL");
   const [channelFilter, setChannelFilter] = useState<string>("ALL");
 
   const { channels, loading: channelsLoading } = useEligibleChannels();
@@ -1217,8 +775,8 @@ export default function DashboardPage() {
       setChannelRequiredModalOpen(true);
       return;
     }
-    if (typeId === "course" || typeId === "roadmap" || typeId === "event" || typeId === "quiz") {
-      setCreateOpen(typeId as any);
+    if (typeId === "course" || typeId === "event") {
+      setCreateOpen(typeId);
     } else if (href) {
       router.push(href);
     }
@@ -1233,14 +791,11 @@ export default function DashboardPage() {
         setChannelRequiredModalOpen(true);
       } else if (create === "webinar" || create === "workshop" || create === "event") {
         setCreateOpen("event");
-      } else if (create === "course" || create === "roadmap" || create === "quiz") {
-        setCreateOpen(create as any);
+      } else if (create === "course") {
+        setCreateOpen("course");
       }
     }
   }, [channelsLoading, channels.length]);
-
-  const [renameTarget, setRenameTarget] = useState<ContentSummary | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ContentSummary | null>(null);
 
   const fetchContent = () => {
     setLoadingItems(true);
@@ -1254,15 +809,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchContent();
   }, []);
-
-  const handleDuplicate = async (item: ContentSummary) => {
-    try {
-      await roadmapService.duplicateRoadmap(item.id);
-      fetchContent();
-    } catch {
-      alert("Failed to duplicate roadmap");
-    }
-  };
 
   const statusCounts = useMemo(() => {
     const counts = { ALL: items.length, DRAFT: 0, SUBMITTED: 0, PUBLISHED: 0, ARCHIVED: 0 };
@@ -1315,8 +861,8 @@ export default function DashboardPage() {
   const TYPE_CHIPS = [
     { id: "ALL" as const, label: "All types" },
     { id: "COURSE" as const, label: "Courses" },
-    { id: "ROADMAP" as const, label: "Roadmaps" },
     { id: "EVENT" as const, label: "Events" },
+    { id: "EXAM" as const, label: "Exams" },
   ];
 
   return (
@@ -1331,29 +877,7 @@ export default function DashboardPage() {
         onClose={() => setChannelRequiredModalOpen(false)}
       />
       {createOpen === "course" && <CreateCourseModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "roadmap" && <CreateRoadmapModal onClose={() => setCreateOpen(null)} />}
-      {createOpen === "quiz" && <CreateQuizModal onClose={() => setCreateOpen(null)} />}
       {createOpen === "event" && <CreateEventModal onClose={() => setCreateOpen(null)} />}
-      {renameTarget && (
-        <RenameRoadmapModal
-          item={renameTarget}
-          onClose={() => setRenameTarget(null)}
-          onUpdated={() => {
-            setRenameTarget(null);
-            fetchContent();
-          }}
-        />
-      )}
-      {deleteTarget && (
-        <DeleteRoadmapModal
-          item={deleteTarget}
-          onClose={() => setDeleteTarget(null)}
-          onDeleted={() => {
-            setDeleteTarget(null);
-            fetchContent();
-          }}
-        />
-      )}
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 pb-28 pt-28 sm:px-8 sm:pt-32">
         {/* Header */}
@@ -1538,7 +1062,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm font-semibold text-[#14142b]">No content yet</p>
               <p className="mt-1 text-xs text-slate-400">
-                Click &quot;Create Content&quot; to build your first course or roadmap.
+                Click &quot;Create Content&quot; to build your first course or event.
               </p>
             </div>
           </div>
@@ -1565,9 +1089,6 @@ export default function DashboardPage() {
               <ContentCard
                 key={item.id}
                 item={item}
-                onRename={setRenameTarget}
-                onDelete={setDeleteTarget}
-                onDuplicate={handleDuplicate}
                 onChanged={fetchContent}
               />
             ))}

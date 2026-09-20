@@ -78,7 +78,7 @@ export default function PrivacyPage() {
               <strong>Account Information:</strong> Full name, official AJCE email address, student/faculty ID number, department, academic batch, profile photo, and password.
             </li>
             <li>
-              <strong>Learning & Performance Analytics:</strong> Courses enrolled, roadmap completion status, learning drawer progress, sandbox code submissions, quiz attempts, and scores.
+              <strong>Learning & Performance Analytics:</strong> Courses enrolled, learning drawer progress, sandbox code submissions, quiz attempts, and scores.
             </li>
             <li>
               <strong>Collaboration Content:</strong> Public and private messages in channels, forum posts, content editor drafts, community upvotes, and collaborative project links.
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-5 space-y-1.5">
             <li>
-              <strong>Personalized Learning:</strong> Tracking your curriculum progress on roadmaps and resuming classes from where you left off.
+              <strong>Personalized Learning:</strong> Tracking your curriculum progress and resuming classes from where you left off.
             </li>
             <li>
               <strong>Credential Issuance:</strong> Validating course assessments to generate official, shareable certificates of achievement.

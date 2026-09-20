@@ -1,5 +1,27 @@
 # Arcade Policy Editor UI Redesign (AWS IAM Inspired)
 
+> **Status (2026-09-16): aspirational, not current.** An earlier attempt at this spec (Managed
+> Policy Bundles, Permission Tree, Dependency Validation, Policy Simulator — `domains/iam/policy-editor/{ManagedBundles,PermissionTree,EffectivePermissionsModal,PermissionDetails,PermissionDetailsDrawer}.tsx`,
+> `domains/iam/store/policy-editor.store.ts`, `domains/iam/{bundle-engine,dependency-engine}/`)
+> was built against fabricated data (`RICH_CHANNEL_PERMISSIONS`, a hardcoded 11-permission array
+> substituted whenever the real catalog returned fewer than 6 rows — which was *always* true for
+> CHANNEL scope, since it only ever defined 5 real permissions) and had no backend support for
+> bundles, a dependency graph, or a simulator. It was unreachable from the app and has been
+> removed. Revisit this doc's full scope (bundles, dependency graph, simulator) only once the
+> permission catalog and a real backend model justify the complexity — today's catalog does not.
+>
+> **What *did* ship (2026-09-16 Policy-only refactor):** `PlatformRole` ("Policy") is now the
+> *only* assignable Platform IAM unit — the parallel per-user granular permission override
+> (`UserPermission`/`granularConfigured`) and the separate "Admin Task" concept have both been
+> removed from the backend and the console UI. The permission catalog is grouped by the real
+> Console navigation surface (`ConsoleSurface`: Channels, Reviews, Content Manage, Exams, Payments,
+> Inbox, IAM, System) via a backend-authoritative `permissions.surface` column, not by the raw
+> `module` string — see `domains/iam/policy-editor/PermissionSelector.tsx` (the one shared
+> permission-picker component, used only by `PolicyEditor`) and `IamBootstrap`'s permission
+> definitions on the backend. The user-access drawer (`domains/iam/user-access/AccessPoliciesPanel.tsx`)
+> is read-only with respect to permissions — it shows assigned Policies and the resulting
+> Effective Access grouped by surface, and never exposes an individual-permission checkbox.
+
 Redesign the Arcade Policy Editor to be a professional, enterprise-grade permission management interface inspired by AWS IAM, GitHub Enterprise, Azure RBAC, and Google Cloud IAM.
 
 This is **not** a simple checkbox list. It should be a scalable permission management system capable of handling hundreds or thousands of permissions across Platform, Publisher, and Channel scopes.

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import {
   Channel,
   ChannelContentItem,
@@ -13,40 +12,26 @@ import { platformReviewApi } from '@/domains/publishing';
 import { toast } from 'sonner';
 import {
   Home,
-  ArrowLeft,
   LayoutGrid,
   AlertTriangle,
   BookOpen,
   Users,
-  FileText,
-  CheckCircle2,
-  Clock,
-  Send,
-  ChevronRight,
-  Link as LinkIcon,
   Bell,
-  Calendar,
-  Star,
   BarChart3,
   Activity,
   ShieldAlert,
   Loader2,
-  Video,
-  Upload,
 } from 'lucide-react';
 
 import { OrganizationHeader } from './components/OrganizationHeader';
 import { SmallCourseOverview } from './components/SmallCourseOverview';
 import { CourseManagementSection } from './components/CourseManagementSection';
-import { ArticlesManagementSection } from './components/ArticlesManagementSection';
-import { EventsManagementSection } from './components/EventsManagementSection';
 import { OrganizationAnalyticsSection } from './components/OrganizationAnalyticsSection';
 import { RecentActivityTimeline } from './components/RecentActivityTimeline';
 import { EditOrganizationModal } from './components/EditOrganizationModal';
 
 import { ChannelStaffManager } from './ChannelStaffManager';
-import { ChannelNotificationsManager } from './ChannelNotificationsManager';
-import { ChannelSocialLinksCard } from './ChannelSocialLinksCard';
+import { ChannelAuditLogManager } from './ChannelAuditLogManager';
 import { ChannelDangerZone } from './ChannelDangerZone';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion } from 'framer-motion';
@@ -59,7 +44,7 @@ type ManageTab =
   | 'CONTENT'
   | 'STAFF'
   | 'ANALYTICS'
-  | 'ACTIVITY'
+  | 'LOGS'
   | 'NOTIFICATIONS'
   | 'DANGER';
 
@@ -116,8 +101,8 @@ export default function ManageChannelPage() {
         myDeletionRequests.find((r) => r.channelId === channelId && r.status === 'PENDING') || null,
       );
       setContent(channelContent);
-    } catch {
-      toast.error('Failed to load channel details');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to load channel details');
       router.push('/manage-channels');
     } finally {
       setLoading(false);
@@ -191,14 +176,15 @@ export default function ManageChannelPage() {
   const isPersonalChannel = channel.isPersonal;
   const canEdit = isOwner || permissions.includes('ALL') || permissions.includes('channel.settings.manage');
 
-  const mainTabs: { id: ManageTab; label: string; icon: any; badge?: string; danger?: boolean }[] = [
+  const mainTabs: { id: ManageTab; label: string; icon: any; danger?: boolean }[] = [
     { id: 'OVERVIEW', label: 'Overview', icon: LayoutGrid },
-    { id: 'CONTENT', label: 'Content', icon: BookOpen, badge: `${content.length || 48}` },
+    { id: 'CONTENT', label: 'Content', icon: BookOpen },
+    // Personal channels have no staff or policies — the owner is the sole authority.
     ...(!channel.isPersonal
-      ? [{ id: 'STAFF' as const, label: 'Staff', icon: Users, badge: '34' }]
+      ? [{ id: 'STAFF' as const, label: 'Staff & Policies', icon: Users }]
       : []),
-    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3, badge: '4.92 ★' },
-    { id: 'ACTIVITY', label: 'Timeline', icon: Activity },
+    { id: 'ANALYTICS', label: 'Analytics & Reviews', icon: BarChart3 },
+    { id: 'LOGS', label: 'Logs', icon: Activity },
     { id: 'NOTIFICATIONS', label: 'Notifications', icon: Bell as any },
     ...(isOwner ? [{ id: 'DANGER' as const, label: 'Danger', icon: ShieldAlert, danger: true }] : []),
   ];
@@ -356,11 +342,11 @@ export default function ManageChannelPage() {
           {/* TAB 4: ANALYTICS & REVIEWS */}
           {activeTab === 'ANALYTICS' && <OrganizationAnalyticsSection />}
 
-          {/* TAB 8: ACTIVITY */}
-          {activeTab === 'ACTIVITY' && <RecentActivityTimeline />}
+          {/* TAB 8: LOGS */}
+          {activeTab === 'LOGS' && <RecentActivityTimeline channelId={channelId} />}
 
           {/* TAB 9: NOTIFICATIONS */}
-          {activeTab === 'NOTIFICATIONS' && <ChannelNotificationsManager channel={channel} />}
+          {activeTab === 'NOTIFICATIONS' && <ChannelAuditLogManager channel={channel} />}
 
           {/* TAB 10: DANGER ZONE */}
           {activeTab === 'DANGER' && isOwner && (
@@ -380,116 +366,3 @@ export default function ManageChannelPage() {
   );
 }
 
-function editHref(item: ChannelContentItem) {
-  if (item.type === 'COURSE') return `/studio/courses/${item.id}`;
-  if (item.type === 'ROADMAP') return `/studio/roadmaps/${item.id}`;
-  return `/studio`;
-}
-
-function statusTone(status: string) {
-  switch (status?.toUpperCase()) {
-    case 'PUBLISHED':
-      return 'border-emerald-200 bg-emerald-50 text-emerald-700';
-    case 'DRAFT':
-      return 'border-amber-200 bg-amber-50 text-amber-700';
-    case 'SUBMITTED':
-      return 'border-sky-200 bg-sky-50 text-sky-700';
-    default:
-      return 'border-slate-200 bg-slate-50 text-slate-700';
-  }
-}
-
-function TypeIcon({ type }: { type: string }) {
-  if (type === 'COURSE') return <BookOpen size={18} />;
-  if (type === 'ROADMAP') return <FileText size={18} />;
-  return <Video size={18} />;
-}
-
-function ContentRow({
-  item,
-  last,
-  reviewHref,
-  canReview,
-}: {
-  item: ChannelContentItem;
-  last?: boolean;
-  reviewHref?: string;
-  canReview?: boolean;
-}) {
-  return (
-    <li
-      className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50/80 ${
-        last ? '' : 'border-b border-slate-100'
-      }`}
-    >
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-500">
-        {item.coverImageUrl ? (
-          <img src={item.coverImageUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <TypeIcon type={item.type} />
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-bold text-[#14142b]">{item.title}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-400">
-          <span className="uppercase tracking-wide">{item.type}</span>
-          <span
-            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${statusTone(
-              item.status,
-            )}`}
-          >
-            {item.status}
-          </span>
-          <span>
-            Edited{' '}
-            {new Date(item.updatedAt).toLocaleString(undefined, {
-              month: 'short',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-            })}
-            {item.authorUsername ? (
-              <>
-                {' by '}
-                <Link
-                  href={`/${item.authorUsername}`}
-                  className="hover:underline font-semibold hover:text-blue-600"
-                >
-                  @{item.authorUsername}
-                </Link>
-              </>
-            ) : item.authorName ? (
-              ` by ${item.authorName}`
-            ) : (
-              ''
-            )}
-          </span>
-        </p>
-      </div>
-      {(() => {
-        if (item.status === 'SUBMITTED') {
-          if (canReview) {
-            return (
-              <Link
-                href={reviewHref || editHref(item)}
-                className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
-              >
-                {reviewHref ? 'Review' : 'Open'}
-              </Link>
-            );
-          } else {
-            return null;
-          }
-        }
-        return (
-          <Link
-            href={editHref(item)}
-            className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-[#14142b] transition-colors hover:border-slate-300 hover:bg-white"
-          >
-            Open
-          </Link>
-        );
-      })()}
-    </li>
-  );
-}

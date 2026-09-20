@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, notFound } from 'next/navigation';
+import { useAuthStore } from '@/infrastructure/auth/auth.store';
+import { AuthorizationService } from '@/infrastructure/auth/authorization.service';
 import { api } from '@/infrastructure/http/api';
 import { ArrowLeft, PlayCircle, FileText, ChevronDown, ChevronRight, Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -42,6 +44,11 @@ interface CourseRenderResponse {
 }
 
 export default function CourseDetailConsolePage() {
+  const { user } = useAuthStore();
+  if (!AuthorizationService.canManageContent(user)) {
+    notFound();
+  }
+
   const router = useRouter();
   const params = useParams();
   const courseId = params?.courseId as string;

@@ -402,7 +402,7 @@ export default function AchievementsPage() {
 
   return (
     <div className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans">
-      <div className="max-w-7xl mx-auto pt-10 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8">
 
         {/* ── Desktop Hero Celebration Section (Image 2 Exact Mock) ── */}
         <AchievementsHero
@@ -1004,7 +1004,7 @@ export default function AchievementsPage() {
                       </button>
                     ) : (
                       <Link
-                        href="/my-learning"
+                        href="/learning"
                         onClick={() => setSelectedBadge(null)}
                         className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20 text-center"
                       >

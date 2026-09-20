@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import type { ContentTypeSegment } from "../lib/contentTypeRouting";
 import { editorHref } from "../lib/contentTypeRouting";
 
-const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "roadmap", "event"];
+// Exam belongs here too now that it has a real Studio route of its own.
+const VALID_SEGMENTS: ContentTypeSegment[] = ["course", "event", "exam"];
 
 // Canonical /studio/content/{contentType}/{contentId}/edit URL — kept as a
 // thin redirect to the real, unchanged editor so the new route namespace

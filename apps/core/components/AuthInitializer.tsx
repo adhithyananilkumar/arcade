@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
-import { AuthService } from '@/infrastructure/auth/auth.service';
+import { initializeSession } from '@/apps/core/lib/session';
 
 export function AuthInitializer() {
-  const { setAuth, clearAuth, setStatus, status } = useAuthStore();
+  const status = useAuthStore((s) => s.status);
   const pathname = usePathname();
   const initRef = useRef(false);
 
@@ -22,20 +22,10 @@ export function AuthInitializer() {
     if (initRef.current) return;
     initRef.current = true;
 
-    const initAuth = async () => {
-      try {
-        const { accessToken, user } = await AuthService.refresh();
-        setAuth(user || useAuthStore.getState().user!, accessToken);
-      } catch (error) {
-        // Refresh failed (or no token), set to unauthenticated
-        clearAuth();
-      }
-    };
-
     if (status === 'loading') {
-      initAuth();
+      initializeSession();
     }
-  }, [setAuth, clearAuth, status, setStatus, pathname]);
+  }, [status, pathname]);
 
   return null;
 }

@@ -148,7 +148,7 @@ export default function ReviewDetailPage() {
         </div>
 
         {review.status === "OPEN" && (
-          review.tier === 'GLOBAL' && (!user || !AuthorizationService.hasPermission(user, 'platform.review.manage')) ? (
+          review.tier === 'GLOBAL' && !AuthorizationService.canReviewPlatformContent(user) ? (
             <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-[13px] font-medium text-blue-800">
               Course approved at Org level and sent for Superuser review.
             </div>

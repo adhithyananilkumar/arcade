@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface BootcampItem {
   id: string;
@@ -38,42 +39,7 @@ export interface BootcampItem {
   status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
 }
 
-const mockBootcamps: BootcampItem[] = [
-  {
-    id: 'boot-1',
-    title: 'Full-Stack AI Engineer Intensive Bootcamp (Cohort 8)',
-    banner: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
-    instructor: 'Dr. Sarah Chen & Alex Rivera',
-    instructorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    duration: '12 Weeks (Live Cohort)',
-    modulesCount: 16,
-    liveSessionsCount: 36,
-    projectsCount: 4,
-    studentsEnrolled: 240,
-    completionPercentage: 94.2,
-    certificatesIssued: 210,
-    rating: 4.96,
-    revenue: '$288,000',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'boot-2',
-    title: 'LLM Fine-Tuning & Custom Model Evaluation Bootcamp',
-    banner: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
-    instructor: 'Prof. Michael Vance',
-    instructorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    duration: '6 Weeks (Weekend Cohort)',
-    modulesCount: 8,
-    liveSessionsCount: 18,
-    projectsCount: 2,
-    studentsEnrolled: 180,
-    completionPercentage: 88.0,
-    certificatesIssued: 145,
-    rating: 4.92,
-    revenue: '$162,000',
-    status: 'UPCOMING',
-  },
-];
+const mockBootcamps: BootcampItem[] = [];
 
 export function BootcampManagementSection() {
   const [bootcamps] = useState<BootcampItem[]>(mockBootcamps);
@@ -102,7 +68,8 @@ export function BootcampManagementSection() {
 
       {/* Bootcamp Cards */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {bootcamps.map((bootcamp) => (
+        {bootcamps.length === 0 && <EmptyState title="No contents" message="No bootcamps running." />}
+        {bootcamps.length > 0 && bootcamps.map((bootcamp) => (
           <motion.div
             key={bootcamp.id}
             initial={{ opacity: 0, y: 12 }}

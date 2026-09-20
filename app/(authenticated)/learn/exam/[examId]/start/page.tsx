@@ -1,70 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Clock, AlertTriangle, ChevronLeft, ChevronRight, Flag, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { api } from '@/infrastructure/http/api';
+import {
+  startExamAttempt,
+  getExamAttempt,
+  getExamAttemptQuestions,
+  saveExamAnswer,
+  submitExamAttempt,
+  startProctorSession,
+  verifyProctorIdentity,
+  recordProctorEvent,
+  completeProctorSession,
+  type AttemptQuestionResponse,
+} from '@/domains/assessments';
+import { TiptapContentView } from '@/domains/learning';
 
-type Question = {
-  id: number;
-  level: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-};
+/** How long after the last keystroke a written answer is persisted. */
+const TEXT_ANSWER_DEBOUNCE_MS = 600;
 
 export default function ExamEnginePage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  const examId = params.examId as string;
 
-  const [questions, setQuestions] = useState<Question[]>([]);
+  // Which of the exam's plans is being sat, and where to return afterwards. A plan carries the
+  // duration, attempt limit, pass mark, paper construction and delivery window, so omitting it
+  // silently falls back to the exam's first active plan — which is why an assessment reached from
+  // inside a course always passes the placement's plan explicitly.
+  const planId = searchParams.get('planId');
+  const returnTo = searchParams.get('returnTo');
+
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<AttemptQuestionResponse[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
+  const [markedForReview, setMarkedForReview] = useState<Set<string>>(new Set());
 
-  const [timeLeft, setTimeLeft] = useState(60 * 60);
+  // The server is the only authority on remaining time — this is a display-only countdown
+  // seeded from the attempt's `secondsRemaining` and decremented locally. Reaching zero triggers
+  // a submit, but the server independently rejects/auto-submits anything past its own deadline
+  // regardless of what the client's clock says.
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [strikes, setStrikes] = useState(0);
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
-  // Proctored exams reject /questions with 403 until a session exists, is identity-verified,
-  // and active — see ProctoringService#requireReadyForDelivery. Non-proctored exams never hit
-  // that branch since the fetch just succeeds on the first try. `isProctored` sticks once known
-  // (used later to report events/complete the session); `awaitingProctorGate` only reflects
-  // whether the consent screen is currently blocking question access.
   const [isProctored, setIsProctored] = useState(false);
   const [awaitingProctorGate, setAwaitingProctorGate] = useState(false);
   const [startingSession, setStartingSession] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const loadQuestions = () => {
-    api
-      .get<Question[]>(`/api/exams/${params.examId}/questions`)
-      .then((data) => {
+  const beginAttempt = useCallback(() => {
+    startExamAttempt(examId, planId)
+      .then((attempt) => {
+        setAttemptId(attempt.id);
         setAwaitingProctorGate(false);
-        setQuestions(data);
+        setTimeLeft(attempt.secondsRemaining);
+        return getExamAttemptQuestions(attempt.id);
+      })
+      .then((withQuestions) => {
+        if (!withQuestions) return;
+        setQuestions(withQuestions.questions);
+        // Resuming an in-progress attempt rehydrates whatever was already saved, for both the
+        // option-based types and written answers.
+        const initialAnswers: Record<string, string[]> = {};
+        const initialText: Record<string, string> = {};
+        withQuestions.questions.forEach((q) => {
+          if (q.selectedOptionIds.length > 0) initialAnswers[q.id] = q.selectedOptionIds;
+          if (q.textAnswer) initialText[q.id] = q.textAnswer;
+        });
+        setAnswers(initialAnswers);
+        setTextAnswers(initialText);
       })
       .catch((err) => {
         if (err?.status === 403) {
           setIsProctored(true);
           setAwaitingProctorGate(true);
         } else {
-          console.error('Failed to load questions', err);
+          setLoadError(err?.message ?? 'Failed to start this exam.');
         }
       });
-  };
+  }, [examId, planId]);
 
   useEffect(() => {
-    loadQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.examId]);
+    beginAttempt();
+  }, [beginAttempt]);
+
+  // The countdown is decremented locally, so a backgrounded tab drifts (browsers throttle timers
+  // in hidden tabs). Re-read the server's own `secondsRemaining` whenever the tab comes back —
+  // the server remains the only authority on the deadline either way.
+  useEffect(() => {
+    if (!attemptId) return;
+    const resync = () => {
+      if (document.visibilityState !== 'visible') return;
+      getExamAttempt(attemptId)
+        .then((attempt) => setTimeLeft(attempt.secondsRemaining))
+        .catch(() => {
+          // Transient failure — keep counting down locally; the server still enforces expiry.
+        });
+    };
+    document.addEventListener('visibilitychange', resync);
+    return () => document.removeEventListener('visibilitychange', resync);
+  }, [attemptId]);
 
   const handleStartProctoring = async () => {
     setStartingSession(true);
     try {
-      await api.post(`/api/exams/${params.examId}/proctoring/session/start`, {});
-      await api.post(`/api/exams/${params.examId}/proctoring/session/verify-identity`, {});
-      loadQuestions();
+      await startProctorSession(examId);
+      await verifyProctorIdentity(examId);
+      beginAttempt();
     } catch (err) {
       console.error('Failed to start proctoring session', err);
     } finally {
@@ -73,27 +123,52 @@ export default function ExamEnginePage() {
   };
 
   const reportProctorEvent = (eventType: string, detail: string) => {
-    api
-      .post(`/api/exams/${params.examId}/proctoring/session/events`, { eventType, detail })
-      .catch(() => {
-        // Best-effort — the client-side strike system is the source of truth for the UI.
-      });
+    recordProctorEvent(examId, eventType, detail).catch(() => {
+      // Best-effort telemetry — never interrupt an in-flight attempt over a logging failure.
+    });
   };
 
   useEffect(() => {
-    if (sessionStorage.getItem(`exam_terminated_${params.examId}`)) {
-      router.replace(`/learn/exam/${params.examId}/terminated`);
+    if (sessionStorage.getItem(`exam_terminated_${examId}`)) {
+      router.replace(`/learn/exam/${examId}/terminated`);
     }
-  }, [params.examId, router]);
+  }, [examId, router]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!attemptId || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      await submitExamAttempt(attemptId);
+      if (isProctored) {
+        await completeProctorSession(examId).catch(() => {});
+      }
+      sessionStorage.setItem(`exam_attempt_${examId}`, attemptId);
+      // Carry `returnTo` through to the results page so an assessment sat from inside a course
+      // can offer a way back into that course rather than dead-ending on the exams hub.
+      const back = returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : '';
+      const go = () => router.push(`/learn/exam/${examId}/results?attemptId=${attemptId}${back}`);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().then(go).catch(go);
+      } else {
+        go();
+      }
+    } catch (err) {
+      console.error('Failed to submit exam', err);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }, [attemptId, examId, isProctored, returnTo, router]);
 
   useEffect(() => {
     if (strikes >= 3) {
-      sessionStorage.setItem(`exam_terminated_${params.examId}`, 'true');
-      router.replace(`/learn/exam/${params.examId}/terminated`);
+      sessionStorage.setItem(`exam_terminated_${examId}`, 'true');
+      if (attemptId) submitExamAttempt(attemptId).catch(() => {});
+      router.replace(`/learn/exam/${examId}/terminated`);
     } else if (strikes > 0) {
       setShowWarning(true);
     }
-  }, [strikes, params.courseId, router]);
+  }, [strikes, attemptId, examId, router]);
 
   useEffect(() => {
     const enterFullscreen = async () => {
@@ -108,7 +183,7 @@ export default function ExamEnginePage() {
     enterFullscreen();
 
     const handleStrike = (reason: string) => {
-      if (isSubmitting) return;
+      if (isSubmittingRef.current) return;
       console.warn('Anti-Cheat Strike:', reason);
       reportProctorEvent('INTEGRITY_STRIKE', reason);
       setStrikes((prev) => prev + 1);
@@ -175,17 +250,17 @@ export default function ExamEnginePage() {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [router, params.courseId, isSubmitting]);
+  }, []);
 
   useEffect(() => {
+    if (timeLeft === null) return;
     if (timeLeft <= 0) {
       handleSubmit();
       return;
     }
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    const timer = setInterval(() => setTimeLeft((prev) => (prev === null ? null : prev - 1)), 1000);
     return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft]);
+  }, [timeLeft, handleSubmit]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -204,43 +279,70 @@ export default function ExamEnginePage() {
     }
   };
 
-  const handleSelectOption = (optIdx: number) => {
-    if (!questions[currentIdx]) return;
-    const qId = questions[currentIdx].id;
-    setAnswers((prev) => ({ ...prev, [qId]: optIdx }));
+  /**
+   * MULTIPLE accumulates a selection set; SINGLE and TRUE_FALSE replace it. The server applies the
+   * same rule authoritatively (`normalizeSelectedOptions` rejects more than one option for the
+   * single-answer types and drops ids that aren't on the frozen paper), so this only keeps the UI
+   * honest — it is not the enforcement point.
+   */
+  const handleSelectOption = (optionId: string) => {
+    const current = questions[currentIdx];
+    if (!current || !attemptId) return;
+
+    const existing = answers[current.id] ?? [];
+    const nextSelection =
+      current.type === 'MULTIPLE'
+        ? existing.includes(optionId)
+          ? existing.filter((id) => id !== optionId)
+          : [...existing, optionId]
+        : [optionId];
+
+    setAnswers((prev) => ({ ...prev, [current.id]: nextSelection }));
+    saveExamAnswer(attemptId, current.id, { selectedOptionIds: nextSelection }).catch(() => {
+      console.error('Failed to save answer — it may not be recorded.');
+    });
   };
+
+  // One timer per question id, so typing in one written answer never cancels another's pending save.
+  const textSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    const timers = textSaveTimers.current;
+    return () => Object.values(timers).forEach(clearTimeout);
+  }, []);
+
+  const handleTextAnswer = (value: string) => {
+    const current = questions[currentIdx];
+    if (!current || !attemptId) return;
+    const questionId = current.id;
+    setTextAnswers((prev) => ({ ...prev, [questionId]: value }));
+
+    clearTimeout(textSaveTimers.current[questionId]);
+    textSaveTimers.current[questionId] = setTimeout(() => {
+      saveExamAnswer(attemptId, questionId, {
+        selectedOptionIds: [],
+        textAnswer: value,
+      }).catch(() => {
+        console.error('Failed to save answer — it may not be recorded.');
+      });
+    }, TEXT_ANSWER_DEBOUNCE_MS);
+  };
+
+  /** A question counts as answered when it has a selection or non-blank written text. */
+  const isAnswered = (question: AttemptQuestionResponse) =>
+    question.type === 'SENTENCE'
+      ? (textAnswers[question.id] ?? '').trim().length > 0
+      : (answers[question.id] ?? []).length > 0;
 
   const toggleReview = () => {
-    if (!questions[currentIdx]) return;
-    const qId = questions[currentIdx].id;
+    const current = questions[currentIdx];
+    if (!current) return;
     setMarkedForReview((prev) => {
       const next = new Set(prev);
-      if (next.has(qId)) next.delete(qId);
-      else next.add(qId);
+      if (next.has(current.id)) next.delete(current.id);
+      else next.add(current.id);
       return next;
     });
-  };
-
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    let score = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.correctAnswer) score++;
-    });
-
-    sessionStorage.setItem('examScore', score.toString());
-    sessionStorage.setItem('examTotal', questions.length.toString());
-
-    if (isProctored) {
-      api.post(`/api/exams/${params.examId}/proctoring/session/complete`, {}).catch(() => {});
-    }
-
-    const go = () => router.push(`/learn/exam/${params.examId}/results`);
-    if (document.fullscreenElement) {
-      document.exitFullscreen().then(go).catch(go);
-    } else {
-      go();
-    }
   };
 
   if (awaitingProctorGate) {
@@ -275,7 +377,18 @@ export default function ExamEnginePage() {
     );
   }
 
-  if (questions.length === 0) {
+  if (loadError) {
+    return (
+      <div
+        className="flex min-h-screen items-center justify-center px-4 text-center text-[13px] font-medium text-rose-600"
+        style={{ background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 40%, #FFFFFF 100%)' }}
+      >
+        {loadError}
+      </div>
+    );
+  }
+
+  if (questions.length === 0 || timeLeft === null) {
     return (
       <div
         className="flex min-h-screen items-center justify-center text-[13px] font-medium text-slate-500"
@@ -330,7 +443,7 @@ export default function ExamEnginePage() {
 
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-5 backdrop-blur-xl">
         <div>
-          <p className="text-[13px] font-bold text-[#14142b]">Final assessment</p>
+          <p className="text-[13px] font-bold text-[#14142b]">Exam in progress</p>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Secure session
           </p>
@@ -353,46 +466,78 @@ export default function ExamEnginePage() {
                 Question {currentIdx + 1} of {questions.length}
               </span>
               <span className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#14142b]">
-                {currentQ.level}
+                {currentQ.points} pt{currentQ.points === 1 ? '' : 's'}
               </span>
             </div>
 
-            <h2 className="mb-7 text-[1.35rem] font-bold leading-snug tracking-tight text-[#14142b]">
-              {currentQ.question}
-            </h2>
-
-            <div className="space-y-2.5">
-              {currentQ.options.map((opt, idx) => {
-                const selected = answers[currentQ.id] === idx;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSelectOption(idx)}
-                    className={`flex w-full items-center rounded-2xl border px-4 py-4 text-left transition-all ${
-                      selected
-                        ? 'border-[#14142b] bg-[#14142b]/[0.04] shadow-[0_4px_12px_rgba(20,20,43,0.06)]'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`mr-3.5 grid size-5 shrink-0 place-items-center rounded-full border-2 ${
-                        selected ? 'border-[#14142b]' : 'border-slate-300'
-                      }`}
-                    >
-                      {selected && <span className="size-2.5 rounded-full bg-[#14142b]" />}
-                    </span>
-                    <span
-                      className={`text-[14px] ${
-                        selected ? 'font-semibold text-[#14142b]' : 'font-medium text-slate-600'
-                      }`}
-                    >
-                      {opt}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* The prompt is a frozen Tiptap document — rendered, not flattened, so images,
+                formatting, code blocks and equations survive into the exam. */}
+            <div className="mb-7 text-[1.05rem] leading-relaxed text-[#14142b]">
+              <TiptapContentView body={promptBody(currentQ.prompt)} emptyMessage="" />
             </div>
+
+            {currentQ.type === 'MULTIPLE' && (
+              <p className="mb-3 text-[12px] font-semibold text-slate-500">
+                Select all that apply.
+              </p>
+            )}
+
+            {currentQ.type === 'SENTENCE' ? (
+              <div>
+                <textarea
+                  value={textAnswers[currentQ.id] ?? ''}
+                  onChange={(e) => handleTextAnswer(e.target.value)}
+                  rows={8}
+                  placeholder="Write your answer here…"
+                  className="w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-[14px] font-medium leading-relaxed text-[#14142b] outline-none transition-colors placeholder:text-slate-400 focus:border-[#14142b]"
+                />
+                <p className="mt-2 text-[11px] font-medium text-slate-400">
+                  Saved automatically as you type.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {currentQ.options.map((opt) => {
+                  const selected = (answers[currentQ.id] ?? []).includes(opt.id);
+                  const multi = currentQ.type === 'MULTIPLE';
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleSelectOption(opt.id)}
+                      aria-pressed={selected}
+                      className={`flex w-full items-center rounded-2xl border px-4 py-4 text-left transition-all ${
+                        selected
+                          ? 'border-[#14142b] bg-[#14142b]/[0.04] shadow-[0_4px_12px_rgba(20,20,43,0.06)]'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      {/* Square for multi-select, circle for single — the shape is the only cue a
+                          candidate gets that more than one answer is allowed. */}
+                      <span
+                        className={`mr-3.5 grid size-5 shrink-0 place-items-center border-2 ${
+                          multi ? 'rounded-[6px]' : 'rounded-full'
+                        } ${selected ? 'border-[#14142b]' : 'border-slate-300'}`}
+                      >
+                        {selected &&
+                          (multi ? (
+                            <CheckCircle2 size={13} className="text-[#14142b]" strokeWidth={3} />
+                          ) : (
+                            <span className="size-2.5 rounded-full bg-[#14142b]" />
+                          ))}
+                      </span>
+                      <span
+                        className={`text-[14px] ${
+                          selected ? 'font-semibold text-[#14142b]' : 'font-medium text-slate-600'
+                        }`}
+                      >
+                        {opt.text}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="mt-10 flex items-center justify-between gap-3 border-t border-slate-200/80 pt-6">
               <button
@@ -430,9 +575,11 @@ export default function ExamEnginePage() {
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-5 py-2.5 text-[12px] font-semibold text-white hover:bg-emerald-700"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-5 py-2.5 text-[12px] font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                   >
-                    Submit <CheckCircle2 size={16} />
+                    {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                    Submit
                   </button>
                 )}
               </div>
@@ -448,7 +595,7 @@ export default function ExamEnginePage() {
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 text-center">
                 <div className="text-xl font-bold tabular-nums text-[#14142b]">
-                  {Object.keys(answers).length}
+                  {questions.filter(isAnswered).length}
                 </div>
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                   Answered
@@ -468,12 +615,11 @@ export default function ExamEnginePage() {
           <div className="flex-1 overflow-y-auto p-5">
             <div className="grid grid-cols-5 gap-2">
               {questions.map((q, idx) => {
-                const hasAnswer = answers[q.id] !== undefined;
+                const hasAnswer = isAnswered(q);
                 const isRev = markedForReview.has(q.id);
                 const isActive = currentIdx === idx;
 
-                let bgClass =
-                  'border-slate-200 bg-white text-slate-600 hover:border-slate-300';
+                let bgClass = 'border-slate-200 bg-white text-slate-600 hover:border-slate-300';
                 if (hasAnswer) bgClass = 'border-[#14142b] bg-[#14142b] text-white';
                 if (isRev && !hasAnswer) bgClass = 'border-amber-300 bg-amber-50 text-amber-800';
                 if (isRev && hasAnswer) bgClass = 'border-amber-400 bg-amber-500 text-white';
@@ -498,13 +644,24 @@ export default function ExamEnginePage() {
             <button
               type="button"
               onClick={handleSubmit}
-              className="w-full rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735]"
+              disabled={isSubmitting}
+              className="w-full rounded-full bg-[#14142b] py-3 text-[13px] font-semibold text-white hover:bg-[#232735] disabled:opacity-60"
             >
-              Submit exam
+              {isSubmitting ? 'Submitting…' : 'Submit exam'}
             </button>
           </div>
         </aside>
       </div>
     </div>
   );
+}
+
+/**
+ * Frozen prompts arrive as a Tiptap document object; TiptapContentView takes the serialized form.
+ * A prompt that is already a string is passed through rather than double-encoded.
+ */
+function promptBody(prompt: unknown): string | null {
+  if (prompt == null) return null;
+  if (typeof prompt === 'string') return prompt;
+  return JSON.stringify(prompt);
 }

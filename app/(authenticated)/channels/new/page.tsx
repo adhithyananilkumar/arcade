@@ -30,11 +30,11 @@ export default function NewChannelPage() {
 
     try {
       setLoading(true);
-      await channelService.createChannelRequest(name, description, isPersonal, iconFile || undefined);
+      await channelService.createChannelRequest(name.trim(), description.trim(), isPersonal, iconFile || undefined);
       toast.success('Channel request submitted successfully!');
-      router.push('/');
+      router.push('/manage-channels');
     } catch (error) {
-      toast.error('Failed to submit channel request');
+      toast.error(error instanceof Error ? error.message : 'Failed to submit channel request');
     } finally {
       setLoading(false);
     }

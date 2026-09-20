@@ -1,0 +1,100 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { NotificationService, type NotificationDto } from './notification.service';
+
+/**
+ * Canonical React Query keys for the notifications domain. Centralized here
+ * (rather than inlined at each call site) so invalidation targets stay
+ * precise — see DATA_LAYER_STANDARD.md for the pattern this follows.
+ */
+export const notificationKeys = {
+  list: () => ['notifications', 'list'] as const,
+  unreadCount: () => ['notifications', 'unread-count'] as const,
+};
+
+export function useNotificationsQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: notificationKeys.list(),
+    queryFn: () => NotificationService.list(),
+    enabled,
+  });
+}
+
+export function useUnreadCountQuery(enabled: boolean) {
+  return useQuery({
+    queryKey: notificationKeys.unreadCount(),
+    queryFn: () => NotificationService.getUnreadCount(),
+    enabled,
+  });
+}
+
+export function useMarkAllReadMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => NotificationService.markAllRead(),
+    onSuccess: () => {
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) =>
+        prev ? prev.map((n) => ({ ...n, read: true })) : prev
+      );
+      queryClient.setQueryData(notificationKeys.unreadCount(), 0);
+    },
+  });
+}
+
+export function useMarkReadMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => NotificationService.markRead(id),
+    onSuccess: (_data, id) => {
+      // Only decrement unreadCount if this notification was actually unread — marking an
+      // already-read notification read again (e.g. a stale click) must not under-count.
+      let wasUnread = false;
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) => {
+        if (!prev) return prev;
+        return prev.map((n) => {
+          if (n.id === id) {
+            if (!n.read) wasUnread = true;
+            return { ...n, read: true };
+          }
+          return n;
+        });
+      });
+      if (wasUnread) {
+        queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
+          typeof prev === 'number' ? Math.max(0, prev - 1) : prev
+        );
+      }
+    },
+  });
+}
+
+export function useDeleteNotificationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => NotificationService.delete(id),
+    onSuccess: (_data, id) => {
+      let wasUnread = false;
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), (prev) => {
+        if (!prev) return prev;
+        const target = prev.find((n) => n.id === id);
+        if (target && !target.read) wasUnread = true;
+        return prev.filter((n) => n.id !== id);
+      });
+      if (wasUnread) {
+        queryClient.setQueryData<number>(notificationKeys.unreadCount(), (prev) =>
+          typeof prev === 'number' ? Math.max(0, prev - 1) : prev
+        );
+      }
+    },
+  });
+}
+
+export function useDeleteAllNotificationsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => NotificationService.deleteAll(),
+    onSuccess: () => {
+      queryClient.setQueryData<NotificationDto[]>(notificationKeys.list(), []);
+      queryClient.setQueryData(notificationKeys.unreadCount(), 0);
+    },
+  });
+}

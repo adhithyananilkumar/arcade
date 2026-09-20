@@ -25,7 +25,7 @@ const TARGET_FRACTION_OF_VIEWPORT_HEIGHT = 0.65;
  * dominate the available space and centered in it, and a bottom zoom control
  * bar. No card, no border, no background of its own — the badge geometry is
  * the only thing that reads as a canvas. Design/Properties/Layers render
- * separately, inside the shared Studio right sidebar (see EditorRightSidebar +
+ * separately, inside the shared Studio right sidebar (see StudioRightPanel +
  * BadgeEditorContextPanel) — this component only owns the toolbar, the badge,
  * and the zoom control.
  */
@@ -52,6 +52,7 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
     // workspace the way it should.
     const recompute = () => {
       const rect = host.getBoundingClientRect();
+      if (rect.width === 0) return;
       const target = Math.min(rect.width, window.innerHeight * TARGET_FRACTION_OF_VIEWPORT_HEIGHT);
       setFitSize(Math.max(MIN_CANVAS_SIZE, Math.min(MAX_CANVAS_SIZE, target)));
       setToolbarCenterX(rect.left + rect.width / 2);
@@ -100,6 +101,14 @@ export function BadgeEditorWorkspace({ editor }: { editor: BadgeEditorState }) {
           size={canvasSize}
           showGuides={!editor.previewMode}
           readOnly={editor.readOnly || editor.previewMode}
+          onCanvasClick={(target) => {
+            editor.setActivePanel("design");
+            if (target === "background") {
+              editor.setOpenDesignSections(prev => ({ ...prev, background: true }));
+            } else if (target === "frame") {
+              editor.setOpenDesignSections(prev => ({ ...prev, frame: true }));
+            }
+          }}
         />
       </div>
 

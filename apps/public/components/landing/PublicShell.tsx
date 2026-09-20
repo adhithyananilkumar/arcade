@@ -39,6 +39,11 @@ function ShellOuter({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isProfile = !!params?.username;
   const isExplore = pathname === "/explore";
+  const isChannelInvite = pathname?.startsWith("/channel-invite");
+
+  if (isChannelInvite) {
+    return <>{children}</>;
+  }
 
   return (
     <>

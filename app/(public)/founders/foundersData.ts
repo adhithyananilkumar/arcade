@@ -55,7 +55,7 @@ export const FOUNDERS_DATA: Founder[] = [
     tagline: "Designing high-throughput backend services and real-time collaborative workshop spaces.",
     image: "/founders/clean_founder_2.jpg",
     bio: "Backend systems engineer passionate about real-time web engines, distributed state, and automated grading.",
-    extendedBio: "Jagan engineered the real-time event streaming and live workspace engine inside Arcade. His work enables interactive coding sessions, live workshop leaderboards, and instant automated feedback for hundreds of concurrent campus participants.",
+    extendedBio: "Jagan engineered the real-time event streaming and live workspace engine inside Arcade. His work enables interactive coding sessions, live workshop spaces, and instant automated feedback for hundreds of concurrent campus participants.",
     quote: "High-performance software removes the friction between a student's curiosity and their mastery.",
     achievements: [
       "Built Arcade's real-time collaborative workshop engine",
@@ -86,7 +86,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Academic Strategy", "Curriculum Design", "NAAC & NBA Standards", "Pedagogical Engineering", "Research"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "athira@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -106,8 +106,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["UI/UX Design", "Figma", "Design Systems", "Framer Motion", "Brand Identity"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "anandhu@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -127,8 +126,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["React & Next.js", "State Management", "Web Vitals", "PostgreSQL", "CI/CD"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "akash@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -148,7 +146,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Operations Strategy", "Program Management", "Community Growth", "Cross-functional Leadership", "Event Execution"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "deepthi@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -168,8 +166,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Cloud Infrastructure", "Kubernetes & Docker", "Terraform", "Monitoring & Observability", "Security"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "anandhulal@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -189,7 +186,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Community Management", "Developer Relations", "Student Advocacy", "Event Management", "Public Speaking"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "kalyany@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -209,8 +206,7 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["Cybersecurity", "Cryptography", "OAuth2 & JWT", "Penetration Testing", "Security Auditing"],
     social: {
       linkedin: "https://linkedin.com",
-      github: "https://github.com",
-      email: "aloshy@arcade.ajce.in"
+      github: "https://github.com"
     }
   },
   {
@@ -230,7 +226,27 @@ export const FOUNDERS_DATA: Founder[] = [
     skills: ["EdTech Gamification", "Instructional Design", "Adaptive Learning", "Data Analytics", "User Engagement"],
     social: {
       linkedin: "https://linkedin.com",
-      email: "anjali@arcade.ajce.in"
+      github: "https://github.com"
+    }
+  },
+  {
+    id: "founder-11",
+    name: "Anna Christina Jhony",
+    role: "Co-Founder & UI/UX Specialist",
+    tagline: "Designing intuitive interfaces and engaging user experiences.",
+    image: "/team/anna_christina.png",
+    bio: "UI/UX designer focusing on creating seamless and accessible learning environments.",
+    extendedBio: "Anna joined Arcade to elevate the platform's visual design and user experience. She crafted the sleek, modern interface, ensuring that the navigation is intuitive and that students have a delightful experience while learning.",
+    quote: "Good design is invisible, yet it profoundly shapes how we learn and interact.",
+    achievements: [
+      "Designed the complete UI/UX architecture of Arcade",
+      "Created a consistent design system and component library",
+      "Enhanced user accessibility and visual hierarchy"
+    ],
+    skills: ["UI/UX Design", "Figma", "User Research", "Prototyping", "Frontend Development"],
+    social: {
+      linkedin: "https://linkedin.com",
+      github: "https://github.com"
     }
   }
 ];
@@ -239,32 +255,32 @@ export const TIMELINE_MILESTONES: Milestone[] = [
   {
     year: "2024 - Q3",
     title: "The Genesis Spark",
-    subtitle: "A vision born out of student passion & campus need",
-    description: "During an annual tech symposium at Amal Jyothi College of Engineering, the founding team identified critical gaps in existing LMS platforms—lacking real-time interactivity, verifiable digital certificates, and modern creator tools.",
+    subtitle: "A vision born from student passion & a need for something better",
+    description: "What began as a conversation around the gaps in modern learning slowly became a vision for something more. At Amal Jyothi College of Engineering, the idea of Arcade emerged with a simple belief — learning should be accessible, engaging, and meaningful to everyone.\n\nThe vision was to move beyond conventional classrooms and create a space where students could learn at their own pace, explore new skills, and discover opportunities beyond the boundaries of a campus.",
     badge: "Origin",
     iconName: "spark"
   },
   {
     year: "2024 - Q4",
-    title: "Blueprint & System Architecture",
-    subtitle: "Engineering an open, modern learning infrastructure",
-    description: "The team established the core technical stack: Next.js App Router, Tailwind CSS with custom editorial design tokens, Framer Motion springs, and verifiable credential cryptography for certificates.",
+    title: "From Idea to Infrastructure",
+    subtitle: "Building the foundation for a learning ecosystem",
+    description: "An idea becomes meaningful when it can serve people. Arcade began taking shape as a digital learning ecosystem — bringing together courses, classrooms, educators, learners, and opportunities under one roof.\n\nThe platform was envisioned not merely as a collection of videos, but as a place where learning could be followed, measured, experienced, and celebrated. Self-paced courses, progress tracking, badges, live learning, and structured educational spaces became pieces of the larger Arcade vision.",
     badge: "Architecture",
     iconName: "code"
   },
   {
     year: "2025 - Q2",
-    title: "Campus Beta Rollout at AJCE",
-    subtitle: "Real-world testing with students and faculty mentors",
-    description: "Arcade launched its first closed beta across engineering departments. Over 1,200+ students and 40+ faculty members participated, running workshops, webinars, and coding challenges on the platform.",
+    title: "The Idea Meets Its Learners",
+    subtitle: "From a campus vision to a learning experience",
+    description: "Arcade began opening its doors to a wider learning community, transforming the original vision into something students could experience for themselves.\n\nFree video-based courses, live classes, progress tracking, badges, and interactive learning experiences began coming together. The platform also expanded beyond individual learners, creating possibilities for schools and institutions to bring their own classrooms into the digital space.\n\nAnd as learners moved forward, Arcade began learning from them too — laying the foundation for more personalised experiences powered by data and machine learning.",
     badge: "Beta Launch",
     iconName: "rocket"
   },
   {
     year: "2026 & Beyond",
-    title: "The Arcade Ecosystem 2.0",
-    subtitle: "Scaling institutional collaboration & AI creator hubs",
-    description: "Today, Arcade is expanding into a comprehensive platform for multi-department learning, automated assessment, institutional ranking support, and creator empowerment across colleges.",
+    title: "A Larger Horizon",
+    subtitle: "Where learning becomes personal, connected, and limitless",
+    description: "Arcade's story does not end with a platform. It continues toward a future where technology can make education more personal, inclusive, and engaging.\n\nMachine learning can help every learner discover what they need next. Gamification can turn progress into motivation. Live learning can bring teachers and students closer, regardless of distance. Institutions can build their own learning communities, while professional learners can move from knowledge to recognised certification.\n\nThe long-term vision is simple: to create a learning ecosystem where anyone can begin, everyone can grow, and every journey has a place.",
     badge: "Future Vision",
     iconName: "globe"
   }

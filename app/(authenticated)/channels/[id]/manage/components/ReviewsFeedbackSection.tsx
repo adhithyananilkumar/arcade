@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { EmptyState } from './EmptyState';
 
 export interface ReviewItem {
   id: string;
@@ -28,43 +29,7 @@ export interface ReviewItem {
   instructorResponse?: string;
 }
 
-const mockReviews: ReviewItem[] = [
-  {
-    id: 'rev-1',
-    learnerName: 'Marcus Vance',
-    learnerAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
-    courseName: 'AI Agent Architecture & Tool Use Masterclass',
-    rating: 5,
-    date: '2 hours ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Hands down the single best enterprise AI course I have taken! The hands-on labs with vector search and multi-agent coordination were immediately applicable to our engineering team.',
-    instructorResponse:
-      'Thank you Marcus! So glad the multi-agent labs resonated with your engineering workflow.',
-  },
-  {
-    id: 'rev-2',
-    learnerName: 'Sophia Lin',
-    learnerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Prompt Engineering & Context Window Optimization',
-    rating: 5,
-    date: '1 day ago',
-    sentiment: 'POSITIVE',
-    reviewText:
-      'Extremely clear explanations and excellent benchmark datasets provided. Learned how to cut our token costs by 40% using prompt caching.',
-  },
-  {
-    id: 'rev-3',
-    learnerName: 'David K.',
-    learnerAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=300&q=80',
-    courseName: 'Neural Networks from Scratch in Python',
-    rating: 4,
-    date: '3 days ago',
-    sentiment: 'CONSTRUCTIVE',
-    reviewText:
-      'Great math breakdown in Module 3. Would love to see additional PyTorch GPU acceleration examples in the bonus section!',
-  },
-];
+const mockReviews: ReviewItem[] = [];
 
 export function ReviewsFeedbackSection() {
   const [reviews, setReviews] = useState<ReviewItem[]>(mockReviews);
@@ -193,7 +158,8 @@ export function ReviewsFeedbackSection() {
       {/* Review Items List */}
       <div className="space-y-4">
         <h3 className="text-sm font-extrabold text-[#14142b]">Recent Learner Reviews</h3>
-        {reviews.map((rev) => (
+        {reviews.length === 0 && <EmptyState title="No contents" message="No reviews received yet." />}
+        {reviews.length > 0 && reviews.map((rev) => (
           <motion.div
             key={rev.id}
             initial={{ opacity: 0, y: 10 }}

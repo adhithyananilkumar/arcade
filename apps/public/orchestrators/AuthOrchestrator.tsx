@@ -17,6 +17,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { AuthService } from '@/infrastructure/auth/auth.service';
+import { GOOGLE_OAUTH_URL } from '@/infrastructure/config/env';
 import AuthForm, { type AuthView } from '@/domains/identity/components/AuthForm';
 
 function parseMode(raw: string | null): AuthView {
@@ -27,16 +28,19 @@ function parseMode(raw: string | null): AuthView {
   return 'login';
 }
 
-function urlForMode(mode: AuthView, token?: string | null) {
-  if (mode === 'signup') return '/sign?mode=signup';
-  if (mode === 'forgot') return '/sign?mode=forgot';
-  if (mode === 'reset') {
-    return token ? `/sign?mode=reset&token=${encodeURIComponent(token)}` : '/sign?mode=reset';
-  }
-  if (mode === 'verify') {
-    return token ? `/sign?mode=verify&token=${encodeURIComponent(token)}` : '/sign?mode=verify';
-  }
-  return '/sign';
+function urlForMode(
+  mode: AuthView,
+  token?: string | null,
+  redirectTarget?: string | null,
+  prefillEmail?: string | null,
+) {
+  const params = new URLSearchParams();
+  if (mode !== 'login') params.set('mode', mode);
+  if ((mode === 'reset' || mode === 'verify') && token) params.set('token', token);
+  if (redirectTarget) params.set('redirect', redirectTarget);
+  if (prefillEmail) params.set('email', prefillEmail);
+  const query = params.toString();
+  return query ? `/sign?${query}` : '/sign';
 }
 
 export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
@@ -45,6 +49,12 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const token = searchParams.get('token');
+  // `redirect` + `email` support the invite-gated channel creation flow (see
+  // channel-invite/page.tsx): it sends unauthenticated users here with the page they should land
+  // on after auth, and their known email prefilled, then relies on this orchestrator to send them
+  // back once they're signed in.
+  const redirectTarget = searchParams.get('redirect');
+  const prefillEmail = searchParams.get('email') || undefined;
   const [mode, setMode] = useState<AuthView>(initialMode);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -97,7 +107,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
     setMode(newMode);
     setGlobalError(undefined);
     setShowSuccess(false);
-    window.history.replaceState(null, '', urlForMode(newMode, token));
+    window.history.replaceState(null, '', urlForMode(newMode, token, redirectTarget, prefillEmail));
   };
 
   const handleSubmit = async (data: {
@@ -119,7 +129,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
         });
         setAuth(user, accessToken);
 
-        const returnTo = searchParams.get('returnTo') || searchParams.get('callbackUrl');
+        const returnTo = redirectTarget || searchParams.get('returnTo') || searchParams.get('callbackUrl');
         const safePath = returnTo?.startsWith('/') ? returnTo : '/';
         router.push(safePath);
       } else if (mode === 'signup') {
@@ -129,12 +139,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
           email: data.email,
           password: data.password,
         });
-        setSuccessKind('signup');
-        setShowSuccess(true);
-        setTimeout(() => {
-          setShowSuccess(false);
-          handleModeChange('verify');
-        }, 2000);
+        handleModeChange('verify');
       } else if (mode === 'verify') {
         if (!data.otp) {
           setGlobalError('Please enter the 6-digit verification code.');
@@ -168,7 +173,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = GOOGLE_OAUTH_URL;
   };
 
   const handleResendOtp = async (email: string) => {
@@ -193,6 +198,7 @@ export function AuthOrchestrator({ initialMode }: { initialMode: AuthView }) {
       onGoogleLogin={handleGoogleLogin}
       hasToken={!!token}
       onResendOtp={handleResendOtp}
+      defaultEmail={prefillEmail}
     />
   );
 }

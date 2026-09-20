@@ -110,7 +110,7 @@ export default function TermsPage() {
               <strong>Student Submissions:</strong> You retain ownership of any original code, project documentation, or media you write or upload to the platform. By submitting them, you grant Arcade a non-exclusive license to present the code to grading instructors.
             </li>
             <li>
-              <strong>Creator & Course Content:</strong> Courses, roadmap visuals, custom guides, slides, and videos published by verified instructors are protected under intellectual property rights. You may view and execute code examples for personal education but may not distribute or re-sell them.
+              <strong>Creator & Course Content:</strong> Courses, custom guides, slides, and videos published by verified instructors are protected under intellectual property rights. You may view and execute code examples for personal education but may not distribute or re-sell them.
             </li>
             <li>
               <strong>Platform Assets:</strong> Arcade branding, UI styles, logos, graphics, and system software are the property of the Arcade development team and Amal Jyothi College of Engineering.
@@ -132,7 +132,7 @@ export default function TermsPage() {
               <strong>No Performance Guarantees:</strong> We do not guarantee that the platform will operate error-free or that database backups will capture every draft. Users are encouraged to save major code projects locally.
             </li>
             <li>
-              <strong>Third-Party Material:</strong> We do not verify nor assume liability for links to external repositories, YouTube videos, or articles referenced in roadmap courses.
+              <strong>Third-Party Material:</strong> We do not verify nor assume liability for links to external repositories, YouTube videos, or articles referenced in courses.
             </li>
             <li>
               <strong>Limitation of Liability:</strong> Amal Jyothi College of Engineering and the development contributors shall not be held liable for any direct or indirect loss of data, project deadlines missed, or grade disputes resulting from system downtime.
@@ -434,7 +434,7 @@ export default function TermsPage() {
                 Academic Honor Code & Compliance
               </h4>
               <p className="text-neutral-505 text-xs leading-relaxed font-sans">
-                Arcade is a tool for professional student development. All workspace compilations and roadmap completions are monitored to ensure student credentials represent actual skill acquisition.
+                Arcade is a tool for professional student development. All workspace compilations and course completions are monitored to ensure student credentials represent actual skill acquisition.
               </p>
             </div>
 

@@ -1,5 +1,4 @@
 import { api } from "@/infrastructure/http/api";
-import { roadmapService } from "@/domains/roadmaps";
 import { submitEvent, duplicateEvent, archiveEvent } from "@/app/(authenticated)/studio/events/api/publish";
 import { deleteEvent } from "@/app/(authenticated)/studio/events/api/dashboardApi";
 import type { ContentTypeSegment } from "./contentTypeRouting";
@@ -9,8 +8,21 @@ import type { ContentTypeSegment } from "./contentTypeRouting";
 
 export function submitForReview(segment: ContentTypeSegment, contentId: string): Promise<unknown> {
   if (segment === "course") return api.post(`/api/courses/${contentId}/submit`);
-  if (segment === "roadmap") return roadmapService.submitRoadmap(contentId);
+  if (segment === "exam") {
+    // Exams are not review-gated — they self-publish an immutable ExamVersion. Nothing should
+    // offer "submit for review" for one; see supportsReviewSubmission.
+    return Promise.reject(new Error("Exams are published directly, not submitted for review."));
+  }
   return submitEvent(contentId);
+}
+
+/** Whether this content type goes through the Platform Review round before publishing. */
+export function supportsReviewSubmission(segment: ContentTypeSegment): boolean {
+  return segment !== "exam";
+}
+
+export function publishExam(contentId: string): Promise<unknown> {
+  return api.post(`/api/exams/${contentId}/publish`, {});
 }
 
 export interface DuplicateAction {
@@ -19,7 +31,6 @@ export interface DuplicateAction {
 
 // Only content types with a real duplicate endpoint get one — course has none.
 export const DUPLICATE_ACTION: Partial<Record<ContentTypeSegment, DuplicateAction>> = {
-  roadmap: { run: (id) => roadmapService.duplicateRoadmap(id) as Promise<{ id: string }> },
   event: { run: (id) => duplicateEvent(id) as Promise<{ id: string }> },
 };
 
@@ -36,8 +47,9 @@ export function deleteContent(
   confirmTitle: string
 ): Promise<void> | null {
   if (segment === "course") return api.delete<void>(`/api/courses/${contentId}`, { confirmTitle });
-  if (segment === "roadmap") return roadmapService.deleteRoadmap(contentId);
   if (segment === "event") return deleteEvent(contentId);
+  // Exam has no delete endpoint yet (DELETE /api/exams/{id} doesn't exist) — returning null keeps
+  // the action out of the menu rather than wiring a button to a 404.
   return null;
 }
 
@@ -45,19 +57,24 @@ export const SUPPORTS_TITLE_CONFIRM_DELETE: Partial<Record<ContentTypeSegment, b
   course: true,
 };
 
-const COLLABORATORS_BASE: Record<ContentTypeSegment, (id: string) => string> = {
-  course: (id) => `/api/v1/courses/${id}/collaborators`,
-  roadmap: (id) => `/api/roadmaps/${id}/collaborators`,
-  event: (id) => `/api/v1/events/${id}/collaborators`,
+const OWNER_TYPE: Record<ContentTypeSegment, "COURSE" | "EVENT" | "EXAM"> = {
+  course: "COURSE",
+  event: "EVENT",
+  exam: "EXAM",
 };
 
-// All three domains share the exact same {email, role} invite contract —
-// see InviteCollaboratorRequest, reused verbatim across course/roadmap/event.
+/** The one Team-tab endpoint every content type shares — see backend ContentCollaborationController. */
+export function collaboratorsPath(segment: ContentTypeSegment, contentId: string): string {
+  return `/api/v1/content/${OWNER_TYPE[segment]}/${contentId}/collaborators`;
+}
+
+// Every owner type shares the exact same {email, role} invite contract —
+// see InviteCollaboratorRequest.
 export function inviteCollaborator(
   segment: ContentTypeSegment,
   contentId: string,
   email: string,
   role: "OWNER" | "MANAGER" | "EDITOR" | "VIEWER"
 ) {
-  return api.post(COLLABORATORS_BASE[segment](contentId), { email, role });
+  return api.post(collaboratorsPath(segment, contentId), { email, role });
 }

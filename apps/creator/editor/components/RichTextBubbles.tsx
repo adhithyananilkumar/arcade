@@ -1,6 +1,6 @@
 // apps/creator/editor/components/RichTextBubbles.tsx
 // Direct port of the reactjs-tiptap-editor demo's per-node bubble menus, drag handle, and
-// slash command list — plus our own backend-tied blocks (button/toggle/quiz/roadmap)
+// slash command list — plus our own backend-tied blocks (button/toggle/quiz)
 // merged into the slash menu's default command groups (they have no library equivalent,
 // so they aren't in `renderCommandListDefault`'s output on their own).
 "use client";

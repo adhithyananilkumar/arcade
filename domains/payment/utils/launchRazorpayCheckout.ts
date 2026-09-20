@@ -1,5 +1,5 @@
 import { PaymentService } from '../api/payment.service';
-import { EnrollmentService } from '@/domains/enrollment/api/enrollment.service';
+import { EnrollmentService } from '@/domains/enrollment';
 
 declare global {
   interface Window {

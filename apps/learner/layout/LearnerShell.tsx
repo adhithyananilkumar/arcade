@@ -18,11 +18,12 @@ const IMMERSIVE_ROUTES = [
   /^\/studio\/course\/[^/]+\/question-bank\/?$/,
   /^\/studio\/workshop\/[^/]+(\/edit)?\/?$/,
   /^\/studio\/events\/[^/]+(\/edit)?\/?$/,
-  /^\/studio\/roadmap\/[^/]+\/edit\/?$/,
   /^\/studio\/content\/[^/]+\/[^/]+\/edit\/?$/,
+  // The exam editor is the same full-screen Studio surface as the course editor: it draws its own
+  // top bar, so the app navbar sitting above it produced two overlapping rows of pills.
+  /^\/studio\/exam\/[^/]+\/edit\/?$/,
   /^\/studio\/published\/[^/]+\/?$/,
   /^\/learn\/[^/]+\/exam\/(start|terminated)\/?$/,
-  /^\/roadmap\/[^/]+\/?$/,
 ];
 
 /** Full-focus surfaces — hide the bottom dock so content can breathe. */
@@ -73,7 +74,7 @@ export default function LearnerShell({
         */}
         <div className="flex flex-col flex-1 relative z-10 bg-transparent text-slate-900 dark:text-white h-full">
           {!immersive && <LearnerNavbar />}
-          <main className={`relative bg-transparent flex flex-col flex-1 ${!hideDock ? 'pb-28' : ''}`}>
+          <main className="relative bg-transparent flex flex-col flex-1">
             {children}
           </main>
           {!hideDock && <LearnerDock />}

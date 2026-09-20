@@ -12,4 +12,4 @@ export {
   encodeSnapshotBase64,
   bytesToBase64,
   base64ToBytes,
-} from "./lib/yjs";
+} from "@/apps/creator/studio/core/collaboration/yjs";

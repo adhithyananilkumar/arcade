@@ -1,6 +1,6 @@
 // app/(authenticated)/studio/events/[id]/edit/page.tsx
 import type { Metadata } from "next";
-import { SharedContentEditorOrchestrator } from "@/apps/creator/shared/content-editor/SharedContentEditorOrchestrator";
+import { EventWorkspace } from "@/apps/creator/studio/workspaces/event/EventWorkspace";
 
 export const metadata: Metadata = {
   title: "Edit Event — Arcade",
@@ -17,7 +17,7 @@ export default async function EditEventPage({ params }: Props) {
     // Removes negative margins since the global layout doesn't use padding anymore.
     // Ensure height works within the new flex layout.
     <div className="flex flex-col flex-1 bg-white">
-      <SharedContentEditorOrchestrator contentId={id} contentType="workshop" />
+      <EventWorkspace eventId={id} />
     </div>
   );
 }

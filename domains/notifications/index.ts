@@ -20,3 +20,7 @@ export { NotificationService } from './api/notification.service';
 export type { NotificationDto } from './api/notification.service';
 export { useNotifications } from './hooks/useNotifications';
 export { NotificationList } from './components/NotificationList';
+export { parseMetadata, getNotificationTargetUrl } from './lib/notificationMetadata';
+export type { NotificationMetadata, TransferStatus } from './lib/notificationMetadata';
+export { getVisualType } from './lib/visualType';
+export type { VisualType } from './lib/visualType';

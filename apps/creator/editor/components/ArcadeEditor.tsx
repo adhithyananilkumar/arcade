@@ -15,6 +15,8 @@ if (typeof console !== "undefined") {
     if (typeof args[0] === "string") {
       if (args[0].includes("flushSync was called from inside a lifecycle method")) return;
       if (args[0].includes("Yjs was already imported")) return;
+      if (args[0].includes("[API ERROR 403] Path: /api/platform/reviews/by-content")) return;
+      if (args[0].includes("[API ERROR 404] Path: /api/courses/") && args[0].includes("/render?publishedOnly=true")) return;
     }
     originalError.apply(console, args);
   };
@@ -87,8 +89,14 @@ interface ArcadeEditorProps {
    * (Figma-style). The host owns padding + scrolling.
    */
   chromeless?: boolean;
+  /**
+   * Minimum height of the writing surface. Defaults to 300px, sized for a lesson's worth of
+   * prose; a host editing something shorter (a question prompt, an answer explanation) should
+   * pass a smaller value rather than inherit lesson-sized empty space.
+   */
+  minHeight?: number;
   /** Content type of the editor. */
-  contentType?: "course" | "workshop" | "roadmap";
+  contentType?: "course" | "workshop";
   /** Callback for selection updates */
   onSelectionUpdate?: (props: { editor: Editor }) => void;
   /** Document identifier for real-time collaboration with Hocuspocus (e.g. `lesson:<uuid>`) */
@@ -103,7 +111,7 @@ interface ArcadeEditorProps {
 // (the Y.Doc, the useCallback'd onSave), so this is a clean cut.
 export const ArcadeEditor = memo(
   forwardRef<ArcadeEditorHandle, ArcadeEditorProps>(function ArcadeEditor(
-    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, contentType, onSelectionUpdate, documentName, onCollabStateChange },
+    { initialContent, placeholder, readOnly = false, onSave, ydoc, seedContent, documentId, className = "", chromeless = false, minHeight = 300, contentType, onSelectionUpdate, documentName, onCollabStateChange },
     ref
   ) {
   // The autosave indicator lives in an external store, NOT in React state — see
@@ -163,40 +171,42 @@ export const ArcadeEditor = memo(
       <div
         className={
           chromeless
-            ? `min-h-[300px] !bg-transparent !shadow-none !border-none ${className}`
+            ? `!bg-transparent !shadow-none !border-none ${className}`
             : `rounded-xl border border-gray-200 bg-white overflow-hidden ${className}`
         }
+        style={chromeless ? { minHeight } : undefined}
       >
         <EditorSkeleton />
       </div>
     );
   }
 
-  const isRoadmap = contentType === "roadmap";
-  const hideToolbar = isRoadmap;
-
   return (
     <div
       className={
         chromeless
-          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${isRoadmap ? "arcade-roadmap-editor h-full w-full flex-1" : ""} ${className}`
+          ? `arcade-chromeless-editor relative flex flex-col !bg-transparent !shadow-none !border-none ${className}`
           : `relative rounded-xl border border-gray-200 bg-white overflow-hidden flex flex-col ${className}`
       }
     >
       <RichTextProvider editor={editor}>
-        {!readOnly && !hideToolbar && <RichTextToolbar editor={editor} />}
+        {!readOnly && <RichTextToolbar editor={editor} />}
         <EditorContent
           editor={editor}
+          // Not a Tailwind arbitrary-value class: `minHeight` is a runtime prop, and Tailwind's
+          // JIT scanner can only generate classes it sees as literal strings in source, so a
+          // template-literal `min-h-[${minHeight}px]` would silently produce no CSS at all.
+          style={{ minHeight }}
           className={
             chromeless
-              ? `flex-1 min-h-[300px] focus-within:outline-none !bg-transparent !shadow-none !border-none ${isRoadmap ? "h-full w-full flex flex-col" : ""}`
-              : "flex-1 overflow-y-auto px-8 py-6 min-h-[300px] focus-within:outline-none"
+              ? "flex-1 focus-within:outline-none !bg-transparent !shadow-none !border-none"
+              : "flex-1 overflow-y-auto px-8 py-6 focus-within:outline-none"
           }
         />
-        {!readOnly && !isRoadmap && <RichTextBubbles editor={editor} />}
+        {!readOnly && <RichTextBubbles editor={editor} />}
       </RichTextProvider>
       {/* Autosave status — subtle footer (card mode only) */}
-      {!readOnly && !chromeless && !isRoadmap && (
+      {!readOnly && !chromeless && (
         <SaveStatusFooter store={statusStore} editor={editor} />
       )}
     </div>

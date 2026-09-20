@@ -5,7 +5,7 @@
 // reactjs-tiptap-editor — see apps/creator/editor/components/ArcadeEditor.tsx. This file
 // only assembles the underlying Tiptap extension set: reactjs-tiptap-editor's node/mark
 // extensions (each configured to use our own backend upload endpoint), plus our own
-// backend-tied domain blocks (button/toggle/quiz/roadmap) that have no library equivalent.
+// backend-tied domain blocks (button/toggle/quiz) that have no library equivalent.
 
 import { Document } from "@tiptap/extension-document";
 import { HardBreak } from "@tiptap/extension-hard-break";

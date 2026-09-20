@@ -7,7 +7,7 @@ import { useAuthStore } from "@/infrastructure/auth/auth.store";
 import { AuthorizationService } from "@/infrastructure/auth/authorization.service";
 import { platformReviewApi } from "@/domains/publishing";
 import type { CourseRenderResponse } from "@/shared/types/api.types";
-import { VersionHistoryOrchestrator } from "@/apps/creator/orchestrators/VersionHistoryOrchestrator";
+import { VersionHistoryOrchestrator } from "@/apps/creator/studio/workspaces/content/history/VersionHistoryOrchestrator";
 import { ArcadeEditor } from "@/apps/creator/editor";
 import { api } from "@/infrastructure/http/api";
 

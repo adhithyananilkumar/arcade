@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   ChevronRight,
   BookOpen,
-  Map,
   Wrench,
   User,
   Link as LinkIcon,
@@ -23,13 +22,11 @@ import { ChannelDoodleBanner } from './manage/ChannelDoodleBanner';
 // Public channel page — YouTube/Instagram-style published grid.
 
 function TypeIcon({ type }: { type: string }) {
-  if (type === 'ROADMAP') return <Map size={12} />;
   if (type === 'WORKSHOP' || type === 'WEBINAR') return <Wrench size={12} />;
   return <BookOpen size={12} />;
 }
 
 function typeLabel(type: string) {
-  if (type === 'ROADMAP') return 'Roadmap';
   if (type === 'WORKSHOP') return 'Event';
   if (type === 'WEBINAR') return 'Webinar';
   return 'Course';
@@ -38,7 +35,6 @@ function typeLabel(type: string) {
 function contentHref(item: ChannelContentItem) {
   const t = item.type?.toUpperCase();
   if (t === 'COURSE') return `/courses/${item.id}`;
-  if (t === 'ROADMAP') return `/roadmap/${item.id}`;
   if (t === 'WORKSHOP' || t === 'WEBINAR') return `/learn/${item.id}`;
   return null;
 }
@@ -92,7 +88,7 @@ function ContentTile({ item }: { item: ChannelContentItem }) {
   );
 }
 
-type Filter = 'ALL' | 'COURSE' | 'ROADMAP' | 'WORKSHOP';
+type Filter = 'ALL' | 'COURSE' | 'WORKSHOP';
 
 export default function ChannelHomePage() {
   const params = useParams();
@@ -147,15 +143,13 @@ export default function ChannelHomePage() {
 
   const counts = useMemo(() => {
     let courses = 0;
-    let roadmaps = 0;
     let workshops = 0;
     for (const i of items) {
       const t = i.type?.toUpperCase();
       if (t === 'COURSE') courses += 1;
-      else if (t === 'ROADMAP') roadmaps += 1;
       else if (t === 'WORKSHOP' || t === 'WEBINAR') workshops += 1;
     }
-    return { courses, roadmaps, workshops, all: items.length };
+    return { courses, workshops, all: items.length };
   }, [items]);
 
   if (loading) {
@@ -180,18 +174,17 @@ export default function ChannelHomePage() {
   const filters: { id: Filter; label: string; count: number }[] = [
     { id: 'ALL', label: 'All', count: counts.all },
     { id: 'COURSE', label: 'Courses', count: counts.courses },
-    { id: 'ROADMAP', label: 'Roadmaps', count: counts.roadmaps },
     { id: 'WORKSHOP', label: 'Events', count: counts.workshops },
   ];
 
   return (
     <div
-      className="relative min-h-screen w-full"
+      className="relative w-full min-h-screen"
       style={{
         background: 'linear-gradient(180deg, #E9EEFB 0%, #F7F9FC 35%, #FFFFFF 70%)',
       }}
     >
-      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-28 pt-32 sm:px-8 sm:pt-36">
+      <div className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-5 pb-16 pt-32 sm:px-8 sm:pt-36">
 
         {/* Hero */}
         <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-[0_10px_32px_rgba(20,20,43,0.05)]">

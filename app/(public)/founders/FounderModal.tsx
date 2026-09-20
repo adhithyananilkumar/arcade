@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { X, Mail, CheckCircle2, Quote, Award, Sparkles } from "lucide-react";
+import { X, CheckCircle2, Award } from "lucide-react";
 import { Founder } from "./foundersData";
 
 function LinkedinIcon({ className }: { className?: string }) {
@@ -58,7 +58,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="relative w-full max-w-3xl bg-white text-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-8"
+            className="relative w-full max-w-2xl bg-white text-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden z-10 my-6"
           >
             {/* Close Button */}
             <button
@@ -69,16 +69,17 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Header Banner Background */}
-            <div className="h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+            {/* Header Banner Background (Faded Soft Gradient & Reduced Height) */}
+            <div className="h-16 sm:h-20 bg-gradient-to-r from-blue-500/25 via-indigo-500/20 to-teal-400/25 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/30 to-white" />
             </div>
 
             {/* Body */}
-            <div className="px-6 sm:px-10 pb-8 -mt-16 relative z-10">
+            <div className="px-6 sm:px-8 pb-7 -mt-10 sm:-mt-12 relative z-10 space-y-6">
               {/* Image & Quick Info Header */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left pb-6 border-b border-slate-100">
-                <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-purple-50">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left pb-5 border-b border-slate-100">
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl bg-purple-50 shrink-0">
                   <Image
                     src={founder.image}
                     alt={founder.name}
@@ -88,9 +89,6 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                 </div>
 
                 <div className="flex-1 space-y-1">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200">
-                    <Sparkles className="w-3.5 h-3.5" /> Arcade Founder
-                  </span>
                   <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-serif">
                     {founder.name}
                   </h2>
@@ -99,7 +97,7 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                   </p>
                 </div>
 
-                {/* Social Links */}
+                {/* Social Links (Only LinkedIn & GitHub) */}
                 <div className="flex items-center gap-2 pt-2 sm:pt-0">
                   {founder.social.linkedin && (
                     <a
@@ -121,37 +119,21 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                       <GithubIcon className="w-4 h-4" />
                     </a>
                   )}
-                  {founder.social.email && (
-                    <a
-                      href={`mailto:${founder.social.email}`}
-                      className="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-teal-600 hover:text-white transition-all duration-200"
-                    >
-                      <Mail className="w-4 h-4" />
-                    </a>
-                  )}
                 </div>
               </div>
 
-              {/* Quote Banner */}
-              <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/80 relative">
-                <Quote className="w-8 h-8 text-blue-500/20 absolute top-3 right-4 pointer-events-none" />
-                <p className="text-sm sm:text-base italic text-slate-700 font-serif leading-relaxed">
-                  "{founder.quote}"
-                </p>
-              </div>
-
               {/* Story & Biography */}
-              <div className="mt-6 space-y-3">
+              <div className="space-y-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Full Journey & Role
                 </h3>
-                <p className="text-sm sm:text-base leading-relaxed text-slate-600 font-sans">
+                <p className="text-xs sm:text-sm leading-relaxed text-slate-700 font-sans">
                   {founder.extendedBio}
                 </p>
               </div>
 
               {/* Achievements */}
-              <div className="mt-6 space-y-3">
+              <div className="space-y-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                   <Award className="w-4 h-4 text-amber-500" /> Key Milestones & Impact
                 </h3>
@@ -163,18 +145,6 @@ export default function FounderModal({ founder, onClose }: FounderModalProps) {
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              {/* Core Skill Chips */}
-              <div className="mt-6 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
-                {founder.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
-                  >
-                    {skill}
-                  </span>
-                ))}
               </div>
             </div>
           </motion.div>

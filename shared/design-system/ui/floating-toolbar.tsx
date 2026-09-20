@@ -33,22 +33,14 @@ export function FloatingToolbar({
   centerX?: number;
 }) {
   return createPortal(
-    centerX !== undefined ? (
-      <div
-        className="pointer-events-none fixed top-[70px] z-[70] transition-[left] duration-300"
-        style={{ left: centerX, transform: "translateX(-50%)" }}
-      >
-        <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/60 backdrop-blur-md shadow-sm">
-          {children}
-        </div>
+    <div
+      className="pointer-events-none fixed top-[70px] z-[70] transition-[left] duration-300"
+      style={{ left: centerX !== undefined ? `${centerX}px` : "50%", transform: "translateX(-50%)" }}
+    >
+      <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/60 backdrop-blur-md shadow-sm">
+        {children}
       </div>
-    ) : (
-      <div className="flex justify-center pointer-events-none fixed top-[70px] inset-x-0 z-[70]">
-        <div className="pointer-events-auto flex items-center max-w-[calc(100vw-2rem)] px-4 py-1.5 overflow-x-auto whitespace-nowrap rounded-full bg-white/60 backdrop-blur-md shadow-sm">
-          {children}
-        </div>
-      </div>
-    ),
+    </div>,
     document.body
   );
 }

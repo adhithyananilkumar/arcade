@@ -10,6 +10,7 @@ import { CommentForm } from './CommentForm';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { useAcceptAnswer } from '../api/forum.queries';
 import { displayName, timeAgo } from '../utils/display';
+import { sanitizeHtml } from '@/shared/utils/sanitizeHtml';
 import type { CommentResponse, PostDetailResponse } from '../types/forum.types';
 
 interface Props {
@@ -131,7 +132,7 @@ export function CommentCard({ comment, post, depth = 0 }: Props) {
                   className="post-html-content"
                   style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', marginBottom: 12 }}
                   dangerouslySetInnerHTML={{
-                    __html: comment.body.replace(/<script[\s\S]*?<\/script>/gi, '')
+                    __html: sanitizeHtml(comment.body)
                   }}
                 />
               ) : (

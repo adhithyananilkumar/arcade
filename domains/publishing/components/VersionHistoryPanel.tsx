@@ -61,7 +61,7 @@ interface VersionHistoryPanelProps {
   /**
    * Renders as inline content sized to fill its parent instead of its own
    * fixed-position, screen-docked overlay — for dropping into a host panel
-   * (EditorRightSidebar's "History" tab) that already provides the backdrop,
+   * (StudioRightPanel's "History" tab) that already provides the backdrop,
    * header, and close button.
    */
   embedded?: boolean;

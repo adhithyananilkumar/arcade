@@ -18,7 +18,33 @@ export interface PageResponse<T> {
   number: number;
 }
 
+export interface RoleAssignmentAuditLog {
+  id: string;
+  actorId?: string;
+  actorName?: string;
+  targetUserId?: string;
+  targetUserName?: string;
+  action?: string;
+  addedRoles?: string;
+  removedRoles?: string;
+  reason?: string;
+  createdAt: string;
+}
+
 export class AuditService {
+  /** Platform-wide IAM audit trail; pass targetUserId to scope it to one user's history. */
+  static async getRoleAssignmentAuditLogs(
+    targetUserId?: string,
+    page: number = 0,
+    size: number = 20
+  ): Promise<PageResponse<RoleAssignmentAuditLog>> {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (targetUserId) params.set('targetUserId', targetUserId);
+    return api.get<PageResponse<RoleAssignmentAuditLog>>(
+      `/api/v1/audit-logs/role-assignments?${params.toString()}`
+    );
+  }
+
   /**
    * Retrieves the current user's personal audit logs.
    */

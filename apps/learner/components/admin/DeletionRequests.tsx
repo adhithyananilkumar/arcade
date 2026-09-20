@@ -349,7 +349,7 @@ export function DeletionRequests() {
               <div className="space-y-2 p-4 rounded-xl border-2 border-red-200 bg-red-50">
                 <p className="text-sm font-bold text-red-800">This cannot be undone.</p>
                 <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
-                  <li>Every course, roadmap, and workshop under this channel is deleted immediately — not soft-deleted, not recoverable.</li>
+                  <li>Every course and workshop under this channel is deleted immediately — not soft-deleted, not recoverable.</li>
                   <li>There is no 6-month grace period, unlike the standard suspend/deletion-request flow.</li>
                   <li>Learners already enrolled in this channel's content lose access immediately.</li>
                   <li>Staff, roles, and pending invitations for this channel are also removed.</li>

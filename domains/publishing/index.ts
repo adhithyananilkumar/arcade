@@ -16,7 +16,7 @@
  */
 
 export { VersionHistoryPanel } from "./components/VersionHistoryPanel";
-export { CreatorService } from './api/creator.service';
+export type { ContentStatusHistoryResponse } from "./components/VersionHistoryPanel";
 export { platformReviewApi } from './api/platformReview';
 export type {
   ReviewQueueItem,

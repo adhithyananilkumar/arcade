@@ -16,6 +16,7 @@
  */
 
 export { UserService } from './api/user.service';
+export type { Page } from './api/user.service';
 export { default as AuthForm } from './components/AuthForm';
 export type { AuthView, AuthFormProps } from './components/AuthForm';
 export { AuthPeriodGear } from './components/AuthPeriodGear';
@@ -23,5 +24,13 @@ export { PebbleLoader } from './components/PebbleLoader';
 export { roleService } from './api/iam/role.service';
 export type { Role, RoleRequest } from './api/iam/role.service';
 export { permissionService } from './api/iam/permission.service';
-export type { Permission } from './api/iam/permission.service';
+export type { Permission, ConsoleSurface } from './api/iam/permission.service';
 export { usePermissions } from './hooks/usePermissions';
+export { InterestService } from './api/interest.service';
+export type { Interest } from './api/interest.service';
+export {
+  interestKeys,
+  useInterestsQuery,
+  useMyInterestsQuery,
+  useUpdateMyInterestsMutation,
+} from './api/interest.queries';

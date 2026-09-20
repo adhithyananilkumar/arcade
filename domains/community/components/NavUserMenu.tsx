@@ -134,7 +134,7 @@ export function NavUserMenu({ user, onLogout }: NavUserMenuProps) {
             {/* Menu items */}
             <div style={{ padding: '4px 0' }}>
               <Link
-                href="/my-learning"
+                href="/learning"
                 onClick={() => setOpen(false)}
                 style={{
                   display: 'flex',

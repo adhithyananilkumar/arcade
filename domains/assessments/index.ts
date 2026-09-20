@@ -17,12 +17,124 @@
 
 // features/assessment/index.ts
 // Public surface of the assessment domain.
-export { QuizEditor } from "./components/QuizEditor";
-export { StandaloneQuizEditor } from "./components/StandaloneQuizEditor";
 export { QuizPlayer } from "./components/QuizPlayer";
-export { QuestionBankEditor } from "./components/QuestionBankEditor";
-export { getQuizStats, getOrCreateCourseQuestionBank, listPools } from "./api";
+export { QuestionTagEditor } from "./components/QuestionTagEditor";
+// The assessment landing page. Shared by the in-course player, the preview renderer and the
+// standalone exam route, so an assessment presents identically wherever it is met.
+export { AssessmentLanding } from "./components/AssessmentLanding";
+export type { AssessmentLandingProps } from "./components/AssessmentLanding";
+// The headless question-authoring engine. Rendering a question is deliberately NOT here: it needs
+// Arcade's rich-text editor, which composes infrastructure and other domains and therefore lives
+// at the apps layer (apps/creator/editor). The domain owns the state machine; the Studio owns the
+// writing surface, and there is exactly one of those in the platform.
+export {
+  useSectionQuestions,
+  toRequest,
+  promptToPlainText,
+  DIFFICULTIES,
+  DIFFICULTIES_BG,
+  TYPE_LABELS,
+} from "./components/useSectionQuestions";
 export type {
+  LocalQuestion,
+  LocalOption,
+  SaveState,
+  SectionQuestionsController,
+  RestoredQuestionSnapshot,
+} from "./components/useSectionQuestions";
+export { listSections, createSection, renameSection, deleteSection } from "./api";
+export { planReadiness, isPlanPublishable } from "./lib/planReadiness";
+export type { PlanReadiness } from "./lib/planReadiness";
+export { buildQuestionSearchParams } from "./api";
+export { getQuizStats, getOrCreateCourseQuestionBank, listPools } from "./api";
+export {
+  searchBankQuestions,
+  getAllBankQuestions,
+  saveSectionQuestions,
+  getSectionQuestions,
+  reorderSections,
+  listPoolDetails,
+  createPoolWithFilter,
+  updatePool,
+  deletePool,
+  previewPool,
+  previewPoolDraft,
+  getPoolMembers,
+  setPoolMembers,
+} from "./api";
+export {
+  listExamPlans,
+  createExamPlan,
+  getExamPlan,
+  updateExamPlan,
+  duplicateExamPlan,
+  deleteExamPlan,
+  validateExamPlan,
+  createPlanSection,
+  renamePlanSection,
+  deletePlanSection,
+  savePlanSectionRules,
+  previewExamPaper,
+} from "./api";
+export {
+  createExam,
+  getExam,
+  updateExam,
+  listMyExams,
+  listExamsForCourse,
+  listAvailableExamsForCourse,
+  attachExamToCourse,
+  detachExamFromCourse,
+  listExamsForEvent,
+  attachExamToEvent,
+  detachExamFromEvent,
+  startExamAttempt,
+  getExamAttempt,
+  getExamAttemptQuestions,
+  saveExamAnswer,
+  submitExamAttempt,
+  getExamResult,
+  listAssessmentPlacements,
+  listAssessmentPlacementsForCourse,
+  placeAssessment,
+  updateAssessmentPlacement,
+  removeAssessmentPlacement,
+  getAssessmentLanding,
+  getCourseExam,
+  createCourseExam,
+  startProctorSession,
+  verifyProctorIdentity,
+  recordProctorEvent,
+  completeProctorSession,
+  listAttemptsForExam,
+  getExamQuestionBank,
+  listExamVersions,
+  publishExam,
+} from "./api";
+export type {
+  AssessmentHostType,
+  AssessmentOutcome,
+  AssessmentPlacementResponse,
+  AssessmentNode,
+  AssessmentBlockedReason,
+  AssessmentLandingResponse,
+  AttemptHistoryItem,
+  DeliveryMode,
+  SelectionMode,
+  PoolMode,
+  ExamPlanRequest,
+  ExamPlanResponse,
+  ExamPlanSectionResponse,
+  ExamPlanValidationResponse,
+  ExamSelectionRuleRequest,
+  ExamSelectionRuleResponse,
+  QuestionPoolDetail,
+  QuestionPoolFilterRequest,
+  QuestionPoolPreviewResponse,
+  QuestionSearchCriteria,
+  QuestionSearchResponse,
+  BankQuestionResponse,
+  BankQuestionRequest,
   QuestionType,
   QuestionResponse,
   OptionResponse,
@@ -36,4 +148,11 @@ export type {
   QuestionBankSummary,
   SectionResponse,
   QuestionPoolResponse,
+  ExamRequest,
+  ExamResponse,
+  AttemptResponse,
+  AttemptQuestionResponse,
+  SaveAnswerRequest,
+  ExamResultResponse,
+  ExamAttemptSummaryResponse,
 } from "./types";

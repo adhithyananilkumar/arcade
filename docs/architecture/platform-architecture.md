@@ -988,6 +988,14 @@ structural contract, and a merged change that contradicts it is a bug in the doc
 
 ## 14. Unified Content Model (2026-07-21)
 
+> **Update (removal):** the Roadmap content type described throughout this section was
+> removed in full — backend module, database tables, frontend domain, editor block, and
+> routes all deleted (product decision; scattered ownership and unresolved issues made it
+> not worth continuing to patch). `ContentItem` keeps its JOINED-inheritance shape because
+> `Course` still needs a shared content base for the `/studio` dashboard and the review
+> workflow, not because Roadmap remains. The narrative below is kept as the historical
+> record of why that shape exists.
+
 **Context.** The Content Studio dashboard route was renamed from `/content` to `/studio`,
 and the previously separate `/roadmaps` feature was merged into it — Roadmap is now just
 another content *type* alongside Course, selectable from the same "Create Content"

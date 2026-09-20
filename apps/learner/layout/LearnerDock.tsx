@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Home, Compass, BookOpen, Crown, Trophy, Waypoints, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { Home, Compass, BookOpen, Trophy, ShieldAlert } from 'lucide-react';
 import { Dock, DockIcon, DockItem, DockLabel } from '@/shared/design-system/ui/dock';
 import { cn } from '@/shared/utils/utils';
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -27,19 +27,11 @@ const dockItems = [
     exact: false,
   },
   {
-    id: 'my-learning',
-    label: 'My Learning',
-    href: '/my-learning',
+    id: 'learning',
+    label: 'Learning',
+    href: '/learning',
     icon: BookOpen,
     activeColor: 'text-emerald-600 dark:text-emerald-400',
-    exact: false,
-  },
-  {
-    id: 'leaderboard',
-    label: 'Leaderboard',
-    href: '/leaderboard',
-    icon: Crown,
-    activeColor: 'text-amber-500 dark:text-amber-400',
     exact: false,
   },
   {
@@ -48,14 +40,6 @@ const dockItems = [
     href: '/achievements',
     icon: Trophy,
     activeColor: 'text-amber-600 dark:text-amber-400',
-    exact: false,
-  },
-  {
-    id: 'roadmap',
-    label: 'Roadmap',
-    href: '/roadmaps',
-    icon: Waypoints,
-    activeColor: 'text-cyan-600 dark:text-cyan-400',
     exact: false,
   },
 ] as const;

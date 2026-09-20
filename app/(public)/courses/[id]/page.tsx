@@ -21,8 +21,12 @@ import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { UserService } from "@/domains/identity"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
-import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
-import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
+import {
+  EnrollmentButton,
+  useMyEnrollmentForResourceQuery,
+  type UIEnrollmentState,
+} from "@/domains/enrollment"
+import { listAvailableExamsForCourse, type ExamResponse } from "@/domains/assessments"
 import { toast } from "sonner"
 import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
@@ -233,6 +237,30 @@ export default function CoursePreviewPage() {
   const [openMod, setOpenMod] = useState(0)
   const [isWishlisted, setIsWishlisted] = useState(false)
 
+  // Server-owned enrollment state (D2). This replaces the previous
+  // `user.enrolledCourses.some(e => e.courseId === course.id)` check, which filtered a private
+  // learning list that was smuggled onto the identity payload — the same coupling that let an
+  // anonymous caller enumerate any named user's enrolled courses (SEC-1). The question "is this
+  // learner enrolled" is now answered by the server, for the authenticated caller only.
+  // Disabled for anonymous visitors: they are never enrolled, and the endpoint requires auth.
+  const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
+    "COURSE",
+    course?.id,
+    Boolean(user)
+  )
+
+  // Published exams attached to this course that this learner is eligible to see — shown on the
+  // Assessments tab below. Not fetched for anonymous visitors (the endpoint requires enrollment).
+  const [availableExams, setAvailableExams] = useState<ExamResponse[]>([])
+  useEffect(() => {
+    if (!course?.id || !user) return
+    listAvailableExamsForCourse(course.id)
+      .then(setAvailableExams)
+      .catch(() => {
+        // Best-effort supplementary content — the page works fine without it.
+      })
+  }, [course?.id, user])
+
   const handleReportSubmit = async (combinedNote: string) => {
     await api.post("/api/v1/reports", {
       contentId: params?.id,
@@ -266,9 +294,9 @@ export default function CoursePreviewPage() {
   const authorUsername = course?.authorUsername || INSTRUCTOR.channel
   const authorAvatarUrl = course?.authorAvatarUrl
   const lessonCount = course?.modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0
-  const isEnrolled = Boolean(
-    course?.id && (user as any)?.enrolledCourses?.some((e: any) => e.courseId === course.id)
-  )
+  // ACCESSIBLE is the only state that grants entry — a PENDING (unpaid / waitlisted) or REVOKED
+  // enrollment is deliberately not "enrolled" for the purposes of this page's CTA.
+  const isEnrolled = myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
 
   const heroContent = (
     <LearningHero
@@ -484,6 +512,39 @@ export default function CoursePreviewPage() {
             </div>
           )
         },
+        ...(availableExams.length > 0
+          ? [
+              {
+                id: "Assessments",
+                label: "Assessments",
+                content: (
+                  <div className="mx-auto flex max-w-3xl flex-col gap-3">
+                    {availableExams.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-paper p-5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-[15px] font-semibold text-ink">{exam.title}</p>
+                          <p className="mt-1 text-[13px] text-subtle">
+                            {exam.purpose ?? "Assessment"} · {exam.questionCount} question
+                            {exam.questionCount === 1 ? "" : "s"}
+                            {exam.requiredForCompletion ? " · Required for completion" : ""}
+                          </p>
+                        </div>
+                        <Link
+                          href={`/learn/exam/${exam.id}`}
+                          className="flex-shrink-0 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-paper transition-transform hover:-translate-y-0.5"
+                        >
+                          View
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+            ]
+          : []),
         {
           id: "Certificate",
           label: "Certificate",

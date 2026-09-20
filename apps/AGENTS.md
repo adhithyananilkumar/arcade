@@ -20,7 +20,7 @@ The Application Layer is responsible for orchestrating the overall user experien
 - **Cannot import from:** Other standalone apps (e.g., `creator/` should not import `learner/`)
 
 ## Examples
-- `apps/creator/orchestrators/CourseEditorOrchestrator.tsx` (Composes Courses, Publishing, and Learning components)
+- `apps/creator/studio/workspaces/course/CourseWorkspace.tsx` (Composes Courses, Publishing, and Learning components)
 - `apps/public/layout/ForumLayout.tsx` (Sets up the forum UI shell)
 
 

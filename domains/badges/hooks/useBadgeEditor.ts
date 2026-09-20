@@ -26,10 +26,10 @@ export type BadgeSaveState = "idle" | "saving" | "saved" | "error";
  * Owns a badge design's full editing state — load, autosave, selection, and object
  * mutations — independent of where any given piece of UI for it renders. The Badge
  * Editor's toolbar/canvas live in the main workspace while its Design/Properties/Layers
- * panels render inside the shared Studio right sidebar (see EditorRightSidebar); both
+ * panels render inside the shared Studio right sidebar (see StudioRightPanel); both
  * need the same live state, so it's centralized here rather than owned by whichever
  * component happens to mount first — the same reason Lesson editing state lives in
- * SharedContentEditorOrchestrator rather than inside ArcadeEditor.
+ * ContentEditorRuntime rather than inside ArcadeEditor.
  *
  * badgeId may be null (no badge currently open) so this can be called unconditionally
  * from the orchestrator regardless of which editor is active.
@@ -55,6 +55,10 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
   const [saveState, setSaveState] = useState<BadgeSaveState>("idle");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<BadgeEditorPanel>("design");
+  const [openDesignSections, setOpenDesignSections] = useState<Record<string, boolean>>({
+    background: false,
+    frame: false,
+  });
   const [previewMode, setPreviewMode] = useState(false);
   const lastSavedRef = useRef<string | null>(null);
 
@@ -221,15 +225,23 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     [doc, addObject]
   );
 
-  const updateSelected = useCallback(
-    (patch: Record<string, unknown>) => {
-      if (!doc || !selectedId) return;
+  const updateObject = useCallback(
+    (id: string, patch: Record<string, unknown>) => {
+      if (!doc) return;
       handleChange({
         ...doc,
-        objects: doc.objects.map((o) => (o.id === selectedId ? ({ ...o, ...patch } as BadgeObject) : o)),
+        objects: doc.objects.map((o) => (o.id === id ? ({ ...o, ...patch } as BadgeObject) : o)),
       });
     },
-    [doc, selectedId, handleChange]
+    [doc, handleChange]
+  );
+
+  const updateSelected = useCallback(
+    (patch: Record<string, unknown>) => {
+      if (!selectedId) return;
+      updateObject(selectedId, patch);
+    },
+    [selectedId, updateObject]
   );
 
   const updateBackground = useCallback(
@@ -265,6 +277,27 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     [doc, selectedId, handleChange, handleSelect]
   );
 
+  const reorderObjects = useCallback(
+    (oldIndex: number, newIndex: number) => {
+      if (!doc || readOnly) return;
+      // Visual order is highest zIndex first (top-to-bottom list)
+      const visualObjects = [...doc.objects].sort((a, b) => b.zIndex - a.zIndex);
+      
+      const item = visualObjects.splice(oldIndex, 1)[0];
+      visualObjects.splice(newIndex, 0, item);
+      
+      // Re-assign z-indexes based on the new visual order
+      // visualObjects[0] is at the top of the list, so it gets the highest zIndex
+      const reordered = visualObjects.map((obj, i) => ({
+        ...obj,
+        zIndex: visualObjects.length - 1 - i,
+      }));
+      
+      handleChange({ ...doc, objects: reordered });
+    },
+    [doc, readOnly, handleChange]
+  );
+
   const selectedObject = doc?.objects.find((o) => o.id === selectedId) ?? null;
   const shape = doc ? getBadgeShapeDefinition(doc.shape.type) : null;
 
@@ -278,6 +311,8 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     shape,
     activePanel,
     setActivePanel,
+    openDesignSections,
+    setOpenDesignSections,
     previewMode,
     setPreviewMode,
     readOnly,
@@ -288,10 +323,12 @@ export function useBadgeEditor(badgeId: string | null, readOnly?: boolean) {
     addIconObject,
     addImageObject,
     updateSelected,
+    updateObject,
     updateBackground,
     updateBorder,
     toggleVisibility,
     deleteObject,
+    reorderObjects,
   };
 }
 

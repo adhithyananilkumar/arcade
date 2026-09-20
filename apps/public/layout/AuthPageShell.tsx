@@ -1,5 +1,3 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { Space_Grotesk } from 'next/font/google';
 
@@ -16,7 +14,6 @@ const spaceGrotesk = Space_Grotesk({
  */
 export function AuthPageShell({
   children,
-  showLogo = false,
 }: {
   children: ReactNode;
   showLogo?: boolean;
@@ -43,21 +40,6 @@ export function AuthPageShell({
           ].join(', '),
         }}
       />
-
-      {showLogo && (
-        <div className="absolute left-4 top-6 z-50 flex h-12 items-center rounded-full px-5 apple-glass-dock md:left-8">
-          <Link href="/" className="group flex cursor-pointer items-center">
-            <Image
-              src="/arcade.svg"
-              alt="Arcade"
-              width={85}
-              height={24}
-              className="h-6 w-auto transition-transform duration-200 group-hover:scale-[1.02]"
-              priority
-            />
-          </Link>
-        </div>
-      )}
 
       <main className="relative z-10 flex min-h-screen items-center justify-center px-4 py-16 sm:px-6 sm:py-20">
         <div className="w-full max-w-[440px]">{children}</div>

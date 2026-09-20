@@ -4,13 +4,6 @@ export type PostStatus = 'DRAFT' | 'PUBLISHED' | 'REMOVED' | 'LOCKED';
 export type VoteType = 'UP' | 'DOWN';
 export type TargetType = 'POST' | 'COMMENT';
 export type FollowType = 'USER' | 'TAG';
-export type NotificationType =
-  | 'COMMENT_ON_POST'
-  | 'REPLY_TO_COMMENT'
-  | 'UPVOTE_ON_POST'
-  | 'ANSWER_ACCEPTED'
-  | 'NEW_FOLLOWER'
-  | 'MENTION';
 export type ReportStatus = 'PENDING' | 'REVIEWED' | 'DISMISSED';
 export type CommentStatus = 'VISIBLE' | 'REMOVED';
 export type BadgeLevel = 'NEWCOMER' | 'CONTRIBUTOR' | 'TRUSTED' | 'EXPERT';
@@ -83,17 +76,6 @@ export interface CommentResponse {
   replies: CommentResponse[];
   createdAt: string;
   editedAt?: string;
-}
-
-export interface NotificationResponse {
-  id: number;
-  type: NotificationType;
-  actor?: ForumUserSummary;
-  postId?: number;
-  postTitle?: string;
-  commentId?: number;
-  isRead: boolean;
-  createdAt: string;
 }
 
 export interface ReputationResponse {

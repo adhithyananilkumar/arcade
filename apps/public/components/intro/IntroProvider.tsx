@@ -38,7 +38,7 @@ export function IntroProvider({ children, enabled = true }: IntroProviderProps) 
   // there is no scrollbar popping in, which means zero layout shift (jerk)
   // for both the intro overlay and the underlying page content.
 
-  // Prevent SSR flash — show plain white until client hydrates
+  // Prevent SSR flash — show clean blank intro background until client hydrates
   if (!mounted) {
     return (
       <div
@@ -47,6 +47,8 @@ export function IntroProvider({ children, enabled = true }: IntroProviderProps) 
           inset: 0,
           background:
             "radial-gradient(ellipse 90% 70% at 50% 42%, #f6f6f6 0%, #ffffff 65%)",
+          zIndex: 9999,
+          pointerEvents: "none",
         }}
       />
     );

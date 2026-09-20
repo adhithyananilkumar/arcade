@@ -17,7 +17,7 @@ interface ChannelPickerProps {
 }
 
 /**
- * Content-creation channel picker — every course/roadmap/workshop must belong to exactly one
+ * Content-creation channel picker — every course/workshop must belong to exactly one
  * channel (see ContentItem's ownership docs). Only rendered when the caller has more than one
  * eligible channel; with exactly one, callers should auto-select it and skip showing this at all.
  */

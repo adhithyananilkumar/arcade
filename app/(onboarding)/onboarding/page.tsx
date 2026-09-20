@@ -6,23 +6,15 @@ import { useAuthStore } from '@/infrastructure/auth/auth.store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/shared/design-system/ui/button';
 import { Input } from '@/shared/design-system/ui/input';
-import { Loader2, Camera, CheckCircle2, AlertCircle, X, Plus, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase } from 'lucide-react';
+import { Loader2, Camera, CheckCircle2, AlertCircle, X, ChevronDown, User, Phone, MapPin, Link as LinkIcon, Briefcase, Search, ArrowLeft } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/design-system/ui/avatar';
-import { api } from '@/infrastructure/http/api';
 import { AuthPageShell } from '@/apps/public/layout/AuthPageShell';
 import '@/domains/identity/components/auth-fields.css';
 import { PebbleLoader } from '@/domains/identity/components/PebbleLoader';
+import { getAvatarUrl } from '@/shared/utils/avatar';
+import { useInterestsQuery, InterestService, UserService } from '@/domains/identity';
 
-const PREFERENCE_OPTIONS = [
-  'Computer Science',
-  'Designing',
-  'Marketing',
-  'Finance',
-  'Healthcare',
-  'Education',
-  'Engineering',
-  'Business',
-];
+const MAX_INTERESTS = 10;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -55,21 +47,11 @@ export default function OnboardingPage() {
   const [address, setAddress] = useState(user?.address || '');
   const [socialLink1, setSocialLink1] = useState(user?.linkedinUrl || user?.socialLinks?.[0] || '');
   const [socialLink2, setSocialLink2] = useState(user?.githubUrl || user?.socialLinks?.[1] || '');
-  const [preferences, setPreferences] = useState<string[]>(user?.preferences || []);
-  
-  const getAvatarUrl = (url?: string) => {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-    if (url.startsWith('/api/v1/')) {
-      return baseUrl.replace('/api/v1', '') + url;
-    }
-    if (!url.includes('/')) {
-      return baseUrl + '/users/avatars/' + url;
-    }
-    return baseUrl + (url.startsWith('/') ? '' : '/') + url;
-  };
-  const [customPreference, setCustomPreference] = useState('');
+  // Step 4: Interests — canonical interest IDs, not arbitrary display strings (see
+  // domains/identity/api/interest.service.ts and the backend `interests` taxonomy).
+  const [selectedInterestIds, setSelectedInterestIds] = useState<string[]>([]);
+  const [interestSearch, setInterestSearch] = useState('');
+  const { data: allInterests = [], isLoading: interestsLoading } = useInterestsQuery();
 
   useEffect(() => {
     if (user?.onboardingCompleted) {
@@ -85,7 +67,7 @@ export default function OnboardingPage() {
       }
       setUsernameStatus('checking');
       try {
-        const res = await api.get<{available: boolean, suggestions?: string[]}>(`/api/v1/users/check-username?username=${username}`);
+        const res = await UserService.checkUsername(username);
         if (res.available) {
           setUsernameStatus('available');
           setUsernameSuggestions([]);
@@ -111,45 +93,47 @@ export default function OnboardingPage() {
     }
   };
 
-  const togglePreference = (pref: string) => {
-    setPreferences(prev => 
-      prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
-    );
+  const toggleInterest = (interestId: string) => {
+    setSelectedInterestIds(prev => {
+      if (prev.includes(interestId)) return prev.filter(id => id !== interestId);
+      if (prev.length >= MAX_INTERESTS) return prev; // sensible selection limit
+      return [...prev, interestId];
+    });
   };
 
-  const addCustomPreference = () => {
-    if (customPreference.trim() && !preferences.includes(customPreference.trim())) {
-      setPreferences(prev => [...prev, customPreference.trim()]);
-      setCustomPreference('');
-    }
-  };
+  const filteredInterests = allInterests.filter(interest =>
+    interest.name.toLowerCase().includes(interestSearch.trim().toLowerCase())
+  );
 
   const handleComplete = async () => {
     setIsSubmitting(true);
     try {
       let uploadedAvatarUrl = user?.avatarUrl;
       if (avatarFile) {
-        const formData = new FormData();
-        formData.append('file', avatarFile);
-        const avatarRes = await api.post<{avatarUrl: string}>('/api/v1/users/me/avatar', formData);
+        const avatarRes = await UserService.uploadAvatar(avatarFile);
         uploadedAvatarUrl = avatarRes.avatarUrl;
       }
 
-      const payload = {
+      // Interests go through their own domain endpoint (canonical IDs, not the legacy free-text
+      // `preferences` field) — submitted before the profile update so onboarding is only marked
+      // complete once the interest selection has actually persisted.
+      if (selectedInterestIds.length > 0) {
+        await InterestService.updateMine(selectedInterestIds);
+      }
+
+      const profileRes = await UserService.updateProfile(
         firstName,
         lastName,
-        avatarUrl: uploadedAvatarUrl,
+        undefined,
+        socialLink1.trim() || undefined,
         username,
         mobileNumber,
         gender,
         address,
-        linkedinUrl: socialLink1.trim() || undefined,
-        githubUrl: socialLink2.trim() || undefined,
-        preferences,
-        onboardingCompleted: true
-      };
-
-      const profileRes = await api.put<any>('/api/v1/users/me', payload);
+        socialLink2.trim() || undefined,
+        uploadedAvatarUrl,
+        true
+      );
       updateUser(profileRes);
       router.push('/');
     } catch (error) {
@@ -160,6 +144,17 @@ export default function OnboardingPage() {
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+  const handleBack = () => {
+    if (step > 1) {
+      prevStep();
+    } else {
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/sign');
+      }
+    }
+  };
 
   const isStep1Valid = username.length >= 3 && usernameStatus === 'available';
   const isStep2Valid = firstName.trim() !== '' && lastName.trim() !== '' && gender !== '' && mobileNumber.trim() !== '';
@@ -326,7 +321,7 @@ export default function OnboardingPage() {
                       id="mobile" 
                       type="tel" 
                       value={mobileNumber} 
-                      onChange={e => setMobileNumber(e.target.value)} 
+                      onChange={e => setMobileNumber(e.target.value.replace(/[^\d\s+-]/g, ''))} 
                       placeholder="+1 234 567 8900"
                       autoComplete="tel"
                       className="w-full border-none bg-transparent p-0 pr-10 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300" 
@@ -455,42 +450,53 @@ export default function OnboardingPage() {
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="space-y-6"
                 >
-                  <div className="flex flex-wrap gap-3">
-                    {[...PREFERENCE_OPTIONS, ...preferences.filter(p => !PREFERENCE_OPTIONS.includes(p))].map(pref => {
-                      const isSelected = preferences.includes(pref);
-                      return (
-                        <button
-                          key={pref}
-                          onClick={() => togglePreference(pref)}
-                          className={`px-5 py-3 rounded-[24px] text-[14px] font-bold transition-all border border-transparent ${
-                            isSelected 
-                              ? 'bg-[#12141C] text-white shadow-[0_2px_10px_rgba(18,20,28,0.12)]' 
-                              : 'bg-white/70 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/80'
-                          }`}
-                        >
-                          {pref}
-                        </button>
-                      );
-                    })}
+                  <div className="auth-field relative flex h-[52px] cursor-text flex-row items-center rounded-[20px] px-5">
+                    <Search className="h-4 w-4 text-[#A5B3CA] shrink-0" />
+                    <input
+                      value={interestSearch}
+                      onChange={e => setInterestSearch(e.target.value)}
+                      placeholder="Search topics"
+                      className="w-full border-none bg-transparent p-0 pl-3 text-[14px] font-semibold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
+                    />
                   </div>
 
-                  <div className="pt-2">
-                    <div className="flex gap-2">
-                      <div className="auth-field relative flex h-[60px] flex-1 cursor-text flex-col justify-center rounded-[20px] px-5 py-2">
-                        <label className="mb-0.5 cursor-text text-[11px] font-bold tracking-wide text-[#A5B3CA] capitalize">Add another field</label>
-                        <input 
-                          value={customPreference} 
-                          onChange={e => setCustomPreference(e.target.value)}
-                          placeholder="e.g. Artificial Intelligence"
-                          onKeyDown={e => e.key === 'Enter' && addCustomPreference()}
-                          className="w-full border-none bg-transparent p-0 text-[15px] font-bold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-300"
-                        />
-                      </div>
-                      <button onClick={addCustomPreference} type="button" className="auth-field flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-[20px] text-slate-400 transition-all hover:text-[#14142b]">
-                        <Plus className="h-6 w-6" />
-                      </button>
+                  <p className="text-[12.5px] font-semibold text-slate-400">
+                    {selectedInterestIds.length} of {MAX_INTERESTS} selected
+                  </p>
+
+                  {interestsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-300" />
                     </div>
-                  </div>
+                  ) : filteredInterests.length === 0 ? (
+                    <p className="py-8 text-center text-[13px] font-medium text-slate-400">
+                      No topics match &ldquo;{interestSearch}&rdquo;.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      {filteredInterests.map(interest => {
+                        const isSelected = selectedInterestIds.includes(interest.id);
+                        const atLimit = !isSelected && selectedInterestIds.length >= MAX_INTERESTS;
+                        return (
+                          <button
+                            key={interest.id}
+                            type="button"
+                            disabled={atLimit}
+                            onClick={() => toggleInterest(interest.id)}
+                            className={`px-5 py-3 rounded-[24px] text-[14px] font-bold transition-all border border-transparent ${
+                              isSelected
+                                ? 'bg-[#12141C] text-white shadow-[0_2px_10px_rgba(18,20,28,0.12)]'
+                                : atLimit
+                                  ? 'bg-white/40 text-slate-300 border border-slate-200/60 cursor-not-allowed'
+                                  : 'bg-white/70 text-slate-500 hover:bg-white hover:text-slate-800 border border-slate-200/80'
+                            }`}
+                          >
+                            {interest.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -499,10 +505,11 @@ export default function OnboardingPage() {
           <div className="mt-8 flex items-center gap-3 pt-4">
             <Button 
               variant="ghost" 
-              onClick={prevStep} 
-              disabled={step === 1 || isSubmitting}
-              className={`h-[52px] px-8 rounded-[26px] font-bold text-[14px] text-[#A5B3CA] bg-[#F7F9FB] hover:bg-slate-100 hover:text-slate-700 transition-all w-1/2 flex-1 ${step === 1 ? 'invisible' : ''}`}
+              onClick={handleBack} 
+              disabled={isSubmitting}
+              className="group flex h-[52px] w-1/2 flex-1 items-center justify-center gap-2 rounded-[26px] bg-[#F7F9FB] px-8 text-[14px] font-bold text-[#A5B3CA] transition-all hover:bg-slate-100 hover:text-slate-700"
             >
+              <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
               Go back
             </Button>
             

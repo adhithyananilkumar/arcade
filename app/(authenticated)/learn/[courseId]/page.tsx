@@ -28,10 +28,12 @@ import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/infrastructure/http/api"
 import type { CourseResponse } from "@/shared/types/api.types"
 import { formatMoney } from "@/shared/utils/money"
-import { UserService } from "@/domains/identity"
 import { useAuthStore } from "@/infrastructure/auth/auth.store"
-import { EnrollmentButton } from "@/domains/enrollment/components/EnrollmentButton"
-import { UIEnrollmentState } from "@/domains/enrollment/types/enrollment.types"
+import {
+  EnrollmentButton,
+  useMyEnrollmentForResourceQuery,
+  type UIEnrollmentState,
+} from "@/domains/enrollment"
 import { toast } from "sonner"
 import { ReportModal } from "@/shared/design-system/ui/ReportModal"
 import {
@@ -987,11 +989,10 @@ export default function CoursePage() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, updateUser } = useAuthStore()
+  const { user } = useAuthStore()
   const [tab, setTab] = useState<Tab>("Overview")
   const [course, setCourse] = useState<CourseResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isEnrolled, setIsEnrolled] = useState(false)
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportNote, setReportNote] = useState('');
@@ -1009,22 +1010,20 @@ export default function CoursePage() {
   const titleFromQuery = searchParams.get('title')
   const courseIdParam = (params?.courseId as string) || ''
 
-  useEffect(() => {
-    if ((user as any)?.enrolledCourses && params?.courseId) {
-      const alreadyEnrolled = (user as any).enrolledCourses.some((e: any) => e.courseId === params.courseId)
-      setIsEnrolled(alreadyEnrolled)
-    }
-  }, [user, params?.courseId])
+  // Server-owned enrollment state (D2), replacing the previous
+  // `user.enrolledCourses.some(e => e.courseId === ...)` check against the identity payload.
+  // ACCESSIBLE is the only state that counts as enrolled: a PENDING (unpaid/awaiting-approval) or
+  // REVOKED enrollment must not unlock the course, which the old boolean could not express.
+  const { data: myEnrollment } = useMyEnrollmentForResourceQuery(
+    "COURSE",
+    courseIdParam || undefined,
+    Boolean(user)
+  )
+  const isEnrolled = myEnrollment?.enrollment?.accessState === "ACCESSIBLE"
 
-  const handleEnrollSuccess = async () => {
-    try {
-      const updatedUser = await UserService.getMe();
-      updateUser(updatedUser);
-      setIsEnrolled(true);
-    } catch (error: any) {
-      console.error("Failed to refresh user profile:", error);
-    }
-  }
+  // EnrollmentButton already invalidates the enrollment read model on every state transition, so
+  // `isEnrolled` refreshes itself. Nothing to refetch here, and no profile payload to reload.
+  const handleEnrollSuccess = () => { }
 
   useEffect(() => {
     if (params?.courseId) {

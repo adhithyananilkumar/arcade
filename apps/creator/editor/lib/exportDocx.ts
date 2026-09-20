@@ -1,6 +1,6 @@
 // apps/creator/editor/lib/exportDocx.ts
 // Word export covering the core node types only. Anything without a mapped case
-// (math, mermaid, embed, columns, callout, quiz, roadmap, button, toggle) renders as a
+// (math, mermaid, embed, columns, callout, quiz, button, toggle) renders as a
 // plain-text fallback line rather than silently disappearing — a documented limitation,
 // not a bug.
 

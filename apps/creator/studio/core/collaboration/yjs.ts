@@ -1,0 +1,62 @@
+// Yjs plumbing for the version-history substrate — the one CRDT layer every Studio content type
+// shares (moved here from apps/creator/editor, which is Tiptap-specific; this file has no Tiptap
+// dependency and never did). We persist the encoded state and periodic snapshots to the backend
+// as base64 over JSON; the backend stores these as opaque blobs.
+
+import * as Y from "yjs";
+
+/**
+ * Create the document's Y.Doc.
+ *
+ * `gc: false` disables garbage collection so deleted content is retained in the
+ * CRDT history — that is what makes snapshots restorable and (later) diffable.
+ * The tradeoff is that the doc grows with edit history; acceptable for authored
+ * documents and periodically flattenable.
+ */
+export function createYDoc(): Y.Doc {
+  return new Y.Doc({ gc: false });
+}
+
+/** Hydrate a Y.Doc from persisted base64 state. No-op if state is null/empty. */
+export function applyBase64Update(ydoc: Y.Doc, base64State: string | null | undefined): void {
+  if (!base64State) return;
+  Y.applyUpdate(ydoc, base64ToBytes(base64State));
+}
+
+/** Encode the full CRDT state (the source of truth) for persistence. */
+export function encodeStateBase64(ydoc: Y.Doc): string {
+  return bytesToBase64(Y.encodeStateAsUpdate(ydoc));
+}
+
+/** Encode a lightweight snapshot marker into the doc's history for a version row. */
+export function encodeSnapshotBase64(ydoc: Y.Doc): string {
+  return bytesToBase64(Y.encodeSnapshot(Y.snapshot(ydoc)));
+}
+
+// ── base64 ⇄ Uint8Array (browser-safe, no Buffer) ─────────────────────────────
+
+export function bytesToBase64(bytes: Uint8Array): string {
+  // Chunked, and using `apply` rather than spread: spreading a 32k subarray pushes
+  // 32k arguments onto the stack per iteration and allocates an array each time.
+  // This runs over the entire CRDT state on every autosave, so it stays on the hot path.
+  const chunk = 0x8000; // avoid stack overflow on large blobs
+  if (bytes.length <= chunk) {
+    return btoa(String.fromCharCode.apply(null, bytes as unknown as number[]));
+  }
+  const parts: string[] = [];
+  for (let i = 0; i < bytes.length; i += chunk) {
+    parts.push(
+      String.fromCharCode.apply(null, bytes.subarray(i, i + chunk) as unknown as number[])
+    );
+  }
+  return btoa(parts.join(""));
+}
+
+export function base64ToBytes(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
