@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Channel, ChannelContentItem, channelService } from "@/domains/channels";
-import { Search, Check, X, Tv, ShieldOff, ShieldCheck, BookOpen, AlertTriangle, Trash2 } from 'lucide-react';
+import { Search, Check, X, Tv, ShieldOff, ShieldCheck, BookOpen, AlertTriangle, Trash2, FileText, UserCircle2, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePermissions } from "@/domains/identity";
 import { useAuthStore } from '@/infrastructure/auth/auth.store';
@@ -341,6 +341,133 @@ export function PendingChannels() {
                 <div className="space-y-2 bg-red-50 p-4 rounded-xl border border-red-100">
                   <h4 className="text-sm font-bold text-red-700">Suspension Reason</h4>
                   <p className="text-sm text-red-600 leading-relaxed">{selectedChannel.suspensionReason}</p>
+                </div>
+              )}
+
+              {selectedChannel.purpose && (
+                <div className="space-y-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                  <h4 className="text-sm font-bold text-gray-900">Purpose</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">{selectedChannel.purpose}</p>
+                </div>
+              )}
+
+              {selectedChannel.applicantProfile && (
+                <div className="space-y-4 pt-6 border-t border-gray-100">
+                  <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <UserCircle2 size={16} className="text-gray-400" /> Applicant Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Full Name</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.fullName}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Email</span>
+                      <span className="text-sm font-semibold text-gray-900 break-all">{selectedChannel.applicantProfile.email}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Phone Number</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.phoneNumber}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Date of Birth</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.dateOfBirth}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Gender</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.gender}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Nationality</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.nationality}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Address</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {[selectedChannel.applicantProfile.address, selectedChannel.applicantProfile.city, selectedChannel.applicantProfile.state, selectedChannel.applicantProfile.country, selectedChannel.applicantProfile.pinCode]
+                          .filter(Boolean)
+                          .join(', ')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">ID Proof Type</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.personalIdProofType}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">ID Proof Number</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.personalIdProofNumber}</span>
+                    </div>
+                    {selectedChannel.applicantProfile.personalIdProofDocumentUrl && (
+                      <div className="col-span-2">
+                        <a
+                          href={selectedChannel.applicantProfile.personalIdProofDocumentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        >
+                          <FileText size={14} /> View ID Proof Document
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {!selectedChannel.isPersonal && (
+                    <>
+                      <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2 pt-2">
+                        <Building2 size={16} className="text-gray-400" /> Organization Details
+                      </h4>
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Organization Name</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationName || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Organization Type</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationType || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Organization Email</span>
+                          <span className="text-sm font-semibold text-gray-900 break-all">{selectedChannel.applicantProfile.organizationEmail || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Website</span>
+                          <span className="text-sm font-semibold text-gray-900 break-all">{selectedChannel.applicantProfile.organizationWebsite || 'N/A'}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Description</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationDescription || 'N/A'}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Address</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationAddress || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Registration Number</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationRegistrationNumber || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Role in Organization</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.roleInOrganization || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Proof Number</span>
+                          <span className="text-sm font-semibold text-gray-900">{selectedChannel.applicantProfile.organizationProofNumber || 'N/A'}</span>
+                        </div>
+                        {selectedChannel.applicantProfile.organizationProofDocumentUrl && (
+                          <div className="col-span-2">
+                            <a
+                              href={selectedChannel.applicantProfile.organizationProofDocumentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                            >
+                              <FileText size={14} /> View Organization Proof Document
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
