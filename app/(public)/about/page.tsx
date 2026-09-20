@@ -46,6 +46,9 @@ export default function AboutPage() {
 
 function AJCESection() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const whyAjceRef = useRef<HTMLDivElement>(null);
+  const isWhyAjceInView = useInView(whyAjceRef, { once: true, amount: 0.2 });
+  const [isRotationDone, setIsRotationDone] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -119,51 +122,59 @@ function AJCESection() {
 
   const highlights = [
     {
-      number: "01",
+      number: "1",
       title: "KIRF Rank #4",
       description: "Ranked #4 among all engineering colleges in Kerala by the Kerala Institutional Ranking Framework (KIRF).",
       icon: Medal,
-      colorClasses: {
-        numberText: "text-amber-500",
-        hoverBorder: "group-hover:border-amber-500",
-        hoverBg: "group-hover:bg-amber-500",
-        lineBg: "bg-amber-500",
+      theme: {
+        bg: "bg-[#EBF3FF] hover:bg-[#E2EDFF]",
+        border: "border-blue-200/80",
+        badgeBg: "bg-[#1D4ED8] text-white shadow-md shadow-blue-500/20",
+        iconColor: "text-[#1D4ED8]",
+        iconBg: "bg-white/90 group-hover:bg-[#1D4ED8] group-hover:text-white",
+        lineBg: "bg-[#1D4ED8]",
       }
     },
     {
-      number: "02",
+      number: "2",
       title: "Autonomous Excellence",
       description: "An Autonomous Institution recognized for maintaining rigorous academic standards and continuous innovation.",
       icon: ShieldCheck,
-      colorClasses: {
-        numberText: "text-emerald-500",
-        hoverBorder: "group-hover:border-emerald-500",
-        hoverBg: "group-hover:bg-emerald-500",
-        lineBg: "bg-emerald-500",
+      theme: {
+        bg: "bg-[#FEF7E6] hover:bg-[#FDF0D5]",
+        border: "border-amber-200/80",
+        badgeBg: "bg-[#D97706] text-white shadow-md shadow-amber-500/20",
+        iconColor: "text-[#D97706]",
+        iconBg: "bg-white/90 group-hover:bg-[#D97706] group-hover:text-white",
+        lineBg: "bg-[#D97706]",
       }
     },
     {
-      number: "03",
+      number: "3",
       title: "NAAC A+ & NBA Accredited",
       description: "Highly accredited with a NAAC A+ grade alongside NBA-accredited engineering programmes.",
       icon: BadgeCheck,
-      colorClasses: {
-        numberText: "text-blue-600",
-        hoverBorder: "group-hover:border-blue-600",
-        hoverBg: "group-hover:bg-blue-600",
-        lineBg: "bg-blue-600",
+      theme: {
+        bg: "bg-[#F7EFFF] hover:bg-[#EFE3FF]",
+        border: "border-purple-200/80",
+        badgeBg: "bg-[#9333EA] text-white shadow-md shadow-purple-500/20",
+        iconColor: "text-[#9333EA]",
+        iconBg: "bg-white/90 group-hover:bg-[#9333EA] group-hover:text-white",
+        lineBg: "bg-[#9333EA]",
       }
     },
     {
-      number: "04",
+      number: "4",
       title: "India 101 Rank",
-      description: "Highly accredited with a NAAC A+ grade alongside NBA-accredited engineering programmes.",
+      description: "Ranked in the 101–150 band across India for engineering excellence and research-driven education.",
       icon: BadgeCheck,
-      colorClasses: {
-        numberText: "text-purple-500",
-        hoverBorder: "group-hover:border-purple-500",
-        hoverBg: "group-hover:bg-purple-500",
-        lineBg: "bg-purple-500",
+      theme: {
+        bg: "bg-[#E8FAF0] hover:bg-[#DCF7E7]",
+        border: "border-emerald-200/80",
+        badgeBg: "bg-[#059669] text-white shadow-md shadow-emerald-500/20",
+        iconColor: "text-[#059669]",
+        iconBg: "bg-white/90 group-hover:bg-[#059669] group-hover:text-white",
+        lineBg: "bg-[#059669]",
       }
     }
   ];
@@ -257,61 +268,96 @@ function AJCESection() {
           WHY AJCE
       ========================================================= */}
 
-      <section className="relative overflow-hidden bg-[#f8fafc]">
+      <section ref={whyAjceRef} className="relative overflow-hidden bg-[#f8fafc]">
 
         <div className="mx-auto max-w-[1400px] px-6 py-28 sm:px-10 lg:px-16 lg:py-40">
 
           {/* Section heading */}
-
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-
-            <div>
-
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em] text-[#2563eb]">
-                Why AJCE
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isWhyAjceInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em] text-[#2563eb]">
+                The Legacy
               </p>
+              <h2
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-normal leading-[1.15] text-[#0b1220] whitespace-nowrap"
+                style={{
+                  fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', 'Amira-Grace', cursive",
+                  fontWeight: 700,
+                }}
+              >
+                Why <span className="text-[#2563eb]">AJCE</span>
+                <motion.span
+                  animate={
+                    isWhyAjceInView
+                      ? {
+                          rotate: [0, 3600],
+                        }
+                      : { rotate: 0 }
+                  }
+                  transition={{
+                    duration: 10,
+                    ease: "easeInOut",
+                  }}
+                  onAnimationComplete={() => {
+                    setIsRotationDone(true);
+                  }}
+                  style={{
+                    display: "inline-block",
+                    transformOrigin: "center 55%",
+                  }}
+                  className="text-[#0b1220] ml-1.5 select-none will-change-transform"
+                >
+                  ?
+                </motion.span>
+              </h2>
+            </motion.div>
 
-              <h3 className="font-bricolage text-4xl font-bold leading-[0.95] tracking-[-0.04em] sm:text-6xl">
-                Kerala's largest
-                <br />
-                infrastructure of
-                <br />
+            <motion.div
+              initial={{ opacity: 0, x: 45, filter: "blur(6px)" }}
+              animate={
+                isRotationDone
+                  ? { opacity: 1, x: 0, filter: "blur(0px)" }
+                  : { opacity: 0, x: 45, filter: "blur(6px)" }
+              }
+              transition={{
+                duration: 0.9,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="flex flex-col justify-center space-y-6 pt-2"
+            >
+              <h3 className="font-bricolage text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-[-0.03em] text-[#0b1220]">
+                Kerala's largest infrastructure of{" "}
                 <span className="text-[#2563eb]">
                   Engineering Education.
                 </span>
               </h3>
 
-            </div>
-
-            <div className="flex items-center">
-
-              <p className="max-w-2xl text-base md:text-lg leading-8 text-[#64748b]">
+              <p className="max-w-2xl text-base md:text-lg leading-relaxed text-[#64748b]">
                 An institution shaped by academic excellence,
                 innovation, accreditation, and a commitment to
                 meaningful industry engagement.
               </p>
-
-            </div>
-
+            </motion.div>
           </div>
 
           {/* ====================================================
-              FEATURE LIST
+              FEATURE LIST (4-Color Theme: Blue, Amber, Purple, Green)
           ========================================================= */}
 
-          <div className="mt-24 border-t border-[#0b1220]/15">
-
+          <div className="mt-16 sm:mt-20 space-y-4 sm:space-y-5">
             {highlights.map((item, index) => {
-
               const Icon = item.icon;
 
               return (
-
                 <motion.div
                   key={item.number}
                   initial={{
                     opacity: 0,
-                    y: 40,
+                    y: 35,
                   }}
                   whileInView={{
                     opacity: 1,
@@ -319,88 +365,90 @@ function AJCESection() {
                   }}
                   viewport={{
                     once: true,
-                    margin: "-80px",
+                    margin: "-60px",
                   }}
                   transition={{
-                    duration: 0.7,
+                    duration: 0.6,
                     delay: index * 0.08,
+                    ease: "easeOut",
                   }}
-                  className="
+                  className={`
                     group
                     relative
                     grid
-                    gap-8
-                    border-b
-                    border-[#0b1220]/15
-                    py-12
-                    transition-colors
-                    duration-500
-                    hover:bg-white
-                    lg:grid-cols-[100px_1fr_1fr_80px]
+                    gap-6
+                    sm:gap-8
+                    rounded-2xl
+                    border
+                    ${item.theme.border}
+                    ${item.theme.bg}
+                    px-6 sm:px-10
+                    py-7 sm:py-8
+                    transition-all
+                    duration-300
+                    hover:shadow-lg
+                    hover:-translate-y-0.5
+                    lg:grid-cols-[70px_1fr_1.3fr_60px]
                     lg:items-center
-                  "
+                  `}
                 >
-
-                  {/* Number */}
-
-                  <div className={`text-sm font-bold tracking-[0.2em] ${item.colorClasses.numberText}`}>
-                    {item.number}
+                  {/* Numbered Circle Badge (1, 2, 3, 4) */}
+                  <div className="flex items-center">
+                    <div className={`
+                      h-11 w-11 sm:h-12 sm:w-12
+                      rounded-full
+                      flex items-center justify-center
+                      font-bold text-base sm:text-lg
+                      ${item.theme.badgeBg}
+                      transition-transform duration-300 group-hover:scale-105
+                    `}>
+                      {item.number}
+                    </div>
                   </div>
 
                   {/* Title */}
-
-                  <h4 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-[#0B132B]">
                     {item.title}
                   </h4>
 
                   {/* Description */}
-
-                  <p className="max-w-md text-sm leading-6 text-[#64748b]">
+                  <p className="text-sm sm:text-base leading-relaxed text-[#475569]">
                     {item.description}
                   </p>
 
                   {/* Icon */}
-
-                  <div className={`
-                    flex
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-                    rounded-full
-                    border
-                    border-[#0b1220]/15
-                    transition-all
-                    duration-500
-                    ${item.colorClasses.hoverBorder}
-                    ${item.colorClasses.hoverBg}
-                    group-hover:text-white
-                  `}>
-
-                    <Icon className="h-5 w-5" />
-
+                  <div className="flex justify-start lg:justify-end">
+                    <div className={`
+                      flex
+                      h-11 w-11
+                      items-center justify-center
+                      rounded-full
+                      border border-slate-200/80
+                      ${item.theme.iconBg}
+                      ${item.theme.iconColor}
+                      shadow-sm
+                      transition-all duration-300
+                    `}>
+                      <Icon className="h-5 w-5" />
+                    </div>
                   </div>
 
                   {/* Hover line */}
-
                   <div className={`
                     absolute
                     bottom-0
                     left-0
-                    h-[2px]
+                    h-[3px]
                     w-0
-                    ${item.colorClasses.lineBg}
+                    rounded-b-2xl
+                    ${item.theme.lineBg}
                     transition-all
-                    duration-700
+                    duration-500
                     group-hover:w-full
                   `} />
-
                 </motion.div>
-
               );
-
             })}
-
           </div>
 
         </div>
