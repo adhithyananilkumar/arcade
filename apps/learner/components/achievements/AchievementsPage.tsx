@@ -9,11 +9,12 @@ import {
   Trophy, Award, Flame, Star, Zap, CheckCircle2, Lock,
   Search, Shield, ChevronRight, Share2, Sparkles, Filter,
   Check, ArrowRight, ExternalLink, Calendar, Medal, Clock,
-  BookOpen, GraduationCap, Video, Wrench, Laptop, Download, ClipboardList, X, Code, MoreVertical
+  BookOpen, GraduationCap, Video, Wrench, Laptop, Download, ClipboardList, X, Code, MoreVertical, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import TiltedCard from '@/shared/design-system/ui/tilted-card';
 import { MagicBento, ParticleCard } from '@/shared/design-system/ui/magic-bento';
+import SpecularButton from '@/shared/design-system/ui/SpecularButton';
 import AchievementsHero from './AchievementsHero';
 
 // ─── SVG Hexagonal Badge Graphic ─────────────────────────────────────────────
@@ -335,9 +336,18 @@ export default function AchievementsPage() {
   const { user, updateUser } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [certFilter, setCertFilter] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
+  const [badgeSpinKey, setBadgeSpinKey] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<'badges' | 'certificates' | 'quests'>('badges');
+  const [hoveredTab, setHoveredTab] = useState<'badges' | 'certificates' | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [hoveredCertFilter, setHoveredCertFilter] = useState<string | null>(null);
+
+  const openBadgeDetails = (badge: BadgeItem) => {
+    setSelectedBadge(badge);
+    setBadgeSpinKey((k) => k + 1);
+  };
 
 
   // Load fresh profile details from DB if available
@@ -401,10 +411,28 @@ export default function AchievementsPage() {
   }, [certFilter, searchQuery]);
 
   return (
-    <div className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans">
-      <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8">
+    <div 
+      className="w-full min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300 relative overflow-hidden"
+      style={{ 
+        background: `
+          radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.14) 0px, transparent 50%),
+          radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+          radial-gradient(at 50% 40%, rgba(240, 253, 250, 0.8) 0px, transparent 60%),
+          radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+          radial-gradient(at 0% 100%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+          linear-gradient(135deg, #f0fdf4 0%, #ecfeff 35%, #f8fafc 70%, #f0fdfa 100%)
+        `
+      }}
+    >
+      {/* Ambient Glow Orbs in Mint / Emerald / Cyan / Sky Blue Tones */}
+      <div className="absolute -top-10 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-[#10B981]/15 via-[#34D399]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-10 -right-10 w-[550px] h-[550px] bg-gradient-to-bl from-[#0EA5E9]/15 via-[#10B981]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute top-[45%] -left-10 w-[450px] h-[450px] bg-gradient-to-tr from-[#10B981]/12 via-[#38BDF8]/10 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
+      <div className="absolute -bottom-10 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-[#059669]/12 via-[#0EA5E9]/12 to-transparent rounded-full blur-3xl pointer-events-none -z-0" />
 
-        {/* ── Desktop Hero Celebration Section (Image 2 Exact Mock) ── */}
+      <div className="max-w-7xl mx-auto pt-10 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
+
+        {/* ── Desktop Hero Celebration Section ── */}
         <AchievementsHero
           unlockedCount={unlockedCount}
           totalBadges={totalBadges}
@@ -412,30 +440,44 @@ export default function AchievementsPage() {
           certificatesCount={CERTIFICATES.length}
         />
 
-        {/* ── Main Navigation Tabs ── */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 mb-8 pb-4 mt-6">
-          <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => setActiveTab('badges')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'badges'
-                ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-md shadow-blue-500/25'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
-                }`}
-            >
-              <Trophy size={16} />
-              <span>Badges & Honors ({unlockedCount})</span>
-            </button>
+        {/* ── Main Navigation Tabs with Moving Selection Pill on Hover/Click ── */}
+        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-neutral-800 mb-8 pb-4 mt-6">
+          <div 
+            className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 relative"
+            onMouseLeave={() => setHoveredTab(null)}
+          >
+            {[
+              { id: 'badges' as const, label: `Badges & Honors (${unlockedCount})`, icon: Trophy },
+              { id: 'certificates' as const, label: `Certificates (${CERTIFICATES.length})`, icon: Award }
+            ].map(({ id, label, icon: Icon }) => {
+              const isTargeted = (hoveredTab ?? activeTab) === id;
 
-            <button
-              onClick={() => setActiveTab('certificates')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${activeTab === 'certificates'
-                ? 'bg-gradient-to-r from-[#2962D6] via-[#2C83F5] to-[#27C5D8] text-white shadow-md shadow-blue-500/25'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-neutral-900'
-                }`}
-            >
-              <Award size={16} />
-              <span>Certificates ({CERTIFICATES.length})</span>
-            </button>
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  onMouseEnter={() => setHoveredTab(id)}
+                  className={`relative px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-colors duration-200 cursor-pointer flex items-center gap-2 select-none z-10 ${
+                    isTargeted
+                      ? 'text-white font-black'
+                      : 'text-slate-600 dark:text-slate-400 font-bold hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  {isTargeted && (
+                    <motion.div
+                      layoutId="activeNavTabPill"
+                      className="absolute inset-0 rounded-xl shadow-md shadow-emerald-500/20 -z-10"
+                      style={{
+                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                      }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <Icon size={16} className="relative z-10" />
+                  <span className="relative z-10">{label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {(activeTab === 'badges' || activeTab === 'certificates') && (
@@ -446,7 +488,7 @@ export default function AchievementsPage() {
                 placeholder={activeTab === 'certificates' ? "Search certificates..." : "Search badges..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#2962D6]"
+                className="w-full bg-white/95 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-900 dark:text-white shadow-xs"
               />
             </div>
           )}
@@ -455,233 +497,266 @@ export default function AchievementsPage() {
         {/* ── TAB 1: BADGES GALLERY ── */}
         {activeTab === 'badges' && (
           <div>
-            {/* Category Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {['All', 'Unlocked', 'In Progress'].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${selectedCategory === cat
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                    : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#2962D6]'
+            {/* Category Filter Pills with Moving Hover/Active Indicator */}
+            <div 
+              className="flex flex-wrap items-center gap-2 mb-6 relative"
+              onMouseLeave={() => setHoveredCategory(null)}
+            >
+              {['All', 'Unlocked', 'In Progress'].map((cat) => {
+                const isTargeted = (hoveredCategory ?? selectedCategory) === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    onMouseEnter={() => setHoveredCategory(cat)}
+                    className={`relative px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-colors duration-200 cursor-pointer select-none ${
+                      isTargeted
+                        ? 'text-emerald-800 dark:text-emerald-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                     }`}
-                >
-                  {cat}
-                </button>
-              ))}
+                  >
+                    {isTargeted ? (
+                      <motion.div
+                        layoutId="activeCategoryPill"
+                        className="absolute inset-0 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400/80 dark:border-emerald-600 rounded-full shadow-xs -z-10"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-white/90 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full -z-10 hover:border-emerald-300" />
+                    )}
+                    <span className="relative z-10">{cat}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Badges Grid — Magic Bento Grid with Cursor Spotlight & Border Glow (Particle dots disabled) */}
-            <MagicBento
-              textAutoHide={false}
-              enableStars={false}
-              enableSpotlight={true}
-              enableBorderGlow={true}
-              enableTilt={true}
-              enableMagnetism={true}
-              clickEffect={true}
-              spotlightRadius={300}
-              particleCount={0}
-              glowColor="41, 98, 214"
-            >
-              {filteredBadges.map((badge) => (
-                <ParticleCard
-                  key={badge.id}
-                  onClick={() => setSelectedBadge(badge)}
-                  className="magic-bento-card magic-bento-card--border-glow group relative flex flex-col items-center justify-between text-center cursor-pointer p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 transition-all duration-300 shadow-sm hover:shadow-xl"
-                  glowColor="41, 98, 214"
-                  particleCount={0}
-                  enableTilt={true}
-                  clickEffect={true}
-                  enableMagnetism={true}
-                >
-                  {/* Badge Hexagon Graphic */}
-                  <div className="w-28 h-32 relative flex items-center justify-center my-2 drop-shadow-lg group-hover:drop-shadow-2xl transition-all duration-300">
-                    <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
-                    {!badge.unlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-2xl">
-                        <Lock className="w-7 h-7 text-white drop-shadow-md" />
-                      </div>
-                    )}
-                  </div>
+            {/* Keyframe animation for moving dotted lines */}
+            <style>{`
+              @keyframes marchingDots {
+                from {
+                  stroke-dashoffset: 0;
+                }
+                to {
+                  stroke-dashoffset: -24;
+                }
+              }
+              .animate-marching-dots {
+                animation: marchingDots 2.5s linear infinite;
+              }
+              .group:hover .animate-marching-dots {
+                animation-duration: 1.2s;
+              }
+            `}</style>
 
-                  {/* Badge Title & Unlocked Status Sub-line */}
-                  <div className="my-2 z-10">
-                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug group-hover:text-[#2962D6] dark:group-hover:text-[#2C83F5] transition-colors">
-                      {badge.name}
-                    </h3>
+            {/* Badges Grid — Diagonal Curve Cards with Modern Emerald / Sky / Teal Gradient Fills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredBadges.map((badge, idx) => {
+                const cardColors = [
+                  '#059669', // Emerald Green
+                  '#0284C7', // Sky Blue
+                  '#0D9488', // Teal
+                  '#2563EB', // Royal Blue
+                  '#10B981', // Mint Emerald
+                  '#0891B2', // Cyan
+                  '#4F46E5', // Indigo
+                  '#16A34A', // Vibrant Green
+                ];
+                const cardColor = cardColors[idx % cardColors.length];
 
-                    {badge.unlocked ? (
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 stroke-[2.5]" />
-                        <span>{badge.achievedDate}</span>
-                      </div>
-                    ) : (
-                      <div className="w-full max-w-[160px] mx-auto mt-2">
-                        <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-extrabold mb-1">
-                          <span>Progress</span>
-                          <span>{badge.progressText}</span>
-                        </div>
-                        <div className="w-full bg-slate-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-[#2962D6] h-full rounded-full transition-all duration-500"
-                            style={{ width: `${badge.progress || 0}%` }}
-                          />
+                return (
+                  <div
+                    key={badge.id}
+                    onClick={() => openBadgeDetails(badge)}
+                    className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between hover:scale-[1.02]"
+                    style={{
+                      background: `linear-gradient(145deg, ${cardColor}18 0%, ${cardColor}08 35%, rgba(255,255,255,0.96) 65%, ${cardColor}14 100%)`,
+                      borderColor: `${cardColor}35`
+                    }}
+                  >
+                    <div>
+                      {/* Top Header with Badge Graphic */}
+                      <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
+                        {/* Hexagon Badge Graphic */}
+                        <div className="w-24 h-28 sm:w-28 sm:h-32 relative flex items-center justify-center drop-shadow-md group-hover:scale-105 transition-all duration-300 my-2">
+                          <BadgeGraphic type={badge.type} unlocked={badge.unlocked} />
+                          {!badge.unlocked && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/20 backdrop-blur-[1px] rounded-2xl">
+                              <Lock className="w-7 h-7 text-white drop-shadow-md" />
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
+
+                      {/* Category & Tier Label */}
+                      <span 
+                        className="text-[11px] font-black uppercase tracking-wider block mb-1"
+                        style={{ color: cardColor }}
+                      >
+                        {badge.category} • {badge.tier}
+                      </span>
+
+                      {/* Main Title */}
+                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug mb-1.5 line-clamp-1">
+                        {badge.name}
+                      </h3>
+
+                      {/* Subtitle / Description / Progress */}
+                      {badge.unlocked ? (
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium line-clamp-2 leading-relaxed">
+                          {badge.description}
+                        </p>
+                      ) : (
+                        <div className="w-full mt-2">
+                          <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300 font-extrabold mb-1">
+                            <span>{badge.progressText}</span>
+                            <span>{badge.progress}%</span>
+                          </div>
+                          <div className="w-full bg-slate-200/80 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${badge.progress || 0}%`, backgroundColor: cardColor }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom Action Text Link */}
+                    <div
+                      className="w-full pt-3 pb-1 flex items-center justify-center gap-2 font-extrabold text-xs sm:text-sm mt-3 transition-all"
+                      style={{ color: cardColor }}
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>{badge.unlocked ? 'View Badge Details' : 'Continue Learning'}</span>
+                    </div>
                   </div>
-                </ParticleCard>
-              ))}
-            </MagicBento>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* ── TAB 2: CERTIFICATES (Slightly Larger Scale & Refined Spacing) ── */}
+        {/* ── TAB 2: CERTIFICATES (Diagonal Curve/Sharp Shape Cards with Gradient Fills) ── */}
         {activeTab === 'certificates' && (
           <div>
-            {/* Certificate Filter Pills — Identical Style to Badges Tab */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {['All', 'Passed', 'Failed'].map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setCertFilter(filter)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
-                    certFilter === filter
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-md'
-                      : 'bg-white dark:bg-neutral-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-neutral-800 hover:border-[#2962D6]'
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
+            {/* Certificate Filter Pills with Moving Hover/Active Indicator */}
+            <div 
+              className="flex flex-wrap items-center gap-2 mb-6 relative"
+              onMouseLeave={() => setHoveredCertFilter(null)}
+            >
+              {['All', 'Passed', 'Failed'].map((filter) => {
+                const isTargeted = (hoveredCertFilter ?? certFilter) === filter;
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setCertFilter(filter)}
+                    onMouseEnter={() => setHoveredCertFilter(filter)}
+                    className={`relative px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-colors duration-200 cursor-pointer select-none ${
+                      isTargeted
+                        ? 'text-emerald-800 dark:text-emerald-200'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    }`}
+                  >
+                    {isTargeted ? (
+                      <motion.div
+                        layoutId="activeCertFilterPill"
+                        className="absolute inset-0 bg-emerald-100/90 dark:bg-emerald-950/60 border border-emerald-400/80 dark:border-emerald-600 rounded-full shadow-xs -z-10"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-white/90 dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-full -z-10 hover:border-emerald-300" />
+                    )}
+                    <span className="relative z-10">{filter}</span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-4 w-full">
-            {filteredCertificates.map((cert) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-2 w-full">
+            {filteredCertificates.map((cert, idx) => {
               const isPassed = cert.status !== 'FAILED';
+              
+              const certColors = [
+                '#059669', // Emerald Green
+                '#0284C7', // Sky Blue
+                '#0D9488', // Teal
+                '#2563EB', // Royal Blue
+                '#10B981', // Mint Emerald
+                '#0891B2', // Cyan
+                '#4F46E5', // Indigo
+                '#16A34A', // Vibrant Green
+              ];
+              const cardColor = isPassed ? certColors[idx % certColors.length] : '#E11D48';
 
               return (
-                <TiltedCard
+                <div
                   key={cert.id}
-                  rotateAmplitude={6}
-                  scaleOnHover={1.02}
-                  showTooltip={false}
+                  className="group relative rounded-tl-[36px] rounded-br-[36px] rounded-tr-none rounded-bl-none p-5 sm:p-6 border shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:scale-[1.02]"
+                  style={{
+                    background: `linear-gradient(145deg, ${cardColor}18 0%, ${cardColor}08 35%, rgba(255,255,255,0.96) 65%, ${cardColor}14 100%)`,
+                    borderColor: `${cardColor}35`
+                  }}
                 >
-                  <div className={`relative flex flex-col justify-between rounded-none bg-white dark:bg-neutral-900 border-2 ${
-                    isPassed ? 'border-[#2962D6] dark:border-[#38BDF8]/80' : 'border-rose-500/80 dark:border-rose-400/80'
-                  } shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden min-h-[250px] h-full group p-5 sm:p-6`}>
-
-                    {/* Top Bar: Left Ribbon Tag (PASSED vs FAILED) */}
-                    <div className="flex items-center justify-between w-full relative z-10">
-                      <div className="flex items-center gap-2">
-                        {/* Hanging Ribbon Banner */}
-                        <div
-                          className={`w-7 h-8 shadow-2xs flex items-center justify-center text-white shrink-0 -mt-6 ${
-                            isPassed ? 'bg-[#2962D6]' : 'bg-rose-600'
-                          }`}
-                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%)' }}
-                        >
-                          <div className={`w-4 h-4 rounded-full bg-white flex items-center justify-center ${
-                            isPassed ? 'text-[#2962D6]' : 'text-rose-600'
-                          }`}>
-                            {isPassed ? <Check className="w-3 h-3 stroke-[3.5]" /> : <X className="w-3 h-3 stroke-[3.5]" />}
-                          </div>
-                        </div>
-                        <span className={`text-xs font-black tracking-wider uppercase -mt-2 ${
-                          isPassed ? 'text-[#2962D6] dark:text-[#38BDF8]' : 'text-rose-600 dark:text-rose-400'
-                        }`}>
-                          {cert.status || 'PASSED'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Center Graphic: Scalloped Medal Seal + 3 Stars */}
-                    <div className="flex flex-col items-center justify-center my-2 relative z-10">
-                      {/* Circular Scalloped Medal Seal */}
-                      <div className={`w-16 h-16 rounded-full border flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300 ${
-                        isPassed
-                          ? 'bg-slate-100/90 dark:bg-neutral-800 border-slate-200/80 dark:border-neutral-700'
-                          : 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200/80 dark:border-rose-900/60'
-                      }`}>
-                        <Award className={`w-8 h-8 stroke-[2] ${
-                          isPassed ? 'text-amber-500' : 'text-rose-400 dark:text-rose-500 opacity-60'
-                        }`} />
+                  <div>
+                    {/* Top Header with Medal Seal */}
+                    <div className="relative w-full flex flex-col items-center justify-center mb-5 pt-1">
+                      {/* Scalloped Medal Seal */}
+                      <div 
+                        className="w-16 h-16 rounded-full border flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300 bg-white/90 dark:bg-neutral-800 my-2"
+                        style={{ borderColor: `${cardColor}40` }}
+                      >
+                        <Award className="w-8 h-8 stroke-[2]" style={{ color: cardColor }} />
                       </div>
 
                       {/* 3 Stars Underneath */}
-                      <div className={`flex items-center gap-1 mt-1.5 ${
-                        isPassed ? 'text-blue-300 dark:text-blue-400' : 'text-slate-300 dark:text-neutral-700'
-                      }`}>
-                        <Star className="w-2.5 h-2.5 fill-current" />
+                      <div 
+                        className="flex items-center gap-1 mt-1"
+                        style={{ color: isPassed ? cardColor : '#94a3b8' }}
+                      >
                         <Star className="w-3 h-3 fill-current" />
-                        <Star className="w-2.5 h-2.5 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
                       </div>
                     </div>
+
+                    {/* Category Label */}
+                    <span 
+                      className="text-[11px] font-black uppercase tracking-wider block mb-1"
+                      style={{ color: cardColor }}
+                    >
+                      {cert.issuer || 'ACCREDITED CERTIFICATE'}
+                    </span>
 
                     {/* Course Title */}
-                    <div className="text-center my-1.5 relative z-10 px-1">
-                      <h3 className={`text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-snug tracking-tight transition-colors ${
-                        isPassed
-                          ? 'group-hover:text-[#2962D6] dark:group-hover:text-[#38BDF8]'
-                          : 'group-hover:text-rose-600 dark:group-hover:text-rose-400'
-                      }`}>
-                        {cert.title}
-                      </h3>
-                    </div>
+                    <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white leading-snug mb-1.5 line-clamp-1">
+                      {cert.title}
+                    </h3>
 
-                    {/* Footer Bar: Date Left | Share & Download Right */}
-                    <div className="pt-2.5 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-between relative z-10">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span>{cert.issueDate}</span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-px h-4 bg-slate-200 dark:bg-neutral-800" />
-
-                        {/* Share Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard?.writeText(window.location.href);
-                            toast.success(`Share link copied for "${cert.title}" 🚀`);
-                          }}
-                          title="Share Certificate"
-                          className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                            isPassed
-                              ? 'text-slate-400 hover:text-[#2962D6] dark:hover:text-[#38BDF8] hover:bg-blue-50 dark:hover:bg-neutral-800'
-                              : 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-neutral-800'
-                          }`}
-                        >
-                          <Share2 className="w-4 h-4 stroke-[2]" />
-                        </button>
-
-                        {/* Download PDF Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isPassed) {
-                              toast.error(`Certificate unavailable. Minimum passing score required for "${cert.title}".`);
-                            } else {
-                              toast.info(`Downloading certificate for "${cert.title}"...`);
-                            }
-                          }}
-                          title={isPassed ? "Download Certificate PDF" : "Exam Not Passed"}
-                          className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                            isPassed
-                              ? 'text-slate-400 hover:text-[#2962D6] dark:hover:text-[#38BDF8] hover:bg-blue-50 dark:hover:bg-neutral-800'
-                              : 'text-slate-300 dark:text-neutral-700 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-neutral-800'
-                          }`}
-                        >
-                          <Download className="w-4 h-4 stroke-[2]" />
-                        </button>
-                      </div>
+                    {/* Issue Date Details */}
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Issued on {cert.issueDate}</span>
                     </div>
                   </div>
-                </TiltedCard>
+
+                  {/* Bottom Action Text Link */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isPassed) {
+                        toast.error(`Certificate unavailable. Minimum passing score required for "${cert.title}".`);
+                      } else {
+                        toast.info(`Downloading certificate for "${cert.title}"...`);
+                      }
+                    }}
+                    className="w-full pt-3 pb-1 flex items-center justify-center gap-2 font-extrabold text-xs sm:text-sm mt-3 cursor-pointer transition-opacity hover:opacity-80"
+                    style={{ color: cardColor }}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{isPassed ? 'Download Certificate' : 'Retake Assessment'}</span>
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -690,7 +765,7 @@ export default function AchievementsPage() {
 
 
 
-        {/* ── RIGHT SLIDE-OVER SPOTLIGHT DRAWER (1:1 Exact Match to Reference Image) ── */}
+        {/* ── RIGHT SLIDE-OVER SPOTLIGHT DRAWER ── */}
         <AnimatePresence>
           {selectedBadge && (
             <div className="fixed inset-0 z-50 overflow-hidden">
@@ -703,63 +778,116 @@ export default function AchievementsPage() {
                 className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm cursor-pointer"
               />
 
-              {/* Slide-Over Drawer Panel */}
+              {/* Slide-Over Drawer Panel — Clean White Main Box */}
               <div className="absolute inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
                 <motion.div
                   initial={{ x: '100%' }}
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                  className="w-screen max-w-md sm:max-w-[480px] bg-slate-50/90 dark:bg-neutral-950/90 backdrop-blur-md border-l border-slate-200/80 dark:border-neutral-800 shadow-2xl flex flex-col justify-between p-4 sm:p-6 overflow-y-auto"
+                  className="w-screen max-w-md sm:max-w-[480px] bg-white dark:bg-neutral-900 border-l border-slate-200/80 dark:border-neutral-800 shadow-2xl flex flex-col justify-between p-6 sm:p-8 overflow-y-auto"
                 >
-                  {/* ── Top Header ── */}
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-200/60 dark:border-neutral-800">
-                    <div>
-                      <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-snug">
-                        Badge Spotlight
-                      </h3>
-                    </div>
+                  {/* ── Top Header: Back Arrow to return to Achievements page ── */}
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-neutral-800">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBadge(null)}
+                      className="group/back p-2 rounded-full text-slate-600 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      title="Go back to Achievements"
+                    >
+                      <ArrowLeft className="w-5 h-5 transition-transform group-hover/back:-translate-x-0.5" />
+                    </button>
 
                     <button
                       type="button"
                       onClick={() => setSelectedBadge(null)}
-                      className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                      title="Close"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* ── Main Inner Card with V-Tear Reveal Header ── */}
-                  <div className="relative my-4 rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-xl overflow-hidden flex flex-col items-center text-center p-6 sm:p-8">
+                  {/* ── Main Blended Content ── */}
+                  <div className="flex-1 flex flex-col items-center text-center py-6">
 
-                    {/* V-Tear Sky Reveal Stage */}
-                    <div className="relative w-full -mt-8 -mx-8 mb-6 pt-10 pb-16 bg-gradient-to-b from-[#EBF3FF] via-[#F4F8FF] to-white dark:from-[#132247] dark:via-[#192B54] dark:to-neutral-900 flex flex-col items-center justify-center overflow-hidden">
+                    {/* Badge Hero Presentation with 3D 3-Second Spin */}
+                    <div 
+                      className="relative w-full mb-6 pt-4 pb-4 flex flex-col items-center justify-center overflow-visible"
+                      style={{ perspective: 1000 }}
+                    >
+                      {/* Floating Sparkle Elements in Mint / Cyan / Emerald */}
+                      <motion.div
+                        key={`sparkle1-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.6, 1, 0.8, 1], scale: [0, 1.3, 0.9, 1.2, 0.95, 1] }}
+                        transition={{ duration: 3.5, delay: 0.1, repeat: 2 }}
+                        className="absolute top-2 left-8 text-[#10B981] text-sm animate-pulse"
+                      >
+                        ✦
+                      </motion.div>
+                      <motion.div
+                        key={`sparkle2-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.8, 1, 0.6, 1], scale: [0, 1.5, 1, 1.3, 1, 1] }}
+                        transition={{ duration: 3.2, delay: 0.4, repeat: 2 }}
+                        className="absolute top-6 right-10 text-[#0EA5E9] text-xs animate-ping"
+                      >
+                        ✦
+                      </motion.div>
+                      <motion.div
+                        key={`sparkle3-${badgeSpinKey}`}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: [0, 1, 0.7, 1, 0.8, 1], scale: [0, 1.2, 1, 1.1, 0.95, 1] }}
+                        transition={{ duration: 3.3, delay: 0.2, repeat: 2 }}
+                        className="absolute bottom-2 left-12 text-[#34D399] text-xs"
+                      >
+                        ✦
+                      </motion.div>
 
-                      {/* Floating Sparkle Elements */}
-                      <div className="absolute top-4 left-10 text-blue-400 text-sm animate-pulse">✦</div>
-                      <div className="absolute top-8 right-12 text-cyan-400 text-xs animate-ping">✦</div>
-                      <div className="absolute top-16 left-16 text-purple-300 text-xs">✦</div>
+                      {/* Luminous Pulsing Glow Backdrop during 10s Spin */}
+                      <motion.div
+                        key={`glow-${badgeSpinKey}`}
+                        initial={{ opacity: 0.2, scale: 0.6 }}
+                        animate={{
+                          opacity: [0.2, 0.75, 0.4, 0.8, 0.45],
+                          scale: [0.6, 1.3, 0.95, 1.25, 1.05],
+                        }}
+                        transition={{ duration: 10, ease: 'easeOut' }}
+                        className="absolute w-48 h-48 rounded-full bg-gradient-to-tr from-[#10B981]/30 via-[#0EA5E9]/25 to-[#34D399]/20 blur-2xl -z-10 pointer-events-none"
+                      />
 
-                      {/* Center Hexagonal Badge Graphic */}
-                      <div className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_15px_30px_rgba(41,98,214,0.35)] z-20">
+                      {/* 3D 10-Second Rotating Center Hexagonal Badge Graphic */}
+                      <motion.div
+                        key={`badge-spin-${selectedBadge.id}-${badgeSpinKey}`}
+                        initial={{
+                          rotateY: 0,
+                          rotateX: 12,
+                          scale: 0.45,
+                          opacity: 0,
+                        }}
+                        animate={{
+                          rotateY: [0, 720, 1440, 2160, 2880, 3600], // 10 full 360° revolutions
+                          rotateX: [12, -10, 8, -6, 3, 0],
+                          scale: [0.45, 1.15, 0.95, 1.08, 0.98, 1],
+                          opacity: [0, 1, 1, 1, 1, 1],
+                        }}
+                        transition={{
+                          duration: 10, // Exactly 10 seconds
+                          ease: [0.16, 1, 0.3, 1], // Majestic smooth deceleration curve
+                          times: [0, 0.2, 0.4, 0.65, 0.85, 1],
+                        }}
+                        style={{
+                          transformStyle: 'preserve-3d',
+                        }}
+                        onClick={() => setBadgeSpinKey((k) => k + 1)}
+                        className="w-32 h-36 relative flex items-center justify-center drop-shadow-[0_20px_35px_rgba(16,185,129,0.28)] z-20 cursor-pointer select-none"
+                        title="Click to spin badge again!"
+                        whileHover={{ scale: 1.08, transition: { duration: 0.2 } }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         <BadgeGraphic type={selectedBadge.type} unlocked={selectedBadge.unlocked} />
-                      </div>
-
-                      {/* V-Shaped Torn Paper Fold Overlay */}
-                      <div className="absolute bottom-0 inset-x-0 w-full z-10 pointer-events-none">
-                        <svg
-                          viewBox="0 0 400 130"
-                          fill="none"
-                          className="w-full h-auto text-white dark:text-neutral-900 drop-shadow-md overflow-visible"
-                          preserveAspectRatio="none"
-                        >
-                          <path
-                            d="M 0 0 Q 100 45 200 115 Q 300 45 400 0 L 400 130 L 0 130 Z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </div>
-
+                      </motion.div>
                     </div>
 
                     <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -782,13 +910,13 @@ export default function AchievementsPage() {
 
                     {/* Description Paragraph */}
                     {selectedBadge.description && (
-                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-sm mx-auto mb-2 mt-2">
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-sm mx-auto mb-3 mt-3">
                         {selectedBadge.description}
                       </p>
                     )}
 
-                    {/* ── 3-Column Circular Arc Gauge Statistics Box ── */}
-                    <div className="w-full rounded-3xl bg-white dark:bg-neutral-900 border border-slate-200/80 dark:border-neutral-800 shadow-sm p-4 sm:p-5 mt-4 grid grid-cols-3 gap-2 text-center">
+                    {/* ── 3-Column Circular Arc Gauge Statistics — Seamlessly Blended ── */}
+                    <div className="w-full pt-4 pb-2 mt-2 grid grid-cols-3 gap-2 text-center">
 
                       {/* Column 1: Modules Completed */}
                       <div className="flex flex-col items-center justify-between px-1">
@@ -849,10 +977,10 @@ export default function AchievementsPage() {
                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-1">
                           <svg viewBox="0 0 100 100" className="w-full h-full">
                             <defs>
-                              <linearGradient id="arcPurple" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#DDD6FE" />
-                                <stop offset="50%" stopColor="#8B5CF6" />
-                                <stop offset="100%" stopColor="#6D28D9" />
+                              <linearGradient id="arcEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#6EE7B7" />
+                                <stop offset="50%" stopColor="#10B981" />
+                                <stop offset="100%" stopColor="#047857" />
                               </linearGradient>
                             </defs>
                             {/* Faint Outer Ring Track */}
@@ -861,18 +989,18 @@ export default function AchievementsPage() {
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="3.5"
-                              className="text-purple-50 dark:text-neutral-800"
+                              className="text-emerald-50 dark:text-neutral-800"
                             />
                             {/* Progress Arc */}
                             <path
                               d="M 22.5 73 A 36 36 0 1 1 77.5 73"
                               fill="none"
-                              stroke="url(#arcPurple)"
+                              stroke="url(#arcEmerald)"
                               strokeWidth="4.5"
                               strokeLinecap="round"
                             />
                             {/* End Cap Dot */}
-                            <circle cx="77.5" cy="73" r="3.5" fill="#6D28D9" />
+                            <circle cx="77.5" cy="73" r="3.5" fill="#047857" />
                             {/* Inner Elevated Circle */}
                             <circle
                               cx="50"
@@ -881,13 +1009,13 @@ export default function AchievementsPage() {
                               className="fill-white dark:fill-neutral-900 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.08)]"
                             />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[#8B5CF6] dark:text-purple-400">
+                          <div className="absolute inset-0 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Star className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
                           </div>
                         </div>
 
                         {/* Value */}
-                        <span className="text-base sm:text-xl font-black text-[#8B5CF6] dark:text-purple-400 my-0.5 tracking-tight">
+                        <span className="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 my-0.5 tracking-tight">
                           {selectedBadge.unlocked ? '98%' : '72%'}
                         </span>
                         {/* Label */}
@@ -902,10 +1030,10 @@ export default function AchievementsPage() {
                         <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-1">
                           <svg viewBox="0 0 100 100" className="w-full h-full">
                             <defs>
-                              <linearGradient id="arcOrange" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#FFEDD5" />
-                                <stop offset="50%" stopColor="#F97316" />
-                                <stop offset="100%" stopColor="#C2410C" />
+                              <linearGradient id="arcCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#BAE6FD" />
+                                <stop offset="50%" stopColor="#0EA5E9" />
+                                <stop offset="100%" stopColor="#0284C7" />
                               </linearGradient>
                             </defs>
                             {/* Faint Outer Ring Track */}
@@ -914,18 +1042,18 @@ export default function AchievementsPage() {
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="3.5"
-                              className="text-orange-50 dark:text-neutral-800"
+                              className="text-cyan-50 dark:text-neutral-800"
                             />
                             {/* Progress Arc */}
                             <path
                               d="M 22.5 73 A 36 36 0 1 1 77.5 73"
                               fill="none"
-                              stroke="url(#arcOrange)"
+                              stroke="url(#arcCyan)"
                               strokeWidth="4.5"
                               strokeLinecap="round"
                             />
                             {/* End Cap Dot */}
-                            <circle cx="77.5" cy="73" r="3.5" fill="#C2410C" />
+                            <circle cx="77.5" cy="73" r="3.5" fill="#0284C7" />
                             {/* Inner Elevated Circle */}
                             <circle
                               cx="50"
@@ -934,13 +1062,13 @@ export default function AchievementsPage() {
                               className="fill-white dark:fill-neutral-900 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.08)]"
                             />
                           </svg>
-                          <div className="absolute inset-0 flex items-center justify-center text-[#F97316] dark:text-amber-400">
+                          <div className="absolute inset-0 flex items-center justify-center text-[#0EA5E9] dark:text-cyan-400">
                             <Clock className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
                           </div>
                         </div>
 
                         {/* Value */}
-                        <span className="text-base sm:text-xl font-black text-[#F97316] dark:text-amber-400 my-0.5 tracking-tight">
+                        <span className="text-base sm:text-xl font-black text-[#0EA5E9] dark:text-cyan-400 my-0.5 tracking-tight">
                           {selectedBadge.unlocked ? '18h' : '4.5h'}
                         </span>
                         {/* Label */}
@@ -971,9 +1099,9 @@ export default function AchievementsPage() {
                         onClick={() => {
                           toast.success(`Downloading "${selectedBadge.name}" badge graphic... 🏆`);
                         }}
-                        className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-800 dark:text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                        className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:bg-emerald-50/60 dark:hover:bg-neutral-800 text-slate-800 dark:text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                       >
-                        <Download className="w-4 h-4 text-[#2962D6]" />
+                        <Download className="w-4 h-4 text-emerald-600" />
                         <span>Download</span>
                       </button>
                     ) : (
@@ -997,7 +1125,7 @@ export default function AchievementsPage() {
                           navigator.clipboard?.writeText(window.location.href);
                           toast.success(`Share link for "${selectedBadge.name}" copied to clipboard! 🚀`);
                         }}
-                        className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/25"
                       >
                         <Share2 className="w-4 h-4" />
                         <span>Share</span>
@@ -1006,7 +1134,7 @@ export default function AchievementsPage() {
                       <Link
                         href="/learning"
                         onClick={() => setSelectedBadge(null)}
-                        className="py-3 px-4 rounded-2xl bg-[#2962D6] hover:bg-[#2354ba] text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-500/20 text-center"
+                        className="py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:opacity-95 text-white font-extrabold text-xs transition-opacity flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/25 text-center"
                       >
                         <span>Continue</span>
                         <ArrowRight className="w-4 h-4" />
